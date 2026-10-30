@@ -2,9 +2,12 @@
 
 namespace Runa\Modules\Admin\Contracts;
 
-/** Guarded API 1.0.0. Every call requires current entry authority and password proof. */
+/** Guarded API 1.0.0. Protected calls require current entry authority and password proof; entry is a minimal advertisement. */
 interface AdminAccess
 {
+    /** @return array{available: bool} Proof-free advertisement; never admits protected reads. */
+    public function entry(): array;
+
     /** @return array<string, mixed> */
     public function bootstrap(): array;
 

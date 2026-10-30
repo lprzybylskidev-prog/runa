@@ -17,6 +17,11 @@ final readonly class Access implements AdminAccess
         // before discovery freezes them. Cold command boot never loads Admin classes.
     }
 
+    public function entry(): array
+    {
+        return ['available' => $this->entry->available()];
+    }
+
     public function bootstrap(): array
     {
         return $this->entry->read(fn (OperationContext $context): array => $this->projection->bootstrap() + [

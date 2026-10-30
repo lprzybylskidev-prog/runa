@@ -18,3 +18,8 @@ Route::get('/modules/frontend', ModuleFrontendController::class)->name('api.modu
 
 // Fixed Core adapter: the existing module HTTP namespace remains unchanged.
 Route::get('/admin', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)->name('runa.admin.bootstrap');
+
+Route::get('/admin/entry', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)->name('runa.admin.entry');
+Route::get('/admin/{owner}/{page}', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
+    ->where(['owner' => 'app|(?:app|runa)\.[a-z][a-z0-9_]{0,47}', 'page' => '[a-z][a-z0-9_]{0,63}'])
+    ->name('runa.admin.page.read');

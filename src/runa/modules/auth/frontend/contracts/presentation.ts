@@ -1,4 +1,6 @@
 import type { VNode } from 'vue';
+import type { ApplicationSessionController } from './controllers';
+import type { NavigationEntry, RouteContext } from '@/runa/ui';
 import type { EntryPage, EntrySession } from '../entry';
 import type { ActivitySession } from '../useApplicationSession';
 import type { AccountHistoryDetail } from '../historyDetails';
@@ -18,10 +20,36 @@ export interface AuthEntryProps {
 export interface AuthAccountProps {
   accountId: string;
 }
-export interface AuthApplicationProps {
+export interface AuthAccountMenuEntry {
+  key: string;
+  label: string;
+  href: string;
+  current?: boolean;
+}
+export interface ApplicationSessionShellProps {
+  session: ApplicationSessionController;
+  navigation?: readonly NavigationEntry[] | undefined;
+  topNavigation?: readonly NavigationEntry[] | undefined;
+  current?: RouteContext | undefined;
+  locale?: 'pl' | 'en' | undefined;
+  accountMenu?: readonly AuthAccountMenuEntry[] | undefined;
+}
+export interface ApplicationSessionShellSlots {
+  loading?(scope: { account: boolean }): VNode[];
+  default?(scope: { session: ActivitySession }): VNode[];
+  'account-menu'?(scope: {
+    session: ActivitySession;
+    entries: readonly AuthAccountMenuEntry[];
+  }): VNode[];
+}
+export interface AuthApplicationProps extends Omit<
+  ApplicationSessionShellProps,
+  'session'
+> {
+  session?: ApplicationSessionController | undefined;
   account?: boolean;
 }
-export interface AuthApplicationSlots {
+export interface AuthApplicationSlots extends ApplicationSessionShellSlots {
   default?(scope: { session: ActivitySession }): VNode[];
   loading?(scope: { account: boolean }): VNode[];
 }
@@ -35,14 +63,14 @@ export interface AuthHistoryDetailProps {
 export type AuthHistoryDetailEmits = { close: []; retry: [] };
 export interface AuthRecoveryCodesDialogProps {
   codes: readonly string[];
-  locale?: 'pl' | 'en';
+  locale?: 'pl' | 'en' | undefined;
   busy?: boolean;
 }
 export type AuthRecoveryCodesDialogEmits = { acknowledge: [] };
 export interface AuthTotpSetupProps {
   secret: string;
   qrCode?: string;
-  locale?: 'pl' | 'en';
+  locale?: 'pl' | 'en' | undefined;
 }
 export interface AuthAvatarCropperProps {
   file: File;

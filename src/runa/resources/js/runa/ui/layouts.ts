@@ -14,6 +14,8 @@ export interface MinimalLayoutProps {
   staticPreferences?: { locale: Locale; theme: Theme } | undefined;
 }
 export interface ApplicationLayoutProps {
+  /** Fixed presentation locale; does not update account language. */
+  locale?: Locale | undefined;
   navigation: readonly NavigationEntry[];
   topNavigation?: readonly NavigationEntry[];
   current?: RouteContext | undefined;

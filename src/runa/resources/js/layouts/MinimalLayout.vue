@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { inject } from 'vue';
+import { applicationSessionOwner } from '../lib/applicationSession';
+const sessionOwned = inject(applicationSessionOwner, false);
 import { onMounted, ref, watch } from 'vue';
 import { useDisplayPreferences } from '../composables/useDisplayPreferences';
 import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
@@ -29,7 +32,7 @@ const props = withDefaults(defineProps<MinimalLayoutProps>(), {
 const identity = useIdentity();
 const logoFailed = ref(false);
 onMounted(() => {
-  if (!props.staticPreferences) initializePreferenceSession();
+  if (!props.staticPreferences && !sessionOwned) initializePreferenceSession();
 });
 if (!props.staticPreferences)
   watch(

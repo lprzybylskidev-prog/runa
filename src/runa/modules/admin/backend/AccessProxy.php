@@ -7,6 +7,14 @@ use Runa\Support\Modules\Api\GuardedApi;
 
 final class AccessProxy extends GuardedApi implements AdminAccess
 {
+    public function entry(): array
+    {
+        /** @var array{available: bool} $result */
+        $result = $this->invoke(__FUNCTION__, []);
+
+        return $result;
+    }
+
     public function bootstrap(): array
     {
         /** @var array<string, mixed> $result */

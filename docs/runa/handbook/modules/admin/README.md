@@ -3,10 +3,11 @@
 # Admin contract specification
 
 This guide records the implementation status and remaining specification for
-RM-2026-016, targeting platform 0.7.0. Points 2–3 supply Admin 0.1.0 source,
+RM-2026-016, targeting platform 0.7.0. Points 2–4 supply Admin 0.1.0 source,
 explicit installation history, entry security, declaration discovery and authorized
-bootstrap/page/section reads. Business adapters, writes, frontend exports/routes
-and settings remain planned.
+bootstrap/page/section reads, the English session shell, page-read HTTP and public
+frontend replacement seams. Business adapters, generated forms/writes and settings
+remain planned.
 Existing Auth, Permissions, Audit and framework APIs retain their current contracts.
 Source implementation and focused checks do not establish rendered or release acceptance.
 
@@ -28,8 +29,8 @@ Read the contracts in dependency order:
 Page declarations, handler DTOs, App registration and guarded Admin reads below
 are implemented through point 3. Capability-specific reads, field-bound
 options, typed widget freshness and source-bound component/build projection are
-implemented; compiled registry resolution and rendering remain point 4. Atomic participation, settings and frontend contracts
-remain specified. Private engines retain their current homes and are never
+implemented, including compiled registry resolution and shell rendering. Atomic
+participation, settings and generated form/resource runtime contracts remain specified. Private engines retain their current homes and are never
 ordinary application imports.
 
 | Capability                                              | Owner and audience                                                      | Supported entrypoint                                                                 | Implementation home and delivery                                                      |
@@ -86,23 +87,35 @@ participation synchronizes its declared grants and transactional Audit; installa
 assigns no grants or users. Request boot never installs or registers Admin.
 
 Resolve `Runa\Modules\Admin\Contracts\AdminAccess` through ModuleApis with version
-`1.0.0`. Every method requires current Core availability, `runa.admin.enter`, a
+`1.0.0`. Protected methods require current Core availability, `runa.admin.enter`, a
 current operational Auth session and password proof for `runa.admin.enter` with
 TTL 300 seconds and `everyAction=false`. Ordinary direct/role grants suffice;
 the protected system role does not bypass proof or session checks. Bootstrap, page and section read are
 implemented; preview/save/command still refuse with `admin_page_unavailable` after
 entry checks until their owning implementation points.
 
-The implemented route is GET `/api/admin`, named `runa.admin.bootstrap`. Its fixed
-platform dispatcher loads the source-owned controller/FormRequest/JsonResource
-only after authenticated entry admission. The existing API middleware supplies
-cookies/session/CSRF; responses are no-store and errors expose fixed English
-messages/reasons. Bootstrap returns authorized owners/pages/widgets and existing
-source-default application presentation (revision 0). No built-in business page
-provider is supplied yet, so the default catalogue remains empty. App providers
-can supply independent pages through the documented bootstrap registry. `/admin`
-HTML, page/section/write HTTP routes and runtime presentation overrides remain planned. The public welcome catalogue reads localized Admin manifest metadata and
-uses the existing adjustments icon; no Admin menu entry or rendered PASS is claimed.
+Delivered routes are GET `/admin` (`runa.admin.dashboard`),
+`/admin/{owner}/{page}` (`runa.admin.page`), `/api/admin`
+(`runa.admin.bootstrap`), `/api/admin/entry` (`runa.admin.entry`) and
+`/api/admin/{owner}/{page}` (`runa.admin.page.read`). HTML contains no protected
+values. The fixed lazy dispatcher loads owned FormRequest/controller/JsonResource
+only after admission. API responses are no-store; protected errors use fixed
+English messages/reasons. The proof-free authenticated advertisement returns only
+`{available:boolean}`; false hides entry without diagnostic details. Ordinary
+platform maintenance, including missing mandatory Core installation, retains 503.
+Guarded PHP still applies normal gateway availability before calling entry.
+
+The default dispatcher selects Admin without changing App source. Shared
+ApplicationSessionShell places the advertised entry beside User panel in the
+account dropdown, retaining one session controller. Admin supplies English-scoped
+ApplicationLayout, owner-left/page-top navigation, password confirmation and
+nested replacement providers. Bootstrap returns authorized owners/pages/widgets
+and current source-default presentation (revision 0). No built-in business page
+provider exists yet, so the default catalogue is empty. App providers can supply
+independent pages and matching compiled/static components. Section-read/write HTTP,
+generated forms, owning business adapters and DB-backed presentation settings
+remain planned. Source/component tests are not final rendered/release acceptance.
+The welcome catalogue remains independent localized manifest metadata.
 
 Named trusted `Runa\Integration\Core\AdminEntry`, `AdminHttpGuard`,
 `AdminBootstrapController` and `AdminDiagnostics` are private integration, not

@@ -84,3 +84,14 @@ export function customerAccountActions(account: AuthAccountController) {
     refresh: account.refresh,
   };
 }
+
+/** Admin replacement names only public facade types and retains platform admission. */
+export interface CustomerAdminScreens {
+  shell: import('@/runa/admin').AdminController;
+  page: import('@/runa/admin').AdminPageController;
+  props: import('@/runa/admin').AdminApplicationProps;
+  slots: import('@/runa/admin').AdminApplicationSlots;
+  layout: import('@/runa/admin').AdminLayoutProps;
+  presentation: import('@/runa/admin').AdminPresentation;
+  sessionShell: import('@/runa/auth').ApplicationSessionShellProps;
+}

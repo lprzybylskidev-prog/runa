@@ -236,7 +236,7 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Filter page/section/field reads and writes, values/options/derived counts, selection
     and exports server-side; isolate invalid declarations. Author negative disclosure,
     disabled/unavailable/stale generation and application-consumer cases; document API.
-- [ ] 4. Deliver the Admin shell and public presentation/controller seams.
+- [x] 4. Deliver the Admin shell and public presentation/controller seams.
   - Prerequisites: 2–3.
   - Add `/admin` and named page routing/default-dispatch integration; module-left,
     page-top navigation, no empty/mandatory Overview. Extend AuthApplication menu and
@@ -822,3 +822,79 @@ Supported backend runners displayed their exact disposable scope and removed onl
 runa_test_test_1. Base runa_test, development data, containers/volumes, Qdrant/model
 caches, backups and reports were preserved. No Docker resource was created or
 removed. Point 3 is complete; point 4 is next.
+
+## Point 4 completion — shared session shell and Admin presentation
+
+Completed 2026-10-30. Added named Admin document, entry-advertisement and page-read
+routes with lazy owned controllers and the existing authenticated maintenance/
+entry guard. The advertisement returns only current availability, without proof or
+protected bootstrap values. Ordinary maintenance, including missing mandatory
+Core installation, remains 503. Guarded PHP retains normal gateway availability;
+protected reads retain entry grants and the native session-bound password proof.
+
+Extracted ApplicationSessionShell under Auth and updated AuthApplication consumers.
+Auth/account/Admin share one caller-owned session controller and retain native
+activity, expiry, logout, profile and reauthentication. Standalone layouts retain
+preference session initialization; inside the shared shell they do not start
+another session read. Authority refreshes and account/session changes fence Admin
+advertisement/bootstrap/page responses. English scope never writes the account's
+ordinary app language; theme and supplied responsive/accessible layout remain.
+
+AdminApplication supplies module-left/page-top navigation, dashboard and empty/
+unavailable states, useAdmin/useAdminPage, entry password confirmation, nested
+presentation providers and a public @/runa/admin facade. DefaultApplication
+selects Admin routes and forwards an explicit static App component registry without
+expanding the app scaffold. Full customer presentation fixtures retain platform
+admission. Component resolution checks owner/key/manifest/build before choosing a
+loader or App entry; component failures remain isolated. Vite serve atomically
+publishes current evidence and invalidates/reloads its virtual registry after
+source changes. Generated business tables/forms/actions and required-form blocking
+remain point 5; business handlers/writes/settings retain their later points.
+
+Agent-owned exact contract details: AdminController.entryProof exposes transient
+password/busy refs for public AdminEntryProof or headless submission; confirmation
+uses the fixed native action, never duplicates submission or replays business
+writes, and clears credentials on completion/invalidation/disposal.
+ApplicationSessionController.authorityRevision advances on successful validation,
+not every heartbeat. ApplicationLayout.locale fixes presentation language. These
+complete the approved shared-session/presentation design without a new owner
+architecture premise. Admin stays 0.1.0 and Auth stays the already unreleased 2.0.0;
+existing initial/native_transactions edges suffice. No schema/data migration or
+extra source-only version edge is introduced.
+
+Grounding: local knowledge current at entry (201 documents / 9,737 chunks), bounded
+current-intent query and original Admin/public frontend/session/framework sources;
+frontend/Vue/Tailwind and backend/Laravel/security skills, installed Tailwind 4.3.3
+and Boost Laravel 13.x routing/FormRequest documentation. Public Admin status,
+declarations/frontend, customization, component/layout references, public boundary,
+framework and Auth account/changelog guidance are synchronized. Owner and customer
+frontend skills already route to these canonical contracts and require shared
+session/build checks; no duplicate rule or root contract change is needed.
+
+Necessary focused diagnostics only:
+
+- Supported backend --parallel --processes=1 with filter 'advertises only current
+  entry|routes Admin pages through guarded': final 2 tests / 29 assertions,
+  6.45 seconds, native exit 0 / cleanup 0. The fixture now publishes a registry
+  generation change and expects ordinary missing-Core maintenance, rather than
+  bypassing the platform guard.
+- Supported frontend filters for session fencing, supplied-session/English/menu,
+  provider/build resolution, native entry proof and authorized locations: 5 passed,
+  3.92 seconds, exit 0 / cleanup 0. A subsequent focused public customer replacement
+  plus shared-session/English rerun passed 2 scenarios, 3.81 seconds. Six distinct
+  scenarios were exercised. Initial diagnostics exposed and corrected optional
+  Boolean wrapper defaults and duplicate layout preference session initialization;
+  the test mock now uses the emitted virtual registry instead of unsupported mock
+  hoisting through the shared Vitest facade.
+- Direct Node selected only 'development evidence republishes' in the existing
+  module-build.test.mjs: 1 passed, 37.76 ms, native exit 0. The supported frontend
+  browser wrapper cannot select this Node-only plugin case. It verifies published/
+  compiled agreement after a source edit and watcher disposal; its owned temporary
+  tree was removed in finally.
+
+Complete suites, type/static analysis, builds, scanners and authored responsive
+light/dark E2E remain point 12. Mandatory commit hooks remain required. No release
+or complete rendered acceptance is claimed. Supported runners displayed and removed
+only runa_test_test_1; base/development databases, active development containers,
+volumes, Qdrant/model caches, backups and reports were preserved. No task-created
+Docker resources required removal. Point 5 is next.

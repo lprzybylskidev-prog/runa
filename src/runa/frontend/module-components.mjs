@@ -4,6 +4,9 @@ import {
   realpathSync,
   existsSync,
   statSync,
+  mkdirSync,
+  writeFileSync,
+  renameSync,
 } from 'node:fs';
 import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -145,6 +148,51 @@ export function moduleComponentsPlugin(root) {
     },
     buildStart() {
       evidence = undefined;
+    },
+    configureServer(server) {
+      const directory = resolve(root, 'public/build');
+      const publish = () => {
+        const current = discoverComponentBuilds(root, true);
+        mkdirSync(directory, { recursive: true });
+        const temporary = resolve(directory, 'runa-components.json.tmp');
+        writeFileSync(temporary, JSON.stringify(current));
+        renameSync(temporary, resolve(directory, 'runa-components.json'));
+      };
+      publish();
+      let timer;
+      const changed = (file) => {
+        const relative = file.slice(root.length + 1).replaceAll('\\', '/');
+        if (
+          !file.startsWith(root + '/') ||
+          !/^(app\/resources\/|(?:app|runa)\/modules\/[^/]+\/(?:frontend\/|module\.json$))/.test(
+            relative,
+          )
+        )
+          return;
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          try {
+            publish();
+            const module = server.moduleGraph.getModuleById(resolved);
+            if (module) server.moduleGraph.invalidateModule(module);
+            server.ws.send({ type: 'full-reload' });
+          } catch {
+            // Stale source evidence fails closed server-side; never publish partial evidence.
+            server.ws.send({ type: 'full-reload' });
+          }
+        }, 30);
+      };
+      server.watcher
+        .on('add', changed)
+        .on('change', changed)
+        .on('unlink', changed);
+      server.httpServer?.once('close', () => {
+        clearTimeout(timer);
+        server.watcher
+          .off('add', changed)
+          .off('change', changed)
+          .off('unlink', changed);
+      });
     },
     generateBundle() {
       const current = discoverComponentBuilds(root, development);

@@ -1,15 +1,25 @@
-<!-- runa-knowledge {"purpose":"proposal","effective_date":null,"applicable_version":"0.7.0","decisions":[]} -->
+<!-- runa-knowledge {"purpose":"current_guidance","effective_date":"2026-10-30","applicable_version":"0.7.0","decisions":[]} -->
 
 # Admin frontend contract
 
-Status: specification for RM-2026-016; exports below are not implemented. Source
+Status: point 4 delivers the session shell, entry/menu, named document and page-read
+routes, compiled component resolution, nested presentation providers and
+`useAdmin`/`useAdminPage`. Delivered facade components are `AdminApplication`,
+`AdminLayout`, `AdminLoading`, `AdminEntryProof` and `AdminPresentationProvider`;
+`useAdminPresentation` and `resolveAdminComponent` are also delivered. Source
 home is `src/runa/modules/admin/frontend`; public facade is `@/runa/admin`.
 Application replacements live in `src/app/resources/js`. All HTTP uses `@/runa/http`;
 all layout/forms/table/theme controls use existing `@/runa/ui` contracts.
 
+Business tables/forms/actions, resource/form controllers and their default
+components remain specified for points 5–6; no business write is available from
+this shell. All wire/controller types below are exported, including types for
+those future runtime functions. Rendered acceptance remains point 12.
+
 ## Controllers and public types
 
-All following types, components and functions are public exports of that facade.
+The following types and implemented functions use that public facade. Function
+and component runtime delivery follows the status above.
 Wire types `AdminBootstrap`, `AdminPageData`, `AdminSectionData`, `AdminFieldData`,
 `AdminCommandData`, `AdminWidgetData`, `AdminRecord`, `AdminReadResult`,
 `AdminWrite`, `AdminAggregateInput`, `AdminPreview`, `AdminSaveResult`,
@@ -53,6 +63,7 @@ interface AdminController {
   bootstrap: Ref<AdminBootstrap | undefined>;
   location: ComputedRef<AdminLocation | undefined>;
   error: Ref<AdminError | undefined>;
+  entryProof: { password: Ref<string>; busy: ComputedRef<boolean> };
   refresh(): Promise<void>;
   navigate(location: AdminLocation): Promise<boolean>;
   confirmEntry(): Promise<void>;
@@ -124,6 +135,17 @@ function useAdminResource(
   section: string,
 ): AdminResourceController;
 ```
+
+`entryProof.password` is transient input for the fixed native
+`runa.admin.enter` password action. Render public `AdminEntryProof` with
+`controller: AdminController`, or bind that input and call `confirmEntry()` once
+on explicit submission. It has no slots or emitted events. Confirmation clears
+the password, admits no duplicate submission and refreshes only bootstrap;
+account/session invalidation and disposal erase it. Failure never replays a
+business operation. `authorityRevision` on ApplicationSessionController increments
+after successful session validation; heartbeat updates do not trigger new Admin
+advertisements. Session identity, suspension, loading, pending logout and that
+revision fence protected reads.
 
 Composables mount once per keyed account/page; scope disposal aborts requests and
 removes listeners/dirty guards. They own cancellation, session/CSRF/proof handling,
@@ -226,7 +248,7 @@ interface AdminActionProps {
 type AdminActionEmits = { invoke: [] };
 ```
 
-Facade component names: `AdminApplication`, `AdminPresentationProvider`,
+The complete target facade component set (runtime delivery is listed above): `AdminApplication`, `AdminPresentationProvider`,
 `AdminLayout`, `AdminPage`, `AdminSection`, `AdminField`, `AdminForm`,
 `AdminWidget`, `AdminAction`, `AdminLoading`. AdminLoading has no props/events,
 and a single optional default slot `(): VNode[]`. Provider/page/section/widget/
@@ -247,6 +269,23 @@ selects a default or loader. Module components continue through existing manifes
 build discovery. The supplied dispatcher forwards an App registry only when the
 application explicitly configures one; no sample screen is added to the scaffold.
 
+Point-4 page replacements receive `{controller: AdminPageController}`; section
+replacements receive `{section: AdminSectionData}`. The form/controller prop in
+the complete target signatures arrives with point 5. Defaults currently render
+page/section headings, safe unavailable/empty states and dashboard widget values;
+they do not pretend to supply editable controls before their owning point.
+
+The public resolver signature is
+`resolveAdminComponent(identity: AdminComponent | null, components?: AdminComponentRegistry): {component: Component | undefined; available: boolean}`.
+`AdminComponent` is the exact wire Component identity. Null returns an undefined
+component and available=true, allowing the selected provider/default. An unavailable
+non-null identity returns a safe supplied unavailable component and available=false.
+Module loaders are chosen only after owner/manifest/build/key agreement; App keys
+also require a matching explicit static registry entry. Use this resolver in full
+replacements; it does not import a path from metadata. Default rendering isolates
+component setup/render/load failures to its boundary. Required form blocking is
+owned by point 5; source identity validation alone is not Save authorization.
+
 Defaults remain usable without configuration: ApplicationLayout, existing Form/
 FormSection/controls, Table/useTable, confirmation and feedback. Admin is English
 including shared controls/proof/errors; this scoped locale does not persist a
@@ -256,7 +295,7 @@ compiler, new framework, UI dependency or duplicated table backend.
 
 ## Shared session shell and account menu seam
 
-Point 4 extracts the existing AuthApplication session/menu/activity orchestration
+Point 4 implements the existing AuthApplication session/menu/activity orchestration
 into public `ApplicationSessionShell` in the `@/runa/auth` facade, implemented under
 Auth frontend. It is the shared platform shell used by AuthApplication and
 AdminApplication. Props and slots are specified as:
@@ -271,7 +310,8 @@ interface ApplicationSessionShellProps {
   accountMenu?: readonly AuthAccountMenuEntry[];
 }
 interface ApplicationSessionShellSlots {
-  default?(scope: { session: ApplicationSessionController }): VNode[];
+  default?(scope: { session: ActivitySession }): VNode[];
+  loading?(scope: { account: boolean }): VNode[];
   'account-menu'?(scope: {
     session: ActivitySession;
     entries: readonly AuthAccountMenuEntry[];
@@ -299,7 +339,7 @@ stays scoped. Actual facade consumers change together in point 4, without old-sh
 adapters or copied security logic. App routers can supply a controller across route
 changes; the default dispatcher owns one for its mounted application boundary.
 
-A minimal advertisement is separately specified on AdminAccess:
+A minimal advertisement is implemented on AdminAccess:
 `public function entry(): array`, guarded API operation `entry` under version
 1.0.0, session-authenticated GET `/api/admin/entry`, named `runa.admin.entry`.
 It returns only `{available:boolean}`. It checks current operational Auth session,
@@ -321,6 +361,22 @@ come from named routes. Extra source-owned accountMenu links use same-origin URL
 links do not declare grants. Replacing the additional account-menu slot retains
 User panel/sign-out and session security. No protected controller mounts before
 session admission. HTML shells carry no protected bootstrap values.
+
+`ApplicationLayoutProps.locale?: 'pl' | 'en'` fixes a presentation locale without
+writing account preference state; supplied Admin passes en. It hides the language
+cycle while retaining the theme control. Descendant shared controls and
+reauthentication inherit that scope. Standalone layouts retain optional preference
+session initialization; a shared ApplicationSessionShell supplies ownership so they
+do not issue a competing session read. Only the controller creator installs the
+session observer/activity listeners and disposes them. A supplied controller lives
+in the caller's Vue scope and survives shell replacement.
+
+`DefaultApplication` accepts `adminComponents?: AdminComponentRegistry`; it dispatches
+`/admin` and `/admin/{owner}/{page}` to AdminApplication without changing the App
+scaffold. App routers may mount AdminApplication themselves and supply navigate and
+one session. Module links select their authorized default_page, top navigation lists
+only declared selected-owner pages, and the dashboard stays its own route; no
+synthetic Overview is inserted. Other paths retain the existing Auth/welcome mapping.
 
 The default entry link is next to User panel in the account dropdown only. Inside
 Admin, module/independent-page navigation is on the left, selected module pages on

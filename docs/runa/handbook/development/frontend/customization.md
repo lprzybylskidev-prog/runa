@@ -13,7 +13,8 @@ Public entrypoints and implementation imports follow the
 
 The supplied `src/app/resources/js/App.vue` renders `DefaultApplication` from
 `@/runa/auth`. That platform component selects exact Auth pages, `/app`, `/account`
-and welcome. When welcome is enabled, the default `/app` has Home / Application breadcrumbs and an otherwise empty workspace: no page heading, welcome card or account links. Native unknown server paths remain 404 responses.
+and welcome, plus AdminApplication for `/admin` and declared Admin page locations.
+When welcome is enabled, the default `/app` has Home / Application breadcrumbs and an otherwise empty workspace: no page heading, welcome card or account links. Native unknown server paths remain 404 responses.
 `main.ts` imports the shared CSS through `@/runa/ui/styles.css` and mounts
 `createApplication(App)` from `@/runa/ui`. This public helper returns a Vue App,
 so customers can install their own plugins before mounting. It hydrates public
@@ -56,6 +57,27 @@ import { Button } from '@/runa/ui';
   </AuthApplication>
 </template>
 ```
+
+`AuthApplication` accepts optional `session`, `navigation`, `topNavigation`,
+`current`, `locale` and `accountMenu` composition inputs. It reuses the public
+`ApplicationSessionShell` from `@/runa/auth`; only the creator calls
+`useApplicationSession` and owns its disposal. The shell takes a required session
+controller and the same navigation inputs, plus an `account-menu` slot with
+`{session, entries}` and loading/default slots. Extra same-origin account links
+never replace the supplied User panel/sign-out controls. Its minimal Admin
+advertisement stays in that dropdown and refreshes with session authority, without
+loading protected Admin metadata. See [Admin shell contracts](../../modules/admin/frontend.md#shared-session-shell-and-account-menu-seam).
+
+`AdminApplication` from `@/runa/admin` retains English entry proof and session
+orchestration. Its default slot receives `{controller: AdminController}`; a
+customer may render its own navigation/page content there. Nested
+`AdminPresentationProvider` supports partial layout/page/section/widget/loading
+replacement. Import useAdmin/useAdminPage for a full source-owned presentation,
+and resolve projected component identities through public resolveAdminComponent.
+Check the [runtime export status](../../modules/admin/frontend.md) before consuming
+future form/resource components. `DefaultApplication` forwards an explicitly
+supplied `adminComponents` static App registry; the minimal scaffold adds no example
+screen. Account language is preserved while Admin and its shared controls use en.
 
 For independent page composition, `MinimalLayout`, `ApplicationLayout`,
 `IdentityProvider` and controls remain available from `@/runa/ui`. Importing them

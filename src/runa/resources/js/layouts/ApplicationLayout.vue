@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { inject, toRef } from 'vue';
+import { provideLocale } from '../composables/useLocale';
+import { applicationSessionOwner } from '../lib/applicationSession';
+const sessionOwned = inject(applicationSessionOwner, false);
 import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
 import {
   accountPreferences,
@@ -47,7 +51,9 @@ const props = withDefaults(defineProps<ApplicationLayoutProps>(), {
   userInitials: 'RU',
   userAvatar: '',
   userLoading: false,
+  locale: undefined,
 });
+provideLocale(toRef(props, 'locale'));
 const emit = defineEmits<{
   navigate: [href: string, event: globalThis.MouseEvent];
   localeChange: [locale: Locale];
@@ -70,7 +76,7 @@ const {
   changePreference,
   applyPreference,
   finishPreferenceChange,
-} = useDisplayPreferences();
+} = useDisplayPreferences(undefined, toRef(props, 'locale'));
 watch(locale, (value) => emit('localeChange', value), { immediate: true });
 watch(
   () => identity.value.applicationId,
@@ -248,7 +254,7 @@ watch(
   },
 );
 onMounted(() => {
-  initializePreferenceSession();
+  if (!sessionOwned) initializePreferenceSession();
   document.addEventListener('keydown', keydown);
 });
 const media = window.matchMedia('(max-width: 63.999rem)');
@@ -411,6 +417,7 @@ onScopeDispose(() => {
         <div class="shell-header-controls" data-print-hide>
           <AppPreferenceControls
             size="sm"
+            :fixed-locale="!!props.locale"
             :locale="locale"
             :theme="theme"
             :theme-label="themeLabel"

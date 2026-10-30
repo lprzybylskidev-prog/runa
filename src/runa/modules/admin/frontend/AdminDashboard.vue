@@ -1,0 +1,66 @@
+<script setup lang="ts">
+import { Card } from '@/runa/ui';
+import type { AdminBootstrap, AdminComponentRegistry } from './contracts';
+import { resolveAdminComponent } from './components';
+import { useAdminPresentation } from './presentation';
+import AdminComponentBoundary from './AdminComponentBoundary.vue';
+const props = defineProps<{
+  bootstrap: AdminBootstrap;
+  components?: AdminComponentRegistry | undefined;
+}>();
+const presentation = useAdminPresentation();
+</script>
+<template>
+  <div class="space-y-6">
+    <h1 class="text-xl font-semibold">Administration</h1>
+    <p
+      v-if="!props.bootstrap.dashboard.widgets.length"
+      class="text-sm text-muted"
+    >
+      No dashboard widgets are available.
+    </p>
+    <div v-else class="grid min-w-0 gap-6 lg:grid-cols-2">
+      <AdminComponentBoundary
+        v-for="widget in bootstrap.dashboard.widgets"
+        :key="widget.id"
+        :identity="bootstrap.revision + ':' + widget.id"
+      >
+        <component
+          v-if="widget.component || presentation.widget"
+          :is="
+            resolveAdminComponent(widget.component, components).component ??
+            presentation.widget
+          "
+          :widget="widget"
+        />
+        <Card v-else>
+          <template #header
+            ><h2>{{ widget.title }}</h2></template
+          >
+          <p v-if="widget.diagnostic" class="text-sm text-muted">
+            Widget information is unavailable or stale.
+          </p>
+          <p v-else-if="!widget.observed_at" class="text-sm text-muted">
+            Observation time is unknown.
+          </p>
+          <dl class="space-y-2 text-sm">
+            <div
+              v-for="(value, key) in widget.values"
+              :key="key"
+              class="flex flex-wrap gap-3"
+            >
+              <dt class="text-muted">{{ key }}</dt>
+              <dd class="min-w-0 break-words">
+                {{ typeof value === 'object' ? JSON.stringify(value) : value }}
+              </dd>
+            </div>
+          </dl>
+          <p v-if="widget.observed_at" class="mt-4 text-xs text-muted">
+            Observed
+            <time :datetime="widget.observed_at">{{ widget.observed_at }}</time>
+          </p>
+        </Card>
+      </AdminComponentBoundary>
+    </div>
+  </div>
+</template>

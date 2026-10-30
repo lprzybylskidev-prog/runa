@@ -20,6 +20,26 @@ final readonly class AdminEntry
     public function __construct(private DatabaseManager $database, private AuthorityLock $authority,
         private OperationGuard $guard, private PrincipalScope $principals, private ModuleApis $apis) {}
 
+    /** Minimal proof-free advertisement. Never returns authority or protected values. */
+    public function available(): bool
+    {
+        if ($this->principals->current() === null) {
+            throw new OperationRejected('authentication_required', 'runa.admin', 'entry', 401);
+        }
+        try {
+            $context = $this->guard->enter('runa.admin', new ApiOperation('entry', 'runa.admin.enter'));
+            $this->guard->assertAvailable($context);
+
+            return true;
+        } catch (OperationRejected $error) {
+            if ($error->reason === 'platform_unavailable') {
+                throw $error;
+            }
+
+            return false;
+        }
+    }
+
     /** @template T
      * @param  Closure(OperationContext): T  $read
      * @return T

@@ -382,3 +382,44 @@ it('fails closed when independent refusal Audit also fails and invalidates rolle
         }
     });
 });
+
+it('advertises only current entry availability without requiring or consuming password proof', function (): void {
+    $this->getJson('/api/admin/entry')->assertUnauthorized()->assertJsonMissingPath('data');
+    ($this->adminLogin)();
+    $this->getJson('/api/admin/entry')->assertOk()->assertExactJson(['data' => ['available' => false]])
+        ->assertHeader('Cache-Control', 'no-store, private');
+    ($this->adminGrant)('runa.admin.enter');
+    $this->getJson('/api/admin/entry')->assertOk()->assertExactJson(['data' => ['available' => true]]);
+    $this->getJson('/api/admin')->assertForbidden()->assertJsonPath('reason', 'step_up_required');
+    expect(DB::table('runa_auth.step_up_proofs')->count())->toBe(0);
+    DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)->delete();
+    $this->getJson('/api/admin/entry')->assertOk()->assertExactJson(['data' => ['available' => false]]);
+    ($this->adminGrant)('runa.admin.enter');
+    DB::table('shared.modules')->where('module_id', 'runa.admin')->update(['installed_version' => null]);
+    DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    // Missing mandatory Core activates ordinary platform maintenance before route admission.
+    $this->getJson('/api/admin/entry')->assertServiceUnavailable()->assertJsonMissingPath('data');
+});
+
+it('routes Admin pages through guarded reads and never relaxes maintenance for advertisement', function (): void {
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminLogin)();
+    $this->getJson('/api/admin/app/users')->assertForbidden()->assertJsonPath('reason', 'step_up_required');
+    ($this->adminProof)();
+    $this->getJson('/api/admin/app/users')->assertNotFound()->assertJsonMissingPath('data');
+    expect(route('runa.admin.dashboard', absolute: false))->toBe('/admin')
+        ->and(route('runa.admin.page', ['owner' => 'app', 'page' => 'users'], false))->toBe('/admin/app/users');
+    $marker = app()->storagePath('framework/maintenance/enabled');
+    if (file_exists($marker)) {
+        throw new RuntimeException('Admin fixture refuses an existing maintenance marker.');
+    }
+    if (! is_dir(dirname($marker))) {
+        mkdir(dirname($marker), 0775, true);
+    }
+    file_put_contents($marker, 'admin-advertisement-fixture');
+    try {
+        $this->getJson('/api/admin/entry')->assertServiceUnavailable()->assertJsonMissingPath('data');
+    } finally {
+        unlink($marker);
+    }
+});

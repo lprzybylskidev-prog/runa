@@ -64,3 +64,5 @@ export type {
 export type * from '../../../../modules/auth/frontend/contracts/controllers';
 export type * from '../../../../modules/auth/frontend/contracts/presentation';
 export type { Restriction } from '../../../../modules/auth/frontend/entry';
+
+export { default as ApplicationSessionShell } from '../../../../modules/auth/frontend/ApplicationSessionShell.vue';

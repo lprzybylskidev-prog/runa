@@ -2,6 +2,10 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Extract public ApplicationSessionShell; AuthApplication accepts a shared session plus typed navigation/current/locale/account-menu inputs without another session/activity owner.
+- Retain account/loading replacement and native session security; advertise Admin entry only in the account dropdown through the fixed proof-free availability read.
+- Expose authorityRevision for successful session refreshes and scope shared Admin controls to English without changing account language. The unreleased 2.0.0 target keeps its existing native_transactions edge; no extra version or migration is introduced.
+
 - Use native owner lock/validate/apply phases for standalone and shared transactions; all owner reviews validate before any business write.
 - Intentionally replace ambient nesting of AuthProfiles.edit with source-owned ModuleTransactions composition; the guarded write API version is 2.0.0 and standalone calls require no ambient transaction. Other guarded API versions remain unchanged.
 - Require platform >=0.7.0 <0.8.0 for the new framework protocol. Preserve strong action proof, current native authority and same-transaction Audit; add a retained-source native_transactions forward edge with no schema change.

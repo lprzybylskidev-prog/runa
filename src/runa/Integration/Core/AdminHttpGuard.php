@@ -44,7 +44,13 @@ final readonly class AdminHttpGuard
         return $this->principals->run($principal, function () use ($request, $next): Response {
             // Admit before controller construction or Form Request validation. Do not retain
             // a transaction around independent owner workflows executed by later commands.
-            $this->entry->read(static fn () => null);
+            if ($request->routeIs('runa.admin.entry')) {
+                if (! $this->entry->available()) {
+                    return response()->json(['data' => ['available' => false]], 200, ['Cache-Control' => 'no-store, private']);
+                }
+            } else {
+                $this->entry->read(static fn () => null);
+            }
 
             $response = $next($request);
             $response->headers->set('Cache-Control', 'no-store, private');

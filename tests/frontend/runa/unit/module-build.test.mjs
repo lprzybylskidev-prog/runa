@@ -1,7 +1,9 @@
 import { test } from 'node:test';
+import { EventEmitter } from 'node:events';
 import assert from 'node:assert/strict';
 import {
   mkdtempSync,
+  readFileSync,
   mkdirSync,
   writeFileSync,
   rmSync,
@@ -100,6 +102,63 @@ test('component evidence binds owned source content and registry snapshot withou
     symlinkSync(join(root, 'app/resources'), join(directory, 'panel.vue'));
     assert.throws(() => discoverComponentBuilds(root), /symlink/);
   } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('development evidence republishes source identity and invalidates the compiled registry', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'runa-dev-evidence-'));
+  const watcher = new EventEmitter();
+  const httpServer = new EventEmitter();
+  try {
+    const directory = join(root, 'app/resources/js/components/admin');
+    mkdirSync(directory, { recursive: true });
+    const file = join(directory, 'panel.vue');
+    writeFileSync(file, '<template>Before</template>');
+    const plugin = moduleComponentsPlugin(root);
+    let invalidated = false;
+    let changed;
+    const reloaded = new Promise((resolve) => {
+      changed = resolve;
+    });
+    const module = {};
+    plugin.configResolved({ command: 'serve', mode: 'development' });
+    plugin.configureServer({
+      watcher,
+      httpServer,
+      moduleGraph: {
+        getModuleById: () => module,
+        invalidateModule: (value) => {
+          assert.equal(value, module);
+          invalidated = true;
+        },
+      },
+      ws: { send: changed },
+    });
+    const asset = join(root, 'public/build/runa-components.json');
+    const before = JSON.parse(readFileSync(asset));
+    assert.deepEqual(before, discoverComponentBuilds(root, true));
+    writeFileSync(file, '<template>After</template>');
+    watcher.emit('change', file);
+    const signal = await Promise.race([
+      reloaded,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('No registry invalidation.')), 1000),
+      ),
+    ]);
+    assert.deepEqual(signal, { type: 'full-reload' });
+    assert.equal(invalidated, true);
+    const after = JSON.parse(readFileSync(asset));
+    assert.notEqual(after.owners.app.build_id, before.owners.app.build_id);
+    assert.ok(
+      plugin
+        .load('\0virtual:runa-module-components')
+        .includes(JSON.stringify(after)),
+    );
+    httpServer.emit('close');
+    assert.equal(watcher.listenerCount('change'), 0);
+  } finally {
+    httpServer.emit('close');
     rmSync(root, { recursive: true, force: true });
   }
 });

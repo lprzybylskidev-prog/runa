@@ -14,6 +14,7 @@ final class AdminApi implements ApiProvider
     public function definition(): ApiDefinition
     {
         return new ApiDefinition(AdminAccess::class, AccessProxy::class, Access::class, '1.0.0', [
+            'entry' => new ApiOperation('entry'),
             'bootstrap' => new ApiOperation('bootstrap', 'runa.admin.enter'),
             'page' => new ApiOperation('page.read', 'runa.admin.enter'),
             'read' => new ApiOperation('section.read', 'runa.admin.enter'),

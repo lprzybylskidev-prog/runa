@@ -18,10 +18,17 @@ final readonly class AdminBootstrapController
 
     public function __invoke(Request $request): mixed
     {
-        $context = $this->guard->enter('runa.admin', new ApiOperation('bootstrap', 'runa.admin.enter'));
+        $operation = match ($request->route()?->getName()) {
+            'runa.admin.entry' => 'entry',
+            'runa.admin.page.read' => 'page',
+            default => 'bootstrap',
+        };
+        $context = $this->guard->enter('runa.admin', new ApiOperation($operation, $operation === 'entry' ? null : 'runa.admin.enter'));
         $record = $this->registry->snapshot()->modules['runa.admin']
             ?? throw new OperationRejected('module_unavailable', 'runa.admin', 'bootstrap');
-        $controller = $this->declarations->make($record, 'Runa\\Modules\\Admin\\Http\\Controllers\\BootstrapController');
+        $controller = $this->declarations->make($record, 'Runa\\Modules\\Admin\\Http\\Controllers\\'.match ($operation) {
+            'entry' => 'EntryController', 'page' => 'PageController', default => 'BootstrapController'
+        });
         $this->guard->assertCurrent($context);
 
         return $this->container->call([$controller, '__invoke']);

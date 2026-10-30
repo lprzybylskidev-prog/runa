@@ -56,6 +56,7 @@ export function useApplicationSession(
 ) {
   const session = shallowRef<ActivitySession>();
   const profile = shallowRef<Profile>();
+  const authorityRevision = ref(0);
   const paused = ref(false),
     loading = ref(true),
     profileLoading = ref(false),
@@ -137,6 +138,7 @@ export function useApplicationSession(
         profile.value = undefined;
       session.value = next;
       failure.value = '';
+      authorityRevision.value++;
       if (next.restrictions.length) suspend();
       else {
         const read = ++presentationRead;
@@ -279,6 +281,7 @@ export function useApplicationSession(
   });
   return {
     session,
+    authorityRevision,
     profile,
     profileLoading,
     welcomeEnabled,

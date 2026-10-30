@@ -4,8 +4,9 @@
 
 Status: point 3 implements declarations/discovery, capability interfaces,
 field-bound options, typed widget results and source-bound component/build
-projection. Compiled registry resolution and rendering remain point 4. The complete wire contract is not yet delivered. Write dispatch, business adapters,
-HTTP routes other than bootstrap and frontend rendering remain planned. See
+projection. Point 4 adds compiled resolution, the shared session shell, entry
+advertisement and page-read/document HTTP. The complete wire contract is not yet
+delivered: section-read/write HTTP, generated forms and business adapters remain planned. See
 [ownership and delivery](README.md). Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
 belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.
@@ -171,7 +172,7 @@ handler methods reject with `OperationRejected('admin_operation_unavailable',
 'runa.admin', <declared operation>, 404)` rather than empty success.
 
 The capability interfaces and read/result DTOs above are implemented in the
-point-3 implementation. Rendering and write dispatch remain planned. A handler
+point-3 implementation. Generated form rendering and write dispatch remain planned. A handler
 implements only its actual capabilities. Resource, lookup, widget and write bindings
 require their corresponding interface; no reader implements dummy write methods.
 A source-declared unsupported capability is a structural declaration error.
@@ -209,8 +210,8 @@ participation becoming unavailable blocks Save; independent pages remain usable.
 AdminAccess bootstrap/page/read and AdminRegistry are implemented.
 Preview/save/command fail closed after entry checks. Handler interfaces are
 delivered; Core business handlers follow in their owning points.
-In the route table below, only `runa.admin.bootstrap` is implemented;
-HTML and remaining API routes belong to subsequent points.
+In the route table below, document routes, entry, bootstrap and page.read are
+implemented. Section-read and write HTTP routes belong to subsequent points.
 
 Admin contracts live in `Runa\Modules\Admin\Contracts`:
 
@@ -347,6 +348,8 @@ older implementation under a new declaration. Other components remain usable;
 a required form component failure blocks Save. Custom full presentation retains
 these checks. The build manifest contains no absolute paths or secrets.
 
+In development-server mode, source changes atomically republish the same evidence
+and invalidate/reload the virtual registry; no API-supplied import is added.
 The existing Vite module-components plugin emits `public/build/runa-components.json`
 (schema 1) and retains the same `builds` named export in its virtual registry.
 Each owner entry contains `manifest_hash`, `build_id`, sorted relative `sources`
@@ -423,8 +426,8 @@ Source component keys resolve to their owning module's existing
 `src/app/resources/js/components/admin/<key>.vue`. Symlinks, imports, foreign keys
 and missing source are refused in source-bearing environments. Production strips
 Vue sources and validates the generated evidence against the current module
-manifest instead. Browser registry resolution, development-server evidence
-publication and replacements remain point 4; projection is not rendered acceptance.
+manifest instead. Browser registry resolution, development-server evidence publication and shell
+replacement are implemented in point 4; final rendered acceptance remains point 12.
 
 Bootstrap selects the first authorized declared default, otherwise the first
 page ordered by order/key. Owners with no authorized page disappear. Page reads

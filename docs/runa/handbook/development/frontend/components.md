@@ -379,3 +379,16 @@ Public replacement and controller types are listed in
 Auth, layout, module page/slot and static-error contracts through their respective
 facades. Supplied components consume the same prop/slot/event declarations;
 customer wrappers need no private source imports.
+
+## Admin shell and replacement
+
+Public `@/runa/admin` supplies AdminApplication, AdminLayout, AdminLoading,
+AdminEntryProof and AdminPresentationProvider, useAdmin/useAdminPage,
+useAdminPresentation and resolveAdminComponent. Shell state and entry proof remain
+platform-owned; nested providers inherit omitted overrides. Compiled owner/build
+identity is checked before choosing an owned module loader or explicitly registered
+App component. Missing/mismatched components show safe isolated unavailable states.
+Generated field/form/table/action components remain specified for subsequent points;
+follow the exact [Admin runtime status and contracts](../../modules/admin/frontend.md).
+ApplicationSessionShell is exported by `@/runa/auth` for both Auth and Admin
+composition; its account menu is a dedicated shell seam, not a business control.

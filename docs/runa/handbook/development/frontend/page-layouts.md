@@ -43,7 +43,8 @@ indicate installation, access grants or rendered Admin availability; see
 
 ## Application layout
 
-Canonical source: `src/runa/resources/js/layouts/ApplicationLayout.vue`, public `ApplicationLayout` from `@/runa/ui`. Point 3 was visually accepted by the owner on 2026-10-18. Account-dropdown/self-service integration and Admin UI remain separate; Auth entry/restricted views use MinimalLayout.
+Canonical source: `src/runa/resources/js/layouts/ApplicationLayout.vue`, public `ApplicationLayout` from `@/runa/ui`. Point 3 was visually accepted by the owner on 2026-10-18. Account-dropdown/self-service use the shared ApplicationSessionShell; Admin shell
+delivery and acceptance follow the [Admin frontend guide](../../modules/admin/frontend.md); Auth entry/restricted views use MinimalLayout.
 
 Supply optional userAvatar with userName/userInitials for the profile disclosure; custom wrappers forward these props. Supply typed navigation/topNavigation descriptors, URL-derived current context, title/description, independent sidebar/topbar visibility and contained/fluid width. The sidebar stays fixed at desktop widths, scrolls independently and persists collapse/groups by application identity. Below 64rem it becomes a focus-trapped, Escape/backdrop-dismissable drawer with focus return; it never relocates to another side. The top header stays visible with sticky positioning; toolbar scrolls with the page. The brand row and header are both 64px high, the Runa mark sits in the same 42px square as MinimalLayout, and sidebar collapse/expand is a 36px sm control before top navigation, inset 24px from the header left edge. Sidebar groups are full-width disclosure buttons with a centered chevron inside; their parent label does not navigate. Hidden sidebar headings, labels, nested subtrees and supplementary sections reserve no space; the collapsed icon list starts 8px below the brand row. Collapsed enabled/disabled icons share exact centering; the sidebar footer retains just the platform version. Dotted left/right edge indicators fade in when more top-navigation content is available in that direction and disappear at its ends or when it fits. The header is 64px high; its horizontal navigation scrollbar sits at the bottom edge. Wheel input over overflowing top navigation is consumed for horizontal movement (also at the ends), leaving Ctrl+wheel zoom native. Top-navigation dropdowns are floating cards teleported outside the nav scroller; they overlay content without stretching the 64px header. Sidebar groups expand inline. Escape/outside click/document scroll/resize dismiss cards; nav scrolling repositions the open card, and Tab boundaries preserve navigation focus order. The circular initials disclosure remains a reusable slot seam; AuthApplication supplies the actual profile link and sign-out action together through that seam.
 
@@ -107,3 +108,19 @@ screens. Replacing the whole header replaces this default group as well.
 Welcome header authentication/application entry uses quiet text links beside
 preferences, without button surfaces/borders. Preserve muted default text,
 underline/color on hover, visible keyboard focus and 44px touch targets.
+
+## Shared authenticated shell
+
+`ApplicationSessionShell` from `@/runa/auth` composes the supplied layout with one
+caller-owned ApplicationSessionController, profile/account menu, expiry warning,
+reauthentication and safe content admission. AuthApplication creates a controller
+only when none is supplied; AdminApplication uses that same public shell directly.
+Extra source-owned links occupy the account-menu seam; User panel and sign-out
+remain supplied. Admin entry is advertised only there. See the complete
+[composition and props](../../modules/admin/frontend.md#shared-session-shell-and-account-menu-seam).
+
+ApplicationLayout accepts optional `locale` for a fixed presentation scope. Its
+shared controls inherit that locale without persisting an account-language change;
+the language cycle is hidden while the theme control remains usable. Standalone
+layouts bootstrap account preferences; inside the session shell they reuse its
+session admission rather than issuing another session read.

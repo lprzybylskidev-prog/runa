@@ -10,12 +10,13 @@ framework API ^1.0.0 remain compatible; apply the normal fenced module update.
 
 The bundled application-owned App.vue selects AuthEntry for exact `/auth/...`
 paths, AuthApplication for `/app`, AuthApplication with `account` for `/account`,
-and AuthWelcome for `/`. DefaultApplication owns that composition; use its public presentation provider or
+and AuthWelcome for `/`, with AdminApplication for `/admin` and Admin page paths. DefaultApplication owns that composition; use its public presentation provider or
 the documented headless contracts when customizing App.
 Named document routes are `runa.auth.pages.application`, `runa.auth.pages.account`
 and the [existing entry routes](entry-ui.md). Unknown paths remain 404. Document
 GETs contain no account data and never grant access; every account request uses
-the server's module/session/eligibility/CSRF boundaries. No Admin UI is supplied.
+the server's module/session/eligibility/CSRF boundaries. The separately owned [Admin shell](../admin/frontend.md) is delivered for platform
+0.7.0 development; its generated business screens remain in progress.
 
 With public welcome enabled, guests see sign-in and registration only when public
 registration is enabled. Authenticated visitors see application access; restricted
@@ -308,3 +309,16 @@ initialization, visible refresh and after security changes; preserve its indepen
 cursor and busy state when opening its dialog. Expired/revoked/missing devices do
 not keep the action visible. This is presentation availability only; server trust,
 factor proof, validation and authorization rules remain unchanged.
+
+## Shared session composition
+
+AuthApplication now composes public ApplicationSessionShell with one optional
+caller-supplied ApplicationSessionController. It forwards navigation/topNavigation,
+current, locale and source-owned accountMenu, plus the account-menu slot; account
+self-service and loading replacement retain their existing public contracts.
+Only the creator owns activity/heartbeat/request observation and disposal. The
+shell adds Admin entry beside User panel only after a minimal authenticated
+advertisement; loss of session/authority removes it and stale responses are ignored.
+The [shared shell contract](../admin/frontend.md#shared-session-shell-and-account-menu-seam)
+owns complete props/slots and availability/proof boundaries. Full frontend
+replacements retain these public controllers without copying session/security logic.
