@@ -72,3 +72,12 @@ export type {
   OperationProofController,
   ProofRequirement,
 } from '../../../../modules/auth/frontend/useOperationProof';
+
+/** Auth-owned Admin presentation; public props come from @/runa/admin. */
+export const AuthAdminUsers = defineAsyncComponent(
+  () => import('../../../../modules/auth/frontend/components/admin_users.vue'),
+);
+export const AuthAdminSection = defineAsyncComponent(
+  () =>
+    import('../../../../modules/auth/frontend/components/admin_section.vue'),
+);

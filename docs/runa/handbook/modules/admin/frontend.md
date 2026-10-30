@@ -15,7 +15,7 @@ useAdminResource/useAdminTable and validateAdminField. Source home is
 Record forms execute explicit independent commands or compatible native atomic
 preview/Save through the shared form owner. Point 6 delivers server coordination
 and initial profile/access record adapters; complete Core pages/operations and
-global settings retain points 7–10. Final rendered/release acceptance remains point 12.
+global settings retain points 8–10. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
 
 ## Controllers and public types
 
@@ -770,3 +770,22 @@ The default entry link is next to User panel in the account dropdown only. Insid
 Admin, module/independent-page navigation is on the left, selected module pages on
 top; no empty/mandatory Overview. Custom full presentation keeps these supported
 controllers and server enforcement while owning its markup/navigation.
+
+## Auth administration composition
+
+Auth supplies public lazy `AuthAdminUsers` and `AuthAdminSection` through
+`@/runa/auth`; their props and source-key precedence are documented in
+[Auth administration](../auth/administration.md#presentation-and-application-consumption).
+The Admin facade also exports `AdminSectionContent` (section/page/controller and
+optional components), and `AdminComponentBoundary` (identity/onFailure, default
+slot). They compose existing controllers/rendering and do not add security logic.
+`AdminResourceController.clear(): void` cancels and clears its read lane, erases
+its retained query and discards late responses; it does not submit/cancel an owning
+business write. Use it before changing an independent collection's subject.
+Selecting a subject in useAdminForm overrides initial descriptor record IDs;
+account/page ownership changes erase that selection along with protected drafts.
+
+Optional independent workflow failures remain local to their commands and do not
+block another section's atomic Save. Required sections and every atomic Save
+participant still block when their content/read/component is unavailable. This
+preserves failure isolation without omitting a failed Save participant.

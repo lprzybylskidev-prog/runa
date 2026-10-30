@@ -32,4 +32,13 @@ temporary App-owned source handlers. It verifies pre-validation admission,
 allowlisted input/review/destructive confirmation, safe errors and result
 projection, stale revision refusal and execution outside the entry transaction.
 The fixture writer is transport evidence, not a replacement for owning Core
-business/Audit cases. Aggregate transport still refuses before point 6.
+business/Audit cases. Native aggregate execution is delivered in point 6.
+
+Point-7 Auth administration cases author bounded directory/cursor/login disclosure,
+deleted/profile/address grants, every lifecycle intent, create/invite/secondary/
+preference workflows, stronger-proof denial/success/reuse, policy preview/publish/
+restore/history, session/trust scoping, selected/all bulk reviews and read-only
+command denial. Frontend cases exercise shared subject selection, collection
+read-lane cancellation and public default composition; browser scenarios retain
+final-only light/dark and responsive acceptance. Focused results are recorded in
+the active roadmap; this inventory does not claim suite PASS.

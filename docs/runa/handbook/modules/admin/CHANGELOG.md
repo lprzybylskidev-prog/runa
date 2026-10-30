@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-30
 
+- Compose Auth-owned Users/policy/bulk administrative pages and independent native actions; expose reusable section dispatch/failure boundaries and read-lane clear. Selecting a directory subject overrides initial descriptor IDs and account/page ownership changes clear that selection.
+
 - Deliver source-owned ManagementParticipant, guarded aggregate preview/Save and exact semantic reviews with all-owner prewrite validation, before-commit authorized projection and atomic Audit/proof rollback. Include initial Auth profile/Permissions assignment composition and App/concurrency fixtures; final acceptance remains pending.
 
 - Complete generated record forms/actions with shared draft/revision ownership, field-bound lookups, static/422 errors, 409 reconciliation, local overlap resolution, dirty navigation, preview/destructive confirmation and native Auth operation-proof composition. Add independently guarded command/preview transport, explicit command intent/input/bulk/action/availability metadata and authorized result projection. Compose cursor selection/views and source-owned export/bulk/print/preference adapters; native aggregate execution follows the composition contract.

@@ -1259,3 +1259,34 @@ it('Admin automatic tables never fall back from a missing declared component to 
   expect(replaced).not.toHaveBeenCalled();
   expect(reads).not.toHaveBeenCalled();
 });
+
+it('Admin resource clear cancels old subject reads and erases the retained query', async () => {
+  const replies: ((value: Response) => void)[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    if (String(input) === '/api/admin') return respond({ data: bootstrap() });
+    if (String(input) === '/api/admin/app/settings')
+      return respond({ data: resourcePage() });
+    return new Promise((resolve) => {
+      replies.push(resolve);
+    });
+  });
+  const { resource, page } = resourceHarness();
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  const pending = resource.read({ kind: 'record', public_id: identity });
+  await vi.waitFor(() => expect(replies.length).toBe(1));
+  resource.clear();
+  replies[0]!(
+    respond({
+      data: {
+        public_id: identity,
+        revision: 'old',
+        values: { name: 'Previous subject' },
+      },
+    }),
+  );
+  await pending;
+  expect(resource.result.value).toBeUndefined();
+  document.dispatchEvent(new Event('visibilitychange'));
+  await flushPromises();
+  expect(replies).toHaveLength(1);
+});

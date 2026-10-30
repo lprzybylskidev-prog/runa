@@ -267,7 +267,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     removal, Audit failure and participant-loss cases. Implement concurrency harness
     here; run complete acceptance only in final verification.
   - Document trusted/public audiences, compatibility restrictions and working examples.
-- [ ] 7. Complete Auth administration through owning public APIs.
+- [x] 7. Complete Auth administration through owning public APIs.
   - Prerequisites: 3–6.
   - Deliver bounded Auth-owned directory/necessary missing read APIs additively;
     identity/lifecycle/deadlines/locks, invitations, profile/login/names, email and
@@ -1309,3 +1309,93 @@ source/schema was removed by its guarded test lifecycle. No Docker resource was
 created or removed; active services, base/development database data, durable
 volumes, Qdrant/model caches, backups and reports were preserved. Point 6 is complete;
 point 7 is next. The active roadmap and release remain open.
+
+## Point 7 completion — Auth administration — 2026-10-30
+
+Auth owns the additive guarded AuthAdministration 1.0.0 directory/profile/lifecycle
+reads and readonly DTOs. Directory uses UUID order, bounded filter-bound opaque
+cursors, literal name search and separately authorized login predicates, without
+email, totals, internal keys or credential state. Deleted/all and profile primary/
+secondary/preference projections retain their separate current grants; missing or
+unauthorized deleted subjects fail safely. Effective eligibility remains its own
+guarded read. Admin has no foreign model/query or reverse backend dependency.
+
+The Users declaration retains the native profile host and Permissions contribution
+and adds directory selection, every native lifecycle intent/deadline/lock, creation,
+invitation rotation/invalidation, primary and secondary email workflows, sessions,
+trust/security resets, eligibility, policy exceptions and preference reset. Source
+commands bind explicit owning public APIs, typed allowlisted inputs and original
+proof actions/revisions. Stronger actions retain single-use both-factor proof;
+meaningful writes retain native transaction/Audit/outbox/refusal behavior. These
+independent operations cannot join profile/access Save. Self-service, recipient/
+delivery routing, operator/bootstrap and reserved identity/grant APIs remain in
+their original audiences.
+
+Authentication policy sections derive typed controls from owning settings under
+existing declaration bounds. Each patch previews differences/consequences and uses
+the exact global settings revision/generation and native policy publication runner.
+Immutable history/restore has a separate reviewed/confirmed flow; native succeeded
+maps to committed, pending/recovery retains operation identity. Selected/all bulk
+session revocation preserves native Permissions selection, bounds, fingerprints,
+proof and confirmation. There is no second policy, delivery, trust or session engine.
+
+Auth's manifest-bound Users and section components reuse Admin's shared form,
+Table, controlled fields, independent proof/confirmation and reconciliation. Selecting
+a directory subject overrides initial descriptor record IDs, protects dirty drafts
+and clears on account/page ownership changes. Optional independent workflow
+failures stay local; required content and every atomic participant still block Save.
+Read-lane clear cancels obsolete
+collection responses and forgets retained queries. Public Auth defaults and Admin
+section dispatch/failure-boundary composition preserve App-owned replacement with
+Runa-owned security. No sample business scaffold or new dependency was introduced.
+
+Author real API cases for directory/cursor/login/deleted/address disclosure,
+every lifecycle intent and stale version, create/invite/secondary/preference
+protocols, stronger-proof refusal/success/reuse, policy review/publication/restore/
+history, session/trust scoping, bulk fingerprint/selection and read-only denial.
+Frontend scenarios cover shared subject selection, late read cancellation,
+collection presentation and public defaults; browser scenarios cover actual built
+Auth components with English, responsive light/dark and dirty navigation.
+Complete area suites, rendered acceptance, concurrency, static analysis, security
+and native installation/update verification remain point 12.
+
+Necessary focused diagnostics resolved declaration bounds, native publication
+status/proof handling and shared subject selection:
+
+- Readonly declaration construction: Users 13 sections, policy 4, bulk 1,
+  17 administrative bindings; existing limits preserved without changing schemas.
+- Supported backend --parallel --processes=1, directory/profile disclosure case:
+  1 test / 38 assertions PASS, 17.70 seconds, native exit 0 / cleanup 0. After replacing synthetic nested admission with the
+  current owning OperationScope context for optional field grants, the same case
+  passed again: 38 assertions, 16.75 seconds, exit 0 / cleanup 0.
+- Same supported backend mode, native policy publish/restore case:
+  1 test / 23 assertions PASS, 29.60 seconds, native exit 0 / cleanup 0.
+- Supported frontend subject-selection regression: 1 test PASS, 4.10 seconds,
+  exit 0 / cleanup 0. Public Auth Users composition/selection: 1 test PASS,
+  4.20 seconds, exit 0 / cleanup 0. The optional-independent-failure isolation
+  regression also passed: 1 test, 4.16 seconds, exit 0 / cleanup 0. The runner emitted its generated Vite
+  module-runner dynamic-import diagnostic; no application failure was reported.
+
+Source review synchronized Auth administration/README/profile/changelog, Admin
+status/declarations/operations/frontend/changelog, public API/components and test
+inventories. Canonical exact administrative contracts now live in Auth's guide;
+Admin operations links there rather than duplicating the read specification.
+Owner frontend pattern reference and customer frontend skill route to that same
+public guide. Root owner/customer AGENTS and backend skills already require owning
+guarded APIs, native Audit/proof, App-only replacement and final-only broad checks;
+no new always-loaded rule or change in their authority is needed.
+
+Auth remains the unreleased 2.0.0 candidate, with additive Administration API 1.0.0
+and unchanged AuthProfiles 2.0.0/other API versions. The existing native_transactions
+forward edge already carries this unreleased source; no version-only history,
+migration, runtime configuration, storage or new service is needed. Admin remains
+unreleased 0.1.0. Platform VERSION and release metadata are unchanged.
+
+Grounding: knowledge current at entry (201 documents / 9,879 chunks); bounded
+current retrieval was verified against the owning Auth/Admin guides and source.
+Backend/Laravel/security/PostgreSQL/frontend/Vue/Tailwind guidance was applied;
+Boost supplied installed Laravel 13 query/validation documentation. Mandatory
+hooks and staged incremental knowledge freshness apply to this point's commit.
+Supported runners displayed and removed only disposable runa_test_test_1 after
+each backend run. No Docker resources were created/removed; active services,
+base/development data, Qdrant/model caches, backups and reports were preserved.

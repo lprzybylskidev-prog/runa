@@ -324,6 +324,10 @@ export function useAdminResource(
     document.removeEventListener('visibilitychange', visible);
   });
   return {
+    clear: () => {
+      lastQuery = undefined;
+      invalidate();
+    },
     state: computed(() =>
       page.state.value !== 'ready'
         ? page.state.value

@@ -50,3 +50,8 @@ and protected-platform boundaries remain governed by installed AGENTS.
 For session-shell and Admin composition, follow the public frontend contract's
 shared session shell section. Reuse one session owner and validate the projected
 component build identity; check delivery status before consuming specified exports.
+
+For administrative Auth pages, follow `docs/runa/handbook/modules/auth/administration.md`
+for public default composition and exact owning grants/proofs/revisions. Reuse
+Admin's section dispatch/failure boundaries and shared subject controller; clear
+independent read lanes when changing subjects. App replacements remain App-owned.

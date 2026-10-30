@@ -399,3 +399,8 @@ Generated field/form/table/action components remain specified for subsequent poi
 follow the exact [Admin runtime status and contracts](../../modules/admin/frontend.md).
 ApplicationSessionShell is exported by `@/runa/auth` for both Auth and Admin
 composition; its account menu is a dedicated shell seam, not a business control.
+
+Auth administrative defaults `AuthAdminUsers` / `AuthAdminSection` are exported
+through `@/runa/auth`; Admin section dispatch/failure boundary and cancellable read
+composition remain under `@/runa/admin`. See the complete
+[administration presentation contract](../../modules/auth/administration.md#presentation-and-application-consumption).

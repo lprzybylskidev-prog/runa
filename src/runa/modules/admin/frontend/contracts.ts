@@ -303,6 +303,8 @@ export interface AdminCommandReview {
   every_action: boolean;
 }
 export interface AdminResourceController {
+  /** Cancel and clear this read lane, including late responses. */
+  clear(): void;
   state: ComputedRef<AdminState>;
   result: Ref<AdminReadResult | undefined>;
   busy: ComputedRef<boolean>;

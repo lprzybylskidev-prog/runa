@@ -332,3 +332,159 @@ test('Admin generated forms: draft reconciliation, safe validation and guarded n
   }
   expect(failures).toEqual([]);
 });
+
+test('Auth administration: owned Users presentation selects accounts and protects dirty drafts in both themes', async ({
+  page,
+}, info) => {
+  const { readFileSync } = await import('node:fs');
+  const artifact = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../../../src/public/build/runa-components.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  ) as {
+    owners: Record<
+      string,
+      { build_id: string; manifest_hash: string; components: string[] }
+    >;
+  };
+  const build = artifact.owners['runa.auth']!;
+  expect(build.components).toContain('runa.auth.admin_users');
+  await transport(page);
+  const other = '01900000-0000-7000-8000-000000000002';
+  const failures: string[] = [];
+  page.on('pageerror', (error) => failures.push(error.message));
+  const field = (key: string) => ({
+    key,
+    type: 'text',
+    label: key === 'name' ? 'Display name' : key,
+    readonly: false,
+    sensitive: false,
+    filterable: false,
+    sortable: false,
+    lookup: false,
+    required: false,
+    max_length: 160,
+    choices: [],
+    multiple: false,
+    component: null,
+  });
+  await page.route('**/api/admin/runa.auth/users**', async (route) => {
+    const url = new URL(route.request().url());
+    let data: unknown;
+    if (url.pathname.endsWith('/directory'))
+      data = {
+        items: [
+          {
+            public_id: other,
+            revision: '1',
+            values: { display_name: 'Other account', state: 'current' },
+          },
+        ],
+        next: null,
+        total: null,
+      };
+    else if (url.pathname.endsWith('/profile')) {
+      const target = url.searchParams.get('public_id') ?? id;
+      data = {
+        public_id: target,
+        revision: '1',
+        values: {
+          name: target === other ? 'Selected account' : 'Current account',
+        },
+      };
+    } else
+      data = {
+        schema_version: 1,
+        owner: 'runa.auth',
+        key: 'users',
+        title: 'Users',
+        generation: 1,
+        revision: 'auth-users-1',
+        component: {
+          owner: 'runa.auth',
+          key: 'runa.auth.admin_users',
+          build_id: build.build_id,
+          manifest_hash: build.manifest_hash,
+        },
+        sections: [
+          {
+            key: 'directory',
+            title: 'User directory',
+            view: 'table',
+            readonly: true,
+            required: false,
+            component: null,
+            record: null,
+            diagnostic: null,
+            fields: [field('display_name'), field('state')],
+            commands: [],
+          },
+          {
+            key: 'profile',
+            title: 'Profile',
+            view: 'record',
+            readonly: false,
+            required: true,
+            component: null,
+            record: null,
+            diagnostic: null,
+            fields: [field('name')],
+            commands: [],
+          },
+        ],
+      };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data }),
+    });
+  });
+  for (const [width, theme] of [
+    [1440, 'dark'],
+    [390, 'light'],
+  ] as const) {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.addInitScript((theme) => {
+      localStorage.setItem('runa.theme', theme);
+      localStorage.setItem('runa.locale', 'pl');
+    }, theme);
+    await page.goto('/admin/runa.auth/users');
+    const password = page.getByLabel('Current password', { exact: true });
+    if (await password.count()) {
+      await password.fill('Example test password');
+      await page
+        .getByRole('button', { name: 'Confirm password', exact: true })
+        .click();
+    }
+    const name = page.getByLabel('Display name', { exact: true });
+    await expect(name).toHaveValue('Current account');
+    await page
+      .getByRole('button', { name: 'Open account', exact: true })
+      .click();
+    await expect(name).toHaveValue('Selected account');
+    await name.fill('Unsaved account draft');
+    await page
+      .getByRole('button', { name: 'Open account', exact: true })
+      .click();
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await expect(name).toHaveValue('Unsaved account draft');
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: info.outputPath(`auth-administration-${width}-${theme}.png`),
+      fullPage: true,
+    });
+    await page
+      .getByRole('button', { name: 'Discard changes', exact: true })
+      .click();
+  }
+  expect(failures).toEqual([]);
+});

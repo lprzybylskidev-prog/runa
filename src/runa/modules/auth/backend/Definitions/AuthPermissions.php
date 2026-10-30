@@ -14,6 +14,11 @@ final class AuthPermissions implements ManagementEntityProvider
     public function permissions(): array
     {
         return [
+            new ManagementPermission('users.read', ['pl' => 'Odczyt katalogu i cyklu życia kont', 'en' => 'Read user directory and lifecycle'], ['pl' => 'Odczyt katalogu i cyklu życia kont.', 'en' => 'Read user directory and lifecycle.']),
+            new ManagementPermission('users.deleted.read', ['pl' => 'Odczyt usuniętych kont', 'en' => 'Read deleted accounts'], ['pl' => 'Odczyt usuniętych kont.', 'en' => 'Read deleted accounts.']),
+            new ManagementPermission('profiles.read', ['pl' => 'Odczyt profili administracyjnych', 'en' => 'Read administrative profiles'], ['pl' => 'Odczyt profili administracyjnych.', 'en' => 'Read administrative profiles.']),
+            new ManagementPermission('emails.read', ['pl' => 'Odczyt głównych adresów e-mail', 'en' => 'Read primary emails'], ['pl' => 'Odczyt głównych adresów e-mail.', 'en' => 'Read primary emails.']),
+            new ManagementPermission('secondary.read', ['pl' => 'Odczyt dodatkowych adresów e-mail', 'en' => 'Read secondary emails'], ['pl' => 'Odczyt dodatkowych adresów e-mail.', 'en' => 'Read secondary emails.']),
             new ManagementPermission('trust.manage', ['pl' => 'Zarządzanie zaufaniem', 'en' => 'Manage trusted devices'], ['pl' => 'Zarządzanie zaufanymi urządzeniami.', 'en' => 'Manage trusted devices.']),
             new ManagementPermission('secondary.manage', ['pl' => 'Zarządzanie adresami dodatkowymi', 'en' => 'Manage secondary emails'], ['pl' => 'Zarządzanie dodatkowymi adresami.', 'en' => 'Manage secondary emails.']),
             new ManagementPermission('avatars.manage', ['pl' => 'Zarządzanie awatarami', 'en' => 'Manage avatars'], ['pl' => 'Zarządzanie awatarami.', 'en' => 'Manage avatars.']),

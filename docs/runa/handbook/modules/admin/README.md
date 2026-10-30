@@ -12,7 +12,7 @@ collection sections and controlled fields, then completes generated record forms
 independent commands/previews, reconciliation, dirty navigation and owning
 collection adapter composition. Point 6 supplies native atomic preview/Save,
 source-owned participants and initial Auth profile/Permissions assignment composition.
-Complete owning operation coverage and settings retain later points.
+Point 7 delivers complete [Auth administration](../auth/administration.md); Permissions/Audit and framework operations/settings retain points 8–10.
 Existing Auth, Permissions, Audit and framework APIs retain their current contracts.
 Source implementation and focused checks do not establish rendered or release acceptance.
 
@@ -68,15 +68,15 @@ Released platform baseline is 0.6.2. The 0.7.0 candidate includes deliberate
 pre-1.0 native transaction changes approved by the owner on 2026-10-30. Current
 source versions below are not a claim of completed release acceptance.
 
-| Owner         | Current source / target                   | Contract disposition                                                                                                                    |
-| ------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Platform      | Target 0.7.0, feature                     | Canonical VERSION stays at the released baseline until finalization.                                                                    |
-| Admin         | Development 0.1.0; creation release 1.0.0 | Requires Audit ^1.0.0 and Auth/Permissions ^2.0.0; no unpublished 0.2.0 compatibility edge.                                             |
-| Auth          | 2.0.0                                     | AuthProfiles API 2.0.0; other current guarded interfaces retain their declared versions. Further Admin adapters belong to later points. |
-| Permissions   | 2.0.0                                     | PermissionsAccess API 2.0.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions. |
-| Audit         | Current 1.0.5; planned 1.1.0              | Owning read/record contracts stay at 1.0.0; viewer declarations follow in their owning point.                                           |
-| Framework API | 1.0.0                                     | New trusted transaction extension; constructor changes remain internal.                                                                 |
-| App scaffold  | Keep 0.0.0                                | Widen its Runa range to >=0.2.1 <0.8.0 in the owning integration point.                                                                 |
+| Owner         | Current source / target                   | Contract disposition                                                                                                                                              |
+| ------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Platform      | Target 0.7.0, feature                     | Canonical VERSION stays at the released baseline until finalization.                                                                                              |
+| Admin         | Development 0.1.0; creation release 1.0.0 | Requires Audit ^1.0.0 and Auth/Permissions ^2.0.0; no unpublished 0.2.0 compatibility edge.                                                                       |
+| Auth          | 2.0.0                                     | AuthProfiles API 2.0.0; other current guarded interfaces retain their declared versions. Administrative reads and owning Admin adapters are delivered in point 7. |
+| Permissions   | 2.0.0                                     | PermissionsAccess API 2.0.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions.                           |
+| Audit         | Current 1.0.5; planned 1.1.0              | Owning read/record contracts stay at 1.0.0; viewer declarations follow in their owning point.                                                                     |
+| Framework API | 1.0.0                                     | New trusted transaction extension; constructor changes remain internal.                                                                                           |
+| App scaffold  | Keep 0.0.0                                | Widen its Runa range to >=0.2.1 <0.8.0 in the owning integration point.                                                                                           |
 
 Auth/Permissions and Admin require platform `>=0.7.0 <0.8.0`. Audit retains its
 `>=0.4.2 <0.8.0` range. Do not rewrite customer manifests automatically. Retain
@@ -121,12 +121,10 @@ ApplicationSessionShell places the advertised entry beside User panel in the
 account dropdown, retaining one session controller. Admin supplies English-scoped
 ApplicationLayout, owner-left/page-top navigation, password confirmation and
 nested replacement providers. Bootstrap returns authorized owners/pages/widgets
-and current source-default presentation (revision 0). No built-in business page
-provider exists yet, so the default catalogue is empty. App providers can supply
+and current source-default presentation (revision 0). Auth declares Users, Authentication policy and Bulk session revocation pages; the catalogue includes only currently authorized pages. App providers can supply
 independent pages and matching compiled/static components. Section reads,
 independent command/preview and bounded aggregate HTTP transports are delivered;
-initial naming/login and ordinary assignment adapters are delivered; complete
-Core operation coverage and DB-backed presentation retain their owning points. Source/component
+Auth administrative coverage and native profile/ordinary assignment composition are delivered; complete Permissions/Audit coverage and DB-backed presentation retain points 8–10. Source/component
 tests are not final rendered/release acceptance.
 The welcome catalogue remains independent localized manifest metadata.
 

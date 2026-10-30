@@ -2,7 +2,7 @@
 
 ## 2.0.0 — 2026-10-30
 
-- Supply private source-declared ProfilePage/ProfileEditor for native atomic naming/login replacement. Default record reads select the actor; explicit authorized reads use public UUIDs. Complete directory/lifecycle administration retains its owning point.
+- Supply private source-declared ProfilePage/ProfileEditor for native atomic naming/login replacement. Default record reads select the actor; explicit authorized reads use public UUIDs. Add complete Auth-owned Users, policy/history/restore and selected/all session administration. Supply guarded AuthAdministration 1.0.0 with bounded cursor directory, grant-filtered profile and lifecycle reads; preserve native independent action/Audit/proof protocols. Include these additive changes in the unreleased 2.0.0 candidate without a new migration or version-only upgrade edge.
 
 - Add public useOperationProof/AuthOperationProof for source-declared administrative action proof. Reuse native security/step-up/email-code endpoints and current eligible methods; erase password/code on settlement/invalidation and never replay an owning business write. The caller retains session admission and lifecycle identity.
 - Extract public ApplicationSessionShell; AuthApplication accepts a shared session plus typed navigation/current/locale/account-menu inputs without another session/activity owner.

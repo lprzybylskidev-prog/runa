@@ -1,17 +1,13 @@
-<!-- runa-knowledge {"purpose":"proposal","effective_date":null,"applicable_version":"0.7.0","decisions":[]} -->
+<!-- runa-knowledge {"purpose":"current_guidance","effective_date":"2026-10-30","applicable_version":"0.7.0","decisions":[]} -->
 
 # Admin Core operations and application settings
 
-Status: RM-2026-016 point 1 specification. Existing operations below are available
-through their owning guarded APIs; their Admin adapters, new reads/settings and
-business UI retain their owning points except for delivered native profile
-naming/login and ordinary assignment record composition from point 6, and the
-private point-2 cached diagnostics foundation. Point 4 supplies the shared Admin shell and presentation seams
-described in [delivery status](README.md#delivery-status-and-acceptance-ownership).
-Generic independent command transport and atomic preview/Save are delivered;
-there is no HTTP diagnostics page yet. AuthProfiles and PermissionsAccess use guarded API `2.0.0`; other current APIs
-retain `1.0.0`, independently of module versions. Each adapter binds explicitly to the named method and current
-ApiOperation declaration; a management key is never assumed to be a PHP method.
+Status: independent commands, native atomic profile/access Save and complete Auth
+administration are delivered in RM-2026-016 points 5–7. Auth owns its declarations,
+reads and operation adapters; [Auth administration](../auth/administration.md)
+records the exact grants, signatures, proofs and independent protocols. Permissions,
+Audit and framework operational pages/settings retain points 8–10. Cached private
+diagnostics are available internally; HTTP diagnostics remain point 9.
 
 ## Core operation coverage
 
@@ -50,50 +46,16 @@ method, its complete native signature, source definition, operation, permission,
 API version and audience. It records the historical baseline; current handlers follow reviewed current contracts and versions, not a frozen signature requirement. the
 public table above records their disposition rather than exposing private classes.
 
-## Additive Auth reads
+## Administrative Auth reads
 
-Add a new guarded `Runa\Modules\Auth\Contracts\AuthAdministration` API `1.0.0`,
-implemented by Auth-owned Queries/proxy/definition, with these complete signatures:
-
-```php
-interface AuthAdministration
-{
-    public function users(UserDirectoryQuery $query): UserDirectoryPage;
-    public function profile(string $publicId): AdministrativeProfile;
-}
-UserDirectoryQuery::__construct(?string $after = null, int $limit = 25,
-    ?string $search = null, string $state = 'current')
-UserDirectoryPage::__construct(array $items, ?string $next)
-AdministrativeUser::__construct(string $publicId, string $displayName,
-    string $state, int $version)
-AdministrativeProfile::__construct(string $publicId, int $version,
-    ?string $name, ?string $firstName, ?string $surname, ?string $login,
-    ?array $primaryEmail, array $secondaryEmails, int $preferenceRevision)
-```
-
-All DTOs are Auth-owned final readonly values. `items` is
-`list<AdministrativeUser>`; search is trimmed plain text, 1–160 characters when
-present; after opaque max 2048 bytes, limit 1–100. State filter is
-`current|deleted|all`; returned state is a supported owning lifecycle state.
-Stable cursor order is public_id ascending; no arbitrary column/order or invented
-total. Directory requires new `runa.auth.users.read`; deleted/all additionally
-requires `runa.auth.users.deleted.read`. No email lookup shortcut through search:
-search only authorized display-name/login fields and only if their read grants
-permit it. When login cannot be read, exclude login from the search predicates.
-
-Profile requires new `runa.auth.profiles.read` and enforces field projection:
-primary email additionally needs new `runa.auth.emails.read`, secondary addresses
-new `runa.auth.secondary.read`, preference revision existing
-`runa.auth.preferences.reset`. `primaryEmail` is null when denied, otherwise
-`array{email:string,verified:bool,verification_required:bool}`;
-secondaryEmails is `list<array{public_id:string,email:string,verified:bool}>`,
-empty when denied, max 100. Absence of a grant cannot leak set-state/counts.
-Name/login values can be null by owning naming rules; adapters omit denied field
-descriptors entirely rather than treating null as a writable value. Preference
-revision uses 0 when not authorized and is omitted from Admin projection. Existing
-Identity/Eligibility and all existing interface methods remain unchanged.
-Unknown/not-visible subjects fail with the owning safe 404; revision conflicts
-retain IdentityConflict. Admin never queries users/addresses/preferences directly.
+The delivered `AuthAdministration` API 1.0.0, DTO signatures, bounded queries,
+field projection and lifecycle read are owned by the
+[Auth administration guide](../auth/administration.md#guarded-administrative-reads).
+The implementation stays in Auth; Admin never queries foreign users, addresses or
+preferences. Existing Identity/Eligibility and other guarded signatures remain
+unchanged. Source-only additions are included in the existing unreleased Auth
+2.0.0 candidate and its native_transactions forward history; no version-only edge
+or runtime migration is added.
 
 ## Framework operation adapters and Audit
 

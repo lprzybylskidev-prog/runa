@@ -804,3 +804,62 @@ it('Admin collection adapters preserve views and authorize export columns throug
   ).rejects.toThrow();
   expect(exports.start).toHaveBeenCalledTimes(1);
 });
+
+it('Admin forms select a directory subject ahead of an initial descriptor record', async () => {
+  const data = descriptor();
+  data.sections[0]!.record = record();
+  const reads: string[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    const subject = url.searchParams.get('public_id') ?? id;
+    reads.push(subject);
+    return respond({
+      data: record({
+        public_id: subject,
+        values: {
+          name: subject === id ? 'Actor' : 'Other account',
+          enabled: false,
+          token: { set: true },
+        },
+      }),
+    });
+  });
+  const { form, state } = harness(data);
+  await vi.waitFor(() =>
+    expect(form.records.value.profile?.public_id).toBe(id),
+  );
+  expect(await form.selectSubject(otherId)).toBe(true);
+  expect(reads.at(-1)).toBe(otherId);
+  expect(form.records.value.profile?.public_id).toBe(otherId);
+  expect(form.values.value['profile.name']).toBe('Other account');
+  await form.refresh();
+  expect(reads.at(-1)).toBe(otherId);
+  state.value = 'forbidden';
+  await flushPromises();
+  expect(form.records.value).toEqual({});
+});
+
+it('Admin forms isolate optional independent workflow failures while required Save content remains blocking', async () => {
+  const data = descriptor();
+  const optional = {
+    ...data.sections[0]!,
+    key: 'independent',
+    required: false,
+    fields: [],
+    commands: [],
+    diagnostic: 'admin_binding_unavailable',
+  };
+  data.sections.push(optional);
+  const { form, value } = harness(data);
+  await vi.waitFor(() => expect(form.records.value.profile).toBeDefined());
+  form.setAvailable('independent', false);
+  expect(form.blocked.value).toBe(false);
+  value.value = {
+    ...value.value,
+    sections: value.value.sections.map((section) =>
+      section.key === 'independent' ? { ...section, required: true } : section,
+    ),
+  };
+  await flushPromises();
+  expect(form.blocked.value).toBe(true);
+});

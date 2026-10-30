@@ -23,6 +23,7 @@
   "declarations": {
     "apis": [
       "Runa\\Modules\\Auth\\Definitions\\IdentityApi",
+      "Runa\\Modules\\Auth\\Definitions\\AdministrationApi",
       "Runa\\Modules\\Auth\\Definitions\\LifecycleApi",
       "Runa\\Modules\\Auth\\Definitions\\InvitationsApi",
       "Runa\\Modules\\Auth\\Definitions\\SessionsApi",
@@ -50,6 +51,7 @@
     "slots": [],
     "management": [
       "Runa\\Modules\\Auth\\Management\\ProfilePage",
+      "Runa\\Modules\\Auth\\Management\\AdministrationPages",
       "Runa\\Modules\\Auth\\Definitions\\AuthPermissions"
     ],
     "upgrades": ["Runa\\Modules\\Auth\\Definitions\\IdentityUpgrades"]

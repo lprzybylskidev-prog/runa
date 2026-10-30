@@ -52,8 +52,7 @@ Permission checks use the current Permissions grants; missing readiness or grant
 
 `AuthLifecycle` version `1.0.0` offers `create(NewIdentity): Identity`, requiring
 `runa.auth.users.create`, and `change(publicId, expectedVersion, LifecycleChange)`
-requiring `runa.auth.users.manage`. These are administrative backend contracts,
-without HTTP routes. A permission does not substitute for the separate authority
+requiring `runa.auth.users.manage`. These are administrative backend contracts. Auth-owned [administration declarations and guarded reads](administration.md) expose them through the existing Admin command transport without changing these signatures. A permission does not substitute for the separate authority
 invariant participant; `AuthorityGuard` lazily resolves the trusted Permissions
 participant and refuses missing/stale integration. Deactivate/delete exclude the
 target from usable administrators; non-removing work uses an empty exclusion set.
@@ -159,3 +158,13 @@ concurrency, installation/delivery and operational Auth acceptance run in the fi
 roadmap verification after their owning implementation points.
 
 Entry/restricted screens use the [Auth entry UI contract](entry-ui.md); own-account screens and session-expiry integration use the [account UI contract](account-ui.md).
+
+## Administrative directory and pages
+
+AuthAdministration 1.0.0 supplies bounded user directory, field-authorized profile
+and lifecycle reads. Auth declares the Users, policy/history/restore and bulk
+session pages, with native independent actions and the existing profile/access
+Save host. See [administration](administration.md) for complete public signatures,
+grants, versions, proof actions, revisions and presentation composition. Auth remains
+independent of Admin for its business operations; operator and self-service
+capabilities retain their own audiences.

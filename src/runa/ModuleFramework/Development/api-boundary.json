@@ -179,7 +179,12 @@
     "Runa\\Contracts\\Modules\\ManagementWriter",
     "Runa\\Contracts\\Modules\\ManagementOptionsRead",
     "Runa\\Contracts\\Modules\\ManagementWidgetResult",
-    "Runa\\Contracts\\Modules\\ManagementParticipant"
+    "Runa\\Contracts\\Modules\\ManagementParticipant",
+    "Runa\\Modules\\Auth\\Contracts\\AdministrativeProfile",
+    "Runa\\Modules\\Auth\\Contracts\\AdministrativeUser",
+    "Runa\\Modules\\Auth\\Contracts\\AuthAdministration",
+    "Runa\\Modules\\Auth\\Contracts\\UserDirectoryPage",
+    "Runa\\Modules\\Auth\\Contracts\\UserDirectoryQuery"
   ],
   "reserved": {
     "Runa\\Contracts\\Modules\\AuthRequestThrottle": [
@@ -383,10 +388,12 @@
       "src/runa/modules/permissions/backend/Queries/SelectUsers.php",
       "src/runa/modules/permissions/backend/Support/AccessTransaction.php",
       "src/runa/modules/auth/backend/Management/ProfileEditor.php",
-      "src/runa/modules/admin/backend/Actions/Aggregate.php"
+      "src/runa/modules/admin/backend/Actions/Aggregate.php",
+      "src/runa/modules/auth/backend/Management/PolicySection.php"
     ],
     "Runa\\ModuleFramework\\Api\\OperationScope": [
-      "src/runa/modules/audit/backend/Support/ExecutionContext.php"
+      "src/runa/modules/audit/backend/Support/ExecutionContext.php",
+      "src/runa/modules/auth/backend/Queries/Administration.php"
     ],
     "Runa\\ModuleFramework\\Api\\PrincipalScope": [
       "src/runa/modules/audit/backend/Queries/ReadOwnHistory.php",
@@ -400,7 +407,8 @@
       "src/runa/modules/permissions/backend/Queries/ResolvePermissions.php",
       "src/runa/modules/admin/backend/Actions/Aggregate.php",
       "src/runa/modules/auth/backend/Management/ProfileEditor.php",
-      "src/runa/modules/permissions/backend/Management/AssignmentEditor.php"
+      "src/runa/modules/permissions/backend/Management/AssignmentEditor.php",
+      "src/runa/modules/auth/backend/Management/SubjectSection.php"
     ],
     "Runa\\ModuleFramework\\Data\\AuthorityLock": [
       "src/runa/modules/auth/backend/Actions/ChangeIdentity.php",

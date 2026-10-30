@@ -15,7 +15,7 @@ use Runa\Contracts\Modules\ManagementSection;
 use Runa\Modules\Auth\Contracts\AuthIdentities;
 use Runa\Modules\Auth\Contracts\AuthProfiles;
 
-/** Initial native record composition. The directory and lifecycle pages are separate capabilities. */
+/** Native profile host plus independent administrative workflows. */
 final class ProfilePage implements ManagementPageProvider
 {
     public function permissions(): array
@@ -53,11 +53,12 @@ final class ProfilePage implements ManagementPageProvider
         }
 
         return [new ManagementPage('users', 'Users', 'runa.auth.identities.read', [
+            ...(new AdministrationPages)->userSections(),
             new ManagementSection('profile', 'Profile', 'runa.auth.identities.read', 'runa.auth.profiles.manage', 'profile', $fields, [
                 new ManagementCommandDefinition('save', 'Save profile', new ManagementOperation(new ApiOperation('profile.edit', 'runa.auth.profiles.manage'),
                     ['name', 'first_name', 'surname', 'login']), 'profile', 'atomic', ProfileEditor::class, intent: 'save'),
             ]),
-        ])];
+        ], component: 'runa.auth.admin_users')];
     }
 
     public function bindings(): array

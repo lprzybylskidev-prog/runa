@@ -75,6 +75,7 @@ export function useAdminForm(
   const editors = ref<Record<string, string | null>>({});
   const activated = ref(new Set<string>());
   const subject = ref(options.publicId?.value ?? null);
+  let subjectSelected = false;
   const runtime = pageRuntime(page),
     admin = pageOwners.get(page);
   const lanes = shallowReactive(
@@ -154,19 +155,25 @@ export function useAdminForm(
     else next.add(identity);
     failures.value = next;
   }
+  const requiresSave = (section: AdminSectionData) =>
+    section.required ||
+    section.commands.some(
+      (command) => command.mode === 'atomic' && command.intent === 'save',
+    );
   const blocked = computed(
     () =>
       page.state.value !== 'ready' ||
       (page.page.value?.sections ?? []).some(
         (section) =>
-          section.required &&
+          requiresSave(section) &&
           section.view === 'record' &&
           !sections.value.includes(section),
       ) ||
       sections.value.some(
         (section) =>
-          (section.required && section.diagnostic !== null) ||
-          (!section.readonly &&
+          (requiresSave(section) && section.diagnostic !== null) ||
+          (requiresSave(section) &&
+            !section.readonly &&
             (!records.value[section.key] ||
               lanes.get(section.key)?.resource.state.value !== 'ready' ||
               lanes.get(section.key)?.resource.busy.value ||
@@ -179,7 +186,13 @@ export function useAdminForm(
                     .available,
               ))),
       ) ||
-      failures.value.size > 0,
+      [...failures.value].some((path) =>
+        (page.page.value?.sections ?? []).some(
+          (section) =>
+            requiresSave(section) &&
+            (path === section.key || path.startsWith(section.key + '.')),
+        ),
+      ),
   );
   function clearSection(key: string) {
     const section = page.page.value?.sections.find(
@@ -298,7 +311,7 @@ export function useAdminForm(
   function readSection(section: AdminSectionData) {
     const id = Object.hasOwn(editors.value, section.key)
       ? editors.value[section.key]
-      : options.publicId
+      : options.publicId || subjectSelected
         ? subject.value
         : (section.record?.public_id ?? subject.value);
     return createLane(section.key).read({
@@ -359,6 +372,8 @@ export function useAdminForm(
       const current = stamp();
       if (identity !== current || page.state.value !== 'ready') {
         erase();
+        subjectSelected = false;
+        subject.value = options.publicId?.value ?? null;
         identity = current;
       }
       if (page.state.value !== 'ready') return;
@@ -455,6 +470,7 @@ export function useAdminForm(
     if (!(await beforeLeave())) return false;
     erase();
     subject.value = id;
+    subjectSelected = true;
     if (options.publicId) options.publicId.value = id;
     await refresh();
     return true;

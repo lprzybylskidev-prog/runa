@@ -69,6 +69,10 @@
     {
       "source": "<?php namespace App; use Runa\\ModuleFramework\\Management\\DeclarationRules;",
       "expected": ["internal_platform_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthAdministration; use Runa\\Modules\\Auth\\Contracts\\UserDirectoryQuery; use Runa\\Support\\Modules\\Api\\ModuleApis; function directory(ModuleApis $apis): void { $api = $apis->resolve('runa.auth', AuthAdministration::class, '1.0.0'); $api->users(new UserDirectoryQuery(limit: 25, search: 'Example')); }",
+      "expected": []
     }
   ]
 }

@@ -213,3 +213,8 @@ AuthProfiles.edit; email, lifecycle and file workflows remain independent.
 See [Admin composition](../admin/composition.md) for the supported input, preview,
 source ownership and atomic Save protocol; the classes are private declaration
 adapters, not direct application factory APIs.
+
+The [Auth administration guide](administration.md) owns directory/profile read
+projection, primary/secondary address action presentation and the full current
+administrative grants/proofs/revisions map. These independent workflows use the
+same owning APIs; they never join the profile/access atomic Save.

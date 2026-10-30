@@ -325,3 +325,10 @@ Module/App-owned implementations are declared and physically inspected; they are
 not HTTP/ModuleApis values or direct access to foreign private mutation factories.
 See [Admin composition](../modules/admin/composition.md) for full phase, signature,
 source-placement, bounds and compatibility requirements.
+
+Auth-owned public `AuthAdministration` API 1.0.0 and its readonly DTOs are
+administrative consumption, implemented by private owning Queries/proxy/definition
+at runtime. [Auth administration](../modules/auth/administration.md) owns exact
+signatures, field grants, safe errors and frontend composition. Ordinary customers
+resolve the guarded API or compose `@/runa/auth` / `@/runa/admin`; they never import
+Auth's private management adapters or acquire a reverse backend dependency on Admin.
