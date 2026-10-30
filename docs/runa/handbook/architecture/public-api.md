@@ -177,6 +177,8 @@ development support, independently of the platform runtime namespace.
 | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `@/runa/ui` and documented UI type/style subpaths                           | Components, layouts, forms, navigation, preferences, tables/exports and typed props/slots. See [component contracts](../development/frontend/components.md). |
 | `@/runa/auth`                                                               | Supplied Auth views, presentation provider, named controller/props/slots/events types and headless session/entry/account/welcome orchestration.              |
+| `@/runa/admin`                                                              | Shared Admin session/page/form/resource/table controllers, presentation providers and typed default components including AdminRecordBrowser.                 |
+| `@/runa/permissions`, `@/runa/audit`                                        | Owning administrative page/section defaults with public Admin props; see their administration guides.                                                        |
 | `@/runa/http`                                                               | The shared HTTP client and its public errors/types.                                                                                                          |
 | `@/runa/modules`, `@/runa/modules/presentation`                             | Module page/slot/registry consumers and public presentation types.                                                                                           |
 | `@runa/testing/vue`, `@runa/testing/vitest`, `@runa/testing/playwright`     | Delivered developer test bridges, resolved from one installed toolchain.                                                                                     |
@@ -332,3 +334,13 @@ at runtime. [Auth administration](../modules/auth/administration.md) owns exact
 signatures, field grants, safe errors and frontend composition. Ordinary customers
 resolve the guarded API or compose `@/runa/auth` / `@/runa/admin`; they never import
 Auth's private management adapters or acquire a reverse backend dependency on Admin.
+
+Permissions and Audit source-owned Admin adapters remain private implementation.
+Their page/section presentations are public through `@/runa/permissions` and
+`@/runa/audit`, with AdminPageProps / AdminSectionPresentationProps. Customer App
+presentation may compose or replace those defaults through `@/runa/admin` public
+controllers/providers, including AdminRecordBrowser; owning backend APIs remain
+PermissionsAccess 2.0.0, PermissionsAuthority/Permissions and AuditReads 1.0.0.
+See [Permissions administration](../modules/permissions/administration.md) and
+[Audit administration](../modules/audit/administration.md). No new backend public
+signature, foreign private import or Admin reverse dependency is introduced.

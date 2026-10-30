@@ -45,7 +45,8 @@
     "slots": [],
     "management": [
       "Runa\\Modules\\Permissions\\Management\\AssignmentContribution",
-      "Runa\\Modules\\Permissions\\Definitions\\PermissionManagement"
+      "Runa\\Modules\\Permissions\\Definitions\\PermissionManagement",
+      "Runa\\Modules\\Permissions\\Management\\AdministrationPages"
     ],
     "upgrades": ["Runa\\Modules\\Permissions\\Definitions\\PermissionsUpgrades"]
   },

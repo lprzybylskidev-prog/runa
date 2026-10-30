@@ -14,3 +14,9 @@ For administrative Auth pages, follow `docs/runa/handbook/modules/auth/administr
 for public default composition and exact owning grants/proofs/revisions. Reuse
 Admin's section dispatch/failure boundaries and shared subject controller; clear
 independent read lanes when changing subjects. App replacements remain App-owned.
+
+For Permissions/Audit administrative defaults, follow
+`docs/runa/handbook/modules/permissions/administration.md` and
+`docs/runa/handbook/modules/audit/administration.md`. Their public facades and
+AdminRecordBrowser compose owning guarded workflows; App presentation replacements
+retain the shared session, dirty guards and native proof/review protocols.

@@ -2,15 +2,15 @@
   "schema_version": 1,
   "id": "runa.audit",
   "kind": "core",
-  "version": "1.0.5",
-  "platform": ">=0.4.2 <0.8.0",
+  "version": "1.1.0",
+  "platform": ">=0.7.0 <0.8.0",
   "framework_api": "^1.0.0",
   "name": {
     "pl": "Audyt",
     "en": "Audit"
   },
   "description": {
-    "pl": "Niezmienna historia operacji biznesowych i bezpiecze\u0144stwa.",
+    "pl": "Niezmienna historia operacji biznesowych i bezpieczeństwa.",
     "en": "Append-only business and security history."
   },
   "dependencies": {
@@ -36,7 +36,10 @@
     "events": [],
     "frontend": [],
     "slots": [],
-    "management": ["Runa\\Modules\\Audit\\Definitions\\AuditPermissions"],
+    "management": [
+      "Runa\\Modules\\Audit\\Definitions\\AuditPermissions",
+      "Runa\\Modules\\Audit\\Management\\HistoryPage"
+    ],
     "upgrades": ["Runa\\Modules\\Audit\\Definitions\\AuditUpgrades"]
   },
   "docs": ["docs/runa/handbook/modules/audit/README.md"],

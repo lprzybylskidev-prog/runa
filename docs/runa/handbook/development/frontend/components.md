@@ -404,3 +404,10 @@ Auth administrative defaults `AuthAdminUsers` / `AuthAdminSection` are exported
 through `@/runa/auth`; Admin section dispatch/failure boundary and cancellable read
 composition remain under `@/runa/admin`. See the complete
 [administration presentation contract](../../modules/auth/administration.md#presentation-and-application-consumption).
+
+`AdminRecordBrowser` is the public catalogue/detail composition from `@/runa/admin`,
+with shared subject selection and dirty guards. Permissions page/section defaults
+are exported by `@/runa/permissions`; Audit history/detail defaults by `@/runa/audit`.
+Use the exact [record-browser contract](../../modules/admin/frontend.md#record-browser)
+and owning [Permissions](../../modules/permissions/administration.md) /
+[Audit](../../modules/audit/administration.md) presentation signatures.

@@ -15,7 +15,7 @@ useAdminResource/useAdminTable and validateAdminField. Source home is
 Record forms execute explicit independent commands or compatible native atomic
 preview/Save through the shared form owner. Point 6 delivers server coordination
 and initial profile/access record adapters; complete Core pages/operations and
-global settings retain points 8–10. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
+global settings retain points 9–10. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
 
 ## Controllers and public types
 
@@ -789,3 +789,22 @@ Optional independent workflow failures remain local to their commands and do not
 block another section's atomic Save. Required sections and every atomic Save
 participant still block when their content/read/component is unavailable. This
 preserves failure isolation without omitting a failed Save participant.
+
+## Record browser
+
+Public `@/runa/admin` exports `AdminRecordBrowser` from
+`src/runa/modules/admin/frontend/AdminRecordBrowser.vue`. Its exported `AdminRecordBrowserProps` extend
+`AdminPageProps` with optional `allowCreate?: boolean` and
+`initialFilters?: Record<string,string>`. It expects a declared `catalogue` table
+section and composes every other section through public AdminSectionContent and
+component failure boundaries. The exported `AdminRecordBrowserSlots.toolbar` receives
+`{table: AdminTableController}`; it can bind approved filters to table.query.
+Initial filters are applied once per mounted page. Table selection calls shared
+form.selectSubject; creating selects null. Failed dirty-draft confirmation preserves
+the prior subject and draft. Read filters never authorize new fields or operations.
+Reuse the existing controller props for App-owned partial/full presentation.
+
+Permissions and Audit defaults export their named page/section components through
+`@/runa/permissions` and `@/runa/audit`; exact supplied pages/protocols live in their
+[Permissions](../permissions/administration.md) and [Audit](../audit/administration.md)
+guides. No security/session ownership moves into customer presentation.

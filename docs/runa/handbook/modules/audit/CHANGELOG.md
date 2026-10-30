@@ -1,5 +1,11 @@
 # Audit module changelog
 
+## 1.1.0 — 2026-10-30
+
+- Preserve the 64-KiB management-record bound with explicit large-payload continuation; reconstruct complete immutable JSON through guarded reads.
+- Deliver source-owned Admin cursor/filter/detail/entity-history viewer and public presentation defaults; summaries omit payloads, current read authority remains required.
+- Add no-transform admin_history forward preparation and target platform >=0.7.0 <0.8.0. AuditReads/AuditRecords remain 1.0.0; no backend module dependency or mutable event API.
+
 ## 1.0.5 — 2026-10-30
 
 - Widen platform compatibility to <0.8.0, preserving the >=0.4.2 lower bound and existing API contracts.

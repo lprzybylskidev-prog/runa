@@ -277,7 +277,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     supported audience. Integrate Permissions sections through contribution contracts.
   - Cover every applicable matrix entry with API/UI tests and document exact grants,
     proofs/revisions and independent workflows; update Auth version/changelog.
-- [ ] 8. Complete Permissions administration and Audit viewer.
+- [x] 8. Complete Permissions administration and Audit viewer.
   - Prerequisites: 3–7.
   - Deliver assignments/direct grants, custom roles/presets/copy/add-replace and
     effective changes review, source/system read-only definitions, dedicated protected
@@ -1402,3 +1402,97 @@ hooks and staged incremental knowledge freshness apply to this point's commit.
 Supported runners displayed and removed only disposable runa_test_test_1 after
 each backend run. No Docker resources were created/removed; active services,
 base/development data, Qdrant/model caches, backups and reports were preserved.
+
+## Point 8 completion — Permissions administration and Audit viewer — 2026-10-30
+
+Permissions owns source declarations and explicit guarded adapters for roles,
+presets, source permission dictionaries, ordinary assignments, copy, add/replace,
+from-account preset snapshots and bounded effective rights. Native review effects,
+versions, subject selection and availability remain authoritative; role-derived
+rights are not flattened into direct grants. Source/system definitions are readonly
+in the defaults and refuse through owning APIs. Protected authority and force-delete
+use dedicated independent sections/capabilities/proofs/confirmation; force-delete
+managers do not require ordinary access-write authority. Self-escalation and the
+last-eligible-superadministrator invariant remain in the native owner. All writes
+retain native default-connection transactions, consumed proof and required Audit.
+The existing profile/access aggregate contribution stays separate and unchanged.
+
+Audit supplies its own read-only history declaration/adapter and English default
+viewer over AuditReads 1.0.0. Cursor/filter summaries omit payload/entity trees and
+invent no totals; explicit detail projects persisted redacted values and immutable
+historical actor labels. Complete entity-reference filters and encoded links open
+that entity's Audit history, without guessing a foreign record route or granting
+access to its current state. Native large detail payloads retain the existing record bound through explicit
+aligned JSON fragments and immutable-event continuation cursors. Missing events/current read authority fail safely;
+there are no edit/delete/undo commands or foreign persistence/identity reads.
+Optional current Auth labels are omitted rather than replacing historical labels.
+
+Public AdminRecordBrowser composes the existing cursor table, section failure
+boundaries and shared form subject selection/dirty guards. Public Permissions and
+Audit facades expose typed page/section defaults without copying session, proof or
+write protocols into App presentation. Effective permissions use their native code
+cursor and retain the selected account, without fabricated public UUIDs. No new
+package, runtime service, configuration or database migration is introduced.
+
+Audit advances its independent candidate from 1.0.5 to 1.1.0 for additive viewer
+functionality, with no-transform admin_history forward preparation and target
+platform >=0.7.0 <0.8.0. Existing public Audit APIs remain 1.0.0. Permissions remains
+the unreleased 2.0.0 candidate carried by native_transactions, Admin unreleased
+0.1.0; no version-only edge is added to either. Platform VERSION, feature/0.7.0 and
+published predecessor history remain unchanged.
+
+Author API regressions for custom definitions/stale reviews, ordinary access/copy/
+preset effects and protected reference exclusion, dedicated authority/self-escalation/
+last administrator, force-delete confirmation and proof/Audit rollback, readonly
+source dictionaries, Audit summary/detail redaction, filters/cursors and grant loss.
+Author frontend regressions for source readonly rendering, dirty definition selection,
+escaped immutable detail/entity links, URL filter initialization and selected-account
+cursor fencing. Built-module E2E scenarios cover desktop/tablet/mobile light/dark;
+complete rendered, concurrency, static/type/build/security and native installation/
+update acceptance remain point 12. No broad acceptance or release PASS is claimed.
+
+Necessary focused supported diagnostics resolved the actual adapter boundaries:
+
+- Native declaration construction: four Permissions pages, six bindings and one
+  Audit history page/binding fit the current schema/bounds without changes.
+- Supported backend --parallel --processes=1 custom definition diagnostic: PASS,
+  native exit 0 / cleanup 0, including required role Audit/proof rollback and
+  explicit retry, version staleness and deletion. Native runner completion was
+  confirmed from its supported result report; no unobserved assertion count is claimed.
+- Audit summary/detail/privacy diagnostic: final 1 test / 19 assertions PASS,
+  12.26 seconds, native exit 0 / cleanup 0. Revoked page authority correctly returns
+  safe 404 rather than disclosing the page; the test follows that existing contract.
+- Dedicated force-delete/Audit rollback diagnostic: 1 test / 39 assertions PASS,
+  29.21 seconds, native exit 0 / cleanup 0. Exact force-delete authority suffices
+  without ordinary access-write grants; Audit failure restores pivots and proof.
+- Ordinary add/replace/copy/preset and protected-authority diagnostics: final
+  2 tests / 77 assertions PASS, 63.75 seconds, native exit 0 / cleanup 0. Native
+  protected-reference validation remains 422; the owner preserves last authority.
+- Supported frontend selected Permissions/Audit interaction diagnostics initially
+  passed 5 scenarios in 4.47 seconds, exit 0 / cleanup 0. Corrected shared Table query
+  composition and a typed readonly fixture; no application Vue warnings remain.
+  The generated Vite module-runner dynamic-import warning remains tooling output.
+- Native large Audit detail continuation diagnostic: 1 test / 28 assertions PASS,
+  18.44 seconds, native exit 0 / cleanup 0. Every part stays below 64 KiB and
+  complete changes/context reconstruct the persisted trees; PostgreSQL JSONB map
+  ordering is compared semantically. Invalid continuation refuses.
+- Final frontend interaction run including immutable-event payload continuation:
+  6 scenarios PASS, 4.24 seconds, exit 0 / cleanup 0; no application warning.
+
+Grounding: entry knowledge was current (202 documents / 9,914 chunks); bounded
+current-intent retrieval was verified against owning Permissions/Audit/Admin sources.
+Backend/Laravel/security/frontend/Vue/Tailwind guidance and PostgreSQL ownership
+rules were applied. Boost supplied installed Laravel 13 allowed-array validation
+documentation. Current module/access/authority/viewer, Admin status/declarations/
+operations/frontend, public boundary/components, changelogs and test inventories
+are synchronized. Owner frontend pattern references and customer frontend skill
+link the new owning guides. Root owner/customer AGENTS and backend skills already
+require guarded owning APIs, native proofs/Audit and App-only presentation; neither
+needs another always-loaded rule, duplicated procedure or expanded authority.
+
+Stage and incrementally synchronize current knowledge for the completion commit;
+mandatory formatting/quick-lint/secret/freshness hooks remain required. Supported
+runners displayed and removed only disposable runa_test_test_1. No Docker resources
+were created or removed. Active services, base/development databases, durable data,
+Qdrant/model caches, backups and verification evidence were preserved. Point 8 is
+complete; point 9 is next. The roadmap and release remain active/open.

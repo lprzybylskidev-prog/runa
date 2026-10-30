@@ -414,3 +414,12 @@ export interface AdminResourceTableSlots {
     value: string | number | null;
   }) => VNode[];
 }
+
+/** Cursor catalogue plus shared subject/detail composition. */
+export interface AdminRecordBrowserProps extends AdminPageProps {
+  allowCreate?: boolean;
+  initialFilters?: Record<string, string>;
+}
+export interface AdminRecordBrowserSlots {
+  toolbar?(props: { table: AdminTableController }): VNode[];
+}

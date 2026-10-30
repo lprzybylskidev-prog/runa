@@ -5,7 +5,7 @@ for platform >=0.7.0 <0.8.0, requiring `runa.auth ^2.0.0`, `runa.audit ^1.0.0` a
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
 `runa.permissions.super_admin` role, with **no user assignments**. Matching installed
-versions are no-ops. No administration UI or new dependency is supplied.
+versions are no-ops. Source-owned [Admin administration](administration.md) is supplied without a backend dependency on Admin or any new package.
 
 See the [built-in contract audiences](../../architecture/public-api.md#built-in-module-contracts-and-execution)
 for public APIs, local helpers and reserved integration. Contract paths remain

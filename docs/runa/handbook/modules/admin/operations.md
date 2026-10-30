@@ -5,8 +5,7 @@
 Status: independent commands, native atomic profile/access Save and complete Auth
 administration are delivered in RM-2026-016 points 5–7. Auth owns its declarations,
 reads and operation adapters; [Auth administration](../auth/administration.md)
-records the exact grants, signatures, proofs and independent protocols. Permissions,
-Audit and framework operational pages/settings retain points 8–10. Cached private
+records the exact grants, signatures, proofs and independent protocols. Point 8 delivers [Permissions administration](../permissions/administration.md) and the [Audit viewer](../audit/administration.md). Framework operational pages/settings retain points 9–10. Cached private
 diagnostics are available internally; HTTP diagnostics remain point 9.
 
 ## Core operation coverage

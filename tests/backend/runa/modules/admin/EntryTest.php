@@ -26,6 +26,9 @@ use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Admin\Contracts\AdminAccess;
 use Runa\Modules\Admin\Contracts\AdminRegistry;
+use Runa\Modules\Audit\Contracts\AuditEntity;
+use Runa\Modules\Audit\Contracts\AuditEvent;
+use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
 use Runa\Modules\Auth\Actions\ProfileMutation;
@@ -1019,4 +1022,206 @@ it('Auth administration maps cleared optional naming fields to the native nullab
     $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', ['command' => 'create', 'public_id' => null, 'revision' => '0',
         'values' => ['email' => 'nullable-create@example.test', 'name' => 'Created name', 'first_name' => '', 'surname' => '', 'login' => '', 'active' => false, 'approved' => false]])->assertOk();
     expect(User::where('email', 'nullable-create@example.test')->value('login'))->toBeNull();
+});
+
+function permissionAdministrationRead(object $test, string $page, string $section, ?string $id = null, array $query = []): array
+{
+    return $test->getJson('/api/admin/runa.permissions/'.$page.'/sections/'.$section.'?'.http_build_query([
+        ...($id === null ? [] : ['public_id' => $id]), ...$query,
+    ]))->assertOk()->json('data');
+}
+
+function permissionDefinitionInput(string $kind, string $code, array $permissions = [], array $roles = []): array
+{
+    return ['command' => 'store', 'public_id' => null, 'revision' => '0', 'values' => [
+        'code' => 'custom.'.$code, 'name_pl' => 'Wsparcie', 'name_en' => 'Support', 'description_pl' => 'Dostep wsparcia.', 'description_en' => 'Support access.',
+        'permissions' => $permissions, ...($kind === 'preset' ? ['roles' => $roles, 'source_user' => null] : []),
+    ]];
+}
+
+function permissionAdministrationReview(object $test, string $path, array $input): array
+{
+    $input['review'] = $test->postJson($path.'/preview', $input)->assertOk()->json('data');
+    expect($input['review']['requirement'])->toBe('both')->and($input['review']['changes'])->toHaveKey('review_summary');
+
+    return $input;
+}
+
+it('Permissions Admin adapts reviewed custom definitions with native proof stale rejection and Audit rollback', function (): void {
+    authAdministrationLogin($this, ['runa.permissions.introspection.read', 'runa.permissions.access.manage']);
+    $path = '/api/admin/runa.permissions/roles/sections/editor';
+    $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+    $input = permissionAdministrationReview($this, $path, permissionDefinitionInput('role', 'admin_support', [$permission]));
+    $this->postJson($path.'/commands', $input)->assertForbidden();
+    authAdministrationStrongProof($this, 'runa.permissions.access.manage');
+    DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT admin_role_audit_failure CHECK (action <> 'role.saved') NOT VALID");
+    try {
+        $this->postJson($path.'/commands', $input)->assertServiceUnavailable();
+        expect(DB::table('runa_permissions.roles')->where('code', 'custom.admin_support')->exists())->toBeFalse()
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT admin_role_audit_failure');
+    }
+    $record = $this->postJson($path.'/commands', $input)->assertOk()->assertJsonPath('data.status', 'committed')->json('data.record');
+    expect($record['values']['permissions'])->toBe([$permission]);
+    $this->postJson($path.'/commands', $input)->assertConflict();
+    $edit = ['command' => 'store', 'public_id' => $record['public_id'], 'revision' => $record['revision'], 'values' => $input['values']];
+    $edit['values']['name_en'] = 'Changed support';
+    $edit = permissionAdministrationReview($this, $path, $edit);
+    authAdministrationStrongProof($this, 'runa.permissions.access.manage');
+    $updated = $this->postJson($path.'/commands', $edit)->assertOk()->json('data.record');
+    $this->postJson($path.'/commands', $edit)->assertConflict();
+    $delete = permissionAdministrationReview($this, $path, ['command' => 'delete', 'public_id' => $updated['public_id'], 'revision' => $updated['revision'], 'values' => [], 'confirmed' => true]);
+    authAdministrationStrongProof($this, 'runa.permissions.access.manage');
+    $this->postJson($path.'/commands', $delete)->assertOk()->assertJsonPath('data.record.public_id', null);
+    expect(DB::table('runa_audit.events')->where('action', 'role.saved')->count())->toBe(2)
+        ->and(DB::table('runa_audit.events')->where('action', 'role.deleted')->count())->toBe(1);
+    $this->postJson('/api/admin/runa.permissions/permissions/sections/editor/commands', $input)->assertUnprocessable();
+});
+
+it('Permissions Admin reviews add replace copy and preset semantics without flattening or protected membership', function (): void {
+    authAdministrationLogin($this, ['runa.permissions.introspection.read', 'runa.permissions.access.manage', 'runa.auth.eligibility.read']);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('permissions-admin-target@example.test', name: 'Administration target', active: true, approved: true));
+    $source = app(ChangeIdentity::class)->create(new NewIdentity('permissions-admin-source@example.test', name: 'Administration target', active: true, approved: true));
+    $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+    $path = '/api/admin/runa.permissions/access/sections/access';
+    $record = permissionAdministrationRead($this, 'access', 'access', $source->publicId);
+    $input = permissionAdministrationReview($this, $path, ['command' => 'assign', 'public_id' => $source->publicId, 'revision' => $record['revision'], 'values' => ['roles' => [], 'permissions' => [$permission], 'mode' => 'add']]);
+    expect($input['review']['changes']['review_summary']['effective_added'])->toContain('runa.audit.read');
+    authAdministrationStrongProof($this, 'runa.permissions.access.manage');
+    $this->postJson($path.'/commands', $input)->assertOk();
+    $presetPath = '/api/admin/runa.permissions/presets/sections/editor';
+    $preset = permissionDefinitionInput('preset', 'admin_snapshot');
+    $preset['values']['source_user'] = $source->publicId;
+    $preset = permissionAdministrationReview($this, $presetPath, $preset);
+    authAdministrationStrongProof($this, 'runa.permissions.access.manage');
+    $presetId = $this->postJson($presetPath.'/commands', $preset)->assertOk()->json('data.record.public_id');
+    foreach ([['copy', ['source_user' => $source->publicId, 'mode' => 'add']], ['preset', ['preset' => $presetId, 'mode' => 'replace']], ['assign', ['roles' => [], 'permissions' => [], 'mode' => 'replace']]] as [$command, $values]) {
+        $record = permissionAdministrationRead($this, 'access', 'access', $target->publicId);
+        $input = permissionAdministrationReview($this, $path, ['command' => $command, 'public_id' => $target->publicId, 'revision' => $record['revision'], 'values' => $values]);
+        authAdministrationStrongProof($this, 'runa.permissions.access.manage');
+        $result = $this->postJson($path.'/commands', $input)->assertOk()->json('data.record.values.permissions');
+        expect($result)->toBe($command === 'assign' ? [] : [$permission]);
+    }
+    $record = permissionAdministrationRead($this, 'access', 'access', $target->publicId);
+    $protected = DB::table('runa_permissions.roles')->where('system', true)->value('public_id');
+    $this->postJson($path.'/preview', ['command' => 'assign', 'public_id' => $target->publicId, 'revision' => $record['revision'], 'values' => ['roles' => [$protected], 'permissions' => [], 'mode' => 'add']])->assertUnprocessable();
+    $effective = permissionAdministrationRead($this, 'access', 'effective', $target->publicId);
+    expect($effective['values']['next'])->toBeString()->and(json_decode($effective['values']['entries'], true))->not->toBeEmpty();
+});
+
+it('Audit Admin keeps cursor summaries payload free and detail immutable behind current authority', function (): void {
+    authAdministrationLogin($this, ['runa.audit.read']);
+    $subject = (string) Str::uuid7();
+    DB::transaction(function () use ($subject): void {
+        app(ModuleApis::class)->resolve('runa.audit', AuditRecords::class, '1.0.0')->record(new AuditEvent('runa.audit', 'viewer.example',
+            entities: [new AuditEntity('runa.auth', 'user', $subject)], changes: ['label' => ['old' => 'before', 'new' => 'safe-detail-only'], 'password' => ['old' => 'private-secret', 'new' => 'other-secret']]));
+    });
+    $path = '/api/admin/runa.audit/history/sections/';
+    $query = ['kind' => 'page', 'limit' => 1, 'filters' => json_encode(['module' => 'runa.audit', 'action' => 'viewer.example'])];
+    $page = $this->getJson($path.'catalogue?'.http_build_query($query))->assertOk()->json('data');
+    expect($page['total'])->toBeNull()->and($page['items'])->toHaveCount(1)->and(json_encode($page))->not->toContain('safe-detail-only', 'private-secret', 'changes', 'execution', 'entities');
+    $id = $page['items'][0]['public_id'];
+    $detail = $this->getJson($path.'detail?public_id='.$id)->assertOk()->json('data');
+    expect($detail['values']['changes'])->toContain('safe-detail-only')->not->toContain('private-secret', 'other-secret')
+        ->and($detail['values']['entities'])->toContain($subject);
+    $this->getJson($path.'catalogue?'.http_build_query(['kind' => 'page', 'filters' => json_encode(['entity_module' => 'runa.auth'])]))->assertUnprocessable();
+    $this->getJson($path.'catalogue?kind=page&cursor=invalid')->assertUnprocessable();
+    $this->getJson($path.'detail?public_id='.(string) Str::uuid7())->assertNotFound();
+    $this->postJson($path.'detail/commands', ['command' => 'delete', 'public_id' => $id, 'revision' => $id, 'values' => []])->assertUnprocessable();
+    DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)->where('permission_id', DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('id'))->delete();
+    $this->getJson($path.'detail?public_id='.$id)->assertNotFound()->assertJsonMissingPath('data');
+});
+
+it('Permissions Admin separates protected authority and retains the last eligible administrator', function (): void {
+    authAdministrationLogin($this, ['runa.permissions.introspection.read', 'runa.permissions.authority.manage']);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('protected-admin-target@example.test', name: 'Administration target', active: true, approved: true));
+    $path = '/api/admin/runa.permissions/access/sections/authority';
+    $own = permissionAdministrationRead($this, 'access', 'authority', $this->adminUser->public_id);
+    $this->postJson($path.'/preview', ['command' => 'change', 'public_id' => $this->adminUser->public_id, 'revision' => $own['revision'], 'values' => ['grant' => true]])->assertForbidden();
+    $record = permissionAdministrationRead($this, 'access', 'authority', $target->publicId);
+    $input = permissionAdministrationReview($this, $path, ['command' => 'change', 'public_id' => $target->publicId, 'revision' => $record['revision'], 'values' => ['grant' => true]]);
+    $this->postJson($path.'/commands', $input)->assertUnprocessable();
+    $input['confirmed'] = true;
+    $this->postJson($path.'/commands', $input)->assertForbidden();
+    authAdministrationStrongProof($this, 'runa.permissions.authority.manage');
+    $this->postJson($path.'/commands', $input)->assertOk();
+    $this->postJson($path.'/commands', $input)->assertConflict();
+    $record = permissionAdministrationRead($this, 'access', 'authority', $target->publicId);
+    $remove = permissionAdministrationReview($this, $path, ['command' => 'change', 'public_id' => $target->publicId, 'revision' => $record['revision'], 'values' => ['grant' => false], 'confirmed' => true]);
+    authAdministrationStrongProof($this, 'runa.permissions.authority.manage');
+    $this->postJson($path.'/commands', $remove)->assertConflict();
+    expect(DB::table('runa_permissions.user_roles')->where('user_public_id', $target->publicId)->exists())->toBeTrue()
+        ->and(DB::table('runa_audit.events')->where('action', 'authority.removed')->count())->toBe(0)
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.authority.manage')->whereNull('consumed_at')->exists())->toBeTrue();
+});
+
+it('Permissions Admin force deletion keeps its dedicated grant complete review confirmation and atomic Audit', function (): void {
+    authAdministrationLogin($this, ['runa.permissions.introspection.read', 'runa.permissions.access.manage', 'runa.permissions.roles.force_delete', 'runa.auth.eligibility.read']);
+    $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+    $path = '/api/admin/runa.permissions/roles/sections/editor';
+    $input = permissionAdministrationReview($this, $path, permissionDefinitionInput('role', 'force_review', [$permission]));
+    authAdministrationStrongProof($this, 'runa.permissions.access.manage');
+    $role = $this->postJson($path.'/commands', $input)->assertOk()->json('data.record');
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('force-admin-target@example.test', name: 'Administration target', active: true, approved: true));
+    $assignmentPath = '/api/admin/runa.permissions/access/sections/access';
+    $targetRead = permissionAdministrationRead($this, 'access', 'access', $target->publicId);
+    $assign = permissionAdministrationReview($this, $assignmentPath, ['command' => 'assign', 'public_id' => $target->publicId, 'revision' => $targetRead['revision'], 'values' => ['roles' => [$role['public_id']], 'permissions' => [], 'mode' => 'add']]);
+    authAdministrationStrongProof($this, 'runa.permissions.access.manage');
+    $this->postJson($assignmentPath.'/commands', $assign)->assertOk();
+    // Ordinary deletion keeps the native referenced-role refusal.
+    $delete = permissionAdministrationReview($this, $path, ['command' => 'delete', 'public_id' => $role['public_id'], 'revision' => $role['revision'], 'values' => [], 'confirmed' => true]);
+    authAdministrationStrongProof($this, 'runa.permissions.access.manage');
+    $this->postJson($path.'/commands', $delete)->assertConflict();
+    // A force-delete manager does not also need ordinary write authority.
+    DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)->where('permission_id', DB::table('runa_permissions.permissions')->where('code', 'runa.permissions.access.manage')->value('id'))->delete();
+    $forcePath = '/api/admin/runa.permissions/roles/sections/force';
+    $force = permissionAdministrationReview($this, $forcePath, ['command' => 'force_delete', 'public_id' => $role['public_id'], 'revision' => $role['revision'], 'values' => []]);
+    expect($force['review']['changes']['review_summary']['users'])->toHaveCount(1);
+    $this->postJson($forcePath.'/commands', $force)->assertUnprocessable();
+    $force['confirmed'] = true;
+    authAdministrationStrongProof($this, 'runa.permissions.roles.force_delete');
+    DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT admin_force_audit_failure CHECK (action <> 'role.force_deleted') NOT VALID");
+    try {
+        $this->postJson($forcePath.'/commands', $force)->assertServiceUnavailable();
+        expect(DB::table('runa_permissions.user_roles')->where('user_public_id', $target->publicId)->exists())->toBeTrue()
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.roles.force_delete')->value('consumed_at'))->toBeNull();
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT admin_force_audit_failure');
+    }
+    $this->postJson($forcePath.'/commands', $force)->assertOk();
+    expect(DB::table('runa_permissions.user_roles')->where('user_public_id', $target->publicId)->exists())->toBeFalse()
+        ->and(DB::table('runa_audit.events')->where('action', 'role.force_deleted')->count())->toBe(1);
+});
+
+it('Permissions Admin source dictionaries and ordinary read grants never authorize mutation', function (): void {
+    authAdministrationLogin($this, ['runa.permissions.introspection.read']);
+    $source = DB::table('runa_permissions.roles')->where('system', true)->first();
+    $detail = permissionAdministrationRead($this, 'roles', 'editor', $source->public_id);
+    expect($detail['values']['system'])->toBeTrue();
+    $input = permissionDefinitionInput('role', 'unauthorized');
+    $this->postJson('/api/admin/runa.permissions/roles/sections/editor/preview', $input)->assertUnprocessable();
+    ($this->adminGrant)('runa.permissions.access.manage');
+    $this->postJson('/api/admin/runa.permissions/roles/sections/editor/preview', ['command' => 'delete', 'public_id' => $source->public_id, 'revision' => $detail['revision'], 'values' => []])->assertUnprocessable();
+    $this->getJson('/api/admin/runa.permissions/permissions/sections/catalogue?kind=page&limit=1')->assertOk()->assertJsonPath('data.total', null);
+    $this->getJson('/api/admin/runa.permissions/roles/sections/catalogue?kind=page&cursor=invalid')->assertUnprocessable()->assertJsonMissingPath('data');
+});
+
+it('Audit Admin pages complete large native detail without weakening management bounds', function (): void {
+    authAdministrationLogin($this, ['runa.audit.read']);
+    $tree = array_fill_keys(['one', 'two', 'three', 'four', 'five', 'six'], str_repeat('bounded-data ', 500));
+    $reference = DB::transaction(fn () => app(ModuleApis::class)->resolve('runa.audit', AuditRecords::class, '1.0.0')->record(new AuditEvent('runa.audit', 'viewer.large', changes: $tree, context: $tree)));
+    $parts = ['changes' => '', 'context' => '', 'execution' => ''];
+    $cursor = null;
+    do {
+        $query = ['public_id' => $reference->publicId, ...($cursor === null ? [] : ['cursor' => $cursor])];
+        $record = $this->getJson('/api/admin/runa.audit/history/sections/detail?'.http_build_query($query))->assertOk()->json('data');
+        expect(strlen(json_encode($record)))->toBeLessThan(65536);
+        foreach (array_keys($parts) as $key) {
+            $parts[$key] .= $record['values'][$key];
+        }
+        $cursor = $record['values']['payload_next'];
+    } while ($cursor !== null);
+    expect(json_decode($parts['changes'], true))->toEqual($tree)->and(json_decode($parts['context'], true))->toEqual($tree);
+    $this->getJson('/api/admin/runa.audit/history/sections/detail?public_id='.$reference->publicId.'&cursor=999')->assertUnprocessable();
 });

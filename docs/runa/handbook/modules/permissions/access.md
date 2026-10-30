@@ -142,8 +142,7 @@ The existing management provider declares bounded custom-role/preset/assignment
 entities, dictionary/reference fields and revision/preview/both-factor requirements.
 Metadata uses its provider-local permission keys and never grants permission or
 executes a write. Unknown management schema versions refuse through the shared
-adapter. No renderer, administration navigation, HTTP CRUD surface or Admin UI is
-introduced. Future adapters must enforce these same public backend contracts.
+adapter. The source-owned [Admin pages](administration.md) consume these same public backend contracts; the metadata itself executes no operation.
 
 Tests prepare real-session/step-up, stale preview and ABA, role/preset independence,
 copy semantics, protected-role exclusion, ordinary grants beyond the actor's own,

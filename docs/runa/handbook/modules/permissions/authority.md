@@ -1,6 +1,6 @@
 # Protected authority and role deletion
 
-Permissions 0.3.0 adds guarded `PermissionsAuthority` API 1.0.0 and the trusted
+The historical Permissions 0.3.0 introduced guarded `PermissionsAuthority` API 1.0.0 and the trusted
 Auth lifecycle participant. It requires Auth ^0.10.1 and Audit ^0.4.0. The explicit
 0.2.0 → 0.3.0 source upgrade validates the protected role and synchronizes new
 declarations during reserved preparation. It grants no user access automatically.
@@ -103,4 +103,4 @@ Required aggregate `assignments.changed`, `preset.saved` and `role.force_deleted
 events include old/new sets and provenance. Proofs, all histories, revisions and
 unlinking roll back together. No automatic per-pivot events are invented. Existing
 metadata declares these separate capabilities, preview/proof/revision requirements
-and explicit confirmation without introducing an Admin renderer or UI.
+and explicit confirmation and is consumed by the [Admin authority and force-deletion sections](administration.md).

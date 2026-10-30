@@ -7,7 +7,7 @@ field-bound options, typed widget results and source-bound component/build
 projection. Point 4 adds compiled resolution, the shared session shell, entry
 advertisement and page-read/document HTTP. Point 5 adds section-read HTTP, the frontend resource read lane, independent
 write/preview HTTP and generated forms. Point 6 delivers native atomic coordination
-and profile/access adapters; point 7 adds complete Auth administrative declarations. Remaining Core coverage retains points 8–10. See
+and profile/access adapters; point 7 adds complete Auth administrative declarations. Point 8 adds owning Permissions pages and the immutable Audit viewer; framework operations/settings retain points 9–10. See
 [ownership and delivery](README.md). Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
 belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.

@@ -488,3 +488,184 @@ test('Auth administration: owned Users presentation selects accounts and protect
   }
   expect(failures).toEqual([]);
 });
+
+test('Permissions and Audit administration: built definition and immutable history defaults on responsive light and dark screens', async ({
+  page,
+}, info) => {
+  const { readFileSync } = await import('node:fs');
+  const artifact = JSON.parse(
+    readFileSync(
+      new URL(
+        '../../../../src/public/build/runa-components.json',
+        import.meta.url,
+      ),
+      'utf8',
+    ),
+  ) as {
+    owners: Record<
+      string,
+      { build_id: string; manifest_hash: string; components: string[] }
+    >;
+  };
+  await transport(page);
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  const field = (key: string, type = 'text') => ({
+    key,
+    label: key,
+    type,
+    readonly: true,
+    sensitive: false,
+    filterable: false,
+    sortable: false,
+    lookup: false,
+    required: false,
+    max_length: null,
+    choices: [],
+    multiple: false,
+    component: null,
+  });
+  for (const [owner, key, pageComponent, detailComponent] of [
+    ['runa.permissions', 'roles', 'admin_definitions', 'admin_definition'],
+    ['runa.audit', 'history', 'admin_history', 'admin_detail'],
+  ] as const) {
+    const build = artifact.owners[owner]!;
+    expect(build.components).toContain(owner + '.' + pageComponent);
+    const identity = (component: string) => ({
+      owner,
+      key: owner + '.' + component,
+      build_id: build.build_id,
+      manifest_hash: build.manifest_hash,
+    });
+    const detailKey = owner === 'runa.audit' ? 'detail' : 'editor';
+    await page.route(`**/api/admin/${owner}/${key}**`, async (route) => {
+      const url = new URL(route.request().url());
+      const values =
+        owner === 'runa.audit'
+          ? {
+              action: 'example.changed',
+              changes: 'Immutable safe detail',
+              entities: JSON.stringify([
+                { module: 'runa.auth', type: 'user', public_id: id },
+              ]),
+            }
+          : {
+              code: 'runa.auth.reader',
+              name_en: 'Source reader',
+              module: 'runa.auth',
+              system: false,
+            };
+      let data: unknown;
+      if (url.pathname.endsWith('/catalogue'))
+        data = {
+          items: [
+            {
+              public_id: id,
+              revision: '1',
+              values: {
+                [owner === 'runa.audit' ? 'action' : 'code']:
+                  owner === 'runa.audit'
+                    ? 'example.changed'
+                    : 'runa.auth.reader',
+              },
+            },
+          ],
+          next: null,
+          total: null,
+        };
+      else if (url.pathname.endsWith('/' + detailKey))
+        data = url.searchParams.has('public_id')
+          ? { public_id: id, revision: '1', values }
+          : { public_id: null, revision: '0', values: {} };
+      else
+        data = {
+          schema_version: 1,
+          owner,
+          key,
+          title: owner === 'runa.audit' ? 'Audit history' : 'Roles',
+          generation: 1,
+          revision: 'page-1',
+          component: identity(pageComponent),
+          sections: [
+            {
+              key: 'catalogue',
+              title: 'Records',
+              view: 'table',
+              readonly: true,
+              required: false,
+              component: null,
+              record: null,
+              diagnostic: null,
+              fields: [field(owner === 'runa.audit' ? 'action' : 'code')],
+              commands: [],
+            },
+            {
+              key: detailKey,
+              title: 'Details',
+              view: 'record',
+              readonly: true,
+              required: false,
+              component: identity(detailComponent),
+              record: null,
+              diagnostic: null,
+              fields: Object.keys(values).map((key) =>
+                field(key, key === 'system' ? 'boolean' : 'text'),
+              ),
+              commands: [],
+            },
+          ],
+        };
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ data }),
+      });
+    });
+    for (const [width, height, theme] of [
+      [1440, 1000, 'dark'],
+      [820, 1180, 'light'],
+      [390, 844, 'dark'],
+      [390, 844, 'light'],
+    ] as const) {
+      await page.setViewportSize({ width, height });
+      await page.addInitScript((theme) => {
+        localStorage.setItem('runa.theme', theme);
+        localStorage.setItem('runa.locale', 'pl');
+      }, theme);
+      await page.goto(`/admin/${owner}/${key}`);
+      const password = page.getByLabel('Current password', { exact: true });
+      if (await password.count()) {
+        await password.fill('Example test password');
+        await page
+          .getByRole('button', { name: 'Confirm password', exact: true })
+          .click();
+      }
+      await page
+        .getByRole('button', { name: 'Open record', exact: true })
+        .click();
+      if (owner === 'runa.audit') {
+        await expect(
+          page.getByText('Immutable safe detail', { exact: true }),
+        ).toBeVisible();
+        await expect(
+          page.getByRole('link', { name: /History: runa.auth/ }),
+        ).toBeVisible();
+      } else
+        await expect(
+          page.getByText('Source and system definitions are read-only.', {
+            exact: true,
+          }),
+        ).toBeVisible();
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page.screenshot({
+        path: info.outputPath(`${owner}-${width}-${theme}.png`),
+        fullPage: true,
+      });
+    }
+  }
+  expect(errors).toEqual([]);
+});

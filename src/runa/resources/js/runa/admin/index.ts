@@ -21,3 +21,5 @@ export { useAdminForm } from '../../../../modules/admin/frontend/useAdminForm';
 export { validateAdminField } from '../../../../modules/admin/frontend/fieldValidation';
 export { resolveAdminComponent } from '../../../../modules/admin/frontend/components';
 export type * from '../../../../modules/admin/frontend/contracts';
+
+export { default as AdminRecordBrowser } from '../../../../modules/admin/frontend/AdminRecordBrowser.vue';

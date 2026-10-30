@@ -42,3 +42,12 @@ command denial. Frontend cases exercise shared subject selection, collection
 read-lane cancellation and public default composition; browser scenarios retain
 final-only light/dark and responsive acceptance. Focused results are recorded in
 the active roadmap; this inventory does not claim suite PASS.
+
+Point-8 cases author native custom-role creation/edit/delete and stale reviews,
+required Audit/proof rollback, add/replace/copy/from-user preset semantics,
+source/system readonly denial, dedicated protected authority/self-escalation/last
+administrator and confirmed force deletion. Audit viewer cases separate cursor
+summaries from redacted detail, exact entity filters, unknown references and current
+grant revocation. Frontend cases author dirty record selection, immutable/source
+presentation, effective-account cursor fencing and escaped entity history links.
+Built default E2E scenarios cover desktop/tablet/mobile light/dark in final verification.

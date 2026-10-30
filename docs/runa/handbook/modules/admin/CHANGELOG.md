@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-30
 
+- Add public AdminRecordBrowser composition for guarded cursor catalogue/detail selection with dirty-draft preservation; compose Permissions and Audit owning defaults without new business engines.
+
 - Compose Auth-owned Users/policy/bulk administrative pages and independent native actions; expose reusable section dispatch/failure boundaries and read-lane clear. Selecting a directory subject overrides initial descriptor IDs and account/page ownership changes clear that selection.
 
 - Deliver source-owned ManagementParticipant, guarded aggregate preview/Save and exact semantic reviews with all-owner prewrite validation, before-commit authorized projection and atomic Audit/proof rollback. Include initial Auth profile/Permissions assignment composition and App/concurrency fixtures; final acceptance remains pending.
