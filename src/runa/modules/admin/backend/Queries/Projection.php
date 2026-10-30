@@ -20,6 +20,7 @@ use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\ModuleFramework\Management\ManagementPages;
+use Runa\Modules\Admin\Actions\AggregatePart;
 use Runa\Support\Modules\Api\OperationRejected;
 use Throwable;
 
@@ -247,6 +248,70 @@ final readonly class Projection
 
         return ['writer' => $writer, 'input' => $write, 'command' => $command,
             'fields' => $this->fields($sectionOwner, $section, $discovery['generation'])];
+    }
+
+    /** The complete current writable atomic Save set, including editable contributions.
+     * @param  array<string,mixed>  $input
+     * @return array{revision:string,parts:list<AggregatePart>}
+     */
+    public function prepareAggregate(string $owner, string $page, array $input, bool $preview): array
+    {
+        if (array_diff(array_keys($input), ['revision', 'participants']) !== []
+            || ! is_string($input['revision'] ?? null) || strlen($input['revision']) > 256
+            || ! is_array($input['participants'] ?? null) || ! array_is_list($input['participants'])
+            || count($input['participants']) < 1 || count($input['participants']) > 15) {
+            throw new OperationRejected('admin_input_invalid', 'runa.admin', 'save', 422);
+        }
+        $submitted = [];
+        foreach ($input['participants'] as $item) {
+            if (! is_array($item) || array_diff(array_keys($item), ['id', 'input']) !== []
+                || ! is_string($item['id'] ?? null) || isset($submitted[$item['id']]) || ! is_array($item['input'] ?? null)) {
+                throw new OperationRejected('admin_input_invalid', 'runa.admin', 'save', 422);
+            }
+            $submitted[$item['id']] = $item['input'];
+        }
+        [$discovery, , $sections] = $this->selected($owner, $page);
+        $parts = [];
+        foreach ($sections as [$sectionOwner, $section, $id]) {
+            if (! $this->allowed($sectionOwner, $section->readPermission, $discovery['generation'])) {
+                continue;
+            }
+            $definition = $discovery['owners'][$sectionOwner];
+            $view = $this->section($sectionOwner, $section, $id, $discovery['generation'],
+                $this->declarations->bindingAvailable($definition['bindings'][$section->binding]), $definition);
+            $saves = array_values(array_filter($view['commands'], fn ($command): bool => $command['intent'] === 'save' && $command['mode'] === 'atomic'));
+            if ($saves === []) {
+                continue;
+            }
+            if (! isset($submitted[$id]) || ! $saves[0]['available']) {
+                throw new OperationRejected('admin_participants_changed', 'runa.admin', 'save', 409);
+            }
+            $candidate = $preview ? array_replace($submitted[$id], ['confirmed' => true]) : $submitted[$id];
+            $write = $this->writeInput($sectionOwner, $section, $candidate, $discovery['generation']);
+            if ($write->command !== $saves[0]['key']) {
+                throw new OperationRejected('admin_input_invalid', 'runa.admin', 'save', 422);
+            }
+            $command = array_values(array_filter($section->commands, fn ($command): bool => $command->key === $write->command))[0];
+            $binding = $definition['bindings'][$command->binding];
+            $writer = $this->declarations->handler($sectionOwner, $binding);
+            if (! $writer instanceof ManagementWriter || $section->view !== 'record' || $command->safety->bulk) {
+                throw new OperationRejected('admin_participant_incompatible', 'runa.admin', 'save', 409);
+            }
+            $record = $this->read($owner, $page, $id, ['public_id' => $write->publicId]);
+            if ($record['public_id'] !== $write->publicId || ! hash_equals($record['revision'], $write->revision)) {
+                throw new OperationRejected('admin_revision_stale', 'runa.admin', 'save', 409);
+            }
+            $parts[] = new AggregatePart($sectionOwner, $id, $command, $write, $writer,
+                $this->declarations->participant($sectionOwner, $binding), $this->fields($sectionOwner, $section, $discovery['generation']));
+            unset($submitted[$id]);
+        }
+        if ($submitted !== [] || $parts === []) {
+            throw new OperationRejected('admin_participants_changed', 'runa.admin', 'save', 409);
+        }
+        usort($parts, fn ($a, $b): int => strcmp($a->id, $b->id));
+        $this->declarations->assertCurrent($discovery['generation']);
+
+        return ['revision' => $this->page($owner, $page)['revision'], 'parts' => $parts];
     }
 
     /** @param array<string,ManagementFieldAccess> $fields

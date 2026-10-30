@@ -10,8 +10,9 @@ frontend replacement seams. Point 5 adds named section-read HTTP and the public
 resource read controller, explicit cursor-table composition and automatic declared
 collection sections and controlled fields, then completes generated record forms,
 independent commands/previews, reconciliation, dirty navigation and owning
-collection adapter composition. Native atomic coordination, owning business
-adapters and settings retain later points.
+collection adapter composition. Point 6 supplies native atomic preview/Save,
+source-owned participants and initial Auth profile/Permissions assignment composition.
+Complete owning operation coverage and settings retain later points.
 Existing Auth, Permissions, Audit and framework APIs retain their current contracts.
 Source implementation and focused checks do not establish rendered or release acceptance.
 
@@ -34,21 +35,20 @@ Page declarations, handler DTOs, App registration and guarded Admin reads below
 are implemented through point 3. Capability-specific reads, field-bound
 options, typed widget freshness and source-bound component/build projection are
 implemented, including compiled registry resolution and shell rendering. Atomic
-participation and settings retain their later points; generated record forms and
-independent command dispatch are implemented.
+participation, generated record forms and independent command dispatch are delivered;
+application settings retain their owning point.
 Resource reads are delivered through `useAdminResource`; `useAdminTable` and
 `AdminResourceTable` compose bounded collection reads with the existing Table.
 `AdminField` and `validateAdminField` supply controlled field composition; default
 record sections compose the one useAdminForm controller and native authorized
-reads/independent writes. Aggregate Save transport/presentation refuses until the
-point-6 native coordinator is delivered. Private engines retain their current homes and are never
+reads/independent writes and native atomic preview/Save. Private engines retain their current homes and are never
 ordinary application imports.
 
 | Capability                                              | Owner and audience                                                      | Supported entrypoint                                                                 | Implementation home and delivery                                                      |
 | ------------------------------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
 | Pages, fields, sections, widgets, command/read bindings | Framework public extension, trusted module authors                      | Optional `ManagementPageProvider` under existing manifest `declarations.management`  | `src/runa/Contracts/Modules`; runtime declarations                                    |
 | Owned read/write adaptation                             | Owning module or application, trusted source handler                    | `ManagementHandler` named by `ManagementBinding`                                     | Owning `backend/Management` or `src/app/Management`; runtime                          |
-| Atomic participation                                    | Framework trusted extension, explicitly compatible owning handlers      | `ManagementParticipant` and immutable plans                                          | Contracts under framework; owner implementations; runtime, never ModuleApis callbacks |
+| Atomic participation                                    | Framework trusted extension, explicitly compatible owning handlers      | `ManagementParticipant::{prepare,project}` and native mutations                      | Contracts under framework; owner implementations; runtime, never ModuleApis callbacks |
 | App pages/contributions                                 | Admin public bootstrap extension, ordinary App providers                | `AdminRegistry::register(ManagementPageProvider $provider): void`                    | Contract under Admin `backend/Contracts`; private registry under Admin; runtime       |
 | Protected Admin reads/writes                            | Admin public guarded consumption                                        | `AdminAccess` resolved through ModuleApis, API `1.0.0`; named HTTP endpoints         | Admin `backend/Contracts`, private Actions/Queries/Http; runtime                      |
 | Core reads/writes                                       | Owning Core public guarded consumption                                  | Existing contracts/API `1.0.0`; additive Auth reads below                            | Owning module `backend/Contracts`, private implementations; runtime                   |
@@ -102,8 +102,8 @@ Resolve `Runa\Modules\Admin\Contracts\AdminAccess` through ModuleApis with versi
 current operational Auth session and password proof for `runa.admin.enter` with
 TTL 300 seconds and `everyAction=false`. Ordinary direct/role grants suffice;
 the protected system role does not bypass proof or session checks. Bootstrap, page and section read are
-implemented, as are independent command/previewCommand. Aggregate preview/save
-still refuse with admin_page_unavailable after admission until point 6.
+implemented, as are independent command/previewCommand. Aggregate preview/save execute compatible native participants through one root;
+see [atomic participation](composition.md) for limits and current coverage.
 
 Delivered routes are GET `/admin` (`runa.admin.dashboard`),
 `/admin/{owner}/{page}` (`runa.admin.page`), `/api/admin`
@@ -125,7 +125,8 @@ and current source-default presentation (revision 0). No built-in business page
 provider exists yet, so the default catalogue is empty. App providers can supply
 independent pages and matching compiled/static components. Section reads,
 independent command/preview and bounded aggregate HTTP transports are delivered;
-owning business adapters and DB-backed presentation remain planned. Source/component
+initial naming/login and ordinary assignment adapters are delivered; complete
+Core operation coverage and DB-backed presentation retain their owning points. Source/component
 tests are not final rendered/release acceptance.
 The welcome catalogue remains independent localized manifest metadata.
 
@@ -171,6 +172,6 @@ supersedes the earlier unchanged-API composition proposal. AuthProfiles and
 PermissionsAccess use guarded API 2.0.0 and independent module 2.0.0; standalone
 writes have a root boundary, while source composition joins native phases.
 Auth/Permissions require platform >=0.7.0 <0.8.0. Audit remains independent 1.0.5.
-The exact current native path is implemented before Admin aggregate dispatch;
-frontend/aggregate/read refinements retain their owning roadmap points. No
+The native path and Admin aggregate dispatch are implemented; complete owning
+read/operation coverage retains its roadmap points. No
 intermediate unpublished Admin 0.2.0 update path is retained.

@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Management\FIXTURE_NAMESPACE;
+
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Runa\Contracts\Modules\ManagementOutcome;
+use Runa\Contracts\Modules\ManagementPageResult;
+use Runa\Contracts\Modules\ManagementParticipant;
+use Runa\Contracts\Modules\ManagementRead;
+use Runa\Contracts\Modules\ManagementRecord;
+use Runa\Contracts\Modules\ManagementResourceReader;
+use Runa\Contracts\Modules\ManagementReview;
+use Runa\Contracts\Modules\ManagementWrite;
+use Runa\Contracts\Modules\ManagementWriter;
+use Runa\Contracts\Modules\TransactionalMutation;
+
+final class AtomicEditor implements ManagementResourceReader, ManagementWriter, ManagementParticipant
+{
+    public static bool $badProjection = false;
+    public function read(ManagementRead $input): ManagementRecord
+    {
+        $row = DB::table('admin_fixture.notes')->where('public_id', $input->publicId)->first();
+        return new ManagementRecord($input->publicId, (string) $row->version, ['note' => $row->note]);
+    }
+    public function page(ManagementRead $input): ManagementPageResult { return new ManagementPageResult([$this->read($input)], null); }
+    public function preview(ManagementWrite $input): ManagementReview
+    {
+        if (($input->values['note'] ?? null) === 'Invalid') { throw ValidationException::withMessages(['note' => ['private-marker'], 'hidden' => ['private-marker']]); }
+        return new ManagementReview(hash('sha256', serialize([$this->read(new ManagementRead($input->publicId)), $input->values])), $input->values, 'none', false);
+    }
+    public function prepare(ManagementWrite $input): TransactionalMutation { return new AtomicMutation($input); }
+    public function execute(ManagementWrite $input): ManagementOutcome { throw new \LogicException('Atomic fixture only.'); }
+    public function project(array $result): ManagementOutcome { return self::$badProjection ? new ManagementOutcome('pending', operationId: 'fixture-pending') : new ManagementOutcome('committed', $this->read(new ManagementRead($result['public_id']))); }
+}

@@ -12,11 +12,10 @@ useAdminResource/useAdminTable and validateAdminField. Source home is
 `src/runa/modules/admin/frontend`. Application replacements live in
 `src/app/resources/js`; HTTP uses `@/runa/http`, UI primitives use `@/runa/ui`.
 
-Default record forms and collection editors execute only explicit independent
-owning commands. Atomic preview/Save presentation and bounded transport are
-implemented; real multi-owner native coordination remains point 6 and currently
-refuses rather than reporting success. Owning Core pages/adapters and global
-settings retain points 7–10. Final rendered/release acceptance remains point 12.
+Record forms execute explicit independent commands or compatible native atomic
+preview/Save through the shared form owner. Point 6 delivers server coordination
+and initial profile/access record adapters; complete Core pages/operations and
+global settings retain points 7–10. Final rendered/release acceptance remains point 12.
 
 ## Controllers and public types
 
@@ -399,9 +398,10 @@ native operationId, blocks blind resubmission and never marks a draft committed.
 
 preview/save supply atomic frontend composition: exact participants, reviewed
 fingerprints, shared revision and decoding every result before changing baselines.
-Native multi-owner server execution remains point 6 and currently refuses. The
-bounded guarded transport is implemented; independent commands never pretend to
-be aggregate Save. No real Core business page is claimed before its owning point.
+Native multi-owner server execution is delivered with the [composition contract](composition.md).
+At most 15 business sections share the root. Independent commands retain separate
+protocols. Initial profile/access records are delivered; complete Core coverage
+retains its owning points.
 
 beforeLeave integrates a custom router, including its Back/Forward history guard.
 AdminController.navigate invokes registered guards before the supplied router.

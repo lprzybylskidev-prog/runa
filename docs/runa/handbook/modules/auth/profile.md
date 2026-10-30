@@ -203,3 +203,13 @@ aggregate callers use source-owned participants. This intentionally replaces
 nested whole-write composition, preserving current grants, reviewed differences,
 stronger action proof and atomic owning Audit. Source/global settings and external
 operations retain their separate owning workflows.
+
+## Admin native profile composition
+
+The source-declared ProfilePage/ProfileEditor supplies current-actor default and
+explicit authorized target records, complete naming/login replacement and native
+transaction participation. It uses the same owner validation/Audit phases as
+AuthProfiles.edit; email, lifecycle and file workflows remain independent.
+See [Admin composition](../admin/composition.md) for the supported input, preview,
+source ownership and atomic Save protocol; the classes are private declaration
+adapters, not direct application factory APIs.

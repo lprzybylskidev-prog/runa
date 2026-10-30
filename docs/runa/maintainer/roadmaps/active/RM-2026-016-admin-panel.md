@@ -256,7 +256,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     revision/read reconciliation without replay or edited-form reinitialization.
   - Author standard CRUD/read-only/field-denial/export/bulk/dirty/conflict scenarios
     and synchronize forms/tables/frontend references and customer examples.
-- [ ] 6. Implement approved cross-module contributions and atomic Save.
+- [x] 6. Implement approved cross-module contributions and atomic Save.
   - Prerequisites: 1, 3, 5; ARCH-001 and ARCH-003 approved as recorded.
   - Add editable participation alongside existing visual slots; owner-namespaced
     input/errors/revisions, compatibility validation and canonical owner phases and lock order.
@@ -1215,3 +1215,97 @@ resource was created or removed. Base/development databases, active services,
 durable volumes, Qdrant/model caches, backups and reports were preserved. Mandatory
 hooks and staged incremental knowledge synchronization apply to the completion
 commit. Point 5 is complete; point 6 is next.
+
+## Point 6 completion — native aggregate Save — 2026-10-30
+
+Complete the approved native composition, not a transport checkpoint. AdminAccess
+preview/save now dispatch one root Action. Source-owned ManagementParticipant has
+prepare(ManagementWrite): TransactionalMutation and project(array): ManagementOutcome;
+discovery verifies ownership, interface, exact binding identity and explicit App
+container binding. It does not expose native objects through HTTP/ModuleApis or
+import foreign private factories. The public audience catalogue and named internal
+caller policy include the new contract and the exact trusted adapters.
+
+The coordinator requires the complete current writable atomic Save set, current
+per-owner records/revisions and exact owning reviews. Participant IDs namespace
+contribution inputs/results/errors. Semantic page/source/build/policy identities,
+actor/subjects, requested values, owning revisions/reviews and immutable native
+definitions bind the aggregate fingerprint. Unchanged successful health observation
+publication does not pretend to be a business edit. At most 15 business participants
+share the existing native 16-mutation bound with the Admin guard; HTTP and guidance
+record that limit, 256-KiB input and 1-MiB output.
+
+Entry admission ends before owner reads/preparation and native health preflight.
+The source-owned Admin guard revalidates selection/reviews inside the canonical
+root, before any apply. ModuleTransactions retains canonical owner/key and complete
+sorted subject locks, all-owner validation, native proof planning/consumption,
+current grants per apply and same-transaction Audit. Admin compatibility admits
+zero native action proof demands for none or exactly one matching declared demand;
+additional undeclared demands conflict. The guard projects all owner
+results and current field/page authority before commit: pending/recovery results,
+missing/mismatched records or lost result grants roll back the whole save. Required
+native refusal history follows rollback and refusal-Audit failure remains blocking.
+No old whole-write nesting, assignment-first shim, revision translation or review
+regeneration is used. Independent lifecycle/settings/file/network/mail/bulk and
+protected-authority protocols remain excluded.
+
+Auth supplies private ProfilePage/ProfileEditor and Permissions supplies private
+AssignmentContribution/AssignmentEditor: the initial real naming/login plus
+ordinary access composition. Default record reads select the actor; explicit reads
+use public UUIDs. Inputs retain owning validation, guarded reads/lookups, native
+both-factor assignment proof and protected-role exclusion. Complete directories,
+lifecycle/security and Permissions administration remain points 7–8. Admin remains
+unreleased 0.1.0; Auth/Permissions remain unreleased 2.0.0 with existing
+initial/native_transactions history. No dependency, runtime migration, storage or
+version-only edge was added.
+
+Author real HTTP cases for commit/replay, both Audit failure directions and explicit
+retry after rollback, App contribution commit and invalid final projection, exact
+participant loss before admission and under root locks, duplicate/incompatible
+participants, safe namespaced validation, stale review/ABA, expired/consumed proof,
+own-grant removal and refusal-Audit failure. App fixtures implement owning native
+phases and explicit Audit without foreign persistence. AggregateCompetition uses
+an independent PostgreSQL backend and bounded lock timeout to probe the registry
+and complete sorted actor/target/contributor subject locks before any apply. The
+full scenario/concurrency matrix is authored here and runs only at point 12.
+
+Necessary focused supported backend diagnostics (--parallel --processes=1):
+
+- 'coordinates an Admin aggregate HTTP review': 1 test / 27 assertions PASS,
+  38.51 seconds, native exit 0 / cleanup 0. Initial discovery exposed incorrectly
+  ordered localization keys; corrected to the canonical pl/en order. Later consumed
+  proof assertions remain authored for final acceptance.
+- 'rolls back an Admin aggregate in either owning Audit failure direction':
+  2 tests / 46 assertions PASS, 91.15 seconds, exit 0 / cleanup 0. Both owners'
+  writes/Audit and consumed proof roll back; explicit retry succeeds.
+- 'includes an App editable contribution': final 2 tests / 43 assertions PASS,
+  60.47 seconds, exit 0 / cleanup 0. This resolves physical App ownership and
+  before-commit projection uncertainty. An initial fixture built an invalid pending
+  DTO; corrected it to a valid pending outcome, which the coordinator rejects
+  with conflict while rolling back every owner and proof.
+
+- 'rolls back own grant removal when current result authority is lost':
+  1 test / 20 assertions PASS, 25.85 seconds, exit 0 / cleanup 0. Entrance authority
+  is reauthorized inside the root before returned values; removing one's own
+  grants rolls back the profile, assignments and consumed proof.
+
+No broad suite, static/type/build/scanner, browser or full concurrency acceptance
+was executed; these remain point 12. Source review and synchronized Admin
+status/declarations/composition/frontend/operations, public boundary/native
+transactions, Auth profile and Permissions access guides and central module
+changelogs describe the delivered behavior and remaining scope. Owner and customer
+backend/frontend skills and AGENTS already reference the canonical composition,
+App-only contribution, public boundaries, reconciliation and final-only checks;
+no duplicated rule or instruction authority change is needed in either product.
+
+Local knowledge was current at entry (201 documents / 9,852 chunks); bounded
+retrieval was source-verified. Backend/Laravel/security/PostgreSQL guidance was
+applied. Boost documentation lookup failed DNS resolution; existing local framework
+APIs and native patterns were inspected instead. Incremental knowledge freshness
+and mandatory commit hooks apply to this completion commit.
+
+Supported cleanup displayed and removed only runa_test_test_1. Task-owned App fixture
+source/schema was removed by its guarded test lifecycle. No Docker resource was
+created or removed; active services, base/development database data, durable
+volumes, Qdrant/model caches, backups and reports were preserved. Point 6 is complete;
+point 7 is next. The active roadmap and release remain open.

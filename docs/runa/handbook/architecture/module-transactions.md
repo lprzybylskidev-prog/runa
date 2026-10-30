@@ -126,9 +126,9 @@ Authorization/introspection and effective-permission previews read current cache
 availability; they do not run external on-use checks for unrelated permission
 owners. Actual guarded operations still perform required exact-operation admission.
 The runner captures generation after preflight, then refuses any subsequent change
-under locks. Future Admin aggregate revisions must describe meaningful participant/
-source/policy/record state, not treat publication of an unchanged successful health
-observation as an edited business field. Transport-only reads/other native writers
+under locks. Admin aggregate revisions describe semantic participant/source/build/policy/record
+state and exclude publication of unchanged successful health observations; the
+current source-owned integration is documented in [Admin composition](../modules/admin/composition.md). Transport-only reads/other native writers
 retain their owning protocols until deliberately migrated; no blanket composition
 of all module methods is claimed.
 

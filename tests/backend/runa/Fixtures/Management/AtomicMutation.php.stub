@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Management\FIXTURE_NAMESPACE;
+
+use Illuminate\Support\Facades\DB;
+use Runa\Contracts\Modules\ApiOperation;
+use Runa\Contracts\Modules\ManagementWrite;
+use Runa\Contracts\Modules\MutationAccess;
+use Runa\Contracts\Modules\MutationDefinition;
+use Runa\Contracts\Modules\MutationProof;
+use Runa\Contracts\Modules\TransactionalMutation;
+use Runa\Modules\Audit\Contracts\AuditEvent;
+use Runa\Modules\Audit\Contracts\AuditRecords;
+use Runa\Support\Modules\Api\ModuleApis;
+use Runa\Support\Modules\Api\OperationRejected;
+
+final class AtomicMutation implements TransactionalMutation
+{
+    public static ?\Closure $probe = null;
+    public static bool $duplicateProof = false;
+    public function __construct(private ManagementWrite $input) {}
+    public function definition(): MutationDefinition
+    {
+        return new MutationDefinition('app', 'note.save', [new MutationAccess('runa.admin', new ApiOperation('note.save', 'runa.admin.enter'))],
+            [$this->input->publicId], ['app.note:'.$this->input->publicId], self::$duplicateProof ? [new MutationProof('runa.permissions.access.manage', 'both')] : []);
+    }
+    public function preflight(): void {}
+    public function lock(): void
+    {
+        DB::table('admin_fixture.notes')->where('public_id', $this->input->publicId)->lockForUpdate()->first();
+        if (self::$probe !== null) { (self::$probe)('lock'); }
+    }
+    public function validate(): void
+    {
+        if ((string) DB::table('admin_fixture.notes')->where('public_id', $this->input->publicId)->value('version') !== $this->input->revision) { throw new OperationRejected('note_stale', 'runa.admin', 'save', 409); }
+    }
+    public function apply(): void
+    {
+        DB::table('admin_fixture.notes')->where('public_id', $this->input->publicId)->update(['note' => $this->input->values['note'], 'version' => ((int) $this->input->revision) + 1]);
+        app(ModuleApis::class)->resolve('runa.audit', AuditRecords::class, '1.0.0')->record(new AuditEvent('app.notes', 'note.changed', changes: ['note' => $this->input->values['note']]));
+    }
+    public function result(): array { return ['public_id' => $this->input->publicId]; }
+    public function refused(string $reason): void {}
+}

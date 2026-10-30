@@ -4,10 +4,12 @@
 
 Status: RM-2026-016 point 1 specification. Existing operations below are available
 through their owning guarded APIs; their Admin adapters, new reads/settings and
-business UI are not implemented except for the private point-2 cached diagnostics
-foundation. Point 4 supplies the shared Admin shell and presentation seams
+business UI retain their owning points except for delivered native profile
+naming/login and ordinary assignment record composition from point 6, and the
+private point-2 cached diagnostics foundation. Point 4 supplies the shared Admin shell and presentation seams
 described in [delivery status](README.md#delivery-status-and-acceptance-ownership).
-It has no HTTP diagnostics or management command yet. AuthProfiles and PermissionsAccess use guarded API `2.0.0`; other current APIs
+Generic independent command transport and atomic preview/Save are delivered;
+there is no HTTP diagnostics page yet. AuthProfiles and PermissionsAccess use guarded API `2.0.0`; other current APIs
 retain `1.0.0`, independently of module versions. Each adapter binds explicitly to the named method and current
 ApiOperation declaration; a management key is never assumed to be a PHP method.
 

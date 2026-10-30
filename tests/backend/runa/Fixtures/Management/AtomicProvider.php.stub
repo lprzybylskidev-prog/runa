@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Management\FIXTURE_NAMESPACE;
+
+use Runa\Contracts\Modules\ApiOperation;
+use Runa\Contracts\Modules\ManagementBinding;
+use Runa\Contracts\Modules\ManagementCommandDefinition;
+use Runa\Contracts\Modules\ManagementContribution;
+use Runa\Contracts\Modules\ManagementField;
+use Runa\Contracts\Modules\ManagementFieldAccess;
+use Runa\Contracts\Modules\ManagementOperation;
+use Runa\Contracts\Modules\ManagementPageProvider;
+use Runa\Contracts\Modules\ManagementSection;
+
+final class AtomicProvider implements ManagementPageProvider
+{
+    public static bool $present = true;
+    public function permissions(): array { return []; }
+    public function actions(): array { return []; }
+    public function components(): array { return []; }
+    public function pages(): array { return []; }
+    public function widgets(): array { return []; }
+    public function bindings(): array { return [new ManagementBinding('note', AtomicEditor::class, [], AtomicEditor::class)]; }
+    public function contributions(): array
+    {
+        $text = ['pl' => 'Note', 'en' => 'Note'];
+        return self::$present ? [new ManagementContribution('notes', 'runa.auth.users.profile', new ManagementSection('note', 'Note',
+            'runa.admin.enter', 'runa.admin.enter', 'note', [new ManagementFieldAccess(new ManagementField('note', 'text', $text, $text, writable: true), 'runa.admin.enter', 'runa.admin.enter')], [
+                new ManagementCommandDefinition('save', 'Save note', new ManagementOperation(new ApiOperation('note.save', 'runa.admin.enter'), ['note']), 'note', 'atomic', AtomicEditor::class, intent: 'save'),
+            ]))] : [];
+    }
+}

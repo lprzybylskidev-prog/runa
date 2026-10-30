@@ -22,7 +22,7 @@ final class AggregateRequest extends FormRequest
     /** @return array<string,list<string>> */
     public function rules(): array
     {
-        return ['revision' => ['required', 'string', 'max:256'], 'participants' => ['required', 'array', 'min:1', 'max:16'],
+        return ['revision' => ['required', 'string', 'max:256'], 'participants' => ['required', 'array', 'min:1', 'max:15'],
             'participants.*' => ['required', 'array:id,input'], 'participants.*.id' => ['required', 'string', 'distinct', 'max:512'],
             'participants.*.input' => ['required', 'array:command,public_id,revision,values,review,confirmed'],
             'participants.*.input.command' => ['required', 'string', 'max:128'],

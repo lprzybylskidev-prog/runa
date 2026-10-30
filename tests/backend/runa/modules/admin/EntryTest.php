@@ -4,6 +4,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\PreparationParticipant;
@@ -40,6 +41,7 @@ use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Data\ModuleTransactions;
 use Runa\Support\Modules\Development\ModuleContractSuite;
 use Runa\Support\Modules\Settings\ModuleSettings;
+use Tests\Fixtures\AggregateCompetition;
 use Tests\Fixtures\CoreModuleStorage;
 use Tests\Fixtures\ModuleSources;
 use Tests\PlatformTestCase;
@@ -103,6 +105,11 @@ afterEach(function (): void {
     }
     while (DB::connection()->transactionLevel() > 0) {
         DB::rollBack();
+    }
+    if (isset($this->adminAtomicDirectory)) {
+        File::deleteDirectory($this->adminAtomicDirectory);
+        DB::statement('DROP TABLE admin_fixture.notes RESTRICT');
+        DB::statement('DROP SCHEMA admin_fixture RESTRICT');
     }
     $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
     foreach (DB::table('shared.module_work')->where('module_id', $authId)->pluck('public_id') as $workId) {
@@ -325,7 +332,7 @@ it('dispatches independent Admin commands outside the entry root with bounded re
         expect($handler::$writes)->toBe(1);
         expect(route('runa.admin.command', ['owner' => 'app', 'page' => 'users', 'section' => 'profile'], false))->toBe($path.'/commands');
         $this->postJson('/api/admin/app/users/save', ['revision' => 'page', 'participants' => [['id' => 'profile', 'input' => $input]]])
-            ->assertNotFound()->assertJsonMissingPath('data');
+            ->assertConflict()->assertJsonMissingPath('data');
     } finally {
         $sources->remove();
     }
@@ -500,5 +507,241 @@ it('routes Admin pages through guarded reads and never relaxes maintenance for a
         $this->getJson('/api/admin/entry')->assertServiceUnavailable()->assertJsonMissingPath('data');
     } finally {
         unlink($marker);
+    }
+});
+
+/** Real HTTP fixture: each owner supplies its own current resource revision. */
+function adminAggregateInput(object $test, string $publicId, array $permissions = []): array
+{
+    $path = '/api/admin/runa.auth/users';
+    $page = $test->getJson($path)->assertOk()->json('data');
+    $profile = $test->getJson($path.'/sections/profile?public_id='.$publicId)->assertOk()->json('data');
+    $id = 'runa.permissions.user_access.assignments';
+    $access = $test->getJson($path.'/sections/'.$id.'?public_id='.$publicId)->assertOk()->json('data');
+
+    return ['revision' => $page['revision'], 'participants' => [
+        ['id' => $id, 'input' => ['command' => 'save', 'public_id' => $publicId, 'revision' => $access['revision'], 'values' => ['roles' => [], 'permissions' => $permissions]]],
+        ['id' => 'profile', 'input' => ['command' => 'save', 'public_id' => $publicId, 'revision' => $profile['revision'], 'values' => array_replace($profile['values'], ['name' => 'After'])]],
+    ]];
+}
+
+function adminAggregateReview(object $test, array $input): array
+{
+    $review = $test->postJson('/api/admin/runa.auth/users/preview', $input)->assertOk()->json('data');
+    $input['revision'] = $review['revision'];
+    foreach ($input['participants'] as &$part) {
+        $part['input']['review'] = array_values(array_filter($review['participants'], fn ($item) => $item['id'] === $part['id']))[0]['review'];
+    }
+
+    return $input;
+}
+
+function adminAggregateLogin(object $test): void
+{
+    foreach (['runa.admin.enter', 'runa.auth.identities.read', 'runa.auth.profiles.manage', 'runa.auth.eligibility.read',
+        'runa.permissions.introspection.read', 'runa.permissions.access.manage'] as $code) {
+        ($test->adminGrant)($code);
+    }
+    nativeMutationProof($test);
+    ($test->adminProof)();
+}
+
+it('coordinates an Admin aggregate HTTP review and Auth first atomic Save with safe owner projections', function (): void {
+    adminAggregateLogin($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate@example.test', name: 'Before', active: true, approved: true));
+    $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+    $input = adminAggregateInput($this, $target->publicId, [$permission]);
+    $this->postJson('/api/admin/runa.auth/users/save', $input)->assertConflict();
+    $input = adminAggregateReview($this, $input);
+    $this->postJson('/api/admin/runa.auth/users/save', $input)->assertOk()
+        ->assertJsonPath('data.status', 'committed')->assertJsonPath('data.participants.0.id', 'profile')
+        ->assertJsonPath('data.participants.0.record.values.name', 'After')
+        ->assertJsonPath('data.participants.1.record.values.permissions', [$permission]);
+    expect(User::where('public_id', $target->publicId)->value('name'))->toBe('After')
+        ->and(DB::table('runa_audit.events')->where('action', 'profile.admin_changed')->count())->toBe(1)
+        ->and(DB::table('runa_audit.events')->where('action', 'assignments.changed')->count())->toBe(1)
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->not->toBeNull()
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.admin.enter')->value('consumed_at'))->toBeNull();
+    $this->postJson('/api/admin/runa.auth/users/save', $input)->assertConflict();
+    $fresh = adminAggregateReview($this, adminAggregateInput($this, $target->publicId, [$permission]));
+    $this->postJson('/api/admin/runa.auth/users/save', $fresh)->assertForbidden();
+});
+
+it('rolls back an Admin aggregate in either owning Audit failure direction including consumed action proof', function (string $action): void {
+    adminAggregateLogin($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-rollback@example.test', name: 'Before', active: true, approved: true));
+    $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+    $input = adminAggregateReview($this, adminAggregateInput($this, $target->publicId, [$permission]));
+    // The action comes from this fixed test dataset, never from request input.
+    DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT aggregate_audit_failure CHECK (action <> '".$action."') NOT VALID");
+    try {
+        $this->postJson('/api/admin/runa.auth/users/save', $input)->assertServiceUnavailable()->assertJsonMissingPath('data');
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT aggregate_audit_failure');
+    }
+    expect(User::where('public_id', $target->publicId)->value('name'))->toBe('Before')
+        ->and(User::where('public_id', $target->publicId)->value('version'))->toBe($target->version)
+        ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $target->publicId)->count())->toBe(0)
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull()
+        ->and(DB::table('runa_audit.events')->where('action', 'access.refused')->count())->toBe(1);
+    // The exact reviewed intent can be retried explicitly after rollback; no automatic replay occurred.
+    $this->postJson('/api/admin/runa.auth/users/save', $input)->assertOk();
+})->with(['profile.admin_changed', 'assignments.changed']);
+
+function adminAtomicApp(object $test, string $publicId): array
+{
+    if (DB::selectOne("SELECT 1 FROM pg_namespace WHERE nspname = 'admin_fixture'")) {
+        throw new RuntimeException('App aggregate fixture requires its own absent disposable schema.');
+    }
+    DB::statement('CREATE SCHEMA admin_fixture');
+    DB::statement('CREATE TABLE admin_fixture.notes (id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY, public_id uuid NOT NULL UNIQUE, note text NOT NULL, version integer NOT NULL)');
+    DB::table('admin_fixture.notes')->insert(['public_id' => $publicId, 'note' => 'Before', 'version' => 1]);
+    $namespace = 'AtomicFixture'.bin2hex(random_bytes(6));
+    $directory = base_path('app/Management/'.$namespace);
+    mkdir($directory, 0775, true);
+    $test->adminAtomicDirectory = $directory;
+    foreach (['AtomicMutation', 'AtomicEditor', 'AtomicProvider'] as $name) {
+        $file = $directory.'/'.$name.'.php';
+        file_put_contents($file, str_replace('FIXTURE_NAMESPACE', $namespace, file_get_contents(__DIR__.'/../../Fixtures/Management/'.$name.'.php.stub')));
+        require $file;
+    }
+    $prefix = 'App\\Management\\'.$namespace.'\\';
+    app()->bind($prefix.'AtomicEditor', $prefix.'AtomicEditor');
+    app()->afterResolving(AdminRegistry::class, fn ($registry) => $registry->register(new ($prefix.'AtomicProvider')));
+
+    return [$prefix.'AtomicProvider', $prefix.'AtomicEditor', $prefix.'AtomicMutation'];
+}
+
+function adminAtomicAppInput(array $input, string $publicId, string $note = 'After'): array
+{
+    $input['participants'][] = ['id' => 'app.notes.note', 'input' => ['command' => 'save', 'public_id' => $publicId, 'revision' => '1', 'values' => ['note' => $note]]];
+
+    return $input;
+}
+
+it('includes an App editable contribution and rolls back invalid final projection before commit', function (bool $badProjection): void {
+    adminAggregateLogin($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-app@example.test', name: 'Before', active: true, approved: true));
+    [, $editor] = adminAtomicApp($this, $target->publicId);
+    $input = adminAtomicAppInput(adminAggregateInput($this, $target->publicId), $target->publicId);
+    $input = adminAggregateReview($this, $input);
+    $editor::$badProjection = $badProjection;
+    $response = $this->postJson('/api/admin/runa.auth/users/save', $input);
+    if ($badProjection) {
+        $response->assertConflict()->assertJsonMissingPath('data');
+    } else {
+        $response->assertOk()->assertJsonPath('data.participants.0.id', 'app.notes.note')->assertJsonPath('data.participants.0.record.values.note', 'After');
+    }
+    expect(DB::table('admin_fixture.notes')->value('note'))->toBe($badProjection ? 'Before' : 'After')
+        ->and(User::where('public_id', $target->publicId)->value('name'))->toBe($badProjection ? 'Before' : 'After')
+        ->and(DB::table('runa_audit.events')->where('action', 'note.changed')->count())->toBe($badProjection ? 0 : 1)
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at') === null)->toBe($badProjection);
+})->with([false, true]);
+
+it('rejects missing duplicate incompatible and lost aggregate participants and namespaces owning validation errors', function (): void {
+    adminAggregateLogin($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-loss@example.test', name: 'Before', active: true, approved: true));
+    [$provider, , $mutation] = adminAtomicApp($this, $target->publicId);
+    $input = adminAtomicAppInput(adminAggregateInput($this, $target->publicId), $target->publicId);
+    $missing = $input;
+    array_pop($missing['participants']);
+    $this->postJson('/api/admin/runa.auth/users/preview', $missing)->assertConflict();
+    $invalid = $input;
+    $invalid['participants'][2]['input']['values']['note'] = 'Invalid';
+    $this->postJson('/api/admin/runa.auth/users/preview', $invalid)->assertUnprocessable()
+        ->assertJsonValidationErrors(['app.notes.note.note'])->assertJsonMissingPath('errors.hidden')->assertDontSee('private-marker');
+    $duplicate = $input;
+    $duplicate['participants'][] = $input['participants'][0];
+    $this->postJson('/api/admin/runa.auth/users/preview', $duplicate)->assertUnprocessable();
+    $reviewed = adminAggregateReview($this, $input);
+    $mutation::$duplicateProof = true;
+    $this->postJson('/api/admin/runa.auth/users/save', $reviewed)->assertConflict();
+    $mutation::$duplicateProof = false;
+    $provider::$present = false;
+    $this->postJson('/api/admin/runa.auth/users/save', $reviewed)->assertConflict();
+    $provider::$present = true;
+    $mutation::$probe = static function () use ($provider): void {
+        $provider::$present = false;
+    };
+    $this->postJson('/api/admin/runa.auth/users/save', $reviewed)->assertConflict();
+    $mutation::$probe = null;
+    expect(DB::table('admin_fixture.notes')->value('note'))->toBe('Before')
+        ->and(User::where('public_id', $target->publicId)->value('name'))->toBe('Before')
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
+});
+
+it('rejects aggregate ABA and expired owning proof without regenerating reviewed intent', function (): void {
+    adminAggregateLogin($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-aba@example.test', name: 'Before', active: true, approved: true));
+    $input = adminAggregateReview($this, adminAggregateInput($this, $target->publicId));
+    app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
+        $profiles = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.0.0');
+        $changed = $profiles->edit($target->publicId, $target->version, new ProfileChange(name: 'Intervening'));
+        $profiles->edit($target->publicId, $changed->version, new ProfileChange(name: 'Before'));
+    });
+    $this->postJson('/api/admin/runa.auth/users/save', $input)->assertConflict();
+    $current = adminAggregateReview($this, adminAggregateInput($this, $target->publicId));
+    DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->update(['expires_at' => now('UTC')->subSecond()]);
+    $this->postJson('/api/admin/runa.auth/users/save', $current)->assertForbidden();
+    expect(User::where('public_id', $target->publicId)->value('name'))->toBe('Before')
+        ->and(DB::table('runa_audit.events')->where('action', 'assignments.changed')->count())->toBe(0);
+});
+
+it('rolls back own grant removal when current result authority is lost', function (): void {
+    adminAggregateLogin($this);
+    $input = adminAggregateReview($this, adminAggregateInput($this, $this->adminUser->public_id));
+    $this->postJson('/api/admin/runa.auth/users/save', $input)->assertForbidden()->assertJsonMissingPath('data');
+    expect(User::where('public_id', $this->adminUser->public_id)->value('name'))->toBe('Admin entry')
+        ->and(DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)->count())->toBe(6)
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
+});
+
+it('holds aggregate registry and complete sorted subject locks against an independent PostgreSQL competitor', function (): void {
+    adminAggregateLogin($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-lock@example.test', name: 'Before', active: true, approved: true));
+    $other = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-subject@example.test', name: 'Other', active: true, approved: true));
+    [, , $mutation] = adminAtomicApp($this, $other->publicId);
+    $input = adminAtomicAppInput(adminAggregateInput($this, $target->publicId), $other->publicId);
+    $input = adminAggregateReview($this, $input);
+    $competition = new AggregateCompetition;
+    $observed = [];
+    DB::connection()->enableQueryLog();
+    $mutation::$probe = function () use ($competition, $target, $other, &$observed): void {
+        $ids = [$this->adminUser->public_id, $target->publicId, $other->publicId];
+        sort($ids);
+        foreach (DB::getQueryLog() as $query) {
+            if (str_contains($query['query'], '"runa_auth"."users"') && str_contains($query['query'], 'for update') && in_array($query['bindings'][0] ?? null, $ids, true)) {
+                $observed[] = $query['bindings'][0];
+            }
+        }
+        $competition->blocked(fn ($connection) => $connection->table('shared.module_registry_state')->where('id', 1)->increment('generation'));
+        foreach ($ids as $id) {
+            $competition->blocked(fn ($connection) => $connection->table('runa_auth.users')->where('public_id', $id)->increment('version'));
+        }
+        expect(array_slice($observed, -3))->toBe($ids);
+    };
+    try {
+        $this->postJson('/api/admin/runa.auth/users/save', $input)->assertOk();
+        expect($observed)->not->toBeEmpty();
+    } finally {
+        $mutation::$probe = null;
+        DB::connection()->disableQueryLog();
+        $competition->close();
+    }
+});
+
+it('fails closed when an Admin aggregate rollback refusal Audit is unavailable', function (): void {
+    adminAggregateLogin($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-refusal@example.test', name: 'Before', active: true, approved: true));
+    $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+    $input = adminAggregateReview($this, adminAggregateInput($this, $target->publicId, [$permission]));
+    DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT aggregate_refusal_failure CHECK (action NOT IN ('assignments.changed', 'access.refused')) NOT VALID");
+    try {
+        $this->postJson('/api/admin/runa.auth/users/save', $input)->assertServiceUnavailable()->assertJsonPath('reason', 'transaction_refusal_unavailable');
+        expect(User::where('public_id', $target->publicId)->value('name'))->toBe('Before')
+            ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $target->publicId)->count())->toBe(0)
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT aggregate_refusal_failure');
     }
 });

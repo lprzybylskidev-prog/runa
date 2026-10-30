@@ -5,9 +5,9 @@
 Status: point 3 implements declarations/discovery, capability interfaces,
 field-bound options, typed widget results and source-bound component/build
 projection. Point 4 adds compiled resolution, the shared session shell, entry
-advertisement and page-read/document HTTP. The complete wire contract is not yet
-delivered: point 5 now adds section-read HTTP and the frontend resource read lane;
-independent write/preview HTTP and generated forms are delivered; native atomic coordination and owning Core adapters retain their later points. See
+advertisement and page-read/document HTTP. Point 5 adds section-read HTTP, the frontend resource read lane, independent
+write/preview HTTP and generated forms. Point 6 delivers native atomic coordination
+and initial profile/access adapters; complete Core coverage retains its owning points. See
 [ownership and delivery](README.md). Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
 belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.
@@ -333,8 +333,9 @@ Error = {message:string,reason:string,
 
 Generation is nonnegative; owner revision values are opaque strings (1–256 bytes).
 Aggregate revisions are server fingerprints of ordered participant identities,
-source hashes/generation, subject UUIDs, owning revisions and related reads. No
-submitted fingerprint grants authority. At most 16 participants; total aggregate
+semantic source/build/policy state, actor/subject UUIDs, owning revisions and related reads.
+Unchanged successful health observation publication does not change semantic revisions. No
+submitted fingerprint grants authority. At most 15 business participants (plus the native Admin guard); total aggregate
 input max 256 KiB; reject duplicate participants and unknown/missing required ones.
 Admin responses are bounded to 1 MiB, or a lower owning API limit. Exceeding the
 bound returns a safe limit error; never silently drop required fields/participants.
@@ -461,8 +462,8 @@ identities use only the explicit public shape above. Contributions
 retain owner authority and use section identity `<owner>.<contribution>.<section>`;
 they appear only under an authorized existing host. Host sections sort by order/key,
 then contributions by contribution order/owned identity. The dashboard host accepts
-widgets only. A missing required participant cannot be saved: aggregate native
-execution remains refused until the point-6 coordinator is delivered. Independent
+widgets only. A missing or lost editable participant conflicts before any apply; the delivered
+coordinator revalidates the complete writable atomic Save set under root locks. Independent
 commands retain their owning writer and current admission.
 
 Read projection removes denied and undeclared fields, choices and controls. It
@@ -512,5 +513,5 @@ already have committed when response admission fails; never replay it. Preview
 changes include only readable nonsecret field keys; owners return safe field-bound
 differences. Validation errors retain only command inputs with fixed messages.
 HTTP error scope entry versus operation distinguishes entrance proof from native
-operation proof. Aggregate routes have bounded validation/transport but native
-preview/Save remain refused until point 6.
+operation proof. Aggregate routes execute source-bound native participants;
+[composition](composition.md) owns compatibility, revisions and transaction phases.

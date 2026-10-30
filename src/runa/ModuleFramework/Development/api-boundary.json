@@ -178,7 +178,8 @@
     "Runa\\Contracts\\Modules\\ManagementWidgetReader",
     "Runa\\Contracts\\Modules\\ManagementWriter",
     "Runa\\Contracts\\Modules\\ManagementOptionsRead",
-    "Runa\\Contracts\\Modules\\ManagementWidgetResult"
+    "Runa\\Contracts\\Modules\\ManagementWidgetResult",
+    "Runa\\Contracts\\Modules\\ManagementParticipant"
   ],
   "reserved": {
     "Runa\\Contracts\\Modules\\AuthRequestThrottle": [
@@ -380,7 +381,9 @@
     "Runa\\ModuleFramework\\Api\\OperationGuard": [
       "src/runa/modules/audit/backend/Support/AutomaticCapture.php",
       "src/runa/modules/permissions/backend/Queries/SelectUsers.php",
-      "src/runa/modules/permissions/backend/Support/AccessTransaction.php"
+      "src/runa/modules/permissions/backend/Support/AccessTransaction.php",
+      "src/runa/modules/auth/backend/Management/ProfileEditor.php",
+      "src/runa/modules/admin/backend/Actions/Aggregate.php"
     ],
     "Runa\\ModuleFramework\\Api\\OperationScope": [
       "src/runa/modules/audit/backend/Support/ExecutionContext.php"
@@ -394,7 +397,10 @@
       "src/runa/modules/auth/backend/Actions/Policies.php",
       "src/runa/modules/auth/backend/Actions/StepUp.php",
       "src/runa/modules/permissions/backend/Actions/ManageAuthority.php",
-      "src/runa/modules/permissions/backend/Queries/ResolvePermissions.php"
+      "src/runa/modules/permissions/backend/Queries/ResolvePermissions.php",
+      "src/runa/modules/admin/backend/Actions/Aggregate.php",
+      "src/runa/modules/auth/backend/Management/ProfileEditor.php",
+      "src/runa/modules/permissions/backend/Management/AssignmentEditor.php"
     ],
     "Runa\\ModuleFramework\\Data\\AuthorityLock": [
       "src/runa/modules/auth/backend/Actions/ChangeIdentity.php",
@@ -429,7 +435,9 @@
       "src/runa/modules/auth/backend/Actions/Policies.php"
     ],
     "Runa\\Integration\\Core\\AdminEntry": [
-      "src/runa/modules/admin/backend/Queries/Access.php"
+      "src/runa/modules/admin/backend/Queries/Access.php",
+      "src/runa/modules/admin/backend/Actions/Command.php",
+      "src/runa/modules/admin/backend/Actions/Aggregate.php"
     ],
     "Runa\\Identity\\ApplicationIdentity": [
       "src/runa/modules/admin/backend/Queries/Access.php"

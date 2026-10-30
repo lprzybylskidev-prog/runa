@@ -158,3 +158,12 @@ aggregate callers use source-owned participants. This intentionally replaces
 nested whole-write composition, preserving current grants, reviewed differences,
 stronger action proof and atomic owning Audit. Source/global settings and external
 operations retain their separate owning workflows.
+
+## Admin native assignment composition
+
+The private source-declared AssignmentContribution/AssignmentEditor joins the
+Auth profile record with ordinary reviewed roles/permissions replacement and
+bounded guarded field lookups. Native both-factor proof, monotonic revisions,
+protected-role exclusion and same-transaction Audit remain authoritative.
+See [Admin composition](../admin/composition.md) for supported inputs, exact review
+and the root protocol. Protected authority and bulk workflows stay independent.

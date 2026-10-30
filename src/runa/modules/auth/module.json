@@ -48,7 +48,10 @@
     "events": [],
     "frontend": [],
     "slots": [],
-    "management": ["Runa\\Modules\\Auth\\Definitions\\AuthPermissions"],
+    "management": [
+      "Runa\\Modules\\Auth\\Management\\ProfilePage",
+      "Runa\\Modules\\Auth\\Definitions\\AuthPermissions"
+    ],
     "upgrades": ["Runa\\Modules\\Auth\\Definitions\\IdentityUpgrades"]
   },
   "docs": ["docs/runa/handbook/modules/auth/README.md"],

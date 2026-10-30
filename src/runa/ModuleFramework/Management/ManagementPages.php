@@ -10,6 +10,7 @@ use Runa\Contracts\Modules\ManagementHandler;
 use Runa\Contracts\Modules\ManagementOptionsReader;
 use Runa\Contracts\Modules\ManagementPage;
 use Runa\Contracts\Modules\ManagementPageProvider;
+use Runa\Contracts\Modules\ManagementParticipant;
 use Runa\Contracts\Modules\ManagementProvider;
 use Runa\Contracts\Modules\ManagementResourceReader;
 use Runa\Contracts\Modules\ManagementSection;
@@ -43,6 +44,8 @@ final readonly class ManagementPages
             if (! $record->registered || ! $record->sourcePresent || ! ($statuses[$record->id]->available ?? false)) {
                 continue;
             }
+            // Semantic source/policy state, excluding successful observation publication.
+            $hashes[$record->id] = [$record->publicId, $record->manifestHash, $record->installedVersion, $record->healthRevision, $record->healthOverrides];
             try {
                 $providers = [];
                 foreach ($this->declarations->classes($record, 'management') as $class) {
@@ -55,7 +58,6 @@ final readonly class ManagementPages
                     $manifest = $this->declarations->manifest($record);
                     $names = (object) $manifest->definition['name'];
                     $owners[$record->id] = $this->collect($record->id, $providers, $names->en, $record);
-                    $hashes[$record->id] = $record->manifestHash;
                 }
             } catch (Throwable) {
                 // Discard the entire conflicting owner; another owner cannot be shadowed.
@@ -80,7 +82,7 @@ final readonly class ManagementPages
         ksort($hashes);
 
         return ['generation' => $snapshot->generation,
-            'revision' => hash('sha256', serialize([$snapshot->generation, $hashes, $owners])),
+            'revision' => hash('sha256', serialize([$hashes, $owners])),
             'owners' => $owners, 'diagnostics' => $diagnostics];
     }
 
@@ -101,6 +103,18 @@ final readonly class ManagementPages
             : $this->declarations->make($record, $binding->handler, ManagementHandler::class);
 
         return $instance instanceof ManagementHandler ? $instance : throw new InvalidArgumentException('Invalid management handler.');
+    }
+
+    public function participant(string $owner, ManagementBinding $binding): ManagementParticipant
+    {
+        if ($binding->participant === null || ! $this->bindingAvailable($binding)) {
+            throw new OperationRejected('admin_participant_unavailable', 'runa.admin', 'save', 409);
+        }
+        $record = $owner === 'app' ? null : ($this->registry->snapshot()->modules[$owner] ?? throw new InvalidArgumentException('Unknown management owner.'));
+        $instance = $record === null ? $this->application->make($binding->participant)
+            : $this->declarations->make($record, $binding->participant, ManagementParticipant::class);
+
+        return $instance instanceof ManagementParticipant ? $instance : throw new InvalidArgumentException('Invalid management participant.');
     }
 
     /** @param list<ManagementPageProvider> $providers
@@ -194,10 +208,12 @@ final readonly class ManagementPages
         if (! $class->isInstantiable() || ! $class->implementsInterface(ManagementHandler::class) || ($record !== null && $binding->targets === []) || ($record === null && ! $this->application->bound($binding->handler))) {
             throw new InvalidArgumentException('Invalid management handler binding.');
         }
-        // Participant implementation and compatibility are validated by the atomic coordinator.
-        // Discovery still enforces source ownership without constructing one.
         if ($binding->participant !== null) {
-            $record === null ? $this->application->inspect($binding->participant) : $this->declarations->inspect($record, $binding->participant);
+            $participant = $record === null ? $this->application->inspect($binding->participant) : $this->declarations->inspect($record, $binding->participant);
+            if (! $participant->isInstantiable() || ! $participant->implementsInterface(ManagementParticipant::class)
+                || ($record === null && ! $this->application->bound($binding->participant))) {
+                throw new InvalidArgumentException('Invalid management participant binding.');
+            }
         }
         foreach ($binding->targets as $target) {
             $this->dependency($owner, $record, $target->module);

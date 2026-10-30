@@ -5,14 +5,14 @@ namespace Runa\Modules\Admin\Queries;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\Identity\ApplicationIdentity;
 use Runa\Integration\Core\AdminEntry;
+use Runa\Modules\Admin\Actions\Aggregate;
 use Runa\Modules\Admin\Actions\Command;
 use Runa\Modules\Admin\Contracts\AdminAccess;
 use Runa\Modules\Admin\Contracts\AdminRegistry;
-use Runa\Support\Modules\Api\OperationRejected;
 
 final readonly class Access implements AdminAccess
 {
-    public function __construct(private AdminEntry $entry, private ApplicationIdentity $identity, private Projection $projection, private Command $commands, AdminRegistry $registry)
+    public function __construct(private AdminEntry $entry, private ApplicationIdentity $identity, private Projection $projection, private Command $commands, private Aggregate $aggregate, AdminRegistry $registry)
     {
         // Resolving the bootstrap registry runs App-owned afterResolving registrations
         // before discovery freezes them. Cold command boot never loads Admin classes.
@@ -42,12 +42,12 @@ final readonly class Access implements AdminAccess
 
     public function preview(string $owner, string $page, array $input): array
     {
-        return $this->unavailable();
+        return $this->aggregate->run($owner, $page, $input, true);
     }
 
     public function save(string $owner, string $page, array $input): array
     {
-        return $this->unavailable();
+        return $this->aggregate->run($owner, $page, $input);
     }
 
     public function command(string $owner, string $page, string $section, array $input): array
@@ -58,13 +58,5 @@ final readonly class Access implements AdminAccess
     public function previewCommand(string $owner, string $page, string $section, array $input): array
     {
         return $this->commands->run($owner, $page, $section, $input, true);
-    }
-
-    /** Native aggregate coordination arrives in point 6. Never fake success.
-     * @return array<string, mixed>
-     */
-    private function unavailable(): array
-    {
-        return $this->entry->read(static fn () => throw new OperationRejected('admin_page_unavailable', 'runa.admin', 'page', 404));
     }
 }
