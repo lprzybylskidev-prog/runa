@@ -50,7 +50,30 @@ A special release roadmap targets a user-selected version.
 
 ## Module versions
 
-Module releases follow the independent [module version policy](../../handbook/development/modules.md#independent-module-versions). New modules reach `1.0.0` at verified closure of their creation roadmap; subsequent compatible features/corrections use MINOR/PATCH and incompatible MAJOR changes require explicit owner approval before implementation. This does not promote the platform version. Finalization includes module manifests/changelogs, dependent constraints and install/update paths.
+Module releases follow the independent [module version policy](../../handbook/development/modules.md#independent-module-versions). New modules reach `1.0.0` at verified closure of their creation roadmap; subsequent compatible features/corrections use MINOR/PATCH and incompatible changes follow the pre-1.0 owner decision below; from platform 1.0.0, module MAJOR changes require explicit owner approval before implementation. This does not promote the platform version. Finalization includes module manifests/changelogs, dependent constraints and install/update paths.
+
+## Pre-1.0 compatibility
+
+Owner decision, 2026-10-30: while Runa platform VERSION is below 1.0.0, maintaining
+old platform/Core contracts is not a design requirement. The owner authorizes
+necessary incompatible changes to existing Runa modules without another
+compatibility or module-MAJOR permission request. Prefer direct changes in the
+owning module, update all current source/generated consumers, tests and canonical
+guidance in the owning roadmap point, and remove superseded implementation. Do
+not add adapters, duplicate models, frozen-signature gates, special execution
+orders or exclusions solely to keep an old interface unchanged.
+
+This is standing change authorization, not authorization to weaken security,
+ignore business invariants, discard durable data, rewrite published tags/closed
+records or skip roadmap/final verification. New architectural/behavioral/security
+premises still follow roadmap discussion. Record intentional breaks and assess
+independent module/API versions and dependent constraints honestly; platform major
+promotion still requires the owner. Preserve supported deployed data/update paths
+when actually needed, rather than hypothetical compatibility with unpublished
+intermediate development states. A creation roadmap may keep a module's current
+0.x.y development version until its final independent creation release; it does
+not require one version/no-op upgrade per implementation point. Customer-owned
+application/module version policy and protected-platform boundaries are unchanged.
 
 ## One roadmap, one release
 

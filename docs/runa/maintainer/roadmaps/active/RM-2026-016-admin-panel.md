@@ -94,13 +94,27 @@ Existing standard table exports remain supported within owning read permissions.
   are agent-owned specification work in point 1, before runtime implementation in
   point 2; they are not another owner architecture approval or activation blocker.
 
+- 2026-10-30 — **Pre-1.0 change authorization:** the owner explicitly says backward
+  compatibility is not required while Runa is in development before platform
+  1.0.0. Change existing modules directly when that produces a simpler coherent
+  design; do not build compatibility workarounds. This supersedes earlier blanket
+  signature-preservation/separate module-MAJOR approval requirements, not ARCH-002
+  maintenance or ARCH-003 security decisions. See the canonical owner
+  [pre-1.0 policy](../../workflows/releases.md#pre-10-compatibility).
+- 2026-10-30 — **Restart architecture review:** the owner requests review from the
+  beginning under that policy. Runtime implementation is held at point 3 pending
+  the source-grounded [reassessment](../../architecture/RM-2026-016-admin-reassessment.md).
+  Points 1–2 retain their actual historical completion; their design consequences
+  and the uncommitted point-3 worktree are subject to that review.
+
 Record subsequent significant owner decisions individually with dates and update
 the review/roadmap.
-If decisions require incompatible existing module APIs, obtain explicit module
-MAJOR approval before that implementation; preserve compatible existing APIs by
-default. Admin develops at 0.x.y and receives independent 1.0.0 only at verified
-creation closure. Existing changed modules receive assessed independent versions
-and central changelog entries; platform versioning is separate.
+Before platform 1.0.0, necessary incompatible Runa/Core refactoring has standing
+owner authorization under the 2026-10-30 decision below. Preserve security and
+ownership invariants, update current consumers and assess independent versions;
+do not preserve historical signatures solely for compatibility. Significant new
+architecture or behavior premises still return to discussion. Admin receives its
+independent 1.0.0 only at verified creation closure; platform versioning is separate.
 
 ### Contract and behavior requirements
 
@@ -444,3 +458,84 @@ its exact identity; the initial/final scoped cleanup lists were [] and
 [runa_test_test_1]. The base runa_test database, development data, containers,
 volumes, caches, backups and reports were preserved. No Docker resources were
 created or removed. The roadmap remains active; point 3 is next.
+
+## Point 3 — Declaration discovery and authorized projection (in progress)
+
+Worktree implementation and focused evidence, 2026-10-30; not committed or complete.
+The owner-requested architecture reassessment holds further implementation.
+The draft implementation adds additive ManagementPageProvider and bounded
+page/section/field/command/binding/target/widget/contribution values, owning handler
+interfaces and read/write/result DTOs without changing legacy provider methods,
+constructors or ModuleManagement schema 1. Admin develops at 0.2.0 with an appended
+source-only declarations edge from 0.1.0; existing Core versions/API signatures and
+platform VERSION remain unchanged. Its creation release remains 1.0.0 at verified
+closure; platform target remains feature/0.7.0.
+
+### Implementation and source grounding
+
+Knowledge was current at entry: 199 documents / 9,597 chunks, no missing/orphan
+chunks. Bounded current-intent retrieval located the Admin declaration contract,
+Audit/Auth boundary and transaction foundations. Original Admin declarations,
+public API/module guides, legacy Management providers/renderers, ModuleDeclarations,
+ModuleApis, ModuleFrontend, OperationGuard/Authorizer, Registry/Availability and
+AdminEntry sources were opened. Backend/Laravel/security skills and Laravel Boost
+13.37.0 container documentation guided implementation. No dependency was added.
+
+Source-verified discovery checks registration/source/hash, enabled availability,
+owned handlers/components, declared target dependencies and exact API methods,
+schema/collection bounds and deterministic order. Invalid/conflicting owners are
+isolated with safe diagnostic codes. App providers use existing grants and explicit
+App handler bindings; they cannot replace a foreign owner. Public import fixtures
+now admit the new declarations/AdminRegistry and reject internal discovery,
+projection and validation classes.
+
+App registration uses a source-owned Laravel afterResolving bootstrap callback,
+resolved before the first protected discovery and frozen at that discovery. This
+keeps cold installation/recovery startup independent of unavailable module classes,
+preserving the lazy module-loading boundary established by point 2. It is a
+technical bootstrap choice within the approved registration contract, not a new
+request-time installation or authority mechanism.
+
+AdminAccess 1.0.0 now projects bootstrap/page/section reads under existing entry
+proof and native authority. Projection removes denied fields/values/choices and
+commands, rejects forbidden filters/sorts/lookups/unknown input/read-only writes,
+validates typed fields and explicit sensitive set-state, preserves unknown totals,
+and refuses mixed generations. Owning handlers retain record/option/selection/
+count/export Policies and guarded API use. Contributions retain owner namespaces
+and host permission checks; widgets fail with empty safe diagnostics. The shared
+write-input intersection executes no writes. Preview/save/command remain refused
+until their owning implementation points; required unavailable participation cannot
+silently produce a partial Save. Only bootstrap has HTTP transport so far.
+
+### Focused checks and remaining acceptance
+
+Three necessary supported focused backend runs resolved separate implementation
+uncertainties, all with --parallel --processes=1:
+
+- `--filter='projects an independent App page and removes forbidden fields values choices queries and options'`: 1 passed / 23 assertions, 0.72 seconds; verifies real discovery/projection of App source and denial before handler calls using an explicit authorization double.
+- `--filter='discovers only available module declarations without constructing business handlers'`: 1 passed / 18 assertions, 0.82 seconds; verifies available source discovery, exact target/dependency checks and zero business constructor/execution calls. An earlier attempt failed on a nonexistent fixture reset helper before assertions; corrected to the fixture's actual static reset fields and reran this same focused case.
+- `--filter='registers lazy App declarations before guarded discovery and freezes replacement'`: 1 passed / 12 assertions, 4.37 seconds; verifies actual native session/password-proof entry, lazy App callbacks, authorized bootstrap, freezing and repeated reads.
+
+All successful runs returned native exit 0 / cleanup 0. Additional authored cases
+cover read-only/unknown inputs, declaration conflicts/components/late registration,
+secret/exception redaction, DTO bounds, generation changes, retained upgrade history
+and consumer imports. Complete suites, static analysis, concurrency/browser/native
+installation/update acceptance remain exclusively point 12. These focused results
+are not a broad, rendered, release or all-group PASS.
+
+### Documentation, instruction products and resources
+
+Synchronized canonical Admin status/declaration/registration/projection guidance,
+module changelog/forward history, public boundary and framework references. Owner
+and separately authored customer backend skills now route App registration and
+record-authority consumption to that canonical guide. Root/customer AGENTS and
+other domain skills need no change: existing authority, protected source, Audit,
+proof and frontend replacement rules already apply; no new policy/UI is introduced.
+
+Each supported run inspected its exact disposable worker scope and removed only
+runa_test_test_1; initial cleanup lists were empty and final lists contained that
+worker. Base runa_test, development data, containers/volumes, Qdrant/model caches,
+backups and reports were preserved. Source fixtures remove only their owned temporary
+directories. No Docker resources or persistent migrations were created/removed.
+The roadmap remains active at point 3. Resume only after resolving the architecture
+reassessment; point 4 has not started.

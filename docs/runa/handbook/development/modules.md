@@ -73,7 +73,14 @@ The agent assesses and updates each changed module's `X.Y.Z` manifest version an
 
 Record the chosen impact and check required dependents and enabled optional integrations. Pre-1.0 does not make silent contract breaks acceptable; state compatibility decisions explicitly. The first stable module release follows the agreed creation-roadmap rule; later module MAJOR changes require a separate owner decision. Platform/application major-release approval remains independent.
 
-`module_versions.py` compares tracked and untracked module implementation against the specified existing Git ref (default `main`), requires a monotonically increased version and a `## X.Y.Z` or `## [X.Y.Z]` central changelog heading for changed implementation, and rejects downgrades. New modules require their initial entry. Test-only edits do not force a bump. Missing baseline/shallow history, malformed versions or unsafe changelog paths fail; provide an available deliberate baseline rather than silently skipping checks. It does not infer semantic breaks, select the bump, prove the entry's accuracy or authorize deletion of a retained module. Human/agent review owns those decisions and must review dependent constraints. Backend-impact local quality graphs include these scoped checks; no CI or universal pre-commit gate is introduced.
+`module_versions.py` compares tracked and untracked module implementation against the specified existing Git ref (default `main`), requires a monotonically increased version and a `## X.Y.Z` or `## [X.Y.Z]` central changelog heading for changed implementation, and rejects downgrades. New modules require their initial entry. Test-only edits do not force a bump. Missing baseline/shallow history, malformed versions or unsafe changelog paths fail; provide an available deliberate baseline rather than silently skipping checks. It does not infer semantic breaks, select the bump, prove the entry's accuracy or authorize deletion of a retained module. Human/agent review owns those decisions and must review dependent constraints.
+
+Runa platform/Core maintenance before platform 1.0.0 has standing owner
+authorization for intentional incompatible refactoring; it does not promise frozen
+Core API signatures merely because an independent Core module already uses 1.x.
+Current consumers, module/API version assessments and release notes must track the
+change. This owner policy does not authorize customer edits to protected Runa or
+change the approval policy for customer-owned application modules. Backend-impact local quality graphs include these scoped checks; no CI or universal pre-commit gate is introduced.
 
 ## Working reference and application integration
 

@@ -16,6 +16,25 @@ If code and documentation disagree, investigate staleness. Do not blindly make e
 
 Project-specific rules override upstream skills and generic best practices.
 
+## Pre-1.0 development
+
+Until Runa platform 1.0.0, backward compatibility is not a design requirement.
+The owner authorizes necessary incompatible changes to Runa, its public APIs and
+existing Core modules without repeated compatibility or module-MAJOR approval.
+Prefer a coherent design: change the owning implementation and update current
+consumers, generators, tests and documentation. Remove obsolete paths instead of
+adding adapters, duplicate APIs or execution workarounds solely to preserve old
+interfaces. An independent Core module's 1.x version does not override this
+platform-development decision.
+
+Assess and record module/API versions honestly. This authorization does not waive
+security/business invariants, data protection, roadmap discussion of significant
+new architectural/behavioral assumptions, or final verification. Published tags
+and closed historical records remain immutable. Promoting the platform to 1.0.0
+still requires an explicit owner decision. Customer instructions retain their
+application scope and never authorize protected-platform edits. Follow the
+canonical owner policy in docs/runa/maintainer/workflows/releases.md#pre-10-compatibility.
+
 ## Roadmap gate
 
 No platform/application implementation, runtime configuration change, migration, or production-impacting change may start without an active roadmap.
@@ -349,7 +368,7 @@ follow the same boundary. Update both instruction products when a reusable rule 
 
 ## Module development
 
-For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH; incompatible changes require an explicitly owner-approved MAJOR before implementation, regardless of how much code is rewritten. Platform versioning remains independent. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
+For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH. Incompatible changes follow the standing pre-1.0 authorization above; from platform 1.0.0 they require an explicitly owner-approved MAJOR before implementation. Platform versioning remains independent. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
 
 ## Language and naming
 

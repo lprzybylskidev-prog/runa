@@ -22,8 +22,13 @@ supported facades/controllers without copied security logic.
 
 For Admin declarations, adapters or cross-module forms, consult
 [Admin contract status and ownership](../../../docs/runa/handbook/modules/admin/README.md)
-and its composition contract. Specification-only APIs are not delivered entrypoints;
-preserve existing owner APIs until their additive implementation is complete.
+and its composition contract. Specification-only APIs are not delivered entrypoints.
+For owner work before platform 1.0.0, follow the standing change authorization in
+AGENTS: refactor owning APIs when that simplifies the design and update current
+consumers; do not preserve an old signature by adding a compatibility workaround.
+Optional page declarations and frozen App bootstrap registration follow the
+canonical declaration guide; registration grants no authority. Keep owning record
+Policies and guarded reads, and respect the documented write/rendering delivery status.
 
 ## References
 
