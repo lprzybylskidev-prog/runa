@@ -13,6 +13,7 @@ import type {
   AdminState,
 } from './contracts';
 import { adminPath, decodeBootstrap, object } from './decode';
+import { navigateWithGuards } from './runtime';
 
 export function adminFailure(error: unknown): {
   state: AdminState;
@@ -150,10 +151,10 @@ export function useAdmin(
       )
     )
       return false;
-    // The supplied application router owns history; dirty guards join here in point 5.
-    go(href);
-    path.value = href;
-    return true;
+    return navigateWithGuards(controller, () => {
+      go(href);
+      path.value = href;
+    });
   }
   async function confirmEntry() {
     if (busy.value || state.value !== 'proof_required' || !password.value)

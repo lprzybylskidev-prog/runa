@@ -11,6 +11,58 @@ import type {
   AdminReadQuery,
   AdminReadResult,
 } from './contracts';
+import type { AdminCommandReview, AdminCommandResult } from './contracts';
+
+export function decodeCommandReview(
+  value: unknown,
+  section?: AdminSectionData,
+): AdminCommandReview {
+  const v = object(object(value).data);
+  if (
+    !['none', 'password', 'second_factor', 'both'].includes(
+      String(v.requirement),
+    )
+  )
+    throw new TypeError('Invalid command review.');
+  const changes = values(v.changes);
+  if (
+    section &&
+    Object.keys(changes).some(
+      (key) =>
+        !section.fields.some((field) => field.key === key && !field.sensitive),
+    )
+  )
+    throw new TypeError('Unreadable review field.');
+  return {
+    fingerprint: text(v.fingerprint),
+    changes,
+    requirement: v.requirement as AdminCommandReview['requirement'],
+    every_action: boolean(v.every_action),
+  };
+}
+export function decodeCommandResult(
+  value: unknown,
+  section: AdminSectionData,
+): AdminCommandResult {
+  const v = object(object(value).data);
+  if (!['committed', 'pending', 'recovery_required'].includes(String(v.status)))
+    throw new TypeError('Invalid command outcome.');
+  const operationId = nullable(v.operation_id, (v) => text(v));
+  if (v.status !== 'committed' && (v.record !== null || !operationId))
+    throw new TypeError('Invalid pending command.');
+  return {
+    status: v.status as AdminCommandResult['status'],
+    operation_id: operationId,
+    record:
+      v.record === null
+        ? null
+        : (decodeRead(
+            { data: v.record },
+            { kind: 'record' },
+            section,
+          ) as AdminRecord),
+  };
+}
 export function object(value: unknown): Record<string, unknown> {
   if (value === null || typeof value !== 'object' || Array.isArray(value))
     throw new TypeError('Invalid Admin object.');
@@ -142,6 +194,7 @@ function command(value: unknown): AdminCommandData {
   const v = object(value);
   if (
     (v.mode !== 'independent' && v.mode !== 'atomic') ||
+    !['action', 'save', 'create', 'delete'].includes(String(v.intent)) ||
     !['none', 'password', 'second_factor', 'both'].includes(
       String(v.requirement),
     )
@@ -154,6 +207,11 @@ function command(value: unknown): AdminCommandData {
     destructive: boolean(v.destructive),
     requirement: v.requirement as AdminCommandData['requirement'],
     preview_required: boolean(v.preview_required),
+    inputs: unique(array(v.inputs, operation, 64), (v) => v),
+    bulk: boolean(v.bulk),
+    action: nullable(v.action, operation),
+    available: boolean(v.available),
+    intent: v.intent as AdminCommandData['intent'],
   };
 }
 function section(value: unknown): AdminSectionData {

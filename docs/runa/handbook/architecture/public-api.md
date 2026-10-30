@@ -291,14 +291,17 @@ Named document, advertisement, bootstrap, page-read and section-read routes are 
 Field-bound options, typed widget freshness and source/compiled component identity
 are implemented. The public `@/runa/admin` shell/controllers/provider/resolver and
 `@/runa/auth` ApplicationSessionShell share one session owner; exact runtime exports
-and the read-only `useAdminResource` controller are delivered. Public
+and `useAdminResource` read/independent command controller are delivered. Public
 `useAdminTable`/`AdminResourceTable` supply explicit cursor collection composition;
 source-declared `ManagementSection(view: 'table')` also enables default collection
 dispatch. Public `AdminField`/`validateAdminField` supply controlled field composition,
-and default record sections display read-only authorized values through the same
-resource lane. Generated editable record form contracts remain listed in the Admin frontend guide.
-Atomic participation, business adapters, write HTTP and settings remain
-planned.
+and generated record forms use public useAdminForm/AdminPage/AdminSection/AdminForm/
+AdminAction for shared drafts, reconciliation, native command proofs, dirty guards
+and exact independent writes. Selection/views/exports/bulk compose existing owning
+providers through AdminCollectionAdapters. Bounded command/aggregate HTTP is
+delivered; native atomic participation, Core business adapters and settings retain
+later points. Auth exposes useOperationProof/AuthOperationProof through its public
+facade, reusing native security/step-up without another session owner or write replay.
 The source-owned `Runa\Integration\Core\Admin*` bridges are private trusted
 integration, not customer imports. Namespace examples for unimplemented symbols
 do not expand the current import allowlist. Existing supported APIs

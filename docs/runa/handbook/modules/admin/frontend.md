@@ -2,24 +2,21 @@
 
 # Admin frontend contract
 
-Status: point 4 delivers the session shell, entry/menu, named document and page-read
-routes, compiled component resolution, nested presentation providers and
-`useAdmin`/`useAdminPage`. Delivered facade components are `AdminApplication`,
-`AdminLayout`, `AdminLoading`, `AdminEntryProof` and `AdminPresentationProvider`;
-`useAdminPresentation`, `resolveAdminComponent` and the read side of
-`useAdminResource`, `useAdminTable`, `AdminResourceTable`, `AdminField` and
-`validateAdminField` are also delivered. Source
-home is `src/runa/modules/admin/frontend`; public facade is `@/runa/admin`.
-Application replacements live in `src/app/resources/js`. All HTTP uses `@/runa/http`;
-all layout/forms/table/theme controls use existing `@/runa/ui` contracts.
+Status: points 4–5 deliver the English session shell, guarded reads and independent
+commands, compiled component resolution, presentation providers, generated record
+forms and cursor tables. Public facade `@/runa/admin` exports AdminApplication,
+AdminLayout, AdminPage, AdminSection, AdminForm, AdminField, AdminAction,
+AdminResourceTable, AdminLoading, AdminEntryProof, AdminPresentationProvider,
+useAdminPresentation, resolveAdminComponent, useAdmin/useAdminPage/useAdminForm,
+useAdminResource/useAdminTable and validateAdminField. Source home is
+`src/runa/modules/admin/frontend`. Application replacements live in
+`src/app/resources/js`; HTTP uses `@/runa/http`, UI primitives use `@/runa/ui`.
 
-Automatic collection-section dispatch is delivered through source-declared
-`ManagementSection(view: 'table')`; default record sections now render authorized
-record reads with read-only fields. Standalone controlled field editing is available
-for customer composition. Record forms/actions, form controllers and their
-default components remain specified for points 5–6; no business write is available from
-this shell. All wire/controller types below are exported, including types for
-those future runtime functions. Rendered acceptance remains point 12.
+Default record forms and collection editors execute only explicit independent
+owning commands. Atomic preview/Save presentation and bounded transport are
+implemented; real multi-owner native coordination remains point 6 and currently
+refuses rather than reporting success. Owning Core pages/adapters and global
+settings retain points 7–10. Final rendered/release acceptance remains point 12.
 
 ## Controllers and public types
 
@@ -94,14 +91,51 @@ interface AdminFormController {
   save(): Promise<AdminSaveResult | undefined>;
   reset(): void;
   resolve(path: AdminFieldPath, choice: 'local' | 'remote'): void;
+  sections: ComputedRef<readonly AdminSectionData[]>;
+  records: Ref<Record<string, AdminRecord>>;
+  blocked: ComputedRef<boolean>;
+  confirmation: Ref<{ title: string; description: string } | undefined>;
+  confirm(accepted: boolean): void;
+  beforeLeave(): Promise<boolean>;
+  selectSubject(publicId: string | null): Promise<boolean>;
+  fieldPath(section: string, field: string): AdminFieldPath;
+  lookup(section: string, field: string): AdminFieldLookup;
+  execute(
+    section: string,
+    command: string,
+  ): Promise<AdminCommandResult | undefined>;
+  reviewCommand(
+    section: string,
+    command: string,
+  ): Promise<AdminCommandReview | undefined>;
+  commandReviews: Ref<Record<string, AdminCommandReview>>;
+  editSection(section: string, publicId: string | null): Promise<boolean>;
+  closeSection(section: string): Promise<boolean>;
+  setAvailable(identity: string, available: boolean): void;
+  notice: Ref<string>;
+  proof(
+    section: string,
+    command: string,
+  ): import('@/runa/auth').OperationProofController;
+  activateSection(section: string): Promise<void>;
+  operations: Ref<
+    Record<
+      string,
+      { status: 'pending' | 'recovery_required'; operationId: string }
+    >
+  >;
 }
 interface AdminResourceController {
   state: ComputedRef<AdminState>;
   result: Ref<AdminReadResult | undefined>;
   busy: ComputedRef<boolean>;
   error: Ref<AdminError | undefined>;
-  read(query: AdminReadQuery): Promise<void>;
+  read(
+    query: AdminReadQuery,
+    options?: { signal?: AbortSignal },
+  ): Promise<void>;
   command(input: AdminWrite): Promise<AdminCommandResult | undefined>;
+  preview(input: AdminWrite): Promise<AdminCommandReview | undefined>;
 }
 interface AdminRecordQuery {
   kind: 'record' | 'page';
@@ -126,6 +160,7 @@ type AdminComponentRegistry = Readonly<
 function useAdmin(options?: {
   navigate?: ApplicationNavigate;
   session?: ApplicationSessionController;
+  collections?: Readonly<Record<string, AdminCollectionAdapters>>;
 }): AdminController;
 function useAdminPage(
   admin: AdminController,
@@ -133,7 +168,12 @@ function useAdminPage(
 ): AdminPageController;
 function useAdminForm(
   page: AdminPageController,
-  options?: { publicId?: Ref<string | null> },
+  options?: {
+    publicId?: Ref<string | null>;
+    confirmLeave?: () => boolean | Promise<boolean>;
+    components?: AdminComponentRegistry;
+    autoRead?: boolean;
+  },
 ): AdminFormController;
 function useAdminResource(
   page: AdminPageController,
@@ -192,15 +232,19 @@ refresh the last resource query. Returning to a visible document also refreshes
 that query, with no timer/polling. A custom headless page controller owns timely
 invalidation of its page/state; use the supplied controller to retain native
 session admission. Call resource composables in a Vue scope and dispose them with
-their page. This resource read lane does not own editable drafts or mutation
-revisions; form reconciliation remains in the rest of point 5.
+their page. This resource read lane does not own editable drafts; all its writes and reads join the shared page
+mutation/revision lane used by useAdminForm.
 
-`command(input)` is deliberately unavailable at this checkpoint: it returns
-undefined, sets `admin_operation_unavailable` and sends no request. It does not
-claim a business write or silently replay an operation. Generated record forms,
-preview/save and native write coordination retain their planned
-delivery status. Entry proof refusal from a resource read returns the owning Admin
-controller to native entry confirmation; stronger operation proof remains owner-owned.
+`command(input)` executes one projected independent command; `preview(input)`
+returns AdminCommandReview. Unknown/read-only/atomic/unavailable commands, forbidden
+input keys, missing review and missing destructive confirmation refuse locally.
+No write is retried. Safe errors preserve drafts; 409 triggers shared current reads.
+Entry-scope proof denial returns to native entry confirmation; operation-scope
+proof denial stays in the editor and uses the separate owning action proof.
+AdminCommandReview is `{fingerprint:string,changes:Record<string,AdminJson>,
+requirement:'none'|'password'|'second_factor'|'both',every_action:boolean}`.
+An optional `read(query,{signal})` cancels that lane and erases its retained query
+when the caller cancels, for field-bound selection lifetimes.
 
 ```ts
 import { useAdminResource } from '@/runa/admin';
@@ -213,14 +257,16 @@ await resource.read({ kind: 'options', field: 'manager', limit: 25 });
 
 ## Delivered cursor table composition
 
-Admin owns `useAdminTable(page: AdminPageController, section: string): AdminTableController`
+Admin owns `useAdminTable(page: AdminPageController, section: string,
+options?: {adapters?: MaybeRefOrGetter<AdminCollectionAdapters>,
+select?: (publicId:string|null)=>Promise<boolean>}): AdminTableController`
 and `AdminResourceTable` through `@/runa/admin`. Their implementation lives under
 Admin frontend and is bundled with the consuming presentation. Module and App
 page replacements can use this source-owned read presentation without private
 imports, an extra HTTP client or another session owner. The default page also
 composes this controller/component automatically for `view: 'table'` sections.
-Editable forms, bulk/export command bindings and mutation reconciliation remain
-planned in point 5.
+Public collection adapters, views, selection and record editing compose the same
+owner-controlled infrastructure described below.
 
 ```ts
 interface AdminTableController {
@@ -231,6 +277,15 @@ interface AdminTableController {
   provider: ComputedRef<TableProvider<AdminRecord>>;
   error: ComputedRef<AdminError | undefined>;
   refresh(): Promise<void>;
+  selection: Ref<
+    import('@/runa/ui').RowSelection<import('@/runa/ui').TableQuery>
+  >;
+  views: import('@/runa/ui').TableViewsController;
+  adapters: ComputedRef<AdminCollectionAdapters>;
+  selected: Ref<string | null | undefined>;
+  select(publicId: string | null): Promise<boolean>;
+  confirmation: Ref<string | undefined>;
+  confirm(accepted: boolean): void;
 }
 interface AdminResourceTableProps {
   controller: AdminTableController;
@@ -244,7 +299,9 @@ and decoded results. Do not reuse a controller between pages or accounts.
 `useAdminResource` retains native admission, visibility refresh, response fencing
 and disposal. Account/authority/page changes erase table filters and cursor state;
 same-context descriptor updates preserve allowed query controls and restart page 1.
-No filters or records are persisted to browser preferences at this checkpoint.
+Views use an ephemeral memory store by default; durable views require an explicit
+source-owned, account-aware preference scope/store with its owning declaration.
+Records and secrets are never preference values.
 
 The adapter uses the existing server Table/useTable provider contract. Only the
 owner's current bounded cursor page is rendered; it is never sorted, filtered or
@@ -296,6 +353,109 @@ const table = useAdminTable(props.controller, 'directory');
 </template>
 ```
 
+## Generated forms and command lifecycle
+
+Admin owns `useAdminForm` and the generated AdminPage/AdminForm/AdminSection/
+AdminAction presentation through `@/runa/admin`; implementation is in Admin
+frontend and delivery is bundled presentation. The signatures above are the
+complete public contract. One creating Vue scope owns the controller per page;
+later consumers receive the same controller, with no competing draft/read lane.
+The default page uses autoRead=false: mounted default/custom record sections join
+with activateSection(key). Headless consumers default to automatic reads. Required
+editable sections that have not joined, failed reads and unavailable declared
+field/section builds block aggregate Save. setAvailable(identity,available) joins
+custom boundaries to that contract; default boundaries report failures themselves.
+
+fieldPath(section,field) uses the projected section namespace and field key.
+Values/errors/conflicts use that exact path. records retains confirmed subjects/
+revisions; sections lists active editors. Descriptor/visibility changes and shared
+mutation completion refresh native reads without polling. Baseline/local/remote
+comparison merges clean/disjoint changes and preserves edited fields. Overlaps
+retain the old write revision until resolved locally through resolve(path,choice).
+reset deliberately discards to the latest readable baseline. Forbidden fields
+leave values/errors/snapshots/conflicts; newly read-only fields revert. Account,
+authority or page invalidation erases protected state and credentials, fences late
+responses and cancels confirmations. Changed sensitive snapshots clear secret
+replacements and require re-entry without putting secrets in conflict panels.
+
+execute(section,command) sends only that declaration's writable inputs. intent
+explicitly distinguishes action/save/create/delete; no method/key is guessed.
+editSection/closeSection guard only that editor and preserve sibling drafts;
+selectSubject guards the whole form. Null selects a new record, a public UUID an
+existing record. One page mutation/revision lane covers forms and independent
+sections; concurrent intents refuse rather than queue and rebase. Known static
+errors refuse locally. 422 maps safe owner-field errors; 409 refreshes reads while
+preserving drafts, without replay. Failed reads can explicitly Retry loading.
+
+reviewCommand explicitly obtains a preview; changes to input/source/revision
+invalidate it, and execute never silently regenerates it. Destructive commands
+use ConfirmDialog and recheck exact input after approval. Native operation proof
+uses public Auth useOperationProof/AuthOperationProof with explicit proofAction;
+see the [Auth proof contract](../auth/entry-ui.md#operation-proof-composition).
+Proof confirmation never executes a write. Owning guards enforce proof, exact
+review, record Policies and transactional Audit. commandReviews exposes previews;
+notice exposes safe success. operations retains pending/recovery_required plus
+native operationId, blocks blind resubmission and never marks a draft committed.
+
+preview/save supply atomic frontend composition: exact participants, reviewed
+fingerprints, shared revision and decoding every result before changing baselines.
+Native multi-owner server execution remains point 6 and currently refuses. The
+bounded guarded transport is implemented; independent commands never pretend to
+be aggregate Save. No real Core business page is claimed before its owning point.
+
+beforeLeave integrates a custom router, including its Back/Forward history guard.
+AdminController.navigate invokes registered guards before the supplied router.
+Default document links use guarded requestLeave; beforeunload uses useDirtyGuard.
+Cancel retains the view/draft and a busy mutation refuses navigation. Modified/
+new-tab links retain browser behavior. Arbitrary pushState/popstate belongs to
+the application's guarded router; do not bypass its beforeLeave adapter. Default
+AdminForm renders confirmation and resolves confirm/cancel/Escape; headless
+consumers may supply confirmLeave. FormNotifications owns success/failure feedback.
+
+## Collection selection, views and owning adapters
+
+The public source-owned composition type is:
+
+```ts
+interface AdminCollectionAdapters {
+  exports?: ExportProvider<TableQuery>;
+  bulk?: BulkProvider<TableQuery>;
+  print?: PrintAdapter<TableQuery>;
+  preferences?: { scope: PreferenceScope; store: PreferenceStore };
+}
+```
+
+All provider/store types come from `@/runa/ui`. Pass adapters to useAdminTable or
+AdminApplication.collections keyed by `<page-owner>.<page>.<projected-section>`.
+DefaultApplication forwards adminCollections. Missing providers mean no controls.
+These are explicit source objects, never executable wire metadata. Owners retain
+endpoint/grant/review/proof/idempotency/cancellation/selection/size protocols.
+Core providers arrive with their owning pages; App consumers can compose existing
+public providers now. No universal export endpoint or browser scan of all pages.
+
+selection reuses explicit/all-matching public selection. Unknown cursor counts
+never manufacture all-matching UI or arbitrary jumps. Explicit public UUIDs
+survive paging; context loss clears them. All-matching clears after query changes.
+views reuses TableViewsController/TablePreferences for order/visibility/widths and
+named views. Defaults are ephemeral memory, erased on context loss. Durable views
+require an explicit account-aware owning preference store/scope/declaration;
+records and secrets are never preference values. A dynamic store follows source
+adapter availability without inventing undeclared platform preference keys.
+
+Exports require a server provider and visible/readable/nonsecret columns; foreign,
+hidden or secret keys refuse before start. A cursor page is never a complete
+export. TableActions retains native format/scope/status/failure/cancellation.
+Bulk actions intersect provider actions with available independent commands with
+bulk=true. Confirm the selection, then recheck context/query/selection before one
+native start; changed membership/concurrent mutation refuse. Owners retain native
+review/strong proof/selection staleness/Audit. TableActions accepts an optional
+export provider for honest bulk-only composition. Operation status/retry/cancel
+handles are context-fenced; foreign-context download results are not projected.
+
+select(publicId|null) invokes the optional editor guard and updates selected;
+undefined means closed. Defaults compose create/open/close with the shared form
+without changing App routing. Public toolbar/filter/row/cell slots remain usable.
+
 ## Delivered field composition
 
 Admin owns public `AdminField` and
@@ -337,8 +497,8 @@ unavailable instead of accepting arbitrary free text. `selectedOptions` supplies
 labels for selected/off-page UUIDs. Select owns bounded cursor pages, cancellation,
 keyboard/focus and English feedback; the owning consumer supplies authorized
 transport/filter semantics. Passing this presentation input grants no authority.
-Automatic lookup adaptation and editable default record forms remain in the rest
-of point 5; no field component sends a write or supplies Save/preview orchestration.
+useAdminForm supplies field-bound option providers automatically. The field
+component itself sends no write; Save/preview orchestration belongs to the form.
 
 ```vue
 <script setup lang="ts">
@@ -388,6 +548,7 @@ interface AdminApplicationProps {
   navigate?: ApplicationNavigate;
   components?: AdminComponentRegistry;
   session?: ApplicationSessionController;
+  collections?: Readonly<Record<string, AdminCollectionAdapters>>;
 }
 interface AdminApplicationSlots {
   default?(scope: { controller: AdminController }): VNode[];
@@ -400,6 +561,7 @@ type AdminLayoutSlots = ApplicationLayoutSlots;
 interface AdminPageProps {
   controller: AdminPageController;
   form: AdminFormController;
+  components?: AdminComponentRegistry;
 }
 interface AdminPageSlots {
   default?(scope: AdminPageProps): VNode[];
@@ -409,6 +571,7 @@ interface AdminPageSlots {
 interface AdminSectionProps {
   section: AdminSectionData;
   controller: AdminFormController;
+  components?: AdminComponentRegistry;
 }
 interface AdminSectionSlots {
   default?(scope: AdminSectionProps): VNode[];
@@ -425,8 +588,12 @@ interface AdminFieldProps {
 interface AdminFieldLookup {
   provider: SelectionProvider;
   selectedOptions?: readonly SelectOption[];
+  searchable?: boolean;
 }
-type AdminFieldEmits = { 'update:modelValue': [value: AdminFieldValue] };
+type AdminFieldEmits = {
+  'update:modelValue': [value: AdminFieldValue];
+  availability: [available: boolean];
+};
 interface AdminFormProps {
   controller: AdminFormController;
 }
@@ -450,7 +617,7 @@ interface AdminActionProps {
 type AdminActionEmits = { invoke: [] };
 ```
 
-The complete target facade component set (runtime delivery is listed above): `AdminApplication`, `AdminPresentationProvider`,
+The delivered facade component set (runtime delivery is listed above): `AdminApplication`, `AdminPresentationProvider`,
 `AdminLayout`, `AdminPage`, `AdminSection`, `AdminField`, `AdminForm`,
 `AdminWidget`, `AdminAction`, `AdminLoading`. AdminLoading has no props/events,
 and a single optional default slot `(): VNode[]`. Provider/page/section/widget/
@@ -473,7 +640,7 @@ application explicitly configures one; no sample screen is added to the scaffold
 
 Page replacements receive `{controller: AdminPageController}`; section
 replacements receive the exported `AdminSectionPresentationProps`:
-`{section: AdminSectionData, page: AdminPageController}`.
+`{section: AdminSectionData, page: AdminPageController, controller: AdminFormController}`.
 The page prop lets section replacements compose `useAdminTable(page, section.key)`
 or `useAdminResource(page, section.key)` in their own scope. Default dispatch mounts
 no competing read controller for a replacement. A section-specific source component
@@ -489,11 +656,11 @@ intent mounts one existing resource lane, reads the projected subject UUID (or
 the owning singleton when null), and displays only returned, readable values.
 Loading, safe failure/explicit Retry, descriptor/visibility refresh and account
 invalidation retain `useAdminResource` behavior. Omitted values have no fabricated
-empty field; secret values show only Set/Not set. This default is read-only until
-form orchestration arrives. The form/controller prop in
-the complete target signatures arrives with point 5. Defaults render
+empty field; secret values show only Set/Not set. Editable values bind to the one
+page form controller and execute explicit declared commands. Form/controller props
+are delivered, including required-content availability blocking. Defaults render
 page/section headings, record values, collection tables, safe unavailable/empty states and dashboard widget values;
-they do not pretend to supply editable controls before their owning point.
+the owning backend remains the write authority.
 
 The public resolver signature is
 `resolveAdminComponent(identity: AdminComponent | null, components?: AdminComponentRegistry): {component: Component | undefined; available: boolean}`.
@@ -504,7 +671,7 @@ Module loaders are chosen only after owner/manifest/build/key agreement; App key
 also require a matching explicit static registry entry. Use this resolver in full
 replacements; it does not import a path from metadata. Default rendering isolates
 component setup/render/load failures to its boundary. Required form blocking is
-owned by point 5; source identity validation alone is not Save authorization.
+implemented by useAdminForm and field/section boundaries; source identity validation alone is not Save authorization.
 
 Defaults remain usable without configuration: ApplicationLayout, existing Form/
 FormSection/controls, Table/useTable, confirmation and feedback. Admin is English
@@ -591,7 +758,8 @@ do not issue a competing session read. Only the controller creator installs the
 session observer/activity listeners and disposes them. A supplied controller lives
 in the caller's Vue scope and survives shell replacement.
 
-`DefaultApplication` accepts `adminComponents?: AdminComponentRegistry`; it dispatches
+`DefaultApplication` accepts `adminComponents?: AdminComponentRegistry` and
+`adminCollections?: Readonly<Record<string,AdminCollectionAdapters>>`; it dispatches
 `/admin` and `/admin/{owner}/{page}` to AdminApplication without changing the App
 scaffold. App routers may mount AdminApplication themselves and supply navigate and
 one session. Module links select their authorized default_page, top navigation lists

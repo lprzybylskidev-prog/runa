@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, defineComponent, h } from 'vue';
+import { computed, defineComponent, h, provide } from 'vue';
 import type { VNode } from 'vue';
 import { ApplicationSessionShell, AuthPresentationProvider } from '@/runa/auth';
 import { Alert, Button } from '@/runa/ui';
@@ -13,7 +13,12 @@ import AdminLoading from './AdminLoading.vue';
 import AdminEntryProof from './AdminEntryProof.vue';
 import AdminPageContent from './AdminPageContent.vue';
 import AdminDashboard from './AdminDashboard.vue';
+import { adminCollectionsKey } from './collections';
 const props = defineProps<AdminApplicationProps>();
+provide(
+  adminCollectionsKey,
+  computed(() => props.collections ?? {}),
+);
 defineSlots<{
   default?(scope: { controller: AdminController }): VNode[];
   loading?(): VNode[];

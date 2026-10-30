@@ -140,3 +140,195 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
   }
   expect(errors).toEqual([]);
 });
+
+test('Admin generated forms: draft reconciliation, safe validation and guarded navigation across responsive themes', async ({
+  page,
+}, info) => {
+  await transport(page);
+  let name = 'Before',
+    revision = 'r1',
+    writes = 0,
+    stale = false;
+  await page.route('**/api/admin**', async (route) => {
+    const url = new URL(route.request().url()),
+      path = url.pathname;
+    let data: unknown;
+    if (path === '/api/admin/entry') data = { available: true };
+    else if (path === '/api/admin')
+      data = {
+        schema_version: 1,
+        generation: 1,
+        revision: 'bootstrap',
+        owners: [
+          {
+            id: 'app',
+            title: 'App administration',
+            default_page: 'users',
+            pages: [
+              {
+                key: 'users',
+                title: 'Users',
+                href: '/admin/app/users',
+                group: null,
+                order: 0,
+              },
+            ],
+          },
+        ],
+        dashboard: { widgets: [] },
+        presentation: { name: 'Runa', logo: null, revision: 0 },
+      };
+    else if (path === '/api/admin/app/users')
+      data = {
+        schema_version: 1,
+        owner: 'app',
+        key: 'users',
+        title: 'Users',
+        generation: 1,
+        revision: 'page',
+        component: null,
+        sections: [
+          {
+            key: 'profile',
+            title: 'Profile',
+            view: 'record',
+            readonly: false,
+            required: true,
+            component: null,
+            record: null,
+            diagnostic: null,
+            commands: [
+              {
+                key: 'rename',
+                title: 'Save profile',
+                mode: 'independent',
+                destructive: false,
+                requirement: 'none',
+                preview_required: false,
+                inputs: ['name'],
+                bulk: false,
+                action: null,
+                available: true,
+                intent: 'save',
+              },
+            ],
+            fields: [
+              {
+                key: 'name',
+                type: 'text',
+                label: 'Display name',
+                readonly: false,
+                sensitive: false,
+                filterable: false,
+                sortable: false,
+                lookup: false,
+                required: true,
+                max_length: 40,
+                choices: [],
+                multiple: false,
+                component: null,
+              },
+            ],
+          },
+        ],
+      };
+    else if (route.request().method() === 'POST') {
+      writes++;
+      if (stale) {
+        stale = false;
+        name = 'Remote edit';
+        revision = 'r2';
+        await route.fulfill({
+          status: 409,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            reason: 'stale_revision',
+            scope: 'operation',
+          }),
+        });
+        return;
+      }
+      const input = route.request().postDataJSON();
+      expect(input.values).toEqual({ name: 'Local edit' });
+      name = input.values.name;
+      revision = 'r3';
+      data = {
+        status: 'committed',
+        operation_id: null,
+        record: { public_id: id, revision, values: { name } },
+      };
+    } else data = { public_id: id, revision, values: { name } };
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ data }),
+    });
+  });
+  const failures: string[] = [];
+  page.on('pageerror', (error) => failures.push(error.message));
+  for (const [width, height, theme] of [
+    [1440, 1000, 'dark'],
+    [820, 1180, 'light'],
+    [390, 844, 'dark'],
+    [390, 844, 'light'],
+  ] as const) {
+    name = 'Before';
+    revision = 'r1';
+    writes = 0;
+    await page.setViewportSize({ width, height });
+    await page.addInitScript((theme) => {
+      localStorage.clear();
+      localStorage.setItem('runa.theme', theme);
+      localStorage.setItem('runa.locale', 'pl');
+    }, theme);
+    await page.goto('/admin/app/users');
+    const field = page.getByLabel('Display name', { exact: true });
+    await expect(field).toHaveValue('Before');
+    await field.fill('');
+    await page
+      .getByRole('button', { name: 'Save profile', exact: true })
+      .click();
+    await expect(field).toHaveAttribute('aria-invalid', 'true');
+    expect(writes).toBe(0);
+    await field.fill('Local edit');
+    stale = true;
+    await page
+      .getByRole('button', { name: 'Save profile', exact: true })
+      .click();
+    await expect(
+      page.getByText('These values changed while you were editing'),
+    ).toBeVisible();
+    await expect(field).toHaveValue('Local edit');
+    expect(writes).toBe(1);
+    await page
+      .getByRole('button', { name: 'Keep my edits', exact: true })
+      .click();
+    expect(writes).toBe(1);
+    await page
+      .getByRole('button', { name: 'Save profile', exact: true })
+      .click();
+    await expect(
+      page.getByText('Changes saved.', { exact: true }),
+    ).toBeVisible();
+    expect(writes).toBe(2);
+    await field.fill('Unsaved draft');
+    await page.screenshot({
+      path: info.outputPath(`admin-editor-${width}-${theme}.png`),
+      fullPage: true,
+    });
+    // Trigger browser-owned document unload protection through a known document navigation.
+    page.once('dialog', (dialog) => dialog.dismiss());
+    await page.evaluate(() => {
+      window.location.assign('/admin');
+    });
+    await expect(field).toHaveValue('Unsaved draft');
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page
+      .getByRole('button', { name: 'Discard changes', exact: true })
+      .click();
+  }
+  expect(failures).toEqual([]);
+});

@@ -24,6 +24,8 @@ final class Provider implements ManagementPageProvider
     public static bool $hiddenWidget = true;
     public static ?string $component = null;
     public static ?string $nestedComponent = null;
+    public static bool $destructive = false;
+    public static bool $previewRequired = false;
 
     public function permissions(): array { return []; }
     public function actions(): array { return []; }
@@ -37,7 +39,7 @@ final class Provider implements ManagementPageProvider
             new ManagementFieldAccess(new ManagementField('token', 'text', $names, $names, sensitive: true), 'runa.admin.enter'),
             new ManagementFieldAccess(new ManagementField('allowed_reference', 'uuid', $names, $names, referenceModule: 'runa.auth', referenceOperation: 'identity'), 'runa.admin.enter'),
             new ManagementFieldAccess(new ManagementField('reference', 'uuid', $names, $names, referenceModule: 'runa.auth', referenceOperation: 'identity'), 'runa.auth.identities.read'),
-        ], [new ManagementCommandDefinition('update', 'Update', new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'), ['name']), 'profile')], component: self::$nestedComponent, view: self::$view);
+        ], [new ManagementCommandDefinition('update', 'Update', new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'), ['name'], previewRequired: self::$previewRequired), 'profile', destructive: self::$destructive, intent: 'save')], component: self::$nestedComponent, view: self::$view);
     }
     public function pages(): array
     {

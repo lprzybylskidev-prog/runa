@@ -33,4 +33,9 @@ interface AdminAccess
      * @return array<string, mixed>
      */
     public function command(string $owner, string $page, string $section, array $input): array;
+
+    /** @param array<string, mixed> $input
+     * @return array<string, mixed>
+     */
+    public function previewCommand(string $owner, string $page, string $section, array $input): array;
 }

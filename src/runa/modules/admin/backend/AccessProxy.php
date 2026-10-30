@@ -62,4 +62,12 @@ final class AccessProxy extends GuardedApi implements AdminAccess
 
         return $result;
     }
+
+    public function previewCommand(string $owner, string $page, string $section, array $input): array
+    {
+        /** @var array<string, mixed> $result */
+        $result = $this->invoke(__FUNCTION__, [$owner, $page, $section, $input]);
+
+        return $result;
+    }
 }

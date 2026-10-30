@@ -5,13 +5,14 @@ namespace Runa\Modules\Admin\Queries;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\Identity\ApplicationIdentity;
 use Runa\Integration\Core\AdminEntry;
+use Runa\Modules\Admin\Actions\Command;
 use Runa\Modules\Admin\Contracts\AdminAccess;
 use Runa\Modules\Admin\Contracts\AdminRegistry;
 use Runa\Support\Modules\Api\OperationRejected;
 
 final readonly class Access implements AdminAccess
 {
-    public function __construct(private AdminEntry $entry, private ApplicationIdentity $identity, private Projection $projection, AdminRegistry $registry)
+    public function __construct(private AdminEntry $entry, private ApplicationIdentity $identity, private Projection $projection, private Command $commands, AdminRegistry $registry)
     {
         // Resolving the bootstrap registry runs App-owned afterResolving registrations
         // before discovery freezes them. Cold command boot never loads Admin classes.
@@ -51,10 +52,15 @@ final readonly class Access implements AdminAccess
 
     public function command(string $owner, string $page, string $section, array $input): array
     {
-        return $this->unavailable();
+        return $this->commands->run($owner, $page, $section, $input);
     }
 
-    /** Declarations and command binding arrive in subsequent points. Never fake success.
+    public function previewCommand(string $owner, string $page, string $section, array $input): array
+    {
+        return $this->commands->run($owner, $page, $section, $input, true);
+    }
+
+    /** Native aggregate coordination arrives in point 6. Never fake success.
      * @return array<string, mixed>
      */
     private function unavailable(): array

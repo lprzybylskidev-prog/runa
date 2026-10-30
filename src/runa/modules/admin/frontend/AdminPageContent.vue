@@ -11,7 +11,8 @@ import { resolveAdminComponent } from './components';
 import { useAdminPresentation } from './presentation';
 import AdminComponentBoundary from './AdminComponentBoundary.vue';
 import AdminLoading from './AdminLoading.vue';
-import AdminSectionContent from './AdminSectionContent.vue';
+import AdminPage from './AdminPage.vue';
+import { useAdminForm } from './useAdminForm';
 const props = defineProps<{
   admin: AdminController;
   location: AdminLocation;
@@ -19,6 +20,10 @@ const props = defineProps<{
 }>();
 const controller = useAdminPage(props.admin, toRef(props, 'location'));
 const { page, state } = controller;
+const form = useAdminForm(controller, {
+  components: props.components,
+  autoRead: false,
+});
 const presentation = useAdminPresentation();
 </script>
 <template>
@@ -44,23 +49,13 @@ const presentation = useAdminPresentation();
         presentation.page
       "
       :controller="controller"
+      :form="form"
     />
-    <div v-else class="space-y-6">
-      <h1 class="text-xl font-semibold">{{ page.title }}</h1>
-      <p v-if="!page.sections.length" class="text-sm text-muted">
-        No sections are available.
-      </p>
-      <AdminComponentBoundary
-        v-for="section in page.sections"
-        :key="section.key"
-        :identity="page.revision + ':' + section.key"
-      >
-        <AdminSectionContent
-          :page="controller"
-          :section="section"
-          :components="components"
-        />
-      </AdminComponentBoundary>
-    </div>
+    <AdminPage
+      v-else
+      :controller="controller"
+      :form="form"
+      :components="components"
+    />
   </AdminComponentBoundary>
 </template>

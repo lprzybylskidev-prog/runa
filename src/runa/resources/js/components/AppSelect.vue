@@ -16,6 +16,7 @@ const props = withDefaults(
     selectedOptions?: readonly SelectOption[];
     provider?: SelectionProvider | undefined;
     searchable?: boolean;
+    providerSearch?: boolean;
     clearable?: boolean;
     disabled?: boolean;
     readonly?: boolean;
@@ -35,6 +36,7 @@ const props = withDefaults(
     options: () => [],
     selectedOptions: () => [],
     searchable: false,
+    providerSearch: true,
     clearable: false,
     disabled: false,
     readonly: false,
@@ -341,7 +343,7 @@ onScopeDispose(cancel);
             @keydown="keyboard"
           >
             <input
-              v-if="searchable || provider"
+              v-if="searchable || (provider && providerSearch)"
               ref="search"
               v-model="query"
               :data-size="size"
@@ -361,7 +363,9 @@ onScopeDispose(cancel);
               :aria-label="label"
               :aria-multiselectable="multiple || undefined"
               :aria-busy="loading"
-              :tabindex="searchable || provider ? undefined : 0"
+              :tabindex="
+                searchable || (provider && providerSearch) ? undefined : 0
+              "
               :aria-activedescendant="
                 active >= 0 ? `${controlId}-option-${active}` : undefined
               "

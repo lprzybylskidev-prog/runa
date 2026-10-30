@@ -8,7 +8,7 @@ import type {
 import { resolveAdminComponent } from './components';
 import { useAdminPresentation } from './presentation';
 import AdminTableSection from './AdminTableSection.vue';
-import AdminRecordSection from './AdminRecordSection.vue';
+import AdminSection from './AdminSection.vue';
 const props = defineProps<
   AdminSectionPresentationProps & {
     components?: AdminComponentRegistry | undefined;
@@ -33,6 +33,7 @@ const replacement = computed(
     :is="replacement"
     :section="section"
     :page="page"
+    :controller="controller"
   />
   <Card v-else>
     <template #header
@@ -43,12 +44,14 @@ const replacement = computed(
       :key="section.key"
       :page="page"
       :section="section.key"
+      :form="controller"
+      :components="components"
     />
-    <AdminRecordSection
+    <AdminSection
       v-else
       :key="section.key"
-      :page="page"
-      :section="section.key"
+      :controller="controller"
+      :section="section"
       :components="components"
     />
   </Card>

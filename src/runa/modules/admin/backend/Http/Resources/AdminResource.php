@@ -15,6 +15,25 @@ final class AdminResource extends JsonResource
             throw new \LogicException('Admin projection exceeds its transport boundary.');
         }
 
-        return $this->resource;
+        return $this->wireMaps($this->resource);
+    }
+
+    /** JSON maps remain objects even when empty; PHP guarded consumers retain native arrays.
+     * @template TKey of array-key
+     *
+     * @param  array<TKey,mixed>  $value
+     * @return array<TKey,mixed>
+     */
+    private function wireMaps(array $value): array
+    {
+        foreach ($value as $key => $item) {
+            if (is_array($item)) {
+                // Business JSON inside a map is opaque; do not reinterpret its field names.
+                $value[$key] = in_array($key, ['values', 'changes', 'errors'], true)
+                    ? ($item === [] ? (object) [] : $item) : $this->wireMaps($item);
+            }
+        }
+
+        return $value;
     }
 }

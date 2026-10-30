@@ -5,9 +5,11 @@ import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import type { Component, PropType } from 'vue';
 import {
   AdminApplication,
+  AdminForm,
   AdminPresentationProvider,
   resolveAdminComponent,
   useAdmin,
+  useAdminForm,
   useAdminPage,
   useAdminResource,
   useAdminTable,
@@ -945,6 +947,16 @@ it('Admin automatic records display only readable values and secret state with o
     });
   });
   const wrapper = mount(AdminApplication, { props: { session } });
+  await vi.waitFor(() =>
+    expect(wrapper.findComponent(AdminForm).exists()).toBe(true),
+  );
+  await vi.waitFor(() =>
+    expect(
+      wrapper.getComponent(AdminForm).props('controller').values.value[
+        'profile.name'
+      ],
+    ).toBe('Readable record'),
+  );
   await vi.waitFor(() => expect(wrapper.text()).toContain('Readable record'));
   expect(queries).toHaveLength(1);
   expect(queries[0]!.get('kind')).toBe('record');
@@ -956,6 +968,53 @@ it('Admin automatic records display only readable values and secret state with o
   await flushPromises();
   expect(wrapper.text()).not.toContain('Readable record');
   expect(queries).toHaveLength(1);
+});
+
+it('Admin dirty navigation retains the current page until explicit approval through the public controller', async () => {
+  const session = sessionFixture(),
+    go = vi.fn();
+  let admin!: AdminController, form!: ReturnType<typeof useAdminForm>;
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const path = new URL(String(input), location.origin).pathname;
+    if (path === '/api/admin') return respond({ data: bootstrap() });
+    if (path === '/api/admin/app/settings') {
+      const data = resourcePage();
+      data.sections[0]!.readonly = false;
+      data.sections[0]!.fields[0]!.readonly = false;
+      return respond({ data });
+    }
+    return respond({
+      data: {
+        public_id: identity,
+        revision: 'r1',
+        values: { name: 'Before', token: { set: true } },
+      },
+    });
+  });
+  mount(
+    defineComponent({
+      setup() {
+        admin = useAdmin({ session, navigate: go });
+        form = useAdminForm(
+          useAdminPage(admin, ref({ owner: 'app', page: 'settings' })),
+        );
+        return () => h(AdminForm, { controller: form });
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(form.records.value.profile).toBeDefined());
+  form.set('profile.name', 'Draft');
+  const cancelled = admin.navigate({ owner: 'app', page: 'settings' });
+  await vi.waitFor(() => expect(form.confirmation.value).toBeDefined());
+  form.confirm(false);
+  expect(await cancelled).toBe(false);
+  expect(go).not.toHaveBeenCalled();
+  expect(form.values.value['profile.name']).toBe('Draft');
+  const accepted = admin.navigate({ owner: 'app', page: 'settings' });
+  await vi.waitFor(() => expect(form.confirmation.value).toBeDefined());
+  form.confirm(true);
+  expect(await accepted).toBe(true);
+  expect(go).toHaveBeenCalledTimes(1);
 });
 
 it('Admin automatic records refuse raw secrets and recover only through an explicit read retry', async () => {
@@ -990,7 +1049,7 @@ it('Admin automatic records refuse raw secrets and recover only through an expli
   expect(reads).toBe(1);
   await wrapper
     .findAll('button')
-    .find((button) => button.text() === 'Retry')!
+    .find((button) => button.text() === 'Retry loading')!
     .trigger('click');
   await vi.waitFor(() => expect(wrapper.text()).toContain('Safe record'));
   expect(wrapper.text()).toContain('Not set');

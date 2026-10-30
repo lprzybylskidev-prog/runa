@@ -38,5 +38,9 @@ final readonly class ManagementSection
                 throw new \InvalidArgumentException('Command inputs require writable declared fields.');
             }
         }
+        if (count(array_filter($commands, fn ($command): bool => $command->intent === 'save')) > 1
+            || count(array_filter($commands, fn ($command): bool => $command->intent === 'create')) > 1) {
+            throw new \InvalidArgumentException('Ambiguous management form commands.');
+        }
     }
 }

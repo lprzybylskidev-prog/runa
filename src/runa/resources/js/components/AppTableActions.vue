@@ -19,7 +19,7 @@ import type {
 } from '../runa/ui/exports';
 const props = withDefaults(
   defineProps<{
-    provider: ExportProvider<Query>;
+    provider?: ExportProvider<Query> | undefined;
     printAdapter?: PrintAdapter<Query> | undefined;
     bulkProvider?: BulkProvider<Query> | undefined;
     query: Query;
@@ -31,6 +31,7 @@ const props = withDefaults(
   }>(),
   {
     feedbackTarget: undefined,
+    provider: undefined,
     filename: 'export',
     english: false,
     printAdapter: undefined,
@@ -56,7 +57,7 @@ watch(
   },
 );
 watch(
-  () => props.provider.capabilities.scopes,
+  () => props.provider?.capabilities.scopes ?? [],
   (values) => {
     if (!values.includes(scope.value as 'all' | 'filtered' | 'selected'))
       scope.value = values[0] ?? 'filtered';
@@ -65,7 +66,7 @@ watch(
 );
 const selected = computed(() => selectionCount(props.selection));
 const scopes = computed(() =>
-  props.provider.capabilities.scopes.map((value) => ({
+  (props.provider?.capabilities.scopes ?? []).map((value) => ({
     value,
     label:
       value === 'all'
@@ -98,6 +99,8 @@ function key() {
   ).join('');
 }
 async function exportFile(format: ExportFormat) {
+  if (!props.provider) return;
+  const provider = props.provider;
   const request = {
     format,
     scope: snapshot(),
@@ -110,9 +113,9 @@ async function exportFile(format: ExportFormat) {
     operationKey: key(),
   };
   await operation.run(
-    (signal) => props.provider.start(request, signal),
+    (signal) => provider.start(request, signal),
     true,
-    props.provider.capabilities.execution === 'client',
+    provider.capabilities.execution === 'client',
   );
 }
 async function print() {
@@ -140,17 +143,30 @@ async function bulk(action: string) {
 <template>
   <div class="min-w-0 space-y-3">
     <div class="space-y-2">
-      <p class="text-xs font-semibold text-muted">
-        {{ scopes.find((option) => option.value === scope)?.label
+      <p v-if="provider || selected" class="text-xs font-semibold text-muted">
+        {{
+          provider
+            ? scopes.find((option) => option.value === scope)?.label
+            : english
+              ? 'Selected rows'
+              : 'Zaznaczone wiersze'
         }}<template v-if="scope === 'selected'">: {{ selected }}</template>
       </p>
       <div
         class="flex flex-wrap items-center gap-1"
         role="group"
-        :aria-label="english ? 'Export and print' : 'Eksport i druk'"
+        :aria-label="
+          provider
+            ? english
+              ? 'Export and print'
+              : 'Eksport i druk'
+            : english
+              ? 'Selected row actions'
+              : 'Akcje zaznaczonych wierszy'
+        "
       >
         <AppTooltip
-          v-for="format in ['csv', 'xlsx', 'pdf'] as const"
+          v-for="format in provider ? (['csv', 'xlsx', 'pdf'] as const) : []"
           :key="format"
           :text="format.toUpperCase()"
         >
@@ -160,8 +176,8 @@ async function bulk(action: string) {
             :aria-label="format.toUpperCase()"
             :disabled="
               operation.busy.value ||
-              !provider.capabilities.formats.includes(format) ||
-              !provider.capabilities.scopes.includes(
+              !provider?.capabilities.formats.includes(format) ||
+              !provider?.capabilities.scopes.includes(
                 scope as 'all' | 'filtered' | 'selected',
               ) ||
               (scope === 'selected' && !selected)
@@ -193,6 +209,7 @@ async function bulk(action: string) {
           /></AppButton>
         </AppTooltip>
         <AppPopover
+          v-if="provider"
           :label="english ? 'Export settings' : 'Ustawienia eksportu'"
           align="end"
         >

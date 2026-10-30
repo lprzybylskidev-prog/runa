@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onScopeDispose, watch } from 'vue';
 import type {
   AdminFieldEmits,
   AdminFieldProps,
@@ -22,6 +22,12 @@ const replacement = computed(
 const locked = computed(
   () => props.readonly || props.field.readonly || !resolved.value.available,
 );
+watch(
+  () => resolved.value.available,
+  (available) => emit('availability', available),
+  { immediate: true },
+);
+onScopeDispose(() => emit('availability', true));
 function update(value: AdminFieldValue) {
   if (!locked.value && !props.busy) emit('update:modelValue', value);
 }
@@ -29,6 +35,9 @@ function update(value: AdminFieldValue) {
 <template>
   <AdminComponentBoundary
     :identity="field.key + ':' + (field.component?.build_id ?? '')"
+    :on-failure="
+      (failed) => emit('availability', !failed && resolved.available)
+    "
   >
     <component
       :is="replacement"

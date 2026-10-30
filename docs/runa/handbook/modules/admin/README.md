@@ -8,9 +8,10 @@ explicit installation history, entry security, declaration discovery and authori
 bootstrap/page/section reads, the English session shell, page-read HTTP and public
 frontend replacement seams. Point 5 adds named section-read HTTP and the public
 resource read controller, explicit cursor-table composition and automatic declared
-collection sections, controlled public fields with static validation hints and
-automatic read-only record sections. Business adapters, generated forms/writes and settings
-remain planned.
+collection sections and controlled fields, then completes generated record forms,
+independent commands/previews, reconciliation, dirty navigation and owning
+collection adapter composition. Native atomic coordination, owning business
+adapters and settings retain later points.
 Existing Auth, Permissions, Audit and framework APIs retain their current contracts.
 Source implementation and focused checks do not establish rendered or release acceptance.
 
@@ -33,13 +34,14 @@ Page declarations, handler DTOs, App registration and guarded Admin reads below
 are implemented through point 3. Capability-specific reads, field-bound
 options, typed widget freshness and source-bound component/build projection are
 implemented, including compiled registry resolution and shell rendering. Atomic
-participation, settings and generated record form dispatch remain specified.
+participation and settings retain their later points; generated record forms and
+independent command dispatch are implemented.
 Resource reads are delivered through `useAdminResource`; `useAdminTable` and
 `AdminResourceTable` compose bounded collection reads with the existing Table.
 `AdminField` and `validateAdminField` supply controlled field composition; default
-record sections display native authorized record reads through those fields.
-The resource command method refuses
-locally until write dispatch is delivered. Private engines retain their current homes and are never
+record sections compose the one useAdminForm controller and native authorized
+reads/independent writes. Aggregate Save transport/presentation refuses until the
+point-6 native coordinator is delivered. Private engines retain their current homes and are never
 ordinary application imports.
 
 | Capability                                              | Owner and audience                                                      | Supported entrypoint                                                                 | Implementation home and delivery                                                      |
@@ -100,8 +102,8 @@ Resolve `Runa\Modules\Admin\Contracts\AdminAccess` through ModuleApis with versi
 current operational Auth session and password proof for `runa.admin.enter` with
 TTL 300 seconds and `everyAction=false`. Ordinary direct/role grants suffice;
 the protected system role does not bypass proof or session checks. Bootstrap, page and section read are
-implemented; preview/save/command still refuse with `admin_page_unavailable` after
-entry checks until their owning implementation points.
+implemented, as are independent command/previewCommand. Aggregate preview/save
+still refuse with admin_page_unavailable after admission until point 6.
 
 Delivered routes are GET `/admin` (`runa.admin.dashboard`),
 `/admin/{owner}/{page}` (`runa.admin.page`), `/api/admin`
@@ -121,9 +123,10 @@ ApplicationLayout, owner-left/page-top navigation, password confirmation and
 nested replacement providers. Bootstrap returns authorized owners/pages/widgets
 and current source-default presentation (revision 0). No built-in business page
 provider exists yet, so the default catalogue is empty. App providers can supply
-independent pages and matching compiled/static components. Section-read/write HTTP,
-generated forms, owning business adapters and DB-backed presentation settings
-remain planned. Source/component tests are not final rendered/release acceptance.
+independent pages and matching compiled/static components. Section reads,
+independent command/preview and bounded aggregate HTTP transports are delivered;
+owning business adapters and DB-backed presentation remain planned. Source/component
+tests are not final rendered/release acceptance.
 The welcome catalogue remains independent localized manifest metadata.
 
 Named trusted `Runa\Integration\Core\AdminEntry`, `AdminHttpGuard`,
@@ -132,8 +135,8 @@ customer extension points. `AdminEntry::read(Closure(OperationContext): T): T`
 checks current entry inside the default PostgreSQL transaction with registry →
 authority → Auth user/proof lock order, without consuming reusable entry proof.
 The HTTP admission transaction ends before controller dispatch; each protected
-read rechecks proof/current grants in its own transaction. Independent future
-commands must retain their owning transaction protocols.
+read rechecks proof/current grants in its own transaction. Independent commands
+execute after that entry transaction ends and retain native owning protocols.
 
 `AdminDiagnostics::snapshot(string $filter = 'enabled'): array` accepts
 `enabled|registered|all`; `module(string $module): array` reports fixed declaration

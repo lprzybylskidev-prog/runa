@@ -246,7 +246,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     app-owned routes and full replacement without copied security logic.
   - Author replacement/menu/location/English/route/session race component/browser
     scenarios; synchronize public customization and component/layout references.
-- [ ] 5. Implement standard generated resource tables, forms and actions.
+- [x] 5. Implement standard generated resource tables, forms and actions.
   - Prerequisites: 3–4.
   - Compose existing Table/useTable/providers/selection/views/exports and Form/fields/
     confirmations/feedback. Support automatic, partial and full replacement, public
@@ -1115,3 +1115,103 @@ and shared aggregate revision/read reconciliation remain. Native atomic executio
 remains point 6. No Docker resources or databases were created/removed; active
 development services/data, durable volumes, Qdrant/model caches, backups and reports
 were preserved. Mandatory hooks and staged incremental knowledge freshness apply.
+
+## Point 5 completion — generated editors, independent commands and collection adapters
+
+Completed 2026-10-30. The remaining point-5 scope now supplies one public
+useAdminForm owner per page plus AdminPage/AdminForm/AdminSection/AdminAction.
+Default record sections and table record/create editors share finite JSON drafts,
+static validation, native subject revisions, field-bound UUID cursor lookups,
+controlled errors, confirmation and public customer replacements. No key-name
+heuristic selects a write: source commands explicitly declare intent and inputs;
+proofAction identifies the exact native action. Delete intent requires destructive
+confirmation, save/create intent is unambiguous and command binding availability
+is projected separately from the reader. These agent-owned presentation/binding
+signature details complete the approved design without a new behavioral premise.
+
+Reads reconcile baseline/local/remote values without remounting edited fields.
+Clean/disjoint fields merge; overlaps retain their old write token until a local
+choice. Denied fields leave drafts/errors/snapshots, read-only changes revert,
+secret replacements clear on invalidation and account/authority/page changes
+cancel/fence protected work. Shared page mutation admission refuses competing
+intents instead of queueing/rebasing/replaying them. 422 maps fixed safe field
+errors; 409 refreshes reads automatically while preserving drafts. Dirty document
+navigation and explicit Admin navigation share useDirtyGuard; custom routers use
+the public beforeLeave contract for their own history. Confirmation cancel keeps
+the editor, and busy writes refuse departure. Pending/recovery_required retain
+native operation identities, block blind resubmission and never become committed
+success. Required build/render/read failures block Save while healthy siblings
+remain visible. The public customer editor fixture reuses the same form/controller.
+
+Independent command/preview transports now use named lazy guarded routes, bounded
+Form Requests and JsonResource. Entry/proof admission precedes validation and
+writer construction. The entry root ends before a native independent writer
+executes; owners retain their own transaction, proof, preview, Policies, Audit
+and side-effect protocols. Result projection reauthorizes current entry/fields;
+validation echoes and forbidden preview/secret values are suppressed. Empty wire
+maps retain object shape. Entry-scope versus operation-scope denial keeps stronger
+native proof in the editor. Auth supplies public useOperationProof and
+AuthOperationProof over its existing native security/step-up/email-code endpoints,
+with eligible methods, credential cleanup and late-response fencing, no second
+session or business-write replay.
+
+The atomic frontend/transport contract includes exact participant sets, current
+reviews and aggregate revisions, all-result decoding before baseline mutation,
+shared independent-read reconciliation and explicit Save. Actual multi-owner native
+execution deliberately remains point 6 and still refuses there; point 5 does not
+claim a server atomic coordinator or real Core business adapters from points 7–10.
+
+Cursor collections now compose native selection/views, TablePreferences,
+TableActions and source-owned export/bulk/print/preference adapters. Unknown totals
+never invent all-matching selection or numbered cursor jumps. Exports admit only
+current visible/readable/nonsecret fields and server providers, without scanning
+pages or treating the current page as a complete dataset. Bulk intersects projected
+owning command authority, confirms and rechecks exact context/query/selection, then
+starts one native provider. Owning review/proof/idempotency/selection/size/status
+protocols remain authoritative. Operations are context-fenced. View preferences
+are ephemeral by default; explicit account-aware source stores/scopes retain their
+own declarations. No arbitrary backend export endpoint or new persistence engine.
+
+Grounding: knowledge current at resumption (201 documents / 9,819 chunks), bounded
+intent query and original Admin/form/table/session/public-boundary sources;
+frontend/Vue/Tailwind/security plus backend/Laravel guidance and Boost Laravel
+13.x Form Request/named routing documentation. Installed Tailwind stays 4.3.3.
+Current Admin status/declarations/frontend/changelog, public boundary, shared
+forms/components/tables and Auth proof/changelog guidance are synchronized.
+Owner and separately authored customer frontend/backend guidance already point
+to these canonical contracts and require public facades, admission, reconciliation
+and build evidence; neither instruction product needs duplicated procedures or
+new authority. Admin remains unreleased 0.1.0 and Auth remains unreleased 2.0.0;
+current initial/native_transactions edges suffice. No dependency, migration,
+runtime configuration or version-only history edge was introduced.
+
+Necessary focused evidence resolved command transaction boundaries and generated
+form/adapter composition rather than running ordinary broad gates:
+
+- Supported backend --parallel --processes=1, filter
+  'dispatches independent Admin commands': final 1 test / 37 assertions PASS,
+  17.15 seconds, native exit 0 / cleanup 0. An initial run exposed camelCase method
+  identity being used as an operation key; the fixed dispatcher now uses the
+  declared command.preview operation. The test covers native admission before
+  validation, safe fields/errors/previews, destructive/review refusal, exact stale
+  revision and execution at transaction level zero. It also confirms that aggregate
+  transport currently refuses before point 6. Temporary App writer evidence does
+  not stand in for owning Core business/Audit acceptance.
+- Supported frontend selected generated forms/collection adapters/native proof/
+  dirty navigation/automatic records/tables/fields: final 35 scenarios PASS,
+  4.53 seconds, exit 0 / cleanup 0. Earlier focused runs exposed and fixed reactive
+  field enumeration and updated read retry presentation. A transient Vite parser
+  message during simultaneous file formatting disappeared on the subsequent
+  stable-source run; the stable run reports only the existing generated Vitest
+  runner dynamic-import warning. The final safe-preview/aggregate selection passed 3 scenarios in 4.13 seconds,
+  exit 0 / cleanup 0, including refusal of secret/undeclared preview differences.
+- Authored responsive light/dark desktop/tablet/mobile E2E covers generated fields,
+  validation, 409 local resolution without replay, save feedback and dirty unload.
+  Browser matrix/build/type/static/scanner/full-suite/native acceptance are not run
+  here and remain point 12; no broad or release PASS is claimed.
+
+Supported backend cleanup displayed and removed only runa_test_test_1. No Docker
+resource was created or removed. Base/development databases, active services,
+durable volumes, Qdrant/model caches, backups and reports were preserved. Mandatory
+hooks and staged incremental knowledge synchronization apply to the completion
+commit. Point 5 is complete; point 6 is next.

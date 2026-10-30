@@ -4,9 +4,11 @@ namespace Runa\Modules\Admin\Queries;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use Runa\Contracts\Modules\ManagementCommandDefinition;
 use Runa\Contracts\Modules\ManagementFieldAccess;
 use Runa\Contracts\Modules\ManagementOptionsRead;
 use Runa\Contracts\Modules\ManagementOptionsReader;
+use Runa\Contracts\Modules\ManagementOutcome;
 use Runa\Contracts\Modules\ManagementPage;
 use Runa\Contracts\Modules\ManagementRead;
 use Runa\Contracts\Modules\ManagementRecord;
@@ -14,6 +16,7 @@ use Runa\Contracts\Modules\ManagementResourceReader;
 use Runa\Contracts\Modules\ManagementSection;
 use Runa\Contracts\Modules\ManagementWidgetReader;
 use Runa\Contracts\Modules\ManagementWrite;
+use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\ModuleFramework\Management\ManagementPages;
@@ -215,6 +218,58 @@ final readonly class Projection
         }
     }
 
+    /** Resolve an independent command under entry admission; the owning writer runs after it ends.
+     * @param  array<string,mixed>  $input
+     * @return array{writer:ManagementWriter,input:ManagementWrite,command:ManagementCommandDefinition,fields:array<string,ManagementFieldAccess>}
+     */
+    public function prepareCommand(string $owner, string $page, string $identity, array $input, bool $preview = false): array
+    {
+        [$discovery, , $sections] = $this->selected($owner, $page);
+        [$sectionOwner, $section] = $this->findSection($sections, $identity, $discovery['generation']);
+        if (! $this->declarations->bindingAvailable($discovery['owners'][$sectionOwner]['bindings'][$section->binding])) {
+            throw new OperationRejected('admin_binding_unavailable', 'runa.admin', 'command', 409);
+        }
+        // A preview does not confirm a destructive operation or require a prior review.
+        $candidate = $preview ? array_replace($input, ['confirmed' => true]) : $input;
+        $write = $this->writeInput($sectionOwner, $section, $candidate, $discovery['generation']);
+        $command = array_values(array_filter($section->commands, fn ($command): bool => $command->key === $write->command))[0];
+        if ($command->mode !== 'independent') {
+            throw new OperationRejected('admin_atomic_required', 'runa.admin', 'command', 409);
+        }
+        if (! $preview && $command->safety->previewRequired && $write->review === null) {
+            throw new OperationRejected('admin_review_required', 'runa.admin', 'command', 409);
+        }
+        $writer = $this->declarations->handler($sectionOwner, $discovery['owners'][$sectionOwner]['bindings'][$command->binding]);
+        if (! $writer instanceof ManagementWriter) {
+            throw new OperationRejected('admin_operation_unavailable', 'runa.admin', 'command', 404);
+        }
+        $this->declarations->assertCurrent($discovery['generation']);
+
+        return ['writer' => $writer, 'input' => $write, 'command' => $command,
+            'fields' => $this->fields($sectionOwner, $section, $discovery['generation'])];
+    }
+
+    /** @param array<string,ManagementFieldAccess> $fields
+     * @return array<string,mixed>
+     */
+    public function outcome(ManagementOutcome $outcome, array $fields): array
+    {
+        return $this->bounded(['status' => $outcome->status,
+            'record' => $outcome->record === null ? null : $this->record($outcome->record, $fields),
+            'operation_id' => $outcome->operationId]);
+    }
+
+    /** Reauthorize returned values after an independent native mutation.
+     * @return array<string,mixed>
+     */
+    public function commandOutcome(string $owner, string $page, string $identity, ManagementOutcome $outcome): array
+    {
+        [$discovery, , $sections] = $this->selected($owner, $page);
+        [$sectionOwner, $section] = $this->findSection($sections, $identity, $discovery['generation']);
+
+        return $this->outcome($outcome, $this->fields($sectionOwner, $section, $discovery['generation']));
+    }
+
     /** @return array{array<string,mixed>,ManagementPage,list<array{string,ManagementSection,string}>} */
     private function selected(string $owner, string $key): array
     {
@@ -286,7 +341,11 @@ final readonly class Projection
                 }
             }
             $commands[] = ['key' => $command->key, 'title' => $command->title, 'mode' => $command->mode, 'destructive' => $command->destructive,
-                'requirement' => $command->safety->stepUp, 'preview_required' => $command->safety->previewRequired];
+                'requirement' => $command->safety->stepUp, 'preview_required' => $command->safety->previewRequired,
+                'inputs' => $command->safety->inputs, 'bulk' => $command->safety->bulk,
+                'intent' => $command->intent,
+                'action' => $command->proofAction,
+                'available' => $this->declarations->bindingAvailable($ownerDefinition['bindings'][$command->binding])];
         }
 
         return ['key' => $identity, 'title' => $section->title, 'view' => $section->view, 'readonly' => $readonly, 'required' => $section->required,

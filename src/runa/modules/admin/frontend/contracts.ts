@@ -42,6 +42,11 @@ export interface AdminCommandData {
   destructive: boolean;
   requirement: 'none' | 'password' | 'second_factor' | 'both';
   preview_required: boolean;
+  inputs: string[];
+  bulk: boolean;
+  action: string | null;
+  available: boolean;
+  intent: 'action' | 'save' | 'create' | 'delete';
 }
 export interface AdminSectionData {
   view: 'record' | 'table';
@@ -136,6 +141,7 @@ export interface AdminPageController {
 export interface AdminSectionPresentationProps {
   section: AdminSectionData;
   page: AdminPageController;
+  controller: AdminFormController;
 }
 export type AdminComponentRegistry = Readonly<
   Record<string, { readonly buildId: string; readonly component: Component }>
@@ -154,6 +160,7 @@ export interface AdminApplicationProps {
   navigate?: ApplicationNavigate | undefined;
   components?: AdminComponentRegistry | undefined;
   session?: ApplicationSessionController | undefined;
+  collections?: Readonly<Record<string, AdminCollectionAdapters>> | undefined;
 }
 export type AdminLayoutProps = ApplicationLayoutProps & {
   controller: AdminController;
@@ -255,14 +262,57 @@ export interface AdminFormController {
   save(): Promise<AdminSaveResult | undefined>;
   reset(): void;
   resolve(path: AdminFieldPath, choice: 'local' | 'remote'): void;
+  sections: ComputedRef<readonly AdminSectionData[]>;
+  records: Ref<Record<string, AdminRecord>>;
+  blocked: ComputedRef<boolean>;
+  confirmation: Ref<{ title: string; description: string } | undefined>;
+  confirm(accepted: boolean): void;
+  beforeLeave(): Promise<boolean>;
+  selectSubject(publicId: string | null): Promise<boolean>;
+  fieldPath(section: string, field: string): AdminFieldPath;
+  lookup(section: string, field: string): AdminFieldLookup;
+  execute(
+    section: string,
+    command: string,
+  ): Promise<AdminCommandResult | undefined>;
+  reviewCommand(
+    section: string,
+    command: string,
+  ): Promise<AdminCommandReview | undefined>;
+  commandReviews: Ref<Record<string, AdminCommandReview>>;
+  editSection(section: string, publicId: string | null): Promise<boolean>;
+  closeSection(section: string): Promise<boolean>;
+  setAvailable(identity: string, available: boolean): void;
+  notice: Ref<string>;
+  proof(
+    section: string,
+    command: string,
+  ): import('@/runa/auth').OperationProofController;
+  activateSection(section: string): Promise<void>;
+  operations: Ref<
+    Record<
+      string,
+      { status: 'pending' | 'recovery_required'; operationId: string }
+    >
+  >;
+}
+export interface AdminCommandReview {
+  fingerprint: string;
+  changes: Record<string, AdminJson>;
+  requirement: AdminCommandData['requirement'];
+  every_action: boolean;
 }
 export interface AdminResourceController {
   state: ComputedRef<AdminState>;
   result: Ref<AdminReadResult | undefined>;
   busy: ComputedRef<boolean>;
   error: Ref<AdminError | undefined>;
-  read(query: AdminReadQuery): Promise<void>;
+  read(
+    query: AdminReadQuery,
+    options?: { signal?: AbortSignal },
+  ): Promise<void>;
   command(input: AdminWrite): Promise<AdminCommandResult | undefined>;
+  preview(input: AdminWrite): Promise<AdminCommandReview | undefined>;
 }
 /** One cursor-backed collection lane; instantiate inside the owning page scope. */
 export interface AdminTableController {
@@ -273,7 +323,61 @@ export interface AdminTableController {
   provider: ComputedRef<TableProvider<AdminRecord>>;
   error: ComputedRef<AdminError | undefined>;
   refresh(): Promise<void>;
+  selection: Ref<
+    import('@/runa/ui').RowSelection<import('@/runa/ui').TableQuery>
+  >;
+  views: import('@/runa/ui').TableViewsController;
+  adapters: ComputedRef<AdminCollectionAdapters>;
+  selected: Ref<string | null | undefined>;
+  select(publicId: string | null): Promise<boolean>;
+  confirmation: Ref<string | undefined>;
+  confirm(accepted: boolean): void;
 }
+export interface AdminCollectionAdapters {
+  exports?: import('@/runa/ui').ExportProvider<import('@/runa/ui').TableQuery>;
+  bulk?: import('@/runa/ui').BulkProvider<import('@/runa/ui').TableQuery>;
+  print?: import('@/runa/ui').PrintAdapter<import('@/runa/ui').TableQuery>;
+  preferences?: {
+    scope: import('@/runa/ui').PreferenceScope;
+    store: import('@/runa/ui').PreferenceStore;
+  };
+}
+export interface AdminFormProps {
+  controller: AdminFormController;
+}
+export interface AdminPageProps {
+  controller: AdminPageController;
+  form: AdminFormController;
+  components?: AdminComponentRegistry | undefined;
+}
+export interface AdminPageSlots {
+  default?(scope: AdminPageProps): VNode[];
+  heading?(scope: AdminPageProps): VNode[];
+  actions?(scope: AdminPageProps): VNode[];
+}
+export interface AdminFormSlots {
+  default?(scope: AdminFormProps): VNode[];
+  actions?(scope: AdminFormProps): VNode[];
+  review?(scope: AdminFormProps): VNode[];
+}
+export type AdminFormEmits = { saved: [result: AdminSaveResult] };
+export interface AdminSectionProps {
+  section: AdminSectionData;
+  controller: AdminFormController;
+  components?: AdminComponentRegistry | undefined;
+}
+export interface AdminSectionSlots {
+  default?(scope: {
+    section: AdminSectionData;
+    controller: AdminFormController;
+  }): VNode[];
+}
+export interface AdminActionProps {
+  command: AdminCommandData;
+  busy: boolean;
+  disabled: boolean;
+}
+export type AdminActionEmits = { invoke: [] };
 export interface AdminResourceTableProps {
   controller: AdminTableController;
 }
@@ -281,6 +385,7 @@ export interface AdminResourceTableProps {
 export interface AdminFieldLookup {
   provider: import('@/runa/ui').SelectionProvider;
   selectedOptions?: readonly import('@/runa/ui').SelectOption[];
+  searchable?: boolean;
 }
 export interface AdminFieldProps {
   field: AdminFieldData;
@@ -293,6 +398,7 @@ export interface AdminFieldProps {
 }
 export type AdminFieldEmits = {
   'update:modelValue': [value: AdminFieldValue];
+  availability: [available: boolean];
 };
 export interface AdminResourceTableSlots {
   toolbar?(scope: { feedbackTarget: string }): VNode[];

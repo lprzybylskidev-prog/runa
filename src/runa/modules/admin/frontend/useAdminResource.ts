@@ -1,5 +1,5 @@
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
-import { RequestCancelledError, request } from '@/runa/http';
+import { ApiError, RequestCancelledError, request } from '@/runa/http';
 import type {
   AdminError,
   AdminPageController,
@@ -7,10 +7,19 @@ import type {
   AdminReadResult,
   AdminResourceController,
   AdminState,
+  AdminWrite,
 } from './contracts';
-import { adminPath, decodeRead } from './decode';
+import {
+  adminPath,
+  decodeRead,
+  decodeCommandResult,
+  decodeCommandReview,
+  object,
+} from './decode';
 import { adminFailure, refuseAdmin, sessionStamp } from './useAdmin';
 import { pageOwners } from './pageContext';
+import { pageRuntime } from './runtime';
+import { writeFailure } from './writeFailure';
 
 function readQuery(query: AdminReadQuery) {
   const params: Record<string, string | number | boolean | null | undefined> = {
@@ -35,6 +44,11 @@ export function useAdminResource(
 ): AdminResourceController {
   const result = shallowRef<AdminReadResult>();
   const error = shallowRef<AdminError>();
+  const writeError = shallowRef<AdminError>();
+  const runtime = pageRuntime(page);
+  let writing = false,
+    writeEpoch = 0;
+  let writeAbort = new AbortController();
   const busy = ref(false),
     status = ref<AdminState>('ready');
   const admin = pageOwners.get(page);
@@ -75,7 +89,11 @@ export function useAdminResource(
     pending = undefined;
     pendingKey = undefined;
   }
-  function read(query: AdminReadQuery): Promise<void> {
+  function read(
+    query: AdminReadQuery,
+    options: { signal?: AbortSignal } = {},
+  ): Promise<void> {
+    if (options.signal?.aborted) return Promise.resolve();
     // Own the query snapshot so caller edits cannot change the meaning of a late response.
     const snapshot: AdminReadQuery = {
       ...query,
@@ -93,6 +111,12 @@ export function useAdminResource(
     abort.abort();
     abort = new AbortController();
     const signal = abort.signal;
+    const externalAbort = () => {
+      if (own === epoch) {
+        lastQuery = undefined;
+        invalidate();
+      }
+    };
     error.value = undefined;
     status.value = 'ready';
     if (
@@ -111,6 +135,7 @@ export function useAdminResource(
     pageIdentity = data.owner + ':' + data.key;
     pendingKey = key;
     busy.value = true;
+    options.signal?.addEventListener('abort', externalAbort, { once: true });
     const current = () => alive && own === epoch && stamp === identity();
     pending = Promise.resolve().then(async () => {
       try {
@@ -147,6 +172,7 @@ export function useAdminResource(
         )
           refuseAdmin(admin, cause);
       } finally {
+        options.signal?.removeEventListener('abort', externalAbort);
         if (current()) {
           busy.value = false;
           pending = undefined;
@@ -156,11 +182,96 @@ export function useAdminResource(
     });
     return pending;
   }
+  async function send<T>(
+    input: AdminWrite,
+    preview: boolean,
+    decode: (value: unknown) => T,
+  ): Promise<T | undefined> {
+    const projection = descriptor.value,
+      data = page.page.value;
+    const command = projection?.commands.find(
+      (command) => command.key === input.command,
+    );
+    if (
+      !alive ||
+      !data ||
+      page.state.value !== 'ready' ||
+      runtime.busy.value ||
+      !projection ||
+      projection.readonly ||
+      projection.diagnostic ||
+      !command?.available ||
+      command.mode !== 'independent' ||
+      Object.keys(input.values).some(
+        (key) =>
+          !command.inputs.includes(key) ||
+          !projection.fields.some(
+            (field) => field.key === key && !field.readonly,
+          ),
+      ) ||
+      (!preview && command.destructive && !input.confirmed) ||
+      (!preview && command.preview_required && !input.review)
+    ) {
+      writeError.value = {
+        reason: 'admin_operation_unavailable',
+        message: 'This operation is currently unavailable.',
+      };
+      return undefined;
+    }
+    const own = ++writeEpoch,
+      stamp = identity();
+    const current = () => alive && own === writeEpoch && stamp === identity();
+    writeAbort.abort();
+    writeAbort = new AbortController();
+    runtime.busy.value = writing = true;
+    writeError.value = undefined;
+    try {
+      const body = JSON.stringify(input);
+      if (new TextEncoder().encode(body).length > 262144)
+        throw new TypeError('Command exceeds limit.');
+      const response = await request(
+        adminPath({ owner: data.owner, page: data.key }) +
+          '/sections/' +
+          encodeURIComponent(section) +
+          (preview ? '/preview' : '/commands'),
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          signal: writeAbort.signal,
+        },
+      );
+      if (!current()) return undefined;
+      const outcome = decode(response);
+      if (!preview) runtime.changed.value++;
+      return outcome;
+    } catch (cause) {
+      if (!current()) return undefined;
+      writeError.value = writeFailure(cause, command.inputs);
+      if (cause instanceof ApiError) {
+        let entry = false;
+        try {
+          entry = object(cause.payload).scope === 'entry';
+        } catch {
+          /* No payload trust. */
+        }
+        if (admin && (cause.status === 401 || entry)) refuseAdmin(admin, cause);
+        if (cause.status === 409) runtime.changed.value++;
+      }
+      return undefined;
+    } finally {
+      if (own === writeEpoch) {
+        runtime.busy.value = false;
+        writing = false;
+      }
+    }
+  }
   const stop = watch(
     [
       () => page.page.value,
       () => page.state.value,
       () => admin && sessionStamp(admin.session),
+      runtime.changed,
     ],
     () => {
       const nextAccount = accountIdentity(),
@@ -173,6 +284,19 @@ export function useAdminResource(
         (nextPage && pageIdentity && nextPage !== pageIdentity)
       )
         lastQuery = undefined;
+      if (
+        nextAccount !== account ||
+        page.state.value !== 'ready' ||
+        (nextPage && pageIdentity && nextPage !== pageIdentity)
+      ) {
+        ++writeEpoch;
+        writeAbort.abort();
+        writeError.value = undefined;
+        if (writing) {
+          writing = false;
+          runtime.busy.value = false;
+        }
+      }
       account = nextAccount;
       if (nextPage) pageIdentity = nextPage;
       invalidate();
@@ -191,6 +315,9 @@ export function useAdminResource(
   document.addEventListener('visibilitychange', visible);
   onScopeDispose(() => {
     alive = false;
+    ++writeEpoch;
+    writeAbort.abort();
+    if (writing) runtime.busy.value = false;
     invalidate();
     lastQuery = undefined;
     stop();
@@ -205,16 +332,23 @@ export function useAdminResource(
           : status.value,
     ),
     result,
-    error,
-    busy: computed(() => busy.value),
+    error: computed(() => writeError.value ?? error.value),
+    busy: computed(() => busy.value || runtime.busy.value),
     read,
-    async command() {
-      // Write coordination is a separate delivery. Do not issue or replay a business write.
-      error.value = {
-        reason: 'admin_operation_unavailable',
-        message: 'This operation is currently unavailable.',
-      };
-      return undefined;
-    },
+    command: (input) =>
+      send(input, false, (response) => {
+        const outcome = decodeCommandResult(response, descriptor.value!);
+        if (
+          input.public_id &&
+          outcome.record &&
+          outcome.record.public_id !== input.public_id
+        )
+          throw new TypeError('Command subject changed.');
+        return outcome;
+      }),
+    preview: (input) =>
+      send(input, true, (response) =>
+        decodeCommandReview(response, descriptor.value!),
+      ),
   };
 }

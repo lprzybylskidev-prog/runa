@@ -61,7 +61,11 @@ export { default as Statistic } from '../../components/AppStatistic.vue';
 export { default as Statistics } from '../../components/AppStatistics.vue';
 
 export type * from './forms';
-export { useForm, laravelFieldErrors } from '../../composables/useForm';
+export {
+  useForm,
+  laravelFieldErrors,
+  formValuesEqual,
+} from '../../composables/useForm';
 export {
   parseDecimal,
   formatDecimal,

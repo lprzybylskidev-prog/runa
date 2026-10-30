@@ -276,6 +276,61 @@ it('registers lazy App declarations before guarded discovery and freezes replace
     }
 });
 
+it('dispatches independent Admin commands outside the entry root with bounded review input and safe failures', function (): void {
+    $path = '/api/admin/app/users/sections/profile';
+    $this->postJson($path.'/commands', [])->assertUnauthorized()->assertJsonMissingPath('errors');
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminGrant)('runa.auth.profiles.manage');
+    ($this->adminLogin)();
+    $this->postJson($path.'/commands', [])->assertForbidden()->assertJsonPath('scope', 'entry')->assertJsonMissingPath('errors');
+    ($this->adminProof)();
+    $sources = new ModuleSources;
+    $namespace = 'CommandFixture'.bin2hex(random_bytes(6));
+    $directory = $sources->root.'/app/Management/'.$namespace;
+    mkdir($directory, 0775, true);
+    foreach (['Provider', 'Handler'] as $name) {
+        $file = $directory.'/'.$name.'.php';
+        file_put_contents($file, str_replace(['FIXTURE_NAMESPACE', 'runa.auth.profile.update'], [$namespace, 'runa.auth.profiles.manage'], file_get_contents(__DIR__.'/../../Fixtures/Management/Admin'.$name.'.php.stub')));
+        require $file;
+    }
+    $provider = 'App\\Management\\'.$namespace.'\\Provider';
+    $handler = 'App\\Management\\'.$namespace.'\\Handler';
+    app()->instance(ApplicationManagement::class, new ApplicationManagement(app(), $sources->root));
+    app()->forgetInstance(ManagementPages::class);
+    app()->bind($handler, $handler);
+    app()->afterResolving(AdminRegistry::class, fn ($registry) => $registry->register(new $provider));
+    $handler::$writing = true;
+    try {
+        $this->getJson('/api/admin/app/users')->assertOk()->assertJsonPath('data.sections.0.commands.0.inputs', ['name'])
+            ->assertJsonPath('data.sections.0.commands.0.intent', 'save');
+        $input = ['command' => 'update', 'public_id' => null, 'revision' => 'revision-1', 'values' => ['name' => 'After']];
+        foreach (['hidden', 'token', 'foreign'] as $field) {
+            $this->postJson($path.'/commands', array_replace($input, ['values' => [$field => 'unsafe-input-marker']]))->assertUnprocessable();
+        }
+        expect($handler::$writes)->toBe(0);
+        $this->postJson($path.'/commands', array_replace($input, ['values' => ['name' => 'Invalid']]))->assertUnprocessable()
+            ->assertJsonPath('errors.name', ['Invalid input.'])->assertJsonMissingPath('errors.hidden')->assertDontSee('private-validation-marker');
+        $provider::$previewRequired = true;
+        $provider::$destructive = true;
+        $this->postJson($path.'/preview', $input)->assertOk()->assertJsonPath('data.changes.name', 'After');
+        $this->postJson($path.'/commands', $input)->assertUnprocessable();
+        $confirmed = $input + ['confirmed' => true];
+        $this->postJson($path.'/commands', $confirmed)->assertConflict();
+        $review = $this->postJson($path.'/preview', $input)->assertOk()->json('data');
+        $this->postJson($path.'/commands', $confirmed + ['review' => $review])->assertOk()
+            ->assertJsonPath('data.status', 'committed')->assertJsonPath('data.record.values.name', 'After')
+            ->assertJsonMissingPath('data.record.values.hidden')->assertJsonMissingPath('data.record.values.unlisted');
+        expect($handler::$writes)->toBe(1)->and($handler::$writeTransactionLevel)->toBe(0);
+        $this->postJson($path.'/commands', $confirmed + ['review' => $review])->assertConflict();
+        expect($handler::$writes)->toBe(1);
+        expect(route('runa.admin.command', ['owner' => 'app', 'page' => 'users', 'section' => 'profile'], false))->toBe($path.'/commands');
+        $this->postJson('/api/admin/app/users/save', ['revision' => 'page', 'participants' => [['id' => 'profile', 'input' => $input]]])
+            ->assertNotFound()->assertJsonMissingPath('data');
+    } finally {
+        $sources->remove();
+    }
+});
+
 function nativeMutationProof(object $test): void
 {
     ($test->adminLogin)();

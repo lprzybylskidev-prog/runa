@@ -21,6 +21,7 @@ final class AdminApi implements ApiProvider
             'preview' => new ApiOperation('preview', 'runa.admin.enter'),
             'save' => new ApiOperation('save', 'runa.admin.enter'),
             'command' => new ApiOperation('command', 'runa.admin.enter'),
+            'previewCommand' => new ApiOperation('command.preview', 'runa.admin.enter'),
         ]);
     }
 }

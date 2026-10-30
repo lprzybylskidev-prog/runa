@@ -138,6 +138,9 @@ For projected Admin resource collections, compose public `useAdminTable` and
 `AdminResourceTable` from `@/runa/admin`; see the [exact Admin contract](../../modules/admin/frontend.md#delivered-cursor-table-composition).
 They adapt the existing resource read lane to this server Table contract, retain
 opaque cursors/nullable owner totals, and never apply local dataset processing.
-Collection composition is delivered; automatic section dispatch and owner-bound
-export/bulk operations remain in their later point-5 work. Owner/customer table
+Automatic section dispatch, shared record editors, selection/views and explicit
+owner-bound export/bulk/print adapters are delivered. TableActions.provider is
+optional for bulk-only/print-only composition; absent export capabilities hide
+export settings and formats. Unknown cursor counts never imply all-page selection.
+Owner/customer table
 references route here; no separate table engine or preference store is introduced.

@@ -1,6 +1,9 @@
 <?php
 
+use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\ManagementBinding;
+use Runa\Contracts\Modules\ManagementCommandDefinition;
+use Runa\Contracts\Modules\ManagementOperation;
 use Runa\Contracts\Modules\ManagementRead;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
@@ -89,6 +92,15 @@ it('refuses read-only and unknown submitted fields before any owning write execu
         expect(fn () => $this->projection->writeInput('app', $section, $input, $generation))->toThrow(OperationRejected::class);
     }
     expect($this->handlerClass::$calls)->toBe(0);
+});
+
+it('refuses ambiguous form intent and implicit management proof actions', function (): void {
+    $operation = new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'));
+    expect(fn () => new ManagementCommandDefinition('delete', 'Delete', $operation, 'profile', intent: 'delete'))->toThrow(InvalidArgumentException::class);
+    expect(fn () => new ManagementCommandDefinition('save', 'Save', $operation, 'profile', intent: 'unknown'))->toThrow(InvalidArgumentException::class);
+    $protected = new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'), stepUp: 'both');
+    expect(fn () => new ManagementCommandDefinition('save', 'Save', $protected, 'profile'))->toThrow(InvalidArgumentException::class);
+    expect(new ManagementCommandDefinition('save', 'Save', $protected, 'profile', proofAction: 'runa.auth.profiles.manage'))->toBeInstanceOf(ManagementCommandDefinition::class);
 });
 
 it('isolates invalid declarations and freezes App registrations without shadowing owners', function (): void {

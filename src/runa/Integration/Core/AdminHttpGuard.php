@@ -22,7 +22,7 @@ final readonly class AdminHttpGuard
         try {
             return $this->admit($request, $next);
         } catch (OperationRejected $error) {
-            return response()->json(['message' => 'Administration request refused.', 'reason' => $error->reason], $error->status, ['Cache-Control' => 'no-store, private']);
+            return response()->json(['message' => 'Administration request refused.', 'reason' => $error->reason, 'scope' => 'operation'], $error->status, ['Cache-Control' => 'no-store, private']);
         } catch (ValidationException $error) {
             return response()->json(['message' => 'Invalid administration input.', 'reason' => 'validation_failed',
                 'errors' => array_fill_keys(array_keys($error->errors()), ['Invalid input.'])], 422, ['Cache-Control' => 'no-store, private']);
@@ -49,7 +49,12 @@ final readonly class AdminHttpGuard
                     return response()->json(['data' => ['available' => false]], 200, ['Cache-Control' => 'no-store, private']);
                 }
             } else {
-                $this->entry->read(static fn () => null);
+                try {
+                    $this->entry->read(static fn () => null);
+                } catch (OperationRejected $error) {
+                    return response()->json(['message' => 'Administration admission refused.', 'reason' => $error->reason, 'scope' => 'entry'],
+                        $error->status, ['Cache-Control' => 'no-store, private']);
+                }
             }
 
             $response = $next($request);

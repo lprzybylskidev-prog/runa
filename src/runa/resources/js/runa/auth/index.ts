@@ -66,3 +66,9 @@ export type * from '../../../../modules/auth/frontend/contracts/presentation';
 export type { Restriction } from '../../../../modules/auth/frontend/entry';
 
 export { default as ApplicationSessionShell } from '../../../../modules/auth/frontend/ApplicationSessionShell.vue';
+export { default as AuthOperationProof } from '../../../../modules/auth/frontend/AuthOperationProof.vue';
+export { useOperationProof } from '../../../../modules/auth/frontend/useOperationProof';
+export type {
+  OperationProofController,
+  ProofRequirement,
+} from '../../../../modules/auth/frontend/useOperationProof';

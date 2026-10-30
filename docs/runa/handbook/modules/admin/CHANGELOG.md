@@ -2,14 +2,16 @@
 
 ## 0.1.0 — 2026-10-30
 
-- Supply public controlled AdminField/validateAdminField with owner-error/static-hint composition, exact integer drafts, public UUID/UTC controls, secret set-state, bounded lookup inputs and owned/provider presentation replacement. Automatically display read-only record sections through the existing resource lane; editable forms and writes remain planned.
+- Complete generated record forms/actions with shared draft/revision ownership, field-bound lookups, static/422 errors, 409 reconciliation, local overlap resolution, dirty navigation, preview/destructive confirmation and native Auth operation-proof composition. Add independently guarded command/preview transport, explicit command intent/input/bulk/action/availability metadata and authorized result projection. Compose cursor selection/views and source-owned export/bulk/print/preference adapters; native aggregate execution remains point 6.
+
+- Supply public controlled AdminField/validateAdminField with owner-error/static-hint composition, exact integer drafts, public UUID/UTC controls, secret set-state, bounded lookup inputs and owned/provider presentation replacement. Compose default record sections through the existing resource lane and shared form owner.
 
 - Add explicit record/table section presentation intent and default bounded table dispatch, with native resource/session ownership, replacement precedence and per-section diagnostic isolation. Section replacements receive the owning page controller for public resource composition.
 
 - Add optional framework page/section/field/binding/widget/contribution declarations and bounded handler values without changing legacy metadata constructors or schema.
 - Supply frozen App bootstrap registration, source/dependency/API/component validation and deterministic discovery with owner isolation.
 - Project authorized bootstrap/page/section reads through AdminAccess 1.0.0; remove denied values and controls, refuse forbidden filter/sort/lookup/write inputs, and require explicit secret set-state.
-- Preserve entry proof and native owner Policies/grants; business handlers, write coordinators, generated forms and write HTTP follow in later points. Remain at development 0.1.0; no intermediate source-only edge.
+- Preserve entry proof and native owner Policies/grants; owning Core handlers and native aggregate coordination retain later points. Remain at development 0.1.0; no intermediate source-only edge.
 
 - Establish the Core module with explicit initialization history and required Audit/Auth/Permissions prerequisites; no Admin storage or automatic request-time installation.
 - Supply guarded AdminAccess 1.0.0 bootstrap and named `/api/admin` transport, current native grants, operational session and reusable 300-second password proof.
@@ -37,7 +39,7 @@ identity; Vite serve republishes evidence and reloads its registry on source cha
 The proof-free minimal entry advertisement is account-menu-only and never supplies
 protected metadata. Reuse Auth ApplicationSessionShell and one session controller;
 fence stale reads and erase transient entry passwords. Generated business forms,
-resource presentation, atomic Save and settings remain in their owning points.
+native atomic Save and settings remain in their owning points.
 
 ### Section-read transport and resource controller
 
@@ -46,8 +48,8 @@ record/cursor-page/field-options shapes. Preserve exact typed/null GET filters,
 readable field intersection and explicit secret set-state. Coalesce identical reads,
 cancel/fence changed queries and account/authority/page/disposal races, and refresh
 the last query on return to a visible document. Retain the mounted same-session page
-during descriptor refresh. Resource commands refuse locally until write coordination;
-generated editable presentation and aggregate reconciliation remain planned in point 5.
+during descriptor refresh; useAdminForm supplies current editable presentation and
+shared revision/reconciliation with explicit independent command dispatch.
 
 ### Cursor resource tables
 
@@ -57,6 +59,6 @@ navigation and nullable owner totals, native typed filters, readable sort/filter
 allowlists, secret set-state and account/authority/descriptor response fencing.
 Refuse invalid public row identities and never scan/download all pages or process
 server rows locally. Expose headless query/provider/controller and toolbar/filter/
-row/cell slots; no extra session, preference persistence or dependency. Automatic
-record editing, forms, exports/bulk and writes remain planned. Development 0.1.0
+row/cell slots; no extra session or dependency. Default record editing, explicit
+owning export/bulk providers and optional account-aware views compose these controls. Development 0.1.0
 and installation history are unchanged; rendered/release acceptance is pending.

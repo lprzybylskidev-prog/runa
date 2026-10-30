@@ -26,3 +26,10 @@ commit, Audit rollback, stale review, duplicate writer/proof refusal and standal
 API 2.0.0 consumption. ModuleHealthTest covers exact-operation admission without
 external work inside a transaction, expiry/source changes and scope disposal.
 Complete area/concurrency/native acceptance remains final-only.
+
+Independent command coverage uses the native target runtime/session/proof and
+temporary App-owned source handlers. It verifies pre-validation admission,
+allowlisted input/review/destructive confirmation, safe errors and result
+projection, stale revision refusal and execution outside the entry transaction.
+The fixture writer is transport evidence, not a replacement for owning Core
+business/Audit cases. Aggregate transport still refuses before point 6.

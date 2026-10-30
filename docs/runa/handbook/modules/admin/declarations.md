@@ -7,7 +7,7 @@ field-bound options, typed widget results and source-bound component/build
 projection. Point 4 adds compiled resolution, the shared session shell, entry
 advertisement and page-read/document HTTP. The complete wire contract is not yet
 delivered: point 5 now adds section-read HTTP and the frontend resource read lane;
-write HTTP, generated forms and business adapters remain planned. See
+independent write/preview HTTP and generated forms are delivered; native atomic coordination and owning Core adapters retain their later points. See
 [ownership and delivery](README.md). Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
 belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.
@@ -58,7 +58,7 @@ ManagementFieldAccess::__construct(ManagementField $field, string $readPermissio
 ManagementCommandDefinition::__construct(string $key, string $title,
     ManagementOperation $safety, string $binding,
     string $mode = 'independent', ?string $participant = null,
-    bool $destructive = false)
+    bool $destructive = false, string $intent = 'action', ?string $proofAction = null)
 ManagementApiTarget::__construct(string $module, string $contract,
     string $version, array $methods)
 ManagementBinding::__construct(string $key, string $handler, array $targets,
@@ -181,7 +181,7 @@ handler methods reject with `OperationRejected('admin_operation_unavailable',
 'runa.admin', <declared operation>, 404)` rather than empty success.
 
 The capability interfaces and read/result DTOs above are implemented in the
-point-3 implementation. Generated form rendering and write dispatch remain planned. A handler
+point-3 implementation. Generated forms and independent write dispatch are delivered in point 5. A handler
 implements only its actual capabilities. Resource, lookup, widget and write bindings
 require their corresponding interface; no reader implements dummy write methods.
 A source-declared unsupported capability is a structural declaration error.
@@ -254,17 +254,18 @@ see [shared session shell](frontend.md#shared-session-shell-and-account-menu-sea
 for its exact `{available:boolean}` result and admission. It exposes no protected
 bootstrap values. HTML shell admission also exposes no protected bootstrap values.
 
-| Method / path                                                | Named route               | Operation                                       |
-| ------------------------------------------------------------ | ------------------------- | ----------------------------------------------- |
-| GET `/admin`                                                 | `runa.admin.dashboard`    | Empty application shell, then guarded bootstrap |
-| GET `/admin/{owner}/{page}`                                  | `runa.admin.page`         | Application shell, owner/page grammar above     |
-| GET `/api/admin/entry`                                       | `runa.admin.entry`        | AdminAccess.entry, minimal advertisement        |
-| GET `/api/admin`                                             | `runa.admin.bootstrap`    | AdminAccess.bootstrap                           |
-| GET `/api/admin/{owner}/{page}`                              | `runa.admin.page.read`    | AdminAccess.page                                |
-| GET `/api/admin/{owner}/{page}/sections/{section}`           | `runa.admin.section.read` | AdminAccess.read                                |
-| POST `/api/admin/{owner}/{page}/preview`                     | `runa.admin.preview`      | AdminAccess.preview                             |
-| POST `/api/admin/{owner}/{page}/save`                        | `runa.admin.save`         | AdminAccess.save                                |
-| POST `/api/admin/{owner}/{page}/sections/{section}/commands` | `runa.admin.command`      | AdminAccess.command                             |
+| Method / path                                                | Named route                  | Operation                                       |
+| ------------------------------------------------------------ | ---------------------------- | ----------------------------------------------- |
+| GET `/admin`                                                 | `runa.admin.dashboard`       | Empty application shell, then guarded bootstrap |
+| GET `/admin/{owner}/{page}`                                  | `runa.admin.page`            | Application shell, owner/page grammar above     |
+| GET `/api/admin/entry`                                       | `runa.admin.entry`           | AdminAccess.entry, minimal advertisement        |
+| GET `/api/admin`                                             | `runa.admin.bootstrap`       | AdminAccess.bootstrap                           |
+| GET `/api/admin/{owner}/{page}`                              | `runa.admin.page.read`       | AdminAccess.page                                |
+| GET `/api/admin/{owner}/{page}/sections/{section}`           | `runa.admin.section.read`    | AdminAccess.read                                |
+| POST `/api/admin/{owner}/{page}/preview`                     | `runa.admin.preview`         | AdminAccess.preview                             |
+| POST `/api/admin/{owner}/{page}/save`                        | `runa.admin.save`            | AdminAccess.save                                |
+| POST `/api/admin/{owner}/{page}/sections/{section}/preview`  | `runa.admin.command.preview` | AdminAccess.previewCommand                      |
+| POST `/api/admin/{owner}/{page}/sections/{section}/commands` | `runa.admin.command`         | AdminAccess.command                             |
 
 Section reads use ordinary GET scalar parameters for `kind`, `field`, `public_id`,
 `cursor` and `limit`, and bracket parameters `sort[0][key]` / `sort[0][direction]`.
@@ -308,7 +309,9 @@ Field = {key:string,type:string,label:string,readonly:boolean,sensitive:boolean,
   required:boolean,max_length:int|null,choices:[string],multiple:boolean,
   component:Component|null}
 Command = {key:string,title:string,mode:'independent'|'atomic',destructive:boolean,
-  requirement:'none'|'password'|'second_factor'|'both',preview_required:boolean}
+  requirement:'none'|'password'|'second_factor'|'both',preview_required:boolean,
+  inputs:[string],bulk:boolean,action:string|null,available:boolean,
+  intent:'action'|'save'|'create'|'delete'}
 Widget = {id:string,title:string,component:Component|null,values:JsonMap,
   observed_at:string|null,expires_at:string|null,diagnostic:string|null}
 Component = {key:string,owner:string,manifest_hash:string|null,build_id:string|null}
@@ -458,8 +461,9 @@ identities use only the explicit public shape above. Contributions
 retain owner authority and use section identity `<owner>.<contribution>.<section>`;
 they appear only under an authorized existing host. Host sections sort by order/key,
 then contributions by contribution order/owned identity. The dashboard host accepts
-widgets only. A missing required participant cannot be saved: all write dispatch
-remains refused until the atomic coordinator is delivered.
+widgets only. A missing required participant cannot be saved: aggregate native
+execution remains refused until the point-6 coordinator is delivered. Independent
+commands retain their owning writer and current admission.
 
 Read projection removes denied and undeclared fields, choices and controls. It
 rejects unknown query fields, unreadable/nonfilterable/nonsortable filter/sort keys,
@@ -477,6 +481,36 @@ carry admin_widget_stale; failures yield empty values/null timestamps plus
 
 The shared private write-input intersection refuses read-only sections/fields,
 unknown keys, inaccessible command inputs and unconfirmed destructive commands.
-It executes no write and is not an application entrypoint. Future command/atomic
-coordinators must reuse it together with owning proofs, previews, revisions and
-Policies; declaration metadata cannot weaken the native owning API guard.
+It is not an application entrypoint. Independent commands consume it under entry
+admission, then execute the native owning writer after the entry root ends.
+Metadata cannot weaken native proofs, previews, revisions, Policies or Audit.
+
+## Independent command execution
+
+The framework owns intent/inputs; Admin projects/consumes them. intent explicitly
+selects action/save/create/delete presentation. A section admits at most one save
+and one create command; delete requires destructive=true. Inputs are projected
+only after read/write grants pass. bulk advertises an existing owning operation,
+never generic SQL. available checks the command binding independently of its
+reader. proofAction is the exact native proof action, projected as nullable action;
+non-none stepUp requires it. No action is inferred from owner/key names.
+
+AdminAccess adds previewCommand(string $owner,string $page,string $section,
+array $input): array at guarded API 1.0.0, operation command.preview with
+runa.admin.enter. Its result is {fingerprint:string,changes:JsonMap,
+requirement:string,every_action:bool}. Both independent transports accept
+ManagementWrite, at most 256 KiB HTTP with existing JSON/depth/field limits.
+Empty transport maps serialize as objects; native PHP retains arrays. Admission
+precedes FormRequest validation and handler loading. Unknown/read-only input
+refuses. Preview does not confirm destruction; execute requires confirmation and
+review when declared, with exact native validation in the owning protocol.
+
+Entry admission resolves a source-owned writer, then ends its transaction before
+preview/execute. Independent lifecycle/network/file work never runs inside that
+entry root. Post-write projection reauthorizes current entry/fields. A write may
+already have committed when response admission fails; never replay it. Preview
+changes include only readable nonsecret field keys; owners return safe field-bound
+differences. Validation errors retain only command inputs with fixed messages.
+HTTP error scope entry versus operation distinguishes entrance proof from native
+operation proof. Aggregate routes have bounded validation/transport but native
+preview/Save remain refused until point 6.

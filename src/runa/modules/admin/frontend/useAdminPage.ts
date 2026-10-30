@@ -12,6 +12,7 @@ import type {
 import { adminPath, decodePage } from './decode';
 import { adminFailure, refuseAdmin, sessionStamp } from './useAdmin';
 import { pageOwners } from './pageContext';
+import { pageRuntime } from './runtime';
 export function useAdminPage(
   admin: AdminController,
   location: Ref<AdminLocation>,
@@ -104,6 +105,7 @@ export function useAdminPage(
     refresh,
   };
   pageOwners.set(controller, admin);
+  pageRuntime(controller);
   onScopeDispose(() => pageOwners.delete(controller));
   return controller;
 }

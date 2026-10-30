@@ -11,6 +11,11 @@ export { useAdminResource } from '../../../../modules/admin/frontend/useAdminRes
 export { useAdminTable } from '../../../../modules/admin/frontend/useAdminTable';
 export { default as AdminResourceTable } from '../../../../modules/admin/frontend/AdminResourceTable.vue';
 export { default as AdminField } from '../../../../modules/admin/frontend/AdminField.vue';
+export { default as AdminForm } from '../../../../modules/admin/frontend/AdminForm.vue';
+export { default as AdminPage } from '../../../../modules/admin/frontend/AdminPage.vue';
+export { default as AdminSection } from '../../../../modules/admin/frontend/AdminSection.vue';
+export { default as AdminAction } from '../../../../modules/admin/frontend/AdminAction.vue';
+export { useAdminForm } from '../../../../modules/admin/frontend/useAdminForm';
 export { validateAdminField } from '../../../../modules/admin/frontend/fieldValidation';
 export { resolveAdminComponent } from '../../../../modules/admin/frontend/components';
 export type * from '../../../../modules/admin/frontend/contracts';

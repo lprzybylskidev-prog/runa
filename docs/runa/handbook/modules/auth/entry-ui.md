@@ -129,3 +129,38 @@ Recovery codes use the same AuthRecoveryCodesDialog as account enrollment and
 replacement. The modal body contains the one-time codes and storage instructions;
 its sole close path is the explicit saved acknowledgement, after which the normal
 restricted-session refresh resumes. Codes stay print-hidden and in memory only.
+
+## Operation proof composition
+
+Auth owns public useOperationProof/AuthOperationProof through `@/runa/auth`,
+implemented under Auth frontend and bundled presentation. Administrative App/module
+consumers retain their existing session owner; this controller never starts one.
+Call in the caller's Vue scope with source-owned action/requirement and an identity
+that becomes undefined whenever the owning session/account/authority is unavailable.
+
+```ts
+type ProofRequirement = 'none' | 'password' | 'second_factor' | 'both';
+function useOperationProof(options: {
+  identity: () => string | undefined;
+  action: () => string;
+  requirement: () => ProofRequirement;
+}): OperationProofController;
+```
+
+OperationProofController has password/code Ref<string>, method Ref<FactorMethod>,
+methods Ref<readonly FactorMethod[]>, open/busy/confirmed Ref<boolean>, error
+Ref<string>, requirement ComputedRef<ProofRequirement>, begin/confirm/sendEmail
+methods returning Promise<void> and reset():void. FactorMethod is totp/email/recovery.
+AuthOperationProof accepts only controller:OperationProofController; it has no
+slots/events. Headless consumers use the same controller with their own controls.
+The supplied presentation is English and composes existing public field/buttons.
+
+begin reads native security options only when a factor is required. Eligibility
+uses the existing Auth required/enrolled/enabled/recovery rules. confirm uses
+native step-up for the exact action; sendEmail uses security/email-send only for
+an eligible email method. Native backend proof policy remains authoritative.
+Passwords/codes clear after each settled attempt; reset/disposal/identity/action/
+requirement changes abort and fence pending work and erase methods/credentials.
+No credential is persisted. Failure is safe and explicitly retryable; proof
+confirmation never submits or retries a business mutation. confirmed is feedback,
+not an authorization token or promise that a later native write will succeed.

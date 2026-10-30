@@ -10,7 +10,7 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 Admin consumers can use public `AdminField` through `@/runa/admin` to compose these
 shared controls from authorized field metadata, including optional bounded lookup
-providers. Default Admin record sections render read-only fields. See the exact
+providers. Generated Admin forms compose shared drafts and explicit owning writes. See the exact
 [Admin field contract](../../modules/admin/frontend.md#delivered-field-composition)
 for replacement precedence, props/events and remaining form delivery.
 
@@ -19,6 +19,7 @@ for replacement precedence, props/events and remaining form delivery.
 - Search is locale-aware for local options; provider queries debounce (250ms default), abort prior requests and ignore stale responses even if a provider ignores cancellation. Loading/error/retry/empty states remain distinct. Escape restores trigger focus, outside pointer dismisses, arrows/Home/End move over enabled options and Enter selects; IME composition is preserved. Multiple selection stays open until Done.
 - Rendering is bounded to one page (40 default, at most 100). Local pages offer previous/next; remote providers receive query/cursor/limit/AbortSignal and return options/nextCursor. Remote next replaces the visible page; the provider owns cursor semantics, transport, ordering and authorization, without whole-dataset fetching. No automatic request on selection changes.
 - selectedOptions supplies labels for initial/off-page values. Labels for selected remote options survive page/query changes; unknown IDs remain visible as IDs. Selection events expose option snapshots; IDs remain the model. Keep durable option labels in caller state when unmounting. locale defaults to pl; pass en for English presentation. All closed selection modes share the same CSS chevron anchored 16px from the control’s right edge, independent of selected-label length. Closed controls retain normalized field styling; readonly controls never open the option panel.
+- providerSearch defaults true. Set false for a cursor provider whose contract has no search parameter: it keeps bounded next-page selection and keyboard navigation without inventing a filter or displaying a nonfunctional search field.
 
 ## AppForm
 

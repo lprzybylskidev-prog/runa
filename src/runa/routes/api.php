@@ -27,3 +27,17 @@ Route::get('/admin/{owner}/{page}', AdminBootstrapController::class)->middleware
 Route::get('/admin/{owner}/{page}/sections/{section}', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
     ->where(['owner' => 'app|(?:app|runa)\.[a-z][a-z0-9_]{0,47}', 'page' => '[a-z][a-z0-9_]{0,63}', 'section' => '[a-z][a-z0-9_.]{0,511}'])
     ->name('runa.admin.section.read');
+
+Route::post('/admin/{owner}/{page}/sections/{section}/commands', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
+    ->where(['owner' => 'app|(?:app|runa)\.[a-z][a-z0-9_]{0,47}', 'page' => '[a-z][a-z0-9_]{0,63}', 'section' => '[a-z][a-z0-9_.]{0,511}'])
+    ->name('runa.admin.command');
+Route::post('/admin/{owner}/{page}/sections/{section}/preview', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
+    ->where(['owner' => 'app|(?:app|runa)\.[a-z][a-z0-9_]{0,47}', 'page' => '[a-z][a-z0-9_]{0,63}', 'section' => '[a-z][a-z0-9_.]{0,511}'])
+    ->name('runa.admin.command.preview');
+
+Route::post('/admin/{owner}/{page}/preview', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
+    ->where(['owner' => 'app|(?:app|runa)\.[a-z][a-z0-9_]{0,47}', 'page' => '[a-z][a-z0-9_]{0,63}'])
+    ->name('runa.admin.preview');
+Route::post('/admin/{owner}/{page}/save', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
+    ->where(['owner' => 'app|(?:app|runa)\.[a-z][a-z0-9_]{0,47}', 'page' => '[a-z][a-z0-9_]{0,63}'])
+    ->name('runa.admin.save');

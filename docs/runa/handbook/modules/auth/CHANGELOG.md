@@ -2,6 +2,7 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Add public useOperationProof/AuthOperationProof for source-declared administrative action proof. Reuse native security/step-up/email-code endpoints and current eligible methods; erase password/code on settlement/invalidation and never replay an owning business write. The caller retains session admission and lifecycle identity.
 - Extract public ApplicationSessionShell; AuthApplication accepts a shared session plus typed navigation/current/locale/account-menu inputs without another session/activity owner.
 - Retain account/loading replacement and native session security; advertise Admin entry only in the account dropdown through the fixed proof-free availability read.
 - Expose authorityRevision for successful session refreshes and scope shared Admin controls to English without changing account language. The unreleased 2.0.0 target keeps its existing native_transactions edge; no extra version or migration is introduced.
