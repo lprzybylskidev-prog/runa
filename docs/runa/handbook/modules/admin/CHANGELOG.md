@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Make the default timezone selector searchable through the shared locale-aware Select and remove redundant settings introduction/logo/favicon helper copy.
+
 - Add application language/theme/timezone defaults, transactional uploaded logo with automatic favicon and custom favicon; preserve explicit preferences, UTC storage, revisions and Audit. Use page-specific main headings and bounded rows with adjacent Restore defaults controls.
 
 - Make optional integrations source-only; remove runtime configuration storage, Admin read/write operations/grant, editor/export/replacement seam and the module dialog tab bar. Preserve source validation and both-side availability checks.

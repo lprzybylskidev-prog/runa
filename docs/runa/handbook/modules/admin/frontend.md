@@ -1077,6 +1077,9 @@ its existing query navigation. AdminDashboard does not duplicate it; custom
 operations presentations own their heading. Module/settings cards omit their
 small duplicate titles. Settings rows have a bounded 48rem width, adjacent Restore
 defaults buttons with field-specific accessible names and narrow-screen wrapping.
+Timezone fields use the shared searchable Select with local filtering and localized
+search labels. The default settings form omits the redundant restart/reset intro
+and logo/favicon explanatory paragraphs.
 
 AdminApplicationSettingsController additionally exposes imageFiles
 `Ref<{logo: File[]; favicon: File[]}>`, imageBusy `Ref<boolean>`, imageError

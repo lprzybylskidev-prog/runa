@@ -55,13 +55,6 @@ onMounted(async () => {
             tr('Refresh current settings')
           }}</Button>
         </div>
-        <p class="text-sm text-muted">
-          {{
-            tr(
-              'Presentation changes take effect without restart. Reset restores source defaults.',
-            )
-          }}
-        </p>
         <Alert v-if="settings.invalid.value" tone="warning">{{
           tr(settings.invalid.value)
         }}</Alert>
@@ -106,13 +99,6 @@ onMounted(async () => {
                   controller.busy.value ||
                   settings.imageBusy.value ||
                   !field.writable
-                "
-                :helper="
-                  tr(
-                    field.key === 'presentation.logo'
-                      ? 'A favicon is generated automatically from the logo.'
-                      : 'Leave empty to use the favicon generated from the logo.',
-                  )
                 "
                 @update:model-value="
                   settings.selectImage(
@@ -179,6 +165,7 @@ onMounted(async () => {
             />
             <Select
               v-else-if="field.type === 'enum' || field.type === 'timezone'"
+              :searchable="field.type === 'timezone'"
               :label="tr(field.title)"
               :model-value="
                 typeof settings.draft.value[field.key] === 'string'

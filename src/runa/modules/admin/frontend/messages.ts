@@ -11,10 +11,6 @@ export const adminMessages: AdminMessages = {
   'Application favicon': 'Favicon aplikacji',
   'Restore defaults': 'Przywróć domyślne',
   'Deployed logo': 'Logo z aplikacji',
-  'A favicon is generated automatically from the logo.':
-    'Favicon jest automatycznie tworzona z logo.',
-  'Leave empty to use the favicon generated from the logo.':
-    'Pozostaw puste, aby używać favicony utworzonej z logo.',
   'Choose a PNG, JPEG or WebP image up to 4 MiB.':
     'Wybierz obraz PNG, JPEG lub WebP do 4 MiB.',
   'The image could not be read.': 'Nie udało się odczytać obrazu.',
@@ -248,8 +244,6 @@ export const adminMessages: AdminMessages = {
   'Ordinary assignments, copy and presets preserve protected membership. Each operation requires its own review and fresh both-factor proof. Protected authority uses a separate action and confirmation.':
     'Zwykłe przypisania, kopiowanie i zestawy zachowują chronione członkostwo. Każda operacja wymaga osobnego przeglądu oraz ponownego potwierdzenia hasłem i drugim składnikiem. Chronione uprawnienia zmienia się osobną akcją z potwierdzeniem.',
   Outcome: 'Wynik',
-  'Presentation changes take effect without restart. Reset restores source defaults.':
-    'Zmiany wyglądu działają bez ponownego uruchamiania. Reset przywraca domyślne wartości ze źródeł.',
   Progress: 'Postęp',
   'Public UUID.': 'Publiczny UUID.',
   'Re-enter this value after reviewing the current record.':

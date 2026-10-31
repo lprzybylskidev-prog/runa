@@ -559,6 +559,12 @@ reassessment before resuming point 3; completed point history remains evidence.
     beside fields, wrapping on narrow screens. Preserve shared controls/replacements.
   - Synchronize public contracts, source consumers and tests, prepare assets/data,
     record focused checks and commit before repeated owner acceptance.
+- [x] 11a24. Enable timezone search and remove redundant settings copy.
+  - Owner request, 2026-10-31: enable the existing local searchable Select variant
+    for timezone fields; preserve other settings controls and native validation.
+  - Owner addition: remove the restart/reset introduction and the two logo/favicon
+    explanatory texts, including obsolete translations.
+  - Synchronize the owning frontend guide/changelog and prepare current assets.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3374,3 +3380,21 @@ point. Release metadata is unchanged. No new Composer/pnpm dependency, runtime
 configuration or Docker resource was introduced. Active services, development/base
 test data, model/Qdrant caches and all evidence are preserved. Manual acceptance
 11b and final affected-area verification/release 12 remain open.
+
+### Point 11a24 — Searchable default timezone and concise settings copy
+
+Enabled the shared Select searchable prop for timezone fields. Search filters the
+existing authorized IANA options locally and retains shared PL/EN labels, keyboard
+selection, focus restoration and settings draft/revision behavior. The owner also
+removes the restart/reset introduction and both logo/favicon helper paragraphs;
+removed their obsolete PL translations. No backend,
+dependency, schema, source default or module version change. Local knowledge was
+current; the source-verified component contract supplies this existing variant.
+Frontend/Vue guidance applies. The canonical Admin frontend guide and candidate
+changelog are synchronized; owner/customer instructions already defer to those
+shared controls and need no duplicate rule. This reversible prop change adds no
+implementation-mirroring test; existing shared Select search coverage remains.
+Current asset preparation is recorded in
+.runtime/frontend/RM-2026-016-timezone-search-build.log. No Docker resources were
+created/removed and all data, caches and reports remain preserved. Manual owner
+acceptance 11b and final verification/release 12 remain open.
