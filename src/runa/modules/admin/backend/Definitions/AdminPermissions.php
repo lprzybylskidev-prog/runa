@@ -17,7 +17,6 @@ final class AdminPermissions implements ManagementProvider
             new ManagementPermission('health.diagnose', ['pl' => 'Diagnostyka modułów', 'en' => 'Diagnose modules'], ['pl' => 'Diagnostyka modułów.', 'en' => 'Diagnose modules.']),
             new ManagementPermission('modules.manage', ['pl' => 'Zarządzanie modułami', 'en' => 'Manage optional modules'], ['pl' => 'Zarządzanie modułami.', 'en' => 'Manage optional modules.']),
             new ManagementPermission('settings.manage', ['pl' => 'Historia i odzyskiwanie ustawień modułów', 'en' => 'Module settings history and recovery'], ['pl' => 'Odczyt historii i odzyskiwanie operacji ustawień.', 'en' => 'Read settings operation history and recover pending operations.']),
-            new ManagementPermission('integrations.manage', ['pl' => 'Konfiguracja integracji', 'en' => 'Configure integrations'], ['pl' => 'Konfiguracja integracji.', 'en' => 'Configure integrations.']),
             new ManagementPermission('work.read', ['pl' => 'Odczyt operacji', 'en' => 'Read module work'], ['pl' => 'Odczyt operacji.', 'en' => 'Read module work.']),
             new ManagementPermission('work.cancel', ['pl' => 'Anulowanie operacji', 'en' => 'Request work cancellation'], ['pl' => 'Anulowanie operacji.', 'en' => 'Request work cancellation.']),
         ];

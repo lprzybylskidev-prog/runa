@@ -159,3 +159,8 @@ not create an administrative editor. The module operations dialog has no generic
 settings tab or read/update endpoint. Source/CLI-only technical demonstrations
 remain separate from administrator-facing settings pages. See the
 [Admin authoring guide](../modules/admin/examples.md).
+
+Optional integrations declare enabled state and non-sensitive configuration in source
+through IntegrationProvider and schema-2 IntegrationDefinition; Admin supplies no
+runtime integration editor. Follow [optional integrations](../architecture/module-framework.md#delivered-public-events-and-optional-integrations)
+for the complete source contract and availability rules.

@@ -2,7 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
-- Remove the generic module settings tab, editor mode, settings read/update operations and read grant. Require dedicated owning settings pages with history/workflows; retain Auth policy, native settings, integrations and existing operation-history recovery.
+- Make optional integrations source-only; remove runtime configuration storage, Admin read/write operations/grant, editor/export/replacement seam and the module dialog tab bar. Preserve source validation and both-side availability checks.
+- Remove the generic module settings tab, editor mode, settings read/update operations and read grant. Require dedicated owning settings pages with history/workflows; retain Auth policy, native settings and existing operation-history recovery.
 
 - Translate lifecycle confirmation Cancel to Anuluj in Polish; verify all three action dialogs and retain the English label.
 
@@ -36,7 +37,7 @@
 
 - Deliver platform-owned application global settings with App-declared safe values/assets, positive revisions, exact grants and atomic redacted Audit; add no-restart public browser/mail/native-error presentation with source-only emergency fallback and replaceable shared-controller editor.
 
-- Deliver guarded operational dashboard, Optional lifecycle review/status/recovery, module settings/integrations/health/work controls and public replacement/controller seams; preserve CLI-only maintenance and native independent runners.
+- Deliver guarded operational dashboard, Optional lifecycle review/status/recovery, module lifecycle/diagnosis/work controls and public replacement/controller seams; preserve CLI-only maintenance and native independent runners.
 
 - Add public AdminRecordBrowser composition for guarded cursor catalogue/detail selection with dirty-draft preservation; compose Permissions and Audit owning defaults without new business engines.
 

@@ -15,7 +15,6 @@ export type AdminOperationView =
   | 'capabilities'
   | 'diagnostics'
   | 'module'
-  | 'integrations'
   | 'history'
   | 'work'
   | 'work.status'
@@ -29,7 +28,6 @@ export type AdminOperationCommand =
   | 'modules.resume'
   | 'modules.cancel'
   | 'settings.recover'
-  | 'integrations.configure'
   | 'work.cancel';
 export type AdminOperationData = Record<string, AdminJson>;
 

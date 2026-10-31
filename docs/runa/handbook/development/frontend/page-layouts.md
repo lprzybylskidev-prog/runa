@@ -184,8 +184,8 @@ helper starts sessions, authorizes access or performs writes.
 `usePageResolver` also returns readonly current `href: ComputedRef<string>` alongside its
 existing methods/current descriptor so query-driven subviews react to deliberate
 navigation and browser history. Account uses `?tab=...` (default details); Admin
-dashboard uses `?section=application` (default Modules); selected module editors
-use `?module=...&section=integrations`. Named server entry paths
+dashboard uses `?section=application` (default Modules); selected modules
+use `?module=...` and one content view without a local tab bar. Named server entry paths
 remain unchanged. Native modified clicks retain their link behavior; guarded
 navigation preserves the existing dirty/write protections and never replays writes.
 

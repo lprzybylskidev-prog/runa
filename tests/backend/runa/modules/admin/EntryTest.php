@@ -1287,33 +1287,25 @@ it('keeps Auth policy settings in their reviewed owner workflow and isolates rea
     $this->getJson('/api/admin/operations/work?module=runa.auth&limit=1')->assertOk()->assertJsonStructure(['data' => ['work', 'truncated']]);
 });
 
-it('publishes synchronous operational configuration only with atomic Audit and current generation', function (): void {
+it('refuses source-only integration and health configuration without mutation', function (): void {
     $fixture = new OperationalModule;
     try {
-        foreach (['enter', 'diagnostics.read', 'settings.manage', 'integrations.manage'] as $permission) {
+        foreach (['enter', 'diagnostics.read', 'settings.manage'] as $permission) {
             ($this->adminGrant)('runa.admin.'.$permission);
         }
         ($this->adminLogin)();
         ($this->adminProof)();
         $generation = app(ModuleRegistry::class)->snapshot()->generation;
         $this->getJson('/api/admin/operations/capabilities')->assertOk()
-            ->assertDontSee('health.configure');
+            ->assertDontSee('health.configure')->assertDontSee('integrations.manage');
         $this->getJson('/api/admin/operations/module?module='.$fixture->id)->assertOk()
             ->assertJsonMissingPath('data.health_policy')->assertJsonMissingPath('data.health_overrides');
         $this->postJson('/api/admin/operations/health.configure', ['module' => $fixture->id, 'generation' => $generation, 'overrides' => ['mode' => 'scheduled']])->assertUnprocessable();
-        expect(app(ModuleRegistry::class)->snapshot()->generation)->toBe($generation);
-        $config = ['module' => $fixture->id, 'generation' => app(ModuleRegistry::class)->snapshot()->generation, 'key' => 'history', 'enabled' => true, 'config' => ['mode' => 'safe']];
-        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT operational_audit_refusal CHECK (action <> 'integration.configure') NOT VALID");
-        try {
-            $this->postJson('/api/admin/operations/integrations.configure', $config)->assertConflict();
-        } finally {
-            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT operational_audit_refusal');
-        }
-        expect(app(ModuleRegistry::class)->snapshot()->generation)->toBe($config['generation']);
-        $this->postJson('/api/admin/operations/integrations.configure', $config)->assertOk();
-        $this->getJson('/api/admin/operations/integrations?module='.$fixture->id)->assertOk()->assertJsonPath('data.integrations.history.enabled', true);
+        $this->getJson('/api/admin/operations/integrations?module='.$fixture->id)->assertUnprocessable();
+        $this->postJson('/api/admin/operations/integrations.configure', ['module' => $fixture->id, 'generation' => $generation, 'key' => 'history', 'enabled' => true, 'config' => ['mode' => 'safe']])->assertUnprocessable();
         $this->getJson('/api/admin/operations/settings?module='.$fixture->id)->assertUnprocessable();
         $this->postJson('/api/admin/operations/settings.update', ['module' => $fixture->id, 'generation' => $generation, 'revision' => 0, 'patch' => ['title' => 'Updated']])->assertUnprocessable();
+        expect(app(ModuleRegistry::class)->snapshot()->generation)->toBe($generation);
     } finally {
         $fixture->remove();
     }

@@ -154,7 +154,6 @@ export interface AdminPresentation {
   operationHistory?: Component;
   moduleCard?: Component;
   operations?: Component;
-  operationalEditor?: Component;
   applicationSettings?: Component;
   layout?: Component;
   page?: Component;

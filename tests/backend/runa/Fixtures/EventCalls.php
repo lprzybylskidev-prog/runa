@@ -15,6 +15,11 @@ final class EventCalls
 
     public static bool $integration = false;
 
+    public static bool $integrationEnabled = true;
+
+    /** @var array<string, mixed> */
+    public static array $integrationConfig = ['format' => 'compact'];
+
     public static int $constructed = 0;
 
     public static function reset(): void
@@ -22,6 +27,8 @@ final class EventCalls
         self::$calls = [];
         self::$sync = self::$async = null;
         self::$integration = false;
+        self::$integrationEnabled = true;
+        self::$integrationConfig = ['format' => 'compact'];
         self::$constructed = 0;
     }
 }

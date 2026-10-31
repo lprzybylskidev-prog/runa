@@ -10,7 +10,6 @@ use Runa\Contracts\Modules\ApiOperation;
 use Runa\Identity\ApplicationIdentity;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
-use Runa\ModuleFramework\Events\ModuleIntegrations;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleOperationHistory;
 use Runa\ModuleFramework\ModuleRegistry;
@@ -29,7 +28,7 @@ final readonly class AdminOperations
         private AdminDiagnostics $diagnostics, private ApplicationIdentity $identity,
         private ModuleHealth $health,
         private ModuleTransitions $transitions, private ModuleSettings $settings,
-        private ModuleIntegrations $integrations, private ModuleWork $work, private Encrypter $encrypter, private AdminOperationalAuthority $authority, private ModuleOperationHistory $operationHistory) {}
+        private ModuleWork $work, private Encrypter $encrypter, private AdminOperationalAuthority $authority, private ModuleOperationHistory $operationHistory) {}
 
     /** @param array<string,mixed> $input @return array<string,mixed> */
     public function read(string $view, array $input = []): array
@@ -40,7 +39,6 @@ final readonly class AdminOperations
                 'application' => ['enter', []],
                 'diagnostics' => ['diagnostics.read', ['filter']],
                 'module' => ['diagnostics.read', ['module']],
-                'integrations' => ['integrations.manage', ['module']],
                 'work' => ['work.read', ['module', 'limit']],
                 'history' => ['enter', ['module', 'cursor', 'limit']],
                 'work.status' => ['work.read', ['id']],
@@ -62,7 +60,6 @@ final readonly class AdminOperations
                         'capabilities' => $this->capabilities(),
                     ],
                     'module' => $this->diagnostics->module($this->moduleId($input)),
-                    'integrations' => ['generation' => $this->registry->snapshot()->generation, 'integrations' => $this->integrations->metadata($this->moduleId($input))],
                     'work' => $this->workHistory($this->moduleId($input), $this->integer($input, 'limit', 100, 1000)),
                     'work.status' => ['work' => $this->work->status($this->uuid($input))],
                     'modules.status' => ['transition' => $this->transitions->status($this->uuid($input))],
@@ -83,7 +80,6 @@ final readonly class AdminOperations
                 'modules.apply' => ['modules.manage', ['review', 'confirmed'], true],
                 'modules.resume', 'modules.cancel' => ['modules.manage', ['id'], true],
                 'settings.recover' => ['settings.manage', ['id'], true],
-                'integrations.configure' => ['integrations.manage', ['module', 'key', 'enabled', 'config', 'generation'], false],
                 'work.cancel' => ['work.cancel', ['id'], false],
                 default => throw $this->invalid(),
             };
@@ -123,12 +119,6 @@ final readonly class AdminOperations
                         return ['transition' => $this->transitions->cancel($this->uuid($input))];
                     case 'settings.recover':
                         return ['transition' => $this->settings->recover($this->uuid($input))];
-                    case 'integrations.configure':
-                        if (! is_bool($input['enabled'] ?? null)) {
-                            throw $this->invalid();
-                        }
-
-                        return ['generation' => $this->integrations->configure($this->moduleId($input), $this->text($input, 'key'), $input['enabled'], $this->map($input, 'config'), $this->integer($input, 'generation'))];
                     case 'work.cancel':
                         return ['work' => $this->work->requestCancellation($this->uuid($input))];
                 }
@@ -175,7 +165,7 @@ final readonly class AdminOperations
     private function capabilities(): array
     {
         $result = [];
-        foreach (['diagnostics.read', 'health.diagnose', 'modules.manage', 'settings.manage', 'integrations.manage', 'work.read', 'work.cancel', 'application.read', 'application.manage'] as $permission) {
+        foreach (['diagnostics.read', 'health.diagnose', 'modules.manage', 'settings.manage', 'work.read', 'work.cancel', 'application.read', 'application.manage'] as $permission) {
             try {
                 $this->guard->enter('runa.admin', new ApiOperation('operations.read', 'runa.admin.'.$permission));
                 $result[] = $permission;

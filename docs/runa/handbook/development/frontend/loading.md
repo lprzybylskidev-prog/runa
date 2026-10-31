@@ -90,13 +90,13 @@ Admin retains ApplicationLayout throughout initial session/bootstrap discovery;
 MinimalLayout belongs to explicit entry proof and refusal. The supplied Admin
 content region mounts its authorized controllers behind a hidden, inert subtree
 while page declarations, record/table reads, capability/diagnostic reads and the
-initial selected application/integration editor read settle. Lazy component boundaries wait for
+initial selected application settings editor read settle. Lazy component boundaries wait for
 resolution or their existing bounded failure fallback. It reuses useViewReadiness and waits
 for projected children to register before revealing the region and navigation.
 Failed reads settle to existing explicit error/retry presentation; they do not
 keep a skeleton indefinitely. No extra reads or minimum delay are introduced.
 The region is scoped to the mounted account/session/page and removed on actual
-access loss. Later reads retain its DOM and drafts. Newly opened application/integration editors
+access loss. Later reads retain its DOM and drafts. Newly opened application settings editors
 also use local boundaries; interactive option searches and optional widgets keep
 their own loading ownership. A replacement that starts independent asynchronous
 work must compose its own public readiness boundary.

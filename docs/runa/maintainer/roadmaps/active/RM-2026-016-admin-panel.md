@@ -61,8 +61,8 @@ foundation; other proposed contracts retain the delivery status in the handbook.
 Scope includes `/admin` dashboard and account-menu-only entry; developer-controlled
 module/page navigation; complete supported Auth/Permissions/Audit administration;
 generated and customizable tables/forms; field/section/page/action authorization;
-compatible atomic cross-module Save; diagnostics/work/Optional lifecycle/settings/
-integrations/recovery; CLI-only maintenance diagnostics/recovery; application
+compatible atomic cross-module Save; diagnostics/work/Optional lifecycle/settings
+recovery; source-only health policy/integrations; CLI-only maintenance diagnostics/recovery; application
 global settings; independent pages; customer replacements; opt-in generator
 scaffolding; tests and complete developer documentation.
 
@@ -316,8 +316,9 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Prerequisites: 2–5, 7–8; recorded ARCH-002 decision.
   - Dashboard versions/safe runtime summary, health/dependencies/freshness/filtering,
     module widgets and explicit diagnosis use existing observations/engines.
-  - Wire allowed Optional transitions/preview/status/resume/cancel, settings and
-    integration configuration and permitted work cancellation/status.
+  - Wire allowed Optional transitions/preview/status/resume/cancel, retained settings
+    recovery and permitted work cancellation/status. Health policy and integration
+    configuration remain source-only under owner amendments 11a17 and 11a22.
     Add mandatory transactional Audit participation where engines lack it; retain
     pending/recovery_required and module-owned recovery semantics.
   - Retain current maintenance guards and update/Core failure fencing; maintenance
@@ -532,6 +533,17 @@ reassessment before resuming point 3; completed point history remains evidence.
     operation history/status/recovery. Integrations keep their existing editor.
   - Document authoring/generator boundaries and update current consumers/tests;
     prepare assets, run focused checks and commit before repeated owner acceptance.
+- [x] 11a22. Make optional integration configuration source-only.
+  - Owner decision, 2026-10-31: follow the source-only health-policy removal;
+    remove the Admin tab/editor, public presentation seam, read/write operations,
+    grant and database override storage. Keep source-declared integration behavior,
+    validation and both-side availability/version admission.
+  - Replace default/override metadata with explicit source enabled/config values;
+    update consumers, tests and canonical guides, using a forward migration.
+  - Remove the module dialog tab bar entirely; retain its single content view,
+    lifecycle/diagnosis/history and module deep links.
+  - Prepare current assets/data, record focused uncertainty checks and instruction
+    assessment, and commit before repeated owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3181,3 +3193,69 @@ at http://localhost:8080/admin for repeated owner acceptance. No migrations,
 application data changes or Docker resources were introduced/removed; active
 services/data, knowledge/model caches and all reports remain preserved. Owner
 acceptance 11b and final verification/release 12 remain open; no broad gate was run.
+
+### Point 11a22 — Source-only optional integrations and a single module dialog view
+
+The owner explicitly requests the same removal boundary as source-only health
+policy (11a17). Optional integration behavior remains, with enabled/config values
+owned exclusively by module source. IntegrationDefinition now has schema 2 and
+explicit enabled/config parameters instead of override defaults. IntegrationProvider
+retains pure source validation. ModuleIntegrations no longer writes, locks or reads
+configuration from storage; version checks, both-side admission and final source
+rechecking still guard use and async invocation. The manifest framework_api remains
+1; this descriptor schema change belongs to the prepared platform 0.7.0 contract.
+All real Core integration declarations are empty, so no module provider or upgrade
+edge needs migration. Admin remains its unreleased creation candidate 0.1.0; no
+independent module version change is required. Standing pre-1.0 authorization
+covers removal of the Admin editor/export/presentation seam and old DTO names.
+
+Removed the integrations read/configure HTTP operations, advertised capability and
+source permission, editor component/public export and operationalEditor replacement
+slot. The module dialog now renders one content view without Tabs or a local menu.
+Old health/settings/integrations URLs retain module selection without editor reads.
+Lifecycle reviews, diagnosis dialogs, task/operation history, guarded navigation and
+identity/authority fencing remain. Application settings keeps its own editor/guards.
+Retained permission dictionary/grant history follows the existing source-removal
+policy; no assignment mutation or history cleanup was performed.
+
+A new forward migration drops only shared.modules.integration_values and its
+constraint, then advances registry generation. Local preflight identified the local
+runa development database, no unresolved transitions and all four installed Core
+versions. The exact column-removal scope was disclosed before application. Owner
+forward migration passed in .runtime/frontend/RM-2026-016-source-integrations-forward.log;
+postflight confirms the column is absent and module flags/installed versions are
+unchanged. No reset or business-data/Audit/work deletion was performed.
+
+Focused supported frontend checks passed 12 cases (390 excluded), native exit /
+cleanup 0, in .runtime/frontend/RM-2026-016-source-integrations-frontend-final.log.
+Coverage includes old module links without tabs/editor requests, direct close/focus
+return, retained diagnosis/tasks and request/draft fencing. Focused isolated backend
+checks passed 6 cases / 38 assertions, parallel/processes=1, native exit/cleanup 0,
+in .runtime/frontend/RM-2026-016-source-integrations-backend-isolated.log: source
+configuration/validation, absent override storage, async/final admission rechecks,
+source synchronization and refusal of removed Admin operations without generation
+mutation. The supported runner removed only its runa_test_test_1, preserving base
+and development databases. Initial nonisolated execution encountered retained Core
+state in the base test database; isolated execution resolved that fixture context.
+A concurrent frontend invocation was refused by the suite lock. Initial UI checks
+caught remaining editor references and a multiline translation value; both were
+removed, then the same focused checks and build passed. Native failed evidence is
+preserved; these checks do not claim broad gate PASS.
+
+TypeScript/Vite/native-error asset preparation passed in
+.runtime/frontend/RM-2026-016-source-integrations-build-final.log. Nginx /admin,
+/api/ready and all 16 entry-linked assets return HTTP 200; unauthenticated
+/api/admin/entry remains 401. Evidence:
+.runtime/frontend/RM-2026-016-source-integrations-http.json. The local application
+at http://localhost:8080/admin is ready for repeated owner acceptance.
+
+Synchronized framework/database/module-authoring, Admin public frontend/operations,
+loading/navigation/component guides and current Admin/Audit candidate changelogs.
+Owner/customer AGENTS and skills already delegate these extension/presentation
+rules to canonical guides and contain no removed editor procedure, so neither
+instruction product needs duplicated rules. Relevant frontend/Vue/Tailwind,
+backend/Laravel/security/PostgreSQL skills were loaded; local knowledge was current
+and bounded retrieval was checked against original sources. No dependency,
+runtime configuration or Docker resource change was made. Development/test data,
+active services, model/Qdrant caches and all reports remain preserved. Owner manual
+acceptance 11b and final verification/release 12 remain open.

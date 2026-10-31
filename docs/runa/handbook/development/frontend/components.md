@@ -431,7 +431,7 @@ Use the exact [record-browser contract](../../modules/admin/frontend.md#record-b
 and owning [Permissions](../../modules/permissions/administration.md) /
 [Audit](../../modules/audit/administration.md) presentation signatures.
 
-Admin operational defaults `AdminOperations`, `AdminOperationalEditor` and
+Admin operational defaults `AdminOperations` and
 `AdminOperationResult` plus `useAdminOperations` are exported by `@/runa/admin`.
 Their typed props/slots/controller and replacement keys are documented in
 [operational dashboard composition](../../modules/admin/frontend.md#operational-dashboard-and-replacements).

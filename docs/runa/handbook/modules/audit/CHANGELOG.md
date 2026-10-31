@@ -4,7 +4,7 @@
 
 - Localize the administrative history/detail presentation through shared Admin PL/EN copy while preserving immutable Audit records and technical identifiers.
 
-- Add reserved operational participation for atomic framework health/integration configuration, lifecycle phase history and first cooperative cancellation requests, without configuration values or runner tokens.
+- Add reserved operational participation for atomic framework lifecycle phase history and first cooperative cancellation requests, without configuration values or runner tokens.
 
 - Preserve the 64-KiB management-record bound with explicit large-payload continuation; reconstruct complete immutable JSON through guarded reads.
 - Deliver source-owned Admin cursor/filter/detail/entity-history viewer and public presentation defaults; summaries omit payloads, current read authority remains required.

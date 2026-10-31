@@ -6,6 +6,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Queue\WorkerOptions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Monolog\Handler\TestHandler;
 use Runa\Contracts\Modules\EventDefinition;
@@ -69,7 +70,7 @@ beforeEach(function (): void {
     $guard = new OperationGuard($this->registry, $availability, new MaintenanceState(app(), DB::connection(), $this->registry, $availability), new DenyProtectedOperations, app(), $this->scope);
     $jobs = new WorkDefinitions($this->registry, $declarations);
     $definitions = new EventDefinitions($declarations, $jobs);
-    $this->integrations = new ModuleIntegrations(DB::connection(), $this->registry, $declarations, $guard);
+    $this->integrations = new ModuleIntegrations($this->registry, $declarations, $guard);
     $this->subscriptions = new EventSubscriptions($this->registry, $definitions, $this->integrations);
     $this->work = new ModuleWork(DB::connection(), $this->registry, $jobs, $guard, $this->scope, app(Encrypter::class), app(Factory::class), $this->subscriptions);
     app()->instance(ModuleWork::class, $this->work);
@@ -169,13 +170,11 @@ it('blocks disabled queued listeners before handler construction and permits bou
     expect($this->work->status(($this->workId)())->status)->toBe('succeeded')->and(EventCalls::$constructed)->toBe(1);
 });
 
-it('toggles optional integration independently and rejects stale or invalid config writes', function (): void {
+it('uses only source integration configuration without changing either module flag', function (): void {
     EventCalls::$integration = true;
-    $generation = $this->registry->snapshot()->generation;
-    $next = $this->integrations->configure($this->subscriber, 'audit', false, ['format' => 'full'], $generation);
-    expect($next)->toBe($generation + 1);
-    expect(fn () => $this->integrations->configure($this->subscriber, 'audit', true, ['format' => 'compact'], $generation))->toThrow(RuntimeException::class);
-    expect(fn () => $this->integrations->configure($this->subscriber, 'audit', true, ['format' => 'invalid'], $next))->toThrow(RuntimeException::class);
+    EventCalls::$integrationEnabled = false;
+    EventCalls::$integrationConfig = ['format' => 'full'];
+    expect(Schema::hasColumn('shared.modules', 'integration_values'))->toBeFalse();
     $this->events->dispatch($this->publisher, 'changed', 1, []);
     expect(EventCalls::$calls)->toBe([])->and(($this->workId)())->toBeNull();
     foreach ([$this->publisher, $this->subscriber] as $id) {
@@ -188,12 +187,11 @@ it('toggles optional integration independently and rejects stale or invalid conf
 it('rechecks integration toggle and both sides at actual async start', function (): void {
     EventCalls::$integration = true;
     $this->events->dispatch($this->publisher, 'changed', 1, []);
-    $generation = $this->registry->snapshot()->generation;
-    $this->integrations->configure($this->subscriber, 'audit', false, ['format' => 'compact'], $generation);
+    EventCalls::$integrationEnabled = false;
     EventCalls::$constructed = 0;
     ($this->worker)();
     expect(EventCalls::$constructed)->toBe(0);
-    $this->integrations->configure($this->subscriber, 'audit', true, ['format' => 'compact'], $this->registry->snapshot()->generation);
+    EventCalls::$integrationEnabled = true;
     ($this->state)($this->publisher, ['enabled' => false]);
     $this->travel(3)->seconds();
     ($this->worker)();
@@ -256,8 +254,9 @@ it('rejects generic job dispatch to a listener bound target', function (): void 
     expect(($this->workId)())->toBeNull();
 });
 
-it('retains optional integration state during source synchronization without activating either module', function (): void {
-    $this->integrations->configure($this->subscriber, 'audit', false, ['format' => 'full'], $this->registry->snapshot()->generation);
+it('reads optional integration configuration from source after synchronization without activation', function (): void {
+    EventCalls::$integrationEnabled = false;
+    EventCalls::$integrationConfig = ['format' => 'full'];
     ($this->state)($this->subscriber, ['enabled' => false]);
     $this->registry->synchronize('app');
     expect($this->integrations->metadata($this->subscriber)['audit']['enabled'])->toBeFalse();
@@ -271,7 +270,7 @@ it('keeps the committed origin successful if enqueue fails and redacts listener 
     $originRuns = 0;
     DB::transaction(function () use (&$originRuns): void {
         $originRuns++;
-        DB::table('shared.modules')->where('module_id', $this->publisher)->update(['integration_values' => '{"origin_marker":{"enabled":false,"config":{}}}']);
+        DB::table('shared.modules')->where('module_id', $this->publisher)->update(['settings_revision' => 321]);
         $this->events->dispatch($this->publisher, 'changed', 1, ['public_value' => 'private-payload']);
     });
     expect($this->logger->entries)->toHaveCount(3);
@@ -280,7 +279,7 @@ it('keeps the committed origin successful if enqueue fails and redacts listener 
         expect(json_encode([$message, $context]))->not->toContain('private-exception', 'private-payload');
     }
     expect($originRuns)->toBe(1)->and(EventCalls::$calls)->toHaveCount(2)->and(($this->workId)())->toBeNull();
-    expect(DB::table('shared.modules')->where('module_id', $this->publisher)->value('integration_values'))->toContain('origin_marker');
+    expect(DB::table('shared.modules')->where('module_id', $this->publisher)->value('settings_revision'))->toBe(321);
 });
 
 it('rejects conflicting envelopes sharing a delivery identity and enforces actual database constraints', function (): void {
@@ -289,7 +288,6 @@ it('rejects conflicting envelopes sharing a delivery identity and enforces actua
     expect(fn () => $this->work->dispatchEvent($this->subscriber, 'queued', $conflict))->toThrow(RuntimeException::class);
     expect(DB::table('shared.jobs')->where('queue', $this->queue)->count())->toBe(1);
     expect(fn () => DB::transaction(fn () => DB::table('shared.module_work')->where('public_id', ($this->workId)())->update(['delivery_key' => null])))->toThrow(QueryException::class);
-    expect(fn () => DB::transaction(fn () => DB::table('shared.modules')->where('module_id', $this->subscriber)->update(['integration_values' => '[]'])))->toThrow(QueryException::class);
 });
 
 it('rechecks a toggle changed during the final operational health check before enqueue', function (): void {
@@ -304,7 +302,7 @@ it('rechecks a toggle changed during the final operational health check before e
     $this->registry->synchronize('app');
     HealthPolicy::$definitions[$this->subscriber] = ['operations' => ['receive']];
     HealthPolicy::$checks[$this->subscriber] = function (): bool {
-        $this->integrations->configure($this->subscriber, 'audit', false, ['format' => 'compact'], $this->registry->snapshot()->generation);
+        EventCalls::$integrationEnabled = false;
 
         return true;
     };
@@ -318,9 +316,9 @@ it('rechecks a toggle changed during the final operational health check before e
     }
 });
 
-it('fails closed on malformed persisted toggle values', function (): void {
+it('fails closed on invalid source integration configuration', function (): void {
     EventCalls::$integration = true;
-    ($this->state)($this->subscriber, ['integration_values' => '{"audit":{"enabled":"false","config":{"format":"compact"}}}']);
+    EventCalls::$integrationConfig = ['format' => 'invalid'];
     expect(fn () => $this->integrations->requireAvailable($this->subscriber, 'audit'))->toThrow(RuntimeException::class);
     $this->events->dispatch($this->publisher, 'changed', 1, []);
     expect(EventCalls::$constructed)->toBe(0)->and(($this->workId)())->toBeNull();

@@ -92,7 +92,7 @@ final class ModuleFrameworkServiceProvider extends ServiceProvider
         $this->app->singleton(ModuleApis::class);
         $this->app->singleton(WorkDefinitions::class);
         $this->app->singleton(EventDefinitions::class);
-        $this->app->singleton(ModuleIntegrations::class, fn () => new ModuleIntegrations($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make(OperationGuard::class), $this->app->make(OperationalParticipant::class)));
+        $this->app->singleton(ModuleIntegrations::class, fn () => new ModuleIntegrations($this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make(OperationGuard::class)));
         $this->app->singleton(EventSubscriptions::class);
         $this->app->singleton(ModuleEvents::class, fn () => new ModuleEvents($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(EventDefinitions::class), $this->app->make(EventSubscriptions::class), $this->app->make(ModuleDeclarations::class), $this->app->make(OperationGuard::class), $this->app->make(OperationScope::class), $this->app->make(ModuleWork::class), $this->app->make(LoggerInterface::class)));
         $this->app->singleton(ModuleWork::class, fn () => new ModuleWork($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(WorkDefinitions::class), $this->app->make(OperationGuard::class), $this->app->make(OperationScope::class), $this->app->make(Encrypter::class), $this->app->make(Factory::class), $this->app->make(EventSubscriptions::class), $this->app->make(OperationalParticipant::class)));

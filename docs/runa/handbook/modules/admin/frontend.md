@@ -15,7 +15,7 @@ useAdminResource/useAdminTable and validateAdminField. Source home is
 Record forms execute explicit independent commands or compatible native atomic
 preview/Save through the shared form owner. Point 6 delivers server coordination
 and initial profile/access record adapters. Point 9 delivers operational dashboard,
-integration editing, lifecycle/work controls and retained settings operation recovery. Point 10 delivers application global settings and runtime branding. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
+module diagnosis, lifecycle/work controls and retained settings operation recovery. Point 10 delivers application global settings and runtime branding. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
 
 ## Initial presentation
 
@@ -846,7 +846,7 @@ guides. No security/session ownership moves into customer presentation.
 
 ## Operational dashboard and replacements
 
-`@/runa/admin` exports `AdminOperations`, `AdminOperationalEditor`,
+`@/runa/admin` exports `AdminOperations`,
 `AdminOperationResult`, `useAdminOperations`, `AdminOperationsController`,
 `AdminOperationView`, `AdminOperationCommand` and `AdminOperationData`.
 The dashboard composes operational content alongside independently isolated module
@@ -854,21 +854,16 @@ widgets. `AdminOperations` props: `{ admin: AdminController }`; default slot:
 `{ controller: AdminOperationsController }`. The component exposes `controller`.
 `AdminPresentation.operations?: Component` replaces that default with the same prop.
 
-`AdminOperationalEditor` props are `{ controller: AdminOperationsController;
-module: string }`.
-`AdminPresentation.operationalEditor?: Component` replaces it with the same props;
-its `saved` event requests safe dashboard read reconciliation after publication.
 `AdminOperationResult` accepts `{ result: AdminOperationData }`. Diagnostic outcomes
 use semantic health/blocked colors and safe reasons without redundant module identity;
 other native results retain their operation IDs and cooperative cancellation without
 inventing success.
-These views reuse the shared controls and support PL/EN. AdminOperationalEditor
-edits only non-sensitive integration maps through controlled JSON input. Module
-settings have no generic dialog tab, reader or writer; administrator-editable
-settings require the owning module's dedicated page, change history and workflow.
-Auth supplies its Authentication policy page. Native settings storage, revision,
-validation, secret redaction and recovery remain reusable; they do not automatically
-create an editor. Health policy remains source-only.
+These views reuse shared controls and support PL/EN. Integration enabled/config
+values and health policy are source-only; neither has an Admin editor or presentation
+replacement seam. Module settings have no generic dialog tab, reader or writer;
+administrator-editable settings require the owning module's dedicated page, change
+history and workflow. Auth supplies its Authentication policy page. Native settings
+storage, revision, validation, secret redaction and recovery remain reusable.
 
 `useAdminOperations(admin: AdminController): AdminOperationsController` owns one
 request/write lane, session/proof failure propagation, context cancellation, dirty
@@ -982,15 +977,15 @@ controllers, refetching protected data or discarding drafts.
 
 The sidebar selects the dashboard or an owning module; owner page links already
 use the horizontal top bar. Dashboard Modules/Application settings publish to that same top bar through
-public PageNavigation. Selected module Health policy/Settings/Integrations belong
-to its operation dialog, with capability-filtered local tabs.
-Record/module selection and actual diagnose/read/review/save actions stay in content.
-Application settings uses `?section=application`; module editors preserve
-`?module=<module-code>&section=integrations`. Direct URLs and browser
-history restore the selected view. The shared operational dirty guard can cancel
-navigation without changing URL/draft; accepted navigation cancels only optional
-reads, never submits or replays writes. Initial capability admission completes
-before a selected editor read; background validation retains mounted editors.
+public PageNavigation. Selected modules open one content view in their operation
+dialog without a tab bar or local menu. Diagnose/read/review actions stay in content.
+Application settings uses `?section=application`; module selection uses
+`?module=<module-code>`. Direct URLs and browser history restore selection; obsolete
+health/settings/integrations sections show the same content without editor reads.
+The shared operational guard can cancel navigation without changing URL/draft;
+accepted navigation cancels optional reads and never replays writes. Initial capability
+admission settles before opening selected module content; background validation
+retains it.
 Custom App layouts follow the UI-owned
 [composition contract](../../development/frontend/page-layouts.md#page-level-navigation-composition).
 
@@ -1010,12 +1005,12 @@ and observations. Disabled/unregistered cards use a gray top accent and gray hov
 border, sharing the existing subtle transitions and keyboard focus ring. Optional slots are not required; App replacements compose the
 public operation controller and can replace the whole operations presentation.
 
-The default module cards open a Dialog for the selected module. Its scoped tabs
-contain overview/actions and integrations according to
-current capabilities. These dialog-local controls are not page-level navigation.
-Dashboard/Application settings remain in the shared top bar. Module/section query
-parameters retain deep links and history; closing or changing a dirty editor uses
-the existing guard before changing URL or disposing the draft. Core lifecycle
+The default module cards open a Dialog with one content view for module details,
+lifecycle actions, diagnosis and retained operation/task history. There is no tab
+bar, local menu or generic settings/integration editor. Dashboard/Application settings
+remain in the shared top bar. Module query parameters retain deep links and history;
+closing uses the existing controller navigation guard.
+Core lifecycle
 controls stay hidden and native server refusals remain authoritative. Native
 preview/review and confirmations remain mandatory for lifecycle mutations.
 
