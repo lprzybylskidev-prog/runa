@@ -7,10 +7,8 @@ interface HealthPolicy
 {
     public function schemaVersion(): int;
 
-    /** Reject unknown/forbidden overrides. The revision covers module-owned policy inputs.
-     * @param  array<string, mixed>  $overrides
-     */
-    public function definition(array $overrides): HealthDefinition;
+    /** Source-only policy. The revision covers all module-owned policy inputs. */
+    public function definition(): HealthDefinition;
 
     /** Honor the deadline and bound network/IO calls. False is a safe failed observation. */
     public function check(string $check, HealthContext $context): bool;

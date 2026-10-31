@@ -15,7 +15,6 @@ final class AdminPermissions implements ManagementProvider
             new ManagementPermission('enter', ['pl' => 'Wejście do administracji', 'en' => 'Enter administration'], ['pl' => 'Wejście do administracji.', 'en' => 'Enter administration.']),
             new ManagementPermission('diagnostics.read', ['pl' => 'Odczyt diagnostyki', 'en' => 'Read diagnostics'], ['pl' => 'Odczyt diagnostyki.', 'en' => 'Read diagnostics.']),
             new ManagementPermission('health.diagnose', ['pl' => 'Diagnostyka modułów', 'en' => 'Diagnose modules'], ['pl' => 'Diagnostyka modułów.', 'en' => 'Diagnose modules.']),
-            new ManagementPermission('health.configure', ['pl' => 'Konfiguracja diagnostyki', 'en' => 'Configure health policy'], ['pl' => 'Konfiguracja diagnostyki.', 'en' => 'Configure health policy.']),
             new ManagementPermission('modules.manage', ['pl' => 'Zarządzanie modułami', 'en' => 'Manage optional modules'], ['pl' => 'Zarządzanie modułami.', 'en' => 'Manage optional modules.']),
             new ManagementPermission('settings.read', ['pl' => 'Odczyt ustawień modułów', 'en' => 'Read module settings'], ['pl' => 'Odczyt ustawień modułów.', 'en' => 'Read module settings.']),
             new ManagementPermission('settings.manage', ['pl' => 'Zmiana ustawień modułów', 'en' => 'Manage module settings'], ['pl' => 'Zmiana ustawień modułów.', 'en' => 'Manage module settings.']),

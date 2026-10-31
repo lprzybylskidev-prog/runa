@@ -6,7 +6,6 @@ use Illuminate\Database\Connection;
 use Runa\Contracts\Modules\GraphBlocker;
 use Runa\Contracts\Modules\HealthContext;
 use Runa\Contracts\Modules\HealthDefinition;
-use Runa\Contracts\Modules\OperationalParticipant;
 use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Support\Modules\ModuleRecord;
 use RuntimeException;
@@ -18,37 +17,7 @@ final class ModuleHealth
     /** @var array<string, true> */
     private static array $running = [];
 
-    public function __construct(private readonly HealthAdmissions $admissions, private readonly Connection $connection, private readonly ModuleRegistry $registry, private readonly HealthPolicies $policies, private readonly HealthDeadline $deadline, private readonly OperationalParticipant $history = new NoOperationalParticipation) {}
-
-    /** Trusted management write with optimistic concurrency; source policy validates every override.
-     * @param  array<string, mixed>  $overrides
-     */
-    public function configure(string $id, array $overrides, int $generation): void
-    {
-        $encoded = json_encode((object) $overrides, JSON_THROW_ON_ERROR);
-        if (strlen($encoded) > 4096) {
-            throw new RuntimeException('Health overrides exceed the safe bound.');
-        }
-        $this->connection->transaction(function () use ($id, $overrides, $generation, $encoded): void {
-            $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
-            $snapshot = $this->registry->snapshot();
-            if ($snapshot->generation !== $generation || $snapshot->fenced !== []) {
-                throw new RuntimeException('Refresh health configuration after the current transition.');
-            }
-            $record = $snapshot->modules[$id] ?? throw new RuntimeException('Unknown module.');
-            $policy = $this->policies->resolve($record);
-            if ($policy === null) {
-                throw new RuntimeException('The module declares no health overrides.');
-            }
-            $policy->definition($overrides);
-            $this->connection->table('shared.modules')->where('module_id', $id)->update([
-                'health_overrides' => $encoded, 'health_revision' => $record->healthRevision + 1,
-                'health_observations' => '{}', 'updated_at' => now(),
-            ]);
-            $this->connection->table('shared.module_registry_state')->where('id', 1)->increment('generation');
-            $this->history->recording($this->connection, $id, 'health.configure', ['revision' => $record->healthRevision + 1, 'generation' => $generation + 1]);
-        });
-    }
+    public function __construct(private readonly HealthAdmissions $admissions, private readonly Connection $connection, private readonly ModuleRegistry $registry, private readonly HealthPolicies $policies, private readonly HealthDeadline $deadline) {}
 
     /** Explicit trusted diagnosis also prepares observations before enabling a disabled module.
      * @return array{state: string, reasons: list<GraphBlocker>, blocked: bool, observations: ?array<string, array{fingerprint: string, passed: bool, checked_at: int, expires_at: int, code: string}>}
@@ -75,9 +44,9 @@ final class ModuleHealth
     {
         try {
             $policy = $this->policies->resolve($record);
-            $definition = $policy?->definition($record->healthOverrides) ?? new HealthDefinition('none', 'scheduled', []);
+            $definition = $policy?->definition() ?? new HealthDefinition('none', 'scheduled', []);
             $checks = array_filter($definition->checks, fn ($check): bool => $operation === null || $check->applies($operation));
-            $fingerprint = hash('sha256', json_encode([$record->manifestHash, $record->healthRevision, $definition], JSON_THROW_ON_ERROR));
+            $fingerprint = hash('sha256', json_encode([$record->manifestHash, $definition], JSON_THROW_ON_ERROR));
             $observations = $record->healthObservations;
             $run = $policy !== null && ($trigger === 'diagnostic' || ($trigger === 'use' && in_array($definition->mode, ['on_use', 'hybrid'], true)) || ($trigger === 'scheduled' && in_array($definition->mode, ['scheduled', 'hybrid'], true)));
             if ($run && $trigger === 'use' && $checks !== [] && $this->admissions->reuse($record, $operation, $fingerprint)) {
@@ -171,6 +140,6 @@ final class ModuleHealth
 
     private function samePolicy(ModuleRecord $old, ModuleRecord $new): bool
     {
-        return $new->registered && $new->sourcePresent && $new->publicId === $old->publicId && $new->manifestHash === $old->manifestHash && $new->healthRevision === $old->healthRevision;
+        return $new->registered && $new->sourcePresent && $new->publicId === $old->publicId && $new->manifestHash === $old->manifestHash;
     }
 }

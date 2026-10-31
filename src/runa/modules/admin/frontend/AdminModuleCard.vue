@@ -187,7 +187,7 @@ function date(value: AdminJson | undefined) {
 <style scoped>
 .admin-module-card {
   position: relative;
-  --module-accent: var(--runa-border);
+  --module-accent: var(--runa-text-secondary);
   --module-tint: var(--runa-surface-raised);
   display: flex;
   flex-direction: column;

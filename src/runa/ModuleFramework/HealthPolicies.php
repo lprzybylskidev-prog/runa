@@ -45,7 +45,7 @@ final readonly class HealthPolicies
             throw new RuntimeException('Invalid health descriptor.');
         }
         $policy = $this->container->make($class);
-        if (! $policy instanceof HealthPolicy || $policy->schemaVersion() !== 1) {
+        if (! $policy instanceof HealthPolicy || $policy->schemaVersion() !== 2) {
             throw new RuntimeException('Unsupported health descriptor.');
         }
 

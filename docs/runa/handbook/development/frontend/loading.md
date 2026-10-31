@@ -142,9 +142,11 @@ and uses its existing authority/error flow. Optional entry navigation policy doe
 not block the shell. Explicit preference changes retain the established overlay;
 incoming hydration never saves defaults back to the account.
 
-Admin diagnostic refresh retains the current cards and shows a local Spinner;
-changing the module-state filter cancels an older optional diagnostic read so the
-latest selection wins. Module dialog editors retain the same initial-readiness
+Admin same-filter diagnostic refresh retains current cards and shows a local
+Spinner. Changing the module-state filter replaces the card list with shared
+animated block Skeletons until the latest selection settles, retaining the filter
+and section frame. Older optional diagnostic reads are cancelled and late results
+cannot replace the latest selection. Module dialog editors retain the same initial-readiness
 and dirty-draft boundaries.
 
 New views and App replacements must declare these boundaries and use the public

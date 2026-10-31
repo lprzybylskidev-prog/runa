@@ -185,7 +185,6 @@ export const adminMessages: AdminMessages = {
   'First payload part': 'Pierwsza część danych',
   'First permissions': 'Pierwsza strona uprawnień',
   'From (UTC ISO-8601)': 'Od (UTC ISO-8601)',
-  'Health policy': 'Zasady monitorowania stanu',
   Integration: 'Integracja',
   Integrations: 'Integracje',
   Intent: 'Zamiar',
@@ -212,8 +211,6 @@ export const adminMessages: AdminMessages = {
   'No active work.': 'Brak aktywnych zadań.',
   'No application settings are available.':
     'Brak dostępnych ustawień aplikacji.',
-  'No editable health policy is available.':
-    'Brak zasad monitorowania stanu do edycji.',
   'No entries in this bounded result.': 'Brak wpisów w tym wyniku.',
   'No sections are available.': 'Brak dostępnych sekcji.',
   'No settings are declared.': 'Nie zadeklarowano ustawień.',
@@ -284,8 +281,6 @@ export const adminMessages: AdminMessages = {
   'Source and system definitions are read-only.':
     'Definicje źródłowe i systemowe są tylko do odczytu.',
   'Source default': 'Wartość domyślna ze źródeł',
-  'Source-validated health overrides (JSON)':
-    'Nadpisania zasad monitorowania sprawdzane przez źródło (JSON)',
   'State changed or the operation could not complete. Refresh and review before another explicit attempt.':
     'Stan się zmienił lub operacja nie została ukończona. Odśwież dane i sprawdź je przed ponowieniem.',
   'The administrator panel is currently unavailable.':

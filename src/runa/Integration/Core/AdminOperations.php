@@ -12,7 +12,6 @@ use Runa\Identity\ApplicationIdentity;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\Events\ModuleIntegrations;
-use Runa\ModuleFramework\HealthPolicies;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleOperationHistory;
 use Runa\ModuleFramework\ModuleRegistry;
@@ -29,7 +28,7 @@ final readonly class AdminOperations
     public function __construct(private AdminEntry $entry, private OperationGuard $guard,
         private PrincipalScope $principals, private ModuleRegistry $registry,
         private AdminDiagnostics $diagnostics, private ApplicationIdentity $identity,
-        private ModuleHealth $health, private HealthPolicies $healthPolicies,
+        private ModuleHealth $health,
         private ModuleTransitions $transitions, private ModuleSettings $settings,
         private ModuleIntegrations $integrations, private ModuleWork $work, private Encrypter $encrypter, private AdminOperationalAuthority $authority, private ModuleOperationHistory $operationHistory) {}
 
@@ -64,7 +63,7 @@ final readonly class AdminOperations
                         'runtime' => ['php' => PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION.'.'.PHP_RELEASE_VERSION],
                         'capabilities' => $this->capabilities(),
                     ],
-                    'module' => $this->module($this->moduleId($input)),
+                    'module' => $this->diagnostics->module($this->moduleId($input)),
                     'settings' => $this->settingsView($this->moduleId($input)),
                     'integrations' => ['generation' => $this->registry->snapshot()->generation, 'integrations' => $this->integrations->metadata($this->moduleId($input))],
                     'work' => $this->workHistory($this->moduleId($input), $this->integer($input, 'limit', 100, 1000)),
@@ -83,7 +82,6 @@ final readonly class AdminOperations
             [$permission, $keys, $independent] = match ($command) {
                 'application.update' => ['enter', ['revision', 'patch'], false],
                 'health.diagnose' => ['health.diagnose', ['module'], true],
-                'health.configure' => ['health.configure', ['module', 'generation', 'overrides'], false],
                 'modules.preview' => ['modules.manage', ['module', 'intent'], false],
                 'modules.apply' => ['modules.manage', ['review', 'confirmed'], true],
                 'modules.resume', 'modules.cancel' => ['modules.manage', ['id'], true],
@@ -105,10 +103,6 @@ final readonly class AdminOperations
 
                         return ['module' => $module, 'health' => $result['state'], 'blocked' => $result['blocked'],
                             'reasons' => array_values(array_unique(array_map(static fn ($reason): string => $reason->code, $result['reasons'])))];
-                    case 'health.configure':
-                        $this->health->configure($this->moduleId($input), $this->map($input, 'overrides'), $this->integer($input, 'generation'));
-
-                        return ['status' => 'committed'];
                     case 'modules.preview':
                         return $this->preview($input);
                     case 'modules.apply':
@@ -194,7 +188,7 @@ final readonly class AdminOperations
     private function capabilities(): array
     {
         $result = [];
-        foreach (['diagnostics.read', 'health.diagnose', 'health.configure', 'modules.manage', 'settings.read', 'settings.manage', 'integrations.manage', 'work.read', 'work.cancel', 'application.read', 'application.manage'] as $permission) {
+        foreach (['diagnostics.read', 'health.diagnose', 'modules.manage', 'settings.read', 'settings.manage', 'integrations.manage', 'work.read', 'work.cancel', 'application.read', 'application.manage'] as $permission) {
             try {
                 $this->guard->enter('runa.admin', new ApiOperation('operations.read', 'runa.admin.'.$permission));
                 $result[] = $permission;
@@ -226,23 +220,6 @@ final readonly class AdminOperations
         $result = $this->operationHistory->read($module, $intents, $cursor, $this->integer($input, 'limit', 25, 100));
         foreach ($contexts as $context) {
             $this->guard->assertCurrent($context);
-        }
-
-        return $result;
-    }
-
-    /** @return array<string,mixed> */
-    private function module(string $module): array
-    {
-        $record = $this->registry->snapshot()->modules[$module];
-        $result = $this->diagnostics->module($module);
-        try {
-            $policy = $this->healthPolicies->resolve($record);
-            $definition = $policy?->definition($record->healthOverrides);
-            $result['health_policy'] = $definition;
-            $result['health_overrides'] = $record->healthOverrides;
-        } catch (\Throwable) {
-            $result['health_diagnostic'] = 'health_policy_unavailable';
         }
 
         return $result;

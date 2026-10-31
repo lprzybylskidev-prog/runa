@@ -89,3 +89,8 @@ Initial language/theme controls share local Skeleton placeholders with shell
 navigation readiness; reveal hydrated icons/labels instead of animating a temporary
 system preference into the account value. Account-menu readiness settles with
 content, while background revalidation retains the existing presentation.
+
+Module-state filtering replaces the Admin card list with the shared pulsing block
+Skeletons while the latest read settles; it retains the selector and section frame.
+Ordinary same-filter refresh retains cards with local progress. Disabled module
+cards use a gray top accent and hover border through the same 160ms transition.

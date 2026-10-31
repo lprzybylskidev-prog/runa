@@ -855,7 +855,7 @@ widgets. `AdminOperations` props: `{ admin: AdminController }`; default slot:
 `AdminPresentation.operations?: Component` replaces that default with the same prop.
 
 `AdminOperationalEditor` props are `{ controller: AdminOperationsController;
-module: string; kind: 'settings' | 'health' | 'integrations'; writable?: boolean }`.
+module: string; kind: 'settings' | 'integrations'; writable?: boolean }`.
 `AdminPresentation.operationalEditor?: Component` replaces it with the same props;
 its `saved` event requests safe dashboard read reconciliation after publication.
 `AdminOperationResult` accepts `{ result: AdminOperationData }`. Diagnostic outcomes
@@ -864,8 +864,8 @@ other native results retain their operation IDs and cooperative cancellation wit
 inventing success.
 These views reuse Card/Select/TextInput/NumberInput/Checkbox/ConfirmDialog and
 support PL/EN. Settings use native types and secret set-state; unsupported custom
-types require a module-specific editor replacement. Source-validated health overrides
-and non-sensitive integration maps use controlled JSON input.
+types require a module-specific editor replacement. Non-sensitive integration maps use controlled JSON input. Health policy has no
+editor or tab: its definition belongs exclusively to module source.
 
 `useAdminOperations(admin: AdminController): AdminOperationsController` owns one
 request/write lane, session/proof failure propagation, context cancellation, dirty
@@ -995,11 +995,12 @@ and event `select(moduleId: string)`. Implementation home is
 runtime. It consumes an already authorized diagnostic result; it never reads or
 mutates independently. Usable defaults share source presentation with Welcome,
 semantic health/availability badges and localized reasons, versions, dependencies
-and observations. Optional slots are not required; App replacements compose the
+and observations. Disabled/unregistered cards use a gray top accent and gray hover
+border, sharing the existing subtle transitions and keyboard focus ring. Optional slots are not required; App replacements compose the
 public operation controller and can replace the whole operations presentation.
 
 The default module cards open a Dialog for the selected module. Its scoped tabs
-contain overview/actions, health policy, settings and integrations according to
+contain overview/actions, settings and integrations according to
 current capabilities. These dialog-local controls are not page-level navigation.
 Dashboard/Application settings remain in the shared top bar. Module/section query
 parameters retain deep links and history; closing or changing a dirty editor uses
@@ -1007,9 +1008,10 @@ the existing guard before changing URL or disposing the draft. Core lifecycle
 controls stay hidden and native server refusals remain authoritative. Native
 preview/review and confirmations remain mandatory for lifecycle mutations.
 
-The module-state selector automatically refreshes persisted diagnostics. Refresh
-keeps existing cards mounted and shows a local spinner; newer filter reads cancel
-older optional diagnostics instead of silently dropping the new selection. Reads
+The module-state selector automatically refreshes persisted diagnostics. Filter changes
+replace cards with shared animated block Skeletons inside the list region while
+keeping the selector/frame available; newer reads cancel older optional diagnostics.
+Ordinary same-filter background refresh retains confirmed cards with a local spinner. Reads
 never run diagnosis or replay writes. Runtime identity uses the public application
 identity's name and the diagnostic snapshot's versions (validated application and
 platform manifests); PHP renders the safe runtime.php scalar. Platform name remains

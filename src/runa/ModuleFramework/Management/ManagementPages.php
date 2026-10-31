@@ -45,7 +45,7 @@ final readonly class ManagementPages
                 continue;
             }
             // Semantic source/policy state, excluding successful observation publication.
-            $hashes[$record->id] = [$record->publicId, $record->manifestHash, $record->installedVersion, $record->healthRevision, $record->healthOverrides];
+            $hashes[$record->id] = [$record->publicId, $record->manifestHash, $record->installedVersion];
             try {
                 $providers = [];
                 foreach ($this->declarations->classes($record, 'management') as $class) {

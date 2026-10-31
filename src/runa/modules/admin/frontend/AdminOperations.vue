@@ -11,6 +11,7 @@ import {
   Dialog,
   Tabs,
   Spinner,
+  Skeleton,
   Badge,
   useIdentity,
   getModulePresentation,
@@ -40,6 +41,7 @@ const pendingCommand = ref<AdminOperationCommand>();
 const workLoading = ref(false);
 const workLoaded = ref(false);
 const diagnosticsLoading = ref(false);
+const filterLoading = ref(false);
 let diagnosticsRequest = 0;
 const needsWork = ref(false);
 let workRequest = 0;
@@ -73,9 +75,7 @@ const applicationSettings = computed(
     new URL(pageNavigation.href.value).searchParams.get('section') ===
     'application',
 );
-function sectionHref(
-  section: boolean | 'health' | 'settings' | 'integrations',
-) {
+function sectionHref(section: boolean | 'settings' | 'integrations') {
   const url = new URL(pageNavigation.href.value);
   if (section)
     url.searchParams.set('section', section === true ? 'application' : section);
@@ -116,7 +116,7 @@ function navigateSection(href: string, event: MouseEvent) {
 watch(applicationSettings, () => {
   editor.value = undefined;
 });
-const editor = ref<'settings' | 'health' | 'integrations'>();
+const editor = ref<'settings' | 'integrations'>();
 const work = shallowRef<AdminOperationData>();
 const preview = shallowRef<AdminOperationData>();
 const result = shallowRef<AdminOperationData>();
@@ -135,18 +135,13 @@ watch(
     }
     const section = url.searchParams.get('section');
     editor.value =
-      selected.value &&
-      section === 'health' &&
-      has('health.configure') &&
-      has('diagnostics.read')
-        ? 'health'
-        : selected.value && section === 'settings' && has('settings.read')
-          ? 'settings'
-          : selected.value &&
-              section === 'integrations' &&
-              has('integrations.manage')
-            ? 'integrations'
-            : undefined;
+      selected.value && section === 'settings' && has('settings.read')
+        ? 'settings'
+        : selected.value &&
+            section === 'integrations' &&
+            has('integrations.manage')
+          ? 'integrations'
+          : undefined;
   },
   { immediate: true },
 );
@@ -168,14 +163,18 @@ const activeWork = computed(() => {
       )
     : [];
 });
-async function refresh() {
+async function refresh(replaceCards = false) {
   if (!has('diagnostics.read')) return;
   const own = ++diagnosticsRequest;
   diagnosticsLoading.value = true;
+  filterLoading.value = replaceCards;
   try {
     await controller.refresh(filter.value);
   } finally {
-    if (own === diagnosticsRequest) diagnosticsLoading.value = false;
+    if (own === diagnosticsRequest) {
+      diagnosticsLoading.value = false;
+      filterLoading.value = false;
+    }
   }
 }
 async function select(module: string) {
@@ -188,21 +187,13 @@ async function select(module: string) {
   controller.dirty.value = false;
 }
 watch(filter, () => {
-  if (capabilitiesReady.value) void refresh();
+  if (capabilitiesReady.value) void refresh(true);
 });
 const selectedModule = computed(() =>
   modules.value.find((module) => module.id === selected.value),
 );
 const moduleTabs = computed(() => [
   { id: 'overview', label: tr('Overview') },
-  ...(has('health.configure') && has('diagnostics.read')
-    ? [
-        {
-          id: 'health',
-          label: tr('Health policy'),
-        },
-      ]
-    : []),
   ...(has('settings.read')
     ? [
         {
@@ -228,9 +219,7 @@ async function changeModuleTab(tab: string) {
     return;
   await pageNavigation.navigate(
     sectionHref(
-      tab === 'overview'
-        ? false
-        : (tab as 'health' | 'settings' | 'integrations'),
+      tab === 'overview' ? false : (tab as 'settings' | 'integrations'),
     ),
   );
 }
@@ -499,7 +488,7 @@ defineExpose({ controller });
     <div class="space-y-6">
       <Alert v-if="controller.error.value && !selected" tone="warning"
         >{{ tr(controller.error.value)
-        }}<Button @click="refresh">{{ tr('Retry') }}</Button></Alert
+        }}<Button @click="refresh()">{{ tr('Retry') }}</Button></Alert
       >
       <PageNavigation
         :entries="navigationEntries"
@@ -565,7 +554,7 @@ defineExpose({ controller });
             <h2 class="py-3 text-base font-semibold">{{ tr('Modules') }}</h2>
             <div class="flex flex-wrap items-center gap-4">
               <span
-                v-if="diagnosticsLoading"
+                v-if="diagnosticsLoading && !filterLoading"
                 class="flex items-center gap-2 text-xs text-muted"
                 data-diagnostics-refresh
                 ><Spinner
@@ -589,7 +578,17 @@ defineExpose({ controller });
               />
             </div>
           </div>
+          <div
+            v-if="filterLoading"
+            class="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3"
+            role="status"
+            :aria-label="tr('Refreshing module state')"
+            data-module-filter-loading
+          >
+            <Skeleton v-for="index in 3" :key="index" shape="block" />
+          </div>
           <ul
+            v-else
             class="grid min-w-0 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3"
           >
             <li
@@ -606,7 +605,9 @@ defineExpose({ controller });
             </li>
           </ul>
           <p
-            v-if="!modules.length && !controller.refreshing.value"
+            v-if="
+              !filterLoading && !modules.length && !controller.refreshing.value
+            "
             class="py-8 text-center text-sm text-muted"
           >
             {{ tr('No modules match this filter.') }}
@@ -871,7 +872,7 @@ defineExpose({ controller });
             :module="selected"
             :kind="editor"
             :writable="editor !== 'settings' || has('settings.manage')"
-            @saved="refresh"
+            @saved="refresh()"
           />
         </template>
       </Tabs>

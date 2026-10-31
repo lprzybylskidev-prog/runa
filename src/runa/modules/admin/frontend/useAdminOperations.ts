@@ -25,7 +25,6 @@ export type AdminOperationView =
 export type AdminOperationCommand =
   | 'application.update'
   | 'health.diagnose'
-  | 'health.configure'
   | 'modules.preview'
   | 'modules.apply'
   | 'modules.resume'

@@ -124,10 +124,12 @@ it('operational diagnostic fences late reads and never replays a failed write', 
   expect(controller.snapshot.value).toBeUndefined();
   fetch.mockResolvedValue(response({}, 409));
   controller.dirty.value = true;
-  await controller.execute('health.configure', {
+  await controller.execute('integrations.configure', {
     module: 'app.example',
     generation: 1,
-    overrides: {},
+    key: 'history',
+    enabled: true,
+    config: {},
   });
   expect(controller.conflict.value).toBe(true);
   expect(controller.dirty.value).toBe(true);
@@ -377,7 +379,7 @@ it('operational background reads leave editors available and an explicit write f
   const read = controller.refresh();
   expect(controller.refreshing.value).toBe(true);
   expect(controller.busy.value).toBe(false);
-  await controller.execute('health.configure', {
+  await controller.execute('integrations.configure', {
     module: 'app',
     enabled: true,
   });
@@ -390,17 +392,25 @@ it('operational background reads leave editors available and an explicit write f
 });
 
 it('operational reload never overwrites a newer edit made while its read is pending', async () => {
-  const fetch = vi
-    .spyOn(window, 'fetch')
-    .mockResolvedValue(
-      response({ generation: 1, health_policy: true, health_overrides: {} }),
-    );
+  const fetch = vi.spyOn(window, 'fetch').mockResolvedValue(
+    response({
+      generation: 1,
+      settings: {
+        title: {
+          definition: { type: 'string', names: { en: 'Title', pl: 'Tytuł' } },
+          value: 'Original',
+        },
+      },
+    }),
+  );
   const { controller } = harness();
   const w = mount(AdminOperationalEditor, {
-    props: { controller, module: 'app.safe', kind: 'health', writable: true },
+    props: { controller, module: 'app.safe', kind: 'settings', writable: true },
     attachTo: document.body,
   });
-  await vi.waitFor(() => expect(w.find('textarea').exists()).toBe(true));
+  await vi.waitFor(() =>
+    expect(w.find('input[type="text"]').exists()).toBe(true),
+  );
   let finish!: (value: Response) => void;
   fetch.mockImplementation(
     () =>
@@ -413,20 +423,22 @@ it('operational reload never overwrites a newer edit made while its read is pend
     .find((button) => button.text() === 'Reload current state')!
     .trigger('click');
   await flushPromises();
-  const input = w.get('textarea');
+  const input = w.get('input[type="text"]');
   expect((input.element as HTMLTextAreaElement).disabled).toBe(false);
-  await input.setValue('{"newer":"draft"}');
+  await input.setValue('Newer draft');
   finish(
     response({
       generation: 2,
-      health_policy: true,
-      health_overrides: { old: 'response' },
+      settings: {
+        title: {
+          definition: { type: 'string', names: { en: 'Title', pl: 'Tytuł' } },
+          value: 'Old response',
+        },
+      },
     }),
   );
   await flushPromises();
-  expect((input.element as HTMLTextAreaElement).value).toBe(
-    '{"newer":"draft"}',
-  );
+  expect((input.element as HTMLTextAreaElement).value).toBe('Newer draft');
   expect(controller.dirty.value).toBe(true);
 });
 
@@ -539,7 +551,7 @@ it('Admin module subviews restore deep links inside a grant-filtered dialog', as
   );
 });
 
-it('dashboard filtering refreshes immediately, shows progress and keeps the latest filter response', async () => {
+it('dashboard filtering replaces cards with content skeletons and keeps the latest filter response', async () => {
   const { Select, IdentityProvider } = await import('@/runa/ui');
   const pending: {
     filter: string;
@@ -598,12 +610,16 @@ it('dashboard filtering refreshes immediately, shows progress and keeps the late
   expect(w.text()).not.toContain('Refresh observations');
   w.getComponent(Select).vm.$emit('update:modelValue', 'registered');
   await vi.waitFor(() => expect(pending).toHaveLength(1));
-  expect(w.find('[data-diagnostics-refresh]').exists()).toBe(true);
-  const retained = w.get('[data-module="app.first"]').element;
+  expect(w.find('[data-diagnostics-refresh]').exists()).toBe(false);
+  expect(w.find('[data-module-filter-loading] .app-skeleton').exists()).toBe(
+    true,
+  );
+  expect(w.find('[data-module="app.first"]').exists()).toBe(false);
   w.getComponent(Select).vm.$emit('update:modelValue', 'all');
   await vi.waitFor(() => expect(pending).toHaveLength(2));
   expect(pending[0]!.signal?.aborted).toBe(true);
-  expect(w.get('[data-module="app.first"]').element).toBe(retained);
+  expect(w.find('[data-module="app.first"]').exists()).toBe(false);
+  expect(w.find('[data-module-filter-loading]').exists()).toBe(true);
   pending[1]!.finish(response(snapshot('app.latest')));
   await vi.waitFor(() =>
     expect(w.find('[data-module="app.latest"]').exists()).toBe(true),
@@ -611,6 +627,7 @@ it('dashboard filtering refreshes immediately, shows progress and keeps the late
   pending[0]!.finish(response(snapshot('app.stale')));
   await flushPromises();
   expect(w.find('[data-module="app.stale"]').exists()).toBe(false);
+  expect(w.find('[data-module-filter-loading]').exists()).toBe(false);
   expect(w.find('[data-diagnostics-refresh]').exists()).toBe(false);
 });
 
@@ -721,7 +738,7 @@ it.each(['selection', 'deep link'])(
           capabilities: [
             'diagnostics.read',
             'health.diagnose',
-            'health.configure',
+            'settings.read',
             'work.read',
             'modules.manage',
           ],
@@ -842,12 +859,12 @@ it.each(['selection', 'deep link'])(
       ).toContain('Report export'),
     );
     expect(button('Request cancellation')).toBeUndefined();
-    const healthTab = Array.from(
+    const settingsTab = Array.from(
       document.body.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
-    ).find((tab) => tab.textContent?.trim() === 'Health policy')!;
-    healthTab.click();
+    ).find((tab) => tab.textContent?.trim() === 'Settings')!;
+    settingsTab.click();
     await vi.waitFor(() =>
-      expect(window.location.search).toContain('section=health'),
+      expect(window.location.search).toContain('section=settings'),
     );
     await vi.waitFor(() => {
       expect(w.findComponent(AdminOperationResult).exists()).toBe(false);

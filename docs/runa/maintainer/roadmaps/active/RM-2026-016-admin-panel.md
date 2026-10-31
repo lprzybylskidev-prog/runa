@@ -317,7 +317,7 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Dashboard versions/safe runtime summary, health/dependencies/freshness/filtering,
     module widgets and explicit diagnosis use existing observations/engines.
   - Wire allowed Optional transitions/preview/status/resume/cancel, settings and
-    integration configuration, health policy and permitted work cancellation/status.
+    integration configuration and permitted work cancellation/status.
     Add mandatory transactional Audit participation where engines lack it; retain
     pending/recovery_required and module-owned recovery semantics.
   - Retain current maintenance guards and update/Core failure fencing; maintenance
@@ -485,6 +485,20 @@ reassessment before resuming point 3; completed point history remains evidence.
     navigation readiness and keep the account-menu trigger disabled until ready.
   - Verify delayed menu/preferences in both completion orders, fallback, identity
     cleanup and unchanged background behavior; synchronize guidance/build assets.
+- [ ] 11a17. Make module health policy code-only and repair filtered-list loading.
+  - Owner decision, 2026-10-31: remove the health-policy tab, JSON editor,
+    management operation/grant and database override/revision mechanism. Keep
+    module-owned source checks, observations, diagnosis and availability guards.
+  - Change HealthPolicy.definition() to source-only; update current consumers,
+    reference module, tests and canonical documentation. Remove persisted override
+    state with a forward platform migration; preserve business data and history.
+  - Owner addition: disabled module cards retain a gray top accent and gray hover
+    border through the existing card motion.
+  - Filter changes replace module cards with the shared content Skeleton while
+    the latest read settles. Preserve the filter/frame and stale-response fencing;
+    ordinary background refresh retains confirmed cards.
+  - Prepare current assets/data, record focused checks and instruction assessment,
+    and commit before repeating owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2832,3 +2846,59 @@ contexts were closed and the temporary diagnostic helper removed. No Docker or
 database resources were created/reset; active services/data, model/knowledge caches
 and all evidence remain preserved. These focused checks do not replace owner manual
 acceptance 11b or final verification/release 12, which remain open.
+
+### Point 11a17 — Source-only health policy and module-list presentation
+
+The owner removes runtime health-policy editing entirely. HealthPolicy is the
+platform-owned public module extension in Contracts/Modules: schemaVersion(): int
+now returns 2, definition(): HealthDefinition has no overrides, and
+check(string, HealthContext): bool retains the deadline/safe-result contract.
+ModuleHealth, registry snapshots, availability comparisons, management discovery
+and the development contract suite consume source-only definitions. Removed the
+configuration method, Admin operation/grant, policy response payload and editor/tab.
+Diagnosis, bounded observations, source/fingerprint expiry, required-graph blocking
+and sealed transaction admission remain. No compatibility adapter is retained.
+
+A forward platform migration removes only health_overrides/health_revision from
+shared.modules, retains the bounded observations constraint, invalidates old
+replaceable results and advances registry generation. Earlier committed migrations
+remain unchanged. No business records, Audit history or installation versions are
+removed. The reference module adopts schema 2 and independently advances 0.1.2 to
+0.2.0 for this incompatible development contract, with a source_health forward edge
+and platform >=0.7.0. Admin remains the unreleased creation candidate 0.1.0;
+prepared platform/release metadata remain 0.7.0. Framework descriptor schema 2 is
+explicit; the module manifest framework_api envelope stays version 1.
+
+Module-state filter reads replace the card list with shared animated block
+Skeletons while retaining the selector/frame. Existing cancellation/request stamps
+keep the latest selection authoritative; ordinary same-filter refresh retains
+confirmed cards and its local spinner. Disabled/unregistered cards use the neutral
+text token for their top accent and hover border, preserving the shared 160ms
+motion, reduced-motion behavior and keyboard focus ring.
+
+Synchronized canonical module-framework/database/development guides, Admin public
+operations/editor/loading/motion contracts, Admin candidate changelog and reference
+module guidance/changelog. Owner/customer AGENTS and skills already delegate module
+participation and readiness to these canonical guides. Neither instruction product
+contains the removed override/editor procedure, so neither needs duplicated rules.
+Local knowledge was current; focused retrieval was checked against original sources.
+
+Focused supported frontend checks passed 7 cases (380 excluded), exit/cleanup 0,
+in .runtime/frontend/RM-2026-016-source-health-filter-tests.log: filtered skeletons,
+latest-response fencing, editor draft retention, operation read/write fencing,
+deep-linked settings and overview task-history departure. Focused supported isolated
+backend checks passed 5 cases / 48 assertions, exit/cleanup 0, in
+.runtime/frontend/RM-2026-016-source-health-backend-ready.log: absent policy columns,
+source scheduling, invalid/stale source refusal, sealed evidence expiry/change and
+removed HTTP command with unchanged integration/settings Audit protections. An
+initial overlapping backend invocation was refused by the existing suite lock;
+it was rerun sequentially without bypass. Only runa_test_test_1 was cleaned by the
+runner; base/development databases were preserved.
+
+The supported TypeScript/Vite/native-error build passed in
+.runtime/frontend/RM-2026-016-source-health-build.log. Local read-only preflight
+identified environment local, database runa, 15 existing accounts, no native
+maintenance and no reserved jobs/active work/transitions. Current source commit,
+forward migration and served-build readiness preparation remain to complete this
+point. Owner acceptance 11b and final verification/release 12 remain open; no broad
+quality gate was run. No Docker resources were created or removed.

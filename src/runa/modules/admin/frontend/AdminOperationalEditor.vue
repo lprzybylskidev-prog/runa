@@ -29,7 +29,7 @@ import type {
 const props = defineProps<{
   controller: AdminOperationsController;
   module: string;
-  kind: 'settings' | 'health' | 'integrations';
+  kind: 'settings' | 'integrations';
   writable?: boolean;
 }>();
 const emit = defineEmits<{ saved: [] }>();
@@ -140,10 +140,9 @@ function changed() {
 async function load() {
   if (!(await props.controller.beforeLeave())) return;
   const own = draftRevision;
-  const response = await props.controller.read(
-    props.kind === 'health' ? 'module' : props.kind,
-    { module: props.module },
-  );
+  const response = await props.controller.read(props.kind, {
+    module: props.module,
+  });
   if (!response || own !== draftRevision) return;
   loaded.value = response;
   draft.value = {};
@@ -159,9 +158,7 @@ async function load() {
         : (row.entry.value ?? null);
       raw.value[row.key] = JSON.stringify(draft.value[row.key]);
     }
-  } else if (props.kind === 'health')
-    json.value = JSON.stringify(response.health_overrides ?? {}, null, 2);
-  else {
+  } else {
     key.value = '';
     enabled.value = false;
     json.value = '{}';
@@ -211,16 +208,13 @@ async function save() {
   } else {
     const value = parse();
     if (!value) return;
-    response = await props.controller.execute(
-      props.kind === 'health' ? 'health.configure' : 'integrations.configure',
-      {
-        module: props.module,
-        generation: loaded.value.generation ?? null,
-        ...(props.kind === 'health'
-          ? { overrides: value }
-          : { key: key.value, enabled: enabled.value, config: value }),
-      },
-    );
+    response = await props.controller.execute('integrations.configure', {
+      module: props.module,
+      generation: loaded.value.generation ?? null,
+      key: key.value,
+      enabled: enabled.value,
+      config: value,
+    });
   }
   if (response) {
     props.controller.dirty.value = false;
@@ -287,9 +281,7 @@ onScopeDispose(() => {
           {{
             kind === 'settings'
               ? tr('Module settings')
-              : kind === 'health'
-                ? tr('Health policy')
-                : tr('Optional integrations')
+              : tr('Optional integrations')
           }}
         </h3>
         <Button :disabled="controller.busy.value" @click="load">{{
@@ -417,36 +409,30 @@ onScopeDispose(() => {
             >
           </div>
         </template>
-        <template v-else-if="kind !== 'health' || loaded.health_policy">
-          <template v-if="kind === 'integrations'">
-            <Select
-              :label="tr('Integration')"
-              :model-value="key"
-              :options="
-                Object.keys(integrations).map((value) => ({
-                  value,
-                  label: value,
-                }))
-              "
-              :disabled="controller.busy.value"
-              :locale="adminLocale"
-              @update:model-value="selectIntegration(String($event))"
-            />
-            <Checkbox
-              v-if="key"
-              :label="tr('Enabled')"
-              v-model="enabled"
-              :disabled="controller.busy.value"
-              @update:model-value="changed"
-            />
-          </template>
-          <TextInput
-            v-if="kind === 'health' || key"
-            :label="
-              kind === 'health'
-                ? tr('Source-validated health overrides (JSON)')
-                : tr('Non-sensitive integration configuration (JSON)')
+        <template v-else>
+          <Select
+            :label="tr('Integration')"
+            :model-value="key"
+            :options="
+              Object.keys(integrations).map((value) => ({
+                value,
+                label: value,
+              }))
             "
+            :disabled="controller.busy.value"
+            :locale="adminLocale"
+            @update:model-value="selectIntegration(String($event))"
+          />
+          <Checkbox
+            v-if="key"
+            :label="tr('Enabled')"
+            v-model="enabled"
+            :disabled="controller.busy.value"
+            @update:model-value="changed"
+          />
+          <TextInput
+            v-if="key"
+            :label="tr('Non-sensitive integration configuration (JSON)')"
             type="textarea"
             v-model="json"
             :error="tr(parseError)"
@@ -454,9 +440,6 @@ onScopeDispose(() => {
             @update:model-value="changed"
           />
         </template>
-        <p v-else class="text-sm text-muted">
-          {{ tr('No editable health policy is available.') }}
-        </p>
         <Button
           v-if="loaded.editable !== false && writable !== false"
           :disabled="controller.busy.value || !controller.dirty.value"

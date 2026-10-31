@@ -67,7 +67,6 @@ target/source/revision checks. No generic engine-method dispatcher is allowed.
 | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | diagnostics.read / `runa.admin.diagnostics.read`          | ModuleRegistry.snapshot(), ModuleManagement.read(string $module): ManagementView and cached ModuleAvailability.statuses()                           | Registry state filter, generation and safe observed/expiry/reason data; no diagnostic execution on read                                                       |
 | health.diagnose / `runa.admin.health.diagnose`            | ModuleHealth.diagnose(string $id): array                                                                                                            | Independent deadline/lock; persisted observations, safe fixed codes; diagnostic observation is not a business mutation event                                  |
-| health.configure / `runa.admin.health.configure`          | ModuleHealth.configure(string $id, array $overrides, int $generation): void                                                                         | Existing 4096-byte bound/policy; add mandatory synchronous Audit to the same update transaction                                                               |
 | modules.preview / `runa.admin.modules.manage`             | ModuleTransitions.preview(string $intent, string $target): AdministrativePreview                                                                    | Only existing allowed Optional intents; exact reviewed graph/source/generation and active work                                                                |
 | modules.apply / same                                      | ModuleTransitions.apply(AdministrativePreview $preview): TransitionResult                                                                           | Independent reservation/hook/publication runner; add Audit participation to reservation/final publication/compensation state boundaries                       |
 | modules.status/resume/cancel / same                       | ModuleTransitions.status/resume/cancel(string $operationId): TransitionResult                                                                       | Exact native status/recovery and generation; add missing meaningful mutation Audit in the owning transaction; no blanket recovery                             |
@@ -81,7 +80,7 @@ target/source/revision checks. No generic engine-method dispatcher is allowed.
 If a signature above is abbreviated, parameter/return types are inherited exactly
 from the explicitly named first signature, never inferred from an HTTP payload.
 SettingsParticipant publication hooks retain their native behavior. Point 9 adds
-OperationalParticipant for health configuration, integration configuration,
+OperationalParticipant for integration configuration,
 lifecycle boundaries and cancellation. A post-commit wrapper record is
 insufficient. Recovery retains pending/recovery_required and owner cancellation
 limits; do not show committed before native completion. The new transaction/Audit
@@ -319,13 +318,15 @@ Read views: `capabilities` (entry-only safe grant advertisement), `diagnostics` 
 `settings` (`module`), `integrations` (`module`), `history` (`module`, optional UUIDv7
 `cursor`, `limit=1..100`; per-kind management authority), `work` (`module`, optional
 `limit=1..1000`), `work.status` (`id`), `modules.status` (`id`), `settings.status`
-(`id`). Module reads isolate unavailable settings/integration/health declarations.
+(`id`). Module reads expose safe diagnostic state without health policy configuration. Settings/integration reads isolate unavailable declarations.
 Configuration values are projected only under their owning grants; settings
 secrets expose set-state only. Auth policy settings use the dedicated Auth policy
 workflow rather than bypassing reviewed publication.
 
-Commands: `health.diagnose` (`module`), `health.configure` (`module`, `generation`,
-`overrides`), `modules.preview` (`module`, `intent=enable|disable|unregister`),
+Health policies are defined exclusively in module source; no management grant or
+configuration command exists. Explicit diagnosis and observed health remain available.
+
+Commands: `health.diagnose` (`module`), `modules.preview` (`module`, `intent=enable|disable|unregister`),
 `modules.apply` (`review`, `confirmed=true`), `modules.resume` / `modules.cancel`
 (`id`), `settings.update` (`module`, `generation`, `revision`, `patch`),
 `settings.recover` (`id`), `integrations.configure` (`module`, `generation`, `key`,

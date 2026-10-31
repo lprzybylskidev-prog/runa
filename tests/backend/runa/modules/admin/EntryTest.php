@@ -1287,23 +1287,18 @@ it('keeps Auth policy settings in their reviewed owner workflow and isolates rea
 it('publishes synchronous operational configuration only with atomic Audit and current generation', function (): void {
     $fixture = new OperationalModule;
     try {
-        foreach (['enter', 'diagnostics.read', 'health.configure', 'settings.read', 'settings.manage', 'integrations.manage'] as $permission) {
+        foreach (['enter', 'diagnostics.read', 'settings.read', 'settings.manage', 'integrations.manage'] as $permission) {
             ($this->adminGrant)('runa.admin.'.$permission);
         }
         ($this->adminLogin)();
         ($this->adminProof)();
         $generation = app(ModuleRegistry::class)->snapshot()->generation;
-        $input = ['module' => $fixture->id, 'generation' => $generation, 'overrides' => ['interval' => 11]];
-        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT operational_audit_refusal CHECK (action <> 'health.configure') NOT VALID");
-        try {
-            $this->postJson('/api/admin/operations/health.configure', $input)->assertConflict();
-        } finally {
-            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT operational_audit_refusal');
-        }
+        $this->getJson('/api/admin/operations/capabilities')->assertOk()
+            ->assertDontSee('health.configure');
+        $this->getJson('/api/admin/operations/module?module='.$fixture->id)->assertOk()
+            ->assertJsonMissingPath('data.health_policy')->assertJsonMissingPath('data.health_overrides');
+        $this->postJson('/api/admin/operations/health.configure', ['module' => $fixture->id, 'generation' => $generation, 'overrides' => ['mode' => 'scheduled']])->assertUnprocessable();
         expect(app(ModuleRegistry::class)->snapshot()->generation)->toBe($generation);
-        $this->postJson('/api/admin/operations/health.configure', $input)->assertOk()->assertJsonPath('data.status', 'committed');
-        expect(DB::table('runa_audit.events')->where('action', 'health.configure')->count())->toBe(1);
-        $this->postJson('/api/admin/operations/health.configure', $input)->assertConflict();
         $config = ['module' => $fixture->id, 'generation' => app(ModuleRegistry::class)->snapshot()->generation, 'key' => 'history', 'enabled' => true, 'config' => ['mode' => 'safe']];
         DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT operational_audit_refusal CHECK (action <> 'integration.configure') NOT VALID");
         try {

@@ -126,7 +126,7 @@ final readonly class ModuleContractSuite
             $policy = app(LifecyclePolicies::class)->resolve($record);
             $policy->plan('enable');
             $policy->plan('disable');
-            app(HealthPolicies::class)->resolve($record)?->definition($record->healthOverrides);
+            app(HealthPolicies::class)->resolve($record)?->definition();
             foreach ($categories as $category => $classes) {
                 $interface = match ($category) {
                     'apis' => 'ApiProvider', 'health' => 'HealthPolicy', 'lifecycle' => 'LifecyclePolicy',
@@ -137,7 +137,7 @@ final readonly class ModuleContractSuite
                 };
                 foreach ($classes as $class) {
                     $instance = $declarations->make($record, $class, 'Runa\\Contracts\\Modules\\'.$interface);
-                    if (method_exists($instance, 'schemaVersion') && $instance->schemaVersion() !== 1) {
+                    if (method_exists($instance, 'schemaVersion') && $instance->schemaVersion() !== ($category === 'health' ? 2 : 1)) {
                         throw new \RuntimeException('Unsupported declaration schema.');
                     }
                     if ($instance instanceof ScheduleProvider) {

@@ -3,6 +3,7 @@
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Runa\Contracts\Modules\Preparation;
 use Runa\ModuleFramework\HealthDeadline;
 use Runa\ModuleFramework\HealthPolicies;
@@ -130,13 +131,12 @@ it('keeps warning failure and expiry nonblocking while stale critical becomes un
     expect($this->registry->snapshot()->modules[$id]->enabled)->toBeTrue();
 })->with(['critical', 'warning']);
 
-it('updates validated policy in the database with revision fencing and no deployment', function (): void {
-    $id = ($this->add)();
+it('uses source-only scheduling without persisted health configuration', function (): void {
+    $id = ($this->add)('scheduled');
+    HealthPolicy::$definitions[$id] += ['interval' => 2, 'expiry' => 4];
     ($this->sync)();
-    $snapshot = $this->registry->snapshot();
-    $this->health->configure($id, ['mode' => 'scheduled', 'interval' => 2, 'expiry' => 4], $snapshot->generation);
-    expect(fn () => $this->health->configure($id, [], $snapshot->generation))->toThrow(RuntimeException::class);
-    expect(fn () => $this->health->configure($id, ['class' => 'unsafe'], $this->registry->snapshot()->generation))->toThrow(RuntimeException::class);
+    expect(Schema::hasColumn('shared.modules', 'health_overrides'))->toBeFalse()
+        ->and(Schema::hasColumn('shared.modules', 'health_revision'))->toBeFalse();
     expect($this->availability->statuses($id, 'read')[$id]->available)->toBeFalse();
     $this->health->recover();
     expect($this->availability->statuses($id, 'read')[$id]->available)->toBeTrue();
@@ -189,7 +189,8 @@ it('rejects stale results and never discloses private checker exceptions', funct
     $status = $this->availability->statuses($id, 'read')[$id];
     expect($status->available)->toBeFalse()->and(json_encode($status))->not->toContain('private-password');
     HealthPolicy::$checks[$id] = function () use ($id): bool {
-        $this->health->configure($id, ['mode' => 'scheduled'], $this->registry->snapshot()->generation);
+        DB::table('shared.modules')->where('module_id', $id)->update(['manifest_hash' => str_repeat('0', 64), 'health_observations' => '{}']);
+        DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
 
         return true;
     };
@@ -305,10 +306,10 @@ it('rejects enable previews until explicit diagnosis succeeds without changing d
     expect($transitions->preview('enable', $id)->ready())->toBeFalse();
 });
 
-it('rejects invalid persisted policy and source drift without leaking raw diagnostics', function (): void {
+it('rejects invalid source policy and source drift without leaking raw diagnostics', function (): void {
     $id = ($this->add)();
     ($this->sync)();
-    DB::table('shared.modules')->where('module_id', $id)->update(['health_overrides' => '{"unknown_secret":"private"}']);
+    HealthPolicy::$definitions[$id]['mode'] = 'private';
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     $status = $this->availability->statuses($id, 'read')[$id];
     expect($status->ownHealth)->toBe('unknown')->and($status->available)->toBeFalse()->and(json_encode($status))->not->toContain('private');
@@ -360,9 +361,10 @@ it('uses exact operation health admission inside one transaction and refuses mis
             $this->travel(1)->weeks();
             expect($this->availability->statuses($id, 'write')[$id]->available)->toBeFalse();
             $this->travelBack();
-            DB::table('shared.modules')->where('module_id', $id)->increment('health_revision');
+            HealthPolicy::$definitions[$id]['interval'] = 11;
             DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
             expect($this->availability->statuses($id, 'write')[$id]->available)->toBeFalse();
+            unset(HealthPolicy::$definitions[$id]['interval']);
         });
     });
     // The scope is gone: the next real use executes a new check, never stale admission.
