@@ -46,7 +46,7 @@ export function useAdminTable(
   let confirmResult: ((accepted: boolean) => void) | undefined;
   const registry = inject(
     adminCollectionsKey,
-    computed(() => ({})),
+    computed<Readonly<Record<string, AdminCollectionAdapters>>>(() => ({})),
   );
   const sourceAdapters = computed<AdminCollectionAdapters>(
     () =>

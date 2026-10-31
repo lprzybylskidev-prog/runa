@@ -8,8 +8,11 @@ activated_at: 2026-10-29
 closed_at: null
 release_type: feature
 proposed_version: 0.7.0
-quality_groups: docs,backend,frontend,e2e,database,delivery,installation,updates,security-source
-quality_rationale: Provisional affected-area scope for the new mandatory Core, public declarations and adapters, transactional storage, rendered UI and protected customer extension/generator contracts. Native installation/updates verify actual Core forward history and preservation. Security-source covers new authenticated operations and composition. Mandatory baseline/hooks and real prerequisites remain required. Reassess after architecture decisions; no infrastructure/image or knowledge-runtime change is currently proposed and no all-group milestone is due at 0.7.0.
+prepared_version: 0.7.0
+prepared_version_approved_at: 2026-10-31
+prepared_version_reason: Owner-authorized runnable frontend acceptance; Core targets 0.7.0 while released 0.6.2 runtime and stale local module installation caused HTTP 503.
+quality_groups: docs,backend,frontend,e2e,database,delivery,installation,updates,security-source,tooling
+quality_rationale: Provisional affected-area scope for the new mandatory Core, public declarations and adapters, transactional storage, rendered UI and protected customer extension/generator contracts. Native installation/updates verify actual Core forward history and preservation. Security-source covers new authenticated operations and composition. Tooling covers prepared-candidate release validation added for owner manual acceptance. Mandatory baseline/hooks and real prerequisites remain required. No infrastructure/image or knowledge-runtime change is currently proposed and no all-group milestone is due at 0.7.0.
 impact_areas:
   - backend
   - frontend
@@ -127,6 +130,22 @@ Existing standard table exports remain supported within owning read permissions.
   inferred. Other guarded API versions remain unchanged. Both modules now require
   target platform >=0.7.0 <0.8.0. Current native consumers and private target-runtime
   fixtures are updated; published predecessor history is retained.
+
+- 2026-10-31 — **Runnable manual acceptance — APPROVED:** the owner explicitly
+  authorizes setting VERSION and the protected runtime manifest to the agreed
+  0.7.0 before final verification and asks to retain the reason. Local source
+  already requires 0.7.0, but runtime still advertised 0.6.2 and the development
+  registry retained earlier module hashes/versions; effective Core maintenance
+  returned HTTP 503. Prepare the candidate and forward local data without resets
+  or weakened availability guards. This is not release closure, a final gate PASS,
+  Admin 1.0.0 promotion, tagging or publication; published baseline remains 0.6.2.
+- 2026-10-31 — **Manual frontend acceptance policy — APPROVED:** for every roadmap
+  adding/changing frontend, the penultimate point belongs to the owner's manual
+  tests. The agent first prepares a usable application/current assets/data and
+  records readiness. Only the owner confirms acceptance. Insert repairs before
+  that point and repeat affected acceptance after UI changes; final automated
+  verification/release stays last. Apply the rule to owner and customer instruction
+  products and this roadmap; ordinary non-frontend roadmaps need no extra point.
 
 Record subsequent significant owner decisions individually with dates and update
 the review/roadmap.
@@ -320,8 +339,28 @@ reassessment before resuming point 3; completed point history remains evidence.
     Synchronize minimal app scaffold, welcome catalogue and source/API/version checks.
   - Review owner AGENTS/skills plus customer bundle; update affected public consumption
     guidance without authorizing protected edits; record unaffected-product reasons.
+- [ ] 11a. Prepare runnable owner frontend acceptance and synchronize workflow policy.
+  - Prerequisites: 1–11 and the owner's 2026-10-31 approval.
+  - Record the new manual acceptance rule in canonical workflows, template and both
+    instruction products; retain the automatic final gate and repair-loop rules.
+  - Prepare approved 0.7.0 source/runtime metadata and release-validator support,
+    retaining published 0.6.2 history and exact target arithmetic from main.
+  - Correct compilation blockers found while preparing the real local asset build,
+    preserving public layout slots, typed collection adapters and owner test contracts.
+  - Explicitly apply only necessary forward local platform/module data, preserve
+    users/settings/Audit, prepare current assets and confirm real HTTP readiness
+    plus authorized access. Record exact outcomes and any operational blockers.
+- [ ] 11b. Owner manual frontend acceptance.
+  - Prerequisites: completed/committed implementation and runnable local application
+    with current assets/data and usable authorized access from 11a.
+  - The owner tests Admin and affected application frontend and reports defects.
+    Insert repairs before this point and repeat affected manual acceptance.
+  - Complete only after explicit owner acceptance; record tested source/environment.
+    Agent checks and automated tests cannot supply that decision. This stays the
+    penultimate point; final automated verification/release remains last.
 - [ ] 12. Complete affected-area verification, release finalization and closure.
-  - Prerequisites: all implementation points complete and committed; no unresolved
+  - Prerequisites: all implementation points complete and committed, explicit owner
+    manual acceptance in 11b; no unresolved
     architecture, public-signature, module-version or synchronization decisions.
   - Review current-state README, commands, configuration, architecture, Core/Admin
     guides, app compatibility, module/generator/customization docs and both instruction
@@ -335,7 +374,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     turn and provide quality-status. Complete full selected backend/frontend/tooling
     prerequisites, browser/render/security/database and native installation/update
     acceptance here only. Follow the owner SIGSEGV disposition without hiding reports.
-  - If verification requires changes, insert a fix point immediately before this one;
+  - If verification requires changes, insert a fix point before manual acceptance;
     run the complete affected-area repair suite in its failing mode before committing
     the fix, then restart final verification from the beginning. Discuss changed
     architectural premises rather than silently repairing them.
@@ -1791,3 +1830,41 @@ containers/networks/images/volumes need removal. Supported test cleanup removed 
 worker databases and preserved the base/development databases, active services,
 Qdrant/model caches and all verification evidence. Point 11 is complete; point 12
 is next. The roadmap/release remain active/open; no final gate or release is claimed.
+
+## Point 11a — Manual acceptance preparation — 2026-10-31
+
+The owner approved a runnable 0.7.0 candidate and the penultimate manual frontend
+acceptance rule. Root/customer AGENTS, owner/public roadmap workflows and the
+public template now route to that rule. Repairs go before manual acceptance;
+owner confirmation is required, and automated final verification/release stays last.
+Asset builds needed for the manual runtime are explicitly operational preparation;
+they do not waive final automated build/type/security/browser/native gates.
+
+VERSION and the protected runtime manifest now both identify 0.7.0. The active
+roadmap records the explicit approval/date/reason and retains the released 0.6.2
+baseline. The maintainer README identifies the actual candidate and active roadmap;
+the published changelog is unchanged. Release validation accepts only the recorded
+prepared version equal to proposed/computed target with a valid approval date and
+reason; it still refuses arbitrary drift, missing manual completion, existing tags
+and wrong target arithmetic. Finalization must not increment the prepared target
+to 0.8.0. The focused release contracts selected `owner_approved_runtime` and
+`active_version_and_branch_drift`: 2 PASS, native exit/cleanup 0.
+
+The required `pnpm --dir src run build` initially exposed strict TS errors in
+Admin layout optional-prop/slot forwarding and collection injection, Audit filter
+binding, recursive field fixture refs, mock discriminants and Node-only E2E file
+imports. Corrected owning types/forwarding and controlled filter inputs; fixtures
+use shallow typed state and explicit results, and browser acceptance reads the
+actual served component manifest. No new dependency, assertion suppression or
+weakened compiler setting was added. The complete supported asset build (including
+vue-tsc and normal/static error rendering) then passed. Admin remains development
+0.1.0 and Audit retains its current 1.1.0 candidate; these compilation corrections
+belong to their existing unreleased scope, without extra version-only edges.
+
+Read-only local diagnostics identified database `runa`, stale Core manifest
+registrations/installed versions and no active/reserved business work or transitions.
+Plan: forward-create only shared.application_settings; apply retained module
+upgrades Audit 1.0.0 → 1.1.0, Auth/Permissions 1.0.0 → 2.0.0 and initialize Admin
+0.1.0. No module-domain migration is pending. Local runtime preparation and HTTP
+readiness remain pending; point 11a stays open until those results are received.
+No final gate or owner manual PASS is claimed.

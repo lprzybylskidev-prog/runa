@@ -113,6 +113,27 @@ The GitHub Release may be richer than `docs/runa/maintainer/CHANGELOG.md`, but b
 
 ## Finalization sequence
 
+### Prepared runtime candidate before manual acceptance
+
+When the owner explicitly authorizes preparing the agreed target version early
+to make frontend manual acceptance runnable, set VERSION and the protected runtime
+manifest together. Record `prepared_version`, `prepared_version_approved_at`
+(`YYYY-MM-DD`) and nonempty `prepared_version_reason` in the active roadmap, plus
+the dated owner decision. `prepared_version` must equal both `proposed_version` and
+the version computed from `main:VERSION`/release_type (or the approved explicit
+release target). No other active-version drift is authorized. This metadata is
+source runtime preparation, not a published release or evidence of passed gates.
+
+Keep the published changelog head at the baseline until verified closure; update
+the maintainer README to the actual source version/active roadmap and identify it
+as an unreleased runtime candidate. Finalization retains the already prepared
+target rather than incrementing it again. Reconcile against `main:VERSION`, not
+the prepared VERSION. All manual acceptance, final automated gates, independent
+module creation finalization, closure, immutable tag and publication remain required.
+Customer applications cannot use this owner workflow to change protected manifests.
+
+### Verified closure
+
 Near roadmap completion:
 
 1. complete implementation,
@@ -121,7 +142,8 @@ Near roadmap completion:
    0.10.0, 0.15.0 and later five-minor checkpoints, and before 1.0.0,
 3. resolve failures using inserted fix points and rerun,
 4. prepare concise final technical report,
-5. compute the version from current `VERSION` and `release_type`,
+5. compute the version from the released baseline (`main:VERSION` when a runtime
+   candidate is already prepared) and `release_type`,
    reconcile the roadmap's `proposed_version` with that result before closure,
 6. update `VERSION` and the version field of `src/runa/platform.json` to the same value; preserve `src/app/application.json`,
 7. update `docs/runa/maintainer/CHANGELOG.md` and synchronize the maintainer README current version,

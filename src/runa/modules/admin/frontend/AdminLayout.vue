@@ -12,11 +12,19 @@ const layoutProps = computed(() => {
   void controller;
   return layout;
 });
-defineSlots<ApplicationLayoutSlots>();
+const slots = defineSlots<ApplicationLayoutSlots>();
+const slotNames = () =>
+  Object.keys(slots).filter((name) => name !== 'sidebar-bottom') as Exclude<
+    keyof ApplicationLayoutSlots,
+    'sidebar-bottom'
+  >[];
 </script>
 <template>
   <ApplicationLayout v-bind="layoutProps" locale="en">
-    <template v-for="(_, name) in $slots" #[name]="scope"
+    <template v-if="slots['sidebar-bottom']" #sidebar-bottom="scope">
+      <slot name="sidebar-bottom" v-bind="scope" />
+    </template>
+    <template v-for="name in slotNames()" #[name]="scope"
       ><slot :name="name" v-bind="scope"
     /></template>
   </ApplicationLayout>

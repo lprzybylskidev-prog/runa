@@ -17,20 +17,20 @@ export interface ApplicationLayoutProps {
   /** Fixed presentation locale; does not update account language. */
   locale?: Locale | undefined;
   navigation: readonly NavigationEntry[];
-  topNavigation?: readonly NavigationEntry[];
+  topNavigation?: readonly NavigationEntry[] | undefined;
   current?: RouteContext | undefined;
   title: string;
-  description?: string;
-  sidebar?: boolean;
-  topbar?: boolean;
-  width?: 'contained' | 'fluid';
+  description?: string | undefined;
+  sidebar?: boolean | undefined;
+  topbar?: boolean | undefined;
+  width?: 'contained' | 'fluid' | undefined;
   footer?: FooterOptions | undefined;
-  homeHref?: string;
+  homeHref?: string | undefined;
   preferenceStore?: PreferenceStore | undefined;
-  userName?: string;
-  userInitials?: string;
-  userAvatar?: string;
-  userLoading?: boolean;
+  userName?: string | undefined;
+  userInitials?: string | undefined;
+  userAvatar?: string | undefined;
+  userLoading?: boolean | undefined;
 }
 export interface LayoutSlotContext {
   t: (key: MessageKey) => string;

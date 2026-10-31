@@ -34,7 +34,7 @@ impact_areas:
 
 ## Implementation plan
 
-Implementation points produce code, tests and documentation; only small, fast checks for a concrete uncertainty may run there. Put full suites, broad acceptance, analysis, builds and scanner pipelines in the final point after all implementation. When reviewing any supplied roadmap, stop and notify the user if it requires these earlier; follow the roadmap workflow before activation or execution. Mandatory commit hooks still apply.
+Implementation points produce code, tests and documentation; only small, fast checks for a concrete uncertainty may run there. Put full suites, broad automated acceptance, analysis, quality builds and scanner pipelines in the final point after all implementation. For frontend changes, prepare a working runtime/current assets and reserve the penultimate point for the owner's manual acceptance under the roadmap workflow. When reviewing any supplied roadmap, stop and notify the user if it requires earlier broad automated gates. Mandatory commit hooks still apply.
 
 - [ ] 1. First coherent implementation point.
   - Prerequisites: explicit inputs or none.
@@ -42,6 +42,9 @@ Implementation points produce code, tests and documentation; only small, fast ch
 - [ ] 2. Next coherent implementation point.
   - Prerequisites: completed earlier points only.
   - Completion: outcome, test code, synchronized documentation and any necessary small, fast, focused check.
+- [ ] N-1. Owner manual frontend acceptance (required for frontend additions/changes).
+  - Prerequisites: completed implementation and a working application with current assets/data and authorized access.
+  - Completion: explicit owner result recorded with tested source/environment; repairs precede this point and affected acceptance is repeated.
 - [ ] N. Full verification, release finalization, merge, and final report.
 
 ## Execution handoff (optional)

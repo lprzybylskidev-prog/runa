@@ -70,6 +70,14 @@ If implementation uncovers a significant unknown that changes behavior, architec
 
 ## Final roadmap point
 
+When a roadmap adds or changes frontend behavior/presentation, its penultimate
+point is the application owner's manual frontend acceptance. Prepare a working
+application and current assets/data before handing it over; only the owner confirms
+acceptance. Place repairs before that point and repeat affected manual acceptance
+after UI changes. Final automated verification/release stays last. Follow
+`docs/runa/handbook/workflows/roadmaps.md#manual-frontend-acceptance`; this grants
+no authority to edit protected platform versions/source.
+
 The final point completes all verification for the affected areas and release finalization, including the current-state documentation review in `docs/runa/handbook/workflows/roadmaps.md` and closure synchronization in `docs/runa/handbook/workflows/releases.md`.
 
 Ordinary roadmap closure runs only complete checks for changed behavior/contracts
@@ -81,7 +89,7 @@ ordinary affected-area closure; follow the owning quality guide for its cadence.
 If verification finds work:
 
 - keep the roadmap active,
-- insert a fix point immediately before final verification,
+- insert a fix point before manual acceptance when present, otherwise immediately before final verification,
 - implement and verify the fix point,
 - rerun final verification from the beginning.
 

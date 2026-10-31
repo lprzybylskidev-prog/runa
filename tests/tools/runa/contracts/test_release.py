@@ -137,6 +137,36 @@ class ReleaseContracts(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "already exists"):
             self.validate()
 
+    def test_owner_approved_runtime_target_preserves_release_baseline_and_final_gate(self) -> None:
+        prepared = self.roadmap().replace(
+            "closed_at: null",
+            "closed_at: null\nproposed_version: 0.1.0\nprepared_version: 0.1.0\n"
+            "prepared_version_approved_at: 2026-10-31\n"
+            "prepared_version_reason: Runnable owner frontend acceptance",
+        )
+        self.write(self.active, prepared)
+        self.write("VERSION", "0.1.0\n")
+        self.readme("0.1.0", "RM-2026-001")
+        self.assertEqual(self.validate(), "0.1.0")
+        self.write(self.active, prepared + "- [ ] Owner manual frontend acceptance\n")
+        with self.assertRaisesRegex(ValueError, "Only the final"):
+            self.validate()
+        for invalid in (
+            prepared.replace("prepared_version: 0.1.0", "prepared_version: 0.2.0"),
+            prepared.replace("proposed_version: 0.1.0", "proposed_version: 0.2.0"),
+            prepared.replace("prepared_version_approved_at: 2026-10-31\n", ""),
+            prepared.replace("2026-10-31", "2026-02-31"),
+            prepared.replace("Runnable owner frontend acceptance", " "),
+        ):
+            with self.subTest(metadata=invalid):
+                self.write(self.active, invalid)
+                with self.assertRaisesRegex(ValueError, "prepared runtime"):
+                    self.validate()
+        self.write(self.active, prepared)
+        self.git("tag", "v0.1.0")
+        with self.assertRaisesRegex(ValueError, "already exists"):
+            self.validate()
+
     def test_closed_metadata_accepts_release_before_publication(self) -> None:
         self.close()
         self.assertEqual(self.validate(), "0.1.0")

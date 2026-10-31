@@ -336,16 +336,9 @@ test('Admin generated forms: draft reconciliation, safe validation and guarded n
 test('Auth administration: owned Users presentation selects accounts and protects dirty drafts in both themes', async ({
   page,
 }, info) => {
-  const { readFileSync } = await import('node:fs');
-  const artifact = JSON.parse(
-    readFileSync(
-      new URL(
-        '../../../../src/public/build/runa-components.json',
-        import.meta.url,
-      ),
-      'utf8',
-    ),
-  ) as {
+  const artifact = (await (
+    await page.request.get('/build/runa-components.json')
+  ).json()) as {
     owners: Record<
       string,
       { build_id: string; manifest_hash: string; components: string[] }
@@ -492,16 +485,9 @@ test('Auth administration: owned Users presentation selects accounts and protect
 test('Permissions and Audit administration: built definition and immutable history defaults on responsive light and dark screens', async ({
   page,
 }, info) => {
-  const { readFileSync } = await import('node:fs');
-  const artifact = JSON.parse(
-    readFileSync(
-      new URL(
-        '../../../../src/public/build/runa-components.json',
-        import.meta.url,
-      ),
-      'utf8',
-    ),
-  ) as {
+  const artifact = (await (
+    await page.request.get('/build/runa-components.json')
+  ).json()) as {
     owners: Record<
       string,
       { build_id: string; manifest_hash: string; components: string[] }

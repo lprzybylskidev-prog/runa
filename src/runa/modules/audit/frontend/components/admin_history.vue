@@ -50,7 +50,8 @@ function apply(table: AdminTableController) {
         <TextInput
           v-for="(label, key) in labels"
           :key="key"
-          v-model="filters[key]"
+          :model-value="filters[key] ?? null"
+          @update:model-value="filters[key] = $event"
           :label="label"
           :maxlength="128"
           @keydown.enter.prevent="apply(table)"

@@ -16,7 +16,13 @@ import type {
   AdminPageData,
   AdminRecord,
 } from '@/runa/admin';
-import type { ExportProvider, BulkProvider, TableQuery } from '@/runa/ui';
+import type {
+  ExportProvider,
+  BulkProvider,
+  TableQuery,
+  ExportResult,
+  OperationResult,
+} from '@/runa/ui';
 enableAutoUnmount(afterEach);
 const id = '01900000-0000-7000-8000-000000000001';
 const otherId = '01900000-0000-7000-8000-000000000002';
@@ -477,7 +483,7 @@ it('Admin collection adapters retain native export limits and deny secret column
       scopes: ['filtered', 'selected'],
       cancellation: false,
     },
-    start: vi.fn(async () => ({
+    start: vi.fn(async (): Promise<ExportResult> => ({
       kind: 'download',
       download: {
         filename: 'safe.csv',
@@ -492,7 +498,7 @@ it('Admin collection adapters retain native export limits and deny secret column
       { key: 'foreign', label: 'Foreign' },
     ],
     cancellation: false,
-    start: vi.fn(async () => ({
+    start: vi.fn(async (): Promise<OperationResult> => ({
       kind: 'status',
       status: { state: 'completed', succeeded: 1 },
     })),
@@ -751,7 +757,7 @@ it('Admin collection adapters preserve views and authorize export columns throug
       scopes: ['filtered'],
       cancellation: false,
     },
-    start: vi.fn(async () => ({
+    start: vi.fn(async (): Promise<ExportResult> => ({
       kind: 'download',
       download: {
         filename: 'safe.csv',

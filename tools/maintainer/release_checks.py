@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import subprocess
 from collections.abc import Mapping
+from datetime import date
 from pathlib import Path
 
 from tools.application.quality_evidence import ClosurePolicy
@@ -157,11 +158,29 @@ def validate(root: Path) -> str:
             raise ValueError("Active roadmap status/branch mismatch.")
         base = git(root, "show", "main:VERSION")
         target = expected(base, release_kind(data), release_target(data))
-        if current != base:
+        prepared = data.get("prepared_version")
+        if prepared is not None:
+            approved = data.get("prepared_version_approved_at")
+            reason = data.get("prepared_version_reason")
+            if (
+                prepared != target
+                or prepared != data.get("proposed_version")
+                or current != prepared
+                or not isinstance(approved, str)
+                or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", approved)
+                or not isinstance(reason, str)
+                or not reason.strip()
+            ):
+                raise ValueError("Invalid owner-approved prepared runtime version metadata.")
+            try:
+                date.fromisoformat(approved)
+            except ValueError as error:
+                raise ValueError("Invalid prepared runtime approval date.") from error
+        elif current != base:
             raise ValueError("Active roadmap VERSION must match main until release finalization.")
-        if entries and entries[0] != current:
+        if entries and entries[0] != base:
             raise ValueError("Changelog head does not match current VERSION.")
-        if current != "0.0.0" and not entries:
+        if base != "0.0.0" and not entries:
             raise ValueError("Current release is absent from changelog.")
         pending = re.findall(r"^\s*- \[ \] (.+)$", text, re.M)
         if len(pending) != 1 or not all(

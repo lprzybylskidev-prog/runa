@@ -43,6 +43,11 @@ indicate installation, access grants or rendered Admin availability; see
 
 ## Application layout
 
+Optional ApplicationLayoutProps accept explicit `undefined` as well as omission;
+Vue wrappers may forward it and the existing component defaults still apply.
+AdminLayout forwards the typed public slots, including the sidebar-bottom
+`collapsed` value, without widening their props to a string-indexed map.
+
 Canonical source: `src/runa/resources/js/layouts/ApplicationLayout.vue`, public `ApplicationLayout` from `@/runa/ui`. Point 3 was visually accepted by the owner on 2026-10-18. Account-dropdown/self-service use the shared ApplicationSessionShell; Admin shell
 delivery and acceptance follow the [Admin frontend guide](../../modules/admin/frontend.md); Auth entry/restricted views use MinimalLayout.
 

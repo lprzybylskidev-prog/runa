@@ -1,7 +1,7 @@
 /* eslint-disable vue/one-component-per-file -- Independent controlled-field and failure-isolation fixtures. */
 import { afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
-import { defineComponent, h, nextTick, ref } from 'vue';
+import { defineComponent, h, nextTick, shallowRef, shallowReactive } from 'vue';
 import type { PropType } from 'vue';
 import {
   AdminField,
@@ -38,7 +38,7 @@ function controlled(
   descriptor: AdminFieldData,
   initial: AdminFieldValue = null,
 ) {
-  const value = ref(initial);
+  const value = shallowRef<AdminFieldValue>(initial);
   const wrapper = mount(
     defineComponent({
       setup: () => () =>
@@ -179,7 +179,7 @@ it('Admin fields use English bounded selection controls and require an explicit 
 });
 
 it('Admin fields preserve public customer replacement contracts and block stale or readonly emissions', async () => {
-  const props = ref<AdminFieldProps>({
+  const props = shallowReactive<AdminFieldProps>({
     field: field(),
     modelValue: 'Current',
     errors: [],
@@ -188,23 +188,23 @@ it('Admin fields preserve public customer replacement contracts and block stale 
   });
   const wrapper = mount(AdminPresentationProvider, {
     props: { components: { field: CustomerAdminField } },
-    slots: { default: () => h(AdminField, props.value) },
+    slots: { default: () => h(AdminField, props) },
   });
   expect(wrapper.text()).toContain('Customer Name');
   const control = wrapper.getComponent(AdminField);
   const replacement = wrapper.getComponent(CustomerAdminField);
   replacement.vm.$emit('update:modelValue', 'Changed');
   expect(control.emitted('update:modelValue')).toEqual([['Changed']]);
-  props.value.readonly = true;
+  props.readonly = true;
   await nextTick();
   replacement.vm.$emit('update:modelValue', 'Forbidden');
   expect(control.emitted('update:modelValue')).toEqual([['Changed']]);
-  props.value.readonly = false;
-  props.value.busy = true;
+  props.readonly = false;
+  props.busy = true;
   await nextTick();
   replacement.vm.$emit('update:modelValue', 'Concurrent');
   expect(control.emitted('update:modelValue')).toEqual([['Changed']]);
-  props.value.field = field({
+  props.field = field({
     component: {
       key: 'app.missing',
       owner: 'app',
@@ -212,7 +212,7 @@ it('Admin fields preserve public customer replacement contracts and block stale 
       build_id: null,
     },
   });
-  props.value.busy = false;
+  props.busy = false;
   await nextTick();
   expect(wrapper.findComponent(CustomerAdminField).exists()).toBe(false);
   expect(wrapper.find('input').exists()).toBe(false);

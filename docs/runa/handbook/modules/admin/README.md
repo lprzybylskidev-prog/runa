@@ -73,7 +73,7 @@ source versions below are not a claim of completed release acceptance.
 
 | Owner         | Current source / target                   | Contract disposition                                                                                                                                              |
 | ------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Platform      | Target 0.7.0, feature                     | Canonical VERSION stays at the released baseline until finalization.                                                                                              |
+| Platform      | Prepared 0.7.0 candidate, feature         | Owner-approved runtime metadata permits manual frontend acceptance; published baseline remains 0.6.2 until verified closure.                                      |
 | Admin         | Development 0.1.0; creation release 1.0.0 | Requires Audit ^1.0.0 and Auth/Permissions ^2.0.0; no unpublished 0.2.0 compatibility edge.                                                                       |
 | Auth          | 2.0.0                                     | AuthProfiles API 2.0.0; other current guarded interfaces retain their declared versions. Administrative reads and owning Admin adapters are delivered in point 7. |
 | Permissions   | 2.0.0                                     | PermissionsAccess API 2.0.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions.                           |
