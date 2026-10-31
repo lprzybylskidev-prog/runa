@@ -158,3 +158,10 @@ selected while its containing Dialog fieldset disables mutation controls; markin
 all tab items unavailable would remove every panel. History/work Table frames
 remain visible for confirmed empty reads and keep existing rows through refresh.
 Module/context changes invalidate pending result ownership before clearing tables.
+
+Breadcrumbs share ApplicationLayout's initial navigation readiness: while
+navigationLoading or the page-navigation publisher's loading state is true, keep
+the region mounted/aria-busy and render the existing Skeleton instead of partial
+labels/links. Reveal the completed path with the navigation. This is a local
+placeholder, not a page/frame cover or an independent HTTP prerequisite. Supplied
+Admin readiness remains latched through ordinary background reads.

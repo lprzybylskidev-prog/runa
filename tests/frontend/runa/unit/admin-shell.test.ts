@@ -2224,15 +2224,27 @@ it('Admin initial readiness keeps the Application frame through bootstrap and de
   await flushPromises();
   const frame = wrapper.get('.application-page').element;
   expect(wrapper.find('.minimal-page').exists()).toBe(false);
+  expect(wrapper.find('[data-breadcrumbs-loading]').exists()).toBe(true);
+  expect(wrapper.find('.shell-breadcrumbs nav').exists()).toBe(false);
   finishBootstrap(respond({ data: bootstrap() }));
   await flushPromises();
   await vi.waitFor(() => expect(finishCapabilities).toBeTypeOf('function'));
   expect(wrapper.get('[data-admin-content]').isVisible()).toBe(false);
+  expect(wrapper.get('.shell-breadcrumbs').attributes('aria-busy')).toBe(
+    'true',
+  );
+  expect(wrapper.find('[data-breadcrumbs-loading]').exists()).toBe(true);
+  expect(wrapper.find('.shell-breadcrumbs nav').exists()).toBe(false);
   expect(wrapper.find('[data-navigation-loading]').exists()).toBe(true);
   finishCapabilities(respond({ data: { capabilities: ['diagnostics.read'] } }));
   await flushPromises();
   await vi.waitFor(() => expect(finishDiagnostics).toBeTypeOf('function'));
   expect(wrapper.get('[data-admin-content]').isVisible()).toBe(false);
+  expect(wrapper.get('.shell-breadcrumbs').attributes('aria-busy')).toBe(
+    'true',
+  );
+  expect(wrapper.find('[data-breadcrumbs-loading]').exists()).toBe(true);
+  expect(wrapper.find('.shell-breadcrumbs nav').exists()).toBe(false);
   finishDiagnostics(
     respond({
       data: {
@@ -2247,6 +2259,13 @@ it('Admin initial readiness keeps the Application frame through bootstrap and de
     expect(wrapper.get('[data-admin-content]').isVisible()).toBe(true),
   );
   expect(wrapper.find('[data-navigation-loading]').exists()).toBe(false);
+  expect(wrapper.find('[data-breadcrumbs-loading]').exists()).toBe(false);
+  expect(wrapper.get('.shell-breadcrumbs').attributes('aria-busy')).toBe(
+    'false',
+  );
+  expect(wrapper.get('.shell-breadcrumbs [aria-current="page"]').text()).toBe(
+    'Modules',
+  );
   expect(wrapper.get('.application-page').element).toBe(frame);
 });
 

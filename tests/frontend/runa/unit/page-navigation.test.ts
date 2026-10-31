@@ -122,6 +122,7 @@ it('page navigation publishes its loading placeholder in the header before links
             preferenceStore: createPreferenceStore(),
           },
           {
+            breadcrumbs: () => h('a', { href: '/app' }, 'Complete path'),
             default: () =>
               h(PageNavigation, {
                 entries: [entry('details')],
@@ -136,9 +137,13 @@ it('page navigation publishes its loading placeholder in the header before links
   expect(w.find('header [data-navigation-loading]').exists()).toBe(true);
   expect(w.find('header .shell-top-nav a').exists()).toBe(false);
   expect(w.find('main nav').exists()).toBe(false);
+  expect(w.find('[data-breadcrumbs-loading]').exists()).toBe(true);
+  expect(w.find('.shell-breadcrumbs a').exists()).toBe(false);
   loading.value = false;
   await flushPromises();
   expect(w.find('header [data-navigation-loading]').exists()).toBe(false);
   expect(w.get('header .shell-top-nav a').text()).toBe('details');
+  expect(w.find('[data-breadcrumbs-loading]').exists()).toBe(false);
+  expect(w.get('.shell-breadcrumbs a').text()).toBe('Complete path');
   expect(w.get('.application-page').element).toBe(frame);
 });

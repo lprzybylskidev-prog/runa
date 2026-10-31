@@ -503,8 +503,19 @@ onScopeDispose(() => {
             <slot name="actions" :t="t" />
           </div>
         </header>
-        <div v-if="$slots.breadcrumbs" class="shell-breadcrumbs">
+        <div
+          v-if="$slots.breadcrumbs"
+          class="shell-breadcrumbs"
+          :aria-busy="navigationLoading || pageNavigation.loading.value"
+        >
+          <AppSkeleton
+            v-if="navigationLoading || pageNavigation.loading.value"
+            :lines="1"
+            class="w-80 max-w-full py-1"
+            data-breadcrumbs-loading
+          />
           <slot
+            v-else
             name="breadcrumbs"
             :t="t"
             :navigation="navigation"

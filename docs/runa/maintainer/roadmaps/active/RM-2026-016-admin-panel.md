@@ -472,6 +472,12 @@ reassessment before resuming point 3; completed point history remains evidence.
     bounded reads, grant checks, write/dirty guards and stale-response fencing.
   - Synchronize public contracts, run focused regression checks and prepare current
     assets before repeating owner acceptance.
+- [x] 11a15. Cover breadcrumb discovery with shared navigation readiness.
+  - Keep the breadcrumb region mounted with the existing animated skeleton until
+    shell/page navigation settles; reveal only the complete path and links.
+  - Reuse the existing readiness signals without blocking the frame or introducing
+    a new loading engine; preserve normal background-refresh behavior.
+  - Synchronize guidance, verify delayed bootstrap/page readiness and prepare assets.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2736,3 +2742,34 @@ were closed and the temporary diagnostic helper removed. No Docker resources wer
 created; active development data/services, caches and evidence remain preserved.
 These focused implementation checks do not replace owner acceptance or final-area
 verification. Manual point 11b and final verification/release point 12 stay open.
+
+### Point 11a15 — Breadcrumb loading readiness
+
+Covered breadcrumb discovery with the existing ApplicationLayout navigation
+readiness. The breadcrumb region stays mounted/aria-busy with shared animated
+Skeleton while shell navigationLoading or the PageNavigation publisher is loading.
+Its slot mounts only when the complete navigation context is ready, removing the
+visible partial area/owner/page path and intermediate links. Ready standalone
+layouts still render immediately. No new timer, prerequisite registry, controller,
+session or page-wide cover was introduced. The existing skeleton's reduced-motion
+and print behavior applies; responsive width stays bounded. Supplied Admin's
+initial latch remains unchanged, so ordinary background reads retain their path.
+
+Extended the existing delayed Admin bootstrap/capability/diagnostic and page-host
+loading regressions to assert placeholders, withheld partial links and the final
+breadcrumb leaf alongside the stable frame. Focused supported frontend execution
+passed 5 cases (378 excluded), exit 0 / cleanup 0:
+.runtime/frontend/RM-2026-016-breadcrumb-readiness-tests.log. Existing hierarchy and
+standalone layout-region regressions passed in the same selection. This is focused
+implementation evidence, not full frontend acceptance. The TypeScript/Vite/native
+error build passed in .runtime/frontend/RM-2026-016-breadcrumb-readiness-build.log;
+Nginx /admin and all 16 entry-linked assets returned HTTP 200.
+
+Synchronized canonical loading, motion and page-layout contracts. This shared UI
+presentation repair changes no Admin/Auth module implementation or public
+signature; independent module candidates and prepared platform 0.7.0 stay current.
+Owner/customer AGENTS and skills already refer to those readiness/layout contracts,
+so neither instruction product needs duplicated rules. No dependencies, database
+changes or Docker resources were introduced; development data/services, knowledge/
+model caches and verification reports remain preserved. Owner acceptance 11b and
+final verification/release 12 remain open; broad gates were not run.

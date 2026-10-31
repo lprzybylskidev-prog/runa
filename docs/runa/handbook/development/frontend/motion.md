@@ -79,3 +79,8 @@ Modal diagnosis keeps its current panel and shows progress only in Diagnose now.
 Task-history and operation-history reads use their own Button/Spinner feedback;
 confirmed empty tables keep the column frame. Refresh retains loaded rows and
 uses the same shared reduced-motion behavior without another content entrance.
+
+Breadcrumb discovery uses the shared Skeleton pulse in its own layout region,
+coordinated with initial shell/page navigation readiness. Reveal the complete path
+once ready; never animate partial hierarchy growth. The existing reduced-motion
+Skeleton fallback remains static.

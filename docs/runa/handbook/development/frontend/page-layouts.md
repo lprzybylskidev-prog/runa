@@ -209,3 +209,9 @@ page navigation updates the leaf together with the top bar, including browser
 history. Dialog-local module tabs are not additional page breadcrumb levels.
 Breadcrumb navigate events reuse the layout's existing navigation handler and
 page dirty guards; modified clicks retain native link behavior.
+
+The default layout covers the breadcrumb slot with an animated Skeleton while
+its shell/page navigation is loading, matching the top-bar readiness. Its region
+retains aria-busy and a bounded responsive placeholder; incomplete links are not
+mounted. Custom layouts follow the same existing navigationLoading/host loading
+signals. Standalone ready/static breadcrumb slots render immediately.
