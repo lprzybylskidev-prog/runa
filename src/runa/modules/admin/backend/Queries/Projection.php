@@ -2,6 +2,7 @@
 
 namespace Runa\Modules\Admin\Queries;
 
+use Closure;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Runa\Contracts\Modules\ManagementCommandDefinition;
@@ -92,9 +93,11 @@ final readonly class Projection
     {
         [$discovery, $page, $sections] = $this->selected($owner, $key);
         $views = [];
+        $checks = [];
         foreach ($sections as [$sectionOwner, $section, $identity]) {
-            if ($this->allowed($sectionOwner, $section->readPermission, $discovery['generation'])) {
-                $views[] = $this->section($sectionOwner, $section, $identity, $discovery['generation'], $this->declarations->bindingAvailable($discovery['owners'][$sectionOwner]['bindings'][$section->binding]), $discovery['owners'][$sectionOwner]);
+            $allowed = $checks[$sectionOwner] ??= $this->permissionChecks($sectionOwner, $discovery['generation']);
+            if ($allowed($section->readPermission)) {
+                $views[] = $this->section($sectionOwner, $section, $identity, $discovery['generation'], $this->declarations->bindingAvailable($discovery['owners'][$sectionOwner]['bindings'][$section->binding]), $discovery['owners'][$sectionOwner], $allowed);
             }
         }
         $this->declarations->assertCurrent($discovery['generation']);
@@ -392,27 +395,28 @@ final readonly class Projection
     }
 
     /** @param array{components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>} $ownerDefinition
+     * @param  Closure(?string): bool  $allowed
      * @return array<string, mixed>
      */
-    private function section(string $owner, ManagementSection $section, string $identity, int $generation, bool $available, array $ownerDefinition): array
+    private function section(string $owner, ManagementSection $section, string $identity, int $generation, bool $available, array $ownerDefinition, Closure $allowed): array
     {
-        $readonly = ! $available || ! $this->allowed($owner, $section->writePermission, $generation);
-        $fields = $this->fields($owner, $section, $generation);
+        $readonly = ! $available || ! $allowed($section->writePermission);
+        $fields = $this->fields($owner, $section, $generation, $allowed);
         $views = $commands = [];
         foreach ($fields as $field) {
             $definition = $field->field;
             $views[] = ['key' => $definition->key, 'type' => $definition->type, 'label' => $definition->names,
-                'readonly' => $readonly || ! $definition->writable || ! $this->allowed($owner, $field->writePermission, $generation),
+                'readonly' => $readonly || ! $definition->writable || ! $allowed($field->writePermission),
                 'sensitive' => $definition->sensitive, 'filterable' => $definition->filterable, 'sortable' => $definition->sortable,
                 'lookup' => $definition->referenceModule !== null, 'required' => $definition->required, 'max_length' => $definition->maxLength,
                 'choices' => $definition->choices, 'multiple' => $definition->multiple, 'component' => $this->component($ownerDefinition, $field->component)];
         }
         foreach ($section->commands as $command) {
-            if ($readonly || ! $this->allowed($owner, $command->safety->operation->permission, $generation)) {
+            if ($readonly || ! $allowed($command->safety->operation->permission)) {
                 continue;
             }
             foreach ($command->safety->inputs as $key) {
-                if (! isset($fields[$key]) || ! $fields[$key]->field->writable || ! $this->allowed($owner, $fields[$key]->writePermission, $generation)) {
+                if (! isset($fields[$key]) || ! $fields[$key]->field->writable || ! $allowed($fields[$key]->writePermission)) {
                     continue 2;
                 }
             }
@@ -424,7 +428,7 @@ final readonly class Projection
                 'available' => $this->declarations->bindingAvailable($ownerDefinition['bindings'][$command->binding])];
         }
 
-        return ['export_allowed' => $available && $this->allowed($owner === 'app' ? 'runa.admin' : $owner, 'runa.permissions.tables.export', $generation), 'key' => $identity, 'title' => $section->title, 'view' => $section->view, 'readonly' => $readonly, 'required' => $section->required,
+        return ['export_allowed' => $available && $allowed('runa.permissions.tables.export'), 'key' => $identity, 'title' => $section->title, 'view' => $section->view, 'readonly' => $readonly, 'required' => $section->required,
             'component' => $this->component($ownerDefinition, $section->component), 'fields' => $views, 'commands' => $commands, 'record' => null, 'diagnostic' => $available ? null : 'admin_binding_unavailable'];
     }
 
@@ -436,17 +440,36 @@ final readonly class Projection
         return $key === null ? null : $definition['components'][$key];
     }
 
-    /** @return array<string,ManagementFieldAccess> */
-    private function fields(string $owner, ManagementSection $section, int $generation): array
+    /** @param (Closure(?string): bool)|null $allowed
+     * @return array<string,ManagementFieldAccess>
+     */
+    private function fields(string $owner, ManagementSection $section, int $generation, ?Closure $allowed = null): array
     {
+        $allowed ??= $this->permissionChecks($owner, $generation);
         $fields = [];
         foreach ($section->fields as $field) {
-            if ($this->allowed($owner, $field->readPermission, $generation)) {
+            if ($allowed($field->readPermission)) {
                 $fields[$field->field->key] = $field;
             }
         }
 
         return $fields;
+    }
+
+    /** Deduplicate one synchronous declaration projection, never an owning read/write.
+     * @return Closure(?string): bool
+     */
+    private function permissionChecks(string $owner, int $generation): Closure
+    {
+        $decisions = [];
+
+        return function (?string $permission) use ($owner, $generation, &$decisions): bool {
+            if ($permission === null) {
+                return false;
+            }
+
+            return $decisions[$permission] ??= $this->allowed($owner, $permission, $generation);
+        };
     }
 
     /** @param array<string,ManagementFieldAccess> $fields

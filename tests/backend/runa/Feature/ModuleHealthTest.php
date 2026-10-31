@@ -131,6 +131,23 @@ it('keeps warning failure and expiry nonblocking while stale critical becomes un
     expect($this->registry->snapshot()->modules[$id]->enabled)->toBeTrue();
 })->with(['critical', 'warning']);
 
+it('reevaluates health expiry while reusing a locked registry snapshot', function (): void {
+    $id = ($this->add)('scheduled', 'critical');
+    ($this->sync)();
+    $this->health->recover();
+    DB::beginTransaction();
+    try {
+        $snapshot = $this->registry->snapshot();
+        expect($this->availability->statuses($id)[$id]->available)->toBeTrue();
+        $this->travel(21)->seconds();
+        $status = $this->availability->statuses($id)[$id];
+        expect($this->registry->snapshot())->toBe($snapshot)
+            ->and($status->available)->toBeFalse()->and($status->ownHealth)->toBe('unknown');
+    } finally {
+        DB::rollBack();
+    }
+});
+
 it('uses source-only scheduling without persisted health configuration', function (): void {
     $id = ($this->add)('scheduled');
     HealthPolicy::$definitions[$id] += ['interval' => 2, 'expiry' => 4];

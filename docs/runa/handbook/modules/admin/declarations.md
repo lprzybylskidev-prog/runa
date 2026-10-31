@@ -343,6 +343,13 @@ before serialization. Removed authority causes protected state to unmount, not
 reuse a stale bootstrap. A newly forbidden dirty field is cleared from client
 memory; drafts of still-readable fields are preserved.
 
+One synchronous page metadata projection deduplicates identical permission
+checks per owner/current principal/generation, including repeated field and
+command references. A resource field intersection has its own short-lived set.
+These decisions are discarded before invoking an owning handler and before any
+subsequent projection; native owning grants, record Policies, expiry and proof
+checks still run. No worker/request-wide permission cache is introduced.
+
 Outcome invariants: pending/recovery_required require a native operation_id and
 record=null; committed aggregate Save has no partial/pending participant results.
 Field lookup=true uses the section's authorized options adapter and its owning

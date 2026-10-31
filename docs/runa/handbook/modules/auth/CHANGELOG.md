@@ -2,6 +2,10 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Batch own-account presentation preferences and delivery categories instead of
+  querying/revalidating every entry independently. Preserve current declarations,
+  account isolation, migrations/defaults and mandatory recipient restrictions.
+
 - Keep reset beside filter fields in the shared filter region. Render declared
   event timestamps and known Auth entry dates through the application locale/
   timezone formatter, preserving canonical instants in transport and exports.

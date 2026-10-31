@@ -104,6 +104,43 @@ Cache only an identified expensive read/computation. Document the canonical sour
 
 Each request has a safe correlation ID for diagnostics, propagated to related work where useful; validate externally supplied identifiers before logging them.
 
+## Read-path performance
+
+Review query growth when adding or changing lists, resources, bootstrap metadata,
+permission intersections, settings/preference snapshots or module discovery. N+1
+includes repeated authorization, registry, declaration and accessor work, even
+when no Eloquent relation is involved. Small development datasets do not excuse
+hundreds of repeated infrastructure reads. Repair demonstrated amplification in
+the authorized area and inspect analogous consumers in the same point; report
+protected-platform findings to its owner from a customer checkout. Escalate a
+changed architectural/security premise through the applicable roadmap workflow.
+
+1. Measure the complete relevant read and its stages, recording elapsed time,
+   query count, repeated query families and lock waits. Match the real principal,
+   transaction nesting and payload size; separate cold loading from repeated
+   reads. A fast SQL plan alone does not prove a fast endpoint, and an internal
+   projection timing does not measure HTTP/session/proof overhead. Keep bindings,
+   private values and credentials out of evidence. Use isolated test data or
+   nonmutating diagnostics; do not assume a POST read or rollback permits writes.
+2. Batch bounded collections and reuse validated declarations within the current
+   computation. Deduplicate identical permission checks only within one
+   synchronous metadata intersection with the same owner, principal and
+   generation. Discard those decisions before invoking owning handlers or starting
+   another operation; owning grants, record Policies and expiry checks remain
+   authoritative. Do not add a request/worker/global authorization cache.
+3. For snapshot reuse, identify which lock guarantees stability and how writes,
+   nested commit/rollback, replacement transactions, generation reuse and database
+   reconnection invalidate it. Database/model events may be suppressed; an
+   event-only invalidator cannot guarantee freshness. Keep time-dependent health
+   and eligibility evaluation separate from immutable registry records. Preserve
+   registry/authority/account lock order rather than removing locks for speed.
+4. Compare the same stages after repair and add focused regression scenarios for
+   query growth and freshness across operations. Prefer bounded query counts as
+   assertions; absolute millisecond thresholds are environment-dependent. Include
+   rollback/reused-worker cases for retained snapshots and denial/current-grant
+   cases for authorization-related changes. Follow the normal verification phase
+   rules; this review does not authorize early broad suites or new infrastructure.
+
 ## Application and protected platform
 
 One Laravel application lives under src. Customer code belongs to src/app; protected Runa PHP/resources/config/routes live in src/runa. Both use the same dependency graph and container. Customer source can use ordinary PHP/Vue without becoming a module.

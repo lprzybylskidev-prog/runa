@@ -12,6 +12,14 @@ generation never installs modules or grants permissions.
 
 Use this skill for backend architecture and implementation choices that are broader than Laravel syntax.
 
+For lists, metadata/bootstrap, authorization intersections and settings/preference
+snapshots, review repeated reads beyond Eloquent relations. Follow
+[read-path performance](../../../docs/runa/handbook/architecture/application-architecture.md#read-path-performance):
+measure query growth under real transaction nesting, inspect analogous consumers
+and repair demonstrated amplification within authorized scope. Preserve current
+authority, expiry and rollback/reused-worker freshness; do not defer a known
+in-scope defect or introduce persistent permission caches.
+
 Before acting:
 
 1. Read the active roadmap.

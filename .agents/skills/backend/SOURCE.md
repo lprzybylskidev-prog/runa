@@ -27,3 +27,7 @@ Local Runa API/presentation/source-placement routing follows the canonical publi
 handbook and owner contract. RM-2026-012 established those boundaries; RM-2026-013
 consolidated local routing without upstream refresh, copied upstream text, new
 dependency or new customer authority. Original research pins/dates above are unchanged.
+
+Read-path performance routing was added from local RM-2026-016 measurements on
+2026-10-31. The application architecture guide owns the procedure. This is local
+Runa guidance, without upstream refresh, new dependencies or changed quality gates.

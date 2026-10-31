@@ -2,6 +2,11 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Remove repeated infrastructure reads from module page projections. Reuse the
+  locked registry snapshot and check each distinct permission once per owner in
+  a synchronous metadata projection; owning handlers and subsequent operations
+  retain current authorization and record Policies.
+
 - Keep reset beside filter fields in the shared filter region. Render declared
   event timestamps and known Auth entry dates through the application locale/
   timezone formatter, preserving canonical instants in transport and exports.

@@ -4,6 +4,11 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Remove registry/permission read amplification across Admin module projections
+  and batch Auth preference/delivery snapshots. Add query-growth, transaction/
+  rollback and authorization freshness regressions, plus preventive review
+  guidance in owner/customer backend skills.
+
 - Unify module record Details dialogs and compact automatic dictionary filters.
   Supply shared refresh/reset table controls, preferences and bounded
   CSV/XLSX/PDF/Print under `runa.permissions.tables.export`, preserving owning

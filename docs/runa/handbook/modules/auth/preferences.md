@@ -55,6 +55,14 @@ current source defaults as well as stored values for the selected application an
 shared `runa` display namespace. Other devices converge on visible return, navigation, conflict refresh or new login;
 there is no polling or WebSocket synchronization.
 
+Snapshot reads validate each available provider's declarations once, then load
+the bounded declared preference scopes for the current account in one query.
+Stored-value migration, validation/default fallback and the 1024-entry bound
+remain enforced. Delivery snapshots likewise validate each available provider
+once and batch its declared categories for the current account/module; mandatory
+and sensitive categories retain primary-only routing. These are operation-local
+reads, with no retained account values or authorization decisions across calls.
+
 ## Complete own-account reset
 
 `operation: reset_all` requires application and the current account revision,

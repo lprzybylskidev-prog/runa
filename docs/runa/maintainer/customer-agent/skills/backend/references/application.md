@@ -5,6 +5,7 @@ Use thin controllers, Form Requests for substantial writes, Actions for use case
 Load only the relevant canonical procedure:
 
 - Application design: `docs/runa/handbook/architecture/application-architecture.md`.
+- Query growth, measured repair and operation-bound reuse: `docs/runa/handbook/architecture/application-architecture.md#read-path-performance`.
 - Supported adapters and source ownership: `docs/runa/handbook/architecture/public-api.md`.
 - Optional module declarations and versions: `docs/runa/handbook/development/modules.md`.
 - Module lifecycle/work/events/settings: `docs/runa/handbook/architecture/module-framework.md`.

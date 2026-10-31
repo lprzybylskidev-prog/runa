@@ -596,6 +596,16 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Review Auth/Permissions/Audit together; use declared datetime semantics and
     the application locale/timezone formatter, preserving raw export instants.
     Prepare current assets and synchronize owning guidance before owner review.
+- [x] 11a29. Remove repeated registry/authorization read amplification across supplied flows.
+  - Owner request, 2026-10-31: repair measured Admin latency, audit other small
+    framework/Core read paths for the same amplification and repair demonstrated
+    cases. Preserve current grants, expiry, generation, transaction and rollback
+    guarantees; do not introduce persistent authorization caches.
+  - Add focused query-growth and rollback/reused-worker regression scenarios,
+    compare representative before/after stages and synchronize canonical guidance.
+    Require performance evidence/review in both owner/customer backend skills;
+    repair demonstrated defects in authorized scope, escalate changed premises.
+    Broad verification remains point 12 after owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3620,3 +3630,81 @@ module review to those guides; no duplicate skill/AGENTS rule is needed. No data
 migration, business write, reset or Docker resource creation/removal occurred.
 Preserve active services/databases, model/Qdrant caches and evidence. Owner manual
 acceptance 11b and final automated verification/release 12 remain open.
+
+### Point 11a29 — bounded infrastructure reads and preventive performance review
+
+Removed repeated registry rebuilding under caller-owned transactions. The first
+snapshot holds the existing singleton read lock; read-only descendants reuse it.
+Connection callbacks invalidate before writes/raw statements independently of
+database events; transaction levels and PDO identity fence rollback, reused
+generations, replacement transactions and reconnection. Committed calls outside
+transactions still check persisted generation. Health expiry and current actor
+eligibility remain separate evaluations. Registry/authority/proof lock order is
+unchanged; the existing exclusive Admin entry lock is intentional under that
+protocol and was not weakened for speed.
+
+Admin page metadata deduplicates permission checks per owner within one synchronous
+projection, and resource field intersections do likewise locally. Decisions never
+survive into owning handler execution or another operation. Native reads/writes,
+record Policies, proof and current grants remain enforced.
+
+The related-consumer review found and repaired two additional Auth cases:
+presentation snapshots queried/revalidated every preference, and delivery
+snapshots queried/revalidated every category. Presentation reads now validate
+provider declarations once and fetch at most 1024 declared scopes in one account
+query; delivery reads validate once and batch declared categories per available
+module/provider. Both retain defaults, old-value migration/validation, account
+isolation and recipient restrictions. Audit event/entity projection and own
+history, Auth directory projection, Permissions explain/assignment loading,
+settings definitions and Admin discovery/diagnostics were inspected. Their existing
+bounded/batched collection reads remain; nested registry consumers benefit from
+the shared fix. No speculative SQL indexes, infrastructure or permission caches
+were added.
+
+Before/after diagnostics used the same existing local principal, selected data,
+default-connection transaction nesting and projection sequence. Original versions
+were loaded from HEAD into an isolated diagnostic process without replacing
+tracked/runtime files. Logs contain counts/timing/table families only, with zero
+write statements, and both transactions rolled back. These are internal-stage
+measurements, not complete browser/HTTP/session/proof timings; wall time is
+environment-dependent and does not establish a latency SLA.
+
+| Stage                         | SQL before → after | Wall time before → after |
+| ----------------------------- | ------------------ | ------------------------ |
+| Audit page metadata           | 3829 → 21          | 1394 → 103 ms            |
+| Audit history, 25 rows        | 1760 → 31          | 563 → 94 ms              |
+| Permissions roles metadata    | 3636 → 35          | 1121 → 100 ms            |
+| Auth users metadata           | 15687 → 182        | 6209 → 350 ms            |
+| Admin bootstrap               | 906 → 56           | 483 → 118 ms             |
+| Repeated Audit metadata       | 3449 → 21          | 1361 → 72 ms             |
+| Account presentation snapshot | 124 → 1            | 38 → 6 ms                |
+| Account delivery snapshot     | 151 → 1            | 46 → 4 ms                |
+
+Evidence: `.runtime/performance/RM-2026-016/{profile.php,before.jsonl,after.jsonl}`.
+Focused supported backend runs resolved cache/freshness and projection uncertainties:
+five registry scenarios passed (199 assertions), six projection/preferences cases
+passed (77 assertions), six current-grant/proof/delivery/health scenarios passed
+(88 assertions), and locked-snapshot health expiry passed (four assertions).
+The presentation regression doubles entries from four to eight with one SQL read
+and compares every value with the single-scope read; delivery covers stored/default,
+mandatory recipient and account isolation behavior. Registry coverage includes
+100 repeated reads, nested read savepoints, same-connection writes, commit/rollback
+generation reuse, suppressed events and reconnect. Reports:
+`.runtime/frontend/RM-2026-016-registry-cache-focused.log` and
+`.runtime/performance/RM-2026-016/{reads-focused,security-freshness-focused,health-expiry-focused}.log`.
+
+Canonical application performance, registry, Admin projection and Auth preference
+guides and current changelogs are synchronized. Owner and customer backend skill
+entrypoints/references route to the same preventive procedure: measure query growth
+beyond relations, review siblings and repair demonstrated authorized defects;
+customer repairs stay App-owned. Provenance records this as local guidance, with
+no upstream/dependency refresh. Existing AGENTS already owns workflow/security and
+needs no duplicated rule. This is an internal performance correction to unreleased
+Admin 0.1.0/Auth 2.0.0 candidates and the platform framework; public signatures,
+manifests and independent Permissions/Audit versions do not change.
+
+No migration, development business write or Docker resource creation/removal was
+needed. Supported runners cleaned only disposable `runa_test_test_1` workers;
+development/base test data, services, caches and reports remain preserved. No broad
+verification was run. Owner manual point 11b and final verification/release 12 stay
+open.

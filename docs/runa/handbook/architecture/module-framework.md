@@ -134,7 +134,25 @@ Each call scans exactly one owner and validates all of its manifests before publ
 
 Synchronization locks the existing singleton row, validates/discovers trusted local files and atomically publishes the selected owner's metadata plus generation. Optional records start disabled; Core records start enabled. Repeated identical synchronization changes neither timestamps nor generation. Existing enabled flags, public IDs and installed versions survive source updates and disappearance/restoration. Missing records retain their last validated source metadata. A kind change fails instead of reinterpreting retained data. Sync does not migrate module data, infer installed versions or activate modules. Unregister and explicit re-registration preserve retained provenance through the delivered lifecycle adapter.
 
-`ModuleRegistry::snapshot()` returns immutable `RegistrySnapshot`/`ModuleRecord` values ordered by full ID. It checks the persisted generation on each call, reuses unchanged cached records and takes a read lock while rebuilding so records and generation remain consistent. Callers must reacquire a snapshot to observe changes; a retained immutable value describes its original generation. Snapshot reads and normal application/request boot never synchronize or write registration. The module autoloader consults this snapshot only for a module namespace; registry migrations and synchronization must precede use of module classes. It rejects a source hash change pending explicit synchronization. Class loading alone is not an operational API; use the guarded public PHP/HTTP adapters below.
+`ModuleRegistry::snapshot()` returns immutable `RegistrySnapshot`/`ModuleRecord`
+values ordered by full ID. Outside a transaction it checks the persisted generation
+on each call and reuses unchanged records. A rebuild holds the singleton read lock
+while loading records, active transitions and the update reservation consistently.
+Inside a caller-owned transaction, subsequent reads and read-only child savepoints
+reuse that locked snapshot. Connection callbacks invalidate it before writes or
+conservative raw statements, even with database events suppressed; leaving its
+owning transaction/savepoint, starting a replacement transaction or changing the
+PDO session also invalidates it. Rolled-back generations cannot label reused rows.
+This stores registry records, not permission decisions or time-dependent health
+results; availability/eligibility checks still evaluate their current conditions.
+
+Callers must reacquire a snapshot to observe changes; a retained immutable value
+describes its original generation. Snapshot reads and normal application/request
+boot never synchronize or write registration. The module autoloader consults this
+snapshot only for a module namespace; registry migrations and synchronization must
+precede use of module classes. It rejects a source hash change pending explicit
+synchronization. Class loading alone is not an operational API; use the guarded
+public PHP/HTTP adapters below.
 
 The forward Runa preparation primitive and external updater explicitly invoke the Runa-owned update contract below. Application deployment code explicitly invokes the same contract for app modules; the platform updater never installs them implicitly. The retained development-only `app.reference` example is the only supplied module source; there are no production Core registrations.
 

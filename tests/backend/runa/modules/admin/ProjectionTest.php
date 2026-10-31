@@ -48,12 +48,31 @@ beforeEach(function (): void {
     {
         public array $grants = ['runa.admin.enter'];
 
+        public array $checks = [];
+
         public function allows(OperationContext $context, string $permission): bool
         {
+            $this->checks[] = $permission;
+
             return in_array($permission, $this->grants, true);
         }
     };
     $this->projection = new Projection($this->declarations, $this->authority);
+});
+
+it('bounds repeated field permission checks and discards decisions before the next projection', function (): void {
+    $this->authority->checks = [];
+    $this->projection->read('app', 'users', 'profile', []);
+    // Page/contribution admission, section admission and one field intersection; repeated
+    // visible/hidden fields must not each invoke the same permission resolver.
+    expect(array_count_values($this->authority->checks)['runa.admin.enter'])->toBe(4)
+        ->and(array_count_values($this->authority->checks)['runa.auth.identities.read'])->toBe(1);
+    $this->authority->grants[] = 'runa.auth.identities.read';
+    $page = $this->projection->page('app', 'users');
+    expect(array_column($page['sections'][0]['fields'], 'key'))->toContain('hidden', 'reference');
+    array_pop($this->authority->grants);
+    $page = $this->projection->page('app', 'users');
+    expect(array_column($page['sections'][0]['fields'], 'key'))->not->toContain('hidden', 'reference');
 });
 
 afterEach(function (): void {
