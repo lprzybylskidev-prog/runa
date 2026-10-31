@@ -75,7 +75,7 @@ const applicationSettings = computed(
     new URL(pageNavigation.href.value).searchParams.get('section') ===
     'application',
 );
-function sectionHref(section: boolean | 'settings' | 'integrations') {
+function sectionHref(section: boolean | 'integrations') {
   const url = new URL(pageNavigation.href.value);
   if (section)
     url.searchParams.set('section', section === true ? 'application' : section);
@@ -116,7 +116,7 @@ function navigateSection(href: string, event: MouseEvent) {
 watch(applicationSettings, () => {
   editor.value = undefined;
 });
-const editor = ref<'settings' | 'integrations'>();
+const editor = ref<'integrations'>();
 const work = shallowRef<AdminOperationData>();
 const preview = shallowRef<AdminOperationData>();
 const result = shallowRef<AdminOperationData>();
@@ -204,13 +204,9 @@ watch(
     }
     const section = url.searchParams.get('section');
     editor.value =
-      selected.value && section === 'settings' && has('settings.read')
-        ? 'settings'
-        : selected.value &&
-            section === 'integrations' &&
-            has('integrations.manage')
-          ? 'integrations'
-          : undefined;
+      selected.value && section === 'integrations' && has('integrations.manage')
+        ? 'integrations'
+        : undefined;
   },
   { immediate: true },
 );
@@ -264,14 +260,6 @@ const selectedModule = computed(() =>
 );
 const moduleTabs = computed(() => [
   { id: 'overview', label: tr('Overview') },
-  ...(has('settings.read')
-    ? [
-        {
-          id: 'settings',
-          label: tr('Settings'),
-        },
-      ]
-    : []),
   ...(has('integrations.manage')
     ? [
         {
@@ -288,9 +276,7 @@ async function changeModuleTab(tab: string) {
   )
     return;
   await pageNavigation.navigate(
-    sectionHref(
-      tab === 'overview' ? false : (tab as 'settings' | 'integrations'),
-    ),
+    sectionHref(tab === 'overview' ? false : (tab as 'integrations')),
   );
 }
 async function closeModule() {
@@ -912,8 +898,6 @@ defineExpose({ controller });
             :key="selected + ':' + editor"
             :controller="controller"
             :module="selected"
-            :kind="editor"
-            :writable="editor !== 'settings' || has('settings.manage')"
             @saved="refresh()"
           />
         </template>

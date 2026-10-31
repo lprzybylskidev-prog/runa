@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import { useAdminLocale } from './localization';
-import { useAdminInitialReadiness } from './initialReadiness';
-const { locale: adminLocale, t: tr } = useAdminLocale();
-import AdminOperationResult from './AdminOperationResult.vue';
 import {
   computed,
   onMounted,
@@ -12,126 +8,39 @@ import {
   watch,
 } from 'vue';
 import {
-  Alert,
   ViewBoundary,
   useViewReadiness,
   Button,
   Checkbox,
-  NumberInput,
   Select,
   TextInput,
 } from '@/runa/ui';
-import type { AdminJson } from './contracts';
+import { useAdminLocale } from './localization';
+import { useAdminInitialReadiness } from './initialReadiness';
+import AdminOperationResult from './AdminOperationResult.vue';
 import type {
   AdminOperationData,
   AdminOperationsController,
 } from './useAdminOperations';
+const { locale: adminLocale, t: tr } = useAdminLocale();
 const props = defineProps<{
   controller: AdminOperationsController;
   module: string;
-  kind: 'settings' | 'integrations';
-  writable?: boolean;
 }>();
 const emit = defineEmits<{ saved: [] }>();
 const loaded = shallowRef<AdminOperationData>();
-const draft = ref<Record<string, AdminJson>>({});
-let draftRevision = 0;
-const edited = ref(new Set<string>());
-const raw = ref<Record<string, string>>({});
-const invalidArrays = ref(new Set<string>());
+const result = shallowRef<AdminOperationData>();
 const json = ref('{}'),
   key = ref(''),
-  enabled = ref(false);
-const parseError = ref('');
-const settingRows = computed(() => {
-  const source = loaded.value?.settings;
-  if (!source || typeof source !== 'object' || Array.isArray(source)) return [];
-  return Object.entries(source).flatMap(([key, entry]) => {
-    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return [];
-    const definition = entry.definition;
-    if (
-      !definition ||
-      typeof definition !== 'object' ||
-      Array.isArray(definition)
-    )
-      return [];
-    const names = definition.names;
-    return [
-      {
-        key,
-        definition,
-        entry,
-        label:
-          names &&
-          typeof names === 'object' &&
-          !Array.isArray(names) &&
-          typeof names.en === 'string' &&
-          typeof names.pl === 'string'
-            ? { en: names.en, pl: names.pl }
-            : key,
-      },
-    ];
-  });
-});
+  enabled = ref(false),
+  parseError = ref('');
+let draftRevision = 0;
 const integrations = computed(() => {
   const source = loaded.value?.integrations;
   return source && typeof source === 'object' && !Array.isArray(source)
     ? source
     : {};
 });
-function choices(options: AdminJson | undefined) {
-  const items =
-    options &&
-    typeof options === 'object' &&
-    !Array.isArray(options) &&
-    Array.isArray(options.choices)
-      ? options.choices
-      : [];
-  return items.map((value) => ({
-    value: JSON.stringify(value),
-    label: tr(String(value)),
-  }));
-}
-function enumEdit(
-  name: string,
-  options: AdminJson | undefined,
-  value: string | null,
-) {
-  const items =
-    options &&
-    typeof options === 'object' &&
-    !Array.isArray(options) &&
-    Array.isArray(options.choices)
-      ? options.choices
-      : [];
-  const selected = items.find((item) => JSON.stringify(item) === value);
-  if (selected !== undefined) edit(name, selected);
-}
-function arrayEdit(name: string, value: string | null) {
-  draftRevision++;
-  raw.value[name] = value ?? '';
-  try {
-    const parsed: unknown = JSON.parse(value ?? '');
-    if (!Array.isArray(parsed)) throw new TypeError();
-    invalidArrays.value.delete(name);
-    parseError.value = '';
-    edit(name, parsed as AdminJson[]);
-  } catch {
-    invalidArrays.value.add(name);
-    parseError.value = 'Enter a valid JSON array.';
-    props.controller.dirty.value = true;
-  }
-}
-function edit(name: string, value: AdminJson) {
-  draftRevision++;
-  if (value === null) {
-    raw.value[name] = 'null';
-    invalidArrays.value.delete(name);
-  }
-  draft.value[name] = value;
-  edited.value.add(name);
-  props.controller.dirty.value = true;
-}
 function changed() {
   draftRevision++;
   parseError.value = '';
@@ -140,29 +49,16 @@ function changed() {
 async function load() {
   if (!(await props.controller.beforeLeave())) return;
   const own = draftRevision;
-  const response = await props.controller.read(props.kind, {
+  const response = await props.controller.read('integrations', {
     module: props.module,
   });
   if (!response || own !== draftRevision) return;
   loaded.value = response;
-  draft.value = {};
-  raw.value = {};
-  invalidArrays.value = new Set();
-  edited.value = new Set();
+  key.value = '';
+  enabled.value = false;
+  json.value = '{}';
   props.controller.dirty.value = false;
   parseError.value = '';
-  if (props.kind === 'settings') {
-    for (const row of settingRows.value) {
-      draft.value[row.key] = row.definition.sensitive
-        ? null
-        : (row.entry.value ?? null);
-      raw.value[row.key] = JSON.stringify(draft.value[row.key]);
-    }
-  } else {
-    key.value = '';
-    enabled.value = false;
-    json.value = '{}';
-  }
 }
 async function selectIntegration(value: string) {
   if (!(await props.controller.beforeLeave())) return;
@@ -174,79 +70,41 @@ async function selectIntegration(value: string) {
   json.value = JSON.stringify(entry.config ?? {}, null, 2);
   props.controller.dirty.value = false;
 }
-function parse(): AdminOperationData | undefined {
+async function save() {
+  if (!loaded.value || !key.value || !props.controller.dirty.value) return;
+  let value: AdminOperationData;
   try {
-    const value: unknown = JSON.parse(json.value);
-    if (!value || typeof value !== 'object' || Array.isArray(value))
+    const parsed: unknown = JSON.parse(json.value);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
       throw new TypeError();
+    value = parsed as AdminOperationData;
     parseError.value = '';
-    return value as AdminOperationData;
   } catch {
     parseError.value = 'Enter a valid JSON object.';
     return;
   }
-}
-async function save() {
-  if (
-    !loaded.value ||
-    !props.controller.dirty.value ||
-    props.writable === false ||
-    invalidArrays.value.size > 0
-  )
-    return;
-  let response: AdminOperationData | undefined;
-  if (props.kind === 'settings') {
-    const patch = Object.fromEntries(
-      [...edited.value].map((key) => [key, draft.value[key] ?? null]),
-    );
-    response = await props.controller.execute('settings.update', {
-      module: props.module,
-      generation: loaded.value.generation ?? null,
-      revision: loaded.value.revision ?? null,
-      patch,
-    });
-  } else {
-    const value = parse();
-    if (!value) return;
-    response = await props.controller.execute('integrations.configure', {
-      module: props.module,
-      generation: loaded.value.generation ?? null,
-      key: key.value,
-      enabled: enabled.value,
-      config: value,
-    });
-  }
+  const response = await props.controller.execute('integrations.configure', {
+    module: props.module,
+    generation: loaded.value.generation ?? null,
+    key: key.value,
+    enabled: enabled.value,
+    config: value,
+  });
   if (response) {
     props.controller.dirty.value = false;
-    // Native pending/recovery state stays visible; never label it committed.
     result.value = response;
     loaded.value = undefined;
-    draft.value = {};
-    edited.value = new Set();
     json.value = '{}';
-    const transition = response.transition;
-    if (
-      response.status === 'committed' ||
-      typeof response.generation === 'number' ||
-      (transition &&
-        typeof transition === 'object' &&
-        !Array.isArray(transition) &&
-        transition.status === 'succeeded')
-    )
-      await load();
+    await load();
     emit('saved');
   }
 }
-const result = shallowRef<AdminOperationData>();
 watch(
   () => props.controller.contextRevision.value,
   () => {
+    draftRevision++;
     loaded.value = undefined;
     result.value = undefined;
-    draft.value = {};
-    raw.value = {};
-    edited.value = new Set();
-    invalidArrays.value = new Set();
     json.value = '{}';
     key.value = '';
     enabled.value = false;
@@ -277,174 +135,43 @@ onScopeDispose(() => {
   >
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <h3 class="font-semibold">
-          {{
-            kind === 'settings'
-              ? tr('Module settings')
-              : tr('Optional integrations')
-          }}
-        </h3>
+        <h3 class="font-semibold">{{ tr('Optional integrations') }}</h3>
         <Button :disabled="controller.busy.value" @click="load">{{
           tr('Reload current state')
         }}</Button>
       </div>
       <AdminOperationResult v-if="result" :result="result" />
       <template v-if="loaded">
-        <Alert
-          v-if="kind === 'settings' && loaded.editable === false"
-          tone="info"
-          >{{
-            tr('Auth policies use their dedicated reviewed policy page.')
-          }}</Alert
-        >
-        <template v-if="kind === 'settings'">
-          <p v-if="!settingRows.length" class="text-sm text-muted">
-            {{ tr('No settings are declared.') }}
-          </p>
-          <div v-for="row in settingRows" :key="row.key" class="space-y-2">
-            <p v-if="row.definition.sensitive" class="text-xs text-muted">
-              {{ tr(row.label) }}:
-              {{ row.entry.set ? tr('Set') : tr('Not set') }}.
-              {{ tr('Only an explicit replacement is submitted.') }}
-            </p>
-            <Checkbox
-              v-if="row.definition.type === 'boolean'"
-              :label="tr(row.label)"
-              :model-value="draft[row.key] === true"
-              :disabled="
-                controller.busy.value ||
-                loaded.editable === false ||
-                writable === false
-              "
-              @update:model-value="edit(row.key, $event)"
-            />
-            <NumberInput
-              v-else-if="row.definition.type === 'integer'"
-              :label="tr(row.label)"
-              :model-value="String(draft[row.key] ?? '')"
-              kind="integer"
-              :locale="adminLocale"
-              :disabled="
-                controller.busy.value ||
-                loaded.editable === false ||
-                writable === false
-              "
-              @update:model-value="
-                edit(
-                  row.key,
-                  $event !== null &&
-                    /^-?\d+$/.test($event) &&
-                    Number.isSafeInteger(Number($event))
-                    ? Number($event)
-                    : $event,
-                )
-              "
-            />
-            <Select
-              v-else-if="row.definition.type === 'enum'"
-              :label="tr(row.label)"
-              :model-value="JSON.stringify(draft[row.key])"
-              :options="choices(row.definition.options)"
-              :locale="adminLocale"
-              :disabled="
-                controller.busy.value ||
-                loaded.editable === false ||
-                writable === false
-              "
-              @update:model-value="
-                enumEdit(row.key, row.definition.options, $event)
-              "
-            />
-            <TextInput
-              v-else-if="row.definition.type === 'array'"
-              :label="tr(row.label) + ' (JSON)'"
-              type="textarea"
-              :model-value="raw[row.key] ?? ''"
-              :error="tr(parseError)"
-              :disabled="
-                controller.busy.value ||
-                loaded.editable === false ||
-                writable === false
-              "
-              @update:model-value="arrayEdit(row.key, $event)"
-            />
-            <TextInput
-              v-else-if="
-                ['string', 'decimal'].includes(String(row.definition.type))
-              "
-              :label="tr(row.label)"
-              :type="row.definition.sensitive ? 'password' : 'text'"
-              :model-value="
-                typeof draft[row.key] === 'string'
-                  ? (draft[row.key] as string)
-                  : draft[row.key] === null
-                    ? null
-                    : JSON.stringify(draft[row.key])
-              "
-              :disabled="
-                controller.busy.value ||
-                loaded.editable === false ||
-                writable === false
-              "
-              autocomplete="off"
-              @update:model-value="edit(row.key, $event)"
-            />
-            <p v-else class="break-words text-sm text-muted">
-              {{ tr(row.label) }}
-              {{
-                tr(
-                  'uses a module-specific control. Supply an operational editor replacement for this declared type.',
-                )
-              }}
-            </p>
-            <Button
-              v-if="
-                row.definition.nullable &&
-                loaded.editable !== false &&
-                writable !== false
-              "
-              :disabled="controller.busy.value"
-              @click="edit(row.key, null)"
-              >{{ tr('Clear') }} {{ tr(row.label) }}</Button
-            >
-          </div>
-        </template>
-        <template v-else>
-          <Select
-            :label="tr('Integration')"
-            :model-value="key"
-            :options="
-              Object.keys(integrations).map((value) => ({
-                value,
-                label: value,
-              }))
-            "
-            :disabled="controller.busy.value"
-            :locale="adminLocale"
-            @update:model-value="selectIntegration(String($event))"
-          />
-          <Checkbox
-            v-if="key"
-            :label="tr('Enabled')"
-            v-model="enabled"
-            :disabled="controller.busy.value"
-            @update:model-value="changed"
-          />
-          <TextInput
-            v-if="key"
-            :label="tr('Non-sensitive integration configuration (JSON)')"
-            type="textarea"
-            v-model="json"
-            :error="tr(parseError)"
-            :disabled="controller.busy.value"
-            @update:model-value="changed"
-          />
-        </template>
+        <Select
+          :label="tr('Integration')"
+          :model-value="key"
+          :options="
+            Object.keys(integrations).map((value) => ({ value, label: value }))
+          "
+          :disabled="controller.busy.value"
+          :locale="adminLocale"
+          @update:model-value="selectIntegration(String($event))"
+        />
+        <Checkbox
+          v-if="key"
+          :label="tr('Enabled')"
+          v-model="enabled"
+          :disabled="controller.busy.value"
+          @update:model-value="changed"
+        />
+        <TextInput
+          v-if="key"
+          :label="tr('Non-sensitive integration configuration (JSON)')"
+          type="textarea"
+          v-model="json"
+          :error="tr(parseError)"
+          :disabled="controller.busy.value"
+          @update:model-value="changed"
+        />
         <Button
-          v-if="loaded.editable !== false && writable !== false"
-          :disabled="controller.busy.value || !controller.dirty.value"
+          :disabled="controller.busy.value || !controller.dirty.value || !key"
           @click="save"
-          >{{ tr('Save') }} {{ kind }}</Button
+          >{{ tr('Save integration') }}</Button
         >
       </template>
     </div>

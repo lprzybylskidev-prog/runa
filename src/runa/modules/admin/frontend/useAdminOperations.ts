@@ -15,7 +15,6 @@ export type AdminOperationView =
   | 'capabilities'
   | 'diagnostics'
   | 'module'
-  | 'settings'
   | 'integrations'
   | 'history'
   | 'work'
@@ -29,7 +28,6 @@ export type AdminOperationCommand =
   | 'modules.apply'
   | 'modules.resume'
   | 'modules.cancel'
-  | 'settings.update'
   | 'settings.recover'
   | 'integrations.configure'
   | 'work.cancel';

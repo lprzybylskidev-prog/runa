@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Remove the generic module settings tab, editor mode, settings read/update operations and read grant. Require dedicated owning settings pages with history/workflows; retain Auth policy, native settings, integrations and existing operation-history recovery.
+
 - Translate lifecycle confirmation Cancel to Anuluj in Polish; verify all three action dialogs and retain the English label.
 
 - Put Optional module controls left and diagnosis right in an unlabelled action row above details and replace the intent selector/separate preview with action buttons and one native-preview confirmation dialog. Fence previews on authority/context changes and require explicit review after failure. Keep diagnosis in its own result dialog, independent of other outcomes; retain registration versus installed-data semantics.

@@ -523,6 +523,15 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Add the missing Polish dictionary entry and check rendered Enable/Disable/
     Unregister confirmation footers in Polish. Preserve English presentation.
   - Prepare current assets and commit before repeated owner acceptance.
+- [x] 11a21. Remove the generic module settings editor in favor of owned pages.
+  - Owner decision, 2026-10-31: administrator-editable module settings belong on
+    the module's dedicated page with change history and its own reviewed workflow,
+    as Auth already supplies; do not expose a second generic module-dialog form.
+  - Remove the settings tab/editor mode, generic settings read/update endpoints
+    and read grant. Retain native settings storage, Auth policy pages and retained
+    operation history/status/recovery. Integrations keep their existing editor.
+  - Document authoring/generator boundaries and update current consumers/tests;
+    prepare assets, run focused checks and commit before repeated owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3100,3 +3109,75 @@ Local knowledge was current and the focused localization source was reviewed.
 No Docker resources were created/removed, no application business data changed,
 and existing services/data, caches and reports are preserved. Owner acceptance
 11b and final verification/release 12 stay open; no broad gate was run.
+
+### Point 11a21 — Dedicated settings pages instead of a generic module editor
+
+The owner removes the generic module settings tab and requires module-owned
+administrator-facing settings pages with history and owning publication workflows,
+as Auth already provides. The native SettingsProvider/ModuleSettings storage,
+validation, secret redaction, revisions, Audit and recovery contracts remain.
+Source/CLI-only technical examples do not advertise an Admin editor automatically.
+The reference preserves its existing values and documented native CLI example;
+this point does not invent an unrequested reference administration page.
+
+Removed the dialog settings tab, editor mode, generic settings read/update HTTP
+operations, controller command/view types and settings.read declaration. Old
+settings deep links resolve to Overview without making settings requests. The
+fixed settings.status/recover endpoints and settings.manage authority remain only
+for retained operation history/recovery, with clarified source permission copy.
+No fresh settings patch is accepted through that retained recovery route. Existing
+permission dictionaries/grant history retain the native source-removal policy;
+no database cleanup or manual assignment mutation is performed. Dedicated Auth
+policy read/review/history remains available under its owning grants.
+
+AdminOperationalEditor now has the public props {controller,module} and supports
+only non-sensitive integration configuration. Removed obsolete typed settings/
+secret/custom-control code and translations rather than adding compatibility
+paths. Its public facade/presentation seam remains, with the narrowed props
+specified in the Admin frontend guide. Integrations retain dirty guards, initial
+readiness, context/reload fencing and explicit writes. The save label is localized
+as Save integration / Zapisz integrację. Admin remains its unreleased 0.1.0 creation
+candidate within prepared platform 0.7.0; no manifest/upgrade or dependency change.
+
+Synchronized Admin README/frontend/operations/authoring/candidate changelog,
+module-development guidance, reference README, loading and page-navigation query
+contracts. Both owner and customer instruction products already direct module
+and Admin authoring to those canonical guides, so neither needs duplicated rules.
+Relevant backend/frontend skills and current local knowledge were consulted;
+bounded retrieval was checked against original sources.
+
+Focused supported frontend execution passed 10 cases (392 excluded), native
+exit/cleanup 0, in .runtime/frontend/RM-2026-016-dedicated-settings-frontend.log:
+no generic tab/reads for Auth/Audit/Permissions/reference or old links, integration
+conflict/reload draft retention, integration deep links/dirty close guards and
+unchanged diagnosis/task-history departure. The supported TypeScript/Vite/native
+error build passed in .runtime/frontend/RM-2026-016-dedicated-settings-build-ready.log.
+
+Focused supported isolated backend execution passed 4 cases / 70 assertions,
+parallel/processes=1 with native exit/cleanup 0, in
+.runtime/frontend/RM-2026-016-dedicated-settings-backend-ready.log. Coverage includes
+refused generic reads/patches for all four module IDs without generation mutation,
+unchanged integration Audit rollback/publication, dedicated Auth policy read/review/
+history/refusal and scoped retained settings history. The first run exposed a
+stale Auth policy test assertion: the native OperationRejected render returns
+error.code, not top-level reason. Source inspection confirmed that owning contract;
+only that assertion was corrected, preserving HTTP 403 and step_up_required. The
+same four-case supported selection then passed; failed reports remain preserved.
+The runner removed only its disposable runa_test_test_1 and preserved base/dev data.
+
+Controlled browser inspection of the served build passed PL/dark/1440px and
+EN/light/390px. It checked all four module dialogs, an old Auth settings deep link,
+exactly Overview/Integrations tabs, zero generic settings reads, working integration
+selection/configuration and no page errors/document overflow. Screenshots and
+report.json remain under .runtime/artifacts/playwright/runa/RM-2026-016-dedicated-settings/;
+log: .runtime/frontend/RM-2026-016-dedicated-settings-browser.log. Synthetic account/
+operation responses performed no application business writes. Browser contexts
+closed and the temporary helper was removed.
+
+Nginx /admin, /api/ready and all 16 entry-linked assets returned HTTP 200;
+unauthenticated /api/admin/entry remains 401. Evidence:
+.runtime/frontend/RM-2026-016-dedicated-settings-http.json. Current assets are ready
+at http://localhost:8080/admin for repeated owner acceptance. No migrations,
+application data changes or Docker resources were introduced/removed; active
+services/data, knowledge/model caches and all reports remain preserved. Owner
+acceptance 11b and final verification/release 12 remain open; no broad gate was run.

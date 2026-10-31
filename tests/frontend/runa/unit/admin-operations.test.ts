@@ -209,53 +209,41 @@ it('operational diagnostic renders persisted health and isolates denied manageme
     .trigger('click');
   expect(wrapper.text()).not.toContain('Recover settings');
 });
-it('operational diagnostic preserves secret set-state and dirty settings after conflict', async () => {
+it('integration edits preserve a dirty draft after conflict', async () => {
+  const { Select } = await import('@/runa/ui');
   const fetch = vi.spyOn(window, 'fetch').mockResolvedValue(
     response({
       generation: 3,
-      revision: 4,
-      editable: true,
-      settings: {
-        credential: {
-          definition: {
-            type: 'string',
-            sensitive: true,
-            nullable: true,
-            names: { en: 'Credential' },
-          },
-          set: true,
-        },
-      },
+      integrations: { history: { enabled: true, config: { mode: 'safe' } } },
     }),
   );
   const { controller } = harness();
   const wrapper = mount(AdminOperationalEditor, {
-    props: { controller, module: 'app.safe', kind: 'settings', writable: true },
+    props: { controller, module: 'app.safe' },
+    attachTo: document.body,
   });
-  await flushPromises();
-  await vi.waitFor(() => expect(wrapper.text()).toContain('Set'));
-  expect(
-    wrapper.find<HTMLInputElement>('input[type=password]').element.value,
-  ).toBe('');
-  await wrapper
-    .find<HTMLInputElement>('input[type=password]')
-    .setValue('replacement');
+  await vi.waitFor(() =>
+    expect(wrapper.findComponent(Select).exists()).toBe(true),
+  );
+  wrapper.getComponent(Select).vm.$emit('update:modelValue', 'history');
+  await vi.waitFor(() => expect(wrapper.find('textarea').exists()).toBe(true));
+  await wrapper.get('textarea').setValue('{"mode":"new"}');
   fetch.mockResolvedValue(response({}, 409));
   await wrapper
     .findAll('button')
-    .find((button) => button.text() === 'Save settings')!
+    .find((button) => button.text() === 'Save integration')!
     .trigger('click');
-  await flushPromises();
   await vi.waitFor(() => expect(controller.conflict.value).toBe(true));
-  expect(
-    wrapper.find<HTMLInputElement>('input[type=password]').element.value,
-  ).toBe('replacement');
+  expect((wrapper.get('textarea').element as HTMLTextAreaElement).value).toBe(
+    '{"mode":"new"}',
+  );
   expect(controller.dirty.value).toBe(true);
   expect(JSON.parse(String(fetch.mock.calls.at(-1)?.[1]?.body))).toEqual({
     module: 'app.safe',
     generation: 3,
-    revision: 4,
-    patch: { credential: 'replacement' },
+    key: 'history',
+    enabled: true,
+    config: { mode: 'new' },
   });
 });
 
@@ -393,30 +381,28 @@ it('operational background reads leave editors available and an explicit write f
   expect(fetch).toHaveBeenCalledTimes(2);
 });
 
-it('operational reload never overwrites a newer edit made while its read is pending', async () => {
+it('operational reload never overwrites a newer integration edit made while its read is pending', async () => {
+  const { Select } = await import('@/runa/ui');
   const fetch = vi.spyOn(window, 'fetch').mockResolvedValue(
     response({
       generation: 1,
-      settings: {
-        title: {
-          definition: { type: 'string', names: { en: 'Title', pl: 'Tytuł' } },
-          value: 'Original',
-        },
+      integrations: {
+        history: { enabled: true, config: { mode: 'original' } },
       },
     }),
   );
   const { controller } = harness();
   const w = mount(AdminOperationalEditor, {
-    props: { controller, module: 'app.safe', kind: 'settings', writable: true },
+    props: { controller, module: 'app.safe' },
     attachTo: document.body,
   });
-  await vi.waitFor(() =>
-    expect(w.find('input[type="text"]').exists()).toBe(true),
-  );
+  await vi.waitFor(() => expect(w.findComponent(Select).exists()).toBe(true));
+  w.getComponent(Select).vm.$emit('update:modelValue', 'history');
+  await vi.waitFor(() => expect(w.find('textarea').exists()).toBe(true));
   let finish!: (value: Response) => void;
   fetch.mockImplementation(
     () =>
-      new Promise<Response>((resolve) => {
+      new Promise((resolve) => {
         finish = resolve;
       }),
   );
@@ -425,22 +411,19 @@ it('operational reload never overwrites a newer edit made while its read is pend
     .find((button) => button.text() === 'Reload current state')!
     .trigger('click');
   await flushPromises();
-  const input = w.get('input[type="text"]');
+  const input = w.get('textarea');
   expect((input.element as HTMLTextAreaElement).disabled).toBe(false);
-  await input.setValue('Newer draft');
+  await input.setValue('{"mode":"newer"}');
   finish(
     response({
       generation: 2,
-      settings: {
-        title: {
-          definition: { type: 'string', names: { en: 'Title', pl: 'Tytuł' } },
-          value: 'Old response',
-        },
+      integrations: {
+        history: { enabled: false, config: { mode: 'old response' } },
       },
     }),
   );
   await flushPromises();
-  expect((input.element as HTMLTextAreaElement).value).toBe('Newer draft');
+  expect((input.element as HTMLTextAreaElement).value).toBe('{"mode":"newer"}');
   expect(controller.dirty.value).toBe(true);
 });
 
@@ -515,18 +498,18 @@ it('Admin module subviews restore deep links inside a grant-filtered dialog', as
   window.history.replaceState(
     {},
     '',
-    '/admin?module=app.safe&section=settings',
+    '/admin?module=app.safe&section=integrations',
   );
   const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
     String(input).endsWith('/capabilities')
-      ? response({ capabilities: ['diagnostics.read', 'settings.read'] })
+      ? response({ capabilities: ['diagnostics.read', 'integrations.manage'] })
       : String(input).includes('/diagnostics')
         ? response({ modules: [] })
         : response({
             module: 'app.safe',
             generation: 1,
             revision: 1,
-            settings: {},
+            integrations: {},
           }),
   );
   const w = mount(AdminOperations, {
@@ -534,7 +517,7 @@ it('Admin module subviews restore deep links inside a grant-filtered dialog', as
     attachTo: document.body,
   });
   await vi.waitFor(() =>
-    expect(document.body.textContent).toContain('No settings are declared.'),
+    expect(document.body.textContent).toContain('Optional integrations'),
   );
   expect(w.getComponent(AdminOperationalEditor).props('module')).toBe(
     'app.safe',
@@ -544,12 +527,12 @@ it('Admin module subviews restore deep links inside a grant-filtered dialog', as
   const tabs = Array.from(dialog.querySelectorAll('[role="tab"]')).map((tab) =>
     tab.textContent?.trim(),
   );
-  expect(tabs).toEqual(['Overview', 'Settings']);
+  expect(tabs).toEqual(['Overview', 'Integrations']);
   expect(
     fetch.mock.calls.filter(([url]) => String(url).includes('/diagnostics')),
   ).toHaveLength(1);
   expect(new URL(window.location.href).searchParams.get('section')).toBe(
-    'settings',
+    'integrations',
   );
 });
 
@@ -634,11 +617,12 @@ it('dashboard filtering replaces cards with content skeletons and keeps the late
 });
 
 it('module dialog guards close and tab transitions without losing a dirty draft', async () => {
+  const { Select } = await import('@/runa/ui');
   vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
     const url = String(input);
     if (url.endsWith('/capabilities'))
       return response({
-        capabilities: ['diagnostics.read', 'settings.read', 'settings.manage'],
+        capabilities: ['diagnostics.read', 'integrations.manage'],
       });
     if (url.includes('/diagnostics'))
       return response({
@@ -657,15 +641,8 @@ it('module dialog guards close and tab transitions without losing a dirty draft'
       module: 'app.safe',
       generation: 1,
       revision: 1,
-      settings: {
-        title: {
-          definition: {
-            type: 'string',
-            nullable: true,
-            names: { pl: 'Nazwa', en: 'Name' },
-          },
-          value: 'Original',
-        },
+      integrations: {
+        history: { enabled: true, config: { name: 'Original' } },
       },
     });
   });
@@ -684,14 +661,18 @@ it('module dialog guards close and tab transitions without losing a dirty draft'
   );
   const tab = Array.from(
     document.body.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
-  ).find((tab) => tab.textContent?.trim() === 'Settings')!;
+  ).find((tab) => tab.textContent?.trim() === 'Integrations')!;
   tab.click();
   await vi.waitFor(() =>
     expect(w.findComponent(AdminOperationalEditor).exists()).toBe(true),
   );
   const editor = w.getComponent(AdminOperationalEditor);
-  await vi.waitFor(() => expect(editor.find('input').exists()).toBe(true));
-  await editor.get('input').setValue('Unsaved name');
+  await vi.waitFor(() =>
+    expect(editor.findComponent(Select).exists()).toBe(true),
+  );
+  editor.getComponent(Select).vm.$emit('update:modelValue', 'history');
+  await vi.waitFor(() => expect(editor.find('textarea').exists()).toBe(true));
+  await editor.get('textarea').setValue('{"name":"Unsaved name"}');
   const controller = w.vm.controller;
   const close = document.body.querySelector<HTMLButtonElement>(
     '[aria-label="Close dialog"]',
@@ -701,9 +682,9 @@ it('module dialog guards close and tab transitions without losing a dirty draft'
   controller.confirm(false);
   await flushPromises();
   expect(new URL(window.location.href).searchParams.get('section')).toBe(
-    'settings',
+    'integrations',
   );
-  expect(editor.get('input').element.value).toBe('Unsaved name');
+  expect(editor.get('textarea').element.value).toBe('{"name":"Unsaved name"}');
   close.click();
   await vi.waitFor(() => expect(controller.confirmation.value).toBeDefined());
   controller.confirm(true);
@@ -740,7 +721,7 @@ it.each(['selection', 'deep link'])(
           capabilities: [
             'diagnostics.read',
             'health.diagnose',
-            'settings.read',
+            'integrations.manage',
             'work.read',
             'modules.manage',
           ],
@@ -881,10 +862,10 @@ it.each(['selection', 'deep link'])(
     expect(button('Request cancellation')).toBeUndefined();
     const settingsTab = Array.from(
       document.body.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
-    ).find((tab) => tab.textContent?.trim() === 'Settings')!;
+    ).find((tab) => tab.textContent?.trim() === 'Integrations')!;
     settingsTab.click();
     await vi.waitFor(() =>
-      expect(window.location.search).toContain('section=settings'),
+      expect(window.location.search).toContain('section=integrations'),
     );
     await vi.waitFor(() => {
       expect(w.findComponent(AdminOperationResult).exists()).toBe(false);
@@ -1393,5 +1374,50 @@ it.each(['enable', 'disable', 'unregister'] as const)(
       ),
     ).toBe(false);
     language.locale.value = 'en';
+  },
+);
+
+it.each(['runa.auth', 'runa.audit', 'runa.permissions', 'app.reference'])(
+  'module %s never exposes or reads a generic settings editor, including an old deep link',
+  async (module) => {
+    window.history.replaceState(
+      {},
+      '',
+      `/admin?module=${module}&section=settings`,
+    );
+    const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+      String(input).endsWith('/capabilities')
+        ? response({ capabilities: ['diagnostics.read', 'settings.read'] })
+        : response({
+            modules: [
+              {
+                id: module,
+                kind: 'optional',
+                registered: true,
+                enabled: true,
+                health: 'healthy',
+                available: true,
+              },
+            ],
+          }),
+    );
+    const w = mount(AdminOperations, {
+      props: { admin: admin() },
+      attachTo: document.body,
+    });
+    await vi.waitFor(() =>
+      expect(document.body.querySelector('[role="tabpanel"]')).not.toBeNull(),
+    );
+    expect(
+      Array.from(document.body.querySelectorAll('[role="tab"]')).map((tab) =>
+        tab.textContent?.trim(),
+      ),
+    ).toEqual(['Overview']);
+    expect(w.findComponent(AdminOperationalEditor).exists()).toBe(false);
+    expect(
+      fetch.mock.calls.some(([url]) =>
+        String(url).includes('/operations/settings'),
+      ),
+    ).toBe(false);
   },
 );

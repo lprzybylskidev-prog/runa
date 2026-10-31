@@ -185,7 +185,7 @@ helper starts sessions, authorizes access or performs writes.
 existing methods/current descriptor so query-driven subviews react to deliberate
 navigation and browser history. Account uses `?tab=...` (default details); Admin
 dashboard uses `?section=application` (default Modules); selected module editors
-use `?module=...&section=health|settings|integrations`. Named server entry paths
+use `?module=...&section=integrations`. Named server entry paths
 remain unchanged. Native modified clicks retain their link behavior; guarded
 navigation preserves the existing dirty/write protections and never replays writes.
 

@@ -117,14 +117,13 @@ export const adminMessages: AdminMessages = {
   'Application settings could not be read.':
     'Nie udało się odczytać ustawień aplikacji.',
   'Application settings saved.': 'Ustawienia aplikacji zostały zapisane.',
-  'Auth policies use their dedicated reviewed policy page.':
-    'Zasady uwierzytelniania zmienisz na dedykowanej stronie zasad z przeglądem zmian.',
   Available: 'Dostępny',
   Operations: 'Operacje',
   'Back to operations': 'Wróć do operacji',
   'Bulk action cancelled or selection changed.':
     'Akcja zbiorcza została anulowana lub zmieniono zaznaczenie.',
   'Bulk action unavailable.': 'Akcja zbiorcza jest niedostępna.',
+  'Save integration': 'Zapisz integrację',
   Cancel: 'Anuluj',
   'Cancel and compensate': 'Anuluj i wycofaj skutki',
   Cancellation: 'Anulowanie',
@@ -198,7 +197,6 @@ export const adminMessages: AdminMessages = {
   Module: 'Moduł',
   'Module ID': 'Identyfikator modułu',
   'Module operations': 'Operacje modułu',
-  'Module settings': 'Ustawienia modułu',
   'Name or authorized login': 'Nazwa lub login dostępny dla Twoich uprawnień',
   'New custom definition': 'Nowa definicja własna',
   'New record': 'Nowy rekord',
@@ -210,7 +208,6 @@ export const adminMessages: AdminMessages = {
     'Brak dostępnych ustawień aplikacji.',
   'No entries in this bounded result.': 'Brak wpisów w tym wyniku.',
   'No sections are available.': 'Brak dostępnych sekcji.',
-  'No settings are declared.': 'Nie zadeklarowano ustawień.',
   'No value is set.': 'Nie ustawiono wartości.',
   'Non-sensitive integration configuration (JSON)':
     'Konfiguracja integracji bez danych poufnych (JSON)',
@@ -347,10 +344,6 @@ export const adminMessages: AdminMessages = {
   Source: 'Źródło',
   'changed elsewhere. Current value:':
     'zmieniono w innym miejscu. Bieżąca wartość:',
-  'uses a module-specific control. Supply an operational editor replacement for this declared type.':
-    'korzysta z kontrolki modułu. Dostarcz zastępczy edytor operacyjny dla tego zadeklarowanego typu.',
-  'Only an explicit replacement is submitted.':
-    'Wysyłana jest wyłącznie jawnie wpisana nowa wartość.',
   Access: 'Dostęp',
   'Account access': 'Dostęp konta',
   Accounts: 'Konta',

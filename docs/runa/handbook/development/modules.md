@@ -151,3 +151,11 @@ source-owned phases shared by standalone writes and aggregate forms, operation-
 specific health admission, locked review validation and atomic proof/Audit. Use
 its public source contracts for owned mutations; do not wrap a whole guarded write
 inside another transaction or import a foreign module's private mutation class.
+
+Administrator-editable module settings must have a dedicated module-owned Admin
+page, change history and the owning validation/publication/recovery workflow.
+Reuse native settings and Audit contracts; declaring a SettingsProvider alone does
+not create an administrative editor. The module operations dialog has no generic
+settings tab or read/update endpoint. Source/CLI-only technical demonstrations
+remain separate from administrator-facing settings pages. See the
+[Admin authoring guide](../modules/admin/examples.md).

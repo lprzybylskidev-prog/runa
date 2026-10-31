@@ -63,19 +63,17 @@ not customer imports. Requests name stable commands only. The owning engine keep
 its current public signature; each bridge enforces the permission below plus
 target/source/revision checks. No generic engine-method dispatcher is allowed.
 
-| Command / grant                                           | Exact engine entrypoint                                                                                                                             | Concurrency, outcome and Audit disposition                                                                                                                    |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| diagnostics.read / `runa.admin.diagnostics.read`          | ModuleRegistry.snapshot(), ModuleManagement.read(string $module): ManagementView and cached ModuleAvailability.statuses()                           | Registry state filter, generation and safe observed/expiry/reason data; no diagnostic execution on read                                                       |
-| health.diagnose / `runa.admin.health.diagnose`            | ModuleHealth.diagnose(string $id): array                                                                                                            | Independent deadline/lock; persisted observations, safe fixed codes; diagnostic observation is not a business mutation event                                  |
-| modules.preview / `runa.admin.modules.manage`             | ModuleTransitions.preview(string $intent, string $target): AdministrativePreview                                                                    | Only existing allowed Optional intents; exact reviewed graph/source/generation and active work                                                                |
-| modules.apply / same                                      | ModuleTransitions.apply(AdministrativePreview $preview): TransitionResult                                                                           | Independent reservation/hook/publication runner; add Audit participation to reservation/final publication/compensation state boundaries                       |
-| modules.status/resume/cancel / same                       | ModuleTransitions.status/resume/cancel(string $operationId): TransitionResult                                                                       | Exact native status/recovery and generation; add missing meaningful mutation Audit in the owning transaction; no blanket recovery                             |
-| settings.read / `runa.admin.settings.read`                | ModuleSettings.read(string $module): array                                                                                                          | Redacted typed values/set-state only, generation/revision; never use private value() for HTTP                                                                 |
-| settings.update / `runa.admin.settings.manage`            | ModuleSettings.update(string $module, array $patch, int $expectedRevision, int $expectedGeneration, ?SettingsActor $actor = null): TransitionResult | Independent runner; derive actor from trusted context; existing SettingsParticipant publication Audit, no duplicate wrapper success event                     |
-| settings.status/recover / same                            | ModuleSettings.status/recover(string $id): TransitionResult                                                                                         | Owning recovery only, no generic undo; preserve SettingsParticipant restore Audit                                                                             |
-| integrations.configure / `runa.admin.integrations.manage` | ModuleIntegrations.configure(string $module, string $key, bool $enabled, array $config, int $expectedGeneration): int                               | Existing declared target/config validation and 8192-byte bound; add Audit inside same generation/config transaction                                           |
-| work.read / `runa.admin.work.read`                        | ModuleWork.history(string $module, int $limit = 100): array; status(string $id): WorkStatus                                                         | Default 100 plus explicit truncation; bounded requested limit up to native 1000, subject to response byte limit; safe progress code, no fabricated percentage |
-| work.cancel / `runa.admin.work.cancel`                    | ModuleWork.requestCancellation(string $id): WorkStatus                                                                                              | Cooperative request only, owning cancellable policy; add transaction/revision-safe Audit at the actual cancel_requested write, not after it                   |
+| Command / grant                                           | Exact engine entrypoint                                                                                                   | Concurrency, outcome and Audit disposition                                                                                                                    |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| diagnostics.read / `runa.admin.diagnostics.read`          | ModuleRegistry.snapshot(), ModuleManagement.read(string $module): ManagementView and cached ModuleAvailability.statuses() | Registry state filter, generation and safe observed/expiry/reason data; no diagnostic execution on read                                                       |
+| health.diagnose / `runa.admin.health.diagnose`            | ModuleHealth.diagnose(string $id): array                                                                                  | Independent deadline/lock; persisted observations, safe fixed codes; diagnostic observation is not a business mutation event                                  |
+| modules.preview / `runa.admin.modules.manage`             | ModuleTransitions.preview(string $intent, string $target): AdministrativePreview                                          | Only existing allowed Optional intents; exact reviewed graph/source/generation and active work                                                                |
+| modules.apply / same                                      | ModuleTransitions.apply(AdministrativePreview $preview): TransitionResult                                                 | Independent reservation/hook/publication runner; add Audit participation to reservation/final publication/compensation state boundaries                       |
+| modules.status/resume/cancel / same                       | ModuleTransitions.status/resume/cancel(string $operationId): TransitionResult                                             | Exact native status/recovery and generation; add missing meaningful mutation Audit in the owning transaction; no blanket recovery                             |
+| settings.status/recover / same                            | ModuleSettings.status/recover(string $id): TransitionResult                                                               | Owning recovery only, no generic undo; preserve SettingsParticipant restore Audit                                                                             |
+| integrations.configure / `runa.admin.integrations.manage` | ModuleIntegrations.configure(string $module, string $key, bool $enabled, array $config, int $expectedGeneration): int     | Existing declared target/config validation and 8192-byte bound; add Audit inside same generation/config transaction                                           |
+| work.read / `runa.admin.work.read`                        | ModuleWork.history(string $module, int $limit = 100): array; status(string $id): WorkStatus                               | Default 100 plus explicit truncation; bounded requested limit up to native 1000, subject to response byte limit; safe progress code, no fabricated percentage |
+| work.cancel / `runa.admin.work.cancel`                    | ModuleWork.requestCancellation(string $id): WorkStatus                                                                    | Cooperative request only, owning cancellable policy; add transaction/revision-safe Audit at the actual cancel_requested write, not after it                   |
 
 If a signature above is abbreviated, parameter/return types are inherited exactly
 from the explicitly named first signature, never inferred from an HTTP payload.
@@ -315,21 +313,23 @@ Unknown keys, stale generations, malformed UUIDs and unreviewed lifecycle writes
 fail closed. Every invocation rechecks entry/password proof and its exact grant.
 
 Read views: `capabilities` (entry-only safe grant advertisement), `diagnostics` (`filter=enabled|registered|all`), `module` (`module`),
-`settings` (`module`), `integrations` (`module`), `history` (`module`, optional UUIDv7
+`integrations` (`module`), `history` (`module`, optional UUIDv7
 `cursor`, `limit=1..100`; per-kind management authority), `work` (`module`, optional
 `limit=1..1000`), `work.status` (`id`), `modules.status` (`id`), `settings.status`
-(`id`). Module reads expose safe diagnostic state without health policy configuration. Settings/integration reads isolate unavailable declarations.
-Configuration values are projected only under their owning grants; settings
-secrets expose set-state only. Auth policy settings use the dedicated Auth policy
-workflow rather than bypassing reviewed publication.
+(`id`). Module reads expose safe diagnostic state without health policy configuration. Integration reads isolate unavailable declarations.
+There is no generic module settings read/update endpoint or settings.read grant.
+Administrator-editable settings belong to an owned page with history and its
+module-specific publication workflow, as Auth policy already supplies. The
+settings.manage grant remains limited here to retained operation history/status/
+recovery; it does not authorize a generic edit. ModuleSettings remains the native
+settings/revision/redaction/publication engine.
 
 Health policies are defined exclusively in module source; no management grant or
 configuration command exists. Explicit diagnosis and observed health remain available.
 
 Commands: `health.diagnose` (`module`), `modules.preview` (`module`, `intent=enable|disable|unregister`),
 `modules.apply` (`review`, `confirmed=true`), `modules.resume` / `modules.cancel`
-(`id`), `settings.update` (`module`, `generation`, `revision`, `patch`),
-`settings.recover` (`id`), `integrations.configure` (`module`, `generation`, `key`,
+(`id`), `settings.recover` (`id`), `integrations.configure` (`module`, `generation`, `key`,
 `enabled`, `config`), `work.cancel` (`id`). Lifecycle review is a ten-minute,
 actor-bound authenticated encrypted capability over the complete native preview;
 apply recomputes it and the engine rechecks source, plans, work and generation.

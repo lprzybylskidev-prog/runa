@@ -36,9 +36,11 @@ The runnable example is a stateless text normalization tool. Its generated page
 has a controlled input, independent calculation button, read-only bounded table,
 dashboard widget and an owned summary contribution to its own page. The table
 contains one configuration value with no durable public ID. Calculation results
-are temporary; rereading restores the configured default. Module settings change
-that default through the separate existing operational workflow, revisions,
-grants and transactional Audit. The widget intentionally has unknown observation
+are temporary; rereading restores the configured default. This generated tool does not expose settings editing. Its configured default is
+consumed through native settings. To make settings administrator-editable, author
+a dedicated owning module page with change history, typed validation, grants,
+revisions and transactional Audit; use Auth policy as the supplied workflow
+reference. The module dialog never supplies a generic settings editor. The widget intentionally has unknown observation
 freshness. It must not advertise a newly invented health timestamp.
 
 The business API is usable without Admin:

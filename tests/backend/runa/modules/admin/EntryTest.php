@@ -900,7 +900,7 @@ it('Auth administration exposes bounded policy reads history reviews and stale p
     $review = $this->postJson('/api/admin/runa.auth/policy/sections/policy0/preview', $input)->assertOk()->json('data');
     expect($review['changes'])->toHaveKey('summary')->and($review['requirement'])->toBe('both');
     $input['review'] = $review;
-    $this->postJson('/api/admin/runa.auth/policy/sections/policy0/commands', $input)->assertForbidden()->assertJsonPath('reason', 'step_up_required');
+    $this->postJson('/api/admin/runa.auth/policy/sections/policy0/commands', $input)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
     $input['revision'] = '0:0';
     $this->postJson('/api/admin/runa.auth/policy/sections/policy0/preview', $input)->assertConflict();
     $history = $this->getJson('/api/admin/runa.auth/policy/sections/history')->assertOk()->json('data');
@@ -1271,14 +1271,17 @@ it('exposes fixed operational diagnostics with exact grants redaction and mainte
 });
 
 it('keeps Auth policy settings in their reviewed owner workflow and isolates read authority', function (): void {
-    foreach (['runa.admin.enter', 'runa.admin.settings.read', 'runa.admin.settings.manage'] as $code) {
+    foreach (['runa.admin.enter', 'runa.admin.settings.manage'] as $code) {
         ($this->adminGrant)($code);
     }
     ($this->adminLogin)();
     ($this->adminProof)();
-    $response = $this->getJson('/api/admin/operations/settings?module=runa.auth')->assertOk()->assertJsonPath('data.editable', false);
-    $this->postJson('/api/admin/operations/settings.update', ['module' => 'runa.auth', 'generation' => $response->json('data.generation'), 'revision' => $response->json('data.revision'), 'patch' => ['email_verification' => 'required']])
-        ->assertForbidden()->assertJsonPath('reason', 'admin_owner_workflow_required');
+    $generation = app(ModuleRegistry::class)->snapshot()->generation;
+    foreach (['runa.auth', 'runa.audit', 'runa.permissions', 'app.reference'] as $module) {
+        $this->getJson('/api/admin/operations/settings?module='.$module)->assertUnprocessable();
+        $this->postJson('/api/admin/operations/settings.update', ['module' => $module, 'generation' => $generation, 'revision' => 0, 'patch' => []])->assertUnprocessable();
+    }
+    expect(app(ModuleRegistry::class)->snapshot()->generation)->toBe($generation);
     $this->getJson('/api/admin/operations/work?module=runa.auth')->assertForbidden();
     ($this->adminGrant)('runa.admin.work.read');
     $this->getJson('/api/admin/operations/work?module=runa.auth&limit=1')->assertOk()->assertJsonStructure(['data' => ['work', 'truncated']]);
@@ -1287,7 +1290,7 @@ it('keeps Auth policy settings in their reviewed owner workflow and isolates rea
 it('publishes synchronous operational configuration only with atomic Audit and current generation', function (): void {
     $fixture = new OperationalModule;
     try {
-        foreach (['enter', 'diagnostics.read', 'settings.read', 'settings.manage', 'integrations.manage'] as $permission) {
+        foreach (['enter', 'diagnostics.read', 'settings.manage', 'integrations.manage'] as $permission) {
             ($this->adminGrant)('runa.admin.'.$permission);
         }
         ($this->adminLogin)();
@@ -1309,9 +1312,8 @@ it('publishes synchronous operational configuration only with atomic Audit and c
         expect(app(ModuleRegistry::class)->snapshot()->generation)->toBe($config['generation']);
         $this->postJson('/api/admin/operations/integrations.configure', $config)->assertOk();
         $this->getJson('/api/admin/operations/integrations?module='.$fixture->id)->assertOk()->assertJsonPath('data.integrations.history.enabled', true);
-        $settings = $this->getJson('/api/admin/operations/settings?module='.$fixture->id)->assertOk()->json('data');
-        $this->postJson('/api/admin/operations/settings.update', ['module' => $fixture->id, 'generation' => $settings['generation'], 'revision' => $settings['revision'], 'patch' => ['title' => 'Updated', 'credential' => 'private-setting-value']])->assertOk()->assertJsonPath('data.transition.status', 'succeeded');
-        $this->getJson('/api/admin/operations/settings?module='.$fixture->id)->assertOk()->assertJsonPath('data.settings.credential.set', true)->assertJsonMissingPath('data.settings.credential.value')->assertDontSee('private-setting-value');
+        $this->getJson('/api/admin/operations/settings?module='.$fixture->id)->assertUnprocessable();
+        $this->postJson('/api/admin/operations/settings.update', ['module' => $fixture->id, 'generation' => $generation, 'revision' => 0, 'patch' => ['title' => 'Updated']])->assertUnprocessable();
     } finally {
         $fixture->remove();
     }

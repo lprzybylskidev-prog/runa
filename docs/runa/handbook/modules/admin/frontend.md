@@ -15,7 +15,7 @@ useAdminResource/useAdminTable and validateAdminField. Source home is
 Record forms execute explicit independent commands or compatible native atomic
 preview/Save through the shared form owner. Point 6 delivers server coordination
 and initial profile/access record adapters. Point 9 delivers operational dashboard,
-module settings, lifecycle and work controls. Point 10 delivers application global settings and runtime branding. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
+integration editing, lifecycle/work controls and retained settings operation recovery. Point 10 delivers application global settings and runtime branding. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
 
 ## Initial presentation
 
@@ -855,17 +855,20 @@ widgets. `AdminOperations` props: `{ admin: AdminController }`; default slot:
 `AdminPresentation.operations?: Component` replaces that default with the same prop.
 
 `AdminOperationalEditor` props are `{ controller: AdminOperationsController;
-module: string; kind: 'settings' | 'integrations'; writable?: boolean }`.
+module: string }`.
 `AdminPresentation.operationalEditor?: Component` replaces it with the same props;
 its `saved` event requests safe dashboard read reconciliation after publication.
 `AdminOperationResult` accepts `{ result: AdminOperationData }`. Diagnostic outcomes
 use semantic health/blocked colors and safe reasons without redundant module identity;
 other native results retain their operation IDs and cooperative cancellation without
 inventing success.
-These views reuse Card/Select/TextInput/NumberInput/Checkbox/ConfirmDialog and
-support PL/EN. Settings use native types and secret set-state; unsupported custom
-types require a module-specific editor replacement. Non-sensitive integration maps use controlled JSON input. Health policy has no
-editor or tab: its definition belongs exclusively to module source.
+These views reuse the shared controls and support PL/EN. AdminOperationalEditor
+edits only non-sensitive integration maps through controlled JSON input. Module
+settings have no generic dialog tab, reader or writer; administrator-editable
+settings require the owning module's dedicated page, change history and workflow.
+Auth supplies its Authentication policy page. Native settings storage, revision,
+validation, secret redaction and recovery remain reusable; they do not automatically
+create an editor. Health policy remains source-only.
 
 `useAdminOperations(admin: AdminController): AdminOperationsController` owns one
 request/write lane, session/proof failure propagation, context cancellation, dirty
@@ -983,7 +986,7 @@ public PageNavigation. Selected module Health policy/Settings/Integrations belon
 to its operation dialog, with capability-filtered local tabs.
 Record/module selection and actual diagnose/read/review/save actions stay in content.
 Application settings uses `?section=application`; module editors preserve
-`?module=<module-code>&section=health|settings|integrations`. Direct URLs and browser
+`?module=<module-code>&section=integrations`. Direct URLs and browser
 history restore the selected view. The shared operational dirty guard can cancel
 navigation without changing URL/draft; accepted navigation cancels only optional
 reads, never submits or replays writes. Initial capability admission completes
@@ -1008,7 +1011,7 @@ border, sharing the existing subtle transitions and keyboard focus ring. Optiona
 public operation controller and can replace the whole operations presentation.
 
 The default module cards open a Dialog for the selected module. Its scoped tabs
-contain overview/actions, settings and integrations according to
+contain overview/actions and integrations according to
 current capabilities. These dialog-local controls are not page-level navigation.
 Dashboard/Application settings remain in the shared top bar. Module/section query
 parameters retain deep links and history; closing or changing a dirty editor uses

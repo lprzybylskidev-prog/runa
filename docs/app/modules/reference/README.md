@@ -51,3 +51,8 @@ Use the [public module development guide](../../../runa/handbook/development/mod
 The health declaration implements HealthPolicy schema 2. Its hybrid mode and
 check timing are defined in ReferenceHealthPolicy source only; no Admin tab or
 database override changes that policy.
+
+The reference SettingsProvider demonstrates the native source/CLI settings
+contract; it has no generic Admin settings tab. Administrator-facing configuration
+requires a dedicated owned page with change history and its own validated workflow,
+as described in the Admin authoring guide. Existing values remain preserved.
