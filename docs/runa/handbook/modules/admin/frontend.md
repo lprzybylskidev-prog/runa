@@ -193,9 +193,15 @@ replaceable. AdminEntryProof has no slots or emitted events. Confirmation clears
 the password, admits no duplicate submission and refreshes only bootstrap;
 account/session invalidation and disposal erase it. Failure never replays a
 business operation. `authorityRevision` on ApplicationSessionController increments
-after successful session validation; heartbeat updates do not trigger new Admin
-advertisements. Session identity, suspension, loading, pending logout and that
-revision fence protected reads.
+after successful session validation; unchanged activity/heartbeat observations do
+not trigger new Admin advertisements or descriptor reads. Session identity,
+restrictions, suspension, loading, pending logout and that revision fence protected
+reads. Pre-admission password input uses the current unrestricted account/session
+identity rather than the observation revision: same-session revalidation keeps its
+page and input mounted while bootstrap is checked in the background. An unchanged
+native step_up_required result preserves that form; a real denial/invalidation or
+successful bootstrap admission clears its credentials. This does not retain
+protected bootstrap/page data across authority changes or replay proof/business writes.
 
 Composables mount once per keyed account/page; scope disposal aborts requests and
 removes listeners/dirty guards. They own cancellation, session/CSRF/proof handling,
@@ -746,8 +752,11 @@ the existing action-bound entry proof and native owning checks. The advertisemen
 cannot authorize a subsequent request or bypass protected bootstrap.
 
 The shell fetches advertisement once after session validation and revalidates on
-session/authority refresh and return to the application; it cancels/fences stale
-responses and removes the link on loss of authority. It uses the shared HTTP client
+session/authority refresh and return to the application. A known same-session link
+stays visible during the optional background read, then follows its result;
+malformed/failed/denied reads hide it. Session/account change, restriction or lost
+session immediately hides it and cancels/fences stale responses. Reopening the
+menu and unchanged activity updates do not start another read. It uses the shared HTTP client
 and session controller, no second activity loop or global store. Default link URLs
 come from named routes. Extra source-owned accountMenu links use same-origin URLs;
 links do not declare grants. Replacing the additional account-menu slot retains
@@ -755,8 +764,10 @@ User panel/sign-out and session security. No protected controller mounts before
 session admission. HTML shells carry no protected bootstrap values.
 
 `ApplicationLayoutProps.locale?: 'pl' | 'en'` fixes a presentation locale without
-writing account preference state; supplied Admin passes en. It hides the language
-cycle while retaining the theme control. Descendant shared controls and
+writing account preference state. Supplied Admin does not pin that optional locale;
+it follows the shared application language and retains both preference controls.
+Consumers that explicitly pin a locale hide the language cycle while retaining
+the theme control. Descendant shared controls and
 reauthentication inherit that scope. Standalone layouts retain optional preference
 session initialization; a shared ApplicationSessionShell supplies ownership so they
 do not issue a competing session read. Only the controller creator installs the

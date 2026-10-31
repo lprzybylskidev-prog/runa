@@ -387,6 +387,13 @@ reassessment before resuming point 3; completed point history remains evidence.
     without a visible heading outline; retain keyboard indicators on controls.
   - Use the existing red error/danger outline button for proof cancellation,
     synchronize current presentation docs and refresh local assets for owner review.
+- [x] 11a6. Stabilize Admin menu advertisement and password admission revalidation.
+  - Ignore unchanged session/activity observations for optional navigation reads;
+    revalidate known same-session availability in place and hide on denial/invalidation.
+  - Keep the mounted pre-admission Auth proof and transient input through same-session
+    validation; recheck bootstrap in the background without weakening protected-read fences.
+  - Cover delayed validation, denials, identity switches and late responses; update
+    current contracts and prepare assets before returning to owner manual acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2128,3 +2135,51 @@ Real local `/admin` returns HTTP 200. No broad suites/final quality gate,
 database changes or Docker resource cleanup were needed. Development data,
 services, knowledge/model caches and reports remain. Owner manual point 11b and
 final verification/release point 12 remain open.
+
+### Point 11a6 — Stable optional link and pre-admission revalidation
+
+Owner manual testing found the Admin link disappearing/reappearing on dropdown
+activity and the password admission page remounting after returning to a tab.
+The advertisement watcher returned a new tuple on each session-object update,
+so even unchanged activity observations cleared/refetched the link. It now watches
+a stable account/session/restriction/validation fingerprint. The known same-session
+link remains visible during a fresh optional availability read; denied, malformed
+or failed results hide it. Lost/restricted/changed identity hides it immediately,
+and request epochs still ignore late responses. Opening the menu itself does not
+read protected bootstrap or start another session/activity loop.
+
+A successful Auth session validation advances authorityRevision even when identity
+is unchanged. Admin previously used that observation revision as proof-controller
+identity and unconditionally cleared the pre-admission view. Entry proof now uses
+the current unrestricted account/session identity, while same-session revalidation
+reads native bootstrap in the background without replacing that password page.
+An unchanged native step_up_required refusal retains the form/input. A real denial,
+identity invalidation or successful bootstrap admission clears the transient proof.
+Explicit proof still uses the same native action and no write is replayed.
+Protected bootstrap/page/read/mutation authority fences remain intact; restriction
+values additionally participate in their stamp. This repair does not retain
+protected Admin data across authority changes. A matching tuple-watcher issue in
+useAdminPage was corrected to individual sources, avoiding descriptor reads caused
+only by activity timestamps and their unnecessary downstream reconciliation.
+
+Current Admin/Auth guides and candidate changelogs are synchronized, including
+removal of residual current guidance claiming Admin still pins English. Owner and
+customer instructions already require one session owner, safe in-place read
+reconciliation and cleanup on identity loss; their canonical public references
+remain applicable, with no new rule or copied procedure needed. Public controller
+signatures and source/runtime versions remain unchanged: Auth 2.0.0 and Admin 0.1.0
+are still their existing unreleased candidates; no migration/version-only edge,
+dependency, backend authorization or runtime configuration change is introduced.
+
+Necessary focused check: `python3 tools/maintainer/test-frontend
+--filter='Admin revalidation|Admin session diagnostic|Admin resource reads coalesce|Admin cursor tables type filters|Admin page refresh'`:
+**8 PASS**, native exit 0 / cleanup 0. Coverage includes unchanged activity/menu
+reopening, delayed optional reads/denial/late responses, mounted password DOM/input
+across repeated validation, real refusal, account-switch erasure, successful
+admission cleanup, stable descriptors, and existing strict protected-read/cursor
+fences. Native browser response/DOM settlement is awaited before refusal assertions.
+`pnpm --dir src run build` passed type compilation, Vite and native error assets;
+current local `/admin` returns HTTP 200. No broad suites/final release gate,
+DB reset or Docker cleanup was needed. Existing development services/data,
+model/knowledge caches and all verification/build evidence remain. Manual owner
+point 11b and final verification/release point 12 remain open.

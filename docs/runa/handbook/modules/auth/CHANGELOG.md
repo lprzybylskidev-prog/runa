@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Keep the known Admin menu advertisement during same-session revalidation, ignore unchanged activity observations and hide on denial/failure or immediate identity invalidation. Preserve stale-response fencing without a second session or polling loop.
+
 - Match operation-proof page heading focus to existing Auth screens and give shared proof cancellation its red danger/error outline button. Preserve reading focus and normal keyboard indicators on controls.
 
 - Follow the shared application language in administrative defaults and entry proof, retain translated policy setting names, and notify guest preference subscribers after write/reset so all mounted locale consumers stay synchronized.

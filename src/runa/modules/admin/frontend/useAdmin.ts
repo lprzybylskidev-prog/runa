@@ -65,6 +65,7 @@ export function sessionStamp(session: ApplicationSessionController): string {
   return JSON.stringify([
     session.session.value?.public_id,
     session.session.value?.session.public_id,
+    session.session.value?.restrictions,
     session.authorityRevision.value,
     session.paused.value,
     session.loading.value,
@@ -98,8 +99,15 @@ export function useAdmin(
   const error = shallowRef<AdminError>();
   const status = ref<AdminState>('loading');
   const path = ref(window.location.pathname);
+  const proofIdentity = () =>
+    admitted(session)
+      ? JSON.stringify([
+          session.session.value?.public_id,
+          session.session.value?.session.public_id,
+        ])
+      : undefined;
   const entryProof = useOperationProof({
-    identity: () => (admitted(session) ? sessionStamp(session) : undefined),
+    identity: proofIdentity,
     action: () => 'runa.admin.enter',
     requirement: () => 'password',
   });
@@ -130,24 +138,33 @@ export function useAdmin(
     if (failure.state === 'proof_required') void entryProof.begin();
   }
   async function refresh() {
+    await readBootstrap(false);
+  }
+  async function readBootstrap(retainProof: boolean) {
     const own = ++epoch,
       stamp = sessionStamp(session);
     abort.abort();
     abort = new AbortController();
-    bootstrap.value = undefined;
-    error.value = undefined;
-    status.value = 'loading';
+    if (!retainProof) {
+      bootstrap.value = undefined;
+      error.value = undefined;
+      status.value = 'loading';
+    }
     if (!admitted(session)) return;
     try {
       const result = decodeBootstrap(
         await request('/admin', { signal: abort.signal }),
       );
       if (!alive || own !== epoch || stamp !== sessionStamp(session)) return;
+      entryProof.reset();
       bootstrap.value = result;
       status.value = 'ready';
     } catch (cause) {
-      if (alive && own === epoch && stamp === sessionStamp(session))
+      if (alive && own === epoch && stamp === sessionStamp(session)) {
+        if (retainProof && adminFailure(cause).state === 'proof_required')
+          return;
         fail(cause);
+      }
     }
   }
   async function navigate(next: AdminLocation) {
@@ -186,11 +203,18 @@ export function useAdmin(
     cancelEntry,
   };
   refusals.set(controller, fail);
+  let observedIdentity: string | undefined;
   const stop = watch(
     () => sessionStamp(session),
     () => {
-      clear();
-      void refresh();
+      const currentIdentity = proofIdentity();
+      const retainProof =
+        !!currentIdentity &&
+        currentIdentity === observedIdentity &&
+        status.value === 'proof_required';
+      observedIdentity = currentIdentity;
+      if (!retainProof) clear();
+      void readBootstrap(retainProof);
     },
     { immediate: true, flush: 'sync' },
   );

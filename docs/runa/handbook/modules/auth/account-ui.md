@@ -318,7 +318,10 @@ current, locale and source-owned accountMenu, plus the account-menu slot; accoun
 self-service and loading replacement retain their existing public contracts.
 Only the creator owns activity/heartbeat/request observation and disposal. The
 shell adds Admin entry beside User panel only after a minimal authenticated
-advertisement; loss of session/authority removes it and stale responses are ignored.
+advertisement. Same-session revalidation retains the known link while the read is
+pending; its result updates the link in place. Lost/restricted/different identity
+hides it immediately, denial/failure hides it on settlement and stale responses are
+ignored. Unchanged activity updates and opening the dropdown do not refetch it.
 The [shared shell contract](../admin/frontend.md#shared-session-shell-and-account-menu-seam)
 owns complete props/slots and availability/proof boundaries. Full frontend
 replacements retain these public controllers without copying session/security logic.

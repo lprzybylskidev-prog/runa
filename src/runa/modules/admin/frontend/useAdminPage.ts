@@ -77,12 +77,12 @@ export function useAdminPage(
     }
   }
   const stop = watch(
-    () => [
-      location.value.owner,
-      location.value.page,
-      admin.state.value,
-      admin.bootstrap.value?.revision,
-      sessionStamp(admin.session),
+    [
+      () => location.value.owner,
+      () => location.value.page,
+      () => admin.state.value,
+      () => admin.bootstrap.value?.revision,
+      () => sessionStamp(admin.session),
     ],
     () => {
       void refresh();

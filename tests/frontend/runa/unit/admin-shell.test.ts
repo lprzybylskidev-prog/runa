@@ -904,6 +904,22 @@ it('Admin page refresh retains the mounted page while a same-session descriptor 
   const { page, session } = resourceHarness();
   await vi.waitFor(() => expect(page.state.value).toBe('ready'));
   const initial = page.page.value;
+  const descriptorReads = () =>
+    vi
+      .mocked(window.fetch)
+      .mock.calls.filter(([url]) => String(url) === '/api/admin/app/settings')
+      .length;
+  const beforeActivity = descriptorReads();
+  session.session.value = {
+    ...session.session.value!,
+    session: {
+      ...session.session.value!.session,
+      activity_at: new Date(Date.now() + 1000).toISOString(),
+    },
+  };
+  await flushPromises();
+  expect(descriptorReads()).toBe(beforeActivity);
+  expect(page.page.value).toBe(initial);
   slow = true;
   const refresh = page.refresh();
   expect(page.state.value).toBe('ready');
@@ -1909,4 +1925,176 @@ it('Admin bilingual public translation supports explicit source maps and App ove
       'pl',
     ),
   ).toEqual(['Użyj najwyżej 2 znaków.']);
+});
+
+it('Admin revalidation keeps the menu link stable through unchanged activity and hides a denied background advertisement', async () => {
+  const session = sessionFixture();
+  let reads = 0,
+    finish!: (value: Response) => void;
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    if (String(input) !== '/api/admin/entry') return respond({}, 404);
+    reads++;
+    if (reads === 1) return respond({ data: { available: true } });
+    return new Promise((resolve) => {
+      finish = resolve;
+    });
+  });
+  const wrapper = mount(ApplicationSessionShell, {
+    props: { session },
+    attachTo: document.body,
+  });
+  await flushPromises();
+  const menu = wrapper
+    .findAll('button')
+    .find((button) =>
+      button.attributes('aria-label')?.startsWith('User menu:'),
+    )!;
+  await menu.trigger('click');
+  await flushPromises();
+  const link = () => document.querySelector('.account-menu a[href="/admin"]');
+  expect(link()).not.toBeNull();
+  session.session.value = {
+    ...session.session.value!,
+    session: {
+      ...session.session.value!.session,
+      activity_at: new Date(Date.now() + 1000).toISOString(),
+    },
+  };
+  await menu.trigger('click');
+  await menu.trigger('click');
+  await flushPromises();
+  expect(reads).toBe(1);
+  expect(link()).not.toBeNull();
+  session.authorityRevision.value++;
+  await flushPromises();
+  expect(reads).toBe(2);
+  expect(link()).not.toBeNull();
+  finish(respond({ data: { available: false } }));
+  await flushPromises();
+  await vi.waitFor(() => expect(link()).toBeNull());
+  session.authorityRevision.value++;
+  await flushPromises();
+  const late = finish;
+  session.paused.value = true;
+  late(respond({ data: { available: true } }));
+  await flushPromises();
+  await vi.waitFor(() => expect(link()).toBeNull());
+});
+
+it('Admin revalidation retains the mounted password form and input until a real access denial', async () => {
+  const session = sessionFixture();
+  let reads = 0,
+    finish!: (value: Response) => void;
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    if (String(input) === '/api/admin/entry')
+      return respond({ data: { available: true } });
+    if (String(input) !== '/api/admin') return respond({}, 404);
+    reads++;
+    if (reads === 1) return respond({ reason: 'step_up_required' }, 403);
+    return new Promise((resolve) => {
+      finish = resolve;
+    });
+  });
+  const wrapper = mount(AdminApplication, {
+    props: { session, navigate: vi.fn() },
+  });
+  await vi.waitFor(() =>
+    expect(wrapper.find('input[name="current_password"]').exists()).toBe(true),
+  );
+  const input = wrapper.get('input[name="current_password"]');
+  await input.setValue('Transient draft');
+  session.authorityRevision.value++;
+  await flushPromises();
+  expect(reads).toBe(2);
+  expect(wrapper.get('input[name="current_password"]').element).toBe(
+    input.element,
+  );
+  expect((input.element as HTMLInputElement).value).toBe('Transient draft');
+  finish(respond({ reason: 'step_up_required' }, 403));
+  await flushPromises();
+  expect(wrapper.get('input[name="current_password"]').element).toBe(
+    input.element,
+  );
+  expect((input.element as HTMLInputElement).value).toBe('Transient draft');
+  session.authorityRevision.value++;
+  await flushPromises();
+  finish(respond({ reason: 'permission_denied' }, 403));
+  await vi.waitFor(() =>
+    expect(wrapper.find('input[name="current_password"]').exists()).toBe(false),
+  );
+  expect(wrapper.text()).toContain(
+    'Administrator panel access is not available.',
+  );
+  expect(
+    vi
+      .mocked(window.fetch)
+      .mock.calls.filter(([, init]) => init?.method === 'POST'),
+  ).toHaveLength(0);
+});
+
+it('Admin revalidation still erases proof input and rejects a late bootstrap after an account change', async () => {
+  const session = sessionFixture();
+  let admin!: AdminController,
+    finish!: (value: Response) => void,
+    reads = 0;
+  vi.mocked(window.fetch).mockImplementation(async () => {
+    reads++;
+    if (reads === 1) return respond({ reason: 'step_up_required' }, 403);
+    return new Promise((resolve) => {
+      finish = resolve;
+    });
+  });
+  mount(
+    defineComponent({
+      setup() {
+        admin = useAdmin({ session, navigate: vi.fn() });
+        return () => h('div');
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(admin.state.value).toBe('proof_required'));
+  admin.entryProof.password.value = 'Transient draft';
+  session.authorityRevision.value++;
+  await flushPromises();
+  const old = finish;
+  session.session.value = {
+    ...session.session.value!,
+    public_id: '01900000-0000-7000-8000-000000000002',
+  };
+  expect(admin.entryProof.password.value).toBe('');
+  expect(admin.entryProof.open.value).toBe(false);
+  old(respond({ data: bootstrap() }));
+  await flushPromises();
+  expect(admin.bootstrap.value).toBeUndefined();
+  expect(admin.state.value).toBe('loading');
+});
+
+it('Admin revalidation clears transient proof when background bootstrap admits the current session', async () => {
+  const session = sessionFixture();
+  let admin!: AdminController,
+    finish!: (value: Response) => void,
+    reads = 0;
+  vi.mocked(window.fetch).mockImplementation(async () => {
+    reads++;
+    if (reads === 1) return respond({ reason: 'step_up_required' }, 403);
+    return new Promise((resolve) => {
+      finish = resolve;
+    });
+  });
+  mount(
+    defineComponent({
+      setup() {
+        admin = useAdmin({ session, navigate: vi.fn() });
+        return () => h('div');
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(admin.state.value).toBe('proof_required'));
+  admin.entryProof.password.value = 'Transient draft';
+  session.authorityRevision.value++;
+  await flushPromises();
+  finish(respond({ data: bootstrap() }));
+  await vi.waitFor(() => expect(admin.state.value).toBe('ready'));
+  expect(admin.entryProof.password.value).toBe('');
+  expect(admin.entryProof.open.value).toBe(false);
 });
