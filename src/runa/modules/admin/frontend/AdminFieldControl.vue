@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import {
-  DateTimeInput,
-  useApplicationDisplayDefaults,
-  formatApplicationInstant,
-} from '@/runa/ui';
-const displayDefaults = useApplicationDisplayDefaults();
+import { DateTimeInput, formatApplicationInstant } from '@/runa/ui';
 import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
@@ -216,8 +211,6 @@ function integer(value: string | null) {
     :label="tr(field.label)"
     :model-value="temporalValue"
     :locale="adminLocale"
-    :time-zone="displayDefaults.timezone"
-    :zone-label="tr('Time zone')"
     :invalid-message="tr('Enter a valid date and time.')"
     :error="messages"
     :disabled="busy"

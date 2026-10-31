@@ -24,7 +24,6 @@ const props = withDefaults(
       kind: TemporalKind;
       timeZone?: string;
       disambiguation?: TimeDisambiguation;
-      zoneLabel?: string;
     }
   >(),
   {
@@ -37,7 +36,6 @@ const props = withDefaults(
     required: false,
     timeZone: 'UTC',
     disambiguation: 'reject',
-    zoneLabel: 'Time zone',
   },
 );
 const emit = defineEmits<{
@@ -167,7 +165,16 @@ function reset() {
 onMounted(reset);
 watch(
   () => [props.modelValue, props.kind, props.timeZone, props.locale] as const,
-  ([value, kind, zone, locale], [, oldKind, oldZone, oldLocale]) => {
+  ([value, kind, zone, locale], [oldValue, oldKind, oldZone, oldLocale]) => {
+    // A display-zone refresh cannot discard an incomplete local draft.
+    if (
+      invalid.value &&
+      value === oldValue &&
+      kind === oldKind &&
+      locale === oldLocale &&
+      zone !== oldZone
+    )
+      return;
     if (
       value !== emitted ||
       kind !== oldKind ||
@@ -219,16 +226,6 @@ const messages = computed(() => [
     : props.error),
   ...(invalid.value ? [props.invalidMessage] : []),
 ]);
-const description = computed(() =>
-  [
-    props.helper,
-    props.kind === 'datetime-local'
-      ? `${props.zoneLabel}: ${props.timeZone}`
-      : '',
-  ]
-    .filter(Boolean)
-    .join(' '),
-);
 watch(
   () => [props.disabled, props.readonly],
   ([disabled, readonly]) => {
@@ -240,7 +237,7 @@ defineExpose({ reset, focus: () => control.value?.focus() });
 <template>
   <AppFormField
     :label="label"
-    :helper="description"
+    :helper="helper"
     :error="messages"
     :required="required"
   >
@@ -331,9 +328,6 @@ defineExpose({ reset, focus: () => control.value?.focus() });
                 {{ text('Najpierw wybierz datę.', 'Choose a date first.') }}
               </p>
             </div>
-            <p v-if="kind === 'datetime-local'" class="mt-3 text-xs text-muted">
-              {{ zoneLabel }}: {{ timeZone }}
-            </p>
             <p
               v-if="invalid"
               role="status"

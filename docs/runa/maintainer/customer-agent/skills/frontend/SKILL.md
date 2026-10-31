@@ -17,6 +17,13 @@ overlapping mount/focus/visibility/publication reads as well as rendering. Follo
 and forms reconciliation: retain trailing invalidations, account/authority fences
 and dirty drafts. Report protected-platform findings to its owner.
 
+For date/time UI, follow the application timezone contract in
+`docs/runa/handbook/development/frontend/forms.md#dates-times-and-application-timezone`.
+Use public formatApplicationInstant/instantTimestamp and DateTimeInput defaults; never infer
+an instant's zone from the browser or display raw timestamps in typed date fields.
+Keep date-only values unchanged and omit timezone annotations from input copy.
+Review sibling module/App consumers when correcting a shared temporal defect.
+
 For every new or changed view, use public `FormNotifications` from `@/runa/ui`
 for form-wide errors and operation success/failure; keep field errors beside controls.
 Do not introduce page-local outcome banners or duplicate the same result.

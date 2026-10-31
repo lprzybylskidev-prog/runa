@@ -2,7 +2,8 @@
 import { useContentMotion } from '../composables/useContentMotion';
 import { computed, nextTick, ref } from 'vue';
 import AppButton from './AppButton.vue';
-import { isDateOnly } from '../lib/temporal';
+import { isDateOnly, toLocalDateTime } from '../lib/temporal';
+import { useApplicationDisplayDefaults } from '../runa/ui/displayDefaults';
 const props = defineProps<{
   modelValue: string | null;
   locale: 'pl' | 'en';
@@ -10,6 +11,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>();
 const calendarNow = new Date();
+const defaults = useApplicationDisplayDefaults();
 function iso(date: Date) {
   return `${String(date.getUTCFullYear()).padStart(4, '0')}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
 }
@@ -20,14 +22,18 @@ function dateOf(value: string) {
   d.setUTCHours(0, 0, 0, 0);
   return d;
 }
-const todayValue =
+const todayValue = computed(() =>
   props.today && isDateOnly(props.today)
     ? props.today
-    : `${calendarNow.getFullYear()}-${String(calendarNow.getMonth() + 1).padStart(2, '0')}-${String(calendarNow.getDate()).padStart(2, '0')}`;
+    : toLocalDateTime(calendarNow.toISOString(), defaults.value.timezone).slice(
+        0,
+        10,
+      ),
+);
 const focused = ref(
   props.modelValue && isDateOnly(props.modelValue)
     ? props.modelValue
-    : todayValue,
+    : todayValue.value,
 );
 const shown = ref(focused.value.slice(0, 7));
 const mode = ref<'days' | 'months' | 'years'>('days');

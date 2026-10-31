@@ -137,8 +137,6 @@ const fileLabels = computed(() => ({
             v-model="instant"
             :label="text('Termin', 'Scheduled time')"
             :locale="locale"
-            time-zone="Europe/Warsaw"
-            :zone-label="text('Strefa czasowa', 'Time zone')"
             :disambiguation="disambiguation"
             :invalid-message="
               text(

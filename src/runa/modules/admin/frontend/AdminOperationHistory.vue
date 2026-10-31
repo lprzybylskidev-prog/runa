@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatApplicationInstant } from '@/runa/ui';
+import { formatApplicationInstant, instantTimestamp } from '@/runa/ui';
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { FormNotifications, Badge, Button, Table } from '@/runa/ui';
 import type { TableColumn, TableQuery } from '@/runa/ui';
@@ -45,17 +45,15 @@ const result = shallowRef<AdminOperationData>();
 let epoch = 0,
   alive = true;
 function date(value: string) {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? '—'
-    : formatApplicationInstant(date, locale.value);
+  return formatApplicationInstant(value, locale.value);
 }
 const columns = computed<TableColumn<HistoryRow>[]>(() => [
   {
     key: 'created_at',
     label: tr('Started'),
     value: (row) => date(row.created_at),
-    compare: (a, b) => Date.parse(a.created_at) - Date.parse(b.created_at),
+    compare: (a, b) =>
+      instantTimestamp(a.created_at) - instantTimestamp(b.created_at),
   },
   {
     key: 'intent',
@@ -77,7 +75,8 @@ const columns = computed<TableColumn<HistoryRow>[]>(() => [
     key: 'updated_at',
     label: tr('Last change'),
     value: (row) => date(row.updated_at),
-    compare: (a, b) => Date.parse(a.updated_at) - Date.parse(b.updated_at),
+    compare: (a, b) =>
+      instantTimestamp(a.updated_at) - instantTimestamp(b.updated_at),
   },
 ]);
 const columnState = [

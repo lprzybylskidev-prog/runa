@@ -115,9 +115,39 @@ and server authorization remain authoritative.
 
 ## Additional field values and incomplete drafts
 
-DateInput stores YYYY-MM-DD/null; TimeInput stores local HH:mm with optional seconds/fractions/null. DateRangeInput stores { start, end }, permits open/null endpoints and rejects reversed/invalid dates. formatDateOnly formats PL/EN without timezone conversion. DateTimeInput requires an IANA timeZone; toLocalDateTime displays an explicit-offset instant in that zone and resolveLocalDateTime commits UTC ISO values. Nonexistent DST wall times reject; repeated times reject by default, requiring an explicit earlier/later disambiguation policy. Never silently select an occurrence or shift a date-only value through UTC.
+### Dates, times and application timezone
 
-Temporal inputs preserve incomplete text drafts independently of committed values. Fields are type=text; no native date/time picker opens. PL accepts DD.MM.YYYY, EN uses YYYY-MM-DD; canonical dates are accepted in both. Moments append a space or T and 24-hour HH:mm with optional seconds/fractions. Invalid/impossible text remains visible and no partial or normalized date is silently committed. Calendar and time choices share this same validation path, including DST rejection. Consume validity to block submission of a stale last-valid model, and use reset() when deliberately discarding an incomplete draft (including when the model itself did not change). Their focus() method supports recovery. DateRangeInput combines endpoint and order validity. Supply localized invalidMessage/zoneLabel and linked helper text. TagsInput likewise reports validity=false while a nonempty draft awaits Enter; prevent submission or deliberately commit/discard it. ColorInput retains invalid drafts in its string/null model and emits validity. Compose these flags into Form.valid; feature rules still validate required/domain constraints.
+The platform-owned runtime helpers and inputs are consumed through `@/runa/ui`.
+Use `formatApplicationInstant(value: string | number | Date, locale: 'pl' | 'en')`
+for displayed moments and `instantTimestamp(value: string | number | Date): number`
+for epoch comparisons. Their implementation homes are `runa/ui/displayDefaults.ts`
+and `lib/temporal.ts` under `src/runa/resources/js`; both are public consumption
+contracts. The latter accepts Date/epoch milliseconds, ISO moments with an offset (including PostgreSQL hour-only offsets),
+and backend timestamp strings without an offset (defined as UTC), and returns NaN
+for invalid/date-only text. Never parse an unzoned backend timestamp in browser-local
+time. Canonical new transport values use explicit offsets/UTC.
+
+`useApplicationDisplayDefaults()` owns the reactive application timezone hydrated
+from public presentation. Default moment displays, DateTimeInput and calendar
+"today" use it, independently of browser timezone and application language. Changing
+settings refreshes presentation in place. Use DateTimeInput without a timeZone prop
+for ordinary application/module forms and filters; `timeZone?: string` remains the
+explicit domain-zone override. There is no zoneLabel prop or automatic timezone
+helper/picker text. A timezone selector in application settings remains available.
+All conversion and DST handling uses the shared temporal helpers below; do not
+reimplement parsing/formatting in individual views. Review sibling consumers and
+calendar defaults when repairing a temporal defect.
+
+Storage, API moments, operational/security deadlines and canonical exports remain
+UTC/epoch based. A timezone setting changes presentation and local input conversion,
+not the duration or expiry of a session/job/token. Date-only and time-only values
+retain their independent semantics; never pass calendar dates to the instant
+formatter or shift them through UTC. Technical CLI/log/recovery evidence remains
+canonical; arbitrary JSON diagnostics are not heuristically rewritten as dates.
+
+DateInput stores YYYY-MM-DD/null; TimeInput stores local HH:mm with optional seconds/fractions/null. DateRangeInput stores { start, end }, permits open/null endpoints and rejects reversed/invalid dates. formatDateOnly formats PL/EN without timezone conversion. DateTimeInput defaults to the configured application timezone; an explicit IANA timeZone is reserved for a domain-specific zone; toLocalDateTime displays an explicit-offset instant in that zone and resolveLocalDateTime commits UTC ISO values. Nonexistent DST wall times reject; repeated times reject by default, requiring an explicit earlier/later disambiguation policy. Never silently select an occurrence or shift a date-only value through UTC.
+
+Temporal inputs preserve incomplete text drafts independently of committed values. Fields are type=text; no native date/time picker opens. PL accepts DD.MM.YYYY, EN uses YYYY-MM-DD; canonical dates are accepted in both. Moments append a space or T and 24-hour HH:mm with optional seconds/fractions. Invalid/impossible text remains visible and no partial or normalized date is silently committed. Calendar and time choices share this same validation path, including DST rejection. Consume validity to block submission of a stale last-valid model, and use reset() when deliberately discarding an incomplete draft (including when the model itself did not change). Their focus() method supports recovery. DateRangeInput combines endpoint and order validity. Supply localized invalidMessage and linked helper text; inputs and picker panels omit timezone annotations. TagsInput likewise reports validity=false while a nonempty draft awaits Enter; prevent submission or deliberately commit/discard it. ColorInput retains invalid drafts in its string/null model and emits validity. Compose these flags into Form.valid; feature rules still validate required/domain constraints.
 
 FileInput stores File objects in separate shallowRef state, outside useForm's finite-JSON snapshots. Its issues event exposes count/size/type failures without truncating selection. Its dropzone accepts local file drops as well as keyboard/touch activation of the native operating-system chooser. Multiple batches append (without silent deduplication/truncation), single selection replaces; an empty/cancelled chooser preserves the current model. The UI shows limits, selection totals and file rows, never fake upload progress/success. Disabled, readonly and disabled ancestor fieldsets block mutation. Reset/removal is controlled through the model; clearing the native picker after selection allows choosing the same file again. Names/MIME/accept are untrusted UX hints: backend upload authorization, type/content/size validation and storage remain feature-owned. No file reads, previews, object URLs or uploads occur in the primitive.
 

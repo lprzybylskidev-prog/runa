@@ -81,6 +81,7 @@ export {
   isTimeOnly,
   validDateRange,
   isInstant,
+  instantTimestamp,
   resolveLocalDateTime,
   toLocalDateTime,
   formatDateOnly,

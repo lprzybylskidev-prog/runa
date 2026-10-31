@@ -109,8 +109,8 @@ it.each(['runa.auth', 'runa.permissions', 'runa.audit'])(
     expect(
       wrapper
         .findAllComponents(DateTimeInput)
-        .map((control) => control.props('timeZone')),
-    ).toEqual(['Europe/Warsaw', 'Europe/Warsaw']);
+        .every((control) => control.props('timeZone') === undefined),
+    ).toBe(true);
   },
 );
 afterEach(() => {

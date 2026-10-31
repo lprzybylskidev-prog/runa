@@ -1,5 +1,6 @@
 import { RequestCancelledError } from '../../../resources/js/lib/http';
 import { computed, onMounted, onScopeDispose, ref, shallowRef } from 'vue';
+import { instantTimestamp } from '@/runa/ui';
 import { observeRequests } from '../../../resources/js/lib/http';
 import { accountPreferences } from './preferences/session';
 import {
@@ -25,7 +26,7 @@ export interface ActivitySession extends EntrySession {
   };
 }
 function timestamp(value: string) {
-  return Date.parse(/[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z');
+  return instantTimestamp(value);
 }
 export function activityResponse(value: unknown): ActivitySession {
   const identity = decodeSession(value),

@@ -1,4 +1,5 @@
 import { readonly, shallowRef } from 'vue';
+import { instantTimestamp } from '../../lib/temporal';
 export interface ApplicationDisplayDefaults {
   readonly locale: 'pl' | 'en';
   readonly theme: 'system' | 'light' | 'dark';
@@ -26,7 +27,7 @@ export function formatApplicationInstant(
   value: string | number | Date,
   locale: 'pl' | 'en',
 ): string {
-  const date = new Date(value);
+  const date = new Date(instantTimestamp(value));
   return Number.isNaN(date.getTime())
     ? '—'
     : date.toLocaleString(locale === 'pl' ? 'pl-PL' : 'en-GB', {

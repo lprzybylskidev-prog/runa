@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatApplicationInstant } from '@/runa/ui';
+import { formatApplicationInstant, instantTimestamp } from '@/runa/ui';
 import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
   Button,
@@ -238,19 +238,10 @@ async function removeDevice() {
   if (await revokeTrustedDevice(removing.value)) removing.value = undefined;
 }
 function date(value?: string) {
-  const d = value
-    ? new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z')
-    : null;
-  return d && !Number.isNaN(d.getTime())
-    ? formatApplicationInstant(d, locale.value)
-    : '—';
+  return value ? formatApplicationInstant(value, locale.value) : '—';
 }
 function time(value?: string) {
-  const result = value
-    ? new Date(
-        /[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z',
-      ).getTime()
-    : NaN;
+  const result = value ? instantTimestamp(value) : NaN;
   return Number.isNaN(result) ? 0 : result;
 }
 const columns = computed<TableColumn<AccountRow>[]>(() => [

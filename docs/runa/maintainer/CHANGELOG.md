@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Unify application timezone formatting, shared datetime defaults and calendar today; remove input timezone annotations and browser-dependent backend timestamp parsing. Maintain the temporal contract in both frontend instruction products.
+
 - Keep shared table headers and a below-header horizontal scrollbar visible during page/dialog scrolling. Use timezone-aware date/time pickers for declared module filters, including Audit from/until.
 
 - Add reusable Auth-owned protected-section idle access (Auth 2.1.0, AuthStepUp

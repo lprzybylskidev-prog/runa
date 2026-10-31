@@ -15,6 +15,12 @@ current account/authority fences and dirty drafts.
 Use Vue/Tailwind skills only for their implementation concerns. Inspect an analogous
 view and the existing public component catalogue before inventing a pattern.
 
+For date/time UI, follow the [application timezone contract](../../../docs/runa/handbook/development/frontend/forms.md#dates-times-and-application-timezone).
+Use public formatApplicationInstant/instantTimestamp and DateTimeInput defaults; never infer
+an instant's zone from the browser or display raw timestamps in typed date fields.
+Keep date-only values unchanged and omit timezone annotations from input copy.
+Review sibling module/App consumers when correcting a shared temporal defect.
+
 For every new or changed view, use public `FormNotifications` from `@/runa/ui`
 for form-wide errors and operation success/failure; keep field errors beside controls.
 Do not introduce page-local outcome banners or duplicate the same result.

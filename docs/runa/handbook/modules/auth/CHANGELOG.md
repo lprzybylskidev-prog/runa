@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Use shared timezone-independent epoch parsing for account/session/device dates and session deadlines; format known history date changes through the application timezone. Remove misleading UTC wording from datetime field labels.
+
 - Add guarded AuthStepUp 1.1.0 protected-section idle assertion/activity, with
   independent server-owned deadlines, session/action/security/factor isolation,
   atomic rollback and expiry-safe cleanup. Preserve fixed-age and consumed proofs.

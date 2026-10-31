@@ -121,8 +121,8 @@ final class AdministrationPages implements ManagementPageProvider
         'Surname' => 'Nazwisko',
         'Trust' => 'Zaufanie',
         'Trusted devices' => 'Zaufane urządzenia',
-        'UTC deadline (empty clears)' => 'Termin UTC (puste usuwa termin)',
-        'UTC expiry (within 30 days)' => 'Wygaśnięcie UTC (do 30 dni)',
+        'Deadline (empty clears)' => 'Termin (puste usuwa termin)',
+        'Expiry (within 30 days)' => 'Wygaśnięcie (do 30 dni)',
         'User directory' => 'Lista użytkowników',
         'Users' => 'Użytkownicy',
         'Value (empty revokes)' => 'Wartość (puste odwołuje)',
@@ -226,7 +226,7 @@ final class AdministrationPages implements ManagementPageProvider
             'eligibility' => [self::field('blockers', 'Authentication blockers', read: 'eligibility.read'), self::field('restrictions', 'Operation restrictions', read: 'eligibility.read')],
             'creation' => [self::field('email', 'Email', write: 'users.create', read: 'users.create'), ...self::names('users.create'), self::field('active', 'Active', 'boolean', 'users.create', 'users.create'), self::field('approved', 'Approved', 'boolean', 'users.create', 'users.create')],
             'lifecycle' => [self::field('operation', 'Lifecycle operation', 'dictionary', 'users.manage', 'users.read', choices: ['activate', 'deactivate', 'approve', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock', 'set_security_lock', 'require_password_change']),
-                self::field('at', 'UTC deadline (empty clears)', 'datetime', 'users.manage', 'users.read'), self::field('enabled', 'Enable selected flag', 'boolean', 'users.manage', 'users.read'),
+                self::field('at', 'Deadline (empty clears)', 'datetime', 'users.manage', 'users.read'), self::field('enabled', 'Enable selected flag', 'boolean', 'users.manage', 'users.read'),
                 ...array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), in_array($key, ['active', 'approved', 'deleted', 'security_locked', 'password_change_required'], true) ? 'boolean' : 'datetime', read: 'users.read'), ['active', 'approved', 'deleted', 'security_locked', 'password_change_required', 'activate_at', 'deactivate_at', 'expires_at', 'attempt_locked_until'])],
             'invitations' => [],
             'primary_email' => [self::field('current_email', 'Current primary email', read: 'emails.read'), self::field('verified', 'Verified', 'boolean', read: 'emails.read'), self::field('verification_required', 'Verification required', 'boolean', read: 'emails.read'), self::field('email', 'New email', write: 'emails.manage', read: 'profiles.read'), self::field('replacement_email', 'Verified replacement email', write: 'emails.verify_bypass', read: 'profiles.read')],
@@ -235,7 +235,7 @@ final class AdministrationPages implements ManagementPageProvider
             'security' => [],
             'trust' => [self::field('devices', 'Trusted devices', read: 'trust.manage'), self::field('device_id', 'Device UUID', 'uuid', 'trust.manage', 'identities.read')],
             'preferences' => [self::field('preference_revision', 'Current preference revision', 'integer', 'preferences.reset', 'preferences.reset')],
-            'exceptions' => [self::field('exceptions', 'Exceptions (latest 50)', read: 'policy.exceptions'), self::field('key', 'Policy key', 'dictionary', 'policy.exceptions', 'policy.exceptions', choices: ['password_expiry_days', 'session_idle_minutes']), self::field('value', 'Value (empty revokes)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('reason', 'Reason', write: 'policy.exceptions', read: 'policy.exceptions'), self::field('expires_at', 'UTC expiry (within 30 days)', 'datetime', 'policy.exceptions', 'policy.exceptions'), self::field('exception_version', 'Current exception version (0 if absent)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('policy_revision', 'Current policy revision', 'integer', 'policy.exceptions', 'policy.exceptions')],
+            'exceptions' => [self::field('exceptions', 'Exceptions (latest 50)', read: 'policy.exceptions'), self::field('key', 'Policy key', 'dictionary', 'policy.exceptions', 'policy.exceptions', choices: ['password_expiry_days', 'session_idle_minutes']), self::field('value', 'Value (empty revokes)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('reason', 'Reason', write: 'policy.exceptions', read: 'policy.exceptions'), self::field('expires_at', 'Expiry (within 30 days)', 'datetime', 'policy.exceptions', 'policy.exceptions'), self::field('exception_version', 'Current exception version (0 if absent)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('policy_revision', 'Current policy revision', 'integer', 'policy.exceptions', 'policy.exceptions')],
         ];
         $reads = ['eligibility' => 'eligibility.read', 'creation' => 'users.create', 'lifecycle' => 'users.read', 'invitations' => 'identities.read', 'primary_email' => 'profiles.read', 'secondary' => 'secondary.read', 'sessions' => 'sessions.manage', 'security' => 'identities.read', 'trust' => 'trust.manage', 'preferences' => 'profiles.read', 'exceptions' => 'policy.exceptions'];
         foreach ($fields as $key => $items) {

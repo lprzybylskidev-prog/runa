@@ -512,7 +512,7 @@ choices use text. Integers emit safe numbers when complete, null when empty, and
 the exact incomplete/out-of-range string otherwise, so invalid drafts never round
 or reuse a stale valid value. UUID fields accept only public UUIDv7 values through
 static hints; multiple UUIDs use TagsInput when there is no reference lookup.
-Datetime controls show the application display timezone and emit UTC instants through
+Datetime controls use the application display timezone without timezone annotations and emit UTC instants through
 the shared DST-aware DateTimeInput. Invalid/ambiguous local drafts invalidate the
 form rather than silently retaining a previous valid value. Boolean null retains the shared indeterminate state. Read-only values
 are associated text, including Yes/No and Set/Not set, rather than editable controls.
@@ -1113,6 +1113,7 @@ through presentation without preference writes; explicit account/browser choices
 win. Runtime favicon replaces source icon links and restores them on reset/disposal.
 Supplied Auth/Admin instant displays and Admin datetime table/form defaults use
 this timezone; exports/storage retain UTC and date-only values stay calendar dates.
+The epoch parser and complete date-only/input rules live in the [temporal contract](../../development/frontend/forms.md#dates-times-and-application-timezone).
 Custom views consume these public helpers; explicit business-form timezones retain
 owning conversion and DST behavior.
 

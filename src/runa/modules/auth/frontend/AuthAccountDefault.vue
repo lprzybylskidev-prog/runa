@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatApplicationInstant } from '@/runa/ui';
+import { formatApplicationInstant, instantTimestamp } from '@/runa/ui';
 import { computed, ref, watch } from 'vue';
 import {
   PageNavigation,
@@ -230,9 +230,7 @@ const query = ref<TableQuery>({
 });
 function timestamp(value: string | undefined): number | null {
   if (!value) return null;
-  const time = new Date(
-    /[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z',
-  ).getTime();
+  const time = instantTimestamp(value);
   return Number.isNaN(time) ? null : time;
 }
 function date(value: string | undefined) {

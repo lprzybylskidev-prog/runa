@@ -11,7 +11,6 @@ import {
 } from 'vue';
 import AppFormNotifications from './AppFormNotifications.vue';
 import AppDateTimeInput from './AppDateTimeInput.vue';
-import { useApplicationDisplayDefaults } from '../runa/ui/displayDefaults';
 import { isInstant } from '../lib/temporal';
 import { useTableViewport } from '../composables/useTableViewport';
 import AppTablePreferences from './AppTablePreferences.vue';
@@ -284,7 +283,6 @@ const {
   railHeight,
   synchronize,
 } = useTableViewport(tableElement);
-const displayDefaults = useApplicationDisplayDefaults();
 const filterReset = ref(0);
 const invalidFilters = ref<Record<string, boolean>>({});
 function resetFilters() {
@@ -458,8 +456,6 @@ function changePage(value: number) {
                 :key="`${column.key}-${filterReset}`"
                 :label="column.label"
                 :locale="english ? 'en' : 'pl'"
-                :time-zone="displayDefaults.timezone"
-                :zone-label="text('Strefa czasowa', 'Time zone')"
                 :invalid-message="
                   text(
                     'Wpisz poprawną datę i godzinę.',

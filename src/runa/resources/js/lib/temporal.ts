@@ -3,6 +3,23 @@ import type {
   TimeDisambiguation,
   ZonedDateTimeResult,
 } from '../runa/ui/forms';
+/** Parse backend moments independently of browser timezone; unzoned timestamps are UTC. */
+export function instantTimestamp(value: string | number | Date): number {
+  if (typeof value !== 'string') return new Date(value).getTime();
+  let normalized = value.replace(' ', 'T');
+  // PostgreSQL read projections can carry an hour-only numeric offset.
+  if (/[+-]\d\d$/.test(normalized)) normalized += ':00';
+  if (
+    !/^\d{4}-\d{2}-\d{2}T(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d{1,6})?)?(?:Z|[+-](?:[01]\d|2[0-3]):?\d{2})?$/i.test(
+      normalized,
+    ) ||
+    !isDateOnly(normalized.slice(0, 10))
+  )
+    return NaN;
+  return Date.parse(
+    /[zZ]|[+-]\d\d:?\d\d$/.test(normalized) ? normalized : normalized + 'Z',
+  );
+}
 export function isDateOnly(value: string): boolean {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!match) return false;

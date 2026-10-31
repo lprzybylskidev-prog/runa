@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAdminLocale } from './localization';
-const { t: tr } = useAdminLocale();
-import { Card } from '@/runa/ui';
+const { locale, t: tr } = useAdminLocale();
+import { Card, formatApplicationInstant } from '@/runa/ui';
 import AdminOperations from './AdminOperations.vue';
 import type { AdminController } from './contracts';
 import type { AdminBootstrap, AdminComponentRegistry } from './contracts';
@@ -63,7 +63,9 @@ const presentation = useAdminPresentation();
           </dl>
           <p v-if="widget.observed_at" class="mt-4 text-xs text-muted">
             {{ tr('Observed') }}
-            <time :datetime="widget.observed_at">{{ widget.observed_at }}</time>
+            <time :datetime="widget.observed_at">{{
+              formatApplicationInstant(widget.observed_at, locale)
+            }}</time>
           </p>
         </Card>
       </AdminComponentBoundary>

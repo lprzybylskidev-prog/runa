@@ -67,10 +67,7 @@ const observations = computed(() =>
 );
 function date(value: AdminJson | undefined) {
   if (typeof value !== 'string') return '—';
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? '—'
-    : formatApplicationInstant(date, locale.value);
+  return formatApplicationInstant(value, locale.value);
 }
 </script>
 <template>

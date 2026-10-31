@@ -639,6 +639,15 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Synchronize public contracts/changelogs, add focused scrolling/filter
     regressions and prepare current assets for repeated owner acceptance.
     Broad verification remains point 12.
+- [x] 11a33. Unify application date/time presentation and input defaults; remove timezone annotations and maintain durable frontend guidance.
+  - Owner request, 2026-10-31: review the whole system, use one conversion path
+    driven by application timezone settings, and remove timezone notes beside/in
+    date/time inputs. Dates without a time remain calendar dates; UTC storage,
+    transport, operational deadlines and canonical export contracts stay intact.
+  - Review shared primitives, all module/App date consumers, public settings
+    hydration, calendar defaults and frontend owner/customer skills. Repair
+    demonstrated inconsistencies, add focused timezone/DST regressions and prepare
+    runnable assets. Manual acceptance 11b and broad final gates 12 remain open.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4026,3 +4035,84 @@ creation/removal occurred. Preserve development/base-test data, services,
 Qdrant/model caches and all reports. Ready for repeated owner acceptance at
 http://localhost:8080/admin with existing credentials. Manual acceptance 11b and
 final verification/release 12 remain open; no broad quality PASS is claimed.
+
+### Point 11a33 — Application-wide temporal consistency and durable guidance
+
+Owner request, 2026-10-31: review the whole system's timezone handling, use one
+application-settings-driven conversion system and remove timezone annotations
+from inputs. The owner additionally requested durable skills guidance.
+
+Source review covered App and all delivered module/shared date consumers, public
+presentation/default hydration, calendars, Auth history/session/device lists,
+Admin widgets/health/operation history/forms/tables, Audit detail/filter views,
+canonical exports, backend settings validation, Laravel/PostgreSQL timezone
+configuration and operational/session deadlines. The current App scaffold has no
+independent temporal presentation to migrate. Distinguish this source review from
+focused runtime evidence below; this is not an all-group verification claim.
+
+The shared instantTimestamp helper now owns epoch parsing of explicit-offset ISO,
+unzoned UTC backend timestamps and PostgreSQL hour-only offsets, independently
+of browser timezone. It rejects impossible/date-only text. Public signatures and
+source homes are documented in the canonical forms guide before consumer use.
+Auth account/security lists and session epoch parsing use that helper; the latter
+never reads display settings. Existing framework/storage/cron/log clocks remain
+UTC and canonical exports remain epoch/UTC based. XLSX's installed serial-number
+conversion was source-reviewed and uses Date.getTime, not browser-local parts.
+No new dependency, migration, mutable Audit record or server security policy was
+introduced. Current unreleased Auth 2.1.0/Admin 0.1.0 and platform 0.7.0 candidate
+versions remain appropriate; module API/upgrade edges are unchanged.
+
+DateTimeInput now defaults reactively to application timezone, retaining an
+optional explicit domain-zone override. Remove zoneLabel and automatic helper/
+picker annotations, consumer wiring and the scenario's hardcoded Warsaw zone.
+Auth lifecycle/exception input labels no longer misleadingly ask for UTC input.
+Invalid local drafts survive a settings timezone refresh, including before the
+first valid edit. Date-only values stay calendar dates; calendar today and footer
+year follow application timezone across day/year boundaries. Admin's fallback
+widget observation and known before/after Auth history dates now use the common
+formatter. Ordinary text and arbitrary diagnostic/Audit JSON are not inferred as
+dates. All supplied typed instant displays use the shared formatter; validation and
+canonical machine datetime attributes retain their owning contracts.
+
+Seventeen focused frontend cases pass (exit/cleanup 0), covering UTC/backend
+parsing, PostgreSQL +00, invalid calendar dates, midnight/year boundaries,
+New York/Kiritimati/Kathmandu presentation, settings refresh without lost drafts,
+unchanged date-only models, default datetime controls across three owners,
+DST gaps/overlaps, history/widget formatting, session deadline independence,
+session sorting/loading and activity throttling. Evidence:
+`.runtime/frontend/RM-2026-016-timezone-focused.log`. Current supported asset
+preparation passes vue-tsc, Vite and native/static error shells in
+`RM-2026-016-timezone-build.log` in that directory. One prior transport ended 143
+after writing build completion; preserve RM-2026-016-timezone-build-interrupted.log, and use the
+subsequent complete native exit-0 build as acceptance evidence.
+
+A direct focused served-build browser diagnostic fills the existing gap for
+controlled API fixtures on the running development endpoint; it does not replace
+the supported full suites. Six Auth/Permissions/Audit views at 1440px PL/dark and
+390px EN/light use browser zones Kiritimati/Los Angeles while public application
+presentation starts in New York and changes to Kathmandu. Inputs convert 12:00
+to canonical 17:00Z and re-render 22:45 after refresh; displayed 00:30Z changes
+from prior-day 19:30 to 06:15. No timezone helper/picker text, page errors or
+horizontal document overflow appears. Picker/Details, refresh/export and shared
+header/scroll behavior remain usable. Synthetic fixture responses perform no real
+setting/business writes. Evidence: `.runtime/frontend/RM-2026-016-timezone-browser.log`
+and `.runtime/artifacts/playwright/runa/RM-2026-016-timezone/` (JSON/screenshot
+reports). Real Nginx readiness returns 200 for Admin/readiness/presentation/assets,
+401 for anonymous protected entry/activity, and the served/local manifests match;
+see `.runtime/frontend/RM-2026-016-timezone-readiness.json`.
+
+Canonical frontend architecture/forms/component and Admin guides plus current
+changelogs are synchronized. Owner and customer frontend SKILL.md now direct date
+work to the one public contract and shared helpers, require unchanged date-only
+semantics/no timezone notes, and require sibling-consumer review. Root AGENTS and
+other domain skills already retain UTC storage/security and protected-platform
+boundaries; no extra always-loaded policy or duplicated procedure is needed.
+The upstream quick skill validator cannot import its optional PyYAML dependency;
+no package was installed. A focused stdlib check verifies unchanged frontmatter
+and source-backed guide anchors, alongside normal mandatory hook validation.
+
+No Docker resources, database reset/migration or credential/grant changes were
+created by this point. Preserve development/base-test data, active services,
+Qdrant/model caches and evidence, including the interrupted build log. Current
+assets are ready at http://localhost:8080/admin with existing credentials. Owner
+manual frontend acceptance 11b and full verification/release 12 remain open.

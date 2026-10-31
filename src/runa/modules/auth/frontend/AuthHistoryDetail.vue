@@ -77,8 +77,17 @@ const categories: Record<string, readonly [string, string]> = {
 function label(pair: readonly [string, string] | undefined, fallback: string) {
   return pair ? text(pair[0], pair[1]) : fallback;
 }
-function value(v: HistoryValue): string {
+const instantFields = new Set([
+  'activate_at',
+  'deactivate_at',
+  'expires_at',
+  'attempt_locked_until',
+  'valid_until',
+]);
+function value(v: HistoryValue, field?: string): string {
   if (v === null) return '—';
+  if (field && instantFields.has(field) && typeof v === 'string')
+    return formatApplicationInstant(v, props.locale);
   if (typeof v === 'boolean') return v ? text('Tak', 'Yes') : text('Nie', 'No');
   if (
     Array.isArray(v) &&
@@ -163,13 +172,13 @@ function value(v: HistoryValue): string {
                 {{ text('Przed', 'Before') }}
               </p>
               <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">
-                {{ value(change.before) }}
+                {{ value(change.before, change.field) }}
               </p>
             </div>
             <div>
               <p class="mb-1 text-xs text-muted">{{ text('Po', 'After') }}</p>
               <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">
-                {{ value(change.after) }}
+                {{ value(change.after, change.field) }}
               </p>
             </div>
           </dd>
