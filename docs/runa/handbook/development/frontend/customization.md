@@ -18,7 +18,7 @@ When welcome is enabled, the default `/app` has Home / Application breadcrumbs a
 `main.ts` imports the shared CSS through `@/runa/ui/styles.css` and mounts
 `createApplication(App)` from `@/runa/ui`. This public helper returns a Vue App,
 so customers can install their own plugins before mounting. It hydrates public
-identity and public presentation without delaying rendering; failed requests retain source defaults. Runtime name/logo overrides use the [application settings contract](../../modules/admin/operations.md#application-settings-contracts-and-storage) and [public loader/controller seams](../../modules/admin/frontend.md#application-global-settings-and-runtime-branding).
+identity and public presentation before the first root reveal, including bounded logo decoding; failed initial requests retain source defaults and failed background reads retain confirmed branding. See [view readiness](loading.md). Runtime name/logo overrides use the [application settings contract](../../modules/admin/operations.md#application-settings-contracts-and-storage) and [public loader/controller seams](../../modules/admin/frontend.md#application-global-settings-and-runtime-branding).
 
 The retained application files are manifest/dependency files, the HTML entry,
 Vue root/bootstrap, named welcome route, provider/seed/test/config extension
@@ -77,7 +77,7 @@ and resolve projected component identities through public resolveAdminComponent.
 Check the [runtime export status](../../modules/admin/frontend.md) before consuming
 future form/resource components. `DefaultApplication` forwards an explicitly
 supplied `adminComponents` static App registry; the minimal scaffold adds no example
-screen. Account language is preserved while Admin and its shared controls use en.
+screen. Admin and its shared controls follow the shared Polish/English application preference.
 
 For independent page composition, `MinimalLayout`, `ApplicationLayout`,
 `IdentityProvider` and controls remain available from `@/runa/ui`. Importing them
@@ -203,8 +203,8 @@ the controller validation/focus contract aligned.
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `useAuthEntry(page, authenticated?)` | Render `screen`, title/description, ready/busy/failure/notice, `fieldNames`, values/errors/labels/passwordHint, naming/remember/method choices, enrollment and recovery-code states. Call submit, initialize/refresh, refreshCsrf, sendEmail, logout, codesSaved and changeMethod for the corresponding explicit actions. Bind form/heading refs for validation/focus. Honor needsProof, hasSubmit, methods, enrollmentRequired and token-page restrictions. Without callback the controller handles the approved return; with callback the parent resumes its session boundary.                                                                                                                                                                     |
 | `useAuthAccount(accountId)`          | Render server capabilities/tabs, profile/security, task/fields/errors, proofMethods, busy/failure/notice and explicit draft review. Use saveSection(details/avatar/password/security) with sectionFields/sectionErrors and overviewAction/removeAvatar for independent cards; bind form to the submitting Form. Existing saveOverview and choose/submit remain supported. Use refresh for nondestructive read reconciliation and render detailConflicts/resolveDetails and avatarConflict/resolveAvatar locally. Call selectTab, revoke, readPage, saveDelivery, resetPreferences, restoreDraft, sendCode/sendVerification and refreshCsrf for the corresponding actions. Bind form/heading/feedback refs. Never silently resubmit a restored draft. |
-| `useAuthWelcome()`                   | Render loading/failed/retry, options and optional session. The controller enforces disabled welcome. Link a restricted session to `/auth/security`, an unrestricted one to `/app`, guests to sign-in and registration only when enabled.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `useApplicationSession(navigate?)`   | One boundary for the mounted private application. Render loading/failure/pending/warning/remaining; unmount protected content when paused or without a session. Render AuthEntry or a replacement with authenticated callback while paused. Use refresh/logout/activity and render only the current unrestricted session. Navigation defaults to document navigation; an optional callback integrates a customer router.                                                                                                                                                                                                                                                                                                                             |
+| `useAuthWelcome()`                   | Render loading/refreshing/failed/retry, options and optional session. The controller enforces disabled welcome. Link a restricted session to `/auth/security`, an unrestricted one to `/app`, guests to sign-in and registration only when enabled.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `useApplicationSession(navigate?)`   | One boundary for the mounted private application. Render loading/refreshing/failure/pending/warning/remaining; unmount protected content when paused or without a session. Render AuthEntry or a replacement with authenticated callback while paused. Use refresh/logout/activity and render only the current unrestricted session. Navigation defaults to document navigation; an optional callback integrates a customer router.                                                                                                                                                                                                                                                                                                                  |
 
 The default Preferences presentation uses the same public account replacement seam.
 Use `saveDelivery(choice)` with a cloned per-row draft and explicit Save/Revert;
@@ -276,10 +276,15 @@ welcome is enabled. With welcome disabled (or its policy not yet available), omi
 Home and use /app for the brand link in authenticated and Auth entry layouts.
 useApplicationSession exposes welcomeEnabled from the existing public entry options;
 this optional read never blocks a valid session and is fenced against stale results.
-Custom ApplicationLayout wrappers forward userAvatar, userLoading, homeHref and breadcrumbs; use public Avatar for a
-custom user identity row. The session controller exposes profileLoading for its
-optional presentation read; combine it with initial loading when passing Avatar
-loading. Image readiness is handled by Avatar itself. These presentation fields never establish authorization.
+Custom ApplicationLayout wrappers forward userAvatar, userAvatarImage, userLoading,
+homeHref and breadcrumbs. The controller exposes loading for initial session
+validation and refreshing for background validation. profileLoading describes the
+optional profile read. The supplied shell waits for first profile/preferences and
+prepared image readiness before revealing the header/content, then retains them
+through background reads. Its avatar owner is shared with the dropdown. These
+presentation fields never establish authorization. For custom shells, compose the
+public [view/image readiness contract](loading.md), include account/session identity,
+use bounded optional fallbacks and retain strict controller request fences.
 
 Keep private forms scoped to the current account and unmount them on pause/switch.
 In a full customer shell, key the private subtree by session.public_id.

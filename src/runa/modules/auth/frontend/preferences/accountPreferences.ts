@@ -22,7 +22,10 @@ type Transport = (
 const transport: Transport = (input, signal) =>
   request('/runa/auth/preferences', {
     method: 'POST',
-    signal,
+    signal:
+      input.operation === 'snapshot'
+        ? AbortSignal.any([signal, AbortSignal.timeout(5000)])
+        : signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });

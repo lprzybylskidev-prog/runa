@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
+import { useImageReadiness } from '../composables/useImageReadiness';
+import type { ImageReadiness } from '../composables/useImageReadiness';
 import AppSkeleton from './AppSkeleton.vue';
 const props = withDefaults(
   defineProps<{
@@ -7,21 +9,15 @@ const props = withDefaults(
     initials: string;
     size?: number;
     loading?: boolean;
+    image?: ImageReadiness | undefined;
   }>(),
-  { src: '', size: 40, loading: false },
+  { src: '', size: 40, loading: false, image: undefined },
 );
-const failed = ref(false);
-const loaded = ref(false);
+// A supplied image owner lets shell/dropdown consumers share download and decode.
+const local = useImageReadiness(() => (props.image ? '' : props.src));
+const image = computed(() => props.image ?? local);
 const waiting = computed(
-  () => props.loading || (!!props.src && !failed.value && !loaded.value),
-);
-watch(
-  () => props.src,
-  () => {
-    failed.value = false;
-    loaded.value = false;
-  },
-  { flush: 'sync' },
+  () => props.loading || (!image.value.src.value && !image.value.settled.value),
 );
 </script>
 <template>
@@ -32,16 +28,14 @@ watch(
     aria-hidden="true"
   >
     <img
-      v-if="src && !failed"
+      v-if="image.src.value"
       v-show="!waiting"
-      :key="src"
-      :src="src"
+      :key="image.src.value"
+      :src="image.src.value"
       alt=""
-      @load="loaded = true"
-      @error="failed = true"
     />
     <AppSkeleton v-if="waiting" shape="circle" class="avatar-skeleton" />
-    <span v-else-if="!src || failed">{{ initials }}</span>
+    <span v-else-if="!image.src.value">{{ initials }}</span>
   </span>
 </template>
 <style scoped>

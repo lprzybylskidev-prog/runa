@@ -42,6 +42,7 @@ function admin(): AdminController {
       },
     }),
     authorityRevision: ref(1),
+    refreshing: ref(false),
     profile: shallowRef<Profile>(),
     profileLoading: ref(false),
     welcomeEnabled: ref(false),
@@ -344,7 +345,81 @@ it('application settings clear private drafts when the account context changes',
   settings.edit('presentation.name', 'Private draft');
   owner.session.authorityRevision.value++;
   await flushPromises();
+  expect(settings.draft.value['presentation.name']).toBe('Private draft');
+  expect(controller.dirty.value).toBe(true);
+  owner.session.session.value = {
+    ...owner.session.session.value!,
+    public_id: '01900000-0000-7000-8000-000000000099',
+  };
+  await flushPromises();
   expect(settings.draft.value).toEqual({});
   expect(settings.loaded.value).toBe(false);
   expect(controller.dirty.value).toBe(false);
+});
+
+it('operational background reads leave editors available and an explicit write fences the old read without replay', async () => {
+  let finish!: (value: Response) => void;
+  const fetch = vi
+    .spyOn(window, 'fetch')
+    .mockImplementation(async (_, init) => {
+      if (init?.method === 'POST') return response({ accepted: true });
+      return new Promise<Response>((resolve) => {
+        finish = resolve;
+      });
+    });
+  const { controller } = harness();
+  const read = controller.refresh();
+  expect(controller.refreshing.value).toBe(true);
+  expect(controller.busy.value).toBe(false);
+  await controller.execute('health.configure', {
+    module: 'app',
+    enabled: true,
+  });
+  finish(response({ modules: ['Old read'] }));
+  await read;
+  expect(controller.snapshot.value).toBeUndefined();
+  expect(controller.refreshing.value).toBe(false);
+  expect(controller.busy.value).toBe(false);
+  expect(fetch).toHaveBeenCalledTimes(2);
+});
+
+it('operational reload never overwrites a newer edit made while its read is pending', async () => {
+  const fetch = vi
+    .spyOn(window, 'fetch')
+    .mockResolvedValue(
+      response({ generation: 1, health_policy: true, health_overrides: {} }),
+    );
+  const { controller } = harness();
+  const w = mount(AdminOperationalEditor, {
+    props: { controller, module: 'app.safe', kind: 'health', writable: true },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() => expect(w.find('textarea').exists()).toBe(true));
+  let finish!: (value: Response) => void;
+  fetch.mockImplementation(
+    () =>
+      new Promise<Response>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  await w
+    .findAll('button')
+    .find((button) => button.text() === 'Reload current state')!
+    .trigger('click');
+  await flushPromises();
+  const input = w.get('textarea');
+  expect((input.element as HTMLTextAreaElement).disabled).toBe(false);
+  await input.setValue('{"newer":"draft"}');
+  finish(
+    response({
+      generation: 2,
+      health_policy: true,
+      health_overrides: { old: 'response' },
+    }),
+  );
+  await flushPromises();
+  expect((input.element as HTMLTextAreaElement).value).toBe(
+    '{"newer":"draft"}',
+  );
+  expect(controller.dirty.value).toBe(true);
 });

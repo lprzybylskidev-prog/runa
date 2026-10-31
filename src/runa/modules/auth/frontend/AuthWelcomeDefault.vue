@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import { provide } from 'vue';
+import { applicationSessionOwner } from '../../../resources/js/lib/applicationSession';
+import { usePreferencePending } from './preferences/usePreferencePending';
+import { useViewReadiness } from '@/runa/ui';
+provide(applicationSessionOwner, true);
+const preferencePending = usePreferencePending();
 import {
   Alert,
   Button,
@@ -13,10 +19,15 @@ import { useAuthWelcome } from './useAuthWelcome';
 import { useAuthPresentation } from './presentation';
 const presentation = useAuthPresentation();
 const { text, options, session, failed, loading, load } = useAuthWelcome();
+const readiness = useViewReadiness({
+  identity: 'auth-welcome',
+  required: () => !loading.value && !preferencePending.value,
+});
 </script>
 <template>
   <component
     :is="presentation.minimalLayout ?? MinimalLayout"
+    :readiness="readiness"
     :home-href="options?.public_welcome_enabled ? '/' : '/app'"
   >
     <template #header-actions>
@@ -35,7 +46,7 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
           <Button @click="load">{{ text('Ponów', 'Retry') }}</Button></Alert
         >
         <nav
-          v-else-if="options"
+          v-if="options && !loading"
           class="flex flex-wrap items-center gap-4"
           :aria-label="text('Dostęp do aplikacji', 'Application access')"
         >

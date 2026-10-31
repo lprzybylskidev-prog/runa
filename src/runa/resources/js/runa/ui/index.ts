@@ -177,3 +177,12 @@ export type { MessageKey } from '../../locales/messages';
 
 export { loadApplicationPresentation } from './presentation';
 export type { ApplicationPresentation } from './presentation';
+
+export { useViewReadiness } from '../../composables/useViewReadiness';
+export type {
+  ViewReadiness,
+  ViewReadinessOptions,
+} from '../../composables/useViewReadiness';
+export { useImageReadiness } from '../../composables/useImageReadiness';
+export type { ImageReadiness } from '../../composables/useImageReadiness';
+export { default as ViewBoundary } from '../../components/AppViewBoundary.vue';

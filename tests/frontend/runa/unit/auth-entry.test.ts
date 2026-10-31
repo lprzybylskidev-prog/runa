@@ -524,3 +524,52 @@ it('customization: nested reactive replacements inherit defaults and remount hea
   expect(w.find('[data-customer-entry]').exists()).toBe(false);
   expect(warn).not.toHaveBeenCalled();
 });
+
+it('entry readiness waits for preferences without a duplicate session and focuses the delayed heading', async () => {
+  restrictions = [];
+  const implementation = vi.mocked(window.fetch).getMockImplementation()!;
+  let finish!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    finish = resolve;
+  });
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    if (String(input).endsWith('/preferences')) await gate;
+    return implementation(input, init);
+  });
+  const w = mount(AuthEntry, {
+    props: { page: 'login', authenticated: () => {} },
+    attachTo: document.body,
+  });
+  await flushPromises();
+  expect(w.find('h1').exists()).toBe(false);
+  finish();
+  await vi.waitFor(() => expect(w.find('h1').exists()).toBe(true));
+  await vi.waitFor(() =>
+    expect(document.activeElement).toBe(w.get('h1').element),
+  );
+  expect(
+    vi
+      .mocked(window.fetch)
+      .mock.calls.filter(([input]) => String(input).endsWith('/session')),
+  ).toHaveLength(1);
+});
+it('entry readiness exposes an initial failure and deliberate retry instead of waiting indefinitely', async () => {
+  const implementation = vi.mocked(window.fetch).getMockImplementation()!;
+  vi.mocked(window.fetch).mockImplementation((input, init) =>
+    String(input).endsWith('/entry-options')
+      ? Promise.reject(new Error('Offline'))
+      : implementation(input, init),
+  );
+  const w = mount(AuthEntry, { props: { page: 'login' } });
+  await vi.waitFor(() => expect(w.find('h1').exists()).toBe(true));
+  await vi.waitFor(() =>
+    expect(document.body.textContent).toContain('Spróbuj ponownie'),
+  );
+  expect(w.find('form').exists()).toBe(false);
+  vi.mocked(window.fetch).mockImplementation(implementation);
+  const retry = [...document.body.querySelectorAll('button')].find(
+    (button) => button.textContent?.trim() === 'Spróbuj ponownie',
+  )!;
+  retry.click();
+  await settled(w);
+});

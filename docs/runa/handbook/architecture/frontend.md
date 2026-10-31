@@ -368,7 +368,7 @@ The public `@/runa/ui` facade exports Card (header/actions/body/footer slots), D
 
 Public Spinner is shared by busy Button and LoadingOverlay; decorative embedding avoids duplicate status announcements and preserves the accepted layout transition timing/colors. Skeleton provides bounded decorative text/block/circle placeholders. Progress supports determinate/indeterminate values, finite bounds, localized valueText and semantic tones. Reduced motion removes spinner, skeleton and indeterminate-progress animation. EmptyState composes readable title/description and optional caller actions.
 
-AsyncContent selects a controlled loading/error/empty/success slot, with Spinner/Alert/EmptyState defaults and an optional retry event. It never fetches, cancels requests or infers successful completion. Callers own request races, formatted errors and persistent form state (inactive slots unmount). Localize its default text through props; custom slots own their status announcements.
+AsyncContent selects a controlled loading/refreshing/error/empty/success slot (refreshing retains the same success subtree), with Spinner/Alert/EmptyState defaults and an optional retry event. It never fetches, cancels requests or infers successful completion. Callers own request races, formatted errors and persistent form state (inactive slots unmount). Localize its default text through props; custom slots own their status announcements.
 
 Statistic supports label/value/icon/trend/visualization slots and neutral/semantic tones without domain calculations. Statistics always exposes the global/filtered switch and provides the selected mode to its content slot. A view supplies both datasets and keeps global values independent of filters. useStatisticsMode uses the existing validated, versioned preference store, scoped by application/module/view identity, with a per-view default and session fallback. Remount on view-identity changes. The isolated application scenario consumes these primitives in its statistics slot and keys persistence by route.
 
@@ -482,3 +482,11 @@ Native error shells include an escaped presentation-logo variant. Emergency HTML
 uses only validated build-time source branding, including its source logo, and
 never reads or bakes DB overrides. Canonical versions and Runa's code logo remain
 source-owned. Customer styling and presentation seams remain App-owned.
+
+## Initial readiness and background reads
+
+Use the public [view readiness contract](../development/frontend/loading.md) for
+initial shell/page dependencies, bounded image decode/fallback and independent
+regions. Background reads preserve mounted content, focus and drafts; real
+identity/access loss clears protected state. The existing session/security owner
+continues to fence requests; presentation readiness grants no authority.

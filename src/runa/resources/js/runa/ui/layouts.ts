@@ -6,6 +6,8 @@ import type { PreferenceStore } from '../../lib/preferenceStore';
 import type { MessageKey } from '../../locales/messages';
 
 export interface MinimalLayoutProps {
+  readiness?:
+    import('../../composables/useViewReadiness').ViewReadiness | undefined;
   footer?: FooterOptions | undefined;
   homeHref?: string;
   illustration?: boolean;
@@ -14,6 +16,8 @@ export interface MinimalLayoutProps {
   staticPreferences?: { locale: Locale; theme: Theme } | undefined;
 }
 export interface ApplicationLayoutProps {
+  readiness?:
+    import('../../composables/useViewReadiness').ViewReadiness | undefined;
   /** Fixed presentation locale; does not update account language. */
   locale?: Locale | undefined;
   navigation: readonly NavigationEntry[];
@@ -30,6 +34,8 @@ export interface ApplicationLayoutProps {
   userName?: string | undefined;
   userInitials?: string | undefined;
   userAvatar?: string | undefined;
+  userAvatarImage?:
+    import('../../composables/useImageReadiness').ImageReadiness | undefined;
   userLoading?: boolean | undefined;
 }
 export interface LayoutSlotContext {

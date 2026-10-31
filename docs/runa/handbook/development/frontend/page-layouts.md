@@ -136,3 +136,12 @@ native paused-session reauthentication retains priority. Admin uses this slot fo
 AuthOperationProofPage (MinimalLayout), loading and refusals. The slot is a
 presentation boundary, not authorization. Keep one shared session controller and
 an identity-bound Auth proof controller; see the [Auth proof contract](../../modules/auth/entry-ui.md#operation-proof-composition).
+
+## Initial presentation readiness
+
+Both layouts accept optional readiness: ViewReadiness; ApplicationLayout also
+accepts userAvatarImage: ImageReadiness for a prepared shared avatar. Defaults
+remain immediately usable for independent/static composition. Supplied Auth
+screens and the shared session shell declare initial dependencies and preserve
+mounted content during refresh. Follow [view readiness](loading.md) for exact
+public signatures, optional fallbacks and presentation replacement requirements.

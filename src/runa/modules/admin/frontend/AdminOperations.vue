@@ -160,6 +160,20 @@ watch(
   },
   { immediate: true },
 );
+// Validate current capabilities in place without resetting the selected editor.
+watch(
+  () => props.admin.session.authorityRevision.value,
+  async () => {
+    if (props.admin.state.value !== 'ready') return;
+    const context = controller.contextRevision.value;
+    const value = await controller.read('capabilities');
+    if (!value || context !== controller.contextRevision.value) return;
+    capabilities.value = Array.isArray(value.capabilities)
+      ? value.capabilities.filter((v): v is string => typeof v === 'string')
+      : [];
+    await refresh();
+  },
+);
 defineExpose({ controller });
 function format(value: AdminJson | undefined) {
   return typeof value === 'object'
@@ -171,7 +185,7 @@ function format(value: AdminJson | undefined) {
   <slot :controller="controller">
     <div class="space-y-6">
       <p
-        v-if="controller.busy.value && !controller.snapshot.value"
+        v-if="controller.refreshing.value && !controller.snapshot.value"
         class="text-sm text-muted"
         role="status"
       >

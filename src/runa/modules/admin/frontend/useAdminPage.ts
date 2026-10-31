@@ -10,7 +10,12 @@ import type {
   AdminState,
 } from './contracts';
 import { adminPath, decodePage } from './decode';
-import { adminFailure, refuseAdmin, sessionStamp } from './useAdmin';
+import {
+  adminFailure,
+  refuseAdmin,
+  sessionStamp,
+  adminPresentationIdentity,
+} from './useAdmin';
 import { pageOwners } from './pageContext';
 import { pageRuntime } from './runtime';
 export function useAdminPage(
@@ -32,7 +37,7 @@ export function useAdminPage(
     abort.abort();
     abort = new AbortController();
     const retain =
-      loadedStamp === stamp &&
+      loadedStamp === adminPresentationIdentity(admin.session) &&
       page.value?.owner === current.owner &&
       page.value?.key === current.page &&
       admin.state.value === 'ready';
@@ -62,8 +67,9 @@ export function useAdminPage(
         result.generation !== bootstrap.generation
       )
         throw new TypeError('Admin page identity changed.');
-      page.value = result;
-      loadedStamp = stamp;
+      if (JSON.stringify(page.value) !== JSON.stringify(result))
+        page.value = result;
+      loadedStamp = adminPresentationIdentity(admin.session) ?? undefined;
       status.value = 'ready';
     } catch (cause) {
       if (!alive || own !== epoch || stamp !== sessionStamp(admin.session))

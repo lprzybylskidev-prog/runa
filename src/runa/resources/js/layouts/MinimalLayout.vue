@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { inject } from 'vue';
+import AppViewBoundary from '../components/AppViewBoundary.vue';
+import { useViewReadiness } from '../composables/useViewReadiness';
 import { applicationSessionOwner } from '../lib/applicationSession';
 const sessionOwned = inject(applicationSessionOwner, false);
 import { onMounted, ref, watch } from 'vue';
@@ -31,8 +33,13 @@ const props = withDefaults(defineProps<MinimalLayoutProps>(), {
 });
 const identity = useIdentity();
 const logoFailed = ref(false);
+const standaloneReadiness = useViewReadiness({
+  identity: 'layout',
+  required: true,
+});
 onMounted(() => {
-  if (!props.staticPreferences && !sessionOwned) initializePreferenceSession();
+  if (!props.readiness && !props.staticPreferences && !sessionOwned)
+    void initializePreferenceSession();
 });
 if (!props.staticPreferences)
   watch(
@@ -61,101 +68,107 @@ const {
 </script>
 
 <template>
-  <div
-    class="minimal-page flex min-h-dvh flex-col text-ink"
-    :inert="changingPreference"
-    :aria-busy="changingPreference"
-  >
-    <AppBackdrop
-      :constellation-glow="constellationGlow && !staticPreferences"
-    />
-    <a href="#main" class="skip-link">{{ t('skip') }}</a>
-    <header
-      class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-6 px-6 py-7 sm:px-10"
+  <AppViewBoundary :readiness="props.readiness ?? standaloneReadiness">
+    <div
+      class="minimal-page flex min-h-dvh flex-col text-ink"
+      :inert="changingPreference"
+      :aria-busy="changingPreference"
     >
-      <slot name="header" :t="t">
-        <a
-          :href="homeHref"
-          :aria-label="identity.applicationName"
-          class="brand flex min-h-11 items-center gap-3 text-xl font-semibold tracking-tight"
-        >
-          <img
-            v-if="identity.logo && !logoFailed"
-            :key="identity.logo.src"
-            :src="identity.logo.src"
-            :alt="identity.logo.accessibleName"
-            class="h-7 max-w-32 object-contain"
-            @error="logoFailed = true"
-          />
-          <span v-else class="brand-mark" aria-hidden="true"><RunaLogo /></span>
-          <template
-            v-if="
-              identity.applicationId === 'runa' &&
-              identity.applicationName === 'Runa'
-            "
-            >runa<span class="brand-dot" aria-hidden="true">.</span></template
+      <AppBackdrop
+        :constellation-glow="constellationGlow && !staticPreferences"
+      />
+      <a href="#main" class="skip-link">{{ t('skip') }}</a>
+      <header
+        class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-6 px-6 py-7 sm:px-10"
+      >
+        <slot name="header" :t="t">
+          <a
+            :href="homeHref"
+            :aria-label="identity.applicationName"
+            class="brand flex min-h-11 items-center gap-3 text-xl font-semibold tracking-tight"
           >
-          <span v-else class="break-words">{{ identity.applicationName }}</span>
-        </a>
-        <div class="flex max-w-full flex-wrap items-center justify-end gap-3">
-          <slot name="header-actions" :t="t" />
-          <AppPreferenceControls
-            :navigation="props.staticPreferences !== undefined"
-            :locale="locale"
-            :theme="theme"
-            :theme-label="themeLabel"
-            :language-label="languageLabel"
-            :t="t"
-            @change="changePreference"
-          />
-        </div>
-      </slot>
-    </header>
-    <main
-      id="main"
-      tabindex="-1"
-      class="mx-auto flex w-full max-w-7xl flex-1 items-center px-6 py-8 sm:px-10 sm:py-14"
-    >
-      <div class="minimal-panel w-full">
-        <div
-          :class="[
-            'grid',
-            { 'lg:grid-cols-2 lg:items-stretch': props.illustration },
-          ]"
-        >
-          <div
-            class="order-2 min-w-0 flex flex-col justify-center px-6 py-10 sm:px-10 sm:py-16 lg:order-1"
-          >
-            <AppPreferenceFeedback
-              v-if="!props.staticPreferences"
-              :locale="locale"
+            <img
+              v-if="identity.logo && !logoFailed"
+              :key="identity.logo.src"
+              :src="identity.logo.src"
+              :alt="identity.logo.accessibleName"
+              class="h-7 max-w-32 object-contain"
+              @error="logoFailed = true"
             />
-            <slot name="content" :t="t"><slot :t="t" /></slot>
-            <div v-if="$slots.actions" class="mt-6 flex flex-wrap gap-3">
-              <slot name="actions" :t="t" />
+            <span v-else class="brand-mark" aria-hidden="true"
+              ><RunaLogo
+            /></span>
+            <template
+              v-if="
+                identity.applicationId === 'runa' &&
+                identity.applicationName === 'Runa'
+              "
+              >runa<span class="brand-dot" aria-hidden="true">.</span></template
+            >
+            <span v-else class="break-words">{{
+              identity.applicationName
+            }}</span>
+          </a>
+          <div class="flex max-w-full flex-wrap items-center justify-end gap-3">
+            <slot name="header-actions" :t="t" />
+            <AppPreferenceControls
+              :navigation="props.staticPreferences !== undefined"
+              :locale="locale"
+              :theme="theme"
+              :theme-label="themeLabel"
+              :language-label="languageLabel"
+              :t="t"
+              @change="changePreference"
+            />
+          </div>
+        </slot>
+      </header>
+      <main
+        id="main"
+        tabindex="-1"
+        class="mx-auto flex w-full max-w-7xl flex-1 items-center px-6 py-8 sm:px-10 sm:py-14"
+      >
+        <div class="minimal-panel w-full">
+          <div
+            :class="[
+              'grid',
+              { 'lg:grid-cols-2 lg:items-stretch': props.illustration },
+            ]"
+          >
+            <div
+              class="order-2 min-w-0 flex flex-col justify-center px-6 py-10 sm:px-10 sm:py-16 lg:order-1"
+            >
+              <AppPreferenceFeedback
+                v-if="!props.staticPreferences"
+                :locale="locale"
+              />
+              <slot name="content" :t="t"><slot :t="t" /></slot>
+              <div v-if="$slots.actions" class="mt-6 flex flex-wrap gap-3">
+                <slot name="actions" :t="t" />
+              </div>
+            </div>
+            <div
+              v-if="props.illustration"
+              class="order-1 flex min-w-0 lg:order-2"
+            >
+              <slot name="illustration" :t="t"
+                ><AppBrandIllustration
+                  :animated="orbitMotion && !staticPreferences"
+              /></slot>
             </div>
           </div>
-          <div
-            v-if="props.illustration"
-            class="order-1 flex min-w-0 lg:order-2"
-          >
-            <slot name="illustration" :t="t"
-              ><AppBrandIllustration
-                :animated="orbitMotion && !staticPreferences"
-            /></slot>
-          </div>
         </div>
-      </div>
-    </main>
-    <slot v-if="props.footer?.visible !== false" name="footer" :t="t"
-      ><AppFooter :options="props.footer" :powered-by-label="t('poweredBy')"
-    /></slot>
-  </div>
-  <AppLoadingOverlay
-    v-if="!props.staticPreferences"
-    :active="coverVisible"
-    :label="t('applyingPreferences')"
-    @covered="applyPreference"
-    @revealed="finishPreferenceChange"
-  />
+      </main>
+      <slot v-if="props.footer?.visible !== false" name="footer" :t="t"
+        ><AppFooter :options="props.footer" :powered-by-label="t('poweredBy')"
+      /></slot>
+    </div>
+    <AppLoadingOverlay
+      v-if="!props.staticPreferences"
+      :active="coverVisible"
+      :label="t('applyingPreferences')"
+      @covered="applyPreference"
+      @revealed="finishPreferenceChange"
+    />
+  </AppViewBoundary>
 </template>

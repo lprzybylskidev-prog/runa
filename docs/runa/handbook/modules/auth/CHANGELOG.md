@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Share identity-scoped initial view/image readiness, bounded decoded-avatar fallback and nondestructive same-session refresh through the public UI contract.
+
 - Keep the known Admin menu advertisement during same-session revalidation, ignore unchanged activity observations and hide on denial/failure or immediate identity invalidation. Preserve stale-response fencing without a second session or polling loop.
 
 - Match operation-proof page heading focus to existing Auth screens and give shared proof cancellation its red danger/error outline button. Preserve reading focus and normal keyboard indicators on controls.
@@ -17,7 +19,7 @@
 - Add public useOperationProof/AuthOperationProof for source-declared administrative action proof. Reuse native security/step-up/email-code endpoints and current eligible methods; erase password/code on settlement/invalidation and never replay an owning business write. The caller retains session admission and lifecycle identity.
 - Extract public ApplicationSessionShell; AuthApplication accepts a shared session plus typed navigation/current/locale/account-menu inputs without another session/activity owner.
 - Retain account/loading replacement and native session security; advertise Admin entry only in the account dropdown through the fixed proof-free availability read.
-- Expose authorityRevision for successful session refreshes and scope shared Admin controls to English without changing account language. The unreleased 2.0.0 target keeps its existing native_transactions edge; no extra version or migration is introduced.
+- Expose authorityRevision for successful session refreshes and share the application language with Admin controls. The unreleased 2.0.0 target keeps its existing native_transactions edge; no extra version or migration is introduced.
 
 - Use native owner lock/validate/apply phases for standalone and shared transactions; all owner reviews validate before any business write.
 - Intentionally replace ambient nesting of AuthProfiles.edit with source-owned ModuleTransactions composition; the guarded write API version is 2.0.0 and standalone calls require no ambient transaction. Other guarded API versions remain unchanged.

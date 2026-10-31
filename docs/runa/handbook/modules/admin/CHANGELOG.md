@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Retain admitted pages, record/operational drafts and same-session filters during background validation while fencing old requests and clearing real access/identity loss.
+
 - Retain the pre-admission Auth password form/input during same-session background bootstrap revalidation. Clear proof on real denial, identity invalidation or successful admission; keep protected-read authority fences. Stop unchanged activity from refetching page descriptors.
 
 - Support Polish by default and English throughout Admin, shared controls, proof, errors and Core presentation. Preserve the application language preference and dirty controllers on switches; expose public AdminText/messages/useAdminLocale composition and retain bilingual metadata.

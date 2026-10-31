@@ -313,6 +313,14 @@ export function useAuthEntry(
       errors.enrollment_code = 'invalidCode';
     return Object.keys(errors).length === 0;
   }
+  // Presentation may defer mounting until preferences finish hydrating.
+  watch(
+    heading,
+    (element) => {
+      if (alive && ready.value) element?.focus();
+    },
+    { flush: 'post' },
+  );
   async function focusHeading() {
     await nextTick();
     if (alive) heading.value?.focus();

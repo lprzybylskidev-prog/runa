@@ -44,3 +44,7 @@ Admin follows the shared application language preference (Polish default, Englis
 secondary), including module defaults and Auth entry proof. For localized metadata
 and App presentation catalogues, follow `docs/runa/handbook/modules/admin/frontend.md#polish-and-english-presentation`;
 preserve mounted controllers and dirty drafts when the language changes.
+
+For initial reveal, background reads and shared prepared avatars, follow
+`docs/runa/handbook/development/frontend/loading.md`. Declare explicit regions,
+retain mounted drafts/focus and preserve the owning controller's security fences.

@@ -19,7 +19,7 @@ import type {
 import type { AdminPageController } from './contracts';
 import { useAdminResource } from './useAdminResource';
 import { pageOwners } from './pageContext';
-import { sessionStamp } from './useAdmin';
+import { sessionStamp, adminPresentationIdentity } from './useAdmin';
 import { pageRuntime } from './runtime';
 import { adminCollectionsKey } from './collections';
 
@@ -438,7 +438,7 @@ export function useAdminTable(
       const identity = JSON.stringify([
         data?.owner,
         data?.key,
-        admin && sessionStamp(admin.session),
+        admin && adminPresentationIdentity(admin.session),
       ]);
       const changedOwner = identity !== owner;
       owner = identity;
@@ -446,8 +446,8 @@ export function useAdminTable(
       signature = '';
       cursors = new Map([[1, undefined]]);
       confirm(false);
+      selection.value = { mode: 'explicit', publicIds: [] };
       if (changedOwner) {
-        selection.value = { mode: 'explicit', publicIds: [] };
         selected.value = undefined;
         if (!sourceAdapters.value.preferences) {
           memory.clear();

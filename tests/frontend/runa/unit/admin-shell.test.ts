@@ -70,6 +70,7 @@ function sessionFixture(): ApplicationSessionController {
       },
     }),
     authorityRevision: ref(1),
+    refreshing: ref(false),
     profile: shallowRef<Profile>(),
     profileLoading: ref(false),
     welcomeEnabled: ref(false),
@@ -602,7 +603,7 @@ it('Admin cursor tables preserve owner pagination sorting and secret state witho
   expect(queries.every((q) => !q.has('page'))).toBe(true);
 });
 
-it('Admin cursor tables type filters refuse invalid input and reset cursors on authority changes', async () => {
+it('Admin cursor tables type filters refuse invalid input and retain filters while resetting cursors on revalidation', async () => {
   const queries: URLSearchParams[] = [];
   const data = resourcePage();
   data.sections[0]!.fields.push({
@@ -643,10 +644,14 @@ it('Admin cursor tables type filters refuse invalid input and reset cursors on a
   };
   await vi.waitFor(() => expect(queries).toHaveLength(3));
   session.authorityRevision.value++;
-  await vi.waitFor(() => expect(table.query.value.filters).toEqual({}));
+  await vi.waitFor(() =>
+    expect(table.query.value.filters).toEqual({ name: 'Sensitive filter' }),
+  );
   await vi.waitFor(() => expect(queries.length).toBeGreaterThan(3));
   expect(queries.at(-1)!.has('cursor')).toBe(false);
-  expect(JSON.parse(queries.at(-1)!.get('filters')!)).toEqual({});
+  expect(JSON.parse(queries.at(-1)!.get('filters')!)).toEqual({
+    name: 'Sensitive filter',
+  });
 });
 
 it('Admin cursor tables reject missing and duplicate public row identities', async () => {
@@ -824,7 +829,7 @@ it('Admin resource reads coalesce requests and fence page account authority and 
   session.authorityRevision.value++;
   finishes[2]!(record('Old authority'));
   await stale;
-  expect(resource.result.value).toBeUndefined();
+  expect(resource.result.value).toMatchObject({ values: { name: 'Current' } });
   await vi.waitFor(() => expect(finishes.length).toBe(4));
   wrapper.unmount();
   finishes[3]!(record('Disposed'));
@@ -1096,6 +1101,86 @@ it('Admin dirty navigation retains the current page until explicit approval thro
   form.confirm(true);
   expect(await accepted).toBe(true);
   expect(go).toHaveBeenCalledTimes(1);
+});
+
+it('Admin admitted revalidation retains the mounted dirty editor and drops it on access refusal', async () => {
+  const session = sessionFixture();
+  let admin!: AdminController, form!: ReturnType<typeof useAdminForm>;
+  let delay = false,
+    finish!: (response: Response) => void;
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const path = new URL(String(input), location.origin).pathname;
+    if (path === '/api/admin') {
+      if (delay)
+        return new Promise<Response>((resolve) => {
+          finish = resolve;
+        });
+      return respond({ data: bootstrap() });
+    }
+    if (path === '/api/admin/app/settings') {
+      const data = resourcePage();
+      data.sections[0]!.readonly = false;
+      data.sections[0]!.fields[0]!.readonly = false;
+      return respond({ data });
+    }
+    return respond({
+      data: {
+        public_id: identity,
+        revision: 'r1',
+        values: { name: 'Before', token: { set: true } },
+      },
+    });
+  });
+  const w = mount(
+    defineComponent({
+      setup() {
+        admin = useAdmin({ session, navigate: vi.fn() });
+        form = useAdminForm(
+          useAdminPage(admin, ref({ owner: 'app', page: 'settings' })),
+        );
+        return () =>
+          h(
+            AdminForm,
+            { controller: form },
+            {
+              default: () =>
+                h('input', {
+                  type: 'text',
+                  value: form.values.value['profile.name'],
+                }),
+            },
+          );
+      },
+    }),
+    { attachTo: document.body },
+  );
+  await vi.waitFor(() => expect(form.records.value.profile).toBeDefined());
+  form.set('profile.name', 'Draft');
+  await vi.waitFor(() =>
+    expect(w.find('input[type="text"]').exists()).toBe(true),
+  );
+  const input = w.get('input[type="text"]');
+  (input.element as HTMLInputElement).focus();
+  delay = true;
+  const explicit = admin.refresh();
+  expect(admin.state.value).toBe('ready');
+  finish(respond({ data: bootstrap() }));
+  await explicit;
+  expect(form.values.value['profile.name']).toBe('Draft');
+  session.authorityRevision.value++;
+  await flushPromises();
+  expect(admin.state.value).toBe('ready');
+  expect(form.values.value['profile.name']).toBe('Draft');
+  expect(w.get('input[type="text"]').element).toBe(input.element);
+  expect(document.activeElement).toBe(input.element);
+  finish(
+    new Response(JSON.stringify({ reason: 'access_denied' }), {
+      status: 403,
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  );
+  await vi.waitFor(() => expect(admin.state.value).toBe('forbidden'));
+  expect(form.values.value).toEqual({});
 });
 
 it('Admin automatic records refuse raw secrets and recover only through an explicit read retry', async () => {

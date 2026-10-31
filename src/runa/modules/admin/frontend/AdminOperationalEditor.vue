@@ -32,6 +32,7 @@ const props = defineProps<{
 const emit = defineEmits<{ saved: [] }>();
 const loaded = shallowRef<AdminOperationData>();
 const draft = ref<Record<string, AdminJson>>({});
+let draftRevision = 0;
 const edited = ref(new Set<string>());
 const raw = ref<Record<string, string>>({});
 const invalidArrays = ref(new Set<string>());
@@ -104,6 +105,7 @@ function enumEdit(
   if (selected !== undefined) edit(name, selected);
 }
 function arrayEdit(name: string, value: string | null) {
+  draftRevision++;
   raw.value[name] = value ?? '';
   try {
     const parsed: unknown = JSON.parse(value ?? '');
@@ -118,6 +120,7 @@ function arrayEdit(name: string, value: string | null) {
   }
 }
 function edit(name: string, value: AdminJson) {
+  draftRevision++;
   if (value === null) {
     raw.value[name] = 'null';
     invalidArrays.value.delete(name);
@@ -127,16 +130,18 @@ function edit(name: string, value: AdminJson) {
   props.controller.dirty.value = true;
 }
 function changed() {
+  draftRevision++;
   parseError.value = '';
   props.controller.dirty.value = true;
 }
 async function load() {
   if (!(await props.controller.beforeLeave())) return;
+  const own = draftRevision;
   const response = await props.controller.read(
     props.kind === 'health' ? 'module' : props.kind,
     { module: props.module },
   );
-  if (!response) return;
+  if (!response || own !== draftRevision) return;
   loaded.value = response;
   draft.value = {};
   raw.value = {};
@@ -163,6 +168,7 @@ async function selectIntegration(value: string) {
   if (!(await props.controller.beforeLeave())) return;
   const entry = integrations.value[value];
   if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+  draftRevision++;
   key.value = value;
   enabled.value = entry.enabled === true;
   json.value = JSON.stringify(entry.config ?? {}, null, 2);

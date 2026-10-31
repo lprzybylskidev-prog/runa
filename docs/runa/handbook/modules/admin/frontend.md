@@ -200,8 +200,10 @@ reads. Pre-admission password input uses the current unrestricted account/sessio
 identity rather than the observation revision: same-session revalidation keeps its
 page and input mounted while bootstrap is checked in the background. An unchanged
 native step_up_required result preserves that form; a real denial/invalidation or
-successful bootstrap admission clears its credentials. This does not retain
-protected bootstrap/page data across authority changes or replay proof/business writes.
+successful bootstrap admission clears its credentials. Same-session observations retain mounted bootstrap/page presentation and dirty
+forms while revalidating; request/operation stamps still invalidate every old
+authority observation. Real identity/access loss clears protected state immediately.
+No proof/business write is replayed. See [view readiness](../../development/frontend/loading.md).
 
 Composables mount once per keyed account/page; scope disposal aborts requests and
 removes listeners/dirty guards. They own cancellation, session/CSRF/proof handling,
@@ -235,7 +237,7 @@ a request. Malformed responses, foreign subjects, unknown field values and raw
 secrets clear the result and produce safe feedback without exposing payloads.
 
 The page controller created by `useAdminPage` retains its owning shared session
-internally. Account/authority/page invalidation and scope disposal erase resource
+internally. Account/access/page invalidation and scope disposal erase resource
 results and cancel/fence pending responses. Queries never carry their subject or
 filters into a different account/session or owning page. An explicit same-session page refresh
 retains the mounted page while the read is pending; successful descriptor updates
@@ -308,8 +310,9 @@ read lane: change `query` or call `refresh`, rather than sending independent
 record/options reads through `resource`. The latter exposes read status/error/busy
 and decoded results. Do not reuse a controller between pages or accounts.
 `useAdminResource` retains native admission, visibility refresh, response fencing
-and disposal. Account/authority/page changes erase table filters and cursor state;
-same-context descriptor updates preserve allowed query controls and restart page 1.
+and disposal. Account/access/page changes erase table filters and cursor state;
+same-session observations and descriptor updates preserve allowed query controls,
+reset cursor/selection intent and restart page 1.
 Views use an ephemeral memory store by default; durable views require an explicit
 source-owned, account-aware preference scope/store with its owning declaration.
 Records and secrets are never preference values.
@@ -385,8 +388,9 @@ comparison merges clean/disjoint changes and preserves edited fields. Overlaps
 retain the old write revision until resolved locally through resolve(path,choice).
 reset deliberately discards to the latest readable baseline. Forbidden fields
 leave values/errors/snapshots/conflicts; newly read-only fields revert. Account,
-authority or page invalidation erases protected state and credentials, fences late
-responses and cancels confirmations. Changed sensitive snapshots clear secret
+access or page invalidation erases protected state and credentials, fences late
+responses and cancels confirmations. Same-session observations preserve drafts
+while fencing old requests and cancelling stale reviews/confirmations. Changed sensitive snapshots clear secret
 replacements and require re-entry without putting secrets in conflict panels.
 
 execute(section,command) sends only that declaration's writable inputs. intent
@@ -848,7 +852,7 @@ and non-sensitive integration maps use controlled JSON input.
 
 `useAdminOperations(admin: AdminController): AdminOperationsController` owns one
 request/write lane, session/proof failure propagation, context cancellation, dirty
-navigation and confirmation. Returns `busy: ComputedRef<boolean>`;
+navigation and confirmation. Returns `busy: ComputedRef<boolean>` for writes and `refreshing: ComputedRef<boolean>` for reads;
 `dirty`, `conflict`: `Ref<boolean>`; `error: Ref<string>`;
 `confirmation: Ref<string|undefined>`; `snapshot: Ref<AdminOperationData|undefined>`;
 `changed`, `contextRevision`: `Ref<number>`; and these methods:
@@ -877,6 +881,15 @@ and native execution rechecks it. Pending/recovery/failed results remain visible
 Retained operation UUID controls invoke only native status/resume/cancel/recover;
 maintenance/update/Core failure still blocks all protected HTTP.
 
+Operational controller `refreshing: ComputedRef<boolean>` describes reads; `busy`
+blocks only the deliberate write lane. Background reads keep editors available.
+An explicit write may supersede an optional pending read; its response is fenced
+and neither request is replayed. Same-session capability refresh preserves the
+selected editor. An explicit operational reload cannot overwrite an edit made
+while that read was pending; the existing generation stays unchanged for native
+conflict/review handling. Read ownership, strict observation stamps and real context-loss
+cleanup remain in the controller.
+
 ## Application global settings and runtime branding
 
 `AdminApplicationSettings({controller: AdminOperationsController})` is the PL/EN
@@ -902,8 +915,7 @@ or asset upload control is supplied.
 Reuse the passed operational controller rather than creating another session or
 write lane. Refresh merges disjoint reads, preserves dirty edits and exposes
 same-field overlaps with the current value. Resolve each overlap locally before
-Save. A failed/stale write retains drafts and is never replayed. Fixed storage/Audit 503 refusals remain local errors with drafts intact; authentication/grant loss and real Core/maintenance refusal still close the protected shell. Account/authority
-changes clear settings and fence late responses. The dashboard switches editors
+Save. A failed/stale write retains drafts and is never replayed. Fixed storage/Audit 503 refusals remain local errors with drafts intact; authentication/grant loss and real Core/maintenance refusal still close the protected shell. Account/access changes clear settings and fence late responses; same-session observations preserve dirty settings while invalidating old requests/reviews. The dashboard switches editors
 through the existing dirty-navigation confirmation. Full App replacement retains
 these protocols; it does not copy private session/security code.
 
@@ -913,7 +925,7 @@ Promise<ApplicationPresentation | undefined>`. Failure returns undefined so a
 consumer can restore source defaults. `createApplication` hydrates presentation
 separately from canonical identity and refreshes after application-setting writes,
 Auth session changes and focus/visibility/history navigation. Per-app epochs cancel
-older reads; unmount cleans observers/listeners. It never stores branding in guest
+older reads; unmount cleans observers/listeners. First reveal also waits for bounded logo decoding; failed background reads retain confirmed presentation. It never stores branding in guest
 preferences or changes canonical IDs/versions. Custom roots may use the same loader
 and IdentityProvider; retain lifecycle fencing and source fallback.
 

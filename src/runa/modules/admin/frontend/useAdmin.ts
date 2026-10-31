@@ -72,6 +72,17 @@ export function sessionStamp(session: ApplicationSessionController): string {
     session.pending.value,
   ]);
 }
+/** Stable presentation identity; authorityRevision still fences every request. */
+export function adminPresentationIdentity(
+  session: ApplicationSessionController,
+): string | null {
+  return admitted(session)
+    ? JSON.stringify([
+        session.session.value?.public_id,
+        session.session.value?.session.public_id,
+      ])
+    : null;
+}
 export function admitted(session: ApplicationSessionController): boolean {
   return (
     !!session.session.value &&
@@ -138,14 +149,14 @@ export function useAdmin(
     if (failure.state === 'proof_required') void entryProof.begin();
   }
   async function refresh() {
-    await readBootstrap(false);
+    await readBootstrap(status.value === 'ready' && admitted(session));
   }
-  async function readBootstrap(retainProof: boolean) {
+  async function readBootstrap(retainPresentation: boolean) {
     const own = ++epoch,
       stamp = sessionStamp(session);
     abort.abort();
     abort = new AbortController();
-    if (!retainProof) {
+    if (!retainPresentation) {
       bootstrap.value = undefined;
       error.value = undefined;
       status.value = 'loading';
@@ -157,11 +168,16 @@ export function useAdmin(
       );
       if (!alive || own !== epoch || stamp !== sessionStamp(session)) return;
       entryProof.reset();
-      bootstrap.value = result;
+      if (JSON.stringify(bootstrap.value) !== JSON.stringify(result))
+        bootstrap.value = result;
       status.value = 'ready';
     } catch (cause) {
       if (alive && own === epoch && stamp === sessionStamp(session)) {
-        if (retainProof && adminFailure(cause).state === 'proof_required')
+        if (
+          retainPresentation &&
+          status.value === 'proof_required' &&
+          adminFailure(cause).state === 'proof_required'
+        )
           return;
         fail(cause);
       }
@@ -208,13 +224,13 @@ export function useAdmin(
     () => sessionStamp(session),
     () => {
       const currentIdentity = proofIdentity();
-      const retainProof =
+      const retainPresentation =
         !!currentIdentity &&
         currentIdentity === observedIdentity &&
-        status.value === 'proof_required';
+        (status.value === 'proof_required' || status.value === 'ready');
       observedIdentity = currentIdentity;
-      if (!retainProof) clear();
-      void readBootstrap(retainProof);
+      if (!retainPresentation) clear();
+      void readBootstrap(retainPresentation);
     },
     { immediate: true, flush: 'sync' },
   );

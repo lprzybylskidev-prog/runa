@@ -37,7 +37,11 @@ import { pageOwners } from './pageContext';
 import { navigationGuards, pageRuntime } from './runtime';
 import type { NavigationGuard } from './runtime';
 import { resolveAdminComponent } from './components';
-import { refuseAdmin, sessionStamp } from './useAdmin';
+import {
+  refuseAdmin,
+  sessionStamp,
+  adminPresentationIdentity,
+} from './useAdmin';
 import { useAdminResource } from './useAdminResource';
 import { validateAdminField } from './fieldValidation';
 import { writeFailure } from './writeFailure';
@@ -362,7 +366,14 @@ export function useAdminForm(
     error.value = undefined;
     draft.markClean({});
   }
-  let identity = stamp();
+  const draftIdentity = () =>
+    JSON.stringify([
+      page.page.value?.owner,
+      page.page.value?.key,
+      admin && adminPresentationIdentity(admin.session),
+    ]);
+  let identity = draftIdentity(),
+    context = stamp();
   watch(
     [
       () => page.page.value,
@@ -370,7 +381,17 @@ export function useAdminForm(
       () => admin && sessionStamp(admin.session),
     ],
     () => {
-      const current = stamp();
+      const current = draftIdentity();
+      if (context !== stamp()) {
+        // Authority observations invalidate in-flight work/reviews, never replay a write.
+        ++epoch;
+        abort.abort();
+        abort = new AbortController();
+        runtime.busy.value = false;
+        confirm(false);
+        clearReviews();
+        context = stamp();
+      }
       if (identity !== current || page.state.value !== 'ready') {
         erase();
         subjectSelected = false;

@@ -220,6 +220,7 @@ Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/d
 - Do not use native browser validation when it conflicts with controlled application UX.
 - Rendered UI is the acceptance truth.
 - Accessibility is part of normal component review.
+- Views follow the public [readiness contract](docs/runa/handbook/development/frontend/loading.md): declare initial dependencies, refresh in place, bound optional image waits and clear protected content on identity/access loss.
 - Data views follow the public forms guide automatic read reconciliation: refresh in place, preserve dirty drafts, share aggregate mutation revisions, resolve overlapping changes locally and never silently replay writes or reinitialize edited forms.
 - TypeScript strict mode.
 - No `any` for known API payloads.

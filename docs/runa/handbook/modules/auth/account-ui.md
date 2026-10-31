@@ -56,7 +56,7 @@ and private avatar to both the top-bar trigger and dropdown identity. Successful
 own-profile reads after save/remove update both immediately through the session
 controller; revisioned URLs refresh replaced bytes. Initials remain the fallback
 when absent, disabled or unreadable. Profile reads are presentation-only, optional
-and do not block an otherwise valid shell or poll. They never grant access. Profile and CSRF-protected POST sign-out
+and never invalidate an otherwise valid session or poll. Initial shell presentation waits for bounded profile/preference settlement and avatar download/decode; later refreshes keep the existing shell/image visible. See [view readiness](../../development/frontend/loading.md). They never grant access. Profile and CSRF-protected POST sign-out
 share its existing user dropdown, with native links, keyboard/focus return and
 pending/failure feedback. Successful sign-out clears account state and safe drafts
 before navigating through `/`, so welcome policy determines the destination.
@@ -64,12 +64,13 @@ Back/refresh and direct entry recheck the server session. The entry page supplie
 account access, without speculative business statistics or management navigation.
 
 The supplied application/account shell uses ApplicationLayout width="fluid".
-It renders that shell immediately while the server session is checked. Account
+Before the first shell reveal it prepares session/profile/preferences and avatar,
+using the loading slot for a stable noninteractive placeholder. Account
 loading uses the existing Skeleton inside the four destination Cards, retaining
 that structure through account initialization instead of a spinner or a temporary
 MinimalLayout. Skeletons contain no identity values or interactive forms; protected
 content mounts only after session validation. Capability-dependent content is
-resolved from guarded reads. Loading failures expose retry without changing shells;
+resolved from guarded reads. Loading failures expose retry;
 expired/restricted sessions still enter AuthEntry. Existing loaded forms stay
 mounted during ordinary read refreshes. Notification preferences use skeleton rows
 inside their existing Card while their first read is pending.

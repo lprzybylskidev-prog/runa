@@ -30,10 +30,16 @@ const props = withDefaults(
 );
 const emit = defineEmits<{ retry: [] }>();
 const content = ref<globalThis.HTMLElement>();
-useContentMotion(content, () => props.state);
+useContentMotion(content, () =>
+  props.state === 'refreshing' ? 'success' : props.state,
+);
 </script>
 <template>
-  <div ref="content" :aria-busy="state === 'loading'" class="min-w-0">
+  <div
+    ref="content"
+    :aria-busy="state === 'loading' || state === 'refreshing'"
+    class="min-w-0"
+  >
     <div v-if="state === 'loading'">
       <slot name="loading"
         ><div class="flex items-center gap-3 py-6 text-sm text-muted">

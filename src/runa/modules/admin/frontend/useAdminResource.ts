@@ -79,10 +79,10 @@ export function useAdminResource(
       admin && sessionStamp(admin.session),
     ]);
   }
-  function invalidate() {
+  function invalidate(retain = false) {
     ++epoch;
     abort.abort();
-    result.value = undefined;
+    if (!retain) result.value = undefined;
     error.value = undefined;
     busy.value = false;
     status.value = 'ready';
@@ -266,6 +266,7 @@ export function useAdminResource(
       }
     }
   }
+  let previousProjection = page.page.value;
   const stop = watch(
     [
       () => page.page.value,
@@ -297,9 +298,14 @@ export function useAdminResource(
           runtime.busy.value = false;
         }
       }
+      const retain =
+        nextAccount === account &&
+        page.state.value === 'ready' &&
+        data === previousProjection;
+      previousProjection = data;
       account = nextAccount;
       if (nextPage) pageIdentity = nextPage;
-      invalidate();
+      invalidate(retain);
       if (lastQuery && page.state.value === 'ready') void read(lastQuery);
     },
     { flush: 'sync' },

@@ -3,7 +3,11 @@ import { ApiError, request } from '@/runa/http';
 import { useDirtyGuard } from '@/runa/ui';
 import type { AdminController, AdminJson } from './contracts';
 import { object } from './decode';
-import { refuseAdmin, sessionStamp } from './useAdmin';
+import {
+  refuseAdmin,
+  sessionStamp,
+  adminPresentationIdentity,
+} from './useAdmin';
 import { navigationGuards } from './runtime';
 
 export type AdminOperationView =
@@ -33,6 +37,7 @@ export type AdminOperationData = Record<string, AdminJson>;
 
 /** One write lane, explicit retries only, session fencing and guarded draft navigation. */
 export function useAdminOperations(admin: AdminController) {
+  const refreshing = ref(false);
   const busy = ref(false),
     dirty = ref(false),
     conflict = ref(false);
@@ -41,6 +46,7 @@ export function useAdminOperations(admin: AdminController) {
   const changed = ref(0),
     contextRevision = ref(0);
   const snapshot = shallowRef<AdminOperationData>();
+  let reading = false;
   let epoch = 0,
     alive = true,
     abort = new AbortController();
@@ -75,9 +81,18 @@ export function useAdminOperations(admin: AdminController) {
     write: boolean,
   ): Promise<AdminOperationData | undefined> {
     if (!alive || busy.value || admin.state.value !== 'ready') return;
+    if (reading) {
+      if (!write) return;
+      // A deliberate write supersedes an optional read; neither is replayed.
+      epoch++;
+      abort.abort();
+      abort = new AbortController();
+    }
     const own = epoch,
       context = stamp();
-    busy.value = true;
+    reading = !write;
+    refreshing.value = !write;
+    busy.value = write;
     error.value = '';
     try {
       const query: Record<string, string | number> = {};
@@ -141,7 +156,11 @@ export function useAdminOperations(admin: AdminController) {
           ? 'State changed or the operation could not complete. Refresh and review before another explicit attempt.'
           : 'The operation could not be completed. Check your authority and input.';
     } finally {
-      if (own === epoch) busy.value = false;
+      if (own === epoch) {
+        busy.value = false;
+        reading = false;
+        refreshing.value = false;
+      }
     }
   }
   const read = (view: AdminOperationView, input: AdminOperationData = {}) =>
@@ -168,21 +187,33 @@ export function useAdminOperations(admin: AdminController) {
     const next = await read('diagnostics', { filter });
     if (next && own === epoch && alive) snapshot.value = next;
   }
+  const presentationIdentity = () =>
+    admin.state.value === 'ready'
+      ? adminPresentationIdentity(admin.session)
+      : null;
+  let observedIdentity = presentationIdentity();
   watch(
-    () => [stamp(), admin.state.value],
+    [stamp, () => admin.state.value],
     () => {
       epoch++;
       abort.abort();
       abort = new AbortController();
       busy.value = false;
-      snapshot.value = undefined;
-      error.value = '';
-      dirty.value = false;
-      conflict.value = false;
+      reading = false;
+      refreshing.value = false;
+      const nextIdentity = presentationIdentity();
+      if (!nextIdentity || nextIdentity !== observedIdentity) {
+        snapshot.value = undefined;
+        error.value = '';
+        dirty.value = false;
+        conflict.value = false;
+        contextRevision.value++;
+      }
+      observedIdentity = nextIdentity;
       changed.value++;
-      contextRevision.value++;
       confirm(false);
     },
+    { flush: 'sync' },
   );
   function click(event: MouseEvent) {
     if (
@@ -221,6 +252,7 @@ export function useAdminOperations(admin: AdminController) {
   });
   return {
     busy: computed(() => busy.value),
+    refreshing: computed(() => refreshing.value),
     dirty,
     conflict,
     error,

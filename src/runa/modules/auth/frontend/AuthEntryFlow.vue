@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import { provide } from 'vue';
+import { applicationSessionOwner } from '../../../resources/js/lib/applicationSession';
+import { usePreferencePending } from './preferences/usePreferencePending';
+import { useViewReadiness } from '@/runa/ui';
+import { initializePreferenceSession } from './preferences/session';
+provide(applicationSessionOwner, true);
+const preferencePending = usePreferencePending();
 import { computed, ref } from 'vue';
 import { useAuthPresentation } from './presentation';
 import {
@@ -26,6 +33,14 @@ const props = defineProps<{
   page: EntryPage;
   authenticated?: ((session: EntrySession) => void) | undefined;
 }>();
+// Login/security already read the session; other public entry pages hydrate once.
+const preferenceSessionSettled = ref(
+  ['login', 'security'].includes(props.page),
+);
+if (!preferenceSessionSettled.value)
+  void initializePreferenceSession().then(() => {
+    preferenceSessionSettled.value = true;
+  });
 const {
   t,
   options,
@@ -120,11 +135,19 @@ const submitLabel = computed(() => {
       : 'confirm') as EntryCopyKey,
   );
 });
+const readiness = useViewReadiness({
+  identity: () => 'auth-entry:' + props.page,
+  required: () =>
+    (ready.value || !!failure.value) &&
+    preferenceSessionSettled.value &&
+    !preferencePending.value,
+});
 </script>
 
 <template>
   <component
     :is="presentation.minimalLayout ?? MinimalLayout"
+    :readiness="readiness"
     :home-href="options?.public_welcome_enabled ? '/' : '/app'"
   >
     <section

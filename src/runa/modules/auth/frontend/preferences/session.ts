@@ -16,17 +16,30 @@ export const accountPreferences =
 bindPreferenceSession(accountPreferences);
 export const defaultPreferenceStore = accountPreferences.store;
 
-let initialized = false;
-export function initializePreferenceSession(): void {
-  if (!initialized) {
-    initialized = true;
-    void request('/runa/auth/session').catch((error: unknown) => {
-      if (!(
-        error instanceof RequestCancelledError ||
-        (error instanceof ApiError &&
-          [401, 403, 404, 503].includes(error.status))
-      ))
-        accountPreferences.reportLoadFailure();
-    });
-  }
+let initialization: Promise<void> | undefined;
+export function initializePreferenceSession(): Promise<void> {
+  return (initialization ??= (async () => {
+    try {
+      await request('/runa/auth/session', {
+        signal: AbortSignal.timeout(5000),
+      });
+      if (accountPreferences.status().pending)
+        await new Promise<void>((resolve) => {
+          const stop = accountPreferences.subscribeStatus(() => {
+            if (!accountPreferences.status().pending) {
+              stop();
+              resolve();
+            }
+          });
+        });
+    } catch (error) {
+      if (error instanceof RequestCancelledError) return;
+      if (
+        error instanceof ApiError &&
+        [401, 403, 404, 503].includes(error.status)
+      )
+        return;
+      accountPreferences.reportLoadFailure();
+    }
+  })());
 }

@@ -30,6 +30,7 @@ import AuthAccount from '../../../../src/runa/modules/auth/frontend/AuthAccount.
 import AuthWelcome from '../../../../src/runa/modules/auth/frontend/AuthWelcome.vue';
 import { useAuthAccount } from '../../../../src/runa/modules/auth/frontend/useAuthAccount';
 import AuthApplication from '../../../../src/runa/modules/auth/frontend/AuthApplication.vue';
+import { useAuthWelcome } from '../../../../src/runa/modules/auth/frontend/useAuthWelcome';
 import { useApplicationSession } from '../../../../src/runa/modules/auth/frontend/useApplicationSession';
 import {
   accountDraftEpoch,
@@ -385,7 +386,12 @@ it('account boundary diagnostic: welcome exposes registration only when enabled 
   expect(w.find('a[href="/auth/register"]').exists()).toBe(false);
   expect(
     w.findAll('main [role=img]').map((icon) => icon.attributes('aria-label')),
-  ).toEqual(['Audyt', 'Uwierzytelnianie', 'Uprawnienia']);
+  ).toEqual([
+    'Panel administratora',
+    'Audyt',
+    'Uwierzytelnianie',
+    'Uprawnienia',
+  ]);
   expect(w.find('header a[href="/auth/login"]').exists()).toBe(true);
   expect(w.find('main a[href="/auth/login"]').exists()).toBe(false);
   w.unmount();
@@ -1003,16 +1009,15 @@ it('shared avatar falls back on image errors and retries only when its source ch
     props: { src: '/missing-avatar-one.png', initials: 'TU', size: 40 },
   });
   expect(w.find('.avatar-skeleton').exists()).toBe(true);
-  expect(w.text()).toBe('');
-  await w.get('img').trigger('error');
-  expect(w.find('.avatar-skeleton').exists()).toBe(false);
+  await vi.waitFor(() => expect(w.text()).toBe('TU'));
   expect(w.find('img').exists()).toBe(false);
-  expect(w.text()).toBe('TU');
-  await w.setProps({ src: '/missing-avatar-two.png' });
-  expect(w.get('img').attributes('src')).toBe('/missing-avatar-two.png');
+  const src =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+  await w.setProps({ src });
+  await vi.waitFor(() => expect(w.find('img').exists()).toBe(true));
+  expect(w.get('img').attributes('src')).toBe(src);
+  expect(w.text()).toBe('');
   expect(w.get('img').attributes('alt')).toBe('');
-  expect(w.find('.avatar-skeleton').exists()).toBe(true);
-  await w.get('img').trigger('load');
   expect(w.find('.avatar-skeleton').exists()).toBe(false);
   expect(w.get('img').isVisible()).toBe(true);
 });
@@ -2329,46 +2334,43 @@ it('trusted management appears only while an active device exists and disappears
   expect(card.text()).not.toContain('Zarządzaj urządzeniami');
 });
 
-it('shell waits for optional profile metadata before showing avatar initials', async () => {
+it('shell reveals header and content together after profile hydration and retains them during background reads', async () => {
   const implementation = vi.mocked(window.fetch).getMockImplementation()!;
   let releaseProfile!: () => void;
-  const profileGate = new Promise<void>((resolve) => {
+  let profileGate = new Promise<void>((resolve) => {
     releaseProfile = resolve;
   });
   vi.mocked(window.fetch).mockImplementation(async (input, init) => {
     if (String(input).endsWith('/profile')) await profileGate;
     return implementation(input, init);
   });
-  const w = mount(AuthApplication, { props: { account: true } });
-  const shell = w.getComponent(ApplicationLayout);
-  await vi.waitFor(() => expect(w.find('.account-menu').exists()).toBe(false));
-  await vi.waitFor(() =>
-    expect(
-      w.find('button[aria-label^="Menu użytkownika"]').attributes('aria-label'),
-    ).toContain('Test User'),
-  );
-  expect(shell.props('userLoading')).toBe(true);
-  expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(true);
-  expect(
-    w.get('nav[aria-label="Ścieżka nawigacji"] a[href="/app"]').text(),
-  ).toBe('Aplikacja');
-  expect(
-    w.get('nav[aria-label="Ścieżka nawigacji"] [aria-current="page"]').text(),
-  ).toBe('Panel użytkownika');
-  await w.get('button[aria-label^="Menu użytkownika"]').trigger('click');
-  await vi.waitFor(() => expect(w.findAllComponents(Avatar)).toHaveLength(2));
-  expect(
-    w
-      .findAllComponents(Avatar)
-      .every((a) => a.find('.avatar-skeleton').exists()),
-  ).toBe(true);
+  const w = mount(AuthApplication, {
+    slots: { default: '<input aria-label="Draft" />' },
+    attachTo: document.body,
+  });
+  await flushPromises();
+  expect(w.findComponent(ApplicationLayout).exists()).toBe(false);
+  expect(w.find('input[aria-label="Draft"]').exists()).toBe(false);
   releaseProfile();
-  await vi.waitFor(() => expect(shell.props('userLoading')).toBe(false));
-  expect(
-    w
-      .findAllComponents(Avatar)
-      .every((a) => !a.find('.avatar-skeleton').exists()),
-  ).toBe(true);
+  await vi.waitFor(() =>
+    expect(w.findComponent(ApplicationLayout).exists()).toBe(true),
+  );
+  const shell = w.getComponent(ApplicationLayout).element;
+  const draft = w.get('input[aria-label="Draft"]');
+  await draft.setValue('Keep my work');
+  (draft.element as HTMLInputElement).focus();
+  profileGate = new Promise<void>((resolve) => {
+    releaseProfile = resolve;
+  });
+  document.dispatchEvent(new Event('visibilitychange'));
+  await flushPromises();
+  expect(w.getComponent(ApplicationLayout).element).toBe(shell);
+  expect(w.get('input[aria-label="Draft"]').element).toBe(draft.element);
+  expect(document.activeElement).toBe(draft.element);
+  releaseProfile();
+  await flushPromises();
+  expect((draft.element as HTMLInputElement).value).toBe('Keep my work');
+  expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(false);
 });
 
 it('reads delivery once per preference tab entry or account refresh while retaining external invalidation', async () => {
@@ -2694,4 +2696,29 @@ it('account orchestration: disposal aborts trusted reads and cannot repopulate a
   expect(replacement.profile.value?.public_id).toBe(other);
   expect(replacement.trustedRows.value).toEqual([]);
   expect(writes).toHaveLength(0);
+});
+
+it('welcome revalidation retains confirmed options while a background read fails', async () => {
+  const { state } = mountController(useAuthWelcome);
+  await vi.waitFor(() => expect(state.loading.value).toBe(false));
+  const previous = state.options.value;
+  let finish!: (value: Response) => void;
+  const fetch = vi.mocked(window.fetch).mockImplementation(
+    () =>
+      new Promise<Response>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  fetch.mockClear();
+  const pending = state.load();
+  expect(state.loading.value).toBe(false);
+  expect(state.refreshing.value).toBe(true);
+  expect(state.options.value).toBe(previous);
+  await state.load();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  finish(json('unavailable', 503));
+  await pending;
+  expect(state.failed.value).toBe(true);
+  expect(state.options.value).toBe(previous);
+  expect(state.refreshing.value).toBe(false);
 });

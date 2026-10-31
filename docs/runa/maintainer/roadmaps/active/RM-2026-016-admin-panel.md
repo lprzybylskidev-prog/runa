@@ -394,6 +394,19 @@ reassessment before resuming point 3; completed point history remains evidence.
     validation; recheck bootstrap in the background without weakening protected-read fences.
   - Cover delayed validation, denials, identity switches and late responses; update
     current contracts and prepare assets before returning to owner manual acceptance.
+- [x] 11a7. Unify initial presentation readiness and nondestructive revalidation.
+  - Owner-approved manual-acceptance repair: introduce one public, identity-scoped
+    readiness contract for supplied and future views; separate first reveal,
+    background reads, local mutations and immediate identity/access invalidation.
+  - Prepare session profile/preferences and downloaded/decoded avatar before the
+    application shell's first reveal; bound optional image waits with initials
+    fallback. Retain the same decoded image across dropdown mounts and refreshes.
+  - Audit supplied Auth/Admin/layout consumers; keep independent page/data-region
+    readiness and existing security/request epochs, dirty reconciliation and native
+    refusal behavior. Do not add another session owner or wait for every request.
+  - Synchronize public composition contracts and both instruction products, cover
+    delayed/error/identity-switch/background-read scenarios with focused checks,
+    and build runnable assets before repeating owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2183,3 +2196,66 @@ current local `/admin` returns HTTP 200. No broad suites/final release gate,
 DB reset or Docker cleanup was needed. Existing development services/data,
 model/knowledge caches and all verification/build evidence remain. Manual owner
 point 11b and final verification/release point 12 remain open.
+
+### Point 11a7 — Agreed loading/readiness repair
+
+The owner approved a common readiness model after observing that Application
+content appeared before the avatar. This extends the current Admin manual-acceptance
+repair: its shell and Auth dependencies own the observed behavior, with the same
+public contract available to future views. It is not a second active roadmap.
+Platform candidate 0.7.0 and the feature release decision remain unchanged.
+Initial reveal waits for declared essential presentation dependencies; optional
+presentation failures settle to usable defaults, while identity/access loss clears
+protected presentation immediately. Background reads preserve mounted content,
+focus and drafts; writes remain explicit and are never replayed. Heavy tables and
+optional widgets own separate readiness regions.
+
+Implemented the public UI-owned useViewReadiness/ViewBoundary contract and
+identity-scoped useImageReadiness with download+decode, 2.5-second fallback and
+shared shell/dropdown image ownership. Public layout props expose composition
+without requiring private injection or copied security logic. Optional profile
+and preference snapshots settle within five seconds; initial public branding/logo
+settles before root reveal. Subsequent reads keep mounted presentation and focus.
+
+Auth entry/welcome reuse existing session/preference reads instead of adding a
+layout session owner; delayed heading mount retains reading focus. The application
+shell waits for initial profile/preferences/avatar, retains its loading slot and
+clears protected content on account/session invalidation. Admin bootstrap/page
+revalidation retains unchanged descriptors and draft presentation while strict
+authority stamps continue fencing old responses/reviews. Tables retain filters
+for the same identity and reset cursor/selection intent. Operational reads expose
+refreshing separately from write busy, keep editors available and cannot overwrite
+an edit made while an explicit reload was pending. A deliberate write can
+supersede an optional read; neither is replayed. Real access/context loss clears
+protected state and draft ownership.
+
+The canonical frontend loading guide records complete public signatures, ownership,
+optional-fallback bounds, supplied-view audit and future App/module requirements.
+Components/layout/customization/motion, Auth account and Admin guides and both
+module candidate changelogs are synchronized. Root/customer AGENTS and both
+frontend pattern references link the same contract. Other domain skills/customer
+backend guidance need no changes: backend APIs, grants, transactions, storage and
+operators are unchanged. Auth remains the unreleased 2.0.0 candidate (including
+new frontend refreshing), Admin its 0.1.0 creation candidate; Permissions/Audit
+versions and native upgrade edges are unchanged. The additive UI contract remains
+within the approved platform feature candidate 0.7.0; no dependency was added.
+
+Necessary focused browser regressions cover cold/decoded/failed/timed-out images,
+shared image ownership, same-identity refresh focus/drafts, initial preference
+hydration without duplicate sessions, explicit retry, stale/foreign responses,
+Admin admission/protected refresh, filters, operational edits/write supersession
+and actual account/access loss. The final focused run passed 29 tests across five
+files (329 tests excluded), native exit 0 and cleanup 0. Earlier targeted runs
+also covered entry restrictions, CSRF refusal, explicit token handling and layout
+replacement. The affected welcome test's obsolete three-module catalogue
+expectation was updated to include the already delivered Admin module. Failed
+native reports/screenshots remain preserved alongside successful evidence.
+
+The prepared-asset build passed Vue TypeScript, Vite and native/static error-shell
+rendering; log: .runtime/frontend/RM-2026-016-readiness-build.log. Nginx returned
+200 for /admin and /auth/login; the served Admin document references the current
+build and every entry-linked asset returned 200. This is local handover readiness,
+not authenticated owner acceptance or a full quality PASS. Full suites/gates and
+release closure remain point 12, after explicit owner acceptance in 11b. No Docker
+resources, database changes or destructive operations were needed; development
+services/data, caches and reports are preserved.
