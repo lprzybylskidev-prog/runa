@@ -4,6 +4,7 @@ namespace Runa\Http;
 
 use Illuminate\Http\Request;
 use Runa\Identity\ApplicationIdentity;
+use Runa\Support\Settings\ApplicationPresentation;
 
 final class HttpErrorPage
 {
@@ -18,9 +19,11 @@ final class HttpErrorPage
         $identity = app(ApplicationIdentity::class);
         $id = $request->attributes->get('request_id');
 
+        $presentation = app(ApplicationPresentation::class)->read();
+
         return $this->data($status, $locale, in_array($theme, ['light', 'dark'], true) ? $theme : 'system',
-            $identity->applicationName, $identity->applicationVersion,
-            $identity->platformVersion, is_string($id) ? $id : '');
+            $presentation['name'], $identity->applicationVersion,
+            $identity->platformVersion, is_string($id) ? $id : '') + ['logo' => $presentation['logo']];
     }
 
     /** @return array<string, mixed> */

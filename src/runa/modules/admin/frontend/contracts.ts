@@ -149,6 +149,7 @@ export type AdminComponentRegistry = Readonly<
 export interface AdminPresentation {
   operations?: Component;
   operationalEditor?: Component;
+  applicationSettings?: Component;
   layout?: Component;
   page?: Component;
   section?: Component;

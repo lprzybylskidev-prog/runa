@@ -24,6 +24,8 @@ use Runa\Support\Modules\Events\ModuleEvents;
 use Runa\Support\Modules\Frontend\ModuleFrontend;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Work\ModuleWork;
+use Runa\Support\Settings\ApplicationPresentation;
+use Runa\Support\Settings\ApplicationSettings;
 
 /** Development-only source inspection using the existing analysis toolchain. No application boot. */
 final class ApiSourceCheck
@@ -111,7 +113,7 @@ final class ApiSourceCheck
                     continue;
                 }
                 // Adapter construction is container-owned; DTO and declaration constructors are public.
-                if ($member->name->toString() === '__construct' && in_array($symbol, [ModuleApis::class, ModuleFrontend::class, ModuleEvents::class, ModuleSettings::class, ModuleWork::class, ModuleTransactions::class], true)) {
+                if ($member->name->toString() === '__construct' && in_array($symbol, [ModuleApis::class, ModuleFrontend::class, ModuleEvents::class, ModuleSettings::class, ModuleWork::class, ModuleTransactions::class, ApplicationSettings::class, ApplicationPresentation::class], true)) {
                     continue;
                 }
                 $documentation .= "\n".(string) $member->getDocComment();

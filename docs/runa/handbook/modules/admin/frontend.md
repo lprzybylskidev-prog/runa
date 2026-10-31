@@ -15,8 +15,7 @@ useAdminResource/useAdminTable and validateAdminField. Source home is
 Record forms execute explicit independent commands or compatible native atomic
 preview/Save through the shared form owner. Point 6 delivers server coordination
 and initial profile/access record adapters. Point 9 delivers operational dashboard,
-module settings, lifecycle and work controls. Application global settings retain
-point 10. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
+module settings, lifecycle and work controls. Point 10 delivers application global settings and runtime branding. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
 
 ## Controllers and public types
 
@@ -861,3 +860,43 @@ review. Changing the intent/target discards it; Apply confirms the reviewed inpu
 and native execution rechecks it. Pending/recovery/failed results remain visible.
 Retained operation UUID controls invoke only native status/resume/cancel/recover;
 maintenance/update/Core failure still blocks all protected HTTP.
+
+## Application global settings and runtime branding
+
+`AdminApplicationSettings({controller: AdminOperationsController})` is the English
+default editor. Its default slot receives `{controller: AdminApplicationSettingsController}`;
+its exposed `settings` is the same controller. Replace it through
+`AdminPresentation.applicationSettings`, or use the public
+`useAdminApplicationSettings(operations: AdminOperationsController)` once in an
+App-owned component. All symbols/types are exported from `@/runa/admin`.
+Source home: `src/runa/modules/admin/frontend`; App replacements stay in App.
+
+The controller returns `operations`, `revision: Ref<number>`,
+`fields: ShallowRef<AdminApplicationSetting[]>`, `base/draft: Ref<Record<string,
+string|number|boolean|null>>`, `dirty/valid: ComputedRef<boolean>`,
+`conflicts: Ref<Set<string>>`, `invalid: Ref<string>`, `loaded/saved: Ref<boolean>`,
+`refresh(): Promise<void>`, `edit(key, value): void`,
+`resolve(key, keepDraft): void`, `save(): Promise<void>`.
+Each field has `key,title,type,maxLength,choices,writable`; definitions and values
+are server-authorized. Disable controls while operations are busy. Show invalid,
+operation error/conflict and saved feedback; never infer write authority from the
+presence of a field. Null/reset restores its source default. No technical settings
+or asset upload control is supplied.
+
+Reuse the passed operational controller rather than creating another session or
+write lane. Refresh merges disjoint reads, preserves dirty edits and exposes
+same-field overlaps with the current value. Resolve each overlap locally before
+Save. A failed/stale write retains drafts and is never replayed. Account/authority
+changes clear settings and fence late responses. The dashboard switches editors
+through the existing dirty-navigation confirmation. Full App replacement retains
+these protocols; it does not copy private session/security code.
+
+`@/runa/ui` also exports the public `ApplicationPresentation` type
+`{name,logo,revision}` and `loadApplicationPresentation(signal?: AbortSignal):
+Promise<ApplicationPresentation | undefined>`. Failure returns undefined so a
+consumer can restore source defaults. `createApplication` hydrates presentation
+separately from canonical identity and refreshes after application-setting writes,
+Auth session changes and focus/visibility/history navigation. Per-app epochs cancel
+older reads; unmount cleans observers/listeners. It never stores branding in guest
+preferences or changes canonical IDs/versions. Custom roots may use the same loader
+and IdentityProvider; retain lifecycle fencing and source fallback.

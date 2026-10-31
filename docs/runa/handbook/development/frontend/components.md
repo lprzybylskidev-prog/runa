@@ -418,3 +418,10 @@ Their typed props/slots/controller and replacement keys are documented in
 [operational dashboard composition](../../modules/admin/frontend.md#operational-dashboard-and-replacements).
 They reuse shared controls and retain native lifecycle, settings and cooperative
 work outcomes; no copied session/proof or foreign engine logic belongs in App views.
+
+Application settings reuse those primitives through public `AdminApplicationSettings`
+and `useAdminApplicationSettings`, with per-field authority, source reset and dirty
+read reconciliation. Replace `AdminPresentation.applicationSettings` using the
+[controller contract](../../modules/admin/frontend.md#application-global-settings-and-runtime-branding).
+The shared shell's public presentation loader and IdentityProvider apply runtime
+branding without changing canonical identity.

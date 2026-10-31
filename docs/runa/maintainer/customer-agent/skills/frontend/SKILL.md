@@ -66,3 +66,8 @@ For operational dashboard/editor replacements, follow
 `docs/runa/handbook/modules/admin/frontend.md#operational-dashboard-and-replacements`
 and the owning fixed operation catalogue. Keep the shared controller's session,
 dirty-draft, explicit retry and native pending/recovery semantics in App composition.
+
+For application settings and runtime branding composition, follow
+`docs/runa/handbook/modules/admin/frontend.md#application-global-settings-and-runtime-branding`
+and its owning settings contract. Use public App registration/adapters and shared
+controllers; preserve canonical identity and technical/source policy ownership.

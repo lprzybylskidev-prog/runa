@@ -185,7 +185,12 @@
     "Runa\\Modules\\Auth\\Contracts\\AdministrativeUser",
     "Runa\\Modules\\Auth\\Contracts\\AuthAdministration",
     "Runa\\Modules\\Auth\\Contracts\\UserDirectoryPage",
-    "Runa\\Modules\\Auth\\Contracts\\UserDirectoryQuery"
+    "Runa\\Modules\\Auth\\Contracts\\UserDirectoryQuery",
+    "Runa\\Contracts\\Settings\\ApplicationSetting",
+    "Runa\\Contracts\\Settings\\ApplicationLogo",
+    "Runa\\Contracts\\Settings\\ApplicationSettingProvider",
+    "Runa\\Support\\Settings\\ApplicationSettings",
+    "Runa\\Support\\Settings\\ApplicationPresentation"
   ],
   "reserved": {
     "Runa\\Contracts\\Modules\\AuthRequestThrottle": [

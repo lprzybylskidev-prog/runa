@@ -15,6 +15,7 @@ import type {
   AdminOperationData,
   AdminOperationCommand,
 } from './useAdminOperations';
+import AdminApplicationSettings from './AdminApplicationSettings.vue';
 import AdminOperationalEditor from './AdminOperationalEditor.vue';
 import { useAdminPresentation } from './presentation';
 const props = defineProps<{ admin: AdminController }>();
@@ -24,6 +25,12 @@ const capabilities = ref<string[]>([]),
   filter = ref('enabled');
 const moduleInput = ref(''),
   selected = ref('');
+const applicationSettings = ref(false);
+async function showApplicationSettings() {
+  if (!(await controller.beforeLeave())) return;
+  applicationSettings.value = !applicationSettings.value;
+  editor.value = undefined;
+}
 const editor = ref<'settings' | 'health' | 'integrations'>();
 const work = shallowRef<AdminOperationData>();
 const preview = shallowRef<AdminOperationData>();
@@ -131,6 +138,7 @@ async function readWork() {
 watch(
   () => [controller.contextRevision.value, props.admin.state.value],
   async () => {
+    applicationSettings.value = false;
     capabilities.value = [];
     selected.value = '';
     moduleInput.value = '';
@@ -170,7 +178,20 @@ function format(value: AdminJson | undefined) {
       <Alert v-if="controller.error.value" tone="warning">{{
         controller.error.value
       }}</Alert>
-      <Card v-if="has('diagnostics.read')">
+      <Button
+        :disabled="controller.busy.value"
+        @click="showApplicationSettings"
+        >{{
+          applicationSettings ? 'Back to operations' : 'Application settings'
+        }}</Button
+      >
+      <Card v-if="applicationSettings">
+        <component
+          :is="presentation.applicationSettings ?? AdminApplicationSettings"
+          :controller="controller"
+        />
+      </Card>
+      <Card v-if="!applicationSettings && has('diagnostics.read')">
         <template #header><h2>Runtime and module health</h2></template>
         <div class="space-y-4">
           <div class="flex flex-wrap items-end gap-3">
@@ -243,7 +264,7 @@ function format(value: AdminJson | undefined) {
           </ul>
         </div>
       </Card>
-      <Card v-if="capabilities.length">
+      <Card v-if="!applicationSettings && capabilities.length">
         <template #header><h2>Module operations</h2></template>
         <div class="space-y-4">
           <div class="flex flex-wrap items-end gap-3">

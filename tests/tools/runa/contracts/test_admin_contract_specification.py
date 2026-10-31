@@ -130,3 +130,18 @@ if ($slot->jsonSerialize()['schemaVersion'] !== 1) exit(4);
         str(FIXTURES / "legacy-consumer.php"),
     )
     assert result.returncode == 0, result.stderr
+
+
+def test_application_settings_container_adapters_do_not_export_internal_constructor_dependencies() -> (
+    None
+):
+    result = php(
+        r"""
+$check = new Runa\Development\ApiSourceCheck;
+foreach (['ApplicationSettings', 'ApplicationPresentation'] as $adapter) {
+    $path = 'src/runa/Support/Settings/'.$adapter.'.php';
+    if ($check->signatures(file_get_contents($argv[1].'/'.$path), $path) !== []) exit(1);
+}
+"""
+    )
+    assert result.returncode == 0, result.stderr

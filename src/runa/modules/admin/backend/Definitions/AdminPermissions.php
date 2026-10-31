@@ -10,6 +10,8 @@ final class AdminPermissions implements ManagementProvider
     public function permissions(): array
     {
         return [
+            new ManagementPermission('application.read', ['pl' => 'Odczyt ustawień aplikacji', 'en' => 'Read application settings'], ['pl' => 'Odczyt prezentacji aplikacji.', 'en' => 'Read application presentation settings.']),
+            new ManagementPermission('application.manage', ['pl' => 'Zmiana ustawień aplikacji', 'en' => 'Manage application settings'], ['pl' => 'Zmiana prezentacji aplikacji.', 'en' => 'Manage application presentation settings.']),
             new ManagementPermission('enter', ['pl' => 'Wejście do administracji', 'en' => 'Enter administration'], ['pl' => 'Wejście do administracji.', 'en' => 'Enter administration.']),
             new ManagementPermission('diagnostics.read', ['pl' => 'Odczyt diagnostyki', 'en' => 'Read diagnostics'], ['pl' => 'Odczyt diagnostyki.', 'en' => 'Read diagnostics.']),
             new ManagementPermission('health.diagnose', ['pl' => 'Diagnostyka modułów', 'en' => 'Diagnose modules'], ['pl' => 'Diagnostyka modułów.', 'en' => 'Diagnose modules.']),

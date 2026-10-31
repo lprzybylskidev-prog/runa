@@ -1,5 +1,6 @@
 <?php
 
+use App\Settings\PointTenFixture\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Http\Request;
@@ -13,9 +14,12 @@ use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\Preparation;
 use Runa\Contracts\Modules\PreparationParticipant;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\Http\HttpErrorPage;
+use Runa\Identity\ApplicationIdentity;
 use Runa\Integration\Core\AdminDiagnostics;
 use Runa\Integration\Core\AdminHttpGuard;
 use Runa\Integration\Core\AdminOperationalAuthority;
+use Runa\Mail\MailBranding;
 use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\Api\ModuleHttp;
 use Runa\ModuleFramework\Api\OperationGuard;
@@ -49,6 +53,7 @@ use Runa\Modules\Permissions\Actions\ChangeAssignments;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
 use Runa\Runtime\MaintenanceState;
+use Runa\Settings\SettingRegistry;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Data\ModuleTransactions;
@@ -1466,5 +1471,130 @@ it('rechecks native publication authority after a lifecycle hook and unwinds req
         expect(app(ModuleRegistry::class)->snapshot()->modules[$fixture->id]->enabled)->toBeTrue();
     } finally {
         $fixture->remove();
+    }
+});
+
+it('persists application presentation with owning grants revisions and atomic redacted Audit', function (): void {
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    $before = DB::table('shared.application_settings')->where('singleton', 1)->first();
+    $canonical = $this->getJson('/api/identity')->assertOk()->json('data');
+    try {
+        $this->getJson('/api/admin/operations/application')->assertOk()->assertJsonPath('data.values', []);
+        $this->postJson('/api/admin/operations/application.update', ['revision' => (int) $before->revision, 'patch' => ['presentation.name' => 'Atlas']])->assertForbidden();
+        ($this->adminGrant)('runa.admin.application.read');
+        expect($this->getJson('/api/admin/operations/application')->assertOk()->json('data.definitions')['presentation.name']['writable'])->toBeFalse();
+        ($this->adminGrant)('runa.admin.application.manage');
+        $write = fn (array $patch, int $revision) => $this->postJson('/api/admin/operations/application.update', ['revision' => $revision, 'patch' => $patch]);
+        $revision = (int) $before->revision;
+        $write(['presentation.name' => 'Atlas'], $revision)->assertOk()->assertJsonPath('data.revision', $revision + 1);
+        $this->getJson('/api/presentation')->assertOk()->assertHeader('Cache-Control', 'no-store, private')->assertJsonPath('data.name', 'Atlas')->assertJsonPath('data.revision', $revision + 1);
+        $this->getJson('/api/admin')->assertOk()->assertJsonPath('data.presentation.name', 'Atlas');
+        expect(app(MailBranding::class)->name())->toBe('Atlas');
+        expect(app(HttpErrorPage::class)->forRequest(404, Request::create('/missing'))['name'])->toBe('Atlas');
+        expect($this->getJson('/api/identity')->assertOk()->json('data'))->toBe($canonical);
+        $event = DB::table('runa_audit.events')->where('action', 'application.settings.changed')->orderByDesc('id')->first();
+        expect($event->actor_public_id)->toBe($this->adminUser->public_id)
+            ->and($event->context)->toContain('presentation.name')->not->toContain('Atlas')
+            ->and(json_decode($event->changes, true))->toBe([]);
+        $write(['presentation.name' => 'Stale'], $revision)->assertConflict();
+        $write(['APP_KEY' => 'forbidden'], $revision + 1)->assertForbidden();
+        $write(['presentation.name' => 12], $revision + 1)->assertUnprocessable();
+        $write(['presentation.logo' => 'https://invalid.test/logo.png'], $revision + 1)->assertUnprocessable();
+        $this->postJson('/api/admin/operations/application.update', ['revision' => $revision + 1, 'patch' => ['presentation.name' => 'Forged'], 'actor' => $this->adminUser->public_id])->assertUnprocessable();
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT application_settings_audit_refusal CHECK (action <> 'application.settings.changed') NOT VALID");
+        try {
+            $write(['presentation.name' => 'Refused'], $revision + 1)->assertServiceUnavailable()->assertJsonPath('reason', 'application_settings_audit_unavailable');
+        } finally {
+            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT application_settings_audit_refusal');
+        }
+        $this->getJson('/api/presentation')->assertOk()->assertJsonPath('data.name', 'Atlas')->assertJsonPath('data.revision', $revision + 1);
+        $write(['presentation.name' => null], $revision + 1)->assertOk();
+        $this->getJson('/api/presentation')->assertOk()->assertJsonPath('data.name', $canonical['applicationName']);
+        $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.admin.application.manage')->value('id');
+        DB::table('runa_permissions.user_permissions')->where('permission_id', $permission)->delete();
+        $write(['presentation.name' => 'Revoked'], $revision + 2)->assertForbidden();
+    } finally {
+        DB::table('shared.application_settings')->where('singleton', 1)->update(['values' => $before->values, 'revision' => $before->revision, 'updated_at' => $before->updated_at]);
+    }
+});
+
+it('falls back publicly on missing application storage while protected settings fail closed without creating it', function (): void {
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminGrant)('runa.admin.application.read');
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    $name = app(ApplicationIdentity::class)->applicationName;
+    DB::statement('ALTER TABLE shared.application_settings RENAME TO application_settings_point_ten_unavailable');
+    try {
+        $this->getJson('/api/presentation')->assertOk()->assertJsonPath('data.name', $name)->assertJsonPath('data.revision', 0);
+        $this->getJson('/api/admin/operations/application')->assertServiceUnavailable();
+        expect(app(MailBranding::class)->name())->toBe($name);
+        expect(app(HttpErrorPage::class)->forRequest(503, Request::create('/missing'))['name'])->toBe($name);
+        expect(DB::selectOne("SELECT to_regclass('shared.application_settings') AS name")->name)->toBeNull();
+    } finally {
+        DB::statement('ALTER TABLE shared.application_settings_point_ten_unavailable RENAME TO application_settings');
+    }
+});
+
+it('accepts only App owned frozen setting catalogues and source logo keys with safe fallbacks', function (): void {
+    $directory = app_path('Settings/PointTenFixture');
+    $asset = public_path('__point_ten_logo.png');
+    if (file_exists($directory) || file_exists($asset)) {
+        throw new RuntimeException('Application settings fixture refuses existing source or asset.');
+    }
+    File::ensureDirectoryExists($directory);
+    file_put_contents($directory.'/Settings.php', <<<'SOURCE'
+<?php
+namespace App\Settings\PointTenFixture;
+final class Settings implements \Runa\Contracts\Settings\ApplicationSettingProvider
+{
+    public function settings(): array
+    {
+        return [
+            new \Runa\Contracts\Settings\ApplicationSetting('business.label', 'string', 'Default business label', 'Business label', 'runa.admin.application.read', 'runa.admin.application.manage', 100),
+            new \Runa\Contracts\Settings\ApplicationSetting('business.hidden', 'string', 'Private default', 'Hidden label', 'runa.auth.profile.read', 'runa.auth.profile.edit', 100),
+        ];
+    }
+    public function logos(): array
+    {
+        return [new \Runa\Contracts\Settings\ApplicationLogo('atlas', '/__point_ten_logo.png', 'Atlas logo')];
+    }
+}
+SOURCE);
+    require_once $directory.'/Settings.php';
+    copy(base_path('runa/resources/images/runa-mail-logo.png'), $asset);
+    $before = DB::table('shared.application_settings')->where('singleton', 1)->first();
+    try {
+        $registry = new SettingRegistry(app(ApplicationManagement::class));
+        $provider = new Settings;
+        $registry->register($provider);
+        expect(fn () => $registry->register($provider))->toThrow(InvalidArgumentException::class);
+        app()->instance(SettingRegistry::class, $registry);
+        $registry->freeze();
+        expect(fn () => $registry->register($provider))->toThrow(InvalidArgumentException::class);
+        ($this->adminGrant)('runa.admin.enter');
+        ($this->adminGrant)('runa.admin.application.read');
+        ($this->adminGrant)('runa.admin.application.manage');
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        $read = $this->getJson('/api/admin/operations/application')->assertOk();
+        expect($read->json('data.values'))->toHaveKey('business.label')->not->toHaveKey('business.hidden');
+        expect($read->json('data.definitions'))->not->toHaveKey('business.hidden');
+        $revision = (int) $before->revision;
+        $this->postJson('/api/admin/operations/application.update', ['revision' => $revision, 'patch' => ['presentation.logo' => 'atlas', 'business.label' => 'Published business label']])->assertOk();
+        $this->getJson('/api/presentation')->assertOk()->assertJsonPath('data.logo.src', '/__point_ten_logo.png')->assertJsonMissing(['business.label' => 'Published business label']);
+        expect(app(MailBranding::class)->logo())->toStartWith('cid:');
+        expect(app(HttpErrorPage::class)->forRequest(404, Request::create('/missing'))['logo']['src'])->toBe('/__point_ten_logo.png');
+        // A new source catalogue can remove an asset without deleting persisted selections.
+        $replacement = new SettingRegistry(app(ApplicationManagement::class));
+        app()->instance(SettingRegistry::class, $replacement);
+        $this->getJson('/api/presentation')->assertOk()->assertJsonPath('data.logo', app(ApplicationIdentity::class)->logo);
+        expect(DB::table('shared.application_settings')->where('singleton', 1)->value('values'))->toContain('atlas', 'Published business label');
+    } finally {
+        DB::table('shared.application_settings')->where('singleton', 1)->update(['values' => $before->values, 'revision' => $before->revision, 'updated_at' => $before->updated_at]);
+        File::deleteDirectory($directory);
+        unlink($asset);
     }
 });

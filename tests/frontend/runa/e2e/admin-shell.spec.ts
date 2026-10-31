@@ -787,3 +787,112 @@ test('Admin operations: persisted health, explicit cooperative cancellation and 
     });
   }
 });
+
+test('application global settings compose responsive light and dark defaults with explicit source reset', async ({
+  page,
+}, info) => {
+  await transport(page);
+  let name: string | null = null,
+    revision = 1;
+  await page.route('**/api/admin/operations/**', async (route) => {
+    const operation = new URL(route.request().url()).pathname.split('/').at(-1);
+    let data: unknown = {
+      capabilities: ['application.read', 'application.manage'],
+    };
+    if (operation === 'application.update') {
+      const input = route.request().postDataJSON();
+      expect(input.revision).toBe(revision);
+      name = input.patch['presentation.name'];
+      revision++;
+    }
+    if (operation === 'application' || operation === 'application.update')
+      data = {
+        revision,
+        values: { 'presentation.name': name },
+        definitions: {
+          'presentation.name': {
+            title: 'Displayed application name',
+            type: 'string',
+            max_length: 160,
+            choices: [],
+            writable: true,
+          },
+        },
+      };
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ data }),
+    });
+  });
+  await page.route('**/api/presentation', async (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        data: { name: name ?? 'Runa', logo: null, revision },
+      }),
+    }),
+  );
+  for (const [width, height, theme] of [
+    [1440, 1000, 'light'],
+    [820, 1180, 'dark'],
+    [390, 844, 'light'],
+    [390, 844, 'dark'],
+  ] as const) {
+    await page.setViewportSize({ width, height });
+    await page.addInitScript((theme) => {
+      localStorage.setItem('runa.theme', theme);
+    }, theme);
+    await page.goto('/admin');
+    const password = page.getByLabel('Current password', { exact: true });
+    await expect(
+      password.or(
+        page.getByRole('heading', { name: 'Administration', exact: true }),
+      ),
+    ).toBeVisible();
+    if (await password.count()) {
+      await password.fill('Example test password');
+      await page
+        .getByRole('button', { name: 'Confirm password', exact: true })
+        .click();
+    }
+    await page
+      .getByRole('button', { name: 'Application settings', exact: true })
+      .click();
+    await page
+      .getByLabel('Displayed application name', { exact: true })
+      .fill('Runtime Atlas');
+    await page
+      .getByRole('button', { name: 'Save application settings', exact: true })
+      .click();
+    await expect(
+      page.getByText('Application settings saved.', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByLabel('Displayed application name', { exact: true }),
+    ).toHaveValue('Runtime Atlas');
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: info.outputPath(`application-settings-${width}-${theme}.png`),
+      fullPage: true,
+    });
+    await page
+      .getByRole('button', {
+        name: 'Reset Displayed application name',
+        exact: true,
+      })
+      .click();
+    await page
+      .getByRole('button', { name: 'Save application settings', exact: true })
+      .click();
+    await expect(
+      page.getByText('Application settings saved.', { exact: true }),
+    ).toBeVisible();
+    expect(name).toBeNull();
+  }
+});

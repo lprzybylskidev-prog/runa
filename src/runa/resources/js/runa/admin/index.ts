@@ -35,3 +35,10 @@ export type {
 } from '../../../../modules/admin/frontend/useAdminOperations';
 
 export { default as AdminOperationResult } from '../../../../modules/admin/frontend/AdminOperationResult.vue';
+
+export { default as AdminApplicationSettings } from '../../../../modules/admin/frontend/AdminApplicationSettings.vue';
+export { useAdminApplicationSettings } from '../../../../modules/admin/frontend/useAdminApplicationSettings';
+export type {
+  AdminApplicationSetting,
+  AdminApplicationSettingsController,
+} from '../../../../modules/admin/frontend/useAdminApplicationSettings';

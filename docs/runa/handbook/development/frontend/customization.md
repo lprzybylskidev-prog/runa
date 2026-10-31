@@ -18,7 +18,7 @@ When welcome is enabled, the default `/app` has Home / Application breadcrumbs a
 `main.ts` imports the shared CSS through `@/runa/ui/styles.css` and mounts
 `createApplication(App)` from `@/runa/ui`. This public helper returns a Vue App,
 so customers can install their own plugins before mounting. It hydrates public
-identity without delaying rendering; failed requests retain manifest defaults.
+identity and public presentation without delaying rendering; failed requests retain source defaults. Runtime name/logo overrides use the [application settings contract](../../modules/admin/operations.md#application-settings-contracts-and-storage) and [public loader/controller seams](../../modules/admin/frontend.md#application-global-settings-and-runtime-branding).
 
 The retained application files are manifest/dependency files, the HTML entry,
 Vue root/bootstrap, named welcome route, provider/seed/test/config extension
@@ -28,8 +28,8 @@ Runa; no forwarding application controller is needed. `src/app/config/branding.p
 is an optional presentation override (empty by default).
 
 Customers own `src/app/resources/index.html` metadata, their own assets/styles,
-route wiring and added pages/components. Application identity/version/logo belongs
-in `src/app/application.json`; platform version remains independent. Theme tokens
+route wiring and added pages/components. Canonical application identity/version and source logo defaults belong
+in `src/app/application.json`; approved runtime displayed-name/logo selection belongs in application settings; platform version remains independent. Theme tokens
 come from the shared CSS; add application CSS after that import. Tailwind scans
 application resources/modules and platform source. Keep complete utility names
 statically discoverable. See [branding/layouts](../../architecture/frontend.md).

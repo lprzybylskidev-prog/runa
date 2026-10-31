@@ -48,13 +48,21 @@ await writeFile(
 for (const locale of ['pl', 'en']) {
   for (const theme of ['system', 'light', 'dark']) {
     for (const [status, code] of Object.entries(codes)) {
-      for (const variant of ['runa', 'custom']) {
+      for (const variant of ['runa', 'custom', 'presentation']) {
         const identity = {
           applicationId: variant,
           applicationName:
             variant === 'runa' ? 'Runa' : '__RUNA_APPLICATION_NAME__',
           applicationVersion: '__RUNA_APPLICATION_VERSION__',
           platformVersion: '__RUNA_PLATFORM_VERSION__',
+          ...(variant === 'presentation'
+            ? {
+                logo: {
+                  src: '/__RUNA_APPLICATION_LOGO__.png',
+                  accessibleName: '__RUNA_APPLICATION_LOGO_ALT__',
+                },
+              }
+            : {}),
         };
         const app = createSSRApp({
           render: () =>

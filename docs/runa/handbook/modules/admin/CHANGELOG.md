@@ -1,6 +1,8 @@
 # Admin module changelog
 
-## 0.1.0 — 2026-10-30
+## 0.1.0 — 2026-10-31
+
+- Deliver platform-owned application global settings with App-declared safe values/assets, positive revisions, exact grants and atomic redacted Audit; add no-restart public browser/mail/native-error presentation with source-only emergency fallback and replaceable shared-controller editor.
 
 - Deliver guarded operational dashboard, Optional lifecycle review/status/recovery, module settings/integrations/health/work controls and public replacement/controller seams; preserve CLI-only maintenance and native independent runners.
 

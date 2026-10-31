@@ -32,7 +32,7 @@ User-facing UI:
 - Polish is the default language.
 - English is the secondary language.
 
-Any future administration panel is English-only. This release supplies no Admin UI.
+The supplied administration panel is English-only; see the [Admin contract](../modules/admin/README.md) for delivered source and final acceptance status.
 
 Backend, tooling, logs, source code, and documentation remain English-only.
 
@@ -466,3 +466,19 @@ language/theme controls while retaining the default identity/header. Welcome pla
 sign-in, policy-dependent registration and authenticated entry here; these controls
 do not belong in the welcome content panel. The header action group wraps on narrow
 screens. Replacing the whole header replaces this default group as well.
+
+## Runtime application presentation
+
+Global displayed-name/logo overrides use the platform-owned
+[application settings store and consumer precedence](../modules/admin/operations.md#presentation-precedence-and-consumers).
+`/api/identity` remains canonical; public no-store `/api/presentation` exposes only
+name, approved logo and revision. Browser shells use the shared presentation loader;
+normal server errors and mail read the same validated projection with source
+fallback on database failure. Source-declared logos are same-origin static assets;
+selection never fetches a URL or changes CSP. Explicit mail transport/CID settings
+remain developer-owned. The default CID policy can select a source PNG/JPEG inside
+the served public tree; other formats/missing assets retain the configured default.
+Native error shells include an escaped presentation-logo variant. Emergency HTML
+uses only validated build-time source branding, including its source logo, and
+never reads or bakes DB overrides. Canonical versions and Runa's code logo remain
+source-owned. Customer styling and presentation seams remain App-owned.

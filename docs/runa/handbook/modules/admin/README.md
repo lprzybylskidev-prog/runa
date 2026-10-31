@@ -12,7 +12,7 @@ collection sections and controlled fields, then completes generated record forms
 independent commands/previews, reconciliation, dirty navigation and owning
 collection adapter composition. Point 6 supplies native atomic preview/Save,
 source-owned participants and initial Auth profile/Permissions assignment composition.
-Point 7 delivers complete [Auth administration](../auth/administration.md). Point 8 supplies [Permissions administration](../permissions/administration.md) and the [Audit viewer](../audit/administration.md); point 9 supplies guarded framework operations and module settings. Application global settings retain point 10.
+Point 7 delivers complete [Auth administration](../auth/administration.md). Point 8 supplies [Permissions administration](../permissions/administration.md) and the [Audit viewer](../audit/administration.md); point 9 supplies guarded framework operations and module settings. Point 10 delivers guarded application global settings and no-restart presentation.
 Existing Auth, Permissions, Audit and framework APIs retain their current contracts.
 Source implementation and focused checks do not establish rendered or release acceptance.
 
@@ -36,7 +36,7 @@ are implemented through point 3. Capability-specific reads, field-bound
 options, typed widget freshness and source-bound component/build projection are
 implemented, including compiled registry resolution and shell rendering. Atomic
 participation, generated record forms and independent command dispatch are delivered;
-application settings retain their owning point.
+application global settings are delivered in point 10 through platform-owned public adapters.
 Resource reads are delivered through `useAdminResource`; `useAdminTable` and
 `AdminResourceTable` compose bounded collection reads with the existing Table.
 `AdminField` and `validateAdminField` supply controlled field composition; default
@@ -123,7 +123,7 @@ nested replacement providers. Bootstrap returns authorized owners/pages/widgets
 and current source-default presentation (revision 0). Auth declares Users, Authentication policy and Bulk session revocation pages; the catalogue includes only currently authorized pages. App providers can supply
 independent pages and matching compiled/static components. Section reads,
 independent command/preview and bounded aggregate HTTP transports are delivered;
-Auth/Permissions administration, the read-only Audit viewer and native profile/ordinary assignment composition are delivered. Framework operations and module settings are delivered in point 9; application global settings and DB-backed presentation retain point 10. Source/component
+Auth/Permissions administration, the read-only Audit viewer and native profile/ordinary assignment composition are delivered. Framework operations and module settings are delivered in point 9; point 10 delivers application global settings and DB-backed presentation. Source/component
 tests are not final rendered/release acceptance.
 The welcome catalogue remains independent localized manifest metadata.
 

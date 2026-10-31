@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light" />
 <meta name="supported-color-schemes" content="light" />
-<title>{{ config('branding.application_name') }}</title>
+<title>{{ app(\Runa\Mail\MailBranding::class)->name() }}</title>
 <style>
 @media only screen and (max-width: 620px) {
 .inner-body, .footer { width: 100% !important; }

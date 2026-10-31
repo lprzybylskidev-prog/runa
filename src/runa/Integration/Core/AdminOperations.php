@@ -16,9 +16,11 @@ use Runa\ModuleFramework\HealthPolicies;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
+use Runa\Settings\SettingStore;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Work\ModuleWork;
+use Runa\Support\Settings\ApplicationSettings;
 
 /** Fixed trusted integration. Never accepts an engine method, actor or executable metadata. */
 final readonly class AdminOperations
@@ -36,6 +38,7 @@ final readonly class AdminOperations
         return $this->safe(function () use ($view, $input): array {
             [$permission, $keys] = match ($view) {
                 'capabilities' => ['enter', []],
+                'application' => ['enter', []],
                 'diagnostics' => ['diagnostics.read', ['filter']],
                 'module' => ['diagnostics.read', ['module']],
                 'settings' => ['settings.read', ['module']],
@@ -51,6 +54,7 @@ final readonly class AdminOperations
             return $this->admit($view, $permission, function () use ($view, $input): array {
                 return match ($view) {
                     'capabilities' => ['capabilities' => $this->capabilities()],
+                    'application' => app(ApplicationSettings::class)->read() + ['definitions' => app(SettingStore::class)->definitions()],
                     'diagnostics' => $this->diagnostics->snapshot($this->text($input, 'filter', 'enabled')) + [
                         'platform_version' => $this->identity->platformVersion,
                         'application_version' => $this->identity->applicationVersion,
@@ -74,6 +78,7 @@ final readonly class AdminOperations
     {
         return $this->safe(function () use ($command, $input): array {
             [$permission, $keys, $independent] = match ($command) {
+                'application.update' => ['enter', ['revision', 'patch'], false],
                 'health.diagnose' => ['health.diagnose', ['module'], true],
                 'health.configure' => ['health.configure', ['module', 'generation', 'overrides'], false],
                 'modules.preview' => ['modules.manage', ['module', 'intent'], false],
@@ -89,6 +94,8 @@ final readonly class AdminOperations
 
             return $this->admit($command, $permission, function () use ($command, $input): array {
                 switch ($command) {
+                    case 'application.update':
+                        return app(ApplicationSettings::class)->update($this->map($input, 'patch'), $this->integer($input, 'revision'));
                     case 'health.diagnose':
                         $module = $this->moduleId($input);
                         $result = $this->health->diagnose($module);
@@ -154,6 +161,9 @@ final readonly class AdminOperations
         };
         // Prepare exact-operation health before entry's root transaction.
         $check();
+        if (in_array($operation, ['application', 'application.update'], true)) {
+            app(SettingStore::class)->prepare($operation === 'application.update');
+        }
         if ($independent) {
             $this->entry->read(function () use ($check): void {
                 $check();
@@ -181,7 +191,7 @@ final readonly class AdminOperations
     private function capabilities(): array
     {
         $result = [];
-        foreach (['diagnostics.read', 'health.diagnose', 'health.configure', 'modules.manage', 'settings.read', 'settings.manage', 'integrations.manage', 'work.read', 'work.cancel'] as $permission) {
+        foreach (['diagnostics.read', 'health.diagnose', 'health.configure', 'modules.manage', 'settings.read', 'settings.manage', 'integrations.manage', 'work.read', 'work.cancel', 'application.read', 'application.manage'] as $permission) {
             try {
                 $this->guard->enter('runa.admin', new ApiOperation('operations.read', 'runa.admin.'.$permission));
                 $result[] = $permission;

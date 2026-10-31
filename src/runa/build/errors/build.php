@@ -22,6 +22,7 @@ if (is_file($appBranding)) {
     }
     $branding = array_replace_recursive($branding, $overrides);
 }
+$logo = $branding['logo'];
 $renderer = new HttpErrorPage;
 foreach (['pl', 'en'] as $locale) {
     foreach (['system', 'light', 'dark'] as $theme) {

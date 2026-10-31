@@ -6,8 +6,7 @@ Status: independent commands, native atomic profile/access Save and complete Aut
 administration are delivered in RM-2026-016 points 5–7. Auth owns its declarations,
 reads and operation adapters; [Auth administration](../auth/administration.md)
 records the exact grants, signatures, proofs and independent protocols. Point 8 delivers [Permissions administration](../permissions/administration.md) and the [Audit viewer](../audit/administration.md). Point 9 delivers framework operational dashboard/settings/work through the fixed
-AdminOperations API below, with native transactional Audit. Application global
-settings remain point 10; complete release acceptance remains point 12.
+AdminOperations API below, with native transactional Audit. Point 10 delivers platform-owned application global settings and runtime presentation; complete release acceptance remains point 12.
 
 ## Core operation coverage
 
@@ -116,7 +115,7 @@ Distinct from module settings: ordinary App source declares a small set of dynam
 business/presentation values; the platform supplies guarded storage and projection.
 No fake app module and no app business data under `runa_admin`. New public extension
 values live under `Runa\Contracts\Settings`; adapters under
-`Runa\Support\Settings`. These exact signatures are specified:
+`Runa\Support\Settings`. These exact signatures are delivered in point 10:
 
 ```php
 interface ApplicationSettingProvider
@@ -159,8 +158,7 @@ public_id or soft deletion; clients address the aggregate, never its internal ID
 CHECK object type and positive revision, no business triggers/functions/views.
 The platform owns the forward migration
 `src/runa/database/migrations/2026_10_30_000001_create_application_settings.php`
-and the protected implementation under `src/runa/Settings`; this is point-10 work,
-not an already shipped migration. There are no foreign keys or Admin-owned rows.
+and the protected implementation under `src/runa/Settings`; both are delivered source for platform 0.7.0. There are no foreign keys or Admin-owned rows.
 The public Contracts/Settings values and Support/Settings adapters above are thin
 entrypoints to that platform implementation. App owns registered definitions,
 selected values and deployed assets, never the platform migration.
@@ -170,8 +168,7 @@ primitive before required platform seeding/Core installation and App migration/
 seeding. Forward update uses the existing platform-migrations stage before Core
 forward steps and application migrations; it preserves existing values and revision.
 Delivery includes this protected migration and records it in shared.migrations
-through existing platform migration ownership. Point 10 updates the database scope/
-delivery declarations and installation/update fixtures accordingly. Reopen, provider
+through existing platform migration ownership. The protected database inventory and installation/update fixtures include this table. Reopen, provider
 boot, Admin install and HTTP never migrate or create the table. No App migration
 stub or customer-authored prerequisite is generated. Protected settings reads/writes
 fail safely when storage is absent; public presentation alone falls back to source
@@ -194,6 +191,71 @@ Source validation rejects credentials, query/fragment, traversal, remote origins
 data/javascript URLs, markup and non-image assets. Only reviewed PNG/JPEG/WebP/SVG
 static assets already served under existing CSP are selectable; SVG is source-owned
 trusted code, never an administrator-uploaded string. No outbound URL fetching.
+
+### App registration and guarded use
+
+Owner: platform for storage/adapters, App for declarations and assets. Audience:
+ordinary trusted App PHP, including optional App module consumers. Entry points
+are the two container-owned `Runa\Support\Settings` adapters above and the three
+`Runa\Contracts\Settings` declarations. Runtime delivery includes the platform
+migration; internal `Runa\Settings` engines are not customer imports. Registration
+requires a real `App\` class under `src/app`, excluding module provider classes;
+register the App provider during `AppServiceProvider::boot`. Registration is atomic
+and freezes after all providers boot or at first catalogue use. It never queries
+or initializes storage. App modules consume these adapters but do not replace the
+global source catalogue or grant themselves new authority.
+
+```php
+// src/app/Settings/PresentationSettings.php
+namespace App\Settings;
+
+use Runa\Contracts\Settings\ApplicationLogo;
+use Runa\Contracts\Settings\ApplicationSettingProvider;
+
+final class PresentationSettings implements ApplicationSettingProvider
+{
+    public function settings(): array { return []; }
+    public function logos(): array
+    {
+        return [new ApplicationLogo('customer', '/brand/customer-logo.png', 'Customer logo')];
+    }
+}
+
+// In AppServiceProvider::boot():
+app(\Runa\Support\Settings\ApplicationSettings::class)
+    ->register(new \App\Settings\PresentationSettings);
+```
+
+Deploy the static asset before registering/selecting it. Additional business keys
+use ApplicationSetting with already source-declared qualified read/write grants;
+they are not environment/configuration mappings. Strings are nonempty UTF-8 plain
+text without control/format characters; null selects the declared default. Integer
+values are restricted to the JavaScript safe integer range. Omitted keys retain
+stored values; null removes that override. Removed definitions/asset keys remain
+in storage for customer deployment restoration but are never returned as current
+values/options. Invalid persisted types select source defaults. No values are
+cached in long-lived PHP workers.
+
+Protected `read/update` require a trusted current principal, current Permissions
+availability, grants and registry/authority locks; writes additionally require
+available Audit and record one `application.settings.changed` event with fixed
+module `runa.audit`. The event contains changed key names and the new revision,
+never values, configuration or a fabricated aggregate UUID. These public adapters
+do not require Admin to own or initialize storage. Admin's HTTP wrapper additionally
+requires its own current entry/password proof. Arbitrary request actor/module/
+permission fields are rejected. Audit failure rolls back values and revision.
+
+The fixed AdminOperations read view `application` accepts no input and returns
+`{revision,values,definitions}`. Definitions are keyed by readable setting and
+contain only `{title,type,max_length,choices,writable}`; unreadable defaults,
+choices and grant identifiers are absent. Command `application.update` accepts
+only `{revision:int,patch:object}` and returns `{revision,values}`. Each patched
+key requires both declared read/write grants. Extra App keys retain their own
+grants independently of built-in `runa.admin.application.read/manage`. The shared
+operational transport retains its 64 KiB input limit. PHP callers may supply a
+bounded patch up to 512 KiB. Revisions are positive safe integers; no silent retry.
+Protected storage failure is 503; public presentation alone selects source defaults
+and revision 0. Maintenance behavior is unchanged.
 
 ## Presentation precedence and consumers
 

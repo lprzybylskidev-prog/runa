@@ -300,7 +300,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     operator/shell/install/update controls or maintenance-marker mutation.
   - Author diagnostics/redaction/permission/failure isolation/lifecycle/maintenance/
     work/optional fallback tests, plus deployment-fence scenarios if affected.
-- [ ] 10. Deliver approved application global settings and runtime presentation.
+- [x] 10. Deliver approved application global settings and runtime presentation.
   - Prerequisites: 1, 3–5; ARCH-004 resolved.
   - Add source-declared app-owned safe settings/defaults, storage/migration, revisions,
     validation/grants and atomic Audit, independent of module settings. Implement
@@ -1607,3 +1607,101 @@ Optional sources, work/queue and transition rows were removed. No task Docker
 containers, networks, image tags or volumes were created or removed. Active services,
 base/development databases, Qdrant/model caches, backups and all evidence remain.
 Point 9 is complete; point 10 is next. Roadmap/release remain active/open.
+
+## Point 10 completion — Application settings and runtime presentation — 2026-10-31
+
+Delivered the platform-owned `shared.application_settings` migration and protected
+inventory, independent of module settings/Admin installation. Explicit forward
+platform installation/update remains the only initialization path; boot, reopen
+and HTTP never create storage. The technical singleton uses bigint identity,
+UNIQUE/CHECK singleton, positive revision, JSONB-object values and UTC timestamps.
+App declares safe non-secret scalar defaults and deployed static logo assets through
+frozen, source-verified ApplicationSettingProvider; the minimal scaffold adds no
+business settings or upload system. New public Contracts/Settings values and
+container-owned Support/Settings adapters are classified in the owning operations
+contract and public-boundary catalogue. Native application wipes preserve the store.
+
+Protected reads and writes require a trusted current principal, current native
+grants, registry/authority locks and safe exact types. Writes check the locked
+revision and both read/write grants per key, then record one explicit redacted
+application.settings.changed Audit event in the same default PostgreSQL transaction.
+The fixed platform event origin is runa.audit; only key names/revision enter history,
+no selected values or artificial public UUID. Exact Audit admission precedes root
+locks. Mandatory Audit failure rolls back values/revision. Removed App definitions
+and asset selections remain persisted but are not disclosed as current values.
+
+Public no-store `/api/presentation` and Admin bootstrap share only name/logo/revision.
+Canonical identity, versions, compatibility, environment, technical mail/CSP policy
+and Runa's code logo remain source-owned. The browser shell refreshes presentation
+without restart after settings writes/session changes and focus/visibility/history,
+with per-application cancellation/late-response fencing and disposal. Mail and normal
+server errors consume validated runtime branding with source fallback on storage
+failure; approved PNG/JPEG assets pass the existing local CID policy. Native error
+shells add an escaped logo variant. Emergency/static output uses only build-time
+source defaults/logo, with no database read or baked runtime override.
+
+The default English application editor and public useAdminApplicationSettings share
+the existing Admin operation/session/dirty owner and single write lane. Per-field
+read/write metadata drives typed defaults and source-reset controls. Refresh retains
+dirty drafts, merges disjoint reads and requires explicit overlap resolution with
+the current value visible. Failed/stale writes are not replayed; account/authority
+changes clear and fence drafts. App can replace the editor through the public
+presentation provider, default slot or headless controller without copied security.
+
+### Grounding, authored coverage and focused results
+
+Entry knowledge was current: 204 documents / 9,993 chunks, no missing/orphan chunks.
+Bounded current-intent retrieval was checked against the original application
+settings/storage/presentation contracts, native admission/authority/Audit, identity,
+mail/error builds, database ownership and current operational controllers. Applied
+backend/Laravel/security/PostgreSQL/frontend/Vue/Tailwind guidance. Boost supplied
+installed Laravel 13 transaction/pessimistic-lock and allowed-array documentation.
+
+Focused supported diagnostics resolved the new transaction and source boundaries:
+
+- Application settings persistence/grants/revisions, canonical identity, native
+  mail/error projection, actual Audit failure rollback and grant loss: 1 test /
+  42 assertions PASS, 15.09 seconds, native exit 0 / cleanup 0.
+- Missing storage fallback/fail-closed behavior and App-owned frozen source/logo
+  catalogue, hidden defaults/options and removed-source fallback: 2 tests /
+  32 assertions PASS, 8.58 seconds, native exit 0 / cleanup 0.
+- Selected settings reconciliation/readonly/reset/account fencing and shared-shell
+  public presentation hydration/publication: final 5 scenarios PASS, 4.34 seconds,
+  native exit 0 / cleanup 0. Initial two fixture failures required awaiting actual
+  browser response/render completion. No application Vue warning; the existing
+  Vite module-runner dynamic-import warning remains tooling output.
+- Public consumer/internal-engine boundary diagnostic: 1 test PASS, 0.04 seconds.
+  Container-owned public adapter signature diagnostic: 1 test PASS, 0.06 seconds.
+  Both used supported test-python, native exit 0 / cleanup 0.
+
+Authored strict source URL/scalar cases, actual database inventory/identity and
+application-wipe preservation, native fresh-install/store and updater/recovery
+value/revision preservation, plus responsive light/dark default editor scenarios.
+Complete backend/frontend/tooling, static/type/build/CSP/rendered/native deployment
+and installation/update acceptance remain point 12. No broad verification or release
+PASS is claimed. Private Settings is included in the existing final static scope;
+public constructor exceptions remain limited to the named container-owned adapters.
+
+### Versions, guidance, instruction products and resources
+
+Admin remains its unreleased 0.1.0 creation candidate. This platform-owned additive
+store/adapter capability changes no existing guarded module API or module data;
+Auth/Permissions stay 2.0.0 and Audit stays its unreleased 1.1.0 candidate. No
+version-only module forward edge, dependency or runtime configuration change is
+introduced. Platform VERSION, feature/0.7.0 and published history are unchanged.
+
+Current Admin contracts/status/frontend, database/public boundary, browser/mail/
+error customization and component references, module changelog and central test
+inventory are synchronized. Owner frontend references and separately authored
+customer frontend guidance link the canonical replacement/settings contracts.
+Root owner/customer AGENTS and backend/domain skills need no new always-loaded
+rule: existing protected-source, native-grant/transaction/Audit, minimal-scaffold
+and public-composition requirements cover the delivered capability. Customer
+registration examples operate only in App and authorize no protected edits.
+
+Stage and incrementally synchronize knowledge before mandatory completion hooks.
+Supported backend runners displayed and removed only disposable runa_test_test_1;
+fixture source/assets were removed and singleton snapshots restored. No task Docker
+containers, networks, image tags or volumes were created or removed. Development/
+base databases, active services, Qdrant/model caches, backups and evidence remain.
+Point 10 is complete; point 11 is next. Roadmap/release remain active/open.

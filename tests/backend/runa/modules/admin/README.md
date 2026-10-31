@@ -59,3 +59,13 @@ cancellation rollback/idempotency/privacy. Disposable module sources/queue rows 
 owned and removed by OperationalModule. Frontend scenarios cover delayed account
 responses, no replay, frozen destructive input, denied controls and retained secret
 drafts after conflict; responsive/theme browser scenarios remain final acceptance.
+
+Point-10 cases cover built-in grants, canonical identity isolation, no-restart
+presentation, stale revisions, exact scalar/unknown technical-key refusal, Audit
+rollback and current grant revocation. Missing storage fails protected reads while
+public browser/mail/error projection falls back without creating tables. App-owned
+frozen declarations, safe asset keys, hidden defaults/options and removed-source
+fallback preserve stored customer values. Database ownership cases extend real
+platform inventory/identity and application wipe preservation. Native installation/
+update and responsive/theme browser scenarios are authored for point 12; focused
+results are in the active roadmap and do not establish final acceptance.

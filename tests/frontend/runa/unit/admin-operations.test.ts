@@ -2,6 +2,8 @@ import { afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, flushPromises, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import {
+  AdminApplicationSettings,
+  useAdminApplicationSettings,
   AdminOperations,
   AdminOperationalEditor,
   useAdminOperations,
@@ -68,12 +70,16 @@ const response = (data: AdminOperationData, status = 200) =>
     status,
     headers: { 'Content-Type': 'application/json' },
   });
-function harness(owner = admin()) {
+function harness(
+  owner = admin(),
+  onSetup?: (operations: AdminOperationsController) => void,
+) {
   let controller!: AdminOperationsController;
   const wrapper = mount(
     defineComponent({
       setup() {
         controller = useAdminOperations(owner);
+        onSetup?.(controller);
         return () => h('div');
       },
     }),
@@ -222,4 +228,105 @@ it('operational diagnostic preserves secret set-state and dirty settings after c
     revision: 4,
     patch: { credential: 'replacement' },
   });
+});
+
+const applicationState = (
+  revision: number,
+  name: string,
+  label = 'Source label',
+): AdminOperationData => ({
+  revision,
+  values: { 'presentation.name': name, 'business.label': label },
+  definitions: {
+    'presentation.name': {
+      type: 'string',
+      title: 'Displayed application name',
+      max_length: 160,
+      choices: [],
+      writable: true,
+    },
+    'business.label': {
+      type: 'string',
+      title: 'Business label',
+      max_length: 100,
+      choices: [],
+      writable: true,
+    },
+  },
+});
+it('application settings retain dirty drafts across disjoint and overlapping revisions without replay', async () => {
+  let settings!: ReturnType<typeof useAdminApplicationSettings>;
+  const { controller } = harness(admin(), (operations) => {
+    settings = useAdminApplicationSettings(operations);
+  });
+  const fetch = vi.spyOn(window, 'fetch');
+  fetch.mockResolvedValueOnce(response(applicationState(1, 'Source name')));
+  await settings.refresh();
+  settings.edit('presentation.name', 'My draft');
+  fetch.mockResolvedValueOnce(
+    response(applicationState(2, 'Source name', 'Remote label')),
+  );
+  await settings.refresh();
+  expect(settings.draft.value['presentation.name']).toBe('My draft');
+  expect(settings.draft.value['business.label']).toBe('Remote label');
+  expect(settings.revision.value).toBe(2);
+  expect(settings.conflicts.value.size).toBe(0);
+  fetch.mockResolvedValueOnce(
+    response(applicationState(3, 'Remote name', 'Remote label')),
+  );
+  await settings.refresh();
+  expect(settings.conflicts.value.has('presentation.name')).toBe(true);
+  const calls = fetch.mock.calls.length;
+  await settings.save();
+  expect(fetch).toHaveBeenCalledTimes(calls);
+  settings.resolve('presentation.name', true);
+  fetch.mockResolvedValueOnce(
+    response({ reason: 'application_settings_revision_changed' }, 409),
+  );
+  await settings.save();
+  expect(settings.draft.value['presentation.name']).toBe('My draft');
+  expect(controller.dirty.value).toBe(true);
+  expect(fetch).toHaveBeenCalledTimes(calls + 1);
+  expect(JSON.parse(String(fetch.mock.calls.at(-1)?.[1]?.body))).toEqual({
+    revision: 3,
+    patch: { 'presentation.name': 'My draft' },
+  });
+});
+it('application settings defaults compose readonly typed fields and source reset controls', async () => {
+  const { controller } = harness();
+  const state = applicationState(1, 'Source name');
+  const definitions = state.definitions as Record<string, AdminOperationData>;
+  definitions['business.label']!.writable = false;
+  vi.spyOn(window, 'fetch').mockResolvedValue(response(state));
+  const wrapper = mount(AdminApplicationSettings, { props: { controller } });
+  await flushPromises();
+  expect(wrapper.text()).toContain('Application settings');
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Read only.'));
+  expect(wrapper.find('input[disabled]').exists()).toBe(true);
+  const reset = wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Reset Displayed application name');
+  await reset!.trigger('click');
+  expect(controller.dirty.value).toBe(true);
+  expect(
+    wrapper
+      .findAll('button')
+      .some((button) => button.text() === 'Reset Business label'),
+  ).toBe(false);
+});
+it('application settings clear private drafts when the account context changes', async () => {
+  let settings!: ReturnType<typeof useAdminApplicationSettings>;
+  const { controller, owner } = harness(admin(), (operations) => {
+    settings = useAdminApplicationSettings(operations);
+  });
+  vi.spyOn(window, 'fetch').mockResolvedValue(
+    response(applicationState(1, 'Source name')),
+  );
+  await settings.refresh();
+  settings.edit('presentation.name', 'Private draft');
+  owner.session.authorityRevision.value++;
+  await flushPromises();
+  expect(settings.draft.value).toEqual({});
+  expect(settings.loaded.value).toBe(false);
+  expect(controller.dirty.value).toBe(false);
 });

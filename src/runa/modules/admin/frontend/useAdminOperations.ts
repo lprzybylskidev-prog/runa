@@ -7,6 +7,7 @@ import { refuseAdmin, sessionStamp } from './useAdmin';
 import { navigationGuards } from './runtime';
 
 export type AdminOperationView =
+  | 'application'
   | 'capabilities'
   | 'diagnostics'
   | 'module'
@@ -17,6 +18,7 @@ export type AdminOperationView =
   | 'modules.status'
   | 'settings.status';
 export type AdminOperationCommand =
+  | 'application.update'
   | 'health.diagnose'
   | 'health.configure'
   | 'modules.preview'

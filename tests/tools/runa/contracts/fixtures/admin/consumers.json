@@ -85,6 +85,14 @@
     {
       "source": "<?php namespace App; use Runa\\Contracts\\Modules\\OperationalParticipant;",
       "expected": ["reserved_api_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Contracts\\Settings\\ApplicationSettingProvider; use Runa\\Contracts\\Settings\\ApplicationSetting; use Runa\\Contracts\\Settings\\ApplicationLogo; use Runa\\Support\\Settings\\ApplicationSettings; use Runa\\Support\\Settings\\ApplicationPresentation;",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Settings\\SettingRegistry; use Runa\\Settings\\SettingStore;",
+      "expected": ["internal_platform_import"]
     }
   ]
 }
