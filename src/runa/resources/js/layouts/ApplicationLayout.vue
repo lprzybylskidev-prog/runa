@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { usePageNavigationHost } from '../composables/usePageNavigationHost';
 import { inject, toRef } from 'vue';
 import { provideLocale } from '../composables/useLocale';
 import AppViewBoundary from '../components/AppViewBoundary.vue';
@@ -60,6 +61,11 @@ const standaloneReadiness = useViewReadiness({
   required: true,
 });
 provideLocale(toRef(props, 'locale'));
+const pageNavigation = usePageNavigationHost();
+const topEntries = computed(() => [
+  ...props.topNavigation,
+  ...pageNavigation.entries.value,
+]);
 const emit = defineEmits<{
   navigate: [href: string, event: globalThis.MouseEvent];
   localeChange: [locale: Locale];
@@ -163,6 +169,7 @@ function navigate(href: string, event: globalThis.MouseEvent) {
     event.altKey
   )
     return;
+  if (pageNavigation.navigate(href, event)) return;
   emit('navigate', href, event);
   if (event.defaultPrevented) {
     void closeDrawer(false);
@@ -200,12 +207,17 @@ const topOverflow = ref({ left: false, right: false });
 let topNavObserver: globalThis.ResizeObserver | undefined;
 function updateTopOverflow() {
   const element = topNavElement.value;
-  topOverflow.value = {
+  const next = {
     left: !!element && element.scrollLeft > 1,
     right:
       !!element &&
       element.scrollWidth - element.clientWidth - element.scrollLeft > 1,
   };
+  if (
+    next.left !== topOverflow.value.left ||
+    next.right !== topOverflow.value.right
+  )
+    topOverflow.value = next;
 }
 watch(
   topNavElement,
@@ -221,13 +233,10 @@ watch(
   },
   { flush: 'post' },
 );
-watch(
-  () => props.topNavigation,
-  async () => {
-    await nextTick();
-    updateTopOverflow();
-  },
-);
+watch(topEntries, async () => {
+  await nextTick();
+  updateTopOverflow();
+});
 onScopeDispose(() => topNavObserver?.disconnect());
 function scrollTopNavigation(event: globalThis.WheelEvent) {
   if (event.ctrlKey || !(event.currentTarget instanceof window.HTMLElement))
@@ -415,8 +424,8 @@ onScopeDispose(() => {
               @wheel="scrollTopNavigation"
             >
               <AppTopNavigation
-                :entries="topNavigation"
-                :current="current"
+                :entries="topEntries"
+                :current="pageNavigation.current.value ?? current"
                 @navigate="navigate"
               />
             </nav>

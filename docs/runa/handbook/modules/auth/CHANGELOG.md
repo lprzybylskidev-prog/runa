@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Move account subview navigation into the shared top bar via UI PageNavigation, with query deep links, browser history and pending-write protection. Keep standalone presentation usable. Included in the existing unreleased candidate; no migration or version-only upgrade edge.
+
 - Coordinate initial application content/avatar placeholder completion inside the immediately rendered layout; retain the readiness latch across background reads and bound image failures/timeouts.
 
 - Render layout frames immediately and keep loading placeholders local to dependent content/avatar elements; public branding and profile/image reads never hide the page frame.

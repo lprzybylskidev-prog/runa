@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Move dashboard application settings and grant-filtered module editor links into the shared top bar. Preserve dirty confirmation, URL/history selection and explicit reads; serialize initial capabilities before deep-linked editor loading. Included in the existing unreleased candidate; no migration or version-only upgrade edge.
+
 - Render layout frames immediately and keep loading placeholders local to dependent content/avatar elements; public branding and profile/image reads never hide the page frame.
 
 - Retain admitted pages, record/operational drafts and same-session filters during background validation while fencing old requests and clearing real access/identity loss.

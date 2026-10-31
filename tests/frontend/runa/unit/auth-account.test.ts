@@ -132,6 +132,7 @@ let write: (
   body: Record<string, unknown>,
 ) => Response | Promise<Response>;
 beforeEach(() => {
+  window.history.replaceState({}, '', '/account');
   accountPreferences.disconnect();
   clearAccountDraft();
   localStorage.clear();
@@ -2815,3 +2816,55 @@ it.each(['decoded', 'error', 'timeout'] as const)(
     }
   },
 );
+
+it('account subviews use the top navigation with URL selection and browser history', async () => {
+  preferenceDeliveryFixture();
+  const w = mount(AuthApplication, {
+    props: { account: true },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(
+      w.find('header .shell-top-nav a[href*="tab=preferences"]').exists(),
+    ).toBe(true),
+  );
+  expect(w.find('main nav[aria-label="Ustawienia konta"]').exists()).toBe(
+    false,
+  );
+  const frame = w.getComponent(ApplicationLayout).element;
+  await w
+    .get('header .shell-top-nav a[href*="tab=preferences"]')
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(w.findComponent(AuthAccountPreferences).exists()).toBe(true),
+  );
+  expect(new URL(window.location.href).searchParams.get('tab')).toBe(
+    'preferences',
+  );
+  await vi.waitFor(() =>
+    expect(w.get('header .shell-top-nav a[aria-current="page"]').text()).toBe(
+      'Preferencje',
+    ),
+  );
+  window.history.back();
+  await vi.waitFor(() =>
+    expect(w.findComponent(AuthAccountEditor).exists()).toBe(true),
+  );
+  expect(w.get('header .shell-top-nav a[aria-current="page"]').text()).toBe(
+    'Konto i zabezpieczenia',
+  );
+  expect(w.getComponent(ApplicationLayout).element).toBe(frame);
+});
+it('account subview deep links initialize the requested available tab', async () => {
+  preferenceDeliveryFixture();
+  window.history.replaceState({}, '', '/account?tab=preferences');
+  const w = mount(AuthApplication, { props: { account: true } });
+  await vi.waitFor(() =>
+    expect(w.findComponent(AuthAccountPreferences).exists()).toBe(true),
+  );
+  await vi.waitFor(() =>
+    expect(w.get('header .shell-top-nav a[aria-current="page"]').text()).toBe(
+      'Preferencje',
+    ),
+  );
+});

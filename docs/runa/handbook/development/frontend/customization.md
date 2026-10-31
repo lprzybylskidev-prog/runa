@@ -407,3 +407,9 @@ account deletion uses danger outline actions, including confirmation submits.
 Account history provides a replaceable `historyDetail` presentation and typed detail
 controller state; follow the [Auth history contract](../../modules/auth/history.md)
 for props/events, lifecycle fencing, safe output and old-event limitations.
+
+Nested page defaults publish their subview navigation through public `PageNavigation`
+into ApplicationLayout's top bar. Custom App layouts consume `usePageNavigationHost`
+and retain its registered links/current context and guarded navigate event; see
+[page-level composition](page-layouts.md#page-level-navigation-composition).
+Do not recreate account tabs or Admin settings navigation inside page content.

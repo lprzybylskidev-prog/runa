@@ -146,3 +146,36 @@ remain immediately usable for independent/static composition. Supplied Auth
 screens and the shared session shell declare initial dependencies and preserve
 mounted content during refresh. Follow [view readiness](loading.md) for exact
 public signatures, optional fallbacks and presentation replacement requirements.
+
+## Page-level navigation composition
+
+The sidebar selects an application area/module. Subviews within the selected area
+use the shared horizontal top bar, including account tabs and Admin application
+settings; do not duplicate them as navigation buttons inside content. Record
+selection, save/retry/review and other use-case actions remain content controls.
+
+UI owns public `PageNavigation` and `usePageNavigationHost` consumption/composition
+from `@/runa/ui`, implemented in shared components/composables, delivered in the
+frontend runtime. PageNavigation accepts `entries: readonly NavigationEntry[]`,
+`current?: RouteContext`, `label?: string`, `disabled?: boolean`; it emits
+`navigate(href: string, event: MouseEvent)`. In an ApplicationLayout subtree it
+registers with that layout's host and renders no duplicate content menu. Without
+a host, it supplies a labeled standalone navigation fallback with controlled
+buttons, keeping independent presentation usable. Latest mounted publisher owns
+the page context; disposal removes its registration without clearing a newer one.
+
+`usePageNavigationHost()` returns readonly computed `entries`, `current`,
+and `navigate(href,event): boolean` for a custom App layout to compose the existing
+top navigation. Call once in layout setup; retain the same mounted layout instance
+when page entries change. It handles only available registered links and delegates
+selection/guards to the publishing controller. Explicit layout topNavigation
+entries remain supported; page entries join that top bar without replacing sidebar
+context. Neither helper starts sessions, authorizes access or performs writes.
+
+`usePageResolver` also returns readonly current `href: ComputedRef<string>` alongside its
+existing methods/current descriptor so query-driven subviews react to deliberate
+navigation and browser history. Account uses `?tab=...` (default details); Admin
+dashboard uses `?section=application` (default operations); selected module editors
+use `?module=...&section=health|settings|integrations`. Named server entry paths
+remain unchanged. Native modified clicks retain their link behavior; guarded
+navigation preserves the existing dirty/write protections and never replays writes.

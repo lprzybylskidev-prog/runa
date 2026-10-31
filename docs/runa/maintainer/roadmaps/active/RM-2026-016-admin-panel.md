@@ -423,6 +423,16 @@ reassessment before resuming point 3; completed point history remains evidence.
     preserve immediate access/identity invalidation and local loading geometry.
   - Cover delayed download/decode, image failure/timeout and background refresh,
     synchronize current contracts and prepare assets before owner acceptance.
+- [x] 11a10. Move page-level navigation into the shared top bar.
+  - Owner correction: sidebar selects an area/module; links between subviews of
+    that area belong in the existing horizontal top navigation, not content buttons.
+  - Add a typed UI-owned page-navigation composition seam for nested defaults and
+    App layout replacements. Reuse the existing navigation renderer/resolver,
+    preserve URL-derived active state, query/history and existing dirty guards.
+  - Migrate Admin dashboard application settings and Auth account tabs; audit other
+    supplied private views, preserving operation/record actions inside content.
+  - Synchronize contracts/instruction products, exercise focused navigation/guard
+    regressions and prepare current assets before returning to owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2357,3 +2367,54 @@ loading evidence, not authenticated owner acceptance. Browser/context resources
 were closed and the temporary diagnostic helper removed; screenshots/build/test
 reports and existing development services/data/caches remain. No Docker resources
 or database data were created/changed. Manual point 11b and final point 12 stay open.
+
+### Point 11a10 — Shared top navigation for page subviews
+
+The owner confirmed the existing navigation placement rule: the sidebar selects an
+area/module, while its additional subviews belong in the shared horizontal top
+bar. Added UI-owned PageNavigation/usePageNavigationHost through `@/runa/ui`, with
+typed entries/current/navigate, nearest-layout registration and usable standalone
+fallback. ApplicationLayout combines published links with explicit topNavigation;
+layout lifetime, existing dropdown/overflow/keyboard behavior and modified clicks
+remain intact. Stable presentation snapshots prevent parent/slot render loops;
+older publisher cleanup cannot clear a newer registration. No global state or
+routing dependency was introduced. Public usePageResolver now exposes readonly
+href so query changes/history update the mounted subview.
+
+Auth account tabs now publish to the top bar and use `?tab=...`, preserving native
+pending-write blocking and the account controller. Admin dashboard Operations and
+Application settings publish there too; selected module Health policy, Settings
+and Integrations use a capability-filtered top dropdown. Existing dirty guards
+protect deliberate and history transitions. Accepted transitions abort optional
+reads before the new view reads; initial capability admission precedes deep-linked
+editor loading. Writes remain explicit and are never replayed. Admin owner page
+links already used the top bar. Focused source review found no other supplied
+application subview navigation requiring migration: MinimalLayout Auth access
+links remain in their separate layout; record selection and use-case read/mutation
+controls remain in content.
+
+Synchronized public page-layout/component/customization, Auth account and Admin
+frontend contracts, motion inventory and both module candidate changelogs. Root
+and customer AGENTS plus frontend pattern references link the canonical rule.
+No backend/API/schema, dependency or upgrade edge changed. Auth remains the
+unreleased 2.0.0 candidate, Admin remains development 0.1.0, and the platform
+remains the prepared 0.7.0 candidate. Other module versions are unaffected.
+
+Focused native frontend verification passed 16 cases (354 excluded), exit 0 and
+cleanup 0. Coverage includes nested header placement, publisher cleanup, standalone
+fallback, URL/deep-link/history selection, dirty cancellation/acceptance, module
+capability filtering, optional-read fencing and existing resolver/hidden/disabled
+navigation contracts. This is implementation-focused evidence, not the final
+quality graph. Log: .runtime/frontend/RM-2026-016-navigation-tests.log. The prepared
+asset build passed TypeScript, Vite and native/static error rendering; log:
+.runtime/frontend/RM-2026-016-navigation-build.log.
+
+A controlled Playwright presentation fixture against the Nginx-served build
+checked Admin/account in Polish/dark/1440px and English/light/390px. Top links were
+localized, content had no duplicate subview controls, no document overflow or
+page errors were reported. Screenshots and report are preserved under
+.runtime/artifacts/playwright/runa/RM-2026-016-navigation/. This fixture-based check
+does not replace authenticated owner acceptance. Browser contexts were closed and
+the temporary helper removed. Existing development services, database data,
+knowledge/model caches and reports remain; no task Docker resources were created.
+Owner manual point 11b and final verification/release point 12 remain open.

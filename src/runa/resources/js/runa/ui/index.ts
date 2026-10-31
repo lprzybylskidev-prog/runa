@@ -186,3 +186,6 @@ export type {
 export { useImageReadiness } from '../../composables/useImageReadiness';
 export type { ImageReadiness } from '../../composables/useImageReadiness';
 export { default as ViewBoundary } from '../../components/AppViewBoundary.vue';
+
+export { default as PageNavigation } from '../../components/AppPageNavigation.vue';
+export { usePageNavigationHost } from '../../composables/usePageNavigationHost';

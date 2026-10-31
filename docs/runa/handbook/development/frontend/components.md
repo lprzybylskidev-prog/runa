@@ -155,6 +155,16 @@ for replacement precedence, props/events and remaining form delivery.
 - Horizontal group labels are disclosure buttons. Their dropdown card is teleported to body outside the scroll container, positioned under the trigger/header and clamped to the viewport. Header stays 64px when open; sidebar groups retain inline expansion. The panel reuses AppNavigation for its child links.
 - Escape, outside click, route change, document scroll and resize dismiss it; nav scrolling updates its anchor position; focus returns on Escape. Tab boundaries connect the popup back to normal navigation order. General tooltip/popover floating behavior is implemented in point 9; route navigation retains its specialized anchoring and keyboard contract.
 
+## PageNavigation
+
+Public `PageNavigation` from `@/runa/ui` publishes subview links to its nearest
+ApplicationLayout top bar without a duplicate content menu. A custom App layout
+uses `usePageNavigationHost`; independent composition retains labeled controlled
+buttons (including available child destinations). Props, events, host lifetime
+and URL/guard behavior are defined in [page layouts](page-layouts.md#page-level-navigation-composition).
+Sidebar entries select areas/modules; page-level navigation belongs in the top
+bar. Forms and record/operation actions remain in content.
+
 ## Content containers and navigation
 
 - Public `Card`, `Divider`, `Accordion`, `Tabs`, `Dropdown`, `Breadcrumbs`, `Pagination` map to `src/runa/resources/js/components/App*.vue`; types `TabItem`/`BreadcrumbItem` come from `@/runa/ui`. No shell, router or global installation is required.

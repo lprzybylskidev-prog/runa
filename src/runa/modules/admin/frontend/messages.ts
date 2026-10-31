@@ -34,6 +34,7 @@ export const adminMessages: AdminMessages = {
   'Auth policies use their dedicated reviewed policy page.':
     'Zasady uwierzytelniania zmienisz na dedykowanej stronie zasad z przeglądem zmian.',
   Available: 'Dostępny',
+  Operations: 'Operacje',
   'Back to operations': 'Wróć do operacji',
   'Bulk action cancelled or selection changed.':
     'Akcja zbiorcza została anulowana lub zmieniono zaznaczenie.',

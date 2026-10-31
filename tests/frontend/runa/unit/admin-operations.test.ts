@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file -- Independent mounted operation and navigation harnesses. */
 import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, flushPromises, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
@@ -20,6 +21,7 @@ import type {
 } from '@/runa/auth';
 enableAutoUnmount(afterEach);
 beforeEach(() => {
+  window.history.replaceState({}, '', '/admin');
   localStorage.setItem('runa.locale', 'en');
 });
 const id = '01900000-0000-7000-8000-000000000001';
@@ -422,4 +424,141 @@ it('operational reload never overwrites a newer edit made while its read is pend
     '{"newer":"draft"}',
   );
   expect(controller.dirty.value).toBe(true);
+});
+
+it('Admin subviews use top navigation and a cancelled dirty transition preserves its URL and draft', async () => {
+  const { ApplicationLayout, createPreferenceStore } =
+    await import('@/runa/ui');
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    String(input).endsWith('/capabilities')
+      ? response({ capabilities: ['diagnostics.read'] })
+      : String(input).endsWith('/application')
+        ? response(applicationState(1, 'Source'))
+        : response({ modules: [] }),
+  );
+  const owner = admin();
+  const w = mount(
+    defineComponent({
+      setup: () => () =>
+        h(
+          ApplicationLayout,
+          {
+            title: 'Admin',
+            navigation: [],
+            preferenceStore: createPreferenceStore(),
+          },
+          { default: () => h(AdminOperations, { admin: owner }) },
+        ),
+    }),
+    { attachTo: document.body },
+  );
+  await vi.waitFor(() =>
+    expect(
+      w.find('header .shell-top-nav a[href*="section=application"]').exists(),
+    ).toBe(true),
+  );
+  expect(
+    w
+      .findAll('main button')
+      .some((button) => button.text() === 'Application settings'),
+  ).toBe(false);
+  await w
+    .get('header .shell-top-nav a[href*="section=application"]')
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(w.findComponent(AdminApplicationSettings).exists()).toBe(true),
+  );
+  const settings = w.getComponent(AdminApplicationSettings).vm.settings;
+  await vi.waitFor(() => expect(settings.loaded.value).toBe(true));
+  settings.edit('presentation.name', 'Unsaved');
+  const controller = w.getComponent(AdminOperations).vm.controller;
+  await w
+    .get('header .shell-top-nav a:not([href*="section=application"])')
+    .trigger('click');
+  await vi.waitFor(() => expect(controller.confirmation.value).toBeDefined());
+  controller.confirm(false);
+  await flushPromises();
+  expect(new URL(window.location.href).searchParams.get('section')).toBe(
+    'application',
+  );
+  expect(settings.draft.value['presentation.name']).toBe('Unsaved');
+  await w
+    .get('header .shell-top-nav a:not([href*="section=application"])')
+    .trigger('click');
+  await vi.waitFor(() => expect(controller.confirmation.value).toBeDefined());
+  controller.confirm(true);
+  await vi.waitFor(() =>
+    expect(w.findComponent(AdminApplicationSettings).exists()).toBe(false),
+  );
+  expect(new URL(window.location.href).searchParams.has('section')).toBe(false);
+});
+
+it('Admin module subviews restore deep links and expose grant-filtered top dropdown navigation', async () => {
+  window.history.replaceState(
+    {},
+    '',
+    '/admin?module=app.safe&section=settings',
+  );
+  const { ApplicationLayout, createPreferenceStore } =
+    await import('@/runa/ui');
+  const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    String(input).endsWith('/capabilities')
+      ? response({ capabilities: ['diagnostics.read', 'settings.read'] })
+      : response({
+          module: 'app.safe',
+          generation: 1,
+          revision: 1,
+          settings: {},
+        }),
+  );
+  const owner = admin();
+  const w = mount(
+    defineComponent({
+      setup: () => () =>
+        h(
+          ApplicationLayout,
+          {
+            title: 'Admin',
+            navigation: [],
+            preferenceStore: createPreferenceStore(),
+          },
+          { default: () => h(AdminOperations, { admin: owner }) },
+        ),
+    }),
+    { attachTo: document.body },
+  );
+  await vi.waitFor(() =>
+    expect(w.text()).toContain('No settings are declared.'),
+  );
+  expect(w.getComponent(AdminOperationalEditor).props('module')).toBe(
+    'app.safe',
+  );
+  expect(
+    fetch.mock.calls.some(([url]) => String(url).includes('/diagnostics')),
+  ).toBe(false);
+  const trigger = w
+    .findAll('header button')
+    .find((button) => button.text() === 'Module operations')!;
+  await trigger.trigger('click');
+  const popup =
+    document.body.querySelector('.shell-top-dropdown') ?? document.body;
+  const links = Array.from(popup.querySelectorAll('a')).filter((link) =>
+    link.href.includes('section='),
+  );
+  expect(links.some((link) => link.textContent?.trim() === 'Settings')).toBe(
+    true,
+  );
+  expect(
+    links.some((link) => link.textContent?.trim() === 'Health policy'),
+  ).toBe(false);
+  expect(
+    links.some((link) => link.textContent?.trim() === 'Integrations'),
+  ).toBe(false);
+  expect(
+    w
+      .findAll('main button')
+      .some((button) =>
+        ['Settings', 'Health policy', 'Integrations'].includes(button.text()),
+      ),
+  ).toBe(false);
 });

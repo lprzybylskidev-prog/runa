@@ -2,8 +2,10 @@
 import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import AdminOperationResult from './AdminOperationResult.vue';
-import { computed, ref, shallowRef, watch } from 'vue';
+import { computed, nextTick, ref, shallowRef, watch } from 'vue';
 import {
+  PageNavigation,
+  usePageResolver,
   Alert,
   Button,
   Card,
@@ -23,16 +25,123 @@ import { useAdminPresentation } from './presentation';
 const props = defineProps<{ admin: AdminController }>();
 const controller = useAdminOperations(props.admin);
 const presentation = useAdminPresentation();
+const capabilitiesReady = ref(false);
 const capabilities = ref<string[]>([]),
   filter = ref('enabled');
 const moduleInput = ref(''),
   selected = ref('');
-const applicationSettings = ref(false);
-async function showApplicationSettings() {
-  if (!(await controller.beforeLeave())) return;
-  applicationSettings.value = !applicationSettings.value;
-  editor.value = undefined;
+const pageNavigation = usePageResolver(
+  [
+    {
+      href: window.location.pathname,
+      routeKey: 'admin.dashboard',
+      moduleKey: 'runa.admin',
+      serverRouteName: 'runa.admin.dashboard',
+      title: 'Administrator panel',
+    },
+  ],
+  { beforeLeave: () => controller.beforeLeave() },
+);
+const applicationSettings = computed(
+  () =>
+    new URL(pageNavigation.href.value).searchParams.get('section') ===
+    'application',
+);
+function sectionHref(
+  section: boolean | 'health' | 'settings' | 'integrations',
+) {
+  const url = new URL(pageNavigation.href.value);
+  if (section)
+    url.searchParams.set('section', section === true ? 'application' : section);
+  else url.searchParams.delete('section');
+  if (selected.value) url.searchParams.set('module', selected.value);
+  else url.searchParams.delete('module');
+  return url.pathname + url.search + url.hash;
 }
+const navigationEntries = computed(() => [
+  {
+    key: 'operations',
+    routeKey: 'admin.dashboard.operations',
+    moduleKey: 'runa.admin',
+    label: tr('Operations'),
+    href: sectionHref(false),
+    availability: 'available' as const,
+  },
+  {
+    key: 'application',
+    routeKey: 'admin.dashboard.application',
+    moduleKey: 'runa.admin',
+    label: tr('Application settings'),
+    href: sectionHref(true),
+    availability: 'available' as const,
+  },
+  ...(selected.value &&
+  (has('settings.read') ||
+    has('integrations.manage') ||
+    (has('health.configure') && has('diagnostics.read')))
+    ? [
+        {
+          key: 'module',
+          routeKey: 'admin.dashboard.module',
+          moduleKey: 'runa.admin',
+          label: tr('Module operations'),
+          href: sectionHref(false),
+          availability: 'available' as const,
+          children: [
+            ...(has('health.configure') && has('diagnostics.read')
+              ? [
+                  {
+                    key: 'health',
+                    routeKey: 'admin.dashboard.health',
+                    moduleKey: 'runa.admin',
+                    label: tr('Health policy'),
+                    href: sectionHref('health'),
+                    availability: 'available' as const,
+                  },
+                ]
+              : []),
+            ...(has('settings.read')
+              ? [
+                  {
+                    key: 'settings',
+                    routeKey: 'admin.dashboard.settings',
+                    moduleKey: 'runa.admin',
+                    label: tr('Settings'),
+                    href: sectionHref('settings'),
+                    availability: 'available' as const,
+                  },
+                ]
+              : []),
+            ...(has('integrations.manage')
+              ? [
+                  {
+                    key: 'integrations',
+                    routeKey: 'admin.dashboard.integrations',
+                    moduleKey: 'runa.admin',
+                    label: tr('Integrations'),
+                    href: sectionHref('integrations'),
+                    availability: 'available' as const,
+                  },
+                ]
+              : []),
+          ],
+        },
+      ]
+    : []),
+]);
+const navigationCurrent = computed(() => ({
+  routeKey: applicationSettings.value
+    ? 'admin.dashboard.application'
+    : 'admin.dashboard.' + (editor.value ?? 'operations'),
+  moduleKey: 'runa.admin',
+  href: sectionHref(editor.value ?? applicationSettings.value),
+}));
+function navigateSection(href: string, event: MouseEvent) {
+  void pageNavigation.navigate(href, event);
+}
+watch(applicationSettings, () => {
+  editor.value = undefined;
+});
 const editor = ref<'settings' | 'health' | 'integrations'>();
 const work = shallowRef<AdminOperationData>();
 const preview = shallowRef<AdminOperationData>();
@@ -41,6 +150,32 @@ const operationId = ref('');
 const operationKind = ref('modules');
 const intent = ref('disable');
 const has = (permission: string) => capabilities.value.includes(permission);
+watch(
+  [pageNavigation.href, capabilities],
+  () => {
+    const url = new URL(pageNavigation.href.value);
+    const module = url.searchParams.get('module') ?? '';
+    if (selected.value !== module) {
+      selected.value = module;
+      moduleInput.value = module;
+    }
+    const section = url.searchParams.get('section');
+    editor.value =
+      selected.value &&
+      section === 'health' &&
+      has('health.configure') &&
+      has('diagnostics.read')
+        ? 'health'
+        : selected.value && section === 'settings' && has('settings.read')
+          ? 'settings'
+          : selected.value &&
+              section === 'integrations' &&
+              has('integrations.manage')
+            ? 'integrations'
+            : undefined;
+  },
+  { immediate: true },
+);
 const modules = computed(() => {
   const values = controller.snapshot.value?.modules;
   return Array.isArray(values)
@@ -63,19 +198,14 @@ async function refresh() {
   if (has('diagnostics.read')) await controller.refresh(filter.value);
 }
 async function select(module = moduleInput.value) {
-  if (!(await controller.beforeLeave())) return;
+  const url = new URL(sectionHref(false), window.location.origin);
+  url.searchParams.set('module', module);
+  if (!(await pageNavigation.navigate(url.pathname + url.search + url.hash)))
+    return;
   result.value = undefined;
-  selected.value = module;
-  moduleInput.value = module;
-  editor.value = undefined;
   preview.value = undefined;
   work.value = undefined;
   controller.dirty.value = false;
-}
-async function edit(kind: 'settings' | 'health' | 'integrations') {
-  if (!(await controller.beforeLeave())) return;
-  editor.value = kind;
-  preview.value = undefined;
 }
 async function command(
   name: AdminOperationCommand,
@@ -140,7 +270,7 @@ async function readWork() {
 watch(
   () => [controller.contextRevision.value, props.admin.state.value],
   async () => {
-    applicationSettings.value = false;
+    capabilitiesReady.value = false;
     capabilities.value = [];
     selected.value = '';
     moduleInput.value = '';
@@ -156,7 +286,9 @@ watch(
     capabilities.value = Array.isArray(value?.capabilities)
       ? value.capabilities.filter((v): v is string => typeof v === 'string')
       : [];
-    await refresh();
+    capabilitiesReady.value = true;
+    await nextTick();
+    if (!applicationSettings.value && !editor.value) await refresh();
   },
   { immediate: true },
 );
@@ -171,7 +303,9 @@ watch(
     capabilities.value = Array.isArray(value.capabilities)
       ? value.capabilities.filter((v): v is string => typeof v === 'string')
       : [];
-    await refresh();
+    capabilitiesReady.value = true;
+    await nextTick();
+    if (!applicationSettings.value && !editor.value) await refresh();
   },
 );
 defineExpose({ controller });
@@ -194,16 +328,14 @@ function format(value: AdminJson | undefined) {
       <Alert v-if="controller.error.value" tone="warning">{{
         tr(controller.error.value)
       }}</Alert>
-      <Button
+      <PageNavigation
+        :entries="navigationEntries"
+        :current="navigationCurrent"
+        :label="tr('Administrator panel')"
         :disabled="controller.busy.value"
-        @click="showApplicationSettings"
-        >{{
-          applicationSettings
-            ? tr('Back to operations')
-            : tr('Application settings')
-        }}</Button
-      >
-      <Card v-if="applicationSettings">
+        @navigate="navigateSection"
+      />
+      <Card v-if="applicationSettings && capabilitiesReady">
         <component
           :is="presentation.applicationSettings ?? AdminApplicationSettings"
           :controller="controller"
@@ -317,24 +449,6 @@ function format(value: AdminJson | undefined) {
                 :disabled="controller.busy.value"
                 @click="command('health.diagnose', { module: selected })"
                 >{{ tr('Diagnose now') }}</Button
-              >
-              <Button
-                v-if="has('health.configure') && has('diagnostics.read')"
-                :disabled="controller.busy.value"
-                @click="edit('health')"
-                >{{ tr('Health policy') }}</Button
-              >
-              <Button
-                v-if="has('settings.read')"
-                :disabled="controller.busy.value"
-                @click="edit('settings')"
-                >{{ tr('Settings') }}</Button
-              >
-              <Button
-                v-if="has('integrations.manage')"
-                :disabled="controller.busy.value"
-                @click="edit('integrations')"
-                >{{ tr('Integrations') }}</Button
               >
               <Button
                 v-if="has('work.read')"

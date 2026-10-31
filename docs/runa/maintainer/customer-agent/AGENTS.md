@@ -216,6 +216,7 @@ Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/d
 - Light and dark themes from day one.
 - Frontend validation handles known UX errors immediately; backend remains security/integrity authority.
 - Reuse established components/page patterns before inventing new ones; maintain the frontend skill’s component and pattern references in the same task.
+- Sidebar navigation selects areas/modules; subview links use the shared top bar. Follow [page-navigation composition](docs/runa/handbook/development/frontend/page-layouts.md#page-level-navigation-composition).
 - Use one thin HTTP client/wrapper, not scattered fetch calls.
 - Do not use native browser validation when it conflicts with controlled application UX.
 - Rendered UI is the acceptance truth.

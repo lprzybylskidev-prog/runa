@@ -48,3 +48,8 @@ preserve mounted controllers and dirty drafts when the language changes.
 For initial reveal, background reads and shared prepared avatars, follow
 `docs/runa/handbook/development/frontend/loading.md`. Declare explicit regions,
 retain mounted drafts/focus and preserve the owning controller's security fences.
+
+For area/module sidebar versus subview top-bar placement and nested PageNavigation
+or custom-layout usePageNavigationHost, follow
+`docs/runa/handbook/development/frontend/page-layouts.md#page-level-navigation-composition`.
+Preserve the owning controller's guards and history; keep operation controls in content.

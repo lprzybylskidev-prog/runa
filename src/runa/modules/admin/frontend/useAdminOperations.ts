@@ -65,13 +65,30 @@ export function useAdminOperations(admin: AdminController) {
       answer = resolve;
     });
   }
+  function cancelRead() {
+    if (!reading) return;
+    epoch++;
+    abort.abort();
+    abort = new AbortController();
+    reading = false;
+    refreshing.value = false;
+  }
+  async function beforeLeave() {
+    if (busy.value || !(await guard.beforeLeave())) return false;
+    cancelRead();
+    return true;
+  }
   const guard = useDirtyGuard({
     dirty,
     confirmLeave: () => ask('Discard unsaved operational settings?'),
   });
   const guards = navigationGuards.get(admin) ?? new Set();
   const navigation = async (action: () => void | Promise<void>) =>
-    !busy.value && guard.requestLeave(action);
+    !busy.value &&
+    guard.requestLeave(async () => {
+      cancelRead();
+      await action();
+    });
   guards.add(navigation);
   navigationGuards.set(admin, guards);
 
@@ -84,9 +101,7 @@ export function useAdminOperations(admin: AdminController) {
     if (reading) {
       if (!write) return;
       // A deliberate write supersedes an optional read; neither is replayed.
-      epoch++;
-      abort.abort();
-      abort = new AbortController();
+      cancelRead();
     }
     const own = epoch,
       context = stamp();
@@ -241,14 +256,15 @@ export function useAdminOperations(admin: AdminController) {
         window.location.assign(anchor.href);
       });
   }
-  document.addEventListener('click', click, true);
+  // Let guarded local page navigation consume its event before native-link fallback.
+  document.addEventListener('click', click);
   onScopeDispose(() => {
     alive = false;
     epoch++;
     abort.abort();
     confirm(false);
     guards.delete(navigation);
-    document.removeEventListener('click', click, true);
+    document.removeEventListener('click', click);
   });
   return {
     busy: computed(() => busy.value),
@@ -264,7 +280,7 @@ export function useAdminOperations(admin: AdminController) {
     execute,
     refresh,
     confirm,
-    beforeLeave: async () => !busy.value && guard.beforeLeave(),
+    beforeLeave,
   };
 }
 export type AdminOperationsController = ReturnType<typeof useAdminOperations>;

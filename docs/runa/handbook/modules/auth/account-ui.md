@@ -88,7 +88,14 @@ independent column stacks: details/password on the left, avatar/two-factor on th
 right. A taller neighboring card does not add space between details and password;
 narrow screens retain the same reading order in one column. Saving one card does not submit or clear
 another card's draft. Preferences follows Account and security in the default navigation; sessions and
-optional histories follow it.
+optional histories follow it. These subviews appear in ApplicationLayout's top bar
+through public PageNavigation, without a second content tab row. The default
+account destination is `/account`; `?tab=preferences|sessions|...` selects an
+available subview and supports Back/Forward. Unknown/unavailable tabs show Account
+and security. Modified clicks retain native link behavior. Pending writes block
+in-place navigation; the existing account controller owns drafts and reads.
+Independent/custom layouts follow the public
+[page-navigation contract](../../development/frontend/page-layouts.md#page-level-navigation-composition).
 Session/history and trusted-device tables show the shared loading spinner during
 their guarded reads; empty-result text appears only after a completed read.
 Table-tab entry uses one refresh pipeline, without a second rows read after data

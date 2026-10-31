@@ -949,3 +949,19 @@ maps; `DeclarationRules` validates both nonempty bounded language values. Existi
 backend technical diagnostics remain English; views translate reviewed UI labels
 and safe messages. Locale changes rerender presentation without reinitializing
 controllers, refetching protected data or discarding drafts.
+
+## Dashboard subview navigation
+
+The sidebar selects the dashboard or an owning module; owner page links already
+use the horizontal top bar. Dashboard Operations/Application settings and selected
+module Health policy/Settings/Integrations now publish to that same top bar via
+public PageNavigation. Module editor destinations retain capability filtering.
+Record/module selection and actual diagnose/read/review/save actions stay in content.
+Application settings uses `?section=application`; module editors preserve
+`?module=<module-code>&section=health|settings|integrations`. Direct URLs and browser
+history restore the selected view. The shared operational dirty guard can cancel
+navigation without changing URL/draft; accepted navigation cancels only optional
+reads, never submits or replays writes. Initial capability admission completes
+before a selected editor read; background validation retains mounted editors.
+Custom App layouts follow the UI-owned
+[composition contract](../../development/frontend/page-layouts.md#page-level-navigation-composition).

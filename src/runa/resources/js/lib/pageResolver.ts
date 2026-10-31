@@ -1,4 +1,4 @@
-import { onScopeDispose, shallowRef } from 'vue';
+import { computed, onScopeDispose, shallowRef } from 'vue';
 import type { PageDescriptor } from '../runa/ui/navigation';
 
 /** Exact registered paths only. Query/hash are preserved but never select a module. */
@@ -39,8 +39,10 @@ export function usePageResolver(
   options: { beforeLeave?: (href: string) => boolean | Promise<boolean> } = {},
 ) {
   const resolver = createPageResolver(pages);
+  const href = shallowRef(window.location.href);
   const current = shallowRef(resolver.resolve(window.location.href));
   function refresh() {
+    href.value = window.location.href;
     current.value = resolver.resolve(window.location.href);
   }
   const marker = '__runa_page_position';
@@ -131,5 +133,10 @@ export function usePageResolver(
       allowed && !disposed && request === generation ? commit() : false,
     );
   }
-  return { current, navigate, resolve: resolver.resolve };
+  return {
+    current,
+    href: computed(() => href.value),
+    navigate,
+    resolve: resolver.resolve,
+  };
 }

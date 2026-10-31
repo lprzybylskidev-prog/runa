@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
+  PageNavigation,
+  usePageResolver,
   Alert,
   Button,
   Checkbox,
@@ -161,6 +163,59 @@ const visibleTabs = computed(() => {
   if (preferences >= 0) visible.splice(1, 0, ...visible.splice(preferences, 1));
   return visible;
 });
+const pageNavigation = usePageResolver(
+  [
+    {
+      href: window.location.pathname,
+      routeKey: 'account',
+      moduleKey: 'runa.auth',
+      serverRouteName: 'runa.auth.pages.account',
+      title: 'User panel',
+    },
+  ],
+  { beforeLeave: () => !busy.value },
+);
+function tabHref(item: AccountTab) {
+  const url = new URL(pageNavigation.href.value);
+  if (item === 'details') url.searchParams.delete('tab');
+  else url.searchParams.set('tab', item);
+  return url.pathname + url.search + url.hash;
+}
+const navigationEntries = computed(() =>
+  visibleTabs.value.map((item) => ({
+    key: item,
+    routeKey: 'account.' + item,
+    moduleKey: 'runa.auth',
+    label: titles.value[item],
+    href: tabHref(item),
+    availability: 'available' as const,
+  })),
+);
+const navigationCurrent = computed(() => ({
+  routeKey: 'account.' + tab.value,
+  moduleKey: 'runa.auth',
+  href: tabHref(tab.value),
+}));
+let appliedNavigation: string | undefined;
+watch([pageNavigation.href, ready, busy, visibleTabs], () => {
+  if (
+    !ready.value ||
+    busy.value ||
+    appliedNavigation === pageNavigation.href.value
+  )
+    return;
+  appliedNavigation = pageNavigation.href.value;
+  const requested = new URL(pageNavigation.href.value).searchParams.get('tab');
+  const next =
+    visibleTabs.value.find((item) => item === requested) ?? 'details';
+  if (next !== tab.value) {
+    query.value.page = 1;
+    void selectTab(next);
+  }
+});
+function navigateTab(href: string, event: MouseEvent) {
+  void pageNavigation.navigate(href, event);
+}
 const history = computed(() => tab.value.endsWith('History'));
 const query = ref<TableQuery>({
   page: 1,
@@ -312,23 +367,13 @@ const passwordHint = computed(() =>
     :inert="display.changingPreference.value || undefined"
     @submit.capture="feedbackAttempt++"
   >
-    <nav
-      class="flex flex-wrap gap-2"
-      :aria-label="text('Ustawienia konta', 'Account settings')"
-    >
-      <Button
-        v-for="item in visibleTabs"
-        :key="item"
-        :variant="tab === item ? 'solid' : 'outline'"
-        :aria-current="tab === item ? 'page' : undefined"
-        :disabled="busy"
-        @click="
-          query.page = 1;
-          selectTab(item);
-        "
-        >{{ titles[item] }}</Button
-      >
-    </nav>
+    <PageNavigation
+      :entries="navigationEntries"
+      :current="navigationCurrent"
+      :label="text('Ustawienia konta', 'Account settings')"
+      :disabled="busy"
+      @navigate="navigateTab"
+    />
     <div
       class="flex flex-wrap items-center justify-between gap-3"
       data-account-heading
