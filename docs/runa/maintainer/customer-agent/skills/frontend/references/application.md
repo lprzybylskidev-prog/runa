@@ -43,3 +43,9 @@ When a supplied module table defect is reported, assess Auth/Permissions/Audit
 for the same issue and consume the supported public correction without editing
 protected Runa. See the Admin frontend and public table guides for shared dialog,
 refresh/filter/reset and separately authorized export/print behavior.
+
+For renewable password-protected sections, use public `useProtectedActivity`
+and guarded AuthStepUp section APIs from
+`docs/runa/handbook/modules/auth/security.md#protected-section-idle-access`.
+Preserve controller scope, admitted identity and protected roots/portals when
+replacing presentation; automatic reads never count as user activity.

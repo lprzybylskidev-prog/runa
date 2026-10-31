@@ -27,6 +27,7 @@ final readonly class Access implements AdminAccess
     {
         return $this->entry->read(fn (OperationContext $context): array => $this->projection->bootstrap() + [
             'presentation' => $this->presentation->read(),
+            'activity' => $this->entry->activity(false),
         ]);
     }
 

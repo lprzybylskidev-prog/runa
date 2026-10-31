@@ -136,7 +136,7 @@ cleanup deletes expired/revoked technical records, never Audit/password history.
 
 ## Shared step-up contract
 
-Resolve `AuthStepUp` API version `1.0.0` through ModuleApis. The consuming server
+Resolve `AuthStepUp` API version `1.1.0` through ModuleApis. The consuming server
 chooses its action key, `password`, `second_factor` or `both`, TTL and reuse policy;
 never take these requirements from a client or assume a menu permission proves it.
 Confirmation checks actual credentials/factors again, even on a trusted device.
@@ -195,3 +195,89 @@ Private email changes, profile/avatar ownership and forced reverification use th
 [profile contract](profile.md). Password replacement also cancels pending address
 requests/links. Step-up follows current verification policy; explicit forced
 reverification still prevents it until the address is verified.
+
+## Protected-section idle access
+
+Auth owns renewable section access separately from fixed-age operation proofs.
+The delivered runtime implementation remains in Auth's Actions/StepUp, guarded by
+`AuthStepUp` API 1.1.0. Public server consumers resolve it through ModuleApis and call
+`assertActive(string $action, string $requirement, int $ttlSeconds = 300): bool`
+or `activity(string $action, string $requirement, int $ttlSeconds = 300,
+bool $renew = false): array{remaining_seconds: float, heartbeat_seconds: float}`
+inside their default-connection business transaction. These are browser-session
+APIs, not CLI proof inheritance. Owners choose unique section action keys,
+requirements and TTL (1–900 seconds) in trusted source; never accept them from HTTP
+input. Check owning grants, record policies and availability in that transaction.
+A named authenticated GET endpoint calls activity without renewal; its CSRF-protected
+POST counterpart passes renew true after the same owning authorization checks.
+The request body does not carry policy or client timestamps. Invalid action or
+requirement throws InvalidArgumentException; invalid TTL or missing owning
+transaction throws LogicException. Native guard failures propagate as
+OperationRejected; missing/expired proof is HTTP 403 step_up_required.
+
+Confirmation uses the existing credential endpoint and binds the same user/native
+session/security generation/action/factor. Idle deadlines start at confirmation;
+activity extends only still-valid access under the minimum captured, current policy
+and caller TTL. Reads and assertActive do not renew. Expiry, consumed proof, revoked
+session, restricted identity, principal mismatch or ineligible factor refuses access;
+activity cannot restore it. The original verified_at/expires_at remain unchanged,
+so fixed-age and every-action consumers never acquire freshness from section use.
+Idle activity is technical session metadata, without per-keystroke Audit; actual
+confirmation, proof consumption and protected business writes retain native Audit.
+
+Public `ProtectedActivityStatus` has numeric `remaining_seconds` (0–900, exclusive
+zero) and `heartbeat_seconds` (0–30, exclusive zero). A bootstrap may supply this
+status to avoid an extra initial GET; its reads never renew.
+
+The public frontend facade `@/runa/auth` supplies
+`useProtectedActivity(options: ProtectedActivityOptions): { refresh(): Promise<void> }`.
+Options are `endpoint: string` (shared HTTP client path),
+`identity: () => string | undefined` (admitted account/native-session identity),
+`active: () => boolean`, optional
+`initial: () => ProtectedActivityStatus | undefined` (owning bootstrap status), `root: () => HTMLElement | undefined`,
+`onExpired: (cause: unknown) => void`. The controller belongs to its Vue effect scope.
+The root covers the protected presentation. For a full-document section use
+`document.documentElement`, including teleported dialogs; embedded sections keep
+portals inside their root. Public composition must keep this
+controller mounted and pass the current protected root; replacement presentation
+must not copy activity/security logic. `refresh` reads current server status without
+renewing it, including after credential confirmation or successful navigation.
+Trusted clicks, pointer presses, typing, wheel and touch scrolling inside that
+visible root count; programmatic scrolling never counts.
+pointer motion, focus, visibility, background requests and synthetic events do not.
+Activity sends at most one request per server heartbeat interval (at most 30 seconds,
+shortened for smaller TTL), with one trailing batch of real input. No idle heartbeat
+or business write replay runs. Hidden documents, scope disposal, access loss and
+identity changes cancel pending activity and fence late responses. Expiry rechecks
+the server without renewal so another tab's real activity can be respected.
+
+Admin consumes action `runa.admin.enter`, password, 300 seconds. Other application
+sections implement their own guarded endpoints and use this same controller;
+activity outside their root never extends their access. The Admin document, navigation and its dialogs form one section while its
+controller is admitted and the current route belongs to /admin. Embedded sections
+choose their own narrower root.
+
+Example for an application-owned reports section (inside its normal authenticated,
+authorized default-connection transaction):
+
+```php
+$access = $apis->resolve('runa.auth', AuthStepUp::class, '1.1.0');
+$access->assertActive('app.reports.enter', 'password', 300);
+// In the named activity endpoint, after the same current reports permission check:
+return $access->activity('app.reports.enter', 'password', 300, $request->isMethod('POST'));
+```
+
+```ts
+useProtectedActivity({
+  endpoint: '/reports/activity',
+  identity: () => admittedSessionIdentity.value,
+  active: () => reportsAdmitted.value,
+  root: () => reportsRoot.value,
+  onExpired: clearReportsAndRequestProof,
+});
+```
+
+No section gains authority from the activity endpoint or its reported deadline.
+The server cannot prove a human gesture from HTTP; frontend trusted-event filtering
+prevents accidental/background renewal, while the server exclusively enforces
+current authorization and refuses renewal after expiry.

@@ -1139,3 +1139,14 @@ with the active language and application timezone; providers and exports retain
 canonical instants. Audit declares occurred_at as datetime. Auth administrative
 bounded entry lists format their known timestamp keys through the same helper;
 Permissions effective/definition tables currently contain no timestamp columns.
+
+### Protected-section activity
+
+`AdminBootstrap.activity` contains Auth's `ProtectedActivityStatus`. `useAdmin`
+composes public `useProtectedActivity` with the existing admitted session identity,
+the Admin document root and ready `/admin` routes. This remains active with custom
+Admin layouts/page slots and headless public controller consumers. It includes
+teleported dialogs. Current bootstrap status avoids an extra initial status GET;
+GET activity/focus checks never extend access. Expiry clears protected projection,
+requests native entry proof and never replays an interrupted write. Custom Admin
+presentation must keep its controller scoped to the protected route.

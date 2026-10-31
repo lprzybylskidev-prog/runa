@@ -38,7 +38,7 @@ final readonly class AccessTransaction
                 $this->authority->acquire($connection);
                 $this->guard->enter('runa.permissions', new ApiOperation('access.manage', $permission));
                 if ($write) {
-                    $this->apis->resolve('runa.auth', AuthStepUp::class, '1.0.0')->assertVerified($permission, 'both', everyAction: true);
+                    $this->apis->resolve('runa.auth', AuthStepUp::class, '1.1.0')->assertVerified($permission, 'both', everyAction: true);
                 }
 
                 return $work($connection);

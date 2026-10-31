@@ -29,3 +29,9 @@ Security hard rules still apply even when this skill is not fully loaded.
 
 Follow [shared skill workflow](../../../docs/runa/handbook/ai/skills-policy.md#shared-point-workflow)
 for source ownership, instruction-product assessment, supported commands and final-only broad verification.
+
+For password-protected sections, use the Auth-owned
+[protected-section idle contract](../../../docs/runa/handbook/modules/auth/security.md#protected-section-idle-access)
+through guarded APIs and the public frontend controller. Keep source-owned section
+policy, current authorization and operation-proof freshness separate; background
+reads never renew access and expired access always requires reconfirmation.

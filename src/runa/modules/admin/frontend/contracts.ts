@@ -84,6 +84,7 @@ export interface AdminPageData {
   sections: AdminSectionData[];
 }
 export interface AdminBootstrap {
+  activity: import('@/runa/auth').ProtectedActivityStatus;
   schema_version: 1;
   generation: number;
   revision: string;

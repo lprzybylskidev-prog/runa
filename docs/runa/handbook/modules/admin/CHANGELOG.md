@@ -2,6 +2,13 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Repair missing permission-check projection context in aggregate preparation.
+
+- Use Auth-owned protected-section idle access throughout Admin, including native
+  aggregate Save. Trusted activity renews the section; background reads never do.
+  Clear expired presentation and request password confirmation without replaying writes.
+  Expose server status in bootstrap and named GET/POST activity endpoints.
+
 - Bound application-setting permission intersections and work-list status reads.
   Read branding fingerprints without transferring image bytes, and serve only
   the selected asset. Preserve fresh grants, immutable URLs and lease recovery.

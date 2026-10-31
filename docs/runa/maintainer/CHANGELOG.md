@@ -4,6 +4,11 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Add reusable Auth-owned protected-section idle access (Auth 2.1.0, AuthStepUp
+  1.1.0) and migrate Admin admission/aggregate Save. Renew only on deliberate
+  visible-section input, preserve fixed-age/single-use operation proof, and ship
+  public scoped frontend composition plus forward storage and cleanup.
+
 - Extend performance review across application startup, public/account reads,
   settings/assets, module work, bulk sessions, reminders and frontend request
   ownership. Bound repeated settings/declaration reads and collection queries,

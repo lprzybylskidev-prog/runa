@@ -54,6 +54,12 @@ async function transport(page: Page) {
   await page.route('**/api/admin**', async (route) => {
     const path = new URL(route.request().url()).pathname;
     const entry = path === '/api/admin/entry';
+    if (path === '/api/admin/activity' && proof) {
+      await route.fulfill({
+        json: { data: { remaining_seconds: 300, heartbeat_seconds: 30 } },
+      });
+      return;
+    }
     await route.fulfill({
       status: entry || proof ? 200 : 403,
       contentType: 'application/json',
@@ -65,6 +71,7 @@ async function transport(page: Page) {
             : {
                 data: {
                   schema_version: 1,
+                  activity: { remaining_seconds: 300, heartbeat_seconds: 30 },
                   generation: 1,
                   revision: 'bootstrap-1',
                   owners: [],
@@ -157,9 +164,12 @@ test('Admin generated forms: draft reconciliation, safe validation and guarded n
       path = url.pathname;
     let data: unknown;
     if (path === '/api/admin/entry') data = { available: true };
+    else if (path === '/api/admin/activity')
+      data = { remaining_seconds: 300, heartbeat_seconds: 30 };
     else if (path === '/api/admin')
       data = {
         schema_version: 1,
+        activity: { remaining_seconds: 300, heartbeat_seconds: 30 },
         generation: 1,
         revision: 'bootstrap',
         owners: [
@@ -395,6 +405,7 @@ test('Auth administration: owned Users presentation selects accounts and protect
     } else
       data = {
         schema_version: 1,
+        activity: { remaining_seconds: 300, heartbeat_seconds: 30 },
         owner: 'runa.auth',
         key: 'users',
         title: 'Users',
@@ -569,6 +580,7 @@ test('Permissions and Audit administration: built definition and immutable histo
       else
         data = {
           schema_version: 1,
+          activity: { remaining_seconds: 300, heartbeat_seconds: 30 },
           owner,
           key,
           title: owner === 'runa.audit' ? 'Audit history' : 'Roles',

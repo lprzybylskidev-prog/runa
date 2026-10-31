@@ -477,3 +477,13 @@ Application branding reuses FileInput, Select, fields and Button. Image draft/Ca
 behavior belongs to the public [settings presentation](../../modules/admin/frontend.md#application-display-defaults-image-drafts-and-page-headings).
 Public useApplicationDisplayDefaults/formatApplicationInstant provides shared
 display defaults and instant formatting; explicit user preferences win.
+
+## Protected-section activity composition
+
+Public `useProtectedActivity` from `@/runa/auth` composes the caller's admitted
+session and owning section root without another session owner. Its `refresh`
+reads status without renewal; scoped trusted input renews still-valid access.
+Keep it mounted with replacement presentation, including relevant portals, and
+clear protected content through `onExpired`. Complete signatures, server endpoint
+preconditions and examples belong to the
+[Auth idle-access contract](../../modules/auth/security.md#protected-section-idle-access).

@@ -571,7 +571,17 @@ function adminAggregateLogin(object $test): void
 }
 
 it('coordinates an Admin aggregate HTTP review and Auth first atomic Save with safe owner projections', function (): void {
+    CarbonImmutable::setTestNow('2026-10-31 12:00:00 UTC');
     adminAggregateLogin($this);
+    CarbonImmutable::setTestNow('2026-10-31 12:04:00 UTC');
+    $this->postJson('/api/admin/activity')->assertOk();
+    CarbonImmutable::setTestNow('2026-10-31 12:05:01 UTC');
+    // Native aggregate admission accepts idle access beyond the original fixed proof.
+    // Its owning sensitive operation still needs an independently fresh proof.
+    $secret = app(Encrypter::class)->decryptString($this->adminUser->fresh()->totp_secret);
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.permissions.access.manage', 'requirement' => 'both',
+        'current_password' => 'admin-entry-password', 'method' => 'totp',
+        'code' => app(Google2FA::class)->oathTotp($secret, intdiv(now()->getTimestamp(), 30))])->assertOk();
     $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate@example.test', name: 'Before', active: true, approved: true));
     $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     $input = adminAggregateInput($this, $target->publicId, [$permission]);
@@ -1744,4 +1754,21 @@ it('publishes display defaults and uploaded logo icons atomically with revision 
     } finally {
         DB::table('shared.application_settings')->where('singleton', 1)->update(['values' => $before->values, 'revision' => $before->revision, 'updated_at' => $before->updated_at, 'branding_logo' => null, 'branding_logo_icon' => null, 'branding_favicon' => null]);
     }
+});
+
+it('uses Auth protected section idle access for Admin and never trusts activity request policy', function (): void {
+    CarbonImmutable::setTestNow('2026-10-31 12:00:00 UTC');
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminLogin)();
+    $this->postJson('/api/admin/activity')->assertForbidden();
+    ($this->adminProof)();
+    CarbonImmutable::setTestNow('2026-10-31 12:04:00 UTC');
+    $this->getJson('/api/admin/activity')->assertOk()->assertJsonPath('data.remaining_seconds', 60);
+    $this->postJson('/api/admin/activity', ['action' => 'app.unrelated', 'ttlSeconds' => 900, 'requirement' => 'none'])
+        ->assertOk()->assertJsonPath('data.remaining_seconds', 300);
+    CarbonImmutable::setTestNow('2026-10-31 12:05:01 UTC');
+    $this->getJson('/api/admin')->assertOk()->assertJsonPath('data.activity.remaining_seconds', 239);
+    CarbonImmutable::setTestNow('2026-10-31 12:09:00 UTC');
+    $this->getJson('/api/admin/activity')->assertForbidden()->assertJsonPath('reason', 'step_up_required');
+    $this->postJson('/api/admin/activity')->assertForbidden()->assertJsonPath('reason', 'step_up_required');
 });

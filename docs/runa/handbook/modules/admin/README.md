@@ -171,9 +171,17 @@ the administrative behavior and boundaries.
 The owner approved direct native Auth/Permissions/framework refactoring on
 2026-10-30. The [phased transaction contract](../../architecture/module-transactions.md)
 supersedes the earlier unchanged-API composition proposal. AuthProfiles and
-PermissionsAccess use guarded API 2.0.0 with independent Auth 2.0.0 and Permissions 2.1.0; standalone
+PermissionsAccess use guarded API 2.0.0 with independent Auth 2.1.0 and Permissions 2.1.0; standalone
 writes have a root boundary, while source composition joins native phases.
 Auth/Permissions require platform >=0.7.0 <0.8.0. Audit develops as independent 1.1.0 with unchanged guarded read/record signatures.
 The native path and Admin aggregate dispatch are implemented; complete owning
 read/operation coverage retains its roadmap points. No
 intermediate unpublished Admin 0.2.0 update path is retained.
+
+Admin entry uses the Auth [protected-section idle contract](../auth/security.md#protected-section-idle-access),
+not fixed-age operation proof. Its document/controller includes navigation and
+teleported dialogs; automatic reads do not renew. GET/POST `/api/admin/activity`
+(`runa.admin.activity.show`/`runa.admin.activity.renew`) retain entry grants,
+availability and session checks. Bootstrap `activity` exposes numeric
+`remaining_seconds` and `heartbeat_seconds`. Native aggregate entry uses an idle
+MutationProof; each owning sensitive operation keeps its independent proof policy.

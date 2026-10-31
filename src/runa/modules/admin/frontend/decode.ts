@@ -1,3 +1,4 @@
+import { decodeProtectedActivity } from '../../auth/frontend/useProtectedActivity';
 import type {
   AdminText,
   AdminBootstrap,
@@ -285,6 +286,7 @@ export function decodeBootstrap(value: unknown): AdminBootstrap {
     presentation = object(v.presentation);
   return {
     schema_version: 1,
+    activity: decodeProtectedActivity(v.activity),
     generation: integer(v.generation),
     revision: text(v.revision),
     owners: unique(

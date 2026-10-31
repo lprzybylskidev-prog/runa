@@ -33,7 +33,12 @@ final readonly class TransactionSecurity implements SecurityContract
 
     public function proof(MutationProof $proof, bool $consume): void
     {
-        $this->apis->resolve('runa.auth', AuthStepUp::class, '1.0.0')
-            ->assertVerified($proof->action, $proof->requirement, $proof->ttlSeconds, $consume && $proof->everyAction);
+        $api = $this->apis->resolve('runa.auth', AuthStepUp::class, '1.1.0');
+        if ($proof->idle) {
+            $api->assertActive($proof->action, $proof->requirement, $proof->ttlSeconds);
+
+            return;
+        }
+        $api->assertVerified($proof->action, $proof->requirement, $proof->ttlSeconds, $consume && $proof->everyAction);
     }
 }

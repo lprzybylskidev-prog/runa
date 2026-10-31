@@ -84,3 +84,9 @@ export const AuthAdminSection = defineAsyncComponent(
 
 export { default as AuthOperationProofPage } from '../../../../modules/auth/frontend/AuthOperationProofPage.vue';
 export { useAuthPresentation } from '../../../../modules/auth/frontend/presentation';
+
+export { useProtectedActivity } from '../../../../modules/auth/frontend/useProtectedActivity';
+export type {
+  ProtectedActivityOptions,
+  ProtectedActivityStatus,
+} from '../../../../modules/auth/frontend/useProtectedActivity';

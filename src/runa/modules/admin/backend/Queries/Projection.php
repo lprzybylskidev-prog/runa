@@ -285,14 +285,15 @@ final readonly class Projection
             $submitted[$item['id']] = $item['input'];
         }
         [$discovery, , $sections] = $this->selected($owner, $page);
-        $parts = [];
+        $parts = $checks = [];
         foreach ($sections as [$sectionOwner, $section, $id]) {
-            if (! $this->allowed($sectionOwner, $section->readPermission, $discovery['generation'])) {
+            $allowed = $checks[$sectionOwner] ??= $this->permissionChecks($sectionOwner, $discovery['generation']);
+            if (! $allowed($section->readPermission)) {
                 continue;
             }
             $definition = $discovery['owners'][$sectionOwner];
             $view = $this->section($sectionOwner, $section, $id, $discovery['generation'],
-                $this->declarations->bindingAvailable($definition['bindings'][$section->binding]), $definition);
+                $this->declarations->bindingAvailable($definition['bindings'][$section->binding]), $definition, $allowed);
             $saves = array_values(array_filter($view['commands'], fn ($command): bool => $command['intent'] === 'save' && $command['mode'] === 'atomic'));
             if ($saves === []) {
                 continue;

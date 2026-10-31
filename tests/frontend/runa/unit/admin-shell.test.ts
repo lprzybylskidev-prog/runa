@@ -98,6 +98,7 @@ function sessionFixture(): ApplicationSessionController {
 }
 function bootstrap(): AdminBootstrap {
   return {
+    activity: { remaining_seconds: 300, heartbeat_seconds: 30 },
     schema_version: 1,
     generation: 7,
     revision: 'bootstrap-1',

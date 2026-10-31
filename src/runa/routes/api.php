@@ -25,6 +25,9 @@ Route::get('/modules/frontend', ModuleFrontendController::class)->name('api.modu
 // Fixed Core adapter: the existing module HTTP namespace remains unchanged.
 Route::get('/admin', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)->name('runa.admin.bootstrap');
 
+Route::get('/admin/activity', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)->name('runa.admin.activity.show');
+Route::post('/admin/activity', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)->name('runa.admin.activity.renew');
+
 Route::get('/admin/entry', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)->name('runa.admin.entry');
 Route::get('/admin/operations/{operation}', AdminBootstrapController::class)->middleware(AdminHttpGuard::class)
     ->where('operation', '[a-z][a-z.]*')->name('runa.admin.operations.read');

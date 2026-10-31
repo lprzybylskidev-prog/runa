@@ -22,6 +22,7 @@ final readonly class AdminBootstrapController
             'runa.admin.operations.read' => 'operations.read',
             'runa.admin.operations.execute' => 'operations.execute',
             'runa.admin.entry' => 'entry',
+            'runa.admin.activity.show', 'runa.admin.activity.renew' => 'activity',
             'runa.admin.page.read' => 'page',
             'runa.admin.section.read' => 'read',
             'runa.admin.command.preview' => 'previewCommand',
@@ -35,7 +36,7 @@ final readonly class AdminBootstrapController
             ?? throw new OperationRejected('module_unavailable', 'runa.admin', 'bootstrap');
         $controller = $this->declarations->make($record, 'Runa\\Modules\\Admin\\Http\\Controllers\\'.match ($operation) {
             'operations.read', 'operations.execute' => 'OperationController',
-            'entry' => 'EntryController', 'page' => 'PageController', 'read' => 'SectionController',
+            'activity' => 'ActivityController', 'entry' => 'EntryController', 'page' => 'PageController', 'read' => 'SectionController',
             'command', 'previewCommand' => 'CommandController', 'preview', 'save' => 'AggregateController',
             default => 'BootstrapController',
         });

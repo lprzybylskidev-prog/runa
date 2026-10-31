@@ -617,6 +617,19 @@ reassessment before resuming point 3; completed point history remains evidence.
     do not present a selected Core review as whole-application coverage.
     Preserve owning authority, locks, expiry, bounded reads and dirty drafts.
     Broad verification remains point 12 after owner frontend acceptance.
+- [ ] 11a31. Deliver Auth-owned protected-section idle access and migrate Admin.
+  - Owner approval, 2026-10-31: renew the specific protected section on deliberate
+    navigation, clicks, typing and scrolling. Ignore pointer motion, hidden tabs,
+    background reads and automatic refresh. Expired access requires credentials.
+  - Auth owns guarded idle assertion/activity APIs and a reusable scoped frontend
+    controller. Server-owned endpoints choose action, requirement and TTL; clients
+    cannot select weaker policy. Keep fixed-age and single-use operation proof intact.
+  - Retain current session/principal/security-version/factor/availability checks,
+    transactional rollback and native aggregate enforcement. Store idle activity
+    independently from credential verification and preserve live rows during cleanup.
+  - Add native expiry/isolation/policy/rollback and frontend activity/lifecycle
+    regressions, synchronize public contracts/examples and both instruction products.
+    Prepare current runtime/assets for owner acceptance; broad gates stay point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3826,3 +3839,76 @@ force. Development/base test data, services, caches and reports were preserved;
 supported runners removed only their disposable `runa_test_test_1` databases and
 owned temporary browser resources. No real production deployment or business data
 reset occurred. Owner acceptance 11b and final verification/release 12 remain open.
+
+### Point 11a31 — Shared protected-section idle access
+
+Owner approval on 2026-10-31 replaces fixed-age Admin admission with reusable
+Auth-owned section idle access: deliberate navigation/clicks/typing/scrolling in
+that admitted section renews its own still-valid deadline. Activity elsewhere,
+background requests, pointer motion and programmatic scroll never renew it.
+This is an amendment to the active Admin acceptance repairs; confirmed platform
+feature/0.7.0 metadata stays unchanged, with no second active roadmap.
+
+AuthStepUp API 1.1.0 supplies assertActive and activity; source-owned endpoints
+choose the action/requirement/TTL and recheck current section grants/availability.
+Separate activity_at/idle_expires_at retain original credential verified_at and
+expires_at; captured/current/caller TTL, principal/native session/security version,
+restriction/factor and consumed-proof checks remain enforced under native locks.
+Activity metadata rolls back with its owning transaction and cleanup preserves
+still-live section access. Confirmation/consumption/business Audit remains native;
+renewal is technical session metadata, not a per-input Audit event.
+
+Public useProtectedActivity composes the caller's admitted identity and protected
+root. Trusted click/pointer press/typing/wheel/touch input is batched at the bounded
+server interval (at most 30 seconds); automatic reads/focus/visibility never renew.
+Scope/identity/access loss and hidden documents cancel pending input and fence late
+responses. Deadline/visibility checks read server state, allowing another tab's
+legitimate activity without trusting local timestamps. Requests are bounded to ten
+seconds. Bootstrap status avoids another initial read and does not reset throttling.
+Admin uses the admitted /admin document including teleported dialogs/navigation;
+embedded consumers choose narrower roots through the same public controller.
+Native aggregate MutationProof now explicitly supports non-consuming idle assertions;
+fixed-age and single-use owning operation proof remains separate in both phases.
+
+The focused post-five-minute aggregate scenario exposed an existing missing
+permissionChecks closure argument in prepareAggregate after point 11a29's projection
+refactor. Pass the per-owner phase-local checker as the normal page projection does;
+no authority cache, compatibility adapter or changed business premise was added.
+The first extended fixture also attempted to enroll an already enrolled TOTP method;
+corrected it to confirm the existing factor instead. Native failed outputs remain
+in the conversation/tool evidence; successful focused reruns supersede them without
+claiming a full suite or final gate.
+
+Auth advances 2.0.0 -> 2.1.0 with a new section_activity forward edge and additive
+nullable timestamps; existing migration/upgrade history is unchanged. AuthStepUp
+exact-version consumers are updated to 1.1.0. Permissions stays in its already
+unreleased 2.1.0 candidate and Admin in 0.1.0; platform candidate remains 0.7.0.
+Public signatures/examples, native transaction/API boundaries, current Auth/Admin
+guides/changelogs and central candidate changelog are synchronized. Owner/customer
+security and frontend references route to the canonical Auth contract. Existing
+root AGENTS already owns authorization/lifecycle and needs no duplicated rule.
+No dependency, upstream refresh or new infrastructure was introduced.
+
+Focused evidence and runnable preparation follow in this point; no full automated
+gate has been run early.
+Owner manual acceptance 11b and final automated verification/release 12 remain open.
+
+Focused uncertainty checks passed: seven native cases/105 assertions cover section
+renewal versus fixed-age proof, no-read renewal, action/requirement/principal
+isolation, exact expiry, rollback, current policy tightening/security generation,
+cleanup preservation, Admin HTTP policy ownership and real aggregate Save beyond
+the original credential deadline. Eight frontend cases cover trusted input/batching,
+scoped roots, synthetic input, identity/access/hidden cancellation, obsolete replies,
+server expiry reads, throttle preservation during bootstrap and existing Admin/proof
+integration. These are selected regressions, not complete suites. Backend evidence:
+`.runtime/frontend/RM-2026-016-section-activity/backend-focused.log`;
+frontend evidence is the supported native test result (8 PASS, exit/cleanup 0).
+The runner removed only its disposable runa_test_test_1 database and preserved the
+base/development data; no Docker resources were created by this point.
+
+Read-only runtime inspection identified local database runa, 15 retained accounts,
+Auth installed 2.0.0, no idle columns, no reserved queue jobs, active/recovery work,
+module transitions or updater reservation, and no pre-existing manual maintenance.
+The explicit next preparation scope is one additive module migration, its retained
+2.0.0 -> 2.1.0 edge and source synchronization; no reset, credential change, fixture
+replacement or production operation is needed. Preserve all data/caches/reports.

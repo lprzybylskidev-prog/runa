@@ -201,3 +201,9 @@ before applying file/name selections. An unresolved import can abort initial
 optimization and reload the browser with mismatched Vitest runtime state. A warm
 cache can hide this failure; dependency-resolution diagnostics must also cover a
 cold optimizer cache without deleting retained reports or other tooling state.
+
+The browser-test facade `@runa/testing/vitest` also exports Vitest's native `page`
+context for trusted input through `page.elementLocator(element).click()` or
+`.fill(value)`. Import it through the facade so root-owned tests resolve the frozen
+src toolchain consistently in runtime and TypeScript. DOM dispatch/trigger remains
+synthetic and must not stand in for trusted-gesture security regressions.

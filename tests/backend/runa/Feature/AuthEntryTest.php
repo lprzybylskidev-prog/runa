@@ -661,7 +661,7 @@ it('binds step up to identity session action and consumes every action proof ins
     $request = credentialRequest('/');
     app()->instance('request', $request);
     $scope = app(PrincipalScope::class);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthStepUp::class, '1.0.0');
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthStepUp::class, '1.1.0');
     $assert = fn ($action, $requirement, $every = false) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($user->public_id), fn () => $api->assertVerified($action, $requirement, everyAction: $every)));
     expect(fn () => $assert('app.invoice.delete', 'password'))->toThrow(OperationRejected::class);
     expect(fn () => $assert('app.invoice.publish', 'both'))->toThrow(OperationRejected::class);
@@ -1831,4 +1831,90 @@ it('shows concrete account lifecycle values through own history without exposing
         ->and(CarbonImmutable::parse($detail[0]['after'])->format('Y-m-d\TH:i:s\Z'))->toBe($deadline);
     $actions = array_column($this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries'), 'action');
     expect($actions)->toContain('identity.set_expiry');
+});
+
+it('renews protected section idle access without renewing credential freshness or another section', function (): void {
+    CarbonImmutable::setTestNow('2026-10-31 12:00:00 UTC');
+    $user = entryUser('section-activity@example.test');
+    DB::transaction(function () use ($user): void {
+        $user->email_verified_at = now();
+        $user->save();
+    });
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    foreach (['app.reports.enter', 'app.billing.enter'] as $action) {
+        $this->postJson('/api/runa/auth/step-up', ['action' => $action, 'requirement' => 'password', 'current_password' => 'a-long-test-password'])->assertOk();
+    }
+    app()->instance('request', credentialRequest('/'));
+    $scope = app(PrincipalScope::class);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthStepUp::class, '1.1.0');
+    $call = fn (Closure $work) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($user->public_id), $work));
+    $original = DB::table('runa_auth.step_up_proofs')->where('action', 'app.reports.enter')->first();
+    CarbonImmutable::setTestNow('2026-10-31 12:04:00 UTC');
+    expect($call(fn () => $api->activity('app.reports.enter', 'password', renew: true))['remaining_seconds'])->toBe(300.0);
+    CarbonImmutable::setTestNow('2026-10-31 12:05:01 UTC');
+    expect($call(fn () => $api->assertActive('app.reports.enter', 'password')))->toBeTrue();
+    expect(fn () => $call(fn () => $api->assertVerified('app.reports.enter', 'password')))->toThrow(OperationRejected::class);
+    expect(fn () => $call(fn () => $api->activity('app.billing.enter', 'password', renew: true)))->toThrow(OperationRejected::class);
+    app(CleanupSessions::class)->run();
+    $kept = DB::table('runa_auth.step_up_proofs')->where('action', 'app.reports.enter')->first();
+    expect($kept->verified_at)->toBe($original->verified_at)->and($kept->expires_at)->toBe($original->expires_at);
+    CarbonImmutable::setTestNow('2026-10-31 12:09:00 UTC');
+    expect(fn () => $call(fn () => $api->activity('app.reports.enter', 'password', renew: true)))->toThrow(OperationRejected::class);
+});
+
+it('never renews protected section access on reads and rolls back activity with the owning transaction', function (): void {
+    CarbonImmutable::setTestNow('2026-10-31 12:00:00 UTC');
+    $user = entryUser('section-read@example.test');
+    DB::transaction(function () use ($user): void {
+        $user->email_verified_at = now();
+        $user->save();
+    });
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.reports.enter', 'requirement' => 'password', 'current_password' => 'a-long-test-password'])->assertOk();
+    app()->instance('request', credentialRequest('/'));
+    $scope = app(PrincipalScope::class);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthStepUp::class, '1.1.0');
+    $call = fn (Closure $work) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($user->public_id), $work));
+    CarbonImmutable::setTestNow('2026-10-31 12:04:00 UTC');
+    expect($call(fn () => $api->activity('app.reports.enter', 'password'))['remaining_seconds'])->toBe(60.0);
+    expect(fn () => $call(function () use ($api): void {
+        $api->activity('app.reports.enter', 'password', renew: true);
+        throw new RuntimeException('rollback section activity');
+    }))->toThrow(RuntimeException::class, 'rollback section activity');
+    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'app.reports.enter')->value('activity_at'))->toBeNull();
+    expect(fn () => $call(fn () => $api->activity('app.reports.enter', 'both', renew: true)))->toThrow(OperationRejected::class);
+    // A stricter caller must not use activity to extend an already expired shorter window.
+    expect(fn () => $call(fn () => $api->activity('app.reports.enter', 'password', 60, true)))->toThrow(OperationRejected::class);
+    CarbonImmutable::setTestNow('2026-10-31 12:05:00 UTC');
+    expect(fn () => $call(fn () => $api->activity('app.reports.enter', 'password', renew: true)))->toThrow(OperationRejected::class);
+});
+
+it('bounds protected section renewal by current policy and refuses identity generation changes', function (): void {
+    CarbonImmutable::setTestNow('2026-10-31 12:00:00 UTC');
+    $user = entryUser('section-policy@example.test');
+    $other = entryUser('section-other@example.test');
+    DB::transaction(function () use ($user): void {
+        $user->email_verified_at = now();
+        $user->save();
+    });
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.reports.enter', 'requirement' => 'password', 'current_password' => 'a-long-test-password'])->assertOk();
+    app()->instance('request', credentialRequest('/'));
+    $scope = app(PrincipalScope::class);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthStepUp::class, '1.1.0');
+    $call = fn (string $id) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($id), fn () => $api->activity('app.reports.enter', 'password', renew: true)));
+    expect(fn () => $call($other->public_id))->toThrow(OperationRejected::class);
+    CarbonImmutable::setTestNow('2026-10-31 12:04:00 UTC');
+    expect($call($user->public_id)['remaining_seconds'])->toBe(300.0);
+    expect(fn () => DB::transaction(function () use ($user, $call): void {
+        DB::table('runa_auth.users')->where('id', $user->id)->increment('security_version');
+        expect(fn () => $call($user->public_id))->toThrow(OperationRejected::class);
+        throw new RuntimeException('restore test security generation');
+    }))->toThrow(RuntimeException::class, 'restore test security generation');
+    entryPolicy(['step_up_seconds' => 60]);
+    CarbonImmutable::setTestNow('2026-10-31 12:04:01 UTC');
+    expect($call($user->public_id)['remaining_seconds'])->toBe(60.0);
+    entryPolicy(['step_up_seconds' => 300]);
+    CarbonImmutable::setTestNow('2026-10-31 12:05:01 UTC');
+    expect(fn () => $call($user->public_id))->toThrow(OperationRejected::class);
 });

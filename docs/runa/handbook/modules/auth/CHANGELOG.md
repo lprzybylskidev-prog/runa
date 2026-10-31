@@ -1,5 +1,16 @@
 # Auth module changelog
 
+## 2.1.0 — 2026-10-31
+
+- Add guarded AuthStepUp 1.1.0 protected-section idle assertion/activity, with
+  independent server-owned deadlines, session/action/security/factor isolation,
+  atomic rollback and expiry-safe cleanup. Preserve fixed-age and consumed proofs.
+- Deliver public useProtectedActivity with scoped trusted input, bounded event
+  batching, visible-document handling, server expiry rechecks and disposal/identity
+  fencing. Section owners retain current endpoint authorization and presentation.
+- Add the forward section_activity edge and nullable technical timestamps without
+  resetting existing credentials, identities, sessions or development data.
+
 ## 2.0.0 — 2026-10-30
 
 - Reuse validated settings inside the current locked read for entry/security,

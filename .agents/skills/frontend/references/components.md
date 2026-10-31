@@ -11,3 +11,9 @@ Customer composition never authorizes protected platform edits or copied securit
 For nested subview links, use public PageNavigation and the UI-owned host contract
 in `docs/runa/handbook/development/frontend/page-layouts.md#page-level-navigation-composition`;
 reuse the shell renderer rather than adding a content tab/dropdown implementation.
+
+For renewable password-protected sections, use public `useProtectedActivity`
+and guarded AuthStepUp section APIs from
+`docs/runa/handbook/modules/auth/security.md#protected-section-idle-access`.
+Preserve controller scope, admitted identity and protected roots/portals when
+replacing presentation; automatic reads never count as user activity.

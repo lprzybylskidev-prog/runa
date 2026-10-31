@@ -25,7 +25,7 @@ MutationDefinition::__construct(string $owner, string $key, array $access,
     array $subjects, array $resources, array $proofs = [])
 MutationAccess::__construct(string $module, ApiOperation $operation)
 MutationProof::__construct(string $action, string $requirement,
-    int $ttlSeconds = 300, bool $everyAction = true)
+    int $ttlSeconds = 300, bool $everyAction = true, bool $idle = false)
 ```
 
 `access` is a nonempty list of at most 32 MutationAccess values naming the owner's
@@ -34,7 +34,10 @@ at most 100 Auth UUIDv7 values including copy sources; the root adds the actor.
 `resources` is a nonempty unique list of at most 32 owner-namespaced resource keys
 (up to 256 bytes), naming actual independently written revisions. `proofs` contains
 at most 8 MutationProof values; requirement is password|second_factor|both, TTL
-1–300. Source-owned metadata never authorizes bypassing the native owner guard.
+1–300. `idle: true` requires `everyAction: false` and asserts Auth protected-section
+idle access without renewal in both native proof phases. Fixed-age and single-use
+operation proofs remain the defaults. See [Auth section access](../modules/auth/security.md#protected-section-idle-access).
+Source-owned metadata never authorizes bypassing the native owner guard.
 Owner is a retained module ID or `app`; key follows ApiOperation grammar. Proof
 actions are existing owning actions. Duplicate single-use proof demands and
 multiple writers of one resource are refused; there is no implicit proof reuse.

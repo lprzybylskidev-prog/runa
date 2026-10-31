@@ -62,33 +62,69 @@ final readonly class StepUp implements AuthStepUp
         });
     }
 
+    /** @return array{remaining_seconds: float, heartbeat_seconds: float} */
+    public function activity(string $action, string $requirement, int $ttlSeconds = 300, bool $renew = false): array
+    {
+        return $this->verify($action, $requirement, $ttlSeconds, false, true, $renew);
+    }
+
+    public function assertActive(string $action, string $requirement, int $ttlSeconds = 300): bool
+    {
+        $this->activity($action, $requirement, $ttlSeconds);
+
+        return true;
+    }
+
     public function assertVerified(string $action, string $requirement, int $ttlSeconds = 300, bool $everyAction = false): bool
+    {
+        $this->verify($action, $requirement, $ttlSeconds, $everyAction, false, false);
+
+        return true;
+    }
+
+    /** @return array{remaining_seconds: float, heartbeat_seconds: float} */
+    private function verify(string $action, string $requirement, int $ttlSeconds, bool $everyAction, bool $idle, bool $renew): array
     {
         $this->validate($action, $requirement);
         if ($ttlSeconds < 1 || $ttlSeconds > 900 || app('db')->connection()->transactionLevel() < 1) {
             throw new \LogicException('Step-up requires a bounded TTL and the owning business transaction.');
         }
 
-        return $this->context->run(app('request'), /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($action, $requirement, $ttlSeconds, $everyAction): bool {
+        return $this->context->run(app('request'), /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($action, $requirement, $ttlSeconds, $everyAction, $idle, $renew): array {
             if ($this->principals->current()?->publicId !== $user->public_id || $this->policy->restrictions($user, $session) !== []
                 || ! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayOperate() || $user->password_change_required || $this->policy->passwordExpired($user)) {
                 throw new OperationRejected('step_up_required', 'runa.auth', 'step_up', 403);
             }
-            /** @var (\stdClass&object{requirement: string, factor_method: string|null})|null $proof */
+            /** @var (\stdClass&object{id: int, requirement: string, factor_method: string|null, verified_at: string, expires_at: string, activity_at: string|null, idle_expires_at: string|null})|null $proof */
             $proof = $connection->table('runa_auth.step_up_proofs')->where('user_id', $user->id)->where('session_hash', $session->session_hash)
                 ->where('security_version', $user->security_version)->where('action', $action)->whereNull('consumed_at')
                 ->whereIn('requirement', $requirement === 'both' ? ['both'] : [$requirement, 'both'])
-                ->where('expires_at', '>', now())->where('verified_at', '>', CarbonImmutable::now('UTC')->subSeconds(min($ttlSeconds, $this->policy->integer('step_up_seconds'))))
                 ->lockForUpdate()->first();
             if ($proof === null || ($proof->requirement !== 'password' && ! $this->policy->accepts($proof->factor_method ?? ''))) {
                 throw new OperationRejected('step_up_required', 'runa.auth', 'step_up', 403);
             }
+            $now = CarbonImmutable::now('UTC');
+            $verified = CarbonImmutable::parse($proof->verified_at);
+            $captured = CarbonImmutable::parse($proof->expires_at);
+            $ttl = min($ttlSeconds, $this->policy->integer('step_up_seconds'), $verified->diffInSeconds($captured));
+            $last = $idle && $proof->activity_at !== null ? CarbonImmutable::parse($proof->activity_at) : $verified;
+            $expiry = $idle && $proof->idle_expires_at !== null ? CarbonImmutable::parse($proof->idle_expires_at) : $captured;
+            $deadline = $expiry->min($last->addSeconds($ttl));
+            if ($deadline->lessThanOrEqualTo($now)) {
+                throw new OperationRejected('step_up_required', 'runa.auth', 'step_up', 403);
+            }
+            if ($renew) {
+                $deadline = $now->addSeconds($ttl);
+                $connection->table('runa_auth.step_up_proofs')->where('id', $proof->id)->update([
+                    'activity_at' => $now, 'idle_expires_at' => $deadline,
+                ]);
+            }
             if ($everyAction) {
-                $connection->table('runa_auth.step_up_proofs')->where('id', $proof->id)->update(['consumed_at' => now()]);
+                $connection->table('runa_auth.step_up_proofs')->where('id', $proof->id)->update(['consumed_at' => $now]);
                 $this->transactions->record('step_up.consumed', $user);
             }
 
-            return true;
+            return ['remaining_seconds' => (float) $now->diffInSeconds($deadline), 'heartbeat_seconds' => (float) min(30, $ttl / 3)];
         }, count: false);
     }
 }

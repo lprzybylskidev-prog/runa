@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "runa.auth",
   "kind": "core",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "platform": ">=0.7.0 <0.8.0",
   "framework_api": "^1.0.0",
   "name": {

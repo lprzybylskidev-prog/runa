@@ -1,5 +1,9 @@
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
-import { useApplicationSession, useOperationProof } from '@/runa/auth';
+import {
+  useApplicationSession,
+  useOperationProof,
+  useProtectedActivity,
+} from '@/runa/auth';
 import { ApiError, request } from '@/runa/http';
 import type {
   ApplicationNavigate,
@@ -219,6 +223,17 @@ export function useAdmin(
     cancelEntry,
   };
   refusals.set(controller, fail);
+  useProtectedActivity({
+    endpoint: '/admin/activity',
+    identity: proofIdentity,
+    active: () =>
+      state.value === 'ready' &&
+      /^\/admin(?:\/|$)/.test(window.location.pathname),
+    // Admin occupies the document; this includes its teleported dialogs and navigation.
+    root: () => document.documentElement,
+    initial: () => bootstrap.value?.activity,
+    onExpired: fail,
+  });
   let observedIdentity: string | undefined;
   const stop = watch(
     () => sessionStamp(session),

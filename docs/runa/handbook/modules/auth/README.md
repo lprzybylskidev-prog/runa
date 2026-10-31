@@ -1,6 +1,6 @@
 # Auth identities, lifecycle and entry transport
 
-Current Core `runa.auth` source develops at independent version `2.0.0` for
+Current Core `runa.auth` source develops at independent version `2.1.0` for
 platform >=0.7.0 <0.8.0, requiring
 `runa.audit ^1.0.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.

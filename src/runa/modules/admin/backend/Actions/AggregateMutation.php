@@ -26,7 +26,7 @@ final readonly class AggregateMutation implements TransactionalMutation
         return new MutationDefinition('runa.admin', 'aggregate.save', [
             new MutationAccess('runa.admin', new ApiOperation('save', 'runa.admin.enter')),
         ], [], ['runa.admin.aggregate:'.hash('sha256', $this->owner.'.'.$this->page)], [
-            new MutationProof('runa.admin.enter', 'password', everyAction: false),
+            new MutationProof('runa.admin.enter', 'password', everyAction: false, idle: true),
         ]);
     }
 

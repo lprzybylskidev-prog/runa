@@ -22,7 +22,7 @@ final readonly class CleanupSessions
             $connection->table('runa_auth.security_notices')->whereIn('id', $noticeIds)->delete();
             $operatorIds = $connection->table('runa_auth.operator_tokens')->where('expires_at', '<=', $now)->orderBy('id')->limit(500)->pluck('id');
             $connection->table('runa_auth.operator_tokens')->whereIn('id', $operatorIds)->delete();
-            $proofIds = $connection->table('runa_auth.step_up_proofs')->where('expires_at', '<=', $now)->orderBy('id')->limit(500)->pluck('id');
+            $proofIds = $connection->table('runa_auth.step_up_proofs')->whereRaw('COALESCE(idle_expires_at, expires_at) <= ?', [$now])->orderBy('id')->limit(500)->pluck('id');
             $connection->table('runa_auth.step_up_proofs')->whereIn('id', $proofIds)->delete();
             $mailIds = $connection->table('runa_auth.profile_mail')->where('expires_at', '<=', $now)->orderBy('id')->limit(500)->pluck('id');
             $connection->table('runa_auth.profile_mail')->whereIn('id', $mailIds)->delete();
