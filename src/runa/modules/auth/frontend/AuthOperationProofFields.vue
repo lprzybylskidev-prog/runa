@@ -67,6 +67,8 @@ const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
       >
       <Button
         type="button"
+        tone="danger"
+        variant="outline"
         :disabled="controller.busy.value"
         @click="emit('cancel')"
         >{{ copy.cancel }}</Button

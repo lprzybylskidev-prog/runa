@@ -46,7 +46,7 @@ function cancel() {
         <h1
           ref="heading"
           tabindex="-1"
-          class="text-2xl font-semibold text-ink outline-none"
+          class="auth-heading text-2xl font-semibold text-ink"
         >
           {{ title ?? copy.title }}
         </h1>
@@ -80,3 +80,10 @@ function cancel() {
     </div>
   </component>
 </template>
+
+<style scoped>
+/* A programmatic reading target, not an interactive/tab-stop control. */
+.auth-heading:focus {
+  outline: none;
+}
+</style>

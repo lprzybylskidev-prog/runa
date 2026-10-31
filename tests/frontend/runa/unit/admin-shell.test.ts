@@ -1503,9 +1503,13 @@ it('Auth operation proof uses Polish defaults, confirms only identity and cancel
           });
       },
     }),
+    { attachTo: document.body },
   );
   await flushPromises();
   expect(wrapper.text()).toContain('Potwierdź operację');
+  const heading = wrapper.get('h1').element;
+  expect(document.activeElement).toBe(heading);
+  expect(getComputedStyle(heading).outlineStyle).toBe('none');
   await wrapper.get('form').trigger('submit');
   expect(proof.error.value).toBe('Uzupełnij wymagane pola potwierdzenia.');
   const proofRequests = () =>

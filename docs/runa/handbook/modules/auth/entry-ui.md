@@ -177,6 +177,9 @@ methods returning Promise<void> and reset():void. FactorMethod is totp/email/rec
 AuthOperationProof accepts controller:OperationProofController and optional locale:'pl'|'en'; it has no
 slots/events. Headless consumers use the same controller with their own controls.
 Both supplied presentations use shared PL/EN copy and existing public fields/buttons.
+The page focuses its reading heading without a visible outline, matching Auth entry
+screens while retaining control focus indicators. Cancellation uses the shared
+danger/error outline button in inline and standalone proof presentations.
 
 begin reads native security options only when a factor is required. Eligibility
 uses the existing Auth required/enrolled/enabled/recovery rules. confirm uses

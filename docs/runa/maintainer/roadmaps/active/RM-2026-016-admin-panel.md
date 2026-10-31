@@ -382,6 +382,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     contract for App/module extensions, with technical identifiers unchanged.
   - Add focused language-switch/default/replacement regressions, prepare current
     assets and keep owner manual acceptance and final verification open.
+- [x] 11a5. Match Auth proof heading focus and cancellation styling.
+  - Reuse the existing Auth reading-heading focus rule so initial focus is announced
+    without a visible heading outline; retain keyboard indicators on controls.
+  - Use the existing red error/danger outline button for proof cancellation,
+    synchronize current presentation docs and refresh local assets for owner review.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2094,3 +2099,32 @@ acceptance is claimed. Supported backend runners reported successful worker
 cleanup with no disposable workers to remove; no other Docker resources were
 created or removed. Existing development services/data, model/knowledge caches
 and verification/build evidence are preserved.
+
+### Point 11a5 — Proof reading focus and error-tone cancellation
+
+Owner manual inspection found the standalone Admin admission heading outlined on
+initial render and requested red/error cancellation. The page already focused its
+reading heading, but its Tailwind utility did not override the shared focus-visible
+rule. Reused the existing AuthEntryFlow/AuthAccountDefault scoped
+`.auth-heading:focus` rule. Reading focus and tabindex=-1 remain; interactive
+controls keep their keyboard focus indicators. The shared Auth proof Cancel button
+now uses the existing danger tone and outline variant, giving both standalone and
+inline proof presentation red text/border without new CSS tokens or controls.
+
+The current Auth entry guide/changelog is synchronized. Owner/customer guidance
+already covers Auth reading-heading focus, public presentation composition and
+shared controls; no new reusable rule or duplicated instruction is needed. Auth
+remains the existing unreleased 2.0.0 candidate, with no public signature, native
+proof policy, module manifest or version-only upgrade change. Admin remains its
+existing unreleased candidate and consumes the same Auth view.
+
+Necessary rendered regression: `python3 tools/maintainer/test-frontend
+--filter='Auth operation proof uses Polish defaults'`: **1 PASS**, native exit 0,
+cleanup 0. The mounted browser check confirms initial focus remains on the heading,
+its computed outline is none, and the existing password-confirmation/cancellation
+flow still clears transient credentials. Current assets were rebuilt with
+`pnpm --dir src run build` (type compilation, Vite and native errors): PASS.
+Real local `/admin` returns HTTP 200. No broad suites/final quality gate,
+database changes or Docker resource cleanup were needed. Development data,
+services, knowledge/model caches and reports remain. Owner manual point 11b and
+final verification/release point 12 remain open.
