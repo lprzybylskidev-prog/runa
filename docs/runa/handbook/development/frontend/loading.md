@@ -46,7 +46,8 @@ Both `MinimalLayoutProps` and `ApplicationLayoutProps` accept optional
 composition and static/native error delivery. Supplied Auth entry/welcome provide
 their owning controller's readiness; ApplicationSessionShell mounts its layout immediately. Its initial content and
 avatar placeholders share one account/session readiness latch: validated session,
-profile/preferences settlement and decoded image or bounded fallback. Protected
+profile/preferences settlement, bounded Admin menu advertisement and decoded image
+or bounded fallback. Protected
 content still requires session admission. Layout readiness controls only the content/default
 slot (and MinimalLayout actions), never the frame. Custom layout replacements forward readiness and keep controller
 ownership outside presentation. Supplying readiness delegates initial preference
@@ -165,3 +166,17 @@ the region mounted/aria-busy and render the existing Skeleton instead of partial
 labels/links. Reveal the completed path with the navigation. This is a local
 placeholder, not a page/frame cover or an independent HTTP prerequisite. Supplied
 Admin readiness remains latched through ordinary background reads.
+
+The shared session shell includes initial Admin-entry advertisement settlement
+(success, refusal or five-second timeout/failure) in its account/session readiness
+latch. The account-menu trigger remains disabled until that initial presentation
+and page discovery are ready. Existing same-identity background advertisement reads
+retain the known link and mounted content; denial/failure removes the link and
+identity/access loss clears it immediately. Advertisement remains UX, not authority.
+
+ApplicationLayout masks language/theme controls with local Skeletons while
+navigationLoading is true, using the shell's same initial preference/readiness
+signal. It renders controls with hydrated labels/icons when ready. Do not expose
+a temporary system-theme icon while the account snapshot is pending or start a
+second preference/session read. Intentional preference changes keep their existing
+cover/focus protocol.

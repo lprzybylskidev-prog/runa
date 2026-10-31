@@ -84,3 +84,8 @@ Breadcrumb discovery uses the shared Skeleton pulse in its own layout region,
 coordinated with initial shell/page navigation readiness. Reveal the complete path
 once ready; never animate partial hierarchy growth. The existing reduced-motion
 Skeleton fallback remains static.
+
+Initial language/theme controls share local Skeleton placeholders with shell
+navigation readiness; reveal hydrated icons/labels instead of animating a temporary
+system preference into the account value. Account-menu readiness settles with
+content, while background revalidation retains the existing presentation.

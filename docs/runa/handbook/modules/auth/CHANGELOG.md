@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Include bounded initial Admin-entry advertisement in shared shell readiness; keep content/menu coherent with account preference hydration and hide temporary theme/language controls until navigation settles. Preserve background menu revalidation and identity fences.
+
 - Compose shared breadcrumbs from the active layout page context, with linked area/module ancestors and the current Admin/account subview, including query navigation.
 
 - Share Welcome module presentation through the public UI source catalogue and correct the shared session shell's Admin breadcrumbs for dashboard and owner pages.

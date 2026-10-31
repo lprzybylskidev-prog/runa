@@ -442,7 +442,17 @@ onScopeDispose(() => {
           </div>
         </div>
         <div class="shell-header-controls" data-print-hide>
+          <div
+            v-if="navigationLoading"
+            class="flex gap-2"
+            aria-busy="true"
+            data-preferences-loading
+          >
+            <AppSkeleton v-if="!props.locale" class="w-9 py-3" :lines="1" />
+            <AppSkeleton class="w-9 py-3" :lines="1" />
+          </div>
           <AppPreferenceControls
+            v-else
             size="sm"
             :fixed-locale="!!props.locale"
             :locale="locale"
@@ -461,6 +471,7 @@ onScopeDispose(() => {
               <AppButton
                 icon-only
                 class="shell-avatar-button"
+                :disabled="userLoading || navigationLoading"
                 :aria-label="`${t('userMenu')}: ${userName}`"
                 :aria-expanded="open"
                 :aria-controls="panelId"

@@ -478,6 +478,13 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Reuse the existing readiness signals without blocking the frame or introducing
     a new loading engine; preserve normal background-refresh behavior.
   - Synchronize guidance, verify delayed bootstrap/page readiness and prepare assets.
+- [x] 11a16. Settle account-menu admission and display controls before initial reveal.
+  - Include bounded Admin entry discovery in the existing session readiness latch;
+    retain settled presentation during background revalidation and fence identities.
+  - Cover language/theme controls with local shared skeletons during initial
+    navigation readiness and keep the account-menu trigger disabled until ready.
+  - Verify delayed menu/preferences in both completion orders, fallback, identity
+    cleanup and unchanged background behavior; synchronize guidance/build assets.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2773,3 +2780,55 @@ so neither instruction product needs duplicated rules. No dependencies, database
 changes or Docker resources were introduced; development data/services, knowledge/
 model caches and verification reports remain preserved. Owner acceptance 11b and
 final verification/release 12 remain open; broad gates were not run.
+
+### Point 11a16 — Coherent account-menu and display-control readiness
+
+The owner's remaining header loading defects came from two separate omissions:
+initial content readiness did not include Admin entry advertisement settlement,
+and ApplicationLayout rendered language/theme controls even while its navigation
+was awaiting account preference hydration. The private Auth advertisement adapter
+now exposes available/settled refs, bounds the optional read with the shared
+HTTP client and a five-second signal, and settles failures/refusals to no link.
+The existing session identity/readiness latch includes this settlement. Aborted
+or late old-identity results remain fenced by epoch/disposal; same-identity
+background revalidation retains settled presentation and the known link until a
+confirmed result, denial or failure. No authority is inferred from advertisement.
+
+ApplicationLayout uses existing local Skeletons for display controls while its
+navigationLoading is true, then mounts hydrated labels/icons. Its account-menu
+trigger is disabled while user/navigation presentation is loading, preventing an
+incomplete initial menu. The frame stays mounted. Existing preference/session
+owners, snapshot notifications, background draft retention and intentional theme/
+language cover/focus behavior remain unchanged; no global request counter or extra
+session/preference reads were added.
+
+Synchronized canonical loading/motion, Auth account UI, Admin shared-shell guidance
+and the Auth candidate changelog. Auth changes stay within the unreleased 2.0.0
+candidate, Admin remains the unreleased 0.1.0 creation candidate and platform stays
+prepared 0.7.0. No API signature, migration, manifest dependency or upgrade edge
+changes. Owner/customer AGENTS and skills already reference these shared readiness/
+preference contracts; neither product needs duplicated procedures or new rules.
+
+Focused supported frontend checks passed 10 cases (377 excluded), native exit 0 /
+cleanup 0. Log: .runtime/frontend/RM-2026-016-header-readiness-tests-final.log.
+New held-response cases verify both advertisement/preferences completion orders,
+hydrated dark-theme controls on reveal, disabled menu until ready, background
+retention/removal, failure fallback and bounded abort/withdrawal. Existing initial
+Admin readiness, supplied-session ownership, hierarchy and page-loading checks
+passed. Earlier tests attempted menu interaction while the newly guarded trigger
+was still disabled; they now wait for actual readiness rather than assuming one
+promise flush means presentation completion. Failed evidence is preserved.
+
+The TypeScript/Vite/native-error build passed in
+.runtime/frontend/RM-2026-016-header-readiness-build-final.log. /admin and all 16
+entry-linked assets returned HTTP 200. A controlled browser diagnostic against
+the served build held advertisement/preferences separately at PL/dark/1440px and
+EN/light/390px, checking pending display controls/menu, either first completion,
+ready final theme and the advertised Admin link. Both contexts report no page
+errors/document overflow. Screenshots and report.json remain under
+.runtime/artifacts/playwright/runa/RM-2026-016-header-readiness/. Synthetic session/
+preference/operation responses performed no application business writes. Browser
+contexts were closed and the temporary diagnostic helper removed. No Docker or
+database resources were created/reset; active services/data, model/knowledge caches
+and all evidence remain preserved. These focused checks do not replace owner manual
+acceptance 11b or final verification/release 12, which remain open.

@@ -66,8 +66,10 @@ account access, without speculative business statistics or management navigation
 The supplied application/account shell uses ApplicationLayout width="fluid".
 The shell renders its frame immediately; its loading slot supplies a stable
 noninteractive placeholder only in the protected content region until session
-validation. Initial profile/preferences/avatar readiness coordinates content/avatar placeholders
-inside the frame; subsequent reads retain the mounted content and decoded image. Account
+validation. Initial profile/preferences/avatar and bounded Admin-entry advertisement readiness coordinates content/avatar placeholders
+inside the frame; language/theme controls use local skeletons and the account-menu
+trigger stays disabled until initial navigation is ready. The optional advertisement
+settles to no link on refusal/failure or five-second timeout. Subsequent reads retain the mounted content and decoded image. Account
 loading uses the existing Skeleton inside the four destination Cards, retaining
 that structure through account initialization instead of a spinner or a temporary
 MinimalLayout. Skeletons contain no identity values or interactive forms; protected

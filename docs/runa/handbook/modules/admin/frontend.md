@@ -1046,3 +1046,12 @@ for the parent's shared write/confirmation lane. `AdminPresentation.operationHis
 replaces it with that same contract. Implementation is
 src/runa/modules/admin/frontend/AdminOperationHistory.vue. It uses Table, local
 read progress/error/retry and backend-projected per-row actions, never raw UUID entry.
+
+### Account-menu initial readiness
+
+The shared Auth shell waits for its initial guarded Admin entry advertisement to
+settle before revealing session content/navigation/account menu, with a five-second
+no-link fallback. Initial account preference hydration also masks language/theme
+controls through the same layout readiness. Background advertisement reads keep
+the existing presentation until confirmed denial/failure; identity/access loss
+withdraws it immediately. No extra session owner or authorization cache is added.

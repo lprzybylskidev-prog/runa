@@ -171,6 +171,7 @@ const contentReadiness = useViewReadiness({
     !loading.value &&
     !profileLoading.value &&
     !preferencePending.value &&
+    adminEntry.settled.value &&
     avatarImage.settled.value,
 });
 </script>
@@ -236,7 +237,7 @@ const contentReadiness = useViewReadiness({
             <span>{{ text('Panel użytkownika', 'User panel') }}</span>
           </a>
           <a
-            v-if="adminEntry"
+            v-if="adminEntry.available.value"
             href="/admin"
             class="account-menu-action"
             :aria-current="

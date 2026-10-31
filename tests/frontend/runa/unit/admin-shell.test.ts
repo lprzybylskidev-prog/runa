@@ -220,6 +220,7 @@ it('uses one supplied session, follows the English application preference and pl
     .findAll('button')
     .find((b) => b.attributes('aria-label')?.startsWith('User menu:'))!;
   expect(button).toBeTruthy();
+  await vi.waitFor(() => expect(button.attributes('disabled')).toBeUndefined());
   await button.trigger('click');
   await flushPromises();
   const menu = document.querySelector('.account-menu')!;
@@ -2047,6 +2048,7 @@ it('Admin revalidation keeps the menu link stable through unchanged activity and
     .find((button) =>
       button.attributes('aria-label')?.startsWith('User menu:'),
     )!;
+  await vi.waitFor(() => expect(menu.attributes('disabled')).toBeUndefined());
   await menu.trigger('click');
   await flushPromises();
   const link = () => document.querySelector('.account-menu a[href="/admin"]');
@@ -2454,7 +2456,9 @@ it('shared breadcrumbs include linked Admin owner ancestors and account subviews
     attachTo: document.body,
   });
   await vi.waitFor(() =>
-    expect(w.find('.shell-breadcrumbs').exists()).toBe(true),
+    expect(w.find('.shell-breadcrumbs [aria-current="page"]').exists()).toBe(
+      true,
+    ),
   );
   expect(
     w
@@ -2488,4 +2492,146 @@ it('shared breadcrumbs include linked Admin owner ancestors and account subviews
       .map((item) => item.text().replace(/^\/\s*/, '')),
   ).toEqual(['Home', 'Application', 'User panel', 'Security']);
   expect(w.find('.shell-breadcrumbs a[href="/account"]').exists()).toBe(true);
+});
+
+it.each(['entry first', 'preferences first'])(
+  'session reveal waits for Admin menu and hydrated theme (%s)',
+  async (order) => {
+    let finishEntry!: (value: Response) => void;
+    let finishPreferences!: (value: Response) => void;
+    vi.mocked(window.fetch).mockImplementation(async (input) => {
+      if (String(input) === '/api/admin/entry')
+        return new Promise((resolve) => {
+          finishEntry = resolve;
+        });
+      if (String(input) === '/api/runa/auth/preferences')
+        return new Promise((resolve) => {
+          finishPreferences = resolve;
+        });
+      return respond({}, 404);
+    });
+    const connecting = accountPreferences.connect(identity);
+    const session = sessionFixture();
+    const wrapper = mount(ApplicationSessionShell, {
+      props: { session },
+      slots: { default: '<p data-ready-body>Ready body</p>' },
+      attachTo: document.body,
+    });
+    await vi.waitFor(() => expect(finishEntry).toBeTypeOf('function'));
+    await vi.waitFor(() => expect(finishPreferences).toBeTypeOf('function'));
+    const menu = () => wrapper.get('.shell-avatar-button');
+    const assertLoading = () => {
+      expect(wrapper.find('[data-ready-body]').exists()).toBe(false);
+      expect(wrapper.find('[data-preferences-loading]').exists()).toBe(true);
+      expect(menu().attributes('disabled')).toBeDefined();
+    };
+    assertLoading();
+    const entry = () => finishEntry(respond({ data: { available: true } }));
+    const preferences = () =>
+      finishPreferences(
+        respond({
+          data: {
+            account: identity,
+            revision: 1,
+            values: [
+              {
+                scope: 'runa:runa.auth:global:theme',
+                version: 1,
+                stored: true,
+                value: 'dark',
+              },
+              {
+                scope: 'runa:runa.auth:global:locale',
+                version: 1,
+                stored: true,
+                value: 'en',
+              },
+            ],
+          },
+        }),
+      );
+    (order === 'entry first' ? entry : preferences)();
+    await flushPromises();
+    assertLoading();
+    (order === 'entry first' ? preferences : entry)();
+    await connecting;
+    await vi.waitFor(() =>
+      expect(wrapper.find('[data-ready-body]').exists()).toBe(true),
+    );
+    expect(wrapper.find('[data-preferences-loading]').exists()).toBe(false);
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(menu().attributes('disabled')).toBeUndefined();
+    expect(wrapper.find('button[aria-label^="Theme: Dark"]').exists()).toBe(
+      true,
+    );
+    await menu().trigger('click');
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector('.account-menu a[href="/admin"]'),
+      ).not.toBeNull(),
+    );
+    const content = wrapper.get('[data-ready-body]').element;
+    session.authorityRevision.value++;
+    await flushPromises();
+    expect(wrapper.get('[data-ready-body]').element).toBe(content);
+    expect(wrapper.find('[data-preferences-loading]').exists()).toBe(false);
+    finishEntry(respond({ data: { available: false } }));
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector('.account-menu a[href="/admin"]'),
+      ).toBeNull(),
+    );
+  },
+);
+
+it('initial Admin advertisement failure settles the shell to an absent link', async () => {
+  vi.mocked(window.fetch).mockImplementation(async () => {
+    throw new DOMException('Timed out', 'TimeoutError');
+  });
+  const wrapper = mount(ApplicationSessionShell, {
+    props: { session: sessionFixture() },
+    slots: { default: '<p data-ready-body>Ready body</p>' },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(wrapper.find('[data-ready-body]').exists()).toBe(true),
+  );
+  expect(wrapper.find('[data-preferences-loading]').exists()).toBe(false);
+  await wrapper.get('.shell-avatar-button').trigger('click');
+  await flushPromises();
+  expect(document.querySelector('.account-menu a[href="/admin"]')).toBeNull();
+});
+
+it('bounded Admin advertisement timeout releases initial readiness and fences a withdrawn session', async () => {
+  const timeout = new AbortController();
+  const timed = vi
+    .spyOn(AbortSignal, 'timeout')
+    .mockReturnValue(timeout.signal);
+  vi.mocked(window.fetch).mockImplementation(
+    async (_input, init) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener(
+          'abort',
+          () => reject(init.signal!.reason),
+          { once: true },
+        );
+      }),
+  );
+  const session = sessionFixture();
+  const wrapper = mount(ApplicationSessionShell, {
+    props: { session },
+    slots: { default: '<p data-ready-body>Ready body</p>' },
+    attachTo: document.body,
+  });
+  await flushPromises();
+  expect(timed).toHaveBeenCalledWith(5000);
+  expect(wrapper.find('[data-ready-body]').exists()).toBe(false);
+  timeout.abort(new DOMException('Timed out', 'TimeoutError'));
+  await vi.waitFor(() =>
+    expect(wrapper.find('[data-ready-body]').exists()).toBe(true),
+  );
+  session.session.value = undefined;
+  await flushPromises();
+  expect(wrapper.find('[data-ready-body]').exists()).toBe(false);
+  expect(document.querySelector('.account-menu a[href="/admin"]')).toBeNull();
 });
