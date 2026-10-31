@@ -617,7 +617,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     do not present a selected Core review as whole-application coverage.
     Preserve owning authority, locks, expiry, bounded reads and dirty drafts.
     Broad verification remains point 12 after owner frontend acceptance.
-- [ ] 11a31. Deliver Auth-owned protected-section idle access and migrate Admin.
+- [x] 11a31. Deliver Auth-owned protected-section idle access and migrate Admin.
   - Owner approval, 2026-10-31: renew the specific protected section on deliberate
     navigation, clicks, typing and scrolling. Ignore pointer motion, hidden tabs,
     background reads and automatic refresh. Expired access requires credentials.
@@ -3912,3 +3912,50 @@ module transitions or updater reservation, and no pre-existing manual maintenanc
 The explicit next preparation scope is one additive module migration, its retained
 2.0.0 -> 2.1.0 edge and source synchronization; no reset, credential change, fixture
 replacement or production operation is needed. Preserve all data/caches/reports.
+
+Runnable preparation completed from implementation commit
+`324b13f42439e64823bdfb9334dae76bff8d91c4`. The supported asset build initially
+found that root-owned tests could resolve direct vitest/browser at runtime but not
+through TypeScript's src toolchain boundary. Export native page through the existing
+@runa/testing/vitest facade, consume that facade in the regression and document its
+browser-only use. No dependency or compiler exception was added. The repeated full
+supported asset build, including vue-tsc and native/static error shells, passed;
+current evidence is build-2.log under the point's artifact directory. The repeated
+selected frontend run passed eight cases (frontend-focused.log). Mandatory hooks
+passed staged secrets, formatting, quick lint, repository sanity and knowledge
+freshness. Hook formatting/index freshness and an unused test lint suppression
+were resolved before the implementation commit, without bypassing checks.
+
+Native task-owned maintenance fenced writers; repeated inspection confirmed zero
+reserved jobs, active/recovery work, transitions or updater reservations. The narrow
+forward preparation modules phase applied exactly the new Auth migration and
+section_activity edge. The first invocation mistakenly used operation identifier
+`324b13f4f4d0c639b6a490f3c09cf00000000000` instead of the actual full commit above.
+Its executed source was the committed implementation and its content fingerprints
+are valid; completed native ledgers retain that original operation identifier rather
+than rewriting historical evidence. A second supported preparation using the exact
+real commit succeeded with no repeated migration/upgrade and synchronized current
+source state. Preserve forward.log and forward-source-correction.log as evidence of
+the mistake and correction; no unresolved update reservation or data repair remains.
+Only this task's manual maintenance was removed and queue restart was signalled.
+
+The resulting local database runa retains all 15 accounts; Auth is installed 2.1.0,
+Permissions 2.1.0, Audit 1.1.0 and Admin 0.1.0. Both idle columns exist, all operation
+reservations are clear and manual maintenance is false. No database reset,
+credential/permission mutation, fixture replacement or production operation occurred.
+Readiness through actual development Nginx/PHP-FPM returned 200 for /, /admin,
+/api/ready, /api/presentation, /api/runa/auth/entry-options, /api/modules/frontend
+and /build/runa-components.json. Anonymous /api/admin/entry and /api/admin/activity
+returned 401. The served component manifest equals the current local build.
+Evidence: runtime-before.json, runtime-after.json, http-readiness.json and retained
+served manifests in `.runtime/frontend/RM-2026-016-section-activity/`.
+
+Ready for repeated owner acceptance at http://localhost:8080/admin using the existing
+account/password and native entry proof. Check active typing/navigation/scrolling
+beyond the configured idle interval, then actual inactivity and reconfirmation;
+automatic reads/open or hidden tabs must not keep the section alive. This readiness
+is not authenticated owner acceptance or final quality PASS. Point 11b stays open;
+final automated verification/release remains point 12. No Docker containers, images,
+networks or volumes were created/removed. Supported tests removed only disposable
+worker databases; development/base-test data, all services/model/Qdrant caches and
+verification evidence remain preserved.
