@@ -16,6 +16,7 @@ import {
   getModulePresentation,
   usePageResolver,
   Alert,
+  FormNotifications,
   Button,
   Card,
   ConfirmDialog,
@@ -564,10 +565,17 @@ defineExpose({ controller });
       <h1 class="text-xl font-semibold">
         {{ tr(applicationSettings ? 'Application settings' : 'Modules') }}
       </h1>
-      <Alert v-if="controller.error.value && !selected" tone="warning"
-        >{{ tr(controller.error.value)
-        }}<Button @click="refresh()">{{ tr('Retry') }}</Button></Alert
+      <FormNotifications
+        v-if="(!applicationSettings || !capabilitiesReady) && !selected"
+        :locale="adminLocale"
+        :error="tr(controller.error.value)"
       >
+        <template #actions
+          ><Button :disabled="controller.busy.value" @click="refresh()">{{
+            tr('Retry')
+          }}</Button></template
+        >
+      </FormNotifications>
       <PageNavigation
         :entries="navigationEntries"
         :loading="
@@ -701,11 +709,11 @@ defineExpose({ controller });
       :busy="controller.busy.value"
       @update:model-value="!$event && closeModule()"
     >
-      <Alert
-        v-if="controller.error.value && !reviewOpen && !diagnosisOpen"
-        tone="warning"
-        >{{ tr(controller.error.value) }}</Alert
-      >
+      <FormNotifications
+        v-if="!reviewOpen && !diagnosisOpen"
+        :locale="adminLocale"
+        :error="tr(controller.error.value)"
+      />
       <div class="space-y-6" data-module-content>
         <div class="flex flex-wrap items-start gap-3" data-module-actions>
           <div
@@ -863,10 +871,11 @@ defineExpose({ controller });
   >
     <div class="space-y-4" data-module-diagnosis>
       <AdminOperationResult v-if="diagnosis" :result="diagnosis" />
-      <Alert v-else-if="controller.error.value" tone="warning">{{
-        tr(controller.error.value)
-      }}</Alert>
-      <Skeleton v-else shape="block" />
+      <Skeleton v-else-if="!controller.error.value" shape="block" />
+      <FormNotifications
+        :locale="adminLocale"
+        :error="tr(controller.error.value)"
+      />
     </div>
     <template #footer>
       <Button
@@ -899,9 +908,10 @@ defineExpose({ controller });
         {{ tr('Confirm the module action after reviewing its effects.') }}
       </p>
       <Skeleton v-if="previewLoading" shape="block" />
-      <Alert v-if="controller.error.value" tone="warning">{{
-        tr(controller.error.value)
-      }}</Alert>
+      <FormNotifications
+        :locale="adminLocale"
+        :error="tr(controller.error.value)"
+      />
       <template v-if="preview">
         <div class="space-y-3 rounded border border-line p-4">
           <Badge :tone="preview.ready ? 'success' : 'warning'">{{

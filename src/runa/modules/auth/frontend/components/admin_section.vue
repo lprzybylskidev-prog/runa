@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useAdminLocale } from '@/runa/admin';
-const { t: tr } = useAdminLocale();
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, watch } from 'vue';
-import { Alert, Button, Card } from '@/runa/ui';
+import { FormNotifications, Button, Card } from '@/runa/ui';
 import { AdminSection, useAdminResource } from '@/runa/admin';
 import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
 const props = defineProps<AdminSectionPresentationProps>();
@@ -100,9 +100,10 @@ function select(row: Record<string, AdminJson>) {
       ><h2>{{ tr(section.title) }}</h2></template
     >
     <template v-if="collection">
-      <Alert v-if="resource.error.value" tone="warning">{{
-        tr(resource.error.value.message)
-      }}</Alert>
+      <FormNotifications
+        :locale="adminLocale"
+        :error="resource.error.value ? tr(resource.error.value.message) : ''"
+      />
       <p v-if="!rows.length" class="mb-4 text-sm text-muted">
         {{ tr('No entries in this bounded result.') }}
       </p>

@@ -6,6 +6,8 @@ import { useAdminInitialReadiness } from './initialReadiness';
 import {
   Alert,
   FileInput,
+  Form,
+  FormNotifications,
   ViewBoundary,
   useViewReadiness,
   Button,
@@ -49,21 +51,42 @@ onMounted(async () => {
     :label="tr('Loading the administrator panel')"
   >
     <slot :controller="settings">
-      <div class="space-y-4">
+      <Form
+        :busy="controller.busy.value"
+        :valid="settings.valid.value"
+        :dirty="settings.dirty.value"
+        @submit="settings.save"
+        @invalid="settings.save"
+      >
         <div class="flex flex-wrap items-center justify-end gap-3">
           <Button :disabled="controller.busy.value" @click="settings.refresh">{{
             tr('Refresh current settings')
           }}</Button>
         </div>
-        <Alert v-if="settings.invalid.value" tone="warning">{{
-          tr(settings.invalid.value)
-        }}</Alert>
-        <Alert v-if="settings.saved.value" tone="success">{{
-          tr('Application settings saved.')
-        }}</Alert>
-        <Alert v-if="!settings.valid.value" tone="warning">{{
-          tr('Correct the setting values before saving.')
-        }}</Alert>
+        <FormNotifications
+          :locale="adminLocale"
+          :attempt="settings.feedbackAttempt.value"
+          :error="
+            tr(
+              settings.imageError.value ||
+                settings.invalid.value ||
+                controller.error.value,
+            )
+          "
+          :invalid="settings.submitted.value && !settings.valid.value"
+          :success="
+            settings.saved.value ? tr('Application settings saved.') : ''
+          "
+        >
+          <template #actions>
+            <Button
+              v-if="settings.invalid.value || controller.error.value"
+              :disabled="controller.busy.value"
+              @click="settings.refresh"
+              >{{ tr('Retry') }}</Button
+            >
+          </template>
+        </FormNotifications>
         <p
           v-if="settings.loaded.value && !settings.fields.value.length"
           class="text-sm text-muted"
@@ -84,6 +107,7 @@ onMounted(async () => {
             >
               <FileInput
                 :label="tr(field.title)"
+                :error="tr(settings.fieldErrors.value[field.key] ?? '')"
                 :model-value="
                   settings.imageFiles.value[
                     field.key === 'presentation.logo' ? 'logo' : 'favicon'
@@ -141,6 +165,7 @@ onMounted(async () => {
             <Checkbox
               v-else-if="field.type === 'boolean'"
               :label="tr(field.title)"
+              :error="tr(settings.fieldErrors.value[field.key] ?? '')"
               :model-value="settings.draft.value[field.key] === true"
               :disabled="controller.busy.value || !field.writable"
               @update:model-value="settings.edit(field.key, $event)"
@@ -148,6 +173,7 @@ onMounted(async () => {
             <NumberInput
               v-else-if="field.type === 'integer'"
               :label="tr(field.title)"
+              :error="tr(settings.fieldErrors.value[field.key] ?? '')"
               :model-value="String(settings.draft.value[field.key] ?? '')"
               kind="integer"
               :locale="adminLocale"
@@ -167,6 +193,7 @@ onMounted(async () => {
               v-else-if="field.type === 'enum' || field.type === 'timezone'"
               :searchable="field.type === 'timezone'"
               :label="tr(field.title)"
+              :error="tr(settings.fieldErrors.value[field.key] ?? '')"
               :model-value="
                 typeof settings.draft.value[field.key] === 'string'
                   ? String(settings.draft.value[field.key])
@@ -185,6 +212,7 @@ onMounted(async () => {
             <TextInput
               v-else
               :label="tr(field.title)"
+              :error="tr(settings.fieldErrors.value[field.key] ?? '')"
               :model-value="
                 typeof settings.draft.value[field.key] === 'string'
                   ? String(settings.draft.value[field.key])
@@ -228,21 +256,18 @@ onMounted(async () => {
             </div>
           </Alert>
         </div>
-        <Alert v-if="settings.imageError.value" tone="warning">{{
-          tr(settings.imageError.value)
-        }}</Alert>
         <Button
           v-if="settings.fields.value.some((field) => field.writable)"
           :disabled="
             controller.busy.value ||
             !settings.dirty.value ||
-            !settings.valid.value ||
+            settings.imageBusy.value ||
             settings.conflicts.value.size > 0
           "
-          @click="settings.save"
+          type="submit"
           >{{ tr('Save application settings') }}</Button
         >
-      </div>
+      </Form>
     </slot>
   </ViewBoundary>
 </template>

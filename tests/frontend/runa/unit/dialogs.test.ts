@@ -87,7 +87,10 @@ it('uses least-destructive initial focus and keeps confirmation open for caller-
   });
   await settle();
   expect(document.activeElement?.textContent).toBe('Anuluj');
-  expect(dialog().textContent).toContain('Try again');
+  const toast = document.querySelector('.dialog-backdrop .app-toast');
+  expect(toast?.textContent).toContain('Try again');
+  expect(dialog().textContent).not.toContain('Try again');
+  expect(toast?.closest('[inert]')).toBeNull();
   const confirm = dialog().querySelector<globalThis.HTMLButtonElement>(
     '[data-dialog-cancel]',
   )!.nextElementSibling as globalThis.HTMLButtonElement;

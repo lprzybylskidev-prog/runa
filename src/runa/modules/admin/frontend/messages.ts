@@ -167,8 +167,6 @@ export const adminMessages: AdminMessages = {
     'Potwierdź hasło, aby wejść do panelu administratora.',
   'Continue with this action for the selected records?':
     'Wykonać tę akcję dla zaznaczonych rekordów?',
-  'Correct the setting values before saving.':
-    'Popraw wartości ustawień przed zapisaniem.',
   Correlation: 'Identyfikator powiązania',
   'Current accounts': 'Bieżące konta',
   'Current bounded permission page': 'Bieżąca strona uprawnień',

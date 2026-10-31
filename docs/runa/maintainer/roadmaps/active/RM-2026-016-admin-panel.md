@@ -565,6 +565,14 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Owner addition: remove the restart/reset introduction and the two logo/favicon
     explanatory texts, including obsolete translations.
   - Synchronize the owning frontend guide/changelog and prepare current assets.
+- [x] 11a25. Unify form and operation failure notifications across delivered views.
+  - Owner request, 2026-10-31: use the account panel's shared FormNotifications
+    for settings outcomes; associate validation errors with their controls and
+    remove duplicate generic banners. Audit remaining shared/Core views and
+    migrate operation errors while preserving contextual security/availability,
+    reconciliation and durable operation status displays.
+  - Keep explicit recovery actions, modal focus boundaries and repeat-attempt
+    feedback; synchronize contracts and record focused verification before commit.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3398,3 +3406,54 @@ Current asset preparation is recorded in
 .runtime/frontend/RM-2026-016-timezone-search-build.log. No Docker resources were
 created/removed and all data, caches and reports remain preserved. Manual owner
 acceptance 11b and final verification/release 12 remain open.
+
+### Point 11a25 — Shared operation and form feedback
+
+Owner request, 2026-10-31: replace the settings editor's duplicate invalid/image
+banners with the account panel's normal notification mechanism and audit remaining
+views. Local knowledge was current and queried before focused source inspection;
+the canonical forms/visual/component guides already require FormNotifications.
+
+Application settings now uses shared Form and FormNotifications for read/write,
+image and success outcomes, with one summary, deliberate-attempt identity and
+explicit read retry. Field errors stay associated with controls; invalid submission
+focuses the first invalid control without issuing a write. Logo/favicon preparation
+failures remain independent, so selecting a valid favicon cannot erase a rejected
+logo error. Only known branding failures become translated messages; unexpected
+browser exceptions use the generic image-read failure. The redundant generic
+settings warning and its translation are removed.
+
+The focused source audit covered supplied Runa and App Vue views plus shared
+feedback consumers. Migrated Admin module/diagnosis/lifecycle/history/resource
+failure feedback, Auth/Audit/Permissions administrative read errors, Auth operation
+proof/history-detail/welcome/session operation failures, shared Dialog.error and
+TablePreferences outcomes. Preserve explicit recovery, modal portals and one
+transport-error owner for operation history. Keep contextual admission/availability,
+missing-adapter, session-expiry, field validation, reconciliation and durable
+operation-result/progress displays; these describe state rather than duplicate
+operation notifications. The App scaffold has no additional custom outcome banner.
+
+Current Admin controller signatures/component guidance and all affected module
+changelogs are synchronized. Existing prepared candidate versions remain Admin
+0.1.0, Auth/Permissions 2.0.0 and Audit 1.1.0: these are corrections within the same
+unreleased 0.7.0 candidate, with no version-only forward migration. Owner and
+customer AGENTS/skills already prescribe the canonical feedback contract; neither
+instruction product needs a new rule or duplicated implementation guidance.
+
+Focused uncertainty checks: `python3 tools/maintainer/test-frontend
+--filter='application settings|application branding|modal form notifications|caller-owned busy/error/retry|Admin operation proof'`
+passes 14 tests across five files. Coverage includes invalid-submit focus/no write,
+repeated dismissed image failure, independent image errors, read retry without a
+parent duplicate and modal failure recovery. `pnpm --dir src run build` passes
+TypeScript and prepares current browser/native-error assets; log:
+`.runtime/frontend/RM-2026-016-feedback-build.log`. A one-off rendered diagnostic
+against the existing Nginx endpoint used controlled API responses without data
+writes: PL/dark at 1440px and EN/light at 390px each show one image notification
+16px from the top/right, no horizontal overflow and no page errors. Screenshots
+and report: `.runtime/artifacts/playwright/runa/RM-2026-016-feedback/`.
+The temporary diagnostic script is removed; evidence is retained.
+
+No dependencies, runtime configuration, migrations, database mutations or Docker
+resources were introduced; active services, databases, caches and reports remain.
+No broad verification was run. Owner acceptance 11b and final affected-area
+verification/release 12 remain open.

@@ -7,6 +7,7 @@ import { useAdminEntry } from './useAdminEntry';
 import { useAuthPresentation } from './presentation';
 import {
   Alert,
+  FormNotifications,
   Avatar,
   Breadcrumbs,
   ApplicationLayout,
@@ -292,17 +293,23 @@ const contentReadiness = useViewReadiness({
       class="space-y-6"
       :inert="pending || undefined"
     >
-      <Alert v-if="failure" tone="danger" role="alert"
-        >{{
-          text(
-            'Operacja nie powiodła się. Odśwież sesję i spróbuj ponownie.',
-            'The operation failed. Refresh the session and try again.',
-          )
-        }}
-        <Button @click="refresh">{{
-          text('Odśwież sesję', 'Refresh session')
-        }}</Button></Alert
+      <FormNotifications
+        :locale="locale"
+        :error="
+          failure
+            ? text(
+                'Operacja nie powiodła się. Odśwież sesję i spróbuj ponownie.',
+                'The operation failed. Refresh the session and try again.',
+              )
+            : ''
+        "
       >
+        <template #actions
+          ><Button @click="refresh">{{
+            text('Odśwież sesję', 'Refresh session')
+          }}</Button></template
+        >
+      </FormNotifications>
       <Alert v-if="warning" tone="warning" role="status">
         {{ text('Sesja wkrótce wygaśnie.', 'Your session will expire soon.') }}
         {{ Math.ceil(remaining / 1000) }} s.

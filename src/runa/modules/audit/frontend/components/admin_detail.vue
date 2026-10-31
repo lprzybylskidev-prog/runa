@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useAdminLocale } from '@/runa/admin';
-const { t: tr } = useAdminLocale();
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, watch } from 'vue';
-import { Alert, Button, Card } from '@/runa/ui';
+import { FormNotifications, Button, Card } from '@/runa/ui';
 import { useAdminResource } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
 const props = defineProps<AdminSectionPresentationProps>();
@@ -60,9 +60,10 @@ function history(entity: { module: string; type: string; public_id: string }) {
       {{ tr('Select an event to read its immutable details.') }}
     </p>
     <template v-else>
-      <Alert v-if="resource.error.value" tone="warning">{{
-        tr(resource.error.value.message)
-      }}</Alert>
+      <FormNotifications
+        :locale="adminLocale"
+        :error="resource.error.value ? tr(resource.error.value.message) : ''"
+      />
       <dl class="grid gap-4 sm:grid-cols-2">
         <div
           v-for="field in section.fields.filter(

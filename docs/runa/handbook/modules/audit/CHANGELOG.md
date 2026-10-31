@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Use shared FormNotifications for administrative event-detail read errors.
+
 - Localize the administrative history/detail presentation through shared Admin PL/EN copy while preserving immutable Audit records and technical identifiers.
 
 - Add reserved operational participation for atomic framework lifecycle phase history and first cooperative cancellation requests, without configuration values or runner tokens.

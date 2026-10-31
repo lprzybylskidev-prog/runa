@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { formatApplicationInstant } from '@/runa/ui';
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
-import { Alert, Badge, Button, Table } from '@/runa/ui';
+import { FormNotifications, Badge, Button, Table } from '@/runa/ui';
 import type { TableColumn, TableQuery } from '@/runa/ui';
 import type {
   AdminOperationCommand,
@@ -159,11 +159,8 @@ async function refresh(older = false) {
       ...(older && cursor.value ? { cursor: cursor.value } : {}),
     });
     if (!alive || own !== epoch || module !== props.module) return;
-    if (!next) {
-      if (props.controller.error.value)
-        error.value = 'Unable to load operation history.';
-      return;
-    }
+    // The containing operations view owns transport failure feedback for this lane.
+    if (!next) return;
     if (
       !Array.isArray(next.operations) ||
       (next.next_cursor !== null && typeof next.next_cursor !== 'string')
@@ -261,7 +258,13 @@ onScopeDispose(() => {
         >{{ tr('Refresh history') }}</Button
       >
     </div>
-    <Alert v-if="error && !pending" tone="warning">{{ tr(error) }}</Alert>
+    <FormNotifications :locale="locale" :error="!pending ? tr(error) : ''">
+      <template #actions
+        ><Button :disabled="pending" @click="refresh()">{{
+          tr('Retry')
+        }}</Button></template
+      >
+    </FormNotifications>
     <Table
       v-model:query="query"
       mode="client"

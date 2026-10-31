@@ -8,7 +8,7 @@ import AppTextInput from './AppTextInput.vue';
 import AppNumberInput from './AppNumberInput.vue';
 import AppSelect from './AppSelect.vue';
 import AppDialog from './AppDialog.vue';
-import AppAlert from './AppAlert.vue';
+import AppFormNotifications from './AppFormNotifications.vue';
 import type { TableColumn } from '../runa/ui/tables';
 import type { TableViewsController } from '../composables/useTableViews';
 const props = withDefaults(
@@ -25,6 +25,7 @@ const open = ref(false),
   name = ref<string | null>(''),
   error = ref(''),
   message = ref('');
+const feedbackAttempt = ref(0);
 const dragged = ref<string | null>(null);
 const widthErrors = ref<Record<string, string>>({});
 const state = computed(() => props.controller.state.value);
@@ -39,6 +40,7 @@ watch(
   { immediate: true },
 );
 function act(action: () => void, success: string) {
+  feedbackAttempt.value++;
   error.value = '';
   message.value = '';
   try {
@@ -328,8 +330,12 @@ function drop(key: string) {
             {{ text('Domyślny', 'Default') }}:
             {{ state.views.find((v) => v.id === state.defaultId)?.name }}
           </p>
-          <AppAlert v-if="error" tone="danger">{{ error }}</AppAlert>
-          <p role="status" class="text-xs text-muted">{{ message }}</p>
+          <AppFormNotifications
+            :attempt="feedbackAttempt"
+            :error="error"
+            :success="message"
+            :locale="english ? 'en' : 'pl'"
+          />
         </section>
       </div>
     </AppDialog>

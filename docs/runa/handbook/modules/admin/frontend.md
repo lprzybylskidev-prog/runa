@@ -928,11 +928,15 @@ The controller returns `operations`, `revision: Ref<number>`,
 `fields: ShallowRef<AdminApplicationSetting[]>`, `base/draft: Ref<Record<string,
 string|number|boolean|null>>`, `dirty/valid: ComputedRef<boolean>`,
 `conflicts: Ref<Set<string>>`, `invalid: Ref<string>`, `loaded/saved: Ref<boolean>`,
+`fieldErrors: ComputedRef<Record<string,string>>` (English message keys),
+`feedbackAttempt: Ref<number>`, `submitted: Ref<boolean>`,
 `refresh(): Promise<void>`, `edit(key, value): void`,
 `resolve(key, keepDraft): void`, `save(): Promise<void>`.
 Each field has `key,title,type,maxLength,choices,writable,defaultValue`; definitions and values
-are server-authorized. Disable controls while operations are busy. Show invalid,
-operation error/conflict and saved feedback; never infer write authority from the
+are server-authorized. Disable controls while operations are busy. Use shared FormNotifications for read/write/image failures and saved outcomes,
+bind feedbackAttempt and submitted invalid state, and display translated fieldErrors
+beside their controls. Explicit invalid submission focuses the first invalid control
+without writing; conflicts retain their contextual resolution controls; never infer write authority from the
 presence of a field. Null/reset restores its source default. No technical settings
 is supplied. Bounded logo/favicon upload controls are supplied.
 
@@ -1083,7 +1087,7 @@ and logo/favicon explanatory paragraphs.
 
 AdminApplicationSettingsController additionally exposes imageFiles
 `Ref<{logo: File[]; favicon: File[]}>`, imageBusy `Ref<boolean>`, imageError
-`Ref<string>`, `selectImage(kind: 'logo'|'favicon', files: readonly File[]): Promise<void>`
+`ComputedRef<string>`, `selectImage(kind: 'logo'|'favicon', files: readonly File[]): Promise<void>`
 and `previewImage(kind: 'logo'|'favicon'): string|undefined`. PNG/JPEG/WebP inputs
 are limited to 4 MiB/4096px. Canvas preserves aspect ratio/transparency, strips
 original metadata and prepares a bounded PNG logo and 64px square icon. Files

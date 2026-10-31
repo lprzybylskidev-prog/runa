@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import { computed, provide, ref, toRef, useId } from 'vue';
-import AppAlert from './AppAlert.vue';
+import AppFormNotifications from './AppFormNotifications.vue';
 import AppButton from './AppButton.vue';
 import { useModalLayer } from '../composables/useModalLayer';
 import { layerIndex, modalPortal } from '../lib/layers';
@@ -124,9 +124,7 @@ defineExpose({ focus: layer.focus });
             <fieldset :disabled="busy" class="min-w-0 space-y-4">
               <slot :close="close" />
             </fieldset>
-            <AppAlert v-if="error" tone="danger" class="mt-4">{{
-              error
-            }}</AppAlert>
+            <AppFormNotifications :error="error" :locale="locale" />
           </div>
           <footer v-if="$slots.footer" class="dialog-footer">
             <slot name="footer" :close="close" :busy="busy" />

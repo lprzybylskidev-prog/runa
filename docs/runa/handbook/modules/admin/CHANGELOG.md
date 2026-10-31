@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Use shared dismissible FormNotifications for settings and operational/resource failures, with field-associated validation, explicit recovery and repeat-attempt feedback. Remove duplicate inline outcome banners; retain contextual conflicts and durable diagnostic results.
+
 - Make the default timezone selector searchable through the shared locale-aware Select and remove redundant settings introduction/logo/favicon helper copy.
 
 - Add application language/theme/timezone defaults, transactional uploaded logo with automatic favicon and custom favicon; preserve explicit preferences, UTC storage, revisions and Audit. Use page-specific main headings and bounded rows with adjacent Restore defaults controls.

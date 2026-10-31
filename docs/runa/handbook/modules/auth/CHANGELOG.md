@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Use shared FormNotifications for operation proof, history-detail/sign-in-option reads, session operation failures and administrative collection errors; retain session expiry and admission state displays.
+
 - Consume application defaults without overwriting account/browser choices; format supplied account/session/history instants in the application timezone and reuse the public raster container inspection helper.
 
 - Include bounded initial Admin-entry advertisement in shared shell readiness; keep content/menu coherent with account preference hydration and hide temporary theme/language controls until navigation settles. Preserve background menu revalidation and identity fences.

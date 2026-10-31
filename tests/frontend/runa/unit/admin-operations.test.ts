@@ -1406,6 +1406,11 @@ it('application branding converts a logo to PNG and a square favicon, preserving
     new File(['<svg/>'], 'logo.svg', { type: 'image/svg+xml' }),
   ]);
   expect(settings.imageError.value).toContain('PNG, JPEG or WebP');
+  await settings.selectImage('favicon', [await brandingFile('blue')]);
+  expect(settings.fieldErrors.value['presentation.logo']).toContain(
+    'PNG, JPEG or WebP',
+  );
+  expect(settings.valid.value).toBe(false);
   expect(fetch).toHaveBeenCalledTimes(calls);
 });
 
@@ -1468,4 +1473,103 @@ it('application settings use one main heading, bounded fields and adjacent resto
       .filter((input) => input.attributes('type') !== 'file')
       .every((input) => input.element.getBoundingClientRect().width < 768),
   ).toBe(true);
+});
+
+it('application settings show one dismissible failure notification and reopen it for an identical image attempt', async () => {
+  vi.spyOn(window, 'fetch').mockResolvedValue(response(brandingState()));
+  const { controller } = harness();
+  const w = mount(AdminApplicationSettings, {
+    props: { controller },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(w.find('input[type="file"]').exists()).toBe(true),
+  );
+  const { FileInput } = await import('@/runa/ui');
+  const file = new File(['bad'], 'brand.png', { type: 'image/png' });
+  const picker = w.findAllComponents(FileInput)[0]!;
+  picker.vm.$emit('update:modelValue', [file]);
+  await vi.waitFor(() =>
+    expect(
+      document.querySelectorAll('.toast-viewport .app-toast'),
+    ).toHaveLength(1),
+  );
+  expect(document.querySelector('.toast-viewport')?.textContent).toContain(
+    'The image could not be read.',
+  );
+  expect(w.text()).not.toContain('Correct the setting values before saving.');
+  expect(picker.find('[aria-invalid="true"]').exists()).toBe(true);
+  (
+    document.querySelector(
+      '.toast-viewport button[aria-label="Close"]',
+    ) as HTMLButtonElement
+  ).click();
+  await vi.waitFor(() =>
+    expect(
+      document.querySelectorAll('.toast-viewport .app-toast'),
+    ).toHaveLength(0),
+  );
+  picker.vm.$emit('update:modelValue', [file]);
+  await vi.waitFor(() =>
+    expect(
+      document.querySelectorAll('.toast-viewport .app-toast'),
+    ).toHaveLength(1),
+  );
+});
+
+it('application settings focus invalid fields without writing and clear feedback after correction', async () => {
+  const fetch = vi
+    .spyOn(window, 'fetch')
+    .mockResolvedValue(response(brandingState()));
+  const { controller } = harness();
+  const w = mount(AdminApplicationSettings, {
+    props: { controller },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(w.find('input[type="text"]').exists()).toBe(true),
+  );
+  const input = w.find('input[type="text"]');
+  await input.setValue('   ');
+  const before = fetch.mock.calls.length;
+  await w.get('form').trigger('submit');
+  await vi.waitFor(() => expect(document.activeElement).toBe(input.element));
+  expect(fetch).toHaveBeenCalledTimes(before);
+  expect(input.attributes('aria-invalid')).toBe('true');
+  expect(document.querySelectorAll('.toast-viewport .app-toast')).toHaveLength(
+    1,
+  );
+  await input.setValue('Corrected');
+  await vi.waitFor(() =>
+    expect(
+      document.querySelectorAll('.toast-viewport .app-toast'),
+    ).toHaveLength(0),
+  );
+  expect(input.attributes('aria-invalid')).toBeUndefined();
+});
+
+it('application settings retry failed reads without duplicate parent notifications', async () => {
+  window.history.replaceState({}, '', '/admin?section=application');
+  const fetch = vi.spyOn(window, 'fetch').mockResolvedValue(response({}, 500));
+  const w = mount(AdminOperations, {
+    props: { admin: admin() },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(document.querySelectorAll('.app-toast')).toHaveLength(1),
+  );
+  expect(w.find('input[type=file]').exists()).toBe(false);
+  fetch.mockImplementation(async (input) =>
+    String(input).endsWith('/capabilities')
+      ? response({ capabilities: ['application.read', 'application.manage'] })
+      : response(brandingState()),
+  );
+  const retry = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('.app-toast button'),
+  ).find((button) => button.textContent?.trim() === 'Retry')!;
+  retry.click();
+  await vi.waitFor(() =>
+    expect(w.find('input[type=file]').exists()).toBe(true),
+  );
+  expect(document.querySelectorAll('.app-toast')).toHaveLength(0);
 });

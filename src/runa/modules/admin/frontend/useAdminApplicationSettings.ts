@@ -3,7 +3,7 @@ import type {
   AdminOperationsController,
   AdminOperationData,
 } from './useAdminOperations';
-import { prepareBrandingImage } from './brandingImages';
+import { BrandingImageError, prepareBrandingImage } from './brandingImages';
 import { object } from './decode';
 
 type Value = string | number | boolean | null;
@@ -26,8 +26,13 @@ export function useAdminApplicationSettings(
     logo: [],
     favicon: [],
   });
-  const imageBusy = ref(false),
-    imageError = ref('');
+  const imageBusy = ref(false);
+  const imageErrors = ref<Record<string, string>>({});
+  const imageError = computed(
+    () => Object.values(imageErrors.value).at(-1) ?? '',
+  );
+  const feedbackAttempt = ref(0);
+  const submitted = ref(false);
   const imagePreview = ref<{ logo?: string; favicon?: string }>({});
   let imageEpoch = 0;
 
@@ -48,25 +53,32 @@ export function useAdminApplicationSettings(
         (field) => draft.value[field.key] !== base.value[field.key],
       ),
   );
-  const valid = computed(
-    () =>
-      !imageBusy.value &&
-      !imageError.value &&
-      fields.value.every((field) => {
-        const value = draft.value[field.key];
-        if (value === null) return true;
-        if (field.type === 'string')
-          return (
-            typeof value === 'string' &&
-            value.trim().length > 0 &&
-            [...value].length <= (field.maxLength ?? 4096) &&
-            !/[\u0000-\u001f\u007f]/u.test(value)
-          );
-        if (field.type === 'integer')
-          return typeof value === 'number' && Number.isSafeInteger(value);
-        if (field.type === 'boolean') return typeof value === 'boolean';
-        return typeof value === 'string' && field.choices.includes(value);
+  function fieldValid(field: AdminApplicationSetting): boolean {
+    const value = draft.value[field.key];
+    if (value === null) return true;
+    if (field.type === 'string')
+      return (
+        typeof value === 'string' &&
+        value.trim().length > 0 &&
+        [...value].length <= (field.maxLength ?? 4096) &&
+        !/[\u0000-\u001f\u007f]/u.test(value)
+      );
+    if (field.type === 'integer')
+      return typeof value === 'number' && Number.isSafeInteger(value);
+    if (field.type === 'boolean') return typeof value === 'boolean';
+    return typeof value === 'string' && field.choices.includes(value);
+  }
+  const fieldErrors = computed<Record<string, string>>(() =>
+    Object.fromEntries(
+      fields.value.flatMap((field) => {
+        if (imageErrors.value[field.key])
+          return [[field.key, imageErrors.value[field.key]!]];
+        return fieldValid(field) ? [] : [[field.key, 'Enter a valid value.']];
       }),
+    ),
+  );
+  const valid = computed(
+    () => !imageBusy.value && !Object.keys(fieldErrors.value).length,
   );
   watch(
     dirty,
@@ -184,7 +196,7 @@ export function useAdminApplicationSettings(
       ) {
         imageEpoch++;
         imageBusy.value = false;
-        imageError.value = '';
+        delete imageErrors.value['presentation.' + kind];
         imageFiles.value[kind] = [];
         delete images.value[kind];
         if (kind === 'logo') delete images.value.logo_icon;
@@ -211,6 +223,7 @@ export function useAdminApplicationSettings(
     loaded.value = true;
   }
   async function refresh() {
+    feedbackAttempt.value++;
     const response = await operations.read('application');
     if (!response) return;
     try {
@@ -233,7 +246,7 @@ export function useAdminApplicationSettings(
     ) {
       imageEpoch++;
       imageBusy.value = false;
-      imageError.value = '';
+      delete imageErrors.value[key];
       const kind = key === 'presentation.logo' ? 'logo' : 'favicon';
       delete images.value[kind];
       if (kind === 'logo') delete images.value.logo_icon;
@@ -247,7 +260,7 @@ export function useAdminApplicationSettings(
       if (key === 'presentation.logo' || key === 'presentation.favicon') {
         imageEpoch++;
         imageBusy.value = false;
-        imageError.value = '';
+        delete imageErrors.value[key];
         const kind = key === 'presentation.logo' ? 'logo' : 'favicon';
         delete images.value[kind];
         if (kind === 'logo') delete images.value.logo_icon;
@@ -264,7 +277,8 @@ export function useAdminApplicationSettings(
     )
       return;
     const own = ++imageEpoch;
-    imageError.value = '';
+    delete imageErrors.value[key];
+    saved.value = false;
     imageFiles.value[kind] = [...files];
     if (!files[0]) {
       delete images.value[kind];
@@ -281,11 +295,13 @@ export function useAdminApplicationSettings(
       draft.value[key] = 'uploaded';
       saved.value = false;
     } catch (failure) {
-      if (own === imageEpoch)
-        imageError.value =
-          failure instanceof Error
+      if (own === imageEpoch) {
+        imageErrors.value[key] =
+          failure instanceof BrandingImageError
             ? failure.message
             : 'The image could not be read.';
+        feedbackAttempt.value++;
+      }
     } finally {
       if (own === imageEpoch) imageBusy.value = false;
     }
@@ -309,6 +325,8 @@ export function useAdminApplicationSettings(
       : undefined;
   }
   async function save() {
+    feedbackAttempt.value++;
+    submitted.value = true;
     if (
       !dirty.value ||
       !valid.value ||
@@ -351,7 +369,7 @@ export function useAdminApplicationSettings(
     images.value = {};
     imageFiles.value = { logo: [], favicon: [] };
     imageBusy.value = false;
-    imageError.value = '';
+    imageErrors.value = {};
     imagePreview.value = {};
     fields.value = [];
     base.value = {};
@@ -361,13 +379,14 @@ export function useAdminApplicationSettings(
     loaded.value = false;
     saved.value = false;
     invalid.value = '';
+    submitted.value = false;
   });
   onScopeDispose(() => {
     imageEpoch++;
     images.value = {};
     imageFiles.value = { logo: [], favicon: [] };
     imagePreview.value = {};
-    imageError.value = '';
+    imageErrors.value = {};
     imageBusy.value = false;
     operations.dirty.value = false;
   });
@@ -375,6 +394,9 @@ export function useAdminApplicationSettings(
     operations,
     revision,
     imageFiles,
+    fieldErrors,
+    feedbackAttempt,
+    submitted,
     imageBusy,
     imageError,
     selectImage,

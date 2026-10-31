@@ -2,7 +2,7 @@
 import { useAdminLocale } from '@/runa/admin';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
-import { Alert, Button, Card, Table } from '@/runa/ui';
+import { FormNotifications, Button, Card, Table } from '@/runa/ui';
 import type { TableColumn, TableQuery } from '@/runa/ui';
 import { useAdminResource } from '@/runa/admin';
 import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
@@ -69,9 +69,10 @@ async function next() {
     <template #header
       ><h2>{{ tr(section.title) }}</h2></template
     >
-    <Alert v-if="resource.error.value" tone="warning">{{
-      tr(resource.error.value.message)
-    }}</Alert>
+    <FormNotifications
+      :locale="adminLocale"
+      :error="resource.error.value ? tr(resource.error.value.message) : ''"
+    />
     <Table
       mode="client"
       :loading="resource.busy.value || !record"

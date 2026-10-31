@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatApplicationInstant } from '@/runa/ui';
-import { Dialog, Button, Spinner, Alert } from '@/runa/ui';
+import { Dialog, Button, Spinner, FormNotifications } from '@/runa/ui';
 import type { HistoryValue } from './historyDetails';
 import type {
   AuthHistoryDetailProps,
@@ -107,17 +107,22 @@ function value(v: HistoryValue): string {
       v-if="loading"
       :label="text('Wczytywanie szczegółów', 'Loading details')"
     />
-    <Alert v-else-if="failed" tone="danger">
-      {{
+    <FormNotifications
+      v-else-if="failed"
+      :locale="locale"
+      :error="
         text(
           'Nie udało się pobrać szczegółów zdarzenia.',
           'Event details could not be loaded.',
         )
-      }}
-      <Button variant="outline" @click="$emit('retry')">{{
-        text('Ponów', 'Retry')
-      }}</Button>
-    </Alert>
+      "
+    >
+      <template #actions
+        ><Button variant="outline" @click="$emit('retry')">{{
+          text('Ponów', 'Retry')
+        }}</Button></template
+      >
+    </FormNotifications>
     <div v-else-if="detail" class="space-y-5" data-history-detail>
       <p class="font-semibold">
         {{

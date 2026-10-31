@@ -6,7 +6,7 @@ import {
   Table,
   formatApplicationInstant,
   Button,
-  Alert,
+  FormNotifications,
   ConfirmDialog,
   TableActions,
   TablePreferences,
@@ -31,15 +31,19 @@ const exportColumns = computed(() =>
 );
 </script>
 <template>
-  <Alert v-if="controller.error.value" tone="warning">
-    {{ tr(controller.error.value.message) }}
-    <Button
-      size="sm"
-      :disabled="controller.resource.busy.value"
-      @click="controller.refresh"
-      >{{ tr('Retry') }}</Button
-    >
-  </Alert>
+  <FormNotifications
+    :locale="adminLocale"
+    :error="controller.error.value ? tr(controller.error.value.message) : ''"
+  >
+    <template #actions
+      ><Button
+        size="sm"
+        :disabled="controller.resource.busy.value"
+        @click="controller.refresh"
+        >{{ tr('Retry') }}</Button
+      >
+    </template></FormNotifications
+  >
   <Table
     mode="server"
     :english="adminLocale === 'en'"

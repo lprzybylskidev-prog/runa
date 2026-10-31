@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Alert, Button, FormSection } from '@/runa/ui';
+import { FormNotifications, Button, FormSection } from '@/runa/ui';
 import type { OperationProofController } from './useOperationProof';
 import AuthOperationProofFields from './AuthOperationProofFields.vue';
 import { useLocale } from '../../../resources/js/composables/useLocale';
@@ -36,8 +36,9 @@ const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
     >
       {{ copy.confirmed }}
     </p>
-    <Alert v-if="controller.error.value" tone="warning">{{
-      controller.error.value
-    }}</Alert>
+    <FormNotifications
+      :locale="props.locale ?? locale"
+      :error="controller.error.value"
+    />
   </div>
 </template>
