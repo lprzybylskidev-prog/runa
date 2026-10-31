@@ -886,7 +886,7 @@ or asset upload control is supplied.
 Reuse the passed operational controller rather than creating another session or
 write lane. Refresh merges disjoint reads, preserves dirty edits and exposes
 same-field overlaps with the current value. Resolve each overlap locally before
-Save. A failed/stale write retains drafts and is never replayed. Account/authority
+Save. A failed/stale write retains drafts and is never replayed. Fixed storage/Audit 503 refusals remain local errors with drafts intact; authentication/grant loss and real Core/maintenance refusal still close the protected shell. Account/authority
 changes clear settings and fence late responses. The dashboard switches editors
 through the existing dirty-navigation confirmation. Full App replacement retains
 these protocols; it does not copy private session/security code.

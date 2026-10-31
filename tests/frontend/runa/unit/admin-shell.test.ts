@@ -9,6 +9,8 @@ import {
   AdminPresentationProvider,
   resolveAdminComponent,
   useAdmin,
+  useAdminOperations,
+  useAdminApplicationSettings,
   useAdminForm,
   useAdminPage,
   useAdminResource,
@@ -1289,4 +1291,59 @@ it('Admin resource clear cancels old subject reads and erases the retained query
   document.dispatchEvent(new Event('visibilitychange'));
   await flushPromises();
   expect(replies).toHaveLength(1);
+});
+
+it('application settings retain drafts after confirmed Audit refusal while real Core loss closes the shell', async () => {
+  let reason = 'application_settings_audit_unavailable';
+  const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const path = String(input);
+    if (path === '/api/admin') return respond({ data: bootstrap() });
+    if (path.endsWith('/application'))
+      return respond({
+        data: {
+          revision: 1,
+          values: { 'presentation.name': 'Source name' },
+          definitions: {
+            'presentation.name': {
+              title: 'Displayed application name',
+              type: 'string',
+              max_length: 160,
+              choices: [],
+              writable: true,
+            },
+          },
+        },
+      });
+    return respond({ reason, scope: 'operation' }, 503);
+  });
+  let admin!: AdminController;
+  let settings!: ReturnType<typeof useAdminApplicationSettings>;
+  const session = sessionFixture();
+  mount(
+    defineComponent({
+      setup() {
+        admin = useAdmin({ session });
+        const operations = useAdminOperations(admin);
+        settings = useAdminApplicationSettings(operations);
+        return () => h('div');
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(admin.state.value).toBe('ready'));
+  await settings.refresh();
+  settings.edit('presentation.name', 'Uncommitted draft');
+  const calls = fetch.mock.calls.length;
+  await settings.save();
+  await flushPromises();
+  expect(admin.state.value).toBe('ready');
+  expect(settings.draft.value['presentation.name']).toBe('Uncommitted draft');
+  expect(settings.operations.dirty.value).toBe(true);
+  expect(settings.operations.error.value).not.toBe('');
+  expect(fetch).toHaveBeenCalledTimes(calls + 1);
+  reason = 'module_unavailable';
+  await settings.save();
+  await flushPromises();
+  expect(admin.state.value).toBe('unavailable');
+  expect(settings.draft.value).toEqual({});
+  expect(fetch).toHaveBeenCalledTimes(calls + 2);
 });

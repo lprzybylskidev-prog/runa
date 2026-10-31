@@ -113,17 +113,33 @@ export function useAdminOperations(admin: AdminController) {
       return response;
     } catch (failure) {
       if (!alive || own !== epoch || context !== stamp()) return;
+      const settingsFailure =
+        (operation === 'application' || operation === 'application.update') &&
+        failure instanceof ApiError &&
+        failure.status === 503 &&
+        failure.payload !== null &&
+        typeof failure.payload === 'object' &&
+        'scope' in failure.payload &&
+        failure.payload.scope === 'operation' &&
+        'reason' in failure.payload &&
+        typeof failure.payload.reason === 'string' &&
+        [
+          'application_settings_unavailable',
+          'application_settings_audit_unavailable',
+        ].includes(failure.payload.reason);
       if (
         failure instanceof ApiError &&
         (failure.status === 401 ||
           failure.status === 403 ||
-          failure.status === 503)
+          (failure.status === 503 && !settingsFailure))
       )
         refuseAdmin(admin, failure);
       conflict.value = failure instanceof ApiError && failure.status === 409;
-      error.value = conflict.value
-        ? 'State changed or the operation could not complete. Refresh and review before another explicit attempt.'
-        : 'The operation could not be completed. Check your authority and input.';
+      error.value = settingsFailure
+        ? 'Application settings are temporarily unavailable. Your draft is retained.'
+        : conflict.value
+          ? 'State changed or the operation could not complete. Refresh and review before another explicit attempt.'
+          : 'The operation could not be completed. Check your authority and input.';
     } finally {
       if (own === epoch) busy.value = false;
     }

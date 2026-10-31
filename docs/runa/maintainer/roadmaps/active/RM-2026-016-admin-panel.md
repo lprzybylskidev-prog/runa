@@ -1705,3 +1705,14 @@ fixture source/assets were removed and singleton snapshots restored. No task Doc
 containers, networks, image tags or volumes were created or removed. Development/
 base databases, active services, Qdrant/model caches, backups and evidence remain.
 Point 10 is complete; point 11 is next. Roadmap/release remain active/open.
+
+Point-10 completion review additionally identified the shared operational 503
+classification clearing a settings draft after a confirmed storage/Audit rollback.
+Fixed only those exact operation-scoped settings reasons to retain the current
+editor/draft and display local failure; native authentication/grant/Core/maintenance
+refusals still close the protected shell. A focused test using the real useAdmin
+session controller confirms preserved drafts, explicit retry only and Core-loss
+clearing: 1 scenario PASS, 4.19 seconds, native exit 0 / cleanup 0. The canonical
+frontend contract is synchronized. This is the same point's failure behavior;
+no gate, authority or architecture policy changes. Completion commits use mandatory
+formatting/lint/secret/freshness hooks; the first implementation commit is 860c9758.
