@@ -2,6 +2,7 @@
 import { computed, onScopeDispose, provide, toRef, watch } from 'vue';
 import { applicationSessionOwner } from '../../../resources/js/lib/applicationSession';
 import { provideLocale } from '../../../resources/js/composables/useLocale';
+import { usePreferencePending } from './preferences/usePreferencePending';
 import { useAdminEntry } from './useAdminEntry';
 import { useAuthPresentation } from './presentation';
 import {
@@ -14,6 +15,7 @@ import {
   Icon,
   Skeleton,
   useImageReadiness,
+  useViewReadiness,
 } from '@/runa/ui';
 import type { NavigationEntry } from '@/runa/ui';
 import { useLocale } from '../../../resources/js/composables/useLocale';
@@ -122,6 +124,16 @@ const identity = computed(() =>
     : null,
 );
 const avatarImage = useImageReadiness(avatar, identity);
+const preferencePending = usePreferencePending();
+// Coordinate initial placeholders inside the frame; never hide the frame itself.
+const contentReadiness = useViewReadiness({
+  identity,
+  required: () =>
+    !loading.value &&
+    !profileLoading.value &&
+    !preferencePending.value &&
+    avatarImage.settled.value,
+});
 </script>
 <template>
   <AuthEntry v-if="paused" page="login" :authenticated="authenticated" />
@@ -148,7 +160,7 @@ const avatarImage = useImageReadiness(avatar, identity);
     :user-name="userName"
     :user-avatar="avatar"
     :user-avatar-image="avatarImage"
-    :user-loading="loading || profileLoading"
+    :user-loading="!contentReadiness.ready.value"
     :user-initials="initials"
   >
     <template #breadcrumbs>
@@ -173,7 +185,7 @@ const avatarImage = useImageReadiness(avatar, identity);
             :image="avatarImage"
             :initials="initials"
             :size="40"
-            :loading="loading || profileLoading"
+            :loading="!contentReadiness.ready.value"
           />
           <div class="min-w-0">
             <p class="account-menu-name">{{ userName }}</p>
@@ -220,7 +232,7 @@ const avatarImage = useImageReadiness(avatar, identity);
         </div>
       </div>
     </template>
-    <slot v-if="loading" name="loading" :account="account"
+    <slot v-if="!contentReadiness.ready.value" name="loading" :account="account"
       ><div aria-busy="true" class="space-y-6">
         <p role="status" class="sr-only">
           {{ text('Wczytywanie aplikacji', 'Loading application') }}

@@ -279,10 +279,11 @@ this optional read never blocks a valid session and is fenced against stale resu
 Custom ApplicationLayout wrappers forward userAvatar, userAvatarImage, userLoading,
 homeHref and breadcrumbs. The controller exposes loading for initial session
 validation and refreshing for background validation. profileLoading describes the
-optional profile read. The supplied shell mounts its layout immediately, gates protected content only
-on session admission and shows profile/avatar skeletons in their own slots.
-Profile/preferences/image reads never hide the layout or unrelated content;
-background reads retain mounted content. Its avatar owner is shared with the dropdown. These
+optional profile read. The supplied shell mounts its layout immediately. Its content/avatar placeholders
+finish together once session/profile/preferences and decoded image or bounded
+fallback are ready; only those placeholders wait, never the layout frame.
+The readiness latch resets per account/session, so background reads retain
+mounted content and the existing decoded avatar. Its avatar owner is shared with the dropdown. These
 presentation fields never establish authorization. For custom shells, compose the
 public [view/image readiness contract](loading.md), include account/session identity,
 use bounded optional fallbacks and retain strict controller request fences.

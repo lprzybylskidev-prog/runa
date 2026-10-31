@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Coordinate initial application content/avatar placeholder completion inside the immediately rendered layout; retain the readiness latch across background reads and bound image failures/timeouts.
+
 - Render layout frames immediately and keep loading placeholders local to dependent content/avatar elements; public branding and profile/image reads never hide the page frame.
 
 - Share identity-scoped initial view/image readiness, bounded decoded-avatar fallback and nondestructive same-session refresh through the public UI contract.

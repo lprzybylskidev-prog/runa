@@ -56,7 +56,7 @@ and private avatar to both the top-bar trigger and dropdown identity. Successful
 own-profile reads after save/remove update both immediately through the session
 controller; revisioned URLs refresh replaced bytes. Initials remain the fallback
 when absent, disabled or unreadable. Profile reads are presentation-only, optional
-and never invalidate an otherwise valid session or poll. The layout mounts immediately; profile/avatar elements show bounded local placeholders during profile/preference/image reads; later refreshes keep the existing shell/image visible. See [view readiness](../../development/frontend/loading.md). They never grant access. Profile and CSRF-protected POST sign-out
+and never invalidate an otherwise valid session or poll. The layout mounts immediately; initial content/avatar placeholders finish together after session/profile/preferences/image readiness or bounded fallback; later refreshes keep the existing shell/image visible. See [view readiness](../../development/frontend/loading.md). They never grant access. Profile and CSRF-protected POST sign-out
 share its existing user dropdown, with native links, keyboard/focus return and
 pending/failure feedback. Successful sign-out clears account state and safe drafts
 before navigating through `/`, so welcome policy determines the destination.
@@ -66,7 +66,8 @@ account access, without speculative business statistics or management navigation
 The supplied application/account shell uses ApplicationLayout width="fluid".
 The shell renders its frame immediately; its loading slot supplies a stable
 noninteractive placeholder only in the protected content region until session
-validation. Profile/preferences/avatar reads load independently inside the frame. Account
+validation. Initial profile/preferences/avatar readiness coordinates content/avatar placeholders
+inside the frame; subsequent reads retain the mounted content and decoded image. Account
 loading uses the existing Skeleton inside the four destination Cards, retaining
 that structure through account initialization instead of a spinner or a temporary
 MinimalLayout. Skeletons contain no identity values or interactive forms; protected

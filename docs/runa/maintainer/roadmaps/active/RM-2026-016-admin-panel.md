@@ -415,6 +415,14 @@ reassessment before resuming point 3; completed point history remains evidence.
     refresh/draft behavior and protected-content session admission.
   - Synchronize current public/agent guidance and focused rendered regressions,
     prepare current assets and commit before returning to manual acceptance.
+- [x] 11a9. Synchronize initial content/avatar completion within the visible frame.
+  - Owner correction to 11a8: keep the layout immediate, but finish its initial
+    content and avatar placeholders together after profile/preferences and image
+    decode or bounded fallback settle. Reuse the shared readiness controller.
+  - Latch per account/session so later reads keep content/focus/drafts mounted;
+    preserve immediate access/identity invalidation and local loading geometry.
+  - Cover delayed download/decode, image failure/timeout and background refresh,
+    synchronize current contracts and prepare assets before owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2309,3 +2317,43 @@ This is loading-state evidence, not authenticated owner manual acceptance. The
 browser/context resources were closed; no Docker resources or data were changed.
 All screenshots/build/test reports and existing services/data/caches are preserved.
 Manual point 11b and final verification/release point 12 remain open.
+
+### Point 11a9 — Coordinated initial content/avatar completion
+
+The owner clarified that local placeholders must also finish together: 11a8
+correctly preserved the frame but released content after session validation while
+the avatar still awaited profile/image loading. The shared ApplicationSessionShell
+now uses the existing account/session-scoped useViewReadiness latch for its initial
+content placeholder and avatar loading prop. Required initial settlement includes
+session, profile, account preferences and image download/decode or bounded fallback.
+This does not wrap/hide the layout. Pre-admission MinimalLayout composition remains
+independent; heavy page regions retain their own loading states. Subsequent reads
+keep mounted content/drafts/focus and the decoded avatar; actual identity/access
+loss still invalidates protected content. No extra session owner or arbitrary
+minimum loading delay was introduced.
+
+Canonical loading/customization/Auth account contracts and the Auth candidate
+changelog are synchronized. Root/customer AGENTS and frontend pattern references
+already require an immediate frame with local loading and link the owning guide;
+that rule remains correct, so no duplicate instruction-product text is necessary.
+No public signatures, backend APIs, dependencies, module upgrade edges or release
+decisions changed. Auth remains the unreleased 2.0.0 candidate within the existing
+platform 0.7.0 candidate; Admin/Permissions/Audit versions are unchanged.
+
+Focused browser regressions passed 13 cases (350 excluded), native exit 0/cleanup 0.
+They cover delayed profile/download/decode, image error and the 2.5-second timeout,
+simultaneous placeholder completion, retained frame and background draft/focus/image,
+plus prior immediate-layout/root and Admin proof revalidation regressions. The
+prepared-asset build passed TypeScript, Vite and native/static error rendering;
+log: .runtime/frontend/RM-2026-016-coordinated-loading-build.log.
+
+A focused Playwright diagnostic used controlled API presentation fixtures against
+the real development Nginx-served build and held a real PNG response. Mutation
+observations recorded content/avatar loading pairs true/true then false/false,
+never mismatched, with the layout retained and native image naturalWidth positive.
+Inspected waiting.png and ready.png under
+.runtime/artifacts/playwright/RM-2026-016-coordinated-loading/. This is fixture-based
+loading evidence, not authenticated owner acceptance. Browser/context resources
+were closed and the temporary diagnostic helper removed; screenshots/build/test
+reports and existing development services/data/caches remain. No Docker resources
+or database data were created/changed. Manual point 11b and final point 12 stay open.

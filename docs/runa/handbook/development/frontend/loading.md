@@ -44,8 +44,10 @@ identity invalidation. It adds no minimum delay, page animation or focus change.
 Both `MinimalLayoutProps` and `ApplicationLayoutProps` accept optional
 `readiness?: ViewReadiness`. Their defaults render immediately for independent
 composition and static/native error delivery. Supplied Auth entry/welcome provide
-their owning controller's readiness; ApplicationSessionShell mounts its layout immediately and gates only protected
-content on session validation. Layout readiness controls only the content/default
+their owning controller's readiness; ApplicationSessionShell mounts its layout immediately. Its initial content and
+avatar placeholders share one account/session readiness latch: validated session,
+profile/preferences settlement and decoded image or bounded fallback. Protected
+content still requires session admission. Layout readiness controls only the content/default
 slot (and MinimalLayout actions), never the frame. Custom layout replacements forward readiness and keep controller
 ownership outside presentation. Supplying readiness delegates initial preference
 hydration to that composing controller; the standalone preference-session
@@ -57,8 +59,9 @@ never register every HTTP request as an application-wide prerequisite.
 
 Declare dependencies per element/region: branding uses source defaults while
 hydrating; preferences apply through their existing subscriber; profile/avatars
-show their own bounded skeleton/fallback. A slow avatar must not delay the layout
-or an unrelated form/table. A region that depends on an API uses its own skeleton
+show their own bounded skeleton/fallback. A slow avatar never delays the layout. The initial application shell coordinates
+its avatar/content placeholders so they finish together; independent heavy data
+regions are not added to this shared prerequisite. A region that depends on an API uses its own skeleton
 in the space it will occupy. Session admission still gates protected content,
 not the public layout structure. Initial placeholders never mount protected forms.
 
@@ -98,17 +101,17 @@ substitutes for guarded private image delivery.
 
 ## Supplied view audit
 
-| Consumer                                  | Initial dependencies and later behavior                                                                                                                                                                                        |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| createApplication                         | Immediate root mount; bounded public identity/presentation reads and decoded logo update branding in place; failed background branding reads retain the last confirmed presentation.                                           |
-| Auth entry                                | Existing entry/session controller and preference hydration before form reveal; entry pages without a session read use the existing one-time preference initializer. Heading focus also works after delayed presentation mount. |
-| Auth welcome                              | Immediate layout and static welcome content; navigation alone waits for options/session; no second layout-owned session read.                                                                                                  |
-| ApplicationSessionShell / Admin admission | Immediate layout; session admission gates private content only. Profile/avatar use local placeholders; header/dropdown share the image owner. Background session/profile reads retain the shell and content.                   |
-| Auth account                              | Existing independent account/page loading and nondestructive read reconciliation remain; protected account content starts after shell admission/readiness.                                                                     |
-| Admin bootstrap/page                      | Same-session observation revalidates in place. Request stamps still include every authority observation. Unchanged descriptors preserve object identity; denial removes protected content.                                     |
-| Admin records/forms/operations            | Same-session observation fences requests/reviews without erasing drafts; actual context loss clears them. Unchanged resource projection retains confirmed values while reading. Removed fields follow the new projection.      |
-| Admin tables                              | Revalidation resets stale cursor/selection intent but keeps current same-session filters; a different account/page clears them. Heavy reads do not block the shell.                                                            |
-| Static/native HTTP errors                 | Immediate source/static preferences; no readiness dependency on session, image service or network.                                                                                                                             |
+| Consumer                                  | Initial dependencies and later behavior                                                                                                                                                                                                                                          |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| createApplication                         | Immediate root mount; bounded public identity/presentation reads and decoded logo update branding in place; failed background branding reads retain the last confirmed presentation.                                                                                             |
+| Auth entry                                | Existing entry/session controller and preference hydration before form reveal; entry pages without a session read use the existing one-time preference initializer. Heading focus also works after delayed presentation mount.                                                   |
+| Auth welcome                              | Immediate layout and static welcome content; navigation alone waits for options/session; no second layout-owned session read.                                                                                                                                                    |
+| ApplicationSessionShell / Admin admission | Immediate layout; initial content/avatar placeholders finish together after session/profile/preferences/image readiness or bounded fallback. Later reads preserve content; header/dropdown share the image owner. Background session/profile reads retain the shell and content. |
+| Auth account                              | Existing independent account/page loading and nondestructive read reconciliation remain; protected account content starts after shell admission/readiness.                                                                                                                       |
+| Admin bootstrap/page                      | Same-session observation revalidates in place. Request stamps still include every authority observation. Unchanged descriptors preserve object identity; denial removes protected content.                                                                                       |
+| Admin records/forms/operations            | Same-session observation fences requests/reviews without erasing drafts; actual context loss clears them. Unchanged resource projection retains confirmed values while reading. Removed fields follow the new projection.                                                        |
+| Admin tables                              | Revalidation resets stale cursor/selection intent but keeps current same-session filters; a different account/page clears them. Heavy reads do not block the shell.                                                                                                              |
+| Static/native HTTP errors                 | Immediate source/static preferences; no readiness dependency on session, image service or network.                                                                                                                                                                               |
 
 Profile and preference snapshot reads have a five-second presentation timeout;
 image preparation has the separate 2.5-second bound. The session itself is required

@@ -29,6 +29,7 @@ import {
 import AuthAccount from '../../../../src/runa/modules/auth/frontend/AuthAccount.vue';
 import AuthWelcome from '../../../../src/runa/modules/auth/frontend/AuthWelcome.vue';
 import { useAuthAccount } from '../../../../src/runa/modules/auth/frontend/useAuthAccount';
+import { ApplicationSessionShell } from '@/runa/auth';
 import AuthApplication from '../../../../src/runa/modules/auth/frontend/AuthApplication.vue';
 import { useAuthWelcome } from '../../../../src/runa/modules/auth/frontend/useAuthWelcome';
 import { useApplicationSession } from '../../../../src/runa/modules/auth/frontend/useApplicationSession';
@@ -2334,7 +2335,7 @@ it('trusted management appears only while an active device exists and disappears
   expect(card.text()).not.toContain('Zarządzaj urządzeniami');
 });
 
-it('shell renders immediately with a local avatar skeleton and retains content during profile refresh', async () => {
+it('shell renders immediately and synchronizes content with profile readiness while retaining background drafts', async () => {
   const implementation = vi.mocked(window.fetch).getMockImplementation()!;
   let releaseProfile!: () => void;
   let profileGate = new Promise<void>((resolve) => {
@@ -2350,15 +2351,16 @@ it('shell renders immediately with a local avatar skeleton and retains content d
   });
   await flushPromises();
   expect(w.findComponent(ApplicationLayout).exists()).toBe(true);
-  await vi.waitFor(() =>
-    expect(w.find('input[aria-label="Draft"]').exists()).toBe(true),
-  );
+  expect(w.find('input[aria-label="Draft"]').exists()).toBe(false);
   expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(true);
   releaseProfile();
   await vi.waitFor(() =>
     expect(w.findComponent(ApplicationLayout).exists()).toBe(true),
   );
   const shell = w.getComponent(ApplicationLayout).element;
+  await vi.waitFor(() =>
+    expect(w.find('input[aria-label="Draft"]').exists()).toBe(true),
+  );
   const draft = w.get('input[aria-label="Draft"]');
   await draft.setValue('Keep my work');
   (draft.element as HTMLInputElement).focus();
@@ -2725,3 +2727,91 @@ it('welcome revalidation retains confirmed options while a background read fails
   expect(state.options.value).toBe(previous);
   expect(state.refreshing.value).toBe(false);
 });
+
+it.each(['decoded', 'error', 'timeout'] as const)(
+  'shell completes content and avatar placeholders together after image %s',
+  async (outcome) => {
+    currentProfile.has_avatar = true;
+    const images: ControlledImage[] = [];
+    class ControlledImage {
+      src = '';
+      decoding = '';
+      naturalWidth = 1;
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      finishDecode!: () => void;
+      decode = () =>
+        new Promise<void>((resolve) => {
+          this.finishDecode = resolve;
+        });
+      constructor() {
+        images.push(this);
+      }
+    }
+    vi.stubGlobal('Image', ControlledImage);
+    if (outcome === 'timeout') vi.useFakeTimers();
+    const w = mount(AuthApplication, {
+      slots: { default: '<input aria-label="Coordinated draft" />' },
+      attachTo: document.body,
+    });
+    try {
+      const frame = w.getComponent(ApplicationLayout).element;
+      await vi.waitFor(() => expect(images).toHaveLength(1));
+      expect(w.find('input[aria-label="Coordinated draft"]').exists()).toBe(
+        false,
+      );
+      expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(
+        true,
+      );
+      if (outcome === 'decoded') {
+        images[0]!.onload!();
+        await flushPromises();
+        expect(w.find('input[aria-label="Coordinated draft"]').exists()).toBe(
+          false,
+        );
+        expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(
+          true,
+        );
+        images[0]!.finishDecode();
+      } else if (outcome === 'error') images[0]!.onerror!();
+      else {
+        await vi.advanceTimersByTimeAsync(2500);
+        vi.useRealTimers();
+      }
+      await vi.waitFor(() =>
+        expect(w.find('input[aria-label="Coordinated draft"]').exists()).toBe(
+          true,
+        ),
+      );
+      expect(w.getComponent(ApplicationLayout).element).toBe(frame);
+      expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(
+        false,
+      );
+      const input = w.get('input[aria-label="Coordinated draft"]');
+      await input.setValue('Keep this draft');
+      (input.element as HTMLInputElement).focus();
+      if (outcome === 'decoded') {
+        currentProfile.version++;
+        const session = w
+          .getComponent(ApplicationSessionShell)
+          .props('session');
+        await session.refresh();
+        await vi.waitFor(() => expect(images).toHaveLength(2));
+        expect(w.get('input[aria-label="Coordinated draft"]').element).toBe(
+          input.element,
+        );
+        expect(document.activeElement).toBe(input.element);
+        expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(
+          false,
+        );
+        expect(w.getComponent(Avatar).get('img').attributes('src')).toContain(
+          'v=5',
+        );
+      }
+    } finally {
+      w.unmount();
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  },
+);
