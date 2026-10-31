@@ -339,7 +339,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     Synchronize minimal app scaffold, welcome catalogue and source/API/version checks.
   - Review owner AGENTS/skills plus customer bundle; update affected public consumption
     guidance without authorizing protected edits; record unaffected-product reasons.
-- [ ] 11a. Prepare runnable owner frontend acceptance and synchronize workflow policy.
+- [x] 11a. Prepare runnable owner frontend acceptance and synchronize workflow policy.
   - Prerequisites: 1–11 and the owner's 2026-10-31 approval.
   - Record the new manual acceptance rule in canonical workflows, template and both
     instruction products; retain the automatic final gate and repair-loop rules.
@@ -1868,3 +1868,46 @@ upgrades Audit 1.0.0 → 1.1.0, Auth/Permissions 1.0.0 → 2.0.0 and initialize 
 0.1.0. No module-domain migration is pending. Local runtime preparation and HTTP
 readiness remain pending; point 11a stays open until those results are received.
 No final gate or owner manual PASS is claimed.
+
+### Completed local runtime preparation
+
+Implementation/policy/candidate preparation is committed at `6350cbc3`. The
+supported build was repeated after hook formatting to align source-bound component
+evidence with the actual committed Vue sources; it passed, including vue-tsc,
+application assets and native/static error shells. Output is preserved in
+`.runtime/frontend/manual-acceptance-build.log`.
+
+The explicitly documented forward preparation primitive was invoked against the
+local development database `runa` with the exact source commit:
+`php src/runa/database/prepare.php 6350cbc3a5c46672716ff6d58b2c64d6392591aa`.
+Native maintenance was enabled for this task; queue
+workers pause under that maintenance, operational module admission remains fenced,
+and database diagnostics confirmed zero reserved jobs, active business work or
+active transitions before execution. No global service or data cleanup was used.
+The primitive forward-created shared.application_settings, recorded the fixed
+required seed completion and applied all planned retained Core upgrades plus Admin
+initialization. Native exit 0; operation evidence is preserved at
+`.runtime/dev/manual-acceptance/forward-6350cbc3.log` and the native database ledgers.
+
+Only the task-owned native maintenance was then removed and a native queue restart
+signal published. Effective maintenance reports no reasons. All Core modules are
+registered/enabled with source matching installed data: Audit 1.1.0,
+Auth/Permissions 2.0.0 and Admin 0.1.0. The original 15 user accounts remain present;
+no database reset, fixture replacement, credential change, manual permission bypass
+or production operation was performed. The base testing database and its data were
+not changed by this local operation.
+
+Readiness requests against the actual development Nginx/PHP-FPM environment passed:
+`/`, `/admin`, `/api/presentation`, `/api/runa/auth/entry-options` and `/api/ready`
+return HTTP 200. Unauthenticated `/api/admin/entry` still returns 401 as required;
+the owner uses the existing account/password and native entry proof. Local manual
+URL: `http://localhost:8080/`, Admin: `http://localhost:8080/admin`. Current assets
+are built; no HMR process is required for this URL. These observations establish
+handover readiness, not authenticated manual acceptance or final quality PASS.
+
+Owner/customer guidance and the shared template are synchronized. Existing domain
+skills already route roadmap timing to the canonical shared workflow, so they need
+no duplicated manual-acceptance procedure. No Docker containers, networks, volumes
+or image tags were created/removed; active services, development/test data, model/
+Qdrant caches and all reports remain. Point 11a is complete. Point 11b is pending
+the owner's manual frontend tests and explicit acceptance; point 12 stays last/open.
