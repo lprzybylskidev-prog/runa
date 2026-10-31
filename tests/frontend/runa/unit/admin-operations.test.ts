@@ -9,6 +9,7 @@ import {
   AdminOperationalEditor,
   AdminOperationResult,
   useAdminOperations,
+  useAdminLocale,
 } from '@/runa/admin';
 import type {
   AdminController,
@@ -1306,5 +1307,91 @@ it.each(['failure', 'authority loss'])(
       await vi.waitFor(() => expect(document.activeElement).toBe(trigger()));
     }
     expect(calls).toBe(1);
+  },
+);
+
+it.each(['enable', 'disable', 'unregister'] as const)(
+  'Polish module %s confirmation translates its cancel action',
+  async (intent) => {
+    localStorage.setItem('runa.locale', 'pl');
+    vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+      const path = String(input).split('?')[0]!;
+      if (path.endsWith('/capabilities'))
+        return response({
+          capabilities: ['diagnostics.read', 'modules.manage'],
+        });
+      if (path.endsWith('/diagnostics'))
+        return response({
+          modules: [
+            {
+              id: 'app.safe',
+              kind: 'optional',
+              registered: true,
+              enabled: intent === 'disable',
+              health: 'healthy',
+              available: true,
+            },
+          ],
+        });
+      if (path.endsWith('/history'))
+        return response({ operations: [], next_cursor: null });
+      if (path.endsWith('/modules.preview'))
+        return response({
+          ready: true,
+          review: 'token',
+          affected: ['app.safe'],
+          blockers: [],
+        });
+      return response({});
+    });
+    let language!: ReturnType<typeof useAdminLocale>;
+    const owner = admin();
+    const w = mount(
+      defineComponent({
+        setup() {
+          language = useAdminLocale();
+          language.locale.value = 'pl';
+          return () => h(AdminOperations, { admin: owner });
+        },
+      }),
+      { attachTo: document.body },
+    );
+    await vi.waitFor(() =>
+      expect(w.find('[data-module="app.safe"] button').exists()).toBe(true),
+    );
+    await w.get('[data-module="app.safe"] button').trigger('click');
+    const label =
+      intent === 'enable'
+        ? 'Włącz moduł'
+        : intent === 'disable'
+          ? 'Wyłącz moduł'
+          : 'Wyrejestruj moduł';
+    const action = () =>
+      Array.from(
+        document.body.querySelectorAll<HTMLButtonElement>(
+          '[data-module-lifecycle-controls] button',
+        ),
+      ).find((button) => button.textContent?.trim() === label)!;
+    await vi.waitFor(() => expect(action()?.disabled).toBe(false));
+    action().click();
+    await vi.waitFor(() =>
+      expect(
+        document.body.querySelector<HTMLButtonElement>(
+          '[data-lifecycle-cancel]',
+        )?.disabled,
+      ).toBe(false),
+    );
+    const dialog = document.body
+      .querySelector('[data-module-lifecycle-review]')!
+      .closest('[role="dialog"]')!;
+    expect(
+      dialog.querySelector('[data-lifecycle-cancel]')?.textContent?.trim(),
+    ).toBe('Anuluj');
+    expect(
+      Array.from(dialog.querySelectorAll('button')).some(
+        (button) => button.textContent?.trim() === 'Cancel',
+      ),
+    ).toBe(false);
+    language.locale.value = 'en';
   },
 );

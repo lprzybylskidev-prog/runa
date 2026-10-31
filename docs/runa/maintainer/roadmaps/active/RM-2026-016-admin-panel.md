@@ -519,6 +519,10 @@ reassessment before resuming point 3; completed point history remains evidence.
     preserve focus return, current authority/context fencing and explicit retry.
   - Synchronize guidance, cover focused modal behavior and prepare current assets
     before repeated owner acceptance. No backend or persistence change.
+- [x] 11a20. Translate the lifecycle confirmation Cancel label.
+  - Add the missing Polish dictionary entry and check rendered Enable/Disable/
+    Unregister confirmation footers in Polish. Preserve English presentation.
+  - Prepare current assets and commit before repeated owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3068,3 +3072,31 @@ ready for repeated owner acceptance at http://localhost:8080/admin. No Docker
 resources were created or removed; development/test data, active services,
 knowledge/model caches and verification evidence are preserved. Owner acceptance
 11b and final verification/release 12 remain open.
+
+### Point 11a20 — Polish lifecycle cancellation label
+
+Added the missing Cancel -> Anuluj entry to the Admin message dictionary. The
+existing shared action dialog now translates its cancellation button for enable,
+disable and unregister. English retains Cancel. A focused review of literal tr()
+labels in AdminOperations found no other missing dictionary entries. No lifecycle,
+permission, API, dependency, database or configuration behavior changes.
+
+Focused supported rendered frontend checks passed 6 cases (392 excluded), native
+exit/cleanup 0: three Polish cancel-label cases plus the existing English lifecycle
+preview/confirmation cases. Evidence:
+.runtime/frontend/RM-2026-016-cancel-localization-tests-final.log. Test setup uses
+the public locale controller so the stored preference cannot retain an earlier
+English selection, then restores English. Earlier diagnostic failures used an
+incorrect readiness phrase/raw legacy locale value and are preserved; they did
+not represent a remaining runtime translation failure.
+
+The current TypeScript/Vite/native-error build passed in
+.runtime/frontend/RM-2026-016-cancel-localization-build-final.log. Nginx /admin and
+all 16 entry-linked assets returned HTTP 200, with current translations available
+for owner acceptance. Admin stays the unreleased 0.1.0 creation candidate within
+prepared platform 0.7.0. Updated the candidate changelog; existing canonical locale
+contracts and owner/customer AGENTS/skills need no new rule or duplicate procedure.
+Local knowledge was current and the focused localization source was reviewed.
+No Docker resources were created/removed, no application business data changed,
+and existing services/data, caches and reports are preserved. Owner acceptance
+11b and final verification/release 12 stay open; no broad gate was run.

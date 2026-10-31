@@ -125,6 +125,7 @@ export const adminMessages: AdminMessages = {
   'Bulk action cancelled or selection changed.':
     'Akcja zbiorcza została anulowana lub zmieniono zaznaczenie.',
   'Bulk action unavailable.': 'Akcja zbiorcza jest niedostępna.',
+  Cancel: 'Anuluj',
   'Cancel and compensate': 'Anuluj i wycofaj skutki',
   Cancellation: 'Anulowanie',
   'Changes saved.': 'Zmiany zostały zapisane.',
