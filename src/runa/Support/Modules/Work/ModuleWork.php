@@ -329,6 +329,26 @@ final readonly class ModuleWork
         return $statuses;
     }
 
+    /** Bounded newest-first management history, including retained terminal work.
+     * @return list<WorkStatus>
+     */
+    public function history(string $module, int $limit = 100): array
+    {
+        if ($limit < 1 || $limit > 1000) {
+            throw new RuntimeException('Invalid work-history limit.');
+        }
+        $ids = $this->connection->table('shared.module_work as w')->join('shared.modules as m', 'm.id', '=', 'w.module_id')->where('m.module_id', $module)->orderByDesc('w.id')->limit($limit)->pluck('w.public_id');
+        $statuses = [];
+        foreach ($ids as $id) {
+            if (! is_string($id)) {
+                throw new RuntimeException('Invalid stored work identity.');
+            }
+            $statuses[] = $this->status($id);
+        }
+
+        return $statuses;
+    }
+
     /** Explicit recovery after module-owned reconciliation; no automatic crash replay. */
     public function recover(string $id): WorkStatus
     {

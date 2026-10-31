@@ -1665,3 +1665,32 @@ it('module operation history advertises recovery only for active native states',
     DB::table('shared.module_transitions')->where('public_id', $id)->update(['status' => 'failed']);
     expect($history->read('runa.auth', ['disable'])['operations'][0]['actions'])->toBe(['modules.status']);
 });
+
+it('reads bounded task history including terminal work without exposing private payloads', function (): void {
+    $fixture = new OperationalModule;
+    try {
+        foreach (['enter', 'health.diagnose'] as $permission) {
+            ($this->adminGrant)('runa.admin.'.$permission);
+        }
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        $this->postJson('/api/admin/operations/health.diagnose', ['module' => $fixture->id])->assertOk();
+        app()->forgetInstance(ModuleWork::class);
+        $work = app(ModuleWork::class);
+        $active = $work->dispatch($fixture->id, 'process', ['private' => 'task-secret']);
+        $terminal = $work->dispatch($fixture->id, 'process', ['private' => 'task-secret']);
+        DB::table('shared.module_work')->where('public_id', $terminal)->update(['status' => 'succeeded', 'payload' => 'not-decryptable-private-task']);
+        $url = '/api/admin/operations/work?module='.$fixture->id;
+        $this->getJson($url)->assertForbidden();
+        ($this->adminGrant)('runa.admin.work.read');
+        $this->getJson($url.'&limit=1')->assertOk()->assertJsonPath('data.work.0.workId', $terminal)->assertJsonPath('data.work.0.status', 'succeeded')->assertJsonPath('data.truncated', true)->assertDontSee('task-secret')->assertDontSee('not-decryptable-private-task');
+        $result = $this->getJson($url.'&limit=2')->assertOk()->assertJsonPath('data.truncated', false)->json('data.work');
+        expect(array_column($result, 'workId'))->toBe([$terminal, $active]);
+        expect(array_map(fn ($row) => $row->workId, $work->active($fixture->id)))->toBe([$active]);
+        expect($work->history('runa.auth'))->toBe([]);
+        $this->getJson($url.'&limit=1001')->assertUnprocessable();
+        expect(fn () => $work->history($fixture->id, 0))->toThrow(RuntimeException::class);
+    } finally {
+        $fixture->remove();
+    }
+});

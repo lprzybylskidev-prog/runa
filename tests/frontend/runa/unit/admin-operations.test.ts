@@ -708,115 +708,154 @@ it('an operations slot replacement owns its module dialog presentation', async (
   expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 });
 
-it('module diagnosis retains its panel and limits progress to the clicked operation; active work refreshes its table', async () => {
-  const { AdminOperationResult } = await import('@/runa/admin');
-  let finishDiagnosis!: (response: Response) => void;
-  const workReads: ((response: Response) => void)[] = [];
-  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
-    const path = String(input).split('?')[0]!;
-    if (path.endsWith('/capabilities'))
-      return response({
-        capabilities: [
-          'diagnostics.read',
-          'health.diagnose',
-          'work.read',
-          'modules.manage',
-        ],
-      });
-    if (path.endsWith('/diagnostics'))
-      return response({
-        modules: [
+it.each(['selection', 'deep link'])(
+  'module diagnosis retains its panel and limits progress to the clicked operation; task history loads automatically, refreshes and stays in overview (%s)',
+  async (entry) => {
+    const { AdminOperationResult } = await import('@/runa/admin');
+    let finishDiagnosis!: (response: Response) => void;
+    const workReads: ((response: Response) => void)[] = [];
+    vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+      const path = String(input).split('?')[0]!;
+      if (path.endsWith('/capabilities'))
+        return response({
+          capabilities: [
+            'diagnostics.read',
+            'health.diagnose',
+            'health.configure',
+            'work.read',
+            'modules.manage',
+          ],
+        });
+      if (path.endsWith('/diagnostics'))
+        return response({
+          modules: [
+            {
+              id: 'app.safe',
+              kind: 'optional',
+              registered: true,
+              enabled: true,
+              available: true,
+              health: 'healthy',
+            },
+          ],
+        });
+      if (path.endsWith('/history'))
+        return response({ operations: [], next_cursor: null });
+      if (path.endsWith('/health.diagnose'))
+        return new Promise((finish) => {
+          finishDiagnosis = finish;
+        });
+      if (path.endsWith('/work'))
+        return new Promise((finish) => workReads.push(finish));
+      return response({});
+    });
+    if (entry === 'deep link')
+      window.history.replaceState({}, '', '/admin?module=app.safe');
+    const w = mount(AdminOperations, {
+      props: { admin: admin() },
+      attachTo: document.body,
+    });
+    await vi.waitFor(() =>
+      expect(w.find('[data-module="app.safe"] button').exists()).toBe(true),
+    );
+    if (entry === 'selection')
+      await w.get('[data-module="app.safe"] button').trigger('click');
+    const button = (label: string) =>
+      Array.from(
+        document.body.querySelectorAll<HTMLButtonElement>(
+          '[role="dialog"] button',
+        ),
+      ).find((button) => button.textContent?.trim() === label)!;
+    await vi.waitFor(() => expect(workReads).toHaveLength(1));
+    workReads[0]!(response({ work: [], truncated: false }));
+    await vi.waitFor(() =>
+      expect(button('Refresh tasks')?.disabled).toBe(false),
+    );
+    expect(
+      document.body.querySelector('[data-active-work] table'),
+    ).not.toBeNull();
+    expect(button('Active work')).toBeUndefined();
+    await vi.waitFor(() =>
+      expect(button('Diagnose now')?.disabled).toBe(false),
+    );
+    const panel =
+      document.body.querySelector<HTMLElement>('[role="tabpanel"]')!;
+    const card = panel.querySelector('[data-module="app.safe"]');
+    button('Diagnose now').click();
+    await vi.waitFor(() => expect(finishDiagnosis).toBeTypeOf('function'));
+    expect(panel.hidden).toBe(false);
+    expect(panel.querySelector('[data-module="app.safe"]')).toBe(card);
+    expect(button('Diagnose now').getAttribute('aria-busy')).toBe('true');
+    expect(button('Refresh tasks').getAttribute('aria-busy')).not.toBe('true');
+    finishDiagnosis(
+      response({
+        module: 'app.safe',
+        health: 'healthy',
+        blocked: false,
+        reasons: [],
+      }),
+    );
+    await vi.waitFor(() =>
+      expect(w.findComponent(AdminOperationResult).exists()).toBe(true),
+    );
+    const result = w.getComponent(AdminOperationResult);
+    expect(result.attributes('data-tone')).toBe('success');
+    expect(result.text()).not.toContain('app.safe');
+    expect(panel.hidden).toBe(false);
+    await vi.waitFor(() => expect(workReads).toHaveLength(2));
+    workReads[1]!(response({ work: [], truncated: false }));
+    await vi.waitFor(() =>
+      expect(button('Refresh tasks').disabled).toBe(false),
+    );
+    button('Refresh tasks').click();
+    await vi.waitFor(() => expect(workReads).toHaveLength(3));
+    expect(document.body.querySelector('[data-active-work]')).not.toBeNull();
+    expect(button('Refresh tasks').getAttribute('aria-busy')).toBe('true');
+    workReads[2]!(response({ work: [], truncated: false }));
+    await vi.waitFor(() =>
+      expect(button('Refresh tasks').getAttribute('aria-busy')).not.toBe(
+        'true',
+      ),
+    );
+    expect(
+      document.body.querySelector('[data-active-work] table'),
+    ).not.toBeNull();
+    button('Refresh tasks').click();
+    await vi.waitFor(() => expect(workReads).toHaveLength(4));
+    workReads[3]!(
+      response({
+        work: [
           {
-            id: 'app.safe',
-            kind: 'optional',
-            registered: true,
-            enabled: true,
-            available: true,
-            health: 'healthy',
+            workId: id,
+            operation: 'Report export',
+            status: 'succeeded',
+            cancellable: true,
+            progress: '1/5',
           },
         ],
-      });
-    if (path.endsWith('/history'))
-      return response({ operations: [], next_cursor: null });
-    if (path.endsWith('/health.diagnose'))
-      return new Promise((finish) => {
-        finishDiagnosis = finish;
-      });
-    if (path.endsWith('/work'))
-      return new Promise((finish) => workReads.push(finish));
-    return response({});
-  });
-  const w = mount(AdminOperations, {
-    props: { admin: admin() },
-    attachTo: document.body,
-  });
-  await vi.waitFor(() =>
-    expect(w.find('[data-module="app.safe"] button').exists()).toBe(true),
-  );
-  await w.get('[data-module="app.safe"] button').trigger('click');
-  const button = (label: string) =>
-    Array.from(
-      document.body.querySelectorAll<HTMLButtonElement>(
-        '[role="dialog"] button',
-      ),
-    ).find((button) => button.textContent?.trim() === label)!;
-  await vi.waitFor(() => expect(button('Diagnose now')?.disabled).toBe(false));
-  const panel = document.body.querySelector<HTMLElement>('[role="tabpanel"]')!;
-  const card = panel.querySelector('[data-module="app.safe"]');
-  button('Diagnose now').click();
-  await vi.waitFor(() => expect(finishDiagnosis).toBeTypeOf('function'));
-  expect(panel.hidden).toBe(false);
-  expect(panel.querySelector('[data-module="app.safe"]')).toBe(card);
-  expect(button('Diagnose now').getAttribute('aria-busy')).toBe('true');
-  expect(button('Active work').getAttribute('aria-busy')).not.toBe('true');
-  finishDiagnosis(
-    response({
-      module: 'app.safe',
-      health: 'healthy',
-      blocked: false,
-      reasons: [],
-    }),
-  );
-  await vi.waitFor(() =>
-    expect(w.findComponent(AdminOperationResult).exists()).toBe(true),
-  );
-  const result = w.getComponent(AdminOperationResult);
-  expect(result.attributes('data-tone')).toBe('success');
-  expect(result.text()).not.toContain('app.safe');
-  expect(panel.hidden).toBe(false);
-  await vi.waitFor(() => expect(button('Active work').disabled).toBe(false));
-  button('Active work').click();
-  await vi.waitFor(() => expect(workReads).toHaveLength(1));
-  expect(document.body.querySelector('[data-active-work]')).not.toBeNull();
-  expect(button('Active work').getAttribute('aria-busy')).toBe('true');
-  workReads[0]!(response({ work: [], truncated: false }));
-  await vi.waitFor(() =>
-    expect(button('Active work').getAttribute('aria-busy')).not.toBe('true'),
-  );
-  expect(
-    document.body.querySelector('[data-active-work] table'),
-  ).not.toBeNull();
-  button('Active work').click();
-  await vi.waitFor(() => expect(workReads).toHaveLength(2));
-  workReads[1]!(
-    response({
-      work: [
-        {
-          workId: id,
-          operation: 'Report export',
-          status: 'pending',
-          progress: '1/5',
-        },
-      ],
-      truncated: false,
-    }),
-  );
-  await vi.waitFor(() =>
-    expect(
-      document.body.querySelector('[data-active-work]')?.textContent,
-    ).toContain('Report export'),
-  );
-});
+        truncated: false,
+      }),
+    );
+    await vi.waitFor(() =>
+      expect(
+        document.body.querySelector('[data-active-work]')?.textContent,
+      ).toContain('Report export'),
+    );
+    expect(button('Request cancellation')).toBeUndefined();
+    const healthTab = Array.from(
+      document.body.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+    ).find((tab) => tab.textContent?.trim() === 'Health policy')!;
+    healthTab.click();
+    await vi.waitFor(() =>
+      expect(window.location.search).toContain('section=health'),
+    );
+    await vi.waitFor(() => {
+      expect(w.findComponent(AdminOperationResult).exists()).toBe(false);
+      expect(document.body.querySelector('[data-active-work]')).toBeNull();
+      expect(document.body.textContent).not.toContain('Operation history');
+    });
+  },
+);
 
 it('diagnostic outcomes use semantic colors and explain failures without duplicating the module identity', async () => {
   const { AdminOperationResult, AdminModuleCard } =

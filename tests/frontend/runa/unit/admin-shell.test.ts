@@ -2380,5 +2380,93 @@ it('Admin dashboard uses welcome catalogue icons, area breadcrumbs and omits emp
   expect(w.get('.shell-breadcrumbs').text()).toContain('Home');
   expect(w.get('.shell-breadcrumbs').text()).toContain('Administrator panel');
   expect(w.find('.shell-breadcrumbs a[href="/app"]').exists()).toBe(false);
+  expect(w.get('.shell-breadcrumbs [aria-current="page"]').text()).toBe(
+    'Modules',
+  );
+  expect(w.get('.shell-breadcrumbs a[href="/admin"]').text()).toBe(
+    'Administrator panel',
+  );
+  const application = w
+    .findAll('.shell-top-nav a')
+    .find((link) => link.text().trim() === 'Application settings');
+  expect(application).toBeDefined();
+  await application!.trigger('click');
+  await vi.waitFor(() =>
+    expect(w.get('.shell-breadcrumbs [aria-current="page"]').text()).toBe(
+      'Application settings',
+    ),
+  );
+
   expect(w.text()).not.toContain('No dashboard widgets');
+});
+
+it('shared breadcrumbs include linked Admin owner ancestors and account subviews', async () => {
+  const session = sessionFixture();
+  session.welcomeEnabled.value = true;
+  const w = mount(ApplicationSessionShell, {
+    props: {
+      session,
+      current: {
+        routeKey: 'runa.auth.users',
+        moduleKey: 'runa.auth',
+        href: '/admin/runa.auth/users',
+      },
+      navigation: [
+        {
+          key: 'auth',
+          routeKey: 'runa.auth.users',
+          moduleKey: 'runa.auth',
+          label: 'Accounts',
+          href: '/admin/runa.auth/users',
+          availability: 'available',
+        },
+      ],
+      topNavigation: [
+        {
+          key: 'users',
+          routeKey: 'runa.auth.users',
+          moduleKey: 'runa.auth',
+          label: 'Users',
+          href: '/admin/runa.auth/users',
+          availability: 'available',
+        },
+      ],
+    },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(w.find('.shell-breadcrumbs').exists()).toBe(true),
+  );
+  expect(
+    w
+      .findAll('.shell-breadcrumbs li')
+      .map((item) => item.text().replace(/^\/\s*/, '')),
+  ).toEqual(['Home', 'Administrator panel', 'Accounts', 'Users']);
+  expect(w.find('.shell-breadcrumbs a[href="/admin"]').exists()).toBe(true);
+  expect(w.get('.shell-breadcrumbs [aria-current="page"]').text()).toBe(
+    'Users',
+  );
+  await w.setProps({
+    current: {
+      routeKey: 'account.security',
+      moduleKey: 'runa.auth',
+      href: '/account?tab=security',
+    },
+    topNavigation: [
+      {
+        key: 'security',
+        routeKey: 'account.security',
+        moduleKey: 'runa.auth',
+        label: 'Security',
+        href: '/account?tab=security',
+        availability: 'available',
+      },
+    ],
+  });
+  expect(
+    w
+      .findAll('.shell-breadcrumbs li')
+      .map((item) => item.text().replace(/^\/\s*/, '')),
+  ).toEqual(['Home', 'Application', 'User panel', 'Security']);
+  expect(w.find('.shell-breadcrumbs a[href="/account"]').exists()).toBe(true);
 });

@@ -504,7 +504,14 @@ onScopeDispose(() => {
           </div>
         </header>
         <div v-if="$slots.breadcrumbs" class="shell-breadcrumbs">
-          <slot name="breadcrumbs" :t="t" />
+          <slot
+            name="breadcrumbs"
+            :t="t"
+            :navigation="navigation"
+            :top-navigation="topEntries"
+            :current="pageNavigation.current.value ?? current"
+            :navigate="navigate"
+          />
         </div>
         <section
           v-if="$slots.statistics"

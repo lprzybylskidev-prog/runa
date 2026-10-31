@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Compose shared breadcrumbs from the active layout page context, with linked area/module ancestors and the current Admin/account subview, including query navigation.
+
 - Share Welcome module presentation through the public UI source catalogue and correct the shared session shell's Admin breadcrumbs for dashboard and owner pages.
 
 - Publish account navigation loading in the top bar, remove obsolete content tab placeholders and expose shell contentLoading/navigationLoading for initial page discovery.

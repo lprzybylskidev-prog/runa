@@ -75,7 +75,7 @@ target/source/revision checks. No generic engine-method dispatcher is allowed.
 | settings.update / `runa.admin.settings.manage`            | ModuleSettings.update(string $module, array $patch, int $expectedRevision, int $expectedGeneration, ?SettingsActor $actor = null): TransitionResult | Independent runner; derive actor from trusted context; existing SettingsParticipant publication Audit, no duplicate wrapper success event                     |
 | settings.status/recover / same                            | ModuleSettings.status/recover(string $id): TransitionResult                                                                                         | Owning recovery only, no generic undo; preserve SettingsParticipant restore Audit                                                                             |
 | integrations.configure / `runa.admin.integrations.manage` | ModuleIntegrations.configure(string $module, string $key, bool $enabled, array $config, int $expectedGeneration): int                               | Existing declared target/config validation and 8192-byte bound; add Audit inside same generation/config transaction                                           |
-| work.read / `runa.admin.work.read`                        | ModuleWork.active(string $module, int $limit = 100): array; status(string $id): WorkStatus                                                          | Default 100 plus explicit truncation; bounded requested limit up to native 1000, subject to response byte limit; safe progress code, no fabricated percentage |
+| work.read / `runa.admin.work.read`                        | ModuleWork.history(string $module, int $limit = 100): array; status(string $id): WorkStatus                                                         | Default 100 plus explicit truncation; bounded requested limit up to native 1000, subject to response byte limit; safe progress code, no fabricated percentage |
 | work.cancel / `runa.admin.work.cancel`                    | ModuleWork.requestCancellation(string $id): WorkStatus                                                                                              | Cooperative request only, owning cancellable policy; add transaction/revision-safe Audit at the actual cancel_requested write, not after it                   |
 
 If a signature above is abbreviated, parameter/return types are inherited exactly
@@ -371,3 +371,16 @@ read engine over shared.module_transitions, delivered at runtime, not a customer
 extension/consumption API. No new persistence, migration or Audit write is involved.
 History describes recorded lifecycle/settings operations, not all module activity;
 other business changes retain their owning Audit history.
+
+## Task history
+
+The framework-owned public runtime adapter ModuleWork.history(string $module,
+int $limit = 100): array returns a newest-first bounded list of WorkStatus values
+from retained native work, including terminal states. Its implementation remains
+in src/runa/Support/Modules/Work/ModuleWork.php, consumed by trusted management
+and module authors through the container-owned adapter. Limits are 1..1000; it
+uses the same status/lease/capability projection as active(), without decrypting
+work payloads or introducing another store. Active-only lifecycle fences retain
+active() unchanged. AdminOperations.read('work', ['module' => string, optional
+'limit' => int]) uses history with the existing work.read grant and explicit
+truncation. Terminal evidence offers status reads, never cancellation/replay.

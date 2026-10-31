@@ -41,7 +41,7 @@ const workLoading = ref(false);
 const workLoaded = ref(false);
 const diagnosticsLoading = ref(false);
 let diagnosticsRequest = 0;
-const workOpened = ref(false);
+const needsWork = ref(false);
 let workRequest = 0;
 let commandRequest = 0;
 const workQuery = ref<TableQuery>({
@@ -90,7 +90,7 @@ const navigationEntries = computed(() => [
     key: 'operations',
     routeKey: 'admin.dashboard.operations',
     moduleKey: 'runa.admin',
-    label: tr('Operations'),
+    label: tr('Modules'),
     href: sectionHref(false),
     availability: 'available' as const,
   },
@@ -185,7 +185,6 @@ async function select(module: string) {
     return;
   result.value = undefined;
   preview.value = undefined;
-  work.value = undefined;
   controller.dirty.value = false;
 }
 watch(filter, () => {
@@ -344,7 +343,7 @@ function clearWork() {
   workRequest++;
   workQuery.value = { ...workQuery.value, page: 1 };
   work.value = undefined;
-  workOpened.value = false;
+  needsWork.value = false;
   workLoaded.value = false;
   workLoading.value = false;
 }
@@ -352,7 +351,7 @@ async function readWork() {
   if (workLoading.value || controller.busy.value || controller.refreshing.value)
     return;
   const own = ++workRequest;
-  workOpened.value = true;
+  needsWork.value = false;
   workLoading.value = true;
   const module = selected.value;
   try {
@@ -364,6 +363,63 @@ async function readWork() {
   } finally {
     if (own === workRequest) workLoading.value = false;
   }
+}
+watch(
+  [selected, editor, capabilitiesReady],
+  () => {
+    clearWork();
+    needsWork.value =
+      !!selected.value && !editor.value && capabilitiesReady.value;
+  },
+  { immediate: true },
+);
+watch(
+  () => [
+    needsWork.value,
+    capabilitiesReady.value,
+    capabilities.value,
+    controller.busy.value,
+    controller.refreshing.value,
+    pendingCommand.value,
+  ],
+  () => {
+    if (
+      needsWork.value &&
+      capabilitiesReady.value &&
+      has('work.read') &&
+      selected.value &&
+      !editor.value &&
+      !pendingCommand.value &&
+      !controller.busy.value &&
+      !controller.refreshing.value
+    )
+      void readWork();
+  },
+  { flush: 'post' },
+);
+watch(
+  () => controller.changed.value,
+  () => {
+    if (selected.value && !editor.value) needsWork.value = true;
+  },
+);
+function workTone(status: AdminJson | undefined) {
+  return status === 'succeeded'
+    ? 'success'
+    : status === 'failed' || status === 'refused'
+      ? 'danger'
+      : status === 'recovery_required' || status === 'cancelled'
+        ? 'warning'
+        : 'info';
+}
+function cancellable(row: AdminOperationData) {
+  return (
+    ['pending', 'running', 'failed', 'recovery_required'].includes(
+      String(row.status),
+    ) &&
+    !!row.cancellable &&
+    !row.cancellationRequested
+  );
 }
 const workColumnState = [
   { key: 'operation', visible: true, width: 220 },
@@ -578,14 +634,7 @@ defineExpose({ controller });
       >
         <template #overview>
           <div v-if="!editor" class="space-y-6">
-            <component
-              :is="presentation.moduleCard ?? AdminModuleCard"
-              v-if="selectedModule"
-              :module="selectedModule"
-              :interactive="false"
-              details
-            />
-            <div class="flex flex-wrap gap-3">
+            <div class="flex flex-wrap justify-end gap-3">
               <Button
                 v-if="has('health.diagnose')"
                 variant="outline"
@@ -594,15 +643,14 @@ defineExpose({ controller });
                 @click="command('health.diagnose', { module: selected })"
                 >{{ tr('Diagnose now') }}</Button
               >
-              <Button
-                v-if="has('work.read')"
-                variant="outline"
-                :busy="workLoading"
-                :disabled="controller.busy.value || controller.refreshing.value"
-                @click="readWork"
-                >{{ tr('Active work') }}</Button
-              >
             </div>
+            <component
+              :is="presentation.moduleCard ?? AdminModuleCard"
+              v-if="selectedModule"
+              :module="selectedModule"
+              :interactive="false"
+              details
+            />
             <div
               v-if="has('modules.manage') && selectedModule?.kind !== 'core'"
               class="space-y-3"
@@ -717,6 +765,97 @@ defineExpose({ controller });
                 >
               </template>
             </div>
+            <AdminOperationResult v-if="result" :result="result" />
+            <component
+              v-if="has('modules.manage') || has('settings.manage')"
+              :is="presentation.operationHistory ?? AdminOperationHistory"
+              :key="selected"
+              :controller="controller"
+              :module="selected"
+              :pending="!!pendingCommand"
+              @execute="historyAction"
+            />
+            <section
+              v-if="has('work.read')"
+              class="space-y-3 border-t border-line pt-5"
+              :aria-busy="workLoading"
+              data-active-work
+            >
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <h3 class="font-semibold">{{ tr('Task history') }}</h3>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  :busy="workLoading"
+                  :disabled="
+                    controller.busy.value ||
+                    controller.refreshing.value ||
+                    !!pendingCommand
+                  "
+                  @click="readWork"
+                  >{{ tr('Refresh tasks') }}</Button
+                >
+              </div>
+              <Table
+                v-model:query="workQuery"
+                mode="client"
+                :rows="activeWork"
+                :columns="workColumns"
+                :column-state="workColumnState"
+                :row-key="(row) => String(row.workId)"
+                :loading="workLoading && !workLoaded"
+                retain-empty-frame
+                :english="adminLocale === 'en'"
+                :searchable="false"
+                :caption="tr('Task history')"
+              >
+                <template #cell-status="{ row }"
+                  ><Badge
+                    :tone="
+                      row.cancellationRequested
+                        ? 'warning'
+                        : workTone(row.status)
+                    "
+                    >{{
+                      row.cancellationRequested
+                        ? tr(
+                            'Cancellation requested; completion is not confirmed.',
+                          )
+                        : tr(String(row.status))
+                    }}</Badge
+                  ></template
+                >
+                <template #actions="{ row }">
+                  <Button
+                    v-if="has('work.cancel') && cancellable(row)"
+                    size="sm"
+                    tone="warning"
+                    :disabled="controller.busy.value"
+                    @click="
+                      command('work.cancel', { id: row.workId ?? null }, true)
+                    "
+                    >{{ tr('Request cancellation') }}</Button
+                  >
+                  <Button
+                    size="sm"
+                    :disabled="
+                      controller.busy.value || controller.refreshing.value
+                    "
+                    @click="
+                      controller
+                        .read('work.status', { id: row.workId ?? null })
+                        .then((value) => {
+                          if (value) result = value;
+                        })
+                    "
+                    >{{ tr('Refresh work status') }}</Button
+                  >
+                </template>
+              </Table>
+              <p v-if="work?.truncated" class="text-xs text-muted">
+                {{ tr('Additional task history is omitted.') }}
+              </p>
+            </section>
           </div>
         </template>
         <template
@@ -736,74 +875,6 @@ defineExpose({ controller });
           />
         </template>
       </Tabs>
-      <AdminOperationResult v-if="result" :result="result" />
-      <component
-        v-if="has('modules.manage') || has('settings.manage')"
-        :is="presentation.operationHistory ?? AdminOperationHistory"
-        :key="selected"
-        :controller="controller"
-        :module="selected"
-        :pending="!!pendingCommand"
-        @execute="historyAction"
-      />
-      <section
-        v-if="workOpened"
-        class="space-y-3 border-t border-line pt-5"
-        :aria-busy="workLoading"
-        data-active-work
-      >
-        <h3 class="font-semibold">{{ tr('Active work') }}</h3>
-        <Table
-          v-model:query="workQuery"
-          mode="client"
-          :rows="activeWork"
-          :columns="workColumns"
-          :column-state="workColumnState"
-          :row-key="(row) => String(row.workId)"
-          :loading="workLoading && !workLoaded"
-          retain-empty-frame
-          :english="adminLocale === 'en'"
-          :searchable="false"
-          :caption="tr('Active work')"
-        >
-          <template #cell-status="{ row }"
-            ><Badge :tone="row.cancellationRequested ? 'warning' : 'info'">{{
-              row.cancellationRequested
-                ? tr('Cancellation requested; completion is not confirmed.')
-                : tr(String(row.status))
-            }}</Badge></template
-          >
-          <template #actions="{ row }">
-            <Button
-              v-if="
-                has('work.cancel') &&
-                row.cancellable &&
-                !row.cancellationRequested
-              "
-              size="sm"
-              tone="warning"
-              :disabled="controller.busy.value"
-              @click="command('work.cancel', { id: row.workId ?? null }, true)"
-              >{{ tr('Request cancellation') }}</Button
-            >
-            <Button
-              size="sm"
-              :disabled="controller.busy.value || controller.refreshing.value"
-              @click="
-                controller
-                  .read('work.status', { id: row.workId ?? null })
-                  .then((value) => {
-                    if (value) result = value;
-                  })
-              "
-              >{{ tr('Refresh work status') }}</Button
-            >
-          </template>
-        </Table>
-        <p v-if="work?.truncated" class="text-xs text-muted">
-          {{ tr('Additional active work is omitted.') }}
-        </p>
-      </section>
 
       <template #footer
         ><Button

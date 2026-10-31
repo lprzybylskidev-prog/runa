@@ -462,6 +462,16 @@ reassessment before resuming point 3; completed point history remains evidence.
     introduce another history store. Preserve native review/recovery/Audit guards.
   - Synchronize public contracts/instruction assessment, cover focused races,
     refusal/redaction/pagination and prepare current assets before owner acceptance.
+- [x] 11a14. Align navigation hierarchy and scope the module overview.
+  - Rename dashboard Operations to Modules and render breadcrumbs from the current
+    area/module/page hierarchy, including query-driven subviews and linked ancestors.
+  - Move diagnosis to the top of the overview. Keep its result and operation/task
+    tables inside that tab; replace the Active work trigger with an automatically
+    loaded Task history table and its own explicit refresh.
+  - Include retained terminal work through the existing native work owner, preserve
+    bounded reads, grant checks, write/dirty guards and stale-response fencing.
+  - Synchronize public contracts, run focused regression checks and prepare current
+    assets before repeating owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2652,3 +2662,77 @@ does not replace authenticated owner acceptance. No Docker resources or applicat
 DB data were created/reset; development services/data, model/knowledge caches and
 verification artifacts remain. Owner manual point 11b and final quality/release
 point 12 stay open.
+
+### Point 11a14 — Hierarchical breadcrumbs and scoped module overview
+
+Applied the owner's four manual-acceptance corrections. The dashboard top entry is
+Modules / Moduły. UI's public ApplicationBreadcrumbSlotContext exposes current
+sidebar/top entries, the page-published route and the existing navigation handler
+through ApplicationLayout's breadcrumbs slot. The shared session shell renders
+Home (when enabled) / area / owner where applicable / current page, with linked
+ancestors and one current leaf. Dashboard query subviews, owner pages and account
+subviews use their existing localized navigation labels; dialog tabs do not become
+page hierarchy levels. Navigation uses the existing handler/dirty guards and keeps
+modified-click behavior. No additional router or session owner was introduced.
+
+Diagnosis is the first Overview action above the module card. Its result and both
+history tables now belong inside the actual Overview tab panel; policy/settings/
+integration panels do not include them. Operation history disposes its optional
+reads on tab departure. Task history loads automatically, including deep links,
+keeps confirmed table frames during refresh, and has its own Refresh tasks button
+instead of the former Active work trigger. Module/tab/context changes fence late
+work responses. Successful native writes reconcile task reads after the shared
+write/read lane settles; no write is replayed.
+
+The framework-owned public ModuleWork.history(module, limit=100) reuses the native
+ledger and WorkStatus projection for newest-first retained active/terminal work,
+bounded at 1000. Active-only lifecycle fences remain on active(). Admin's existing
+work read keeps entry/proof/work.read admission, safe projection and explicit
+truncation. No work payload is decrypted for history. Terminal rows offer status
+reads without cancellation controls; unresolved rows retain native capability/
+cooperative cancellation policy. No new engine/store, migration, permission,
+dependency or data reset is needed.
+
+Synchronized canonical page-layout, Admin frontend/operations, module-framework,
+motion and Admin/Auth candidate changelogs. Owner/customer AGENTS and domain skills
+already point at these canonical layout/public-adapter/readiness contracts; no
+new reusable operating rule or duplicated instruction procedure is needed in either
+instruction product. Admin remains the unreleased creation 0.1.0 candidate; Auth
+changes remain within the unreleased 2.0.0 candidate. Public contract additions are
+additive, with no persisted identity or native upgrade change. Prepared platform
+0.7.0 and approved release metadata remain unchanged.
+
+Focused supported frontend checks passed 8 cases (375 excluded), exit 0 / cleanup 0:
+.runtime/frontend/RM-2026-016-overview-navigation-tests-ready.log. They cover
+hierarchy/links/query navigation, automatically loaded empty/terminal work,
+refresh/reconciliation, action-local diagnosis, overview-only result/tables,
+selection and direct module URLs, and existing history/guard behavior. The added
+deep-link case exposed initial capability cleanup overwriting the read request;
+the readiness watcher now schedules the initial work read after capabilities settle.
+Earlier failed evidence is retained. A first breadcrumb assertion used a nonexistent
+CSS selector; it was corrected to the actual top-nav primitive.
+
+Focused supported isolated backend checks passed 2 cases / 35 assertions using
+python3 tools/maintainer/test-backend --parallel --processes=1 with the task-history
+and existing read-authority filters. Log:
+.runtime/frontend/RM-2026-016-task-history-backend.log. Coverage includes grant
+refusal, newest-first terminal evidence, bounded/truncated reads, unchanged active
+semantics, module isolation and deliberately undecryptable private task payloads.
+The runner removed only runa_test_test_1; base/development databases were preserved.
+An overlapping initial invocation was refused by the normal suite lock before
+execution, then rerun sequentially; no runner/lock bypass was used.
+
+The current TypeScript/Vite/native-error build passed:
+.runtime/frontend/RM-2026-016-overview-navigation-build-accepted.log. Nginx /admin
+and all 16 entry-linked assets returned HTTP 200. A controlled browser diagnostic
+against that served build inspected PL/dark/1440px and EN/light/390px Overview,
+terminal task history and policy-tab departure. Screenshots/report are retained in
+.runtime/artifacts/playwright/runa/RM-2026-016-overview-navigation/. Both contexts
+report no page errors/document overflow, two deliberate task reads, the expected
+Modules breadcrumb and zero tables/diagnostic results on the policy tab. Synthetic
+session/activity/operation responses performed no application business writes;
+public identity/presentation reads used the existing endpoint. Browser contexts
+were closed and the temporary diagnostic helper removed. No Docker resources were
+created; active development data/services, caches and evidence remain preserved.
+These focused implementation checks do not replace owner acceptance or final-area
+verification. Manual point 11b and final verification/release point 12 stay open.

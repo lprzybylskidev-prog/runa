@@ -17,7 +17,11 @@ import {
   useImageReadiness,
   useViewReadiness,
 } from '@/runa/ui';
-import type { NavigationEntry } from '@/runa/ui';
+import type {
+  NavigationEntry,
+  ApplicationBreadcrumbSlotContext,
+  BreadcrumbItem,
+} from '@/runa/ui';
 import { useLocale } from '../../../resources/js/composables/useLocale';
 import AuthEntry from './AuthEntry.vue';
 const presentation = useAuthPresentation();
@@ -83,11 +87,41 @@ const current = computed(
     },
 );
 const account = computed(() => current.value.routeKey === 'account');
-const adminArea = computed(
-  () =>
-    current.value.href === '/admin' ||
-    current.value.href?.startsWith('/admin/'),
-);
+function breadcrumbs(
+  scope: ApplicationBreadcrumbSlotContext,
+): BreadcrumbItem[] {
+  const route = scope.current ?? current.value;
+  const areas = scope.navigation ?? navigation.value;
+  const pages = scope.topNavigation ?? props.topNavigation ?? [];
+  const area = areas.find((entry) => entry.moduleKey === route.moduleKey);
+  const page = pages.find(
+    (entry) =>
+      entry.moduleKey === route.moduleKey && entry.routeKey === route.routeKey,
+  );
+  const path = new URL(route.href, window.location.origin).pathname;
+  const items: BreadcrumbItem[] = welcomeEnabled.value
+    ? [{ label: text('Strona główna', 'Home'), href: '/' }]
+    : [];
+  if (path === '/admin' || path.startsWith('/admin/')) {
+    items.push({
+      label: text('Panel administratora', 'Administrator panel'),
+      href: '/admin',
+    });
+    if (path !== '/admin' && area)
+      items.push({ label: area.label, href: area.href });
+  } else {
+    items.push({ label: text('Aplikacja', 'Application'), href: '/app' });
+    if (path === '/account')
+      items.push({
+        label: text('Panel użytkownika', 'User panel'),
+        href: '/account',
+      });
+    else if (area && area.href !== '/app')
+      items.push({ label: area.label, href: area.href });
+  }
+  if (page) items.push({ label: page.label });
+  return items;
+}
 const entries = computed(() =>
   (props.accountMenu ?? []).filter((entry) => {
     try {
@@ -171,20 +205,11 @@ const contentReadiness = useViewReadiness({
     "
     :user-initials="initials"
   >
-    <template #breadcrumbs>
+    <template #breadcrumbs="scope">
       <Breadcrumbs
         :label="text('Ścieżka nawigacji', 'Breadcrumbs')"
-        :items="[
-          ...(welcomeEnabled
-            ? [{ label: text('Strona główna', 'Home'), href: '/' }]
-            : []),
-          ...(adminArea
-            ? [{ label: text('Panel administratora', 'Administrator panel') }]
-            : [{ label: text('Aplikacja', 'Application'), href: '/app' }]),
-          ...(account
-            ? [{ label: text('Panel użytkownika', 'User panel') }]
-            : []),
-        ]"
+        :items="breadcrumbs(scope)"
+        @navigate="(href, event) => scope.navigate?.(href, event)"
       />
     </template>
     <template v-if="session && !loading" #user-menu>

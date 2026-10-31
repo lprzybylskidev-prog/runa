@@ -51,6 +51,12 @@ export interface MinimalLayoutSlots {
   actions?(scope: LayoutSlotContext): VNode[];
   footer?(scope: LayoutSlotContext): VNode[];
 }
+export interface ApplicationBreadcrumbSlotContext extends LayoutSlotContext {
+  navigation?: readonly NavigationEntry[];
+  topNavigation?: readonly NavigationEntry[];
+  current?: RouteContext | undefined;
+  navigate?: (href: string, event: MouseEvent) => void;
+}
 export interface ApplicationLayoutSlots {
   default?(scope: LayoutSlotContext): VNode[];
   content?(scope: LayoutSlotContext): VNode[];
@@ -58,7 +64,7 @@ export interface ApplicationLayoutSlots {
   'user-menu'?(scope: LayoutSlotContext): VNode[];
   heading?(scope: LayoutSlotContext): VNode[];
   actions?(scope: LayoutSlotContext): VNode[];
-  breadcrumbs?(scope: LayoutSlotContext): VNode[];
+  breadcrumbs?(scope: ApplicationBreadcrumbSlotContext): VNode[];
   statistics?(scope: LayoutSlotContext): VNode[];
   toolbar?(scope: LayoutSlotContext): VNode[];
   supplementary?(scope: LayoutSlotContext): VNode[];

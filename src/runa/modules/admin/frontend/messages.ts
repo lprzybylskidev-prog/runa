@@ -96,6 +96,10 @@ export const adminMessages: AdminMessages = {
     'Początkowo widoczne jest Twoje konto. Wybierz inne konto z listy użytkowników.',
   'Account state': 'Stan konta',
   Action: 'Akcja',
+  'Task history': 'Historia zadań',
+  'Refresh tasks': 'Odśwież zadania',
+  'Additional task history is omitted.':
+    'Pomijamy starsze zadania poza limitem odczytu.',
   'Active work': 'Aktywne zadania',
   'Actor UUID': 'UUID wykonawcy',
   'Actor kind': 'Typ wykonawcy',

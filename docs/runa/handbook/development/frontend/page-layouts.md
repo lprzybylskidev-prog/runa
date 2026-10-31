@@ -184,7 +184,28 @@ helper starts sessions, authorizes access or performs writes.
 `usePageResolver` also returns readonly current `href: ComputedRef<string>` alongside its
 existing methods/current descriptor so query-driven subviews react to deliberate
 navigation and browser history. Account uses `?tab=...` (default details); Admin
-dashboard uses `?section=application` (default operations); selected module editors
+dashboard uses `?section=application` (default Modules); selected module editors
 use `?module=...&section=health|settings|integrations`. Named server entry paths
 remain unchanged. Native modified clicks retain their link behavior; guarded
 navigation preserves the existing dirty/write protections and never replays writes.
+
+### Breadcrumb hierarchy
+
+UI owns public ApplicationBreadcrumbSlotContext from @/runa/ui, implemented in
+src/runa/resources/js/runa/ui/layouts.ts and delivered in the frontend runtime.
+ApplicationLayout's breadcrumbs slot receives t plus optional navigation,
+topNavigation, current and navigate(href: string, event: MouseEvent): void.
+The default layout supplies its current sidebar entries, merged page/top entries,
+page-published RouteContext (falling back to its own current) and existing navigation
+handler. Custom layouts can supply the same scope without another router/session.
+
+The shared session shell derives breadcrumb labels from that same presentation
+context. Render enabled Home, the area, owning module where applicable, then the
+current page/subview. Prior levels are safe links; only the leaf has aria-current.
+Admin dashboard defaults to Home / Administrator panel / Modules; application
+settings uses that page's label. Owner pages use Home / Administrator panel /
+owner / page; account uses Home / Application / User panel / subview. Query-driven
+page navigation updates the leaf together with the top bar, including browser
+history. Dialog-local module tabs are not additional page breadcrumb levels.
+Breadcrumb navigate events reuse the layout's existing navigation handler and
+page dirty guards; modified clicks retain native link behavior.

@@ -970,7 +970,7 @@ controllers, refetching protected data or discarding drafts.
 ## Dashboard subview navigation
 
 The sidebar selects the dashboard or an owning module; owner page links already
-use the horizontal top bar. Dashboard Operations/Application settings publish to that same top bar through
+use the horizontal top bar. Dashboard Modules/Application settings publish to that same top bar through
 public PageNavigation. Selected module Health policy/Settings/Integrations belong
 to its operation dialog, with capability-filtered local tabs.
 Record/module selection and actual diagnose/read/review/save actions stay in content.
@@ -1018,7 +1018,7 @@ canonical Runa. Empty widget collections render no empty-state message.
 ### Modal read feedback and native history
 
 Module overview keeps its selected panel mounted while write controls are disabled;
-disabling every tab must not withdraw the active panel. Diagnosis, active-work and
+disabling every tab must not withdraw the active panel. Diagnosis, task-history and
 history each own their pending indicator, not the shared optional-read indicator.
 Diagnostic results use success/warning/danger according to health/blocked state,
 show the outcome and localized safe reasons, and omit redundant module identity.
@@ -1027,11 +1027,15 @@ The manual operation UUID/type form is replaced by a module operation history
 Table. It includes succeeded/refused/failed and active transitions, paged through
 the guarded history read in the operations contract. Per-row native status/recovery
 controls use backend-advertised actions and existing confirmations; terminal rows
-never imply a generic undo. History is initially read when the module opens, after
+never imply a generic undo. History is initially read in Overview, after
 other initial reads settle. Failed reads retain explicit retry; confirmed context/write invalidation requests
 a fresh read. Writes are never replayed.
-The active-work Table mounts at the modal bottom on the first explicit Active work
-click, including an empty state; later clicks refresh it in place. Both tables use
+The Task history Table loads automatically at the overview bottom, including an
+empty state and retained terminal work. Its own Refresh tasks button refreshes in
+place, matching operation history. Cancellation controls appear only on unresolved
+work with native cancellation capability. Diagnosis is at the overview top. Results
+and both tables are scoped to Overview and do not appear in policy/settings/integration
+tabs; returning to Overview reconciles its disposed optional reads. Both tables use
 public Table and keep rows/focus during refresh, with module/session request fences.
 
 Admin owns runtime public `AdminOperationHistory` from `@/runa/admin` with props

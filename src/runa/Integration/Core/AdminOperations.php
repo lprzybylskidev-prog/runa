@@ -67,7 +67,7 @@ final readonly class AdminOperations
                     'module' => $this->module($this->moduleId($input)),
                     'settings' => $this->settingsView($this->moduleId($input)),
                     'integrations' => ['generation' => $this->registry->snapshot()->generation, 'integrations' => $this->integrations->metadata($this->moduleId($input))],
-                    'work' => $this->active($this->moduleId($input), $this->integer($input, 'limit', 100, 1000)),
+                    'work' => $this->workHistory($this->moduleId($input), $this->integer($input, 'limit', 100, 1000)),
                     'work.status' => ['work' => $this->work->status($this->uuid($input))],
                     'modules.status' => ['transition' => $this->transitions->status($this->uuid($input))],
                     'settings.status' => ['transition' => $this->settings->status($this->uuid($input))],
@@ -255,9 +255,9 @@ final readonly class AdminOperations
     }
 
     /** @return array<string,mixed> */
-    private function active(string $module, int $limit): array
+    private function workHistory(string $module, int $limit): array
     {
-        $items = $this->work->active($module, min(1000, $limit + 1));
+        $items = $this->work->history($module, min(1000, $limit + 1));
 
         // The native cap itself is explicitly reported as potentially truncated.
         return ['work' => array_slice($items, 0, $limit), 'truncated' => count($items) > $limit || count($items) === 1000];
