@@ -499,6 +499,19 @@ reassessment before resuming point 3; completed point history remains evidence.
     ordinary background refresh retains confirmed cards.
   - Prepare current assets/data, record focused checks and instruction assessment,
     and commit before repeating owner acceptance.
+- [ ] 11a18. Put module controls first and review lifecycle actions in a dialog.
+  - Owner decision, 2026-10-31: retain enable/disable/unregister semantics;
+    installation stays outside Admin. Registration and installed data remain
+    distinct; do not relabel unregister as uninstall.
+  - Place Optional lifecycle action buttons above module details, remove the
+    intent selector, instructional Core warning and standalone Preview trigger.
+    Clicking an action opens one confirmation dialog with the native preview,
+    blockers, dependencies and work; apply only its exact reviewed token.
+  - Place diagnosis feedback beside its trigger and keep it independent from
+    lifecycle/work feedback. Fence pending previews by module/session/authority,
+    preserve native admission and show failures without replaying mutations.
+  - Synchronize guidance, run focused checks and prepare current assets before
+    repeated owner acceptance. No installation API or database change is included.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2933,3 +2946,62 @@ knowledge/model caches and all verification evidence are preserved.
 Point 11a17 is ready for repeated owner acceptance at http://localhost:8080/admin.
 Owner acceptance 11b and final verification/release 12 remain open; these focused
 checks do not claim broad quality or manual acceptance PASS.
+
+### Point 11a18 — Direct lifecycle controls and adjacent diagnosis
+
+The owner confirms that unregister remains registration removal, preserving
+installed data; no installation/uninstallation API is added. Optional lifecycle
+controls now precede the diagnostic row and module details. Enable/Disable follows
+the current enabled state, alongside Unregister. Core and unregistered targets
+have no lifecycle controls. Removed the Core instruction paragraph, intent selector
+and standalone preview/apply sequence without weakening native server refusals.
+
+Each action opens one shared nested Dialog with an initial Skeleton and the native
+modules.preview result: affected modules, proposed flags, active work and blockers.
+Loading/blocked states cannot be confirmed. Confirmation submits the exact reviewed
+token once with confirmed=true; no second generic prompt is shown. Cancel/Escape
+uses existing nested focus/inert/scroll ownership. A Vue render tick lets Dialog
+capture its enabled opener before the shared write lane disables the outer controls;
+there is no artificial timer or new modal engine. Failed apply invalidates the
+review and requires explicit Review again. Module/tab/context/authority or grant
+loss clears previews and fences late results. Native actor/token/expiry/generation
+revalidation, Audit and admission remain unchanged.
+
+Diagnosis feedback is owned separately from lifecycle/work outcomes and is rendered
+in the same wrapping row as its trigger. Work/lifecycle results cannot overwrite it.
+The diagnostic panel stays mounted and only its button indicates diagnosis progress.
+Unregister precondition/dependent blockers now have explicit PL/EN messages.
+
+Synchronized Admin frontend/loading/motion guidance and the candidate changelog.
+Owner/customer AGENTS and skills already delegate to these canonical composition,
+readiness, public-module and dialog contracts; neither instruction product needs
+duplicate procedures. Local knowledge was current and the bounded retrieval was
+checked against the relevant original contracts. Admin remains the unreleased
+creation candidate 0.1.0 within prepared platform 0.7.0. No API signatures, module
+manifests/upgrade edges, dependencies, runtime configuration or database changes.
+
+Focused supported frontend checks passed 9 cases (384 excluded), native exit 0 /
+cleanup 0, in .runtime/frontend/RM-2026-016-lifecycle-controls-tests-ready.log.
+They cover enable/disable/unregister preview and exact-token confirmation,
+cancellation/focus restoration without mutation, blocked previews, failed-apply
+invalidation without replay, authority change during preview, adjacent independent
+diagnosis results, task-history behavior and existing dirty tab/close guards.
+Earlier failures exposed the disabled-opener focus timing; the render tick fixes
+that behavior. An initial build also caught a missing test import, now corrected.
+Native failed evidence remains preserved. No backend implementation changed, so
+no backend suite was selected for this focused UI point.
+
+The supported TypeScript/Vite/native-error build passed in
+.runtime/frontend/RM-2026-016-lifecycle-controls-build-ready.log. A focused controlled
+browser inspection against the served build passed PL/dark/1440px normal motion
+and EN/light/390px reduced motion. It checked control ordering, adjacent diagnosis,
+loading/ready/blocked preview, cancellation focus, Escape, one confirmed apply and
+no document overflow/page errors. Screenshot/report evidence is retained under
+.runtime/artifacts/playwright/runa/RM-2026-016-lifecycle-controls/; log:
+.runtime/frontend/RM-2026-016-lifecycle-controls-browser.log. Synthetic account/
+operation responses made no application business writes. Browser contexts closed;
+temporary diagnostic helper removed. No Docker resources were created/removed;
+active services/data, knowledge/model caches and all reports remain preserved.
+
+Implementation commit and post-hook asset/HTTP readiness remain to finish this
+point. Owner acceptance 11b and final verification/release 12 remain open.

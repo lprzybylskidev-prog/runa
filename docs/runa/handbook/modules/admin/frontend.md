@@ -892,9 +892,16 @@ replace them. Explicit retries only: never replay failed or cancelled writes.
 Context invalidation cancels confirmations, aborts observation of requests and
 removes prior snapshots; a cancelled write may have completed on the server.
 
-Lifecycle preview retains affected modules/active work and an opaque actor-bound
-review. Changing the intent/target discards it; Apply confirms the reviewed input
-and native execution rechecks it. Pending/recovery/failed results remain visible.
+The Optional lifecycle buttons precede module details. Enable/Disable follows the
+current enabled state; Unregister retains its distinct registration-only meaning.
+Clicking a button opens a nested Dialog and requests the native preview there,
+with affected modules, planned flags, active work and blockers. One confirmation
+applies the exact opaque actor-bound review; no separate intent selector, Preview
+trigger or second generic confirmation is needed. Loading/blocked previews cannot
+be applied. Module/tab/context/authority changes discard reviews and late results.
+A failed apply invalidates its token and offers explicit Review again; it never
+replays the mutation. Dialog retains focus/inert/scroll ownership and restores the
+action trigger after cancellation. Native execution rechecks the reviewed input. Pending/recovery/failed results remain visible.
 Operation history rows invoke only their permitted native status/resume/cancel/recover;
 maintenance/update/Core failure still blocks all protected HTTP.
 
@@ -1023,7 +1030,10 @@ Module overview keeps its selected panel mounted while write controls are disabl
 disabling every tab must not withdraw the active panel. Diagnosis, task-history and
 history each own their pending indicator, not the shared optional-read indicator.
 Diagnostic results use success/warning/danger according to health/blocked state,
-show the outcome and localized safe reasons, and omit redundant module identity.
+show the outcome and localized safe reasons beside the Diagnose now button, and
+omit redundant module identity. Diagnosis has separate result ownership so task
+status/lifecycle results cannot replace its feedback. On narrow screens the same
+row wraps without overflowing.
 
 The manual operation UUID/type form is replaced by a module operation history
 Table. It includes succeeded/refused/failed and active transitions, paged through

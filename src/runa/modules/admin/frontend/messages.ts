@@ -117,7 +117,6 @@ export const adminMessages: AdminMessages = {
   'Application settings could not be read.':
     'Nie udało się odczytać ustawień aplikacji.',
   'Application settings saved.': 'Ustawienia aplikacji zostały zapisane.',
-  'Apply reviewed transition': 'Zastosuj sprawdzoną zmianę',
   'Auth policies use their dedicated reviewed policy page.':
     'Zasady uwierzytelniania zmienisz na dedykowanej stronie zasad z przeglądem zmian.',
   Available: 'Dostępny',
@@ -149,8 +148,6 @@ export const adminMessages: AdminMessages = {
     'Potwierdź hasło, aby wejść do panelu administratora.',
   'Continue with this action for the selected records?':
     'Wykonać tę akcję dla zaznaczonych rekordów?',
-  'Core targets are refused. Review all affected dependencies and work before applying.':
-    'Moduły Core nie podlegają tej operacji. Przed zastosowaniem sprawdź zależności i zadania objęte zmianą.',
   'Correct the setting values before saving.':
     'Popraw wartości ustawień przed zapisaniem.',
   Correlation: 'Identyfikator powiązania',
@@ -187,7 +184,6 @@ export const adminMessages: AdminMessages = {
   'From (UTC ISO-8601)': 'Od (UTC ISO-8601)',
   Integration: 'Integracja',
   Integrations: 'Integracje',
-  Intent: 'Zamiar',
   'Invalid input.': 'Nieprawidłowe dane.',
   'Keep my value': 'Zachowaj moją wartość',
   'Latest entries': 'Najnowsze wpisy',
@@ -226,13 +222,21 @@ export const adminMessages: AdminMessages = {
   'Operation UUID': 'UUID operacji',
   'Operation owner': 'Właściciel operacji',
   'Optional integrations': 'Integracje opcjonalne',
+  'Enable module': 'Włącz moduł',
+  'Disable module': 'Wyłącz moduł',
+  'Unregister module': 'Wyrejestruj moduł',
+  'Confirm the module action after reviewing its effects.':
+    'Czy na pewno chcesz wykonać tę operację? Sprawdź jej skutki poniżej.',
+  'Review again': 'Sprawdź ponownie',
+  'Disable the module before unregistering it.':
+    'Przed wyrejestrowaniem wyłącz moduł.',
+  'Unregister dependent modules first.': 'Najpierw wyrejestruj moduły zależne.',
   'Optional lifecycle': 'Cykl życia modułów opcjonalnych',
   'Ordinary assignments, copy and presets preserve protected membership. Each operation requires its own review and fresh both-factor proof. Protected authority uses a separate action and confirmation.':
     'Zwykłe przypisania, kopiowanie i zestawy zachowują chronione członkostwo. Każda operacja wymaga osobnego przeglądu oraz ponownego potwierdzenia hasłem i drugim składnikiem. Chronione uprawnienia zmienia się osobną akcją z potwierdzeniem.',
   Outcome: 'Wynik',
   'Presentation changes take effect without restart. Reset restores source defaults.':
     'Zmiany wyglądu działają bez ponownego uruchamiania. Reset przywraca domyślne wartości ze źródeł.',
-  'Preview transition': 'Podgląd zmiany',
   Progress: 'Postęp',
   'Public UUID.': 'Publiczny UUID.',
   'Re-enter this value after reviewing the current record.':

@@ -156,7 +156,11 @@ an in-flight read and disposal. Automated regressions supplement rendered owner
 acceptance; they do not replace it.
 
 Admin operation feedback is scoped to the initiating operation: diagnosis, work
-reads and history reads have independent pending indicators. Keep the active tab
+reads and history reads have independent pending indicators. Diagnosis results
+remain beside their trigger, independently of lifecycle/work feedback. Optional
+lifecycle buttons open a confirmation Dialog with a local Skeleton while its
+native preview loads; blocked/loading previews cannot be confirmed. Failed writes
+require another explicit review, and context/authority changes discard late previews. Keep the active tab
 selected while its containing Dialog fieldset disables mutation controls; marking
 all tab items unavailable would remove every panel. History/work Table frames
 remain visible for confirmed empty reads and keep existing rows through refresh.

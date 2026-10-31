@@ -75,7 +75,12 @@ feedback; reduced motion keeps static cues. Module operations reuse Dialog's
 existing modal entrance/exit and Tabs' retained-panel motion, without a separate
 page animation or request delay.
 
-Modal diagnosis keeps its current panel and shows progress only in Diagnose now.
+Modal diagnosis keeps its current panel and shows progress only in Diagnose now;
+its result appears beside that trigger. Optional lifecycle controls precede module
+details and open the shared Dialog for preview/confirmation, with local Skeleton
+loading and the existing nested focus/inert/scroll behavior. Let the dialog capture
+its enabled opener before entering the shared write lane, so cancellation restores
+focus. No extra entrance timing or confirmation layer is introduced.
 Task-history and operation-history reads use their own Button/Spinner feedback;
 confirmed empty tables keep the column frame. Refresh retains loaded rows and
 uses the same shared reduced-motion behavior without another content entrance.

@@ -120,8 +120,42 @@ const editor = ref<'settings' | 'integrations'>();
 const work = shallowRef<AdminOperationData>();
 const preview = shallowRef<AdminOperationData>();
 const result = shallowRef<AdminOperationData>();
-const intent = ref('disable');
+const diagnosis = shallowRef<AdminOperationData>();
 const has = (permission: string) => capabilities.value.includes(permission);
+type LifecycleIntent = 'enable' | 'disable' | 'unregister';
+const intent = ref<LifecycleIntent>('disable');
+const reviewOpen = ref(false);
+const previewLoading = ref(false);
+let previewRequest = 0;
+const lifecycleLabel = computed(() =>
+  tr(
+    intent.value === 'enable'
+      ? 'Enable module'
+      : intent.value === 'disable'
+        ? 'Disable module'
+        : 'Unregister module',
+  ),
+);
+function resetReview() {
+  previewRequest++;
+  reviewOpen.value = false;
+  previewLoading.value = false;
+  preview.value = undefined;
+}
+function closeReview() {
+  if (!controller.busy.value) resetReview();
+}
+watch(
+  [
+    selected,
+    editor,
+    () => controller.contextRevision.value,
+    () => props.admin.session.authorityRevision.value,
+    () => has('modules.manage'),
+  ],
+  resetReview,
+  { flush: 'sync' },
+);
 watch(
   [pageNavigation.href, capabilities],
   () => {
@@ -132,6 +166,7 @@ watch(
       clearWork();
       preview.value = undefined;
       result.value = undefined;
+      diagnosis.value = undefined;
     }
     const section = url.searchParams.get('section');
     editor.value =
@@ -183,6 +218,7 @@ async function select(module: string) {
   if (!(await pageNavigation.navigate(url.pathname + url.search + url.hash)))
     return;
   result.value = undefined;
+  diagnosis.value = undefined;
   preview.value = undefined;
   controller.dirty.value = false;
 }
@@ -231,6 +267,7 @@ async function closeModule() {
     clearWork();
     preview.value = undefined;
     result.value = undefined;
+    diagnosis.value = undefined;
     controller.dirty.value = false;
   }
 }
@@ -255,6 +292,8 @@ function blocker(code: string) {
     installed_data_incompatible: 'Installed data requires an update.',
     policy_unavailable: 'The lifecycle policy is unavailable.',
     not_registered: 'The module is not registered.',
+    disable_before_unregister: 'Disable the module before unregistering it.',
+    registered_required_dependent: 'Unregister dependent modules first.',
     source_missing: 'Module source is missing.',
     required_cycle: 'Required dependencies contain a cycle.',
     dependency_version: 'A required dependency is incompatible.',
@@ -279,7 +318,7 @@ async function command(
   const own = ++commandRequest;
   const context = controller.contextRevision.value;
   pendingCommand.value = name;
-  if (name === 'health.diagnose') result.value = undefined;
+  if (name === 'health.diagnose') diagnosis.value = undefined;
   try {
     const response = await controller.execute(name, input, destructive);
     if (
@@ -287,8 +326,8 @@ async function command(
       own === commandRequest &&
       context === controller.contextRevision.value
     ) {
-      result.value = response;
-      preview.value = undefined;
+      if (name === 'health.diagnose') diagnosis.value = response;
+      else result.value = response;
       const changedWork = response.work;
       if (
         changedWork &&
@@ -310,16 +349,65 @@ async function command(
         };
       }
       await refresh();
+      return response;
     }
   } finally {
     if (own === commandRequest) pendingCommand.value = undefined;
   }
 }
-async function review() {
-  preview.value = await controller.execute('modules.preview', {
-    module: selected.value,
-    intent: intent.value,
+async function review(nextIntent: LifecycleIntent) {
+  if (
+    controller.busy.value ||
+    !selected.value ||
+    !has('modules.manage') ||
+    selectedModule.value?.kind !== 'optional' ||
+    selectedModule.value.registered === false
+  )
+    return;
+  const own = ++previewRequest;
+  const module = selected.value;
+  const context = controller.contextRevision.value;
+  intent.value = nextIntent;
+  preview.value = undefined;
+  previewLoading.value = true;
+  reviewOpen.value = true;
+  try {
+    // Let Dialog capture its enabled opener before the shared write lane disables it.
+    await nextTick();
+    if (own !== previewRequest || !reviewOpen.value) return;
+    const response = await controller.execute('modules.preview', {
+      module,
+      intent: nextIntent,
+    });
+    if (
+      own === previewRequest &&
+      module === selected.value &&
+      context === controller.contextRevision.value &&
+      reviewOpen.value
+    )
+      preview.value = response;
+  } finally {
+    if (own === previewRequest) previewLoading.value = false;
+  }
+}
+async function applyReview() {
+  if (
+    controller.busy.value ||
+    previewLoading.value ||
+    !reviewOpen.value ||
+    !preview.value?.ready ||
+    typeof preview.value.review !== 'string'
+  )
+    return;
+  const own = previewRequest;
+  const reviewed = preview.value.review;
+  const response = await command('modules.apply', {
+    review: reviewed,
+    confirmed: true,
   });
+  if (own !== previewRequest) return;
+  if (response) resetReview();
+  else preview.value = undefined; // A failed apply requires another explicit review.
 }
 async function historyAction(name: AdminOperationCommand, id: string) {
   await command(
@@ -449,6 +537,7 @@ watch(
     clearWork();
     preview.value = undefined;
     result.value = undefined;
+    diagnosis.value = undefined;
     if (props.admin.state.value !== 'ready') return;
     const context = controller.contextRevision.value;
     const value = await controller.read('capabilities');
@@ -624,7 +713,7 @@ defineExpose({ controller });
       :busy="controller.busy.value"
       @update:model-value="!$event && closeModule()"
     >
-      <Alert v-if="controller.error.value" tone="warning">{{
+      <Alert v-if="controller.error.value && !reviewOpen" tone="warning">{{
         tr(controller.error.value)
       }}</Alert>
       <Tabs
@@ -635,7 +724,43 @@ defineExpose({ controller });
       >
         <template #overview>
           <div v-if="!editor" class="space-y-6">
-            <div class="flex flex-wrap justify-end gap-3">
+            <section
+              v-if="
+                has('modules.manage') &&
+                selectedModule?.kind === 'optional' &&
+                selectedModule.registered !== false
+              "
+              class="space-y-3"
+              data-module-lifecycle-controls
+            >
+              <h3 class="font-semibold">{{ tr('Optional lifecycle') }}</h3>
+              <div class="flex flex-wrap gap-3">
+                <Button
+                  v-if="!selectedModule.enabled"
+                  :disabled="controller.busy.value"
+                  @click="review('enable')"
+                  >{{ tr('Enable module') }}</Button
+                >
+                <Button
+                  v-else
+                  tone="warning"
+                  :disabled="controller.busy.value"
+                  @click="review('disable')"
+                  >{{ tr('Disable module') }}</Button
+                >
+                <Button
+                  variant="outline"
+                  tone="danger"
+                  :disabled="controller.busy.value"
+                  @click="review('unregister')"
+                  >{{ tr('Unregister module') }}</Button
+                >
+              </div>
+            </section>
+            <div class="flex flex-wrap items-start gap-3" data-module-diagnosis>
+              <div v-if="diagnosis" class="min-w-0 flex-1 basis-64">
+                <AdminOperationResult :result="diagnosis" />
+              </div>
               <Button
                 v-if="has('health.diagnose')"
                 variant="outline"
@@ -652,120 +777,6 @@ defineExpose({ controller });
               :interactive="false"
               details
             />
-            <div
-              v-if="has('modules.manage') && selectedModule?.kind !== 'core'"
-              class="space-y-3"
-            >
-              <h3 class="font-semibold">{{ tr('Optional lifecycle') }}</h3>
-              <p class="text-xs text-muted">
-                {{
-                  tr(
-                    'Core targets are refused. Review all affected dependencies and work before applying.',
-                  )
-                }}
-              </p>
-              <Select
-                :label="tr('Intent')"
-                v-model="intent"
-                :options="
-                  ['enable', 'disable', 'unregister'].map((value) => ({
-                    value,
-                    label: tr(value),
-                  }))
-                "
-                :locale="adminLocale"
-                :disabled="controller.busy.value"
-                @update:model-value="preview = undefined"
-              />
-              <Button :disabled="controller.busy.value" @click="review">{{
-                tr('Preview transition')
-              }}</Button>
-              <template v-if="preview">
-                <div class="space-y-3 rounded border border-line p-4">
-                  <Badge :tone="preview.ready ? 'success' : 'warning'">{{
-                    preview.ready
-                      ? tr('Ready to apply')
-                      : tr('Transition blocked')
-                  }}</Badge>
-                  <div
-                    v-if="list(preview.affected).length"
-                    class="space-y-2 text-xs"
-                  >
-                    <h4 class="font-semibold">{{ tr('Affected modules') }}</h4>
-                    <ul class="space-y-1">
-                      <li v-for="id in list(preview.affected)" :key="id">
-                        {{ getModulePresentation(id).name[adminLocale] }}
-                      </li>
-                    </ul>
-                  </div>
-                  <dl
-                    v-if="entries(preview.changes).length"
-                    class="space-y-2 text-xs"
-                  >
-                    <dt class="font-semibold">{{ tr('Planned changes') }}</dt>
-                    <dd
-                      v-for="[id, enabled] in entries(preview.changes)"
-                      :key="id"
-                      class="flex flex-wrap justify-between gap-2"
-                    >
-                      <span>{{
-                        getModulePresentation(id).name[adminLocale]
-                      }}</span
-                      ><Badge>{{
-                        tr(
-                          intent === 'unregister'
-                            ? 'unregister'
-                            : enabled
-                              ? 'enable'
-                              : 'disable',
-                        )
-                      }}</Badge>
-                    </dd>
-                  </dl>
-                  <Alert v-if="list(preview.blockers).length" tone="warning"
-                    ><ul class="space-y-2">
-                      <li v-for="code in list(preview.blockers)" :key="code">
-                        {{ blocker(code) }}
-                      </li>
-                    </ul></Alert
-                  >
-                  <dl
-                    v-if="entries(preview.active_work).length"
-                    class="space-y-2 text-xs"
-                  >
-                    <dt class="font-semibold">{{ tr('Active work') }}</dt>
-                    <dd
-                      v-for="[id, counts] in entries(preview.active_work)"
-                      :key="id"
-                    >
-                      <span>{{
-                        getModulePresentation(id).name[adminLocale]
-                      }}</span>
-                      <ul>
-                        <li
-                          v-for="[state, count] in entries(counts)"
-                          :key="state"
-                        >
-                          {{ tr(state) }}: {{ count }}
-                        </li>
-                      </ul>
-                    </dd>
-                  </dl>
-                </div>
-                <Button
-                  v-if="preview.ready && typeof preview.review === 'string'"
-                  :disabled="controller.busy.value"
-                  @click="
-                    command(
-                      'modules.apply',
-                      { review: preview.review, confirmed: true },
-                      true,
-                    )
-                  "
-                  >{{ tr('Apply reviewed transition') }}</Button
-                >
-              </template>
-            </div>
             <AdminOperationResult v-if="result" :result="result" />
             <component
               v-if="has('modules.manage') || has('settings.manage')"
@@ -887,6 +898,108 @@ defineExpose({ controller });
       >
     </Dialog>
   </slot>
+  <Dialog
+    :model-value="reviewOpen"
+    :title="lifecycleLabel"
+    :description="getModulePresentation(selected).name[adminLocale]"
+    :locale="adminLocale"
+    :busy="controller.busy.value"
+    initial-focus="[data-lifecycle-cancel]"
+    size="lg"
+    @update:model-value="!$event && closeReview()"
+  >
+    <div class="space-y-4" data-module-lifecycle-review>
+      <p class="text-sm">
+        {{ tr('Confirm the module action after reviewing its effects.') }}
+      </p>
+      <Skeleton v-if="previewLoading" shape="block" />
+      <Alert v-if="controller.error.value" tone="warning">{{
+        tr(controller.error.value)
+      }}</Alert>
+      <template v-if="preview">
+        <div class="space-y-3 rounded border border-line p-4">
+          <Badge :tone="preview.ready ? 'success' : 'warning'">{{
+            preview.ready ? tr('Ready to apply') : tr('Transition blocked')
+          }}</Badge>
+          <div v-if="list(preview.affected).length" class="space-y-2 text-xs">
+            <h4 class="font-semibold">{{ tr('Affected modules') }}</h4>
+            <ul class="space-y-1">
+              <li v-for="id in list(preview.affected)" :key="id">
+                {{ getModulePresentation(id).name[adminLocale] }}
+              </li>
+            </ul>
+          </div>
+          <dl v-if="entries(preview.changes).length" class="space-y-2 text-xs">
+            <dt class="font-semibold">{{ tr('Planned changes') }}</dt>
+            <dd
+              v-for="[id, enabled] in entries(preview.changes)"
+              :key="id"
+              class="flex flex-wrap justify-between gap-2"
+            >
+              <span>{{ getModulePresentation(id).name[adminLocale] }}</span
+              ><Badge>{{
+                tr(
+                  intent === 'unregister'
+                    ? 'unregister'
+                    : enabled
+                      ? 'enable'
+                      : 'disable',
+                )
+              }}</Badge>
+            </dd>
+          </dl>
+          <Alert v-if="list(preview.blockers).length" tone="warning"
+            ><ul class="space-y-2">
+              <li v-for="code in list(preview.blockers)" :key="code">
+                {{ blocker(code) }}
+              </li>
+            </ul></Alert
+          >
+          <dl
+            v-if="entries(preview.active_work).length"
+            class="space-y-2 text-xs"
+          >
+            <dt class="font-semibold">{{ tr('Active work') }}</dt>
+            <dd v-for="[id, counts] in entries(preview.active_work)" :key="id">
+              <span>{{ getModulePresentation(id).name[adminLocale] }}</span>
+              <ul>
+                <li v-for="[state, count] in entries(counts)" :key="state">
+                  {{ tr(state) }}: {{ count }}
+                </li>
+              </ul>
+            </dd>
+          </dl>
+        </div>
+      </template>
+      <Button
+        v-else-if="!previewLoading"
+        :disabled="controller.busy.value"
+        @click="review(intent)"
+        >{{ tr('Review again') }}</Button
+      >
+    </div>
+    <template #footer>
+      <Button
+        data-lifecycle-cancel
+        variant="outline"
+        :disabled="controller.busy.value"
+        @click="closeReview"
+        >{{ tr('Cancel') }}</Button
+      >
+      <Button
+        :tone="intent === 'enable' ? 'primary' : 'danger'"
+        :busy="pendingCommand === 'modules.apply'"
+        :disabled="
+          controller.busy.value ||
+          previewLoading ||
+          !preview?.ready ||
+          typeof preview.review !== 'string'
+        "
+        @click="applyReview"
+        >{{ lifecycleLabel }}</Button
+      >
+    </template>
+  </Dialog>
   <ConfirmDialog
     :model-value="!!controller.confirmation.value"
     :title="tr(controller.confirmation.value ?? '')"

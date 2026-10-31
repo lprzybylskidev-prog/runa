@@ -7,6 +7,7 @@ import {
   useAdminApplicationSettings,
   AdminOperations,
   AdminOperationalEditor,
+  AdminOperationResult,
   useAdminOperations,
 } from '@/runa/admin';
 import type {
@@ -818,6 +819,10 @@ it.each(['selection', 'deep link'])(
     const result = w.getComponent(AdminOperationResult);
     expect(result.attributes('data-tone')).toBe('success');
     expect(result.text()).not.toContain('app.safe');
+    expect(result.element.closest('[data-module-diagnosis]')).not.toBeNull();
+    expect(
+      panel.querySelector('[data-module-diagnosis] button')?.textContent,
+    ).toContain('Diagnose now');
     expect(panel.hidden).toBe(false);
     await vi.waitFor(() => expect(workReads).toHaveLength(2));
     workReads[1]!(response({ work: [], truncated: false }));
@@ -973,3 +978,234 @@ it('native operation history renders safe rows and row actions with paged reads 
       .filter((button) => button.text() === 'Resume native workflow'),
   ).toHaveLength(1);
 });
+
+it.each(['enable', 'disable', 'unregister'] as const)(
+  'module %s action reviews effects in one modal before applying the exact token',
+  async (intent) => {
+    const owner = admin();
+    const submitted: { operation: string; input: unknown }[] = [];
+    let finishPreview!: (response: Response) => void;
+    vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+      const path = new URL(String(input), window.location.origin).pathname;
+      if (path.endsWith('/capabilities'))
+        return response({
+          capabilities: ['diagnostics.read', 'modules.manage'],
+        });
+      if (path.endsWith('/diagnostics'))
+        return response({
+          modules: [
+            {
+              id: 'app.safe',
+              kind: 'optional',
+              registered: true,
+              enabled: intent === 'disable',
+              health: 'healthy',
+              available: true,
+            },
+          ],
+        });
+      if (path.endsWith('/history'))
+        return response({ operations: [], next_cursor: null });
+      if (init?.method === 'POST')
+        submitted.push({
+          operation: path.split('/').pop()!,
+          input: JSON.parse(String(init.body)),
+        });
+      if (path.endsWith('/modules.preview'))
+        return new Promise((resolve) => {
+          finishPreview = resolve;
+        });
+      if (path.endsWith('/modules.apply'))
+        return response({ transition: { operationId: id, status: 'pending' } });
+      return response({});
+    });
+    const w = mount(AdminOperations, {
+      props: { admin: owner },
+      attachTo: document.body,
+    });
+    await vi.waitFor(() =>
+      expect(w.find('[data-module="app.safe"] button').exists()).toBe(true),
+    );
+    await w.get('[data-module="app.safe"] button').trigger('click');
+    const label =
+      intent === 'enable'
+        ? 'Enable module'
+        : intent === 'disable'
+          ? 'Disable module'
+          : 'Unregister module';
+    const controls = () =>
+      document.body.querySelector('[data-module-lifecycle-controls]')!;
+    const action = () =>
+      Array.from(controls().querySelectorAll('button')).find(
+        (button) => button.textContent?.trim() === label,
+      )!;
+    await vi.waitFor(() => expect(action()?.disabled).toBe(false));
+    expect(
+      controls().compareDocumentPosition(
+        document.body.querySelector(
+          '[role="tabpanel"] [data-module="app.safe"]',
+        )!,
+      ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(controls().querySelector('select, .selection-trigger')).toBeNull();
+    expect(controls().textContent).not.toContain('Core targets');
+    expect(controls().textContent).not.toContain('Preview transition');
+    action().focus();
+    action().click();
+    await vi.waitFor(() => expect(finishPreview).toBeTypeOf('function'));
+    const review = () =>
+      document.body.querySelector('[data-module-lifecycle-review]')!;
+    const dialog = () => review().closest('[role="dialog"]')!;
+    const confirm = () =>
+      Array.from(dialog().querySelectorAll('button')).find(
+        (button) => button.textContent?.trim() === label,
+      )!;
+    expect(review().querySelector('.app-skeleton')).not.toBeNull();
+    expect(confirm().disabled).toBe(true);
+    expect(submitted).toEqual([
+      { operation: 'modules.preview', input: { module: 'app.safe', intent } },
+    ]);
+    finishPreview(
+      response({
+        ready: true,
+        review: 'reviewed-token',
+        affected: ['app.safe'],
+        changes: { 'app.safe': intent === 'enable' },
+        active_work: { 'app.safe': { pending: 2 } },
+        blockers: [],
+      }),
+    );
+    await vi.waitFor(() => expect(confirm().disabled).toBe(false));
+    expect(review().textContent).toContain('Affected modules');
+    expect(review().textContent).toContain('Active work');
+    expect(review().textContent).toContain('pending: 2');
+    (
+      dialog().querySelector('[data-lifecycle-cancel]') as HTMLButtonElement
+    ).click();
+    await vi.waitFor(() => expect(document.activeElement).toBe(action()));
+    expect(
+      submitted.filter((item) => item.operation === 'modules.apply'),
+    ).toHaveLength(0);
+    action().click();
+    await vi.waitFor(() => expect(submitted).toHaveLength(2));
+    finishPreview(
+      response({
+        ready: true,
+        review: 'fresh-token',
+        affected: ['app.safe'],
+        blockers: [],
+      }),
+    );
+    await vi.waitFor(() => expect(confirm().disabled).toBe(false));
+    confirm().click();
+    await vi.waitFor(() =>
+      expect(
+        submitted.filter((item) => item.operation === 'modules.apply'),
+      ).toEqual([
+        {
+          operation: 'modules.apply',
+          input: { review: 'fresh-token', confirmed: true },
+        },
+      ]),
+    );
+    expect(w.vm.controller.confirmation.value).toBeUndefined();
+    await vi.waitFor(() =>
+      expect(w.getComponent(AdminOperationResult).text()).toContain('pending'),
+    );
+  },
+);
+
+it.each(['blocked', 'failed apply', 'authority loss'])(
+  'module lifecycle confirmation handles %s without replaying a mutation',
+  async (scenario) => {
+    const owner = admin();
+    const posts: string[] = [];
+    let finishPreview!: (response: Response) => void;
+    vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+      const path = String(input).split('?')[0]!;
+      if (path.endsWith('/capabilities'))
+        return response({
+          capabilities: ['diagnostics.read', 'modules.manage'],
+        });
+      if (path.endsWith('/diagnostics'))
+        return response({
+          modules: [
+            {
+              id: 'app.safe',
+              kind: 'optional',
+              registered: true,
+              enabled: true,
+              health: 'healthy',
+              available: true,
+            },
+          ],
+        });
+      if (path.endsWith('/history'))
+        return response({ operations: [], next_cursor: null });
+      if (init?.method === 'POST') posts.push(path.split('/').pop()!);
+      if (path.endsWith('/modules.preview'))
+        return new Promise((resolve) => {
+          finishPreview = resolve;
+        });
+      if (path.endsWith('/modules.apply')) return response({}, 409);
+      return response({});
+    });
+    const w = mount(AdminOperations, {
+      props: { admin: owner },
+      attachTo: document.body,
+    });
+    await vi.waitFor(() =>
+      expect(w.find('[data-module="app.safe"] button').exists()).toBe(true),
+    );
+    await w.get('[data-module="app.safe"] button').trigger('click');
+    const action = () =>
+      Array.from(
+        document.body.querySelectorAll<HTMLButtonElement>(
+          '[data-module-lifecycle-controls] button',
+        ),
+      ).find((button) => button.textContent?.trim() === 'Disable module')!;
+    await vi.waitFor(() => expect(action()?.disabled).toBe(false));
+    action().click();
+    await vi.waitFor(() => expect(finishPreview).toBeTypeOf('function'));
+    if (scenario === 'authority loss') owner.session.authorityRevision.value++;
+    finishPreview(
+      response({
+        ready: scenario !== 'blocked',
+        review: 'unsafe-old-token',
+        affected: ['app.safe'],
+        blockers: scenario === 'blocked' ? ['disable_before_unregister'] : [],
+      }),
+    );
+    await flushPromises();
+    const review = () =>
+      document.body.querySelector('[data-module-lifecycle-review]');
+    if (scenario === 'authority loss') {
+      await vi.waitFor(() => expect(review()).toBeNull());
+      expect(posts).toEqual(['modules.preview']);
+      return;
+    }
+    const dialog = () => review()!.closest('[role="dialog"]')!;
+    const confirm = () =>
+      Array.from(dialog().querySelectorAll<HTMLButtonElement>('button')).find(
+        (button) => button.textContent?.trim() === 'Disable module',
+      )!;
+    await vi.waitFor(() =>
+      expect(review()?.querySelector('.app-skeleton')).toBeNull(),
+    );
+    if (scenario === 'blocked') {
+      expect(confirm().disabled).toBe(true);
+      expect(review()?.textContent).toContain('Transition blocked');
+      expect(posts).toEqual(['modules.preview']);
+      return;
+    }
+    await vi.waitFor(() => expect(confirm().disabled).toBe(false));
+    confirm().click();
+    await vi.waitFor(() =>
+      expect(review()?.textContent).toContain('Refresh and review'),
+    );
+    expect(confirm().disabled).toBe(true);
+    expect(review()?.textContent).toContain('Review again');
+    expect(posts).toEqual(['modules.preview', 'modules.apply']);
+    expect(w.vm.controller.confirmation.value).toBeUndefined();
+  },
+);
