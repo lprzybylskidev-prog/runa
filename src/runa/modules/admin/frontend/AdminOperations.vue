@@ -121,6 +121,29 @@ const work = shallowRef<AdminOperationData>();
 const preview = shallowRef<AdminOperationData>();
 const result = shallowRef<AdminOperationData>();
 const diagnosis = shallowRef<AdminOperationData>();
+const diagnosisOpen = ref(false);
+let diagnosisRequest = 0;
+function resetDiagnosis() {
+  diagnosisRequest++;
+  diagnosisOpen.value = false;
+  diagnosis.value = undefined;
+}
+function closeDiagnosis() {
+  if (!controller.busy.value) resetDiagnosis();
+}
+async function diagnose() {
+  if (controller.busy.value || !selected.value || !has('health.diagnose'))
+    return;
+  const own = ++diagnosisRequest;
+  const module = selected.value;
+  diagnosis.value = undefined;
+  controller.error.value = '';
+  diagnosisOpen.value = true;
+  // Capture the enabled opener before the shared write lane disables it.
+  await nextTick();
+  if (own !== diagnosisRequest || !diagnosisOpen.value) return;
+  await command('health.diagnose', { module });
+}
 const has = (permission: string) => capabilities.value.includes(permission);
 type LifecycleIntent = 'enable' | 'disable' | 'unregister';
 const intent = ref<LifecycleIntent>('disable');
@@ -154,6 +177,17 @@ watch(
     () => has('modules.manage'),
   ],
   resetReview,
+  { flush: 'sync' },
+);
+watch(
+  [
+    selected,
+    editor,
+    () => controller.contextRevision.value,
+    () => props.admin.session.authorityRevision.value,
+    () => has('health.diagnose'),
+  ],
+  resetDiagnosis,
   { flush: 'sync' },
 );
 watch(
@@ -713,9 +747,11 @@ defineExpose({ controller });
       :busy="controller.busy.value"
       @update:model-value="!$event && closeModule()"
     >
-      <Alert v-if="controller.error.value && !reviewOpen" tone="warning">{{
-        tr(controller.error.value)
-      }}</Alert>
+      <Alert
+        v-if="controller.error.value && !reviewOpen && !diagnosisOpen"
+        tone="warning"
+        >{{ tr(controller.error.value) }}</Alert
+      >
       <Tabs
         :model-value="editor ?? 'overview'"
         :items="moduleTabs"
@@ -724,17 +760,16 @@ defineExpose({ controller });
       >
         <template #overview>
           <div v-if="!editor" class="space-y-6">
-            <section
-              v-if="
-                has('modules.manage') &&
-                selectedModule?.kind === 'optional' &&
-                selectedModule.registered !== false
-              "
-              class="space-y-3"
-              data-module-lifecycle-controls
-            >
-              <h3 class="font-semibold">{{ tr('Optional lifecycle') }}</h3>
-              <div class="flex flex-wrap gap-3">
+            <div class="flex flex-wrap items-start gap-3" data-module-actions>
+              <div
+                v-if="
+                  has('modules.manage') &&
+                  selectedModule?.kind === 'optional' &&
+                  selectedModule.registered !== false
+                "
+                class="flex flex-wrap gap-3"
+                data-module-lifecycle-controls
+              >
                 <Button
                   v-if="!selectedModule.enabled"
                   :disabled="controller.busy.value"
@@ -756,17 +791,13 @@ defineExpose({ controller });
                   >{{ tr('Unregister module') }}</Button
                 >
               </div>
-            </section>
-            <div class="flex flex-wrap items-start gap-3" data-module-diagnosis>
-              <div v-if="diagnosis" class="min-w-0 flex-1 basis-64">
-                <AdminOperationResult :result="diagnosis" />
-              </div>
               <Button
                 v-if="has('health.diagnose')"
+                class="ml-auto"
                 variant="outline"
                 :busy="pendingCommand === 'health.diagnose'"
                 :disabled="controller.busy.value"
-                @click="command('health.diagnose', { module: selected })"
+                @click="diagnose"
                 >{{ tr('Diagnose now') }}</Button
               >
             </div>
@@ -898,6 +929,38 @@ defineExpose({ controller });
       >
     </Dialog>
   </slot>
+  <Dialog
+    :model-value="diagnosisOpen"
+    :title="tr('Diagnostic result')"
+    :description="getModulePresentation(selected).name[adminLocale]"
+    :locale="adminLocale"
+    :busy="pendingCommand === 'health.diagnose'"
+    initial-focus="[data-diagnosis-close]"
+    @update:model-value="!$event && closeDiagnosis()"
+  >
+    <div class="space-y-4" data-module-diagnosis>
+      <AdminOperationResult v-if="diagnosis" :result="diagnosis" />
+      <Alert v-else-if="controller.error.value" tone="warning">{{
+        tr(controller.error.value)
+      }}</Alert>
+      <Skeleton v-else shape="block" />
+    </div>
+    <template #footer>
+      <Button
+        v-if="controller.error.value && !diagnosis"
+        :disabled="controller.busy.value"
+        @click="diagnose"
+        >{{ tr('Retry') }}</Button
+      >
+      <Button
+        data-diagnosis-close
+        variant="outline"
+        :disabled="pendingCommand === 'health.diagnose'"
+        @click="closeDiagnosis"
+        >{{ tr('Close') }}</Button
+      >
+    </template>
+  </Dialog>
   <Dialog
     :model-value="reviewOpen"
     :title="lifecycleLabel"

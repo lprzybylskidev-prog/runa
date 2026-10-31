@@ -799,6 +799,7 @@ it.each(['selection', 'deep link'])(
     const panel =
       document.body.querySelector<HTMLElement>('[role="tabpanel"]')!;
     const card = panel.querySelector('[data-module="app.safe"]');
+    button('Diagnose now').focus();
     button('Diagnose now').click();
     await vi.waitFor(() => expect(finishDiagnosis).toBeTypeOf('function'));
     expect(panel.hidden).toBe(false);
@@ -820,9 +821,22 @@ it.each(['selection', 'deep link'])(
     expect(result.attributes('data-tone')).toBe('success');
     expect(result.text()).not.toContain('app.safe');
     expect(result.element.closest('[data-module-diagnosis]')).not.toBeNull();
-    expect(
-      panel.querySelector('[data-module-diagnosis] button')?.textContent,
-    ).toContain('Diagnose now');
+    expect(result.element.closest('[role="dialog"]')).not.toBe(
+      panel.closest('[role="dialog"]'),
+    );
+    expect(panel.querySelector('[data-module-diagnosis]')).toBeNull();
+    await vi.waitFor(() =>
+      expect(
+        document.body.querySelector<HTMLButtonElement>('[data-diagnosis-close]')
+          ?.disabled,
+      ).toBe(false),
+    );
+    document.body
+      .querySelector<HTMLButtonElement>('[data-diagnosis-close]')!
+      .click();
+    await vi.waitFor(() =>
+      expect(document.activeElement).toBe(button('Diagnose now')),
+    );
     expect(panel.hidden).toBe(false);
     await vi.waitFor(() => expect(workReads).toHaveLength(2));
     workReads[1]!(response({ work: [], truncated: false }));
@@ -1049,6 +1063,7 @@ it.each(['enable', 'disable', 'unregister'] as const)(
     ).toBeTruthy();
     expect(controls().querySelector('select, .selection-trigger')).toBeNull();
     expect(controls().textContent).not.toContain('Core targets');
+    expect(document.body.textContent).not.toContain('Optional lifecycle');
     expect(controls().textContent).not.toContain('Preview transition');
     action().focus();
     action().click();
@@ -1207,5 +1222,89 @@ it.each(['blocked', 'failed apply', 'authority loss'])(
     expect(review()?.textContent).toContain('Review again');
     expect(posts).toEqual(['modules.preview', 'modules.apply']);
     expect(w.vm.controller.confirmation.value).toBeUndefined();
+  },
+);
+
+it.each(['failure', 'authority loss'])(
+  'diagnosis modal handles %s without retaining stale results or replaying requests',
+  async (scenario) => {
+    const owner = admin();
+    let finish!: (response: Response) => void;
+    let calls = 0;
+    vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+      const path = String(input).split('?')[0]!;
+      if (path.endsWith('/capabilities'))
+        return response({
+          capabilities: ['diagnostics.read', 'health.diagnose'],
+        });
+      if (path.endsWith('/diagnostics'))
+        return response({
+          modules: [
+            {
+              id: 'runa.audit',
+              kind: 'core',
+              enabled: true,
+              registered: true,
+              available: true,
+              health: 'healthy',
+            },
+          ],
+        });
+      if (path.endsWith('/health.diagnose')) {
+        calls++;
+        return new Promise((resolve) => {
+          finish = resolve;
+        });
+      }
+      return response({});
+    });
+    const w = mount(AdminOperations, {
+      props: { admin: owner },
+      attachTo: document.body,
+    });
+    await vi.waitFor(() =>
+      expect(w.find('[data-module="runa.audit"] button').exists()).toBe(true),
+    );
+    await w.get('[data-module="runa.audit"] button').trigger('click');
+    const trigger = () =>
+      document.body.querySelector<HTMLButtonElement>(
+        '[data-module-actions] button',
+      )!;
+    await vi.waitFor(() => expect(trigger()?.disabled).toBe(false));
+    expect(
+      document.body.querySelector('[data-module-lifecycle-controls]'),
+    ).toBeNull();
+    expect(trigger().classList.contains('ml-auto')).toBe(true);
+    trigger().focus();
+    trigger().click();
+    await vi.waitFor(() => expect(calls).toBe(1));
+    const modal = () => document.body.querySelector('[data-module-diagnosis]');
+    expect(modal()?.querySelector('.app-skeleton')).not.toBeNull();
+    if (scenario === 'authority loss') owner.session.authorityRevision.value++;
+    finish(
+      scenario === 'failure'
+        ? response({}, 409)
+        : response({ health: 'healthy', blocked: false, reasons: [] }),
+    );
+    if (scenario === 'authority loss') {
+      await vi.waitFor(() => expect(modal()).toBeNull());
+      expect(w.findComponent(AdminOperationResult).exists()).toBe(false);
+    } else {
+      await vi.waitFor(() =>
+        expect(modal()?.textContent).toContain('Refresh and review'),
+      );
+      expect(modal()?.querySelector('.app-skeleton')).toBeNull();
+      const dialog = modal()!.closest('[role="dialog"]')!;
+      expect(
+        Array.from(dialog.querySelectorAll('button')).some(
+          (button) => button.textContent?.trim() === 'Retry',
+        ),
+      ).toBe(true);
+      (
+        dialog.querySelector('[data-diagnosis-close]') as HTMLButtonElement
+      ).click();
+      await vi.waitFor(() => expect(document.activeElement).toBe(trigger()));
+    }
+    expect(calls).toBe(1);
   },
 );

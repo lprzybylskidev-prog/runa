@@ -156,8 +156,10 @@ an in-flight read and disposal. Automated regressions supplement rendered owner
 acceptance; they do not replace it.
 
 Admin operation feedback is scoped to the initiating operation: diagnosis, work
-reads and history reads have independent pending indicators. Diagnosis results
-remain beside their trigger, independently of lifecycle/work feedback. Optional
+reads and history reads have independent pending indicators. Diagnosis opens a nested shared Dialog with a local Skeleton, then a safe result
+or error/retry, independently of lifecycle/work feedback. Its trigger stays
+right-aligned in the module action row. Context/authority loss clears the dialog
+and stale results. Optional
 lifecycle buttons open a confirmation Dialog with a local Skeleton while its
 native preview loads; blocked/loading previews cannot be confirmed. Failed writes
 require another explicit review, and context/authority changes discard late previews. Keep the active tab

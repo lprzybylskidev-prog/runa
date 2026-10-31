@@ -2,7 +2,7 @@
 
 ## 0.1.0 — 2026-10-31
 
-- Put Optional module controls above details and replace the intent selector/separate preview with action buttons and one native-preview confirmation dialog. Fence previews on authority/context changes and require explicit review after failure. Keep diagnosis results beside their trigger, independent of other outcomes; retain registration versus installed-data semantics.
+- Put Optional module controls left and diagnosis right in an unlabelled action row above details and replace the intent selector/separate preview with action buttons and one native-preview confirmation dialog. Fence previews on authority/context changes and require explicit review after failure. Keep diagnosis in its own result dialog, independent of other outcomes; retain registration versus installed-data semantics.
 
 - Remove health-policy editing, its management grant/operation and persisted framework overrides; module health definitions are source-only. Keep diagnosis and observed health. Filtered module reads replace cards with shared animated Skeletons; disabled cards use gray top/hover borders. Admin remains the unreleased 0.1.0 creation candidate.
 

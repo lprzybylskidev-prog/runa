@@ -231,7 +231,6 @@ export const adminMessages: AdminMessages = {
   'Disable the module before unregistering it.':
     'Przed wyrejestrowaniem wyłącz moduł.',
   'Unregister dependent modules first.': 'Najpierw wyrejestruj moduły zależne.',
-  'Optional lifecycle': 'Cykl życia modułów opcjonalnych',
   'Ordinary assignments, copy and presets preserve protected membership. Each operation requires its own review and fresh both-factor proof. Protected authority uses a separate action and confirmation.':
     'Zwykłe przypisania, kopiowanie i zestawy zachowują chronione członkostwo. Każda operacja wymaga osobnego przeglądu oraz ponownego potwierdzenia hasłem i drugim składnikiem. Chronione uprawnienia zmienia się osobną akcją z potwierdzeniem.',
   Outcome: 'Wynik',

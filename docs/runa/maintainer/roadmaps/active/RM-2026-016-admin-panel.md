@@ -512,6 +512,13 @@ reassessment before resuming point 3; completed point history remains evidence.
     preserve native admission and show failures without replaying mutations.
   - Synchronize guidance, run focused checks and prepare current assets before
     repeated owner acceptance. No installation API or database change is included.
+- [x] 11a19. Consolidate module actions and show diagnosis in a dialog.
+  - Remove the Optional lifecycle heading. Keep lifecycle buttons left and the
+    diagnosis trigger right in one responsive action row above module details.
+  - Open the shared nested Dialog for diagnosis loading, safe results and errors;
+    preserve focus return, current authority/context fencing and explicit retry.
+  - Synchronize guidance, cover focused modal behavior and prepare current assets
+    before repeated owner acceptance. No backend or persistence change.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3012,3 +3019,52 @@ suite was necessary after the unchanged-source hook checks. The working applicat
 at http://localhost:8080/admin is ready for repeated owner acceptance. Point 11a18
 is complete; owner acceptance 11b and final verification/release 12 remain open.
 No broad gates, database operations or infrastructure cleanup were performed.
+
+### Point 11a19 — Unified action row and diagnostic result dialog
+
+Removed the Optional lifecycle heading and its unused translation. Lifecycle
+controls remain on the left and Diagnose now aligns right in one wrapping action
+row above module details, including Core/diagnostic-only views. Diagnosis now
+opens a shared nested Dialog immediately: local Skeleton, safe semantic result,
+or error with explicit Retry. No inline diagnostic result remains. The modal
+uses the existing focus/inert/scroll stack, captures its enabled opener before
+the shared write lane disables controls and restores trigger focus on close/Escape.
+Module/tab/context/authority/grant changes clear its result/open state and fence
+late observations. Diagnosis remains explicit, with no automatic retry or new
+request/controller/backend engine. Lifecycle confirmation behavior is unchanged.
+
+Synchronized canonical Admin frontend/loading/motion guidance and the unreleased
+Admin candidate changelog. Owner/customer AGENTS and skills already refer to these
+canonical public dialog/readiness/replaceable-view contracts; neither instruction
+product needs duplicate procedures. Local knowledge was current and bounded
+retrieval was checked against source. No public signatures, dependencies, module
+versions/manifests, upgrade edges, runtime configuration or database changes.
+Admin remains the 0.1.0 creation candidate within prepared platform 0.7.0.
+
+Focused supported frontend checks passed 10 cases (385 excluded), native exit 0 /
+cleanup 0, in .runtime/frontend/RM-2026-016-diagnosis-modal-tests.log. Coverage:
+separate modal results for selected/deep-linked modules, retained overview/task
+history, close/focus restoration, Core diagnostic-only alignment, failure/retry
+presentation without replay, authority loss during diagnosis and all existing
+lifecycle confirmation/token/blocker/refusal cases. The supported TypeScript/Vite/
+native-error build passed in .runtime/frontend/RM-2026-016-diagnosis-modal-build.log.
+No backend suite or broad final gate was selected for this presentation-only point.
+
+Focused controlled browser inspection passed PL/dark/1440px normal motion and
+EN/light/390px reduced motion against the served assets: removed heading, right
+alignment, loading/result in a separate modal, no inline result, safe healthy/
+unhealthy outcomes, Escape/focus return, exactly one explicit diagnosis per context,
+and no page errors/document overflow. Evidence:
+.runtime/artifacts/playwright/runa/RM-2026-016-diagnosis-modal/ and
+.runtime/frontend/RM-2026-016-diagnosis-modal-browser-ready.log. Static screenshots
+finish finite transitions rather than capturing the entering modal translucency.
+Synthetic account/operation responses performed no application business writes.
+Browser contexts closed and the temporary diagnostic helper was removed.
+
+Current /admin, /api/ready and all 16 entry-linked assets return HTTP 200;
+unauthenticated /api/admin/entry remains 401. Evidence:
+.runtime/frontend/RM-2026-016-diagnosis-modal-http.json. The local application is
+ready for repeated owner acceptance at http://localhost:8080/admin. No Docker
+resources were created or removed; development/test data, active services,
+knowledge/model caches and verification evidence are preserved. Owner acceptance
+11b and final verification/release 12 remain open.

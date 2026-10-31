@@ -892,7 +892,8 @@ replace them. Explicit retries only: never replay failed or cancelled writes.
 Context invalidation cancels confirmations, aborts observation of requests and
 removes prior snapshots; a cancelled write may have completed on the server.
 
-The Optional lifecycle buttons precede module details. Enable/Disable follows the
+An unlabelled action row precedes module details, with Optional lifecycle buttons
+on the left and Diagnose now aligned right; the row wraps on narrow screens. Enable/Disable follows the
 current enabled state; Unregister retains its distinct registration-only meaning.
 Clicking a button opens a nested Dialog and requests the native preview there,
 with affected modules, planned flags, active work and blockers. One confirmation
@@ -1030,10 +1031,12 @@ Module overview keeps its selected panel mounted while write controls are disabl
 disabling every tab must not withdraw the active panel. Diagnosis, task-history and
 history each own their pending indicator, not the shared optional-read indicator.
 Diagnostic results use success/warning/danger according to health/blocked state,
-show the outcome and localized safe reasons beside the Diagnose now button, and
-omit redundant module identity. Diagnosis has separate result ownership so task
-status/lifecycle results cannot replace its feedback. On narrow screens the same
-row wraps without overflowing.
+show the outcome and localized safe reasons in a nested shared Dialog, and omit
+redundant module identity. Clicking Diagnose now opens its local loading Skeleton,
+then the result or error with explicit Retry. Closing restores the trigger focus.
+Diagnosis has separate result ownership so task status/lifecycle results cannot
+replace its feedback. Module/tab/context/authority changes clear the modal and
+fence stale responses; no diagnosis is replayed automatically.
 
 The manual operation UUID/type form is replaced by a module operation history
 Table. It includes succeeded/refused/failed and active transitions, paged through
