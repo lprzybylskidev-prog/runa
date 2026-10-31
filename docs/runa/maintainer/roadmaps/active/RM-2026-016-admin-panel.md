@@ -485,7 +485,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     navigation readiness and keep the account-menu trigger disabled until ready.
   - Verify delayed menu/preferences in both completion orders, fallback, identity
     cleanup and unchanged background behavior; synchronize guidance/build assets.
-- [ ] 11a17. Make module health policy code-only and repair filtered-list loading.
+- [x] 11a17. Make module health policy code-only and repair filtered-list loading.
   - Owner decision, 2026-10-31: remove the health-policy tab, JSON editor,
     management operation/grant and database override/revision mechanism. Keep
     module-owned source checks, observations, diagnosis and availability guards.
@@ -2898,7 +2898,38 @@ runner; base/development databases were preserved.
 The supported TypeScript/Vite/native-error build passed in
 .runtime/frontend/RM-2026-016-source-health-build.log. Local read-only preflight
 identified environment local, database runa, 15 existing accounts, no native
-maintenance and no reserved jobs/active work/transitions. Current source commit,
-forward migration and served-build readiness preparation remain to complete this
-point. Owner acceptance 11b and final verification/release 12 remain open; no broad
-quality gate was run. No Docker resources were created or removed.
+maintenance and no reserved jobs/active work/transitions. Implementation is committed at ea9c1afe with mandatory hooks passing.
+The post-hook build also passed:
+.runtime/frontend/RM-2026-016-source-health-build-committed.log.
+
+Prepared the actual local development database through the documented forward
+primitive with source ea9c1afe, during task-owned native maintenance. It applied
+only 2026_10_31_000001_make_module_health_source_only; evidence is retained in
+.runtime/frontend/RM-2026-016-source-health-forward.log. Explicit app-owner sync
+updated reference source metadata to 0.2.0 while preserving its disabled and
+uninstalled state. Existing Core installed versions remain matched and all 15
+accounts remain. Removed only the task-owned maintenance and published the native
+queue restart signal. No reset, credential/grant mutation or module installation
+was performed. Retained permission dictionary/grant history follows the existing
+Permissions source-removal policy; no executable health.configure operation or
+capability remains.
+
+Nginx /admin, /api/ready and all 16 entry-linked assets returned HTTP 200;
+unauthenticated /api/admin/entry remains 401. A focused controlled browser
+inspection against that served build checked PL/dark/1440px with normal motion
+and EN/light/390px with reduced motion. It verified gray top/hover computed colors,
+withdrawn cards and block Skeletons during a held filtered read, motion reduction,
+restored cards and exactly Overview/Settings/Integrations tabs. Neither context
+had page errors or horizontal document overflow. Screenshots/report.json remain
+under .runtime/artifacts/playwright/runa/RM-2026-016-source-health-filter/;
+log: .runtime/frontend/RM-2026-016-source-health-browser-final.log. Synthetic
+session/preferences/operation responses made no application business writes.
+Two earlier diagnostic attempts used incorrect select role/translated option
+selectors; the diagnostic was corrected to the actual public control and copy.
+Failed logs remain preserved. Browser contexts closed and the temporary helper
+was removed. No Docker resources were created or removed; development/test data,
+knowledge/model caches and all verification evidence are preserved.
+
+Point 11a17 is ready for repeated owner acceptance at http://localhost:8080/admin.
+Owner acceptance 11b and final verification/release 12 remain open; these focused
+checks do not claim broad quality or manual acceptance PASS.
