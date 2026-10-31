@@ -471,7 +471,14 @@ it('shared table refresh uses the owning read and controlled filters reset witho
     }),
   );
   await flushPromises();
-  await wrapper.get('button[aria-label="Reset filters"]').trigger('click');
+  expect(
+    wrapper
+      .find('[data-table-toolbar] button[aria-label="Reset filters"]')
+      .exists(),
+  ).toBe(false);
+  await wrapper
+    .get('[data-table-filters] button[aria-label="Reset filters"]')
+    .trigger('click');
   expect(controlled.value.filters).toEqual({});
   expect(controlled.value.search).toBe('');
   expect(controlled.value.sort).toEqual({ key: 'name', direction: 'asc' });

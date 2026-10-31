@@ -403,66 +403,95 @@ function changePage(value: number) {
 <template>
   <div class="min-w-0 rounded border border-line bg-surface text-sm">
     <div
-      v-if="filterColumns.length && !$slots.filters"
-      class="grid grid-cols-1 gap-3 border-b border-line px-4 py-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+      v-if="filterColumns.length || searchable || $slots.filters"
+      data-table-filters
+      role="group"
+      :aria-label="text('Filtry', 'Filters')"
+      class="flex items-end gap-3 border-b border-line px-4 py-3"
     >
-      <template v-for="column in filterColumns" :key="column.key">
-        <AppSelect
-          v-if="column.filterOptions?.length"
+      <div class="min-w-0 flex-1">
+        <slot
+          name="filters"
+          :query="query"
+          :update="
+            (value: TableQuery) => emit('update:query', { ...value, page: 1 })
+          "
+        >
+          <div
+            class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+          >
+            <template v-for="column in filterColumns" :key="column.key">
+              <AppSelect
+                v-if="column.filterOptions?.length"
+                size="sm"
+                clearable
+                :locale="english ? 'en' : 'pl'"
+                :label="column.label"
+                :model-value="query.filters[column.key] ?? ''"
+                :options="column.filterOptions"
+                @update:model-value="filter(column.key, $event)"
+              />
+              <AppTextInput
+                v-else
+                size="sm"
+                :label="column.label"
+                :model-value="query.filters[column.key] ?? ''"
+                @update:model-value="filter(column.key, $event)"
+              />
+            </template>
+            <AppTextInput
+              v-if="searchable"
+              class="w-44 max-w-full"
+              size="sm"
+              :model-value="query.search ?? ''"
+              :label="text('Wyszukaj', 'Search')"
+              @update:model-value="
+                emit('update:query', {
+                  ...query,
+                  page: 1,
+                  search: $event ?? '',
+                })
+              "
+            />
+          </div>
+        </slot>
+      </div>
+      <AppTooltip :text="text('Resetuj filtry', 'Reset filters')">
+        <AppButton
           size="sm"
-          clearable
-          :locale="english ? 'en' : 'pl'"
-          :label="column.label"
-          :model-value="query.filters[column.key] ?? ''"
-          :options="column.filterOptions"
-          @update:model-value="filter(column.key, $event)"
-        />
-        <AppTextInput
-          v-else
-          size="sm"
-          :label="column.label"
-          :model-value="query.filters[column.key] ?? ''"
-          @update:model-value="filter(column.key, $event)"
-        />
-      </template>
+          icon-only
+          variant="ghost"
+          :aria-label="text('Resetuj filtry', 'Reset filters')"
+          :disabled="
+            !query.search && !Object.values(query.filters).some(Boolean)
+          "
+          @click="
+            emit('update:query', {
+              ...query,
+              page: 1,
+              search: '',
+              filters: {},
+            })
+          "
+        >
+          <AppIcon name="filter-off" :size="20" />
+        </AppButton>
+      </AppTooltip>
     </div>
     <div
+      data-table-toolbar
       class="flex flex-wrap items-end justify-between gap-3 border-b border-line bg-[var(--runa-surface-raised)] px-4 py-3"
     >
-      <slot
-        name="filters"
-        :query="query"
-        :update="
-          (value: TableQuery) => emit('update:query', { ...value, page: 1 })
+      <AppSelect
+        size="sm"
+        :locale="english ? 'en' : 'pl'"
+        :model-value="String(query.perPage)"
+        :label="text('Na stronie', 'Page size')"
+        :options="pageOptions"
+        @update:model-value="
+          emit('update:query', { ...query, page: 1, perPage: Number($event) })
         "
-      >
-        <div class="flex min-w-0 flex-wrap items-end gap-3">
-          <AppTextInput
-            v-if="searchable"
-            class="w-44 max-w-full"
-            size="sm"
-            :model-value="query.search ?? ''"
-            :label="text('Wyszukaj', 'Search')"
-            @update:model-value="
-              emit('update:query', { ...query, page: 1, search: $event ?? '' })
-            "
-          />
-          <AppSelect
-            size="sm"
-            :locale="english ? 'en' : 'pl'"
-            :model-value="String(query.perPage)"
-            :label="text('Na stronie', 'Page size')"
-            :options="pageOptions"
-            @update:model-value="
-              emit('update:query', {
-                ...query,
-                page: 1,
-                perPage: Number($event),
-              })
-            "
-          />
-        </div>
-      </slot>
+      />
       <div class="ml-auto flex min-w-0 flex-wrap items-end justify-end gap-2">
         <slot name="toolbar" :feedback-target="`#${feedbackId}`">
           <AppTablePreferences
@@ -482,27 +511,6 @@ function changePage(value: number) {
           :feedback-target="`#${feedbackId}`"
           :english="english"
         />
-        <AppTooltip :text="text('Resetuj filtry', 'Reset filters')">
-          <AppButton
-            size="sm"
-            icon-only
-            variant="ghost"
-            :aria-label="text('Resetuj filtry', 'Reset filters')"
-            :disabled="
-              !query.search && !Object.values(query.filters).some(Boolean)
-            "
-            @click="
-              emit('update:query', {
-                ...query,
-                page: 1,
-                search: '',
-                filters: {},
-              })
-            "
-          >
-            <AppIcon name="filter-off" :size="20" />
-          </AppButton>
-        </AppTooltip>
         <AppTooltip :text="text('Odśwież', 'Refresh')">
           <AppButton
             size="sm"

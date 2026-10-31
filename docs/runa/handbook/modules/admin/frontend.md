@@ -1132,3 +1132,10 @@ When reviewing or changing supplied module record views, inspect Auth,
 Permissions and Audit together for the same defect and apply the shared correction
 where relevant. Prefer fixing Table/AdminRecordBrowser before duplicating view
 logic. Preserve each owner's read/write/proof and record-specific constraints.
+
+Default table filter reset belongs to the shared filter region, alongside the
+fields. Declared datetime cells and event details use formatApplicationInstant
+with the active language and application timezone; providers and exports retain
+canonical instants. Audit declares occurred_at as datetime. Auth administrative
+bounded entry lists format their known timestamp keys through the same helper;
+Permissions effective/definition tables currently contain no timestamp columns.

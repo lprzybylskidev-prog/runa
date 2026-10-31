@@ -167,7 +167,10 @@ three/six columns through mobile/sm/lg/xl). `TableColumn.filterOptions?: readonl
 { value: string; label: string }[]` selects the shared clearable Select; other
 filters use TextInput. A custom filters slot replaces these controls. Changes reset
 page 1 immediately; owning providers retain cancellation/stale-response protection.
-The shared icon-only Reset filters button clears search and filters, preserves
+The shared icon-only Reset filters button lives beside the fields in the labelled
+filter region, including custom filter slots; it is separate from preferences,
+exports and refresh. Search shares this filter region. Page size stays in the
+table toolbar. Reset clears search and filters, preserves
 page size/sort/column preferences and resets page 1. Bind custom controls to query
 rather than a separate unsynchronized draft.
 

@@ -2,7 +2,12 @@
 import { useAdminLocale } from '@/runa/admin';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, watch } from 'vue';
-import { FormNotifications, Button, Card } from '@/runa/ui';
+import {
+  formatApplicationInstant,
+  FormNotifications,
+  Button,
+  Card,
+} from '@/runa/ui';
 import { useAdminResource } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
 const props = defineProps<AdminSectionPresentationProps>();
@@ -81,7 +86,15 @@ function history(entity: { module: string; type: string; public_id: string }) {
             {{ tr(field.label) }}
           </dt>
           <dd class="whitespace-pre-wrap break-words text-sm">
-            {{ record.values[field.key] ?? '—' }}
+            {{
+              field.type === 'datetime' &&
+              typeof record.values[field.key] === 'string'
+                ? formatApplicationInstant(
+                    String(record.values[field.key]),
+                    adminLocale,
+                  )
+                : (record.values[field.key] ?? '—')
+            }}
           </dd>
         </div>
       </dl>

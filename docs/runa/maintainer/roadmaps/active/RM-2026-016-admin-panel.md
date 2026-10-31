@@ -590,6 +590,12 @@ reassessment before resuming point 3; completed point history remains evidence.
     separately from reads on the server, preserve bounded scopes and field grants.
     Synchronize public contracts, regression scenarios and current assets before
     returning to owner acceptance. Broad verification remains point 12.
+- [x] 11a28. Keep filter reset beside filters and format module timestamps.
+  - Owner corrections, 2026-10-31: place the icon/Tooltip reset inside the filter
+    region, separate from table actions, and correct displayed table dates.
+  - Review Auth/Permissions/Audit together; use declared datetime semantics and
+    the application locale/timezone formatter, preserving raw export instants.
+    Prepare current assets and synchronize owning guidance before owner review.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3577,3 +3583,40 @@ remain application-only. Root/customer AGENTS need no duplicate component rule.
 No task-created Docker container/network/image/volume exists; preserve active
 services, development/base-test data, Qdrant/model caches and all evidence. Manual
 acceptance 11b and final affected-area verification/release 12 remain open.
+
+### Point 11a28 — Filter-local reset and formatted module dates
+
+Owner follow-up, 2026-10-31: keep reset beside filtering inputs and correct table
+calendar values. The shared labelled filter region now owns default/slot controls,
+search and the single icon-only Reset filters/Tooltip. Six desktop filter columns
+remain; page size/preferences/export/refresh stay in the separate table toolbar.
+Reset semantics are unchanged, including controlled queries and saved views.
+
+Source review found Audit occurred_at incorrectly declared text. It now declares
+datetime, activating AdminResourceTable's existing locale/application-timezone
+presentation. Audit detail values use that same formatter. Auth bounded admin
+entry lists format their known timestamp keys, including session activity; account,
+trusted-device and operation-history tables already use the shared formatter.
+Permissions definition/effective tables have no timestamp columns. Raw UTC instants
+remain in transport and table export descriptors; no date-looking free text is
+heuristically converted. No dependency, schema, grant or module/API version change
+is required within the current unreleased candidates.
+
+Focused frontend coverage passes four cases for reset placement/behavior, Audit
+formatted cursor/entity history and payload continuation, and Auth bounded entry
+selection in `.runtime/frontend/RM-2026-016-filter-date-focused.log`. Current
+TypeScript/Vite/native-error asset preparation passes in
+`.runtime/frontend/RM-2026-016-filter-date-build.log`. Focused served-build
+inspection uses controlled synthetic API responses for Auth/Permissions/Audit at
+1440px PL/dark and Audit at 390px EN/light. It confirms the filter-local reset,
+six inputs per desktop row, localized Warsaw time (18:25Z displays 19:25), usable
+Details/refresh/CSV and no page errors/document overflow. Evidence:
+`.runtime/artifacts/playwright/runa/RM-2026-016-filter-date/report.json`, screenshots
+and `.runtime/frontend/RM-2026-016-filter-date-browser.log`.
+
+Canonical tables/Admin guides and all affected current module changelogs are
+synchronized. Both instruction products already route shared tables and sibling
+module review to those guides; no duplicate skill/AGENTS rule is needed. No data
+migration, business write, reset or Docker resource creation/removal occurred.
+Preserve active services/databases, model/Qdrant caches and evidence. Owner manual
+acceptance 11b and final automated verification/release 12 remain open.

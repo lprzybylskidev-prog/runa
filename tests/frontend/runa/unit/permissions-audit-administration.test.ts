@@ -231,17 +231,30 @@ it('Audit Admin entity history links initialize the exact bounded filter query',
   );
   const descriptor = section(
     'catalogue',
-    ['entity_module', 'entity_type', 'entity_public_id'].map((key) => ({
-      ...field(key),
-      filterable: true,
-    })),
+    [
+      { ...field('occurred_at'), type: 'datetime' },
+      ...['entity_module', 'entity_type', 'entity_public_id'].map((key) => ({
+        ...field(key),
+        filterable: true,
+      })),
+    ],
     'table',
   );
   const controller = page('runa.audit', 'history', [descriptor]);
-  const fetch = vi
-    .spyOn(window, 'fetch')
-    .mockResolvedValue(response({ items: [], next: null, total: null }));
-  mount(
+  const fetch = vi.spyOn(window, 'fetch').mockResolvedValue(
+    response({
+      items: [
+        {
+          public_id: id,
+          revision: '1',
+          values: { occurred_at: '2026-10-31T18:25:00Z' },
+        },
+      ],
+      next: null,
+      total: null,
+    }),
+  );
+  const wrapper = mount(
     defineComponent({
       setup() {
         const form = useAdminForm(controller, { autoRead: false });
@@ -260,6 +273,14 @@ it('Audit Admin entity history links initialize the exact bounded filter query',
       }),
     ).toBe(true),
   );
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain(
+      new Date('2026-10-31T18:25:00Z').toLocaleString('en-GB', {
+        timeZone: 'Europe/Warsaw',
+      }),
+    ),
+  );
+  expect(wrapper.text()).not.toContain('2026-10-31T18:25:00Z');
 });
 it('Permissions Admin effective cursor preserves the selected account on older reads', async () => {
   const descriptor = section('effective', [field('entries'), field('next')]);

@@ -2,7 +2,12 @@
 import { useAdminLocale } from '@/runa/admin';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, watch } from 'vue';
-import { FormNotifications, Button, Card } from '@/runa/ui';
+import {
+  formatApplicationInstant,
+  FormNotifications,
+  Button,
+  Card,
+} from '@/runa/ui';
 import { AdminSection, useAdminResource } from '@/runa/admin';
 import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
 const props = defineProps<AdminSectionPresentationProps>();
@@ -54,7 +59,19 @@ const next = computed(() => {
   const last = rows.value.at(-1);
   return collection.value?.key === 'history' ? last?.revision : last?.public_id;
 });
-function display(value: AdminJson): string {
+const instantKeys = new Set([
+  'created_at',
+  'updated_at',
+  'occurred_at',
+  'authenticated_at',
+  'activity_at',
+  'expires_at',
+  'last_used_at',
+  'revoked_at',
+]);
+function display(value: AdminJson, key: string): string {
+  if (instantKeys.has(key) && typeof value === 'string')
+    return formatApplicationInstant(value, adminLocale.value);
   if (value === null) return '—';
   if (typeof value === 'boolean') return value ? tr('Yes') : tr('No');
   return typeof value === 'object' ? JSON.stringify(value) : String(value);
@@ -116,7 +133,7 @@ function select(row: Record<string, AdminJson>) {
           <dl class="grid gap-2 text-sm sm:grid-cols-2">
             <div v-for="(value, key) in row" :key="key">
               <dt class="font-semibold">{{ tr(String(key)) }}</dt>
-              <dd class="break-words">{{ display(value) }}</dd>
+              <dd class="break-words">{{ display(value, String(key)) }}</dd>
             </div>
           </dl>
           <Button

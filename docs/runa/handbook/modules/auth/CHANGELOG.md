@@ -2,6 +2,10 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Keep reset beside filter fields in the shared filter region. Render declared
+  event timestamps and known Auth entry dates through the application locale/
+  timezone formatter, preserving canonical instants in transport and exports.
+
 - Use shared table refresh/reset icons with Tooltips, compact automatic filters
   and dictionary Selects; open Details in guarded dialogs. Supply bounded
   CSV/XLSX/PDF/Print behind the shared `runa.permissions.tables.export` grant
