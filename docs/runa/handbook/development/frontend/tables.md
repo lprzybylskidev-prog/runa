@@ -152,3 +152,39 @@ adds presentation only. For already loaded client data, keep rows and pass loadi
 only for the initial read; indicate subsequent refresh in the owning toolbar and
 aria-busy region. Admin history/work tables use this composition to preserve
 focus/rows and retain visible empty table structure.
+
+## Shared table controls
+
+Every Table supplies an icon-only Refresh button with a localized Tooltip and
+accessible name. `refresh?: () => void | Promise<void>` connects caller-owned
+reads; absent a callback it reloads the provider/local source. `refreshing?: boolean`
+keeps the icon busy during in-place reads, and `refreshDisabled?: boolean` guards
+owning operations. Remove duplicate table refresh buttons from view toolbars.
+The toolbar keeps preferences/actions grouped at its trailing edge.
+
+Filterable columns render controlled compact filters above the toolbar (one/two/
+three/six columns through mobile/sm/lg/xl). `TableColumn.filterOptions?: readonly
+{ value: string; label: string }[]` selects the shared clearable Select; other
+filters use TextInput. A custom filters slot replaces these controls. Changes reset
+page 1 immediately; owning providers retain cancellation/stale-response protection.
+The shared icon-only Reset filters button clears search and filters, preserves
+page size/sort/column preferences and resets page 1. Bind custom controls to query
+rather than a separate unsynchronized draft.
+
+### Bounded built-in exports
+
+Table accepts `exportAllowed?: boolean` and
+`exportRows?: (signal: AbortSignal) => Promise<readonly Row[]>`. Both are required
+for built-in CSV/XLSX/PDF/Print. The callback reauthorizes the owning read/export
+permission and returns its bounded export data; Table never walks server pages.
+The built-in scope is explicitly `page` (Current loaded rows), with the controlled
+query snapshot, and never claims the entire server dataset. Provider-backed
+application exports can retain broader scopes through TableActions.
+`ExportScope<Query>` includes `{ kind: 'page'; query: Query }` and
+ExportCapabilities.scopes includes `page`. Shared client adapters apply that
+query's page after filtering/sorting; data fetched as an already paginated server
+page is passed with page 1 and its bounded size. Export uses visible columns only.
+
+Tables without a custom toolbar receive in-memory column/named-view controls.
+Explicit TablePreferences/controller integrations retain their owning persistence.
+No account filters are implicitly persisted under a guessed global key.

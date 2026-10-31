@@ -20,13 +20,14 @@ export type RowSelection<Query> =
 
 export type ExportScope<Query> =
   | { readonly kind: 'all' }
+  | { readonly kind: 'page'; readonly query: Query }
   | { readonly kind: 'filtered'; readonly query: Query }
   | { readonly kind: 'selected'; readonly selection: RowSelection<Query> };
 
 export interface ExportCapabilities {
   readonly execution?: 'client' | 'server';
   readonly formats: readonly ExportFormat[];
-  readonly scopes: readonly ('all' | 'filtered' | 'selected')[];
+  readonly scopes: readonly ('all' | 'filtered' | 'selected' | 'page')[];
   readonly cancellation: boolean;
 }
 

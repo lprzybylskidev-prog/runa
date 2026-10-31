@@ -2,6 +2,11 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Use shared table refresh/reset icons with Tooltips, compact automatic filters
+  and dictionary Selects; open Details in guarded dialogs. Supply bounded
+  CSV/XLSX/PDF/Print behind the shared `runa.permissions.tables.export` grant
+  and current owning read authorization.
+
 - Use shared dismissible FormNotifications for settings and operational/resource failures, with field-associated validation, explicit recovery and repeat-attempt feedback. Remove duplicate inline outcome banners; retain contextual conflicts and durable diagnostic results.
 
 - Make the default timezone selector searchable through the shared locale-aware Select and remove redundant settings introduction/logo/favicon helper copy.

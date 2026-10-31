@@ -14,6 +14,7 @@ final class PermissionManagement implements ManagementEntityProvider
     public function permissions(): array
     {
         return [
+            new ManagementPermission('tables.export', ['pl' => 'Eksport danych tabel', 'en' => 'Export table data'], ['pl' => 'Eksport i drukowanie dostępnych danych tabel.', 'en' => 'Export and print authorized table data.']),
             new ManagementPermission('users.select', ['pl' => 'Wybór użytkowników', 'en' => 'Select users'], ['pl' => 'Jawny wybór jednego, wybranych lub wszystkich kont do autoryzowanej operacji.', 'en' => 'Explicit one, selected or all-account intent for an authorized operation.']),
             new ManagementPermission('authority.manage', ['pl' => 'Zarządzanie superadministratorami', 'en' => 'Manage super administrators'], ['pl' => 'Osobne nadawanie i odbieranie roli systemowej z ochroną ostatniego administratora.', 'en' => 'Dedicated system-role grant and removal preserving the last eligible administrator.']),
             new ManagementPermission('roles.force_delete', ['pl' => 'Wymuszone usunięcie roli własnej', 'en' => 'Force delete custom roles'], ['pl' => 'Potwierdzone usunięcie po podglądzie użytkowników, presetów i utraty uprawnień.', 'en' => 'Confirmed deletion after reviewing users, presets and practical permission loss.']),

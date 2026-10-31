@@ -1,5 +1,5 @@
 /* eslint-disable vue/one-component-per-file -- Independent administrative presentation fixtures. */
-import { afterEach, expect, it, vi } from '@runa/testing/vitest';
+import { beforeEach, afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import { AuthAdminUsers, AuthAdminSection } from '@/runa/auth';
@@ -12,6 +12,8 @@ import type {
   AdminSectionData,
 } from '@/runa/admin';
 enableAutoUnmount(afterEach);
+beforeEach(() => localStorage.setItem('runa.locale', 'en'));
+afterEach(() => localStorage.removeItem('runa.locale'));
 const actor = '01900000-0000-7000-8000-000000000001';
 const target = '01900000-0000-7000-8000-000000000002';
 function field(key: string, readonly = true): AdminFieldData {
@@ -115,14 +117,19 @@ it('Auth administration user page selects another account through the shared gua
   expect(wrapper.text()).toContain('User directory');
   const open = wrapper
     .findAll('button')
-    .find((button) => button.text() === 'Open account');
+    .find((button) => button.text() === 'Details');
   expect(open).toBeDefined();
   await open!.trigger('click');
   await vi.waitFor(() =>
     expect(form.records.value.profile?.public_id).toBe(target),
   );
   expect(form.values.value['profile.name']).toBe('Selected target');
-  expect(wrapper.text()).toContain(`Selected account: ${target}`);
+  await vi.waitFor(() =>
+    expect(
+      document.querySelector<HTMLInputElement>('[role=dialog] input')?.value,
+    ).toBe('Selected target'),
+  );
+  expect(wrapper.find('[role=dialog]').exists()).toBe(false);
 });
 
 it('Auth administration collection sections use only authorized fields and expose safe entry selection', async () => {

@@ -14,6 +14,7 @@ const props = defineProps<{
   controller: AdminOperationsController;
   module: string;
   pending?: boolean;
+  exportAllowed?: boolean;
 }>();
 const emit = defineEmits<{
   execute: [command: AdminOperationCommand, id: string];
@@ -238,6 +239,17 @@ onScopeDispose(() => {
   alive = false;
   epoch++;
 });
+async function exportRows() {
+  // Export only the authorized current native batch, never all unloaded history.
+  const next = await props.controller.read('history', {
+    module: props.module,
+    limit: 25,
+    export: true,
+  });
+  if (!next || !Array.isArray(next.operations))
+    throw new Error('permission_denied');
+  return rows.value;
+}
 </script>
 <template>
   <section
@@ -247,16 +259,6 @@ onScopeDispose(() => {
   >
     <div class="flex flex-wrap items-center justify-between gap-3">
       <h3 class="font-semibold">{{ tr('Operation history') }}</h3>
-      <Button
-        variant="outline"
-        size="sm"
-        :busy="loading"
-        :disabled="
-          pending || controller.busy.value || controller.refreshing.value
-        "
-        @click="refresh()"
-        >{{ tr('Refresh history') }}</Button
-      >
     </div>
     <FormNotifications :locale="locale" :error="!pending ? tr(error) : ''">
       <template #actions
@@ -268,6 +270,13 @@ onScopeDispose(() => {
     <Table
       v-model:query="query"
       mode="client"
+      :export-allowed="exportAllowed === true"
+      :export-rows="exportRows"
+      :refresh="() => refresh()"
+      :refreshing="loading"
+      :refresh-disabled="
+        pending || controller.busy.value || controller.refreshing.value
+      "
       :rows="rows"
       :columns="columns"
       :column-state="columnState"

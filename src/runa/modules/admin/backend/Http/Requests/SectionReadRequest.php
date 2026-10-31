@@ -16,6 +16,7 @@ final class SectionReadRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'export' => ['sometimes', 'boolean'],
             'kind' => ['sometimes', 'required', 'string', 'in:record,page,options'],
             'field' => ['sometimes', 'required', 'string', 'max:128'],
             'public_id' => ['sometimes', 'required', 'uuid:7'],
@@ -46,6 +47,9 @@ final class SectionReadRequest extends FormRequest
             } catch (\JsonException|\InvalidArgumentException) {
                 throw ValidationException::withMessages(['filters' => ['Invalid input.']]);
             }
+        }
+        if (isset($query['export']) && in_array($query['export'], ['0', '1'], true)) {
+            $query['export'] = $query['export'] === '1';
         }
         // GET scalars arrive as strings; never coerce malformed values or arrays.
         if (isset($query['limit']) && is_string($query['limit']) && preg_match('/\A[0-9]{1,3}\z/D', $query['limit']) === 1) {

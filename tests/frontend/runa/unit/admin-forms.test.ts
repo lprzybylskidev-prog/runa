@@ -468,6 +468,7 @@ it('Admin forms support explicit new-record bindings and block required unavaila
 it('Admin collection adapters retain native export limits and deny secret columns or stale bulk selections', async () => {
   const data = descriptor();
   data.sections[0]!.view = 'table';
+  data.sections[0]!.export_allowed = true;
   data.sections[0]!.commands = [
     command({ key: 'revoke', bulk: true, intent: 'action', inputs: [] }),
   ];
@@ -745,6 +746,7 @@ it('Admin forms refuse secret or undeclared preview differences before exposing 
 it('Admin collection adapters preserve views and authorize export columns through current presentation', async () => {
   const data = descriptor();
   data.sections[0]!.view = 'table';
+  data.sections[0]!.export_allowed = true;
   const page: AdminPageController = {
     page: shallowRef(data),
     state: computed(() => 'ready'),

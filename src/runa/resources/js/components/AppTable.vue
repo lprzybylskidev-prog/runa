@@ -9,6 +9,20 @@ import {
   useId,
   onScopeDispose,
 } from 'vue';
+import AppFormNotifications from './AppFormNotifications.vue';
+import AppTablePreferences from './AppTablePreferences.vue';
+import AppTableActions from './AppTableActions.vue';
+import { useTableViews } from '../composables/useTableViews';
+import { createPreferenceStore } from '../lib/preferenceStore';
+import { createClientExportProvider } from '../lib/clientExports';
+import { createClientPrintAdapter } from '../lib/printTable';
+import type {
+  ExportColumn,
+  ExportProvider,
+  PrintAdapter,
+} from '../runa/ui/exports';
+import AppIcon from './AppIcon.vue';
+import AppTooltip from './AppTooltip.vue';
 import AppButton from './AppButton.vue';
 import AppTextInput from './AppTextInput.vue';
 import AppSelect from './AppSelect.vue';
@@ -33,6 +47,13 @@ const props = withDefaults(
     mode: 'client' | 'server';
     loading?: boolean;
     retainEmptyFrame?: boolean;
+    refresh?: (() => void | Promise<void>) | undefined;
+    refreshing?: boolean;
+    refreshDisabled?: boolean;
+    exportAllowed?: boolean;
+    exportColumns?: readonly ExportColumn<Row>[];
+    exportRows?:
+      ((signal: globalThis.AbortSignal) => Promise<readonly Row[]>) | undefined;
     rows?: readonly Row[];
     provider?: TableProvider<Row> | undefined;
     columns: readonly TableColumn<Row>[];
@@ -49,6 +70,12 @@ const props = withDefaults(
   }>(),
   {
     loading: false,
+    refresh: undefined,
+    exportRows: undefined,
+    exportColumns: undefined,
+    refreshing: false,
+    exportAllowed: false,
+    refreshDisabled: false,
     retainEmptyFrame: false,
     columnState: undefined,
     rows: () => [],
@@ -68,6 +95,129 @@ const emit = defineEmits<{
   'column-widths': [value: Record<string, number>];
 }>();
 const slots = useSlots();
+const memory = new Map<string, string>();
+let initializingViews = true;
+const views = useTableViews({
+  scope: { applicationId: 'runa', moduleKey: 'table', viewKey: 'current' },
+  query: computed({
+    get: () => props.query,
+    set: (value) => {
+      if (!initializingViews) emit('update:query', value);
+    },
+  }),
+  columns: () => props.columns,
+  store: createPreferenceStore({
+    read: (key) => memory.get(key) ?? null,
+    write: (key, value) => {
+      memory.set(key, value);
+    },
+    remove: (key) => {
+      memory.delete(key);
+    },
+  }),
+});
+initializingViews = false;
+if (props.columnState) views.setColumns([...props.columnState]);
+const exportColumns = computed(() =>
+  visibleColumns.value.flatMap((column) => {
+    if (props.exportColumns)
+      return props.exportColumns.filter((item) => item.key === column.key);
+    return [{ key: column.key, label: column.label, value: column.value }];
+  }),
+);
+let exportEpoch = 0;
+watch(
+  () => [props.exportAllowed, props.exportRows, props.query],
+  () => {
+    exportEpoch++;
+  },
+  { deep: true, flush: 'sync' },
+);
+async function authorizedRows(signal: globalThis.AbortSignal) {
+  if (!props.exportAllowed || !props.exportRows)
+    throw new Error('permission_denied');
+  const own = exportEpoch,
+    read = props.exportRows;
+  const rows = await read(signal);
+  signal.throwIfAborted();
+  if (!props.exportAllowed || read !== props.exportRows || own !== exportEpoch)
+    throw new Error('selection_stale');
+  return rows;
+}
+const builtExports = computed<ExportProvider<TableQuery> | undefined>(() =>
+  props.exportAllowed && props.exportRows
+    ? {
+        capabilities: {
+          execution: 'server',
+          formats: ['csv', 'xlsx', 'pdf'],
+          scopes: ['page'],
+          cancellation: true,
+        },
+        async start(input, signal) {
+          if (input.scope.kind !== 'page')
+            throw new Error('unsupported_export');
+          const stamp = exportEpoch;
+          const rows = await authorizedRows(signal);
+          const provider = createClientExportProvider({
+            rows: () => rows,
+            columns: () => exportColumns.value,
+            tableColumns: () => props.columns,
+            rowKey: props.rowKey,
+          });
+          const scope =
+            props.mode === 'server' ? { kind: 'all' as const } : input.scope;
+          const result = await provider.start({ ...input, scope }, signal);
+          if (!props.exportAllowed || stamp !== exportEpoch)
+            throw new Error('permission_denied');
+          return result;
+        },
+      }
+    : undefined,
+);
+const builtPrint = computed<PrintAdapter<TableQuery> | undefined>(() =>
+  builtExports.value
+    ? {
+        async print(scope, signal) {
+          if (scope.kind !== 'page') throw new Error('unsupported_export');
+          const rows = await authorizedRows(signal);
+          await createClientPrintAdapter({
+            rows: () => rows,
+            columns: () => exportColumns.value,
+            tableColumns: () => props.columns,
+            rowKey: props.rowKey,
+            title: () => props.caption,
+          }).print(props.mode === 'server' ? { kind: 'all' } : scope, signal);
+        },
+      }
+    : undefined,
+);
+
+const refreshPending = ref(false),
+  refreshError = ref('');
+async function refreshTable() {
+  if (refreshPending.value || props.refreshing || props.refreshDisabled) return;
+  refreshPending.value = true;
+  refreshError.value = '';
+  try {
+    await (props.refresh ? props.refresh() : reload());
+  } catch {
+    refreshError.value = text(
+      'Nie udało się odświeżyć danych.',
+      'Unable to refresh data.',
+    );
+  } finally {
+    refreshPending.value = false;
+  }
+}
+function filter(key: string, value: string | null) {
+  const filters = { ...props.query.filters };
+  if (value) filters[key] = value;
+  else delete filters[key];
+  emit('update:query', { ...props.query, page: 1, filters });
+}
+const filterColumns = computed(() =>
+  props.columns.filter((column) => column.filter),
+);
 const text = (pl: string, en: string) => (props.english ? en : pl);
 const source = () =>
   props.mode === 'client'
@@ -171,7 +321,7 @@ const pages = computed(() =>
 );
 const presentation = computed(() =>
   normalizeTableColumns(
-    props.columnState,
+    slots.toolbar ? props.columnState : views.columns.value,
     props.columns.map((c) => c.key),
   ),
 );
@@ -253,6 +403,30 @@ function changePage(value: number) {
 <template>
   <div class="min-w-0 rounded border border-line bg-surface text-sm">
     <div
+      v-if="filterColumns.length && !$slots.filters"
+      class="grid grid-cols-1 gap-3 border-b border-line px-4 py-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+    >
+      <template v-for="column in filterColumns" :key="column.key">
+        <AppSelect
+          v-if="column.filterOptions?.length"
+          size="sm"
+          clearable
+          :locale="english ? 'en' : 'pl'"
+          :label="column.label"
+          :model-value="query.filters[column.key] ?? ''"
+          :options="column.filterOptions"
+          @update:model-value="filter(column.key, $event)"
+        />
+        <AppTextInput
+          v-else
+          size="sm"
+          :label="column.label"
+          :model-value="query.filters[column.key] ?? ''"
+          @update:model-value="filter(column.key, $event)"
+        />
+      </template>
+    </div>
+    <div
       class="flex flex-wrap items-end justify-between gap-3 border-b border-line bg-[var(--runa-surface-raised)] px-4 py-3"
     >
       <slot
@@ -289,7 +463,68 @@ function changePage(value: number) {
           />
         </div>
       </slot>
-      <slot name="toolbar" :feedback-target="`#${feedbackId}`" />
+      <div class="ml-auto flex min-w-0 flex-wrap items-end justify-end gap-2">
+        <slot name="toolbar" :feedback-target="`#${feedbackId}`">
+          <AppTablePreferences
+            :controller="views"
+            :columns="columns"
+            :english="english"
+          />
+        </slot>
+        <AppTableActions
+          v-if="builtExports"
+          :provider="builtExports"
+          :print-adapter="builtPrint"
+          :query="query"
+          :selection="effectiveSelection"
+          :columns="exportColumns"
+          :filename="caption"
+          :feedback-target="`#${feedbackId}`"
+          :english="english"
+        />
+        <AppTooltip :text="text('Resetuj filtry', 'Reset filters')">
+          <AppButton
+            size="sm"
+            icon-only
+            variant="ghost"
+            :aria-label="text('Resetuj filtry', 'Reset filters')"
+            :disabled="
+              !query.search && !Object.values(query.filters).some(Boolean)
+            "
+            @click="
+              emit('update:query', {
+                ...query,
+                page: 1,
+                search: '',
+                filters: {},
+              })
+            "
+          >
+            <AppIcon name="filter-off" :size="20" />
+          </AppButton>
+        </AppTooltip>
+        <AppTooltip :text="text('Odśwież', 'Refresh')">
+          <AppButton
+            size="sm"
+            icon-only
+            variant="ghost"
+            :aria-label="text('Odśwież', 'Refresh')"
+            :disabled="
+              loading || refreshing || refreshPending || refreshDisabled
+            "
+            @click="refreshTable"
+          >
+            <AppIcon
+              name="refresh"
+              :size="20"
+              :class="{
+                'animate-spin motion-reduce:animate-none':
+                  refreshing || refreshPending,
+              }"
+            />
+          </AppButton>
+        </AppTooltip>
+      </div>
     </div>
     <div
       v-if="
@@ -325,7 +560,13 @@ function changePage(value: number) {
         )
       }}</span>
     </div>
-    <div :id="feedbackId" class="border-b border-line px-4 py-3 empty:hidden" />
+    <div :id="feedbackId" class="border-b border-line px-4 py-3 empty:hidden">
+      <AppFormNotifications
+        v-if="refreshError"
+        :locale="english ? 'en' : 'pl'"
+        :error="refreshError"
+      />
+    </div>
     <div v-if="$slots.bulk" class="p-4">
       <slot
         name="bulk"

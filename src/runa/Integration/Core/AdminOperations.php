@@ -41,8 +41,8 @@ final readonly class AdminOperations
                 'application' => ['enter', []],
                 'diagnostics' => ['diagnostics.read', ['filter']],
                 'module' => ['diagnostics.read', ['module']],
-                'work' => ['work.read', ['module', 'limit']],
-                'history' => ['enter', ['module', 'cursor', 'limit']],
+                'work' => ['work.read', ['module', 'limit', 'export']],
+                'history' => ['enter', ['module', 'cursor', 'limit', 'export']],
                 'work.status' => ['work.read', ['id']],
                 'modules.status' => ['modules.manage', ['id']],
                 'settings.status' => ['settings.manage', ['id']],
@@ -51,6 +51,13 @@ final readonly class AdminOperations
             $this->keys($input, $keys);
 
             return $this->admit($view, $permission, function () use ($view, $input): array {
+                if (array_key_exists('export', $input) && ! is_bool($input['export'])) {
+                    throw $this->invalid();
+                }
+                if (($input['export'] ?? false) === true) {
+                    $this->guard->enter('runa.admin', new ApiOperation('tables.export', 'runa.permissions.tables.export'));
+                }
+
                 return match ($view) {
                     'capabilities' => ['capabilities' => $this->capabilities()],
                     'history' => $this->operationHistory($input),
@@ -167,9 +174,9 @@ final readonly class AdminOperations
     private function capabilities(): array
     {
         $result = [];
-        foreach (['diagnostics.read', 'health.diagnose', 'modules.manage', 'settings.manage', 'work.read', 'work.cancel', 'application.read', 'application.manage'] as $permission) {
+        foreach (['tables.export', 'diagnostics.read', 'health.diagnose', 'modules.manage', 'settings.manage', 'work.read', 'work.cancel', 'application.read', 'application.manage'] as $permission) {
             try {
-                $this->guard->enter('runa.admin', new ApiOperation('operations.read', 'runa.admin.'.$permission));
+                $this->guard->enter('runa.admin', new ApiOperation('operations.read', $permission === 'tables.export' ? 'runa.permissions.tables.export' : 'runa.admin.'.$permission));
                 $result[] = $permission;
             } catch (OperationRejected) { /* Advertisement never substitutes for command authorization. */
             }

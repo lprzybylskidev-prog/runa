@@ -75,7 +75,9 @@ export function useTableViews<Row>(options: {
     return JSON.parse(JSON.stringify(value)) as T;
   }
   function apply(snapshot: TableViewSnapshot) {
-    options.query.value = copy({ ...snapshot.query, page: 1 });
+    const next = copy({ ...snapshot.query, page: 1 });
+    if (JSON.stringify(options.query.value) !== JSON.stringify(next))
+      options.query.value = next;
   }
   const preferred = state.value.views.find(
     (view) => view.id === state.value.defaultId,
@@ -118,7 +120,15 @@ export function useTableViews<Row>(options: {
     { deep: true, flush: 'sync' },
   );
   watch(
-    options.columns,
+    () =>
+      JSON.stringify(
+        options.columns().map((column) => ({
+          key: column.key,
+          label: column.label,
+          sortable: column.sortable,
+          filterable: !!column.filter,
+        })),
+      ),
     () => {
       commit(state.value);
       apply(state.value.current);

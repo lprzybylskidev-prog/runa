@@ -253,3 +253,18 @@ it('retains bilingual management metadata without selecting a request language',
     $projected = $this->projection->page('app', 'users');
     expect($projected['sections'][0]['fields'][0]['label'])->toBe($this->provider->section()->fields[0]->field->names);
 });
+
+it('requires separate table export authority before reading and excludes sensitive fields', function (): void {
+    expect($this->projection->page('app', 'users')['sections'][0]['export_allowed'])->toBeFalse();
+    $calls = $this->handlerClass::$calls;
+    expect(fn () => $this->projection->read('app', 'users', 'profile', ['kind' => 'page', 'export' => true]))->toThrow(OperationRejected::class);
+    expect($this->handlerClass::$calls)->toBe($calls);
+    $this->authority->grants[] = 'runa.permissions.tables.export';
+    expect($this->projection->page('app', 'users')['sections'][0]['export_allowed'])->toBeTrue();
+    $export = $this->projection->read('app', 'users', 'profile', ['kind' => 'page', 'export' => true]);
+    expect($export['items'][0]['values'])->toBe(['name' => 'Visible']);
+    array_pop($this->authority->grants);
+    $calls = $this->handlerClass::$calls;
+    expect(fn () => $this->projection->read('app', 'users', 'profile', ['kind' => 'page', 'export' => true]))->toThrow(OperationRejected::class);
+    expect($this->handlerClass::$calls)->toBe($calls);
+});

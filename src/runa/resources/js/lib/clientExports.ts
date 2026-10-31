@@ -5,7 +5,7 @@ import type {
   ClientExportAdapter,
 } from '../runa/ui/exports';
 import type { TableColumn, TableQuery } from '../runa/ui/tables';
-import { clientTableRows } from './table';
+import { clientTableRows, clientTablePage } from './table';
 import { createCsvAdapter } from './exportFiles';
 import { createXlsxAdapter, createPdfAdapter } from './binaryExports';
 export function clientExportRows<Row>(
@@ -14,6 +14,8 @@ export function clientExportRows<Row>(
   scope: ExportScope<TableQuery>,
   rowKey: (row: Row) => string,
 ): Row[] {
+  if (scope.kind === 'page')
+    return [...clientTablePage(rows, columns, scope.query).rows];
   if (scope.kind === 'all') return [...rows];
   if (scope.kind === 'filtered')
     return clientTableRows(rows, columns, scope.query);

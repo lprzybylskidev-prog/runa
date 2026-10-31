@@ -2,6 +2,11 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Use shared table refresh/reset icons with Tooltips, compact automatic filters
+  and dictionary Selects; open Details in guarded dialogs. Supply bounded
+  CSV/XLSX/PDF/Print behind the shared `runa.permissions.tables.export` grant
+  and current owning read authorization.
+
 - Use shared FormNotifications for administrative event-detail read errors.
 
 - Localize the administrative history/detail presentation through shared Admin PL/EN copy while preserving immutable Audit records and technical identifiers.

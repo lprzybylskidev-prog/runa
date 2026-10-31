@@ -59,7 +59,9 @@ watch(
 watch(
   () => props.provider?.capabilities.scopes ?? [],
   (values) => {
-    if (!values.includes(scope.value as 'all' | 'filtered' | 'selected'))
+    if (
+      !values.includes(scope.value as 'all' | 'filtered' | 'selected' | 'page')
+    )
       scope.value = values[0] ?? 'filtered';
   },
   { immediate: true },
@@ -69,27 +71,33 @@ const scopes = computed(() =>
   (props.provider?.capabilities.scopes ?? []).map((value) => ({
     value,
     label:
-      value === 'all'
+      value === 'page'
         ? props.english
-          ? 'All rows'
-          : 'Wszystkie wiersze'
-        : value === 'selected'
+          ? 'Current loaded rows'
+          : 'Bieżące wczytane wiersze'
+        : value === 'all'
           ? props.english
-            ? 'Selected rows'
-            : 'Zaznaczone wiersze'
-          : props.english
-            ? 'Filtered results'
-            : 'Przefiltrowane wyniki',
+            ? 'All rows'
+            : 'Wszystkie wiersze'
+          : value === 'selected'
+            ? props.english
+              ? 'Selected rows'
+              : 'Zaznaczone wiersze'
+            : props.english
+              ? 'Filtered results'
+              : 'Przefiltrowane wyniki',
     disabled: value === 'selected' && selected.value === 0,
   })),
 );
 function snapshot(): ExportScope<Query> {
   const result: ExportScope<Query> =
-    scope.value === 'selected'
-      ? { kind: 'selected', selection: props.selection }
-      : scope.value === 'all'
-        ? { kind: 'all' }
-        : { kind: 'filtered', query: props.query };
+    scope.value === 'page'
+      ? { kind: 'page', query: props.query }
+      : scope.value === 'selected'
+        ? { kind: 'selected', selection: props.selection }
+        : scope.value === 'all'
+          ? { kind: 'all' }
+          : { kind: 'filtered', query: props.query };
   return JSON.parse(JSON.stringify(result)) as ExportScope<Query>;
 }
 function key() {
@@ -178,7 +186,7 @@ async function bulk(action: string) {
               operation.busy.value ||
               !provider?.capabilities.formats.includes(format) ||
               !provider?.capabilities.scopes.includes(
-                scope as 'all' | 'filtered' | 'selected',
+                scope as 'all' | 'filtered' | 'selected' | 'page',
               ) ||
               (scope === 'selected' && !selected)
             "

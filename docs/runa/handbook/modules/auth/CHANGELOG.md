@@ -2,6 +2,11 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Use shared table refresh/reset icons with Tooltips, compact automatic filters
+  and dictionary Selects; open Details in guarded dialogs. Supply bounded
+  CSV/XLSX/PDF/Print behind the shared `runa.permissions.tables.export` grant
+  and current owning read authorization.
+
 - Use shared FormNotifications for operation proof, history-detail/sign-in-option reads, session operation failures and administrative collection errors; retain session expiry and admission state displays.
 
 - Consume application defaults without overwriting account/browser choices; format supplied account/session/history instants in the application timezone and reuse the public raster container inspection helper.

@@ -52,6 +52,7 @@ export interface AdminCommandData {
   intent: 'action' | 'save' | 'create' | 'delete';
 }
 export interface AdminSectionData {
+  export_allowed?: boolean;
   view: 'record' | 'table';
   key: string;
   title: AdminText;
@@ -193,6 +194,7 @@ export interface AdminEntryProofProps {
 /** Bounded authorized resource query shared by default and custom presentations. */
 export interface AdminRecordQuery {
   kind: 'record' | 'page';
+  export?: boolean;
   public_id?: string;
   cursor?: string;
   limit?: number;
@@ -334,6 +336,7 @@ export interface AdminTableController {
   provider: ComputedRef<TableProvider<AdminRecord>>;
   error: ComputedRef<AdminError | undefined>;
   refresh(): Promise<void>;
+  exportRows(signal: AbortSignal): Promise<readonly AdminRecord[]>;
   selection: Ref<
     import('@/runa/ui').RowSelection<import('@/runa/ui').TableQuery>
   >;

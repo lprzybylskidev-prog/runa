@@ -20,6 +20,7 @@ final class ProfileHttp implements HttpProvider
         return [
             new HttpEndpoint('POST', 'delivery-preferences', new ApiOperation('delivery.own'), Http\DeliveryController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'preferences', new ApiOperation('preferences.own'), Http\PreferencesController::class, HttpAccess::Authenticated),
+            new HttpEndpoint('GET', 'profile/table-export', new ApiOperation('tables.export', 'runa.permissions.tables.export'), Http\TableExportAuthorityController::class, HttpAccess::Authenticated),
             new HttpEndpoint('GET', 'profile', new ApiOperation('profile.show'), Http\ProfileShowController::class, HttpAccess::Authenticated),
             new HttpEndpoint('PATCH', 'profile', new ApiOperation('profile.edit'), Http\ProfileEditController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'profile/lifecycle', new ApiOperation('profile.self_lifecycle'), Http\SelfLifecycleController::class, HttpAccess::Authenticated),

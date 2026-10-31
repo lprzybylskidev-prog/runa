@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file -- Independent controlled table regression fixtures. */
 import { expect, it, vi } from '@runa/testing/vitest';
 import { mount, flushPromises } from '@runa/testing/vue';
 import { defineComponent, h, ref } from 'vue';
@@ -440,5 +441,124 @@ it('keeps query feedback continuous through rapid changes and a slower provider 
   await flushPromises();
   expect(wrapper.find('[data-table-loading]').exists()).toBe(false);
   expect(wrapper.text()).toContain('Alpha');
+  wrapper.unmount();
+});
+
+it('shared table refresh uses the owning read and controlled filters reset without losing layout', async () => {
+  const refresh = vi.fn(async () => {});
+  const controlled = ref({
+    ...query(),
+    filters: { name: 'Alpha' },
+    search: 'A',
+    sort: { key: 'name', direction: 'asc' as const },
+  });
+  const wrapper = mount(
+    defineComponent({
+      setup: () => () =>
+        h(Table<Row>, {
+          mode: 'client',
+          rows,
+          columns,
+          rowKey: (row) => row.public_id,
+          query: controlled.value,
+          caption: 'Shared controls',
+          english: true,
+          refresh,
+          'onUpdate:query': (value) => {
+            controlled.value = value as typeof controlled.value;
+          },
+        }),
+    }),
+  );
+  await flushPromises();
+  await wrapper.get('button[aria-label="Reset filters"]').trigger('click');
+  expect(controlled.value.filters).toEqual({});
+  expect(controlled.value.search).toBe('');
+  expect(controlled.value.sort).toEqual({ key: 'name', direction: 'asc' });
+  expect(controlled.value.perPage).toBe(1);
+  await vi.waitFor(() =>
+    expect(
+      wrapper.get('button[aria-label="Refresh"]').attributes('disabled'),
+    ).toBeUndefined(),
+  );
+  await wrapper.get('button[aria-label="Refresh"]').trigger('click');
+  expect(refresh).toHaveBeenCalledTimes(1);
+  expect(wrapper.get('button[aria-label="Refresh"]').text()).toBe('');
+  wrapper.unmount();
+});
+
+it('shared table filters use declared dictionaries and update the canonical query automatically', async () => {
+  const controlled = ref(query());
+  const wrapper = mount(
+    defineComponent({
+      setup: () => () =>
+        h(Table<Row>, {
+          mode: 'client',
+          rows,
+          columns: [
+            {
+              ...columns[0]!,
+              filterOptions: [{ value: 'Alpha', label: 'Alpha' }],
+            },
+          ],
+          rowKey: (row) => row.public_id,
+          query: controlled.value,
+          caption: 'Dictionaries',
+          english: true,
+          'onUpdate:query': (value) => {
+            controlled.value = value;
+          },
+        }),
+    }),
+  );
+  await flushPromises();
+  const select = wrapper
+    .findAllComponents({ name: 'AppSelect' })
+    .find((control) => control.props('label') === 'Name');
+  expect(select).toBeDefined();
+  select!.vm.$emit('update:modelValue', 'Alpha');
+  await flushPromises();
+  expect(controlled.value.filters).toEqual({ name: 'Alpha' });
+  expect(controlled.value.page).toBe(1);
+  wrapper.unmount();
+});
+
+it('shared table export hides denied formats and fences a revoked in-flight authorization', async () => {
+  const allow = ref(false);
+  let complete!: (value: readonly Row[]) => void;
+  const read = vi.fn(
+    () =>
+      new Promise<readonly Row[]>((resolve) => {
+        complete = resolve;
+      }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup: () => () =>
+        h(Table<Row>, {
+          mode: 'client',
+          rows,
+          columns,
+          rowKey: (row) => row.public_id,
+          query: query(),
+          caption: 'Export grant',
+          english: true,
+          exportAllowed: allow.value,
+          exportRows: read,
+        }),
+    }),
+  );
+  await flushPromises();
+  expect(wrapper.find('button[aria-label="CSV"]').exists()).toBe(false);
+  allow.value = true;
+  await flushPromises();
+  expect(wrapper.find('button[aria-label="Print"]').exists()).toBe(true);
+  await wrapper.get('button[aria-label="CSV"]').trigger('click');
+  expect(read).toHaveBeenCalledTimes(1);
+  allow.value = false;
+  await flushPromises();
+  complete(rows);
+  await flushPromises();
+  expect(wrapper.find('button[aria-label="CSV"]').exists()).toBe(false);
   wrapper.unmount();
 });

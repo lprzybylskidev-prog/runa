@@ -1,5 +1,13 @@
 # Permissions module changelog
 
+## 2.1.0 — 2026-10-31
+
+- Declare the shared `runa.permissions.tables.export` permission for authorized
+  exports/printing across all Runa tables; retain owning reads and record Policies.
+  Forward `table_exports` preparation synchronizes declarations transactionally.
+- Open definition details in guarded dialogs; share compact filters, refresh,
+  reset, column preferences and bounded current-page exports.
+
 ## 2.0.0 — 2026-10-30
 
 - Use shared FormNotifications for effective-permission read errors.

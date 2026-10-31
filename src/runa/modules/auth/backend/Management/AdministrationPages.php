@@ -220,7 +220,7 @@ final class AdministrationPages implements ManagementPageProvider
     {
         $sections = [new ManagementSection('directory', 'User directory', 'runa.auth.users.read', null, 'directory', [
             self::field('display_name', 'Display name', read: 'users.read', filter: true),
-            self::field('state', 'State', read: 'users.read', filter: true),
+            self::field('state', 'Account state', 'dictionary', read: 'users.read', filter: true, choices: ['current', 'deleted', 'all']),
         ], view: 'table')];
         $fields = [
             'eligibility' => [self::field('blockers', 'Authentication blockers', read: 'eligibility.read'), self::field('restrictions', 'Operation restrictions', read: 'eligibility.read')],

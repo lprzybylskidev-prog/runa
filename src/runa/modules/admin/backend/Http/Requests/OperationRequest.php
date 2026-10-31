@@ -14,7 +14,7 @@ final class OperationRequest extends FormRequest
     /** Owning adapter validates command-specific keys and exact scalar types. @return array<string,list<string>> */
     public function rules(): array
     {
-        return ['module' => ['sometimes', 'string', 'max:128'], 'id' => ['sometimes', 'uuid:7'], 'cursor' => ['sometimes', 'uuid:7'],
+        return ['export' => ['sometimes', 'boolean'], 'module' => ['sometimes', 'string', 'max:128'], 'id' => ['sometimes', 'uuid:7'], 'cursor' => ['sometimes', 'uuid:7'],
             'filter' => ['sometimes', 'string', 'in:enabled,registered,all'],
             'generation' => ['sometimes', 'integer', 'min:1'], 'revision' => ['sometimes', 'integer', 'min:0'],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:1000'],
@@ -32,6 +32,10 @@ final class OperationRequest extends FormRequest
         $input = $this->isMethod('GET') ? $this->query() : $this->json()->all();
         if ($this->isMethod('GET') && isset($input['limit']) && is_string($input['limit']) && preg_match('/\A[0-9]{1,4}\z/D', $input['limit'])) {
             $input['limit'] = (int) $input['limit'];
+        }
+
+        if ($this->isMethod('GET') && isset($input['export']) && in_array($input['export'], ['0', '1'], true)) {
+            $input['export'] = $input['export'] === '1';
         }
 
         return $input;

@@ -46,6 +46,13 @@ const exportColumns = computed(() =>
   >
   <Table
     mode="server"
+    :refresh="controller.refresh"
+    :export-allowed="
+      controller.section.value?.export_allowed === true &&
+      !controller.adapters.value.exports
+    "
+    :export-rows="controller.exportRows"
+    :export-columns="exportColumns"
     :english="adminLocale === 'en'"
     :searchable="false"
     :loading="controller.resource.busy.value"
@@ -76,12 +83,6 @@ const exportColumns = computed(() =>
           :columns="controller.columns.value"
           :english="adminLocale === 'en'"
         />
-        <Button
-          size="sm"
-          :disabled="controller.resource.busy.value"
-          @click="controller.refresh"
-          >{{ tr('Refresh') }}</Button
-        >
         <Button
           v-if="
             controller.section.value?.commands.some(
@@ -120,7 +121,7 @@ const exportColumns = computed(() =>
     >
       <slot name="actions" v-bind="scope"
         ><Button size="sm" @click="controller.select(scope.row.public_id)">{{
-          tr('Open record')
+          tr('Details')
         }}</Button></slot
       >
     </template>

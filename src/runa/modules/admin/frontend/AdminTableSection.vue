@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useAdminLocale } from './localization';
-const { t: tr } = useAdminLocale();
+const { locale, t: tr } = useAdminLocale();
 import { computed } from 'vue';
-import { Button } from '@/runa/ui';
+import { Dialog } from '@/runa/ui';
 import type {
   AdminComponentRegistry,
   AdminFormController,
@@ -33,16 +33,20 @@ async function close() {
 </script>
 <template>
   <AdminResourceTable :controller="table" />
-  <div
-    v-if="table.selected.value !== undefined && section"
-    class="mt-6 space-y-4"
+  <Dialog
+    :model-value="table.selected.value !== undefined && !!section"
+    :title="tr('Details')"
+    :locale="locale"
+    size="xl"
+    :busy="form.busy.value"
+    @update:model-value="!$event && close()"
   >
-    <Button size="sm" @click="close">{{ tr('Close record') }}</Button>
     <AdminSection
+      v-if="section"
       :key="table.selected.value ?? 'new'"
       :controller="form"
       :section="section"
       :components="components"
     />
-  </div>
+  </Dialog>
 </template>

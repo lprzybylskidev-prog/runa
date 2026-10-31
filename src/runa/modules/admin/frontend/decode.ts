@@ -231,6 +231,7 @@ function section(value: unknown): AdminSectionData {
   )
     throw new TypeError('Invalid Admin section.');
   return {
+    export_allowed: v.export_allowed === true,
     key: id,
     view: v.view,
     title: localizedText(v.title),

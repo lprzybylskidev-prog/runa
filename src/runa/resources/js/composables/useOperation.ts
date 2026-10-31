@@ -17,7 +17,8 @@ export function operationFailure(cause: unknown): OperationFailure {
     'unsafe_download_url',
   ];
   const code =
-    cause instanceof ApiError && [401, 403].includes(cause.status)
+    (cause instanceof ApiError && [401, 403].includes(cause.status)) ||
+    (cause instanceof Error && cause.message === 'permission_denied')
       ? 'forbidden'
       : cause instanceof Error && known.includes(cause.message)
         ? cause.message

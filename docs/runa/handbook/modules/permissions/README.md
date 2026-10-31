@@ -1,6 +1,6 @@
 # Permissions
 
-Current Core `runa.permissions` source develops at independent version `2.0.0`
+Current Core `runa.permissions` source develops at independent version `2.1.0`
 for platform >=0.7.0 <0.8.0, requiring `runa.auth ^2.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
@@ -167,3 +167,12 @@ production initialization. The actual first fixture administrator uses Auth's
 existing trusted operator participant.
 
 Native assignment composition follows the [owning phase contract](../../architecture/module-transactions.md); arbitrary ambient whole-write nesting is intentionally replaced.
+
+### Shared table export grant
+
+`runa.permissions.tables.export` authorizes supplied table export/printing across
+modules. It never grants access to a page, record or field. Owning read permissions,
+availability and record Policies remain mandatory and are rechecked on export.
+It is declared by Permissions 2.1.0 and synchronized by `table_exports` forward
+preparation. Source role declarations may grant it through the ordinary contract;
+no automatic ordinary-user assignment or generic superadmin bypass is added.

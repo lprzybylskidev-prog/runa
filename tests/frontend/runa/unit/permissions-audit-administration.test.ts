@@ -1,5 +1,5 @@
 /* eslint-disable vue/one-component-per-file -- Independent administrative presentation fixtures. */
-import { afterEach, expect, it, vi } from '@runa/testing/vitest';
+import { beforeEach, afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import {
@@ -17,6 +17,8 @@ import type {
   AdminSectionData,
 } from '@/runa/admin';
 enableAutoUnmount(afterEach);
+beforeEach(() => localStorage.setItem('runa.locale', 'en'));
+afterEach(() => localStorage.removeItem('runa.locale'));
 const id = '01900000-0000-7000-8000-000000000001';
 const other = '01900000-0000-7000-8000-000000000002';
 const field = (key: string, readonly = true): AdminFieldData => ({

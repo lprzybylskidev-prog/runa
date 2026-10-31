@@ -31,6 +31,10 @@ const presentation = useAuthPresentation();
 import AuthRecoveryCodesDialog from './AuthRecoveryCodesDialog.vue';
 const props = defineProps<{ accountId: string }>();
 const account = useAuthAccount(props.accountId);
+async function exportRows(signal: AbortSignal) {
+  await account.authorizeTableExport(signal);
+  return account.rows.value;
+}
 const modalFeedback = ref(false);
 const preferencesView = ref<InstanceType<typeof AuthAccountPreferences>>();
 const {
@@ -609,6 +613,10 @@ const passwordHint = computed(() =>
       <template v-if="tab === 'sessions' || tab === 'trust' || history">
         <Table
           v-model:query="query"
+          :export-allowed="account.tableExportAllowed.value"
+          :export-rows="exportRows"
+          :refresh="() => account.refresh()"
+          :refresh-disabled="busy"
           mode="client"
           :rows="rows"
           :loading="pageLoading"

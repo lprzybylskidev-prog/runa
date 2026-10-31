@@ -109,6 +109,10 @@ export function useAdminOperations(admin: AdminController) {
       const query: Record<string, string | number> = {};
       if (!write)
         for (const [key, value] of Object.entries(input)) {
+          if (key === 'export' && typeof value === 'boolean') {
+            query[key] = value ? 1 : 0;
+            continue;
+          }
           if (typeof value !== 'string' && typeof value !== 'number')
             throw new TypeError('Invalid query.');
           query[key] = value;

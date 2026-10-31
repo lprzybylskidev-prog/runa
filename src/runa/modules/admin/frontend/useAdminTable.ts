@@ -37,6 +37,8 @@ export function useAdminTable(
 ): AdminTableController {
   const { t: tr } = useAdminLocale();
   const resource = useAdminResource(page, sectionKey);
+  const exportResource = useAdminResource(page, sectionKey);
+  let currentRead: import('./contracts').AdminRecordQuery | undefined;
   const query = ref<TableQuery>(initialQuery());
   const validationError = ref<AdminError>();
   const runtime = pageRuntime(page);
@@ -129,6 +131,21 @@ export function useAdminTable(
       searchable: false,
       // The server owns matching; this function only declares a filter key to Table.
       ...(field.filterable && !field.sensitive ? { filter: () => true } : {}),
+      ...(field.choices.length
+        ? {
+            filterOptions: field.choices.map((value) => ({
+              value,
+              label: tr(value),
+            })),
+          }
+        : field.type === 'boolean'
+          ? {
+              filterOptions: [
+                { value: 'true', label: tr('Yes') },
+                { value: 'false', label: tr('No') },
+              ],
+            }
+          : {}),
       value: (record: AdminRecord): string | number | null => {
         const value = record.values[field.key];
         if (value === null || value === undefined) return null;
@@ -254,7 +271,8 @@ export function useAdminTable(
         throw new Error('Collection context changed.');
     };
     return {
-      ...(source.exports?.capabilities.execution === 'server'
+      ...(section.value?.export_allowed &&
+      source.exports?.capabilities.execution === 'server'
         ? {
             exports: {
               capabilities: source.exports.capabilities,
@@ -277,7 +295,7 @@ export function useAdminTable(
             },
           }
         : {}),
-      ...(source.print
+      ...(section.value?.export_allowed && source.print
         ? {
             print: {
               print: async (scope, signal) => {
@@ -400,13 +418,14 @@ export function useAdminTable(
       filters[name] = value;
     }
     const cursor = cursors.get(next.page);
-    await resource.read({
+    currentRead = {
       kind: 'page',
       limit: next.perPage,
       ...(cursor !== undefined ? { cursor } : {}),
       filters,
       sort: next.sort ? [next.sort] : [],
-    });
+    };
+    await resource.read(currentRead);
   }
   watch(
     resource.result,
@@ -528,6 +547,28 @@ export function useAdminTable(
     columns,
     provider,
     refresh,
+    async exportRows(signal) {
+      if (!currentRead || !section.value?.export_allowed || resource.busy.value)
+        throw new Error('permission_denied');
+      const stamp = context(),
+        snapshot = JSON.stringify(query.value);
+      await exportResource.read({ ...currentRead, export: true }, { signal });
+      if (
+        signal.aborted ||
+        context() !== stamp ||
+        snapshot !== JSON.stringify(query.value)
+      )
+        throw new Error('selection_stale');
+      const result = exportResource.result.value;
+      if (
+        exportResource.error.value ||
+        !result ||
+        !('items' in result) ||
+        'field' in result
+      )
+        throw new Error('permission_denied');
+      return result.items;
+    },
     selection,
     selected,
     views,

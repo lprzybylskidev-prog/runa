@@ -223,3 +223,11 @@ Raster container inspection is shared with application branding through platform
 public `Runa\Support\Images\RasterImageContent::safe(string $bytes, string $mime): bool`.
 Its internal parser lives under src/runa/Images. Avatar storage/publication/cleanup
 remain Auth-owned. This checks container metadata, not complete pixel decoding.
+
+### Account table exports
+
+The named authenticated GET `/api/runa/auth/profile/table-export` endpoint
+(`runa.auth.tables.export`) checks `runa.permissions.tables.export` and
+current Auth availability. It returns `{data:{allowed:true}}`; denial is HTTP 403.
+The account controller checks this capability and repeats it before bounded loaded
+session/device/history exports; existing self-service reads still own the data.

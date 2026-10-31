@@ -111,8 +111,16 @@ final readonly class Projection
         [$discovery, , $sections] = $this->selected($owner, $key);
         [$sectionOwner, $section] = $this->findSection($sections, $identity, $discovery['generation']);
         try {
-            if (array_diff(array_keys($query), ['kind', 'field', 'public_id', 'cursor', 'limit', 'filters', 'sort']) !== []) {
+            if (array_diff(array_keys($query), ['kind', 'field', 'public_id', 'cursor', 'limit', 'filters', 'sort', 'export']) !== []) {
                 throw new InvalidArgumentException('Unknown management query.');
+            }
+            $export = $query['export'] ?? false;
+            if (! is_bool($export)) {
+                throw new InvalidArgumentException('Invalid export purpose.');
+            }
+            if ($export && ! $this->allowed($sectionOwner === 'app' ? 'runa.admin' : $sectionOwner,
+                'runa.permissions.tables.export', $discovery['generation'])) {
+                throw new OperationRejected('module_forbidden', 'runa.admin', 'table.export', 403);
             }
             $lookup = null;
             $kind = $query['kind'] ?? 'record';
@@ -124,6 +132,9 @@ final readonly class Projection
             }
             $input = new ManagementRead($query['public_id'] ?? null, $query['cursor'] ?? null, $query['limit'] ?? 25, $query['filters'] ?? [], $query['sort'] ?? []);
             $fields = $this->fields($sectionOwner, $section, $discovery['generation']);
+            if ($export) {
+                $fields = array_filter($fields, static fn (ManagementFieldAccess $field): bool => ! $field->field->sensitive);
+            }
             foreach ($input->filters as $field => $value) {
                 if (! ($fields[$field]->field->filterable ?? false)) {
                     throw new InvalidArgumentException('Invalid management filter.');
@@ -413,7 +424,7 @@ final readonly class Projection
                 'available' => $this->declarations->bindingAvailable($ownerDefinition['bindings'][$command->binding])];
         }
 
-        return ['key' => $identity, 'title' => $section->title, 'view' => $section->view, 'readonly' => $readonly, 'required' => $section->required,
+        return ['export_allowed' => $available && $this->allowed($owner === 'app' ? 'runa.admin' : $owner, 'runa.permissions.tables.export', $generation), 'key' => $identity, 'title' => $section->title, 'view' => $section->view, 'readonly' => $readonly, 'required' => $section->required,
             'component' => $this->component($ownerDefinition, $section->component), 'fields' => $views, 'commands' => $commands, 'record' => null, 'diagnostic' => $available ? null : 'admin_binding_unavailable'];
     }
 

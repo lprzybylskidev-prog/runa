@@ -9,6 +9,7 @@ export interface TableColumn<Row> {
   key: string;
   label: string;
   value: (row: Row) => string | number | null;
+  filterOptions?: readonly { value: string; label: string }[];
   compare?: (a: Row, b: Row) => number;
   filter?: (row: Row, value: string) => boolean;
   /** Data columns sort by default; false opts out. Server capabilities still apply. */

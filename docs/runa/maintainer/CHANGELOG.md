@@ -2,6 +2,13 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## Unreleased — 0.7.0 candidate
+
+- Unify module record Details dialogs and compact automatic dictionary filters.
+  Supply shared refresh/reset table controls, preferences and bounded
+  CSV/XLSX/PDF/Print under `runa.permissions.tables.export`, preserving owning
+  reads. Permissions advances to 2.1.0 with transactional declaration preparation.
+
 ## [0.6.2] - 2026-10-29
 
 Maintenance release — RM-2026-015.

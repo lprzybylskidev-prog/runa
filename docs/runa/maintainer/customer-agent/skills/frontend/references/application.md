@@ -37,3 +37,8 @@ For area/module sidebar versus subview top-bar placement and nested PageNavigati
 or custom-layout usePageNavigationHost, follow
 `docs/runa/handbook/development/frontend/page-layouts.md#page-level-navigation-composition`.
 Preserve the owning controller's guards and history; keep operation controls in content.
+
+When a supplied module table defect is reported, assess Auth/Permissions/Audit
+for the same issue and consume the supported public correction without editing
+protected Runa. See the Admin frontend and public table guides for shared dialog,
+refresh/filter/reset and separately authorized export/print behavior.

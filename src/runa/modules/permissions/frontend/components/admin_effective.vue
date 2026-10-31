@@ -14,11 +14,16 @@ const query = ref<TableQuery>({
 });
 const props = defineProps<AdminSectionPresentationProps>();
 const resource = useAdminResource(props.page, props.section.key);
+const exports = useAdminResource(props.page, props.section.key);
 void props.controller.activateSection(props.section.key);
 const record = computed(
   () => props.controller.records.value[props.section.key],
 );
-watch(record, () => resource.clear());
+watch(record, () => {
+  currentCursor.value = undefined;
+  resource.clear();
+});
+const currentCursor = ref<string>();
 const current = computed(() => {
   const result = resource.result.value;
   return result && 'values' in result ? result : record.value;
@@ -54,14 +59,29 @@ const columns = computed<TableColumn<Record<string, AdminJson>>[]>(() =>
     }),
   ),
 );
+async function exportRows(signal: AbortSignal) {
+  await exports.read(
+    {
+      kind: 'record',
+      export: true,
+      ...(currentCursor.value ? { cursor: currentCursor.value } : {}),
+      ...(record.value?.public_id ? { public_id: record.value.public_id } : {}),
+    },
+    { signal },
+  );
+  if (exports.error.value) throw new Error('permission_denied');
+  return rows.value;
+}
 async function next() {
   const cursor = current.value?.values.next;
-  if (typeof cursor === 'string')
+  if (typeof cursor === 'string') {
+    currentCursor.value = cursor;
     await resource.read({
       kind: 'record',
       ...(record.value?.public_id ? { public_id: record.value.public_id } : {}),
       cursor,
     });
+  }
 }
 </script>
 <template>
@@ -75,6 +95,14 @@ async function next() {
     />
     <Table
       mode="client"
+      :export-allowed="section.export_allowed === true"
+      :export-rows="exportRows"
+      :refresh="
+        async () => {
+          resource.clear();
+          await controller.refresh();
+        }
+      "
       :loading="resource.busy.value || !record"
       :english="adminLocale === 'en'"
       :searchable="false"

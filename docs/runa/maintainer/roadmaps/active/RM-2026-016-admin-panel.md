@@ -579,6 +579,17 @@ reassessment before resuming point 3; completed point history remains evidence.
     route to the canonical field/recovery/modal contract before implementation.
   - Synchronize owner/customer skill products and provenance without copying the
     handbook procedure or changing runtime behavior.
+- [ ] 11a27. Unify module record browsers and system table controls.
+  - Owner request, 2026-10-31: review Auth, Permissions and Audit together for
+    every reported module-view defect. Compact desktop filters to six columns,
+    use declared dictionary choices, filter automatically and provide icon-only
+    reset. Open records in guarded shared dialogs labelled Details.
+  - Deliver shared icon-only refresh with Tooltip for every Table, connect real
+    owning reads and remove duplicate refresh controls. Align preferences/actions.
+  - Review applicable table capabilities across supplied views; authorize exports
+    separately from reads on the server, preserve bounded scopes and field grants.
+    Synchronize public contracts, regression scenarios and current assets before
+    returning to owner acceptance. Broad verification remains point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3487,3 +3498,57 @@ staged repository hooks and knowledge freshness validate the documentation chang
 No runtime code/assets or module versions change, so no application tests/build
 are required. No Docker resources or data were created/removed. Manual acceptance
 11b and final verification/release 12 remain open.
+
+### Point 11a27 — Shared module browsers and table controls
+
+Owner scope, 2026-10-31: inspect Auth/Permissions/Audit for each shared view defect;
+compact desktop filters to six columns, use declared dictionary/boolean Selects,
+filter on edits and reset through an icon/Tooltip. Shared Table now owns refresh,
+reset, default in-memory column/views controls and bounded export/print composition.
+Explicit preferences/export integrations retain their controllers. Actual owning
+reads replace duplicate table refresh buttons across every supplied Table consumer.
+Record browsers, Auth directory and generated table sections use shared Details
+dialogs with owning dirty/busy close protection; creation remains accessible.
+
+The owner explicitly selects one shared permission in this conversation:
+`runa.permissions.tables.export`. It is additional to owning page/section/field
+reads, native Policies and availability. Admin export reads reauthorize and remove
+sensitive fields; account views use named authenticated grant preflight and repeat
+it before export. Operational tables check it inside existing admission. Client
+callbacks and file completion fence revoked/context-changing attempts. The default
+export scope is Current loaded rows, not an all-cursor scan; CSV/XLSX/PDF and Print
+reuse existing bounded generators. Broader custom server export scopes remain
+provider-owned. No dependency or production configuration change is introduced.
+
+Permissions advances independently from prepared 2.0.0 to compatible 2.1.0 for the
+shared grant. New `table_exports` forward preparation synchronizes declarations
+transactionally with Audit; no SQL/schema migration, prior-history rewrite or
+ordinary-user assignment is added. Auth 2.0.0, Audit 1.1.0 and Admin 0.1.0 remain
+unreleased candidates. Public API versions remain unchanged. Platform stays the
+already approved feature/0.7.0 candidate.
+
+Focused uncertainty evidence: six frontend cases pass in
+`.runtime/frontend/RM-2026-016-tables-focused.log` (controlled filter/reset,
+dictionary selection, guarded modal, exact entity filters, effective cursor and
+revoked export). The backend denial/grant/revocation/sensitive-field regression
+passes 1 case / 7 assertions, parallel processes=1, native exit/cleanup 0 in
+`.runtime/frontend/RM-2026-016-tables-export-backend.log`. The runner removed only
+`runa_test_test_1`, preserving the base and development database. An initial
+concurrent invocation correctly refused the suite lock; it was rerun sequentially.
+Earlier focused frontend failures exposed a recursive column/query loop and stale
+English/inline-editor assumptions; the corrected selection passed. Reports remain.
+
+The current asset build passed in
+`.runtime/frontend/RM-2026-016-tables-build.log`; refresh it after final UI edits.
+Read-only local module planning reports only Permissions `table_exports`, no pending
+module migrations or other upgrades. Commit the implementation, then use the
+supported forward modules phase for the actual candidate commit and inspect the
+real endpoint/assets before completing this point.
+
+Canonical tables/components, Admin, Auth profile, Permissions and module/central
+changelogs are synchronized. Both owner and customer frontend references now route
+sibling-view review and export authorization to canonical guidance; customer edits
+remain application-only. Root/customer AGENTS need no duplicate component rule.
+No task-created Docker container/network/image/volume exists; preserve active
+services, development/base-test data, Qdrant/model caches and all evidence. Manual
+acceptance 11b and final affected-area verification/release 12 remain open.

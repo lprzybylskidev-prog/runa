@@ -1108,3 +1108,27 @@ Supplied Auth/Admin instant displays and Admin datetime table/form defaults use
 this timezone; exports/storage retain UTC and date-only values stay calendar dates.
 Custom views consume these public helpers; explicit business-form timezones retain
 owning conversion and DST behavior.
+
+### Record detail dialogs
+
+Default record browsers (including Auth users, Permissions definitions and Audit
+history) open Details in the shared Dialog. Closing respects the owning form's
+busy/dirty confirmation and discards only after approval. No detail editor renders
+under the table. `AdminTableSection` uses the same dialog with section-local close
+protection. Custom presentations retain public controller selection/leave methods.
+AdminResourceTable uses shared refresh/reset and six-column desktop filters;
+field `choices` and boolean descriptors provide Select options.
+
+### Table export authorization
+
+Projected sections advertise optional `export_allowed: boolean`. Requests with
+`export: true` require `runa.permissions.tables.export` in addition to page/section/
+field reads and native Policies; the same permission covers app-owned sections.
+The GET transport encodes this as `export=1`. Export reads return the existing
+bounded page/record envelope with sensitive fields removed. The default resource
+table exports the current cursor page through this path; no all-cursor fetch occurs.
+
+When reviewing or changing supplied module record views, inspect Auth,
+Permissions and Audit together for the same defect and apply the shared correction
+where relevant. Prefer fixing Table/AdminRecordBrowser before duplicating view
+logic. Preserve each owner's read/write/proof and record-specific constraints.

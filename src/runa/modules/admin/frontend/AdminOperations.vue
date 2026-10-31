@@ -557,6 +557,18 @@ watch(
     if (!applicationSettings.value) await refresh();
   },
 );
+async function exportWork() {
+  const next = await controller.read('work', {
+    module: selected.value,
+    limit: 100,
+    export: true,
+  });
+  if (!next || !Array.isArray(next.work)) throw new Error('permission_denied');
+  return next.work.filter(
+    (row): row is AdminOperationData =>
+      !!row && typeof row === 'object' && !Array.isArray(row),
+  );
+}
 defineExpose({ controller });
 </script>
 <template>
@@ -770,6 +782,7 @@ defineExpose({ controller });
           :key="selected"
           :controller="controller"
           :module="selected"
+          :export-allowed="has('tables.export')"
           :pending="!!pendingCommand"
           @execute="historyAction"
         />
@@ -781,21 +794,18 @@ defineExpose({ controller });
         >
           <div class="flex flex-wrap items-center justify-between gap-3">
             <h3 class="font-semibold">{{ tr('Task history') }}</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              :busy="workLoading"
-              :disabled="
-                controller.busy.value ||
-                controller.refreshing.value ||
-                !!pendingCommand
-              "
-              @click="readWork"
-              >{{ tr('Refresh tasks') }}</Button
-            >
           </div>
           <Table
             v-model:query="workQuery"
+            :export-allowed="has('tables.export')"
+            :export-rows="exportWork"
+            :refresh="readWork"
+            :refreshing="workLoading"
+            :refresh-disabled="
+              controller.busy.value ||
+              controller.refreshing.value ||
+              !!pendingCommand
+            "
             mode="client"
             :rows="activeWork"
             :columns="workColumns"

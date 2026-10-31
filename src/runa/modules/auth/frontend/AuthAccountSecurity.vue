@@ -43,6 +43,10 @@ const {
   loadTrustedDevices,
   revokeTrustedDevice,
 } = props.account;
+async function exportRows(signal: AbortSignal) {
+  await props.account.authorizeTableExport(signal);
+  return trustedRows.value;
+}
 const modal = ref<'factor' | 'devices' | null>(null);
 const removing = ref<string>();
 const attempt = ref(0);
@@ -402,6 +406,14 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
     <template v-else-if="modal === 'devices'">
       <Table
         v-model:query="query"
+        :export-allowed="account.tableExportAllowed?.value === true"
+        :export-rows="exportRows"
+        :refresh="
+          async () => {
+            await loadTrustedDevices();
+          }
+        "
+        :refresh-disabled="busy"
         mode="client"
         :rows="trustedRows"
         :loading="trustedLoading"
@@ -431,9 +443,6 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
         @click="loadTrustedDevices(true)"
         >{{ text('Wczytaj starsze', 'Load older') }}</Button
       >
-      <Button :disabled="busy" @click="loadTrustedDevices()">{{
-        text('Odśwież', 'Refresh')
-      }}</Button>
     </template>
     <FormNotifications
       v-if="modal && !removing"

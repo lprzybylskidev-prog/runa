@@ -104,6 +104,19 @@ export function useAuthAccount(accountId: string) {
   const draft = shallowRef<Record<string, string> | null>(null);
   let draftEpoch = accountDraftEpoch();
   const abort = new AbortController();
+  const tableExportAllowed = ref(false);
+  async function authorizeTableExport(signal: AbortSignal) {
+    const result = data(await authGet('profile/table-export', signal));
+    if (!alive || result.allowed !== true) throw new Error('permission_denied');
+  }
+  async function refreshTableExportAuthority() {
+    try {
+      await authorizeTableExport(abort.signal);
+      if (alive) tableExportAllowed.value = true;
+    } catch {
+      tableExportAllowed.value = false;
+    }
+  }
   let alive = true;
   const lifetime = {
     accountId,
@@ -296,6 +309,7 @@ export function useAuthAccount(accountId: string) {
     if (refreshPromise) return refreshPromise;
     refreshPromise = (async () => {
       await loadProfile();
+      await refreshTableExportAuthority();
       const next = decodeSecurity(await authGet('security', abort.signal));
       const entry = decodeOptions(await authGet('entry-options', abort.signal));
       if (!alive) return;
@@ -342,6 +356,7 @@ export function useAuthAccount(accountId: string) {
   async function initialize() {
     await perform(async () => {
       await loadProfile();
+      await refreshTableExportAuthority();
       const o = decodeOptions(await authGet('entry-options', abort.signal));
       const s = decodeSecurity(await authGet('security', abort.signal));
       if (!alive) return;
@@ -980,6 +995,8 @@ export function useAuthAccount(accountId: string) {
     codes.value = [];
   });
   return {
+    tableExportAllowed,
+    authorizeTableExport,
     historyDetail,
     historyDetailOpen,
     historyDetailLoading,

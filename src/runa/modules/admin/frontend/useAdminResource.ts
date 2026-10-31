@@ -29,6 +29,7 @@ function readQuery(query: AdminReadQuery) {
     cursor: query.cursor,
     limit: query.limit,
   };
+  if (query.kind !== 'options' && query.export) params.export = 1;
   if (query.kind === 'options') params.field = query.field;
   if (query.filters) params.filters = JSON.stringify(query.filters);
   if (query.kind !== 'options')
