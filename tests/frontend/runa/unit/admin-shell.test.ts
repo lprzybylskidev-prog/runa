@@ -5,6 +5,10 @@ import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import type { Component, PropType } from 'vue';
 import {
   AdminApplication,
+  AdminField,
+  useAdminLocale,
+  adminText,
+  validateAdminField,
   AdminForm,
   AdminPresentationProvider,
   resolveAdminComponent,
@@ -116,7 +120,7 @@ beforeEach(() => {
   window.history.replaceState({}, '', '/admin');
   accountPreferences.disconnect();
   localStorage.clear();
-  localStorage.setItem('runa.locale', 'pl');
+  localStorage.setItem('runa.locale', 'en');
   vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
     const path = String(input);
     if (path === '/api/admin/entry')
@@ -185,7 +189,7 @@ it('Admin session diagnostic fences bootstrap and page responses after an accoun
   wrapper.unmount();
 });
 
-it('uses one supplied session, scopes English controls and places Admin entry only in the account menu', async () => {
+it('uses one supplied session, follows the English application preference and places Admin entry only in the account menu', async () => {
   const session = sessionFixture();
   const w = mount(AdminApplication, {
     props: { session },
@@ -213,7 +217,7 @@ it('uses one supplied session, scopes English controls and places Admin entry on
   );
   expect(w.find('nav a[href="/account"]').exists()).toBe(false);
   expect(w.find('[aria-label*="Change language"]').exists()).toBe(false);
-  expect(localStorage.getItem('runa.locale')).toBe('pl');
+  expect(localStorage.getItem('runa.locale')).toBe('en');
   expect(
     vi
       .mocked(window.fetch)
@@ -1727,4 +1731,178 @@ it('Admin entry proof preserves a retry when the shared session read fails befor
     .find((button) => button.text() === 'Retry')!
     .trigger('click');
   expect(session.refresh).toHaveBeenCalledOnce();
+});
+
+it('Admin bilingual presentation follows the shared preference and keeps a dirty field mounted without refetching', async () => {
+  localStorage.removeItem('runa.locale');
+  const data = bootstrap();
+  data.owners[0]!.title = {
+    pl: 'Ustawienia własnej aplikacji',
+    en: 'Custom application settings',
+  };
+  vi.mocked(window.fetch).mockImplementation(async (input) =>
+    String(input) === '/api/admin'
+      ? respond({ data })
+      : respond({ data: { available: true } }),
+  );
+  let language!: ReturnType<typeof useAdminLocale>;
+  const draft = ref('');
+  const field = {
+    key: 'name',
+    type: 'text',
+    label: { pl: 'Nazwa robocza', en: 'Draft name' },
+    readonly: false,
+    sensitive: false,
+    filterable: false,
+    sortable: false,
+    lookup: false,
+    required: true,
+    max_length: 160,
+    choices: [],
+    multiple: false,
+    component: null,
+  };
+  const session = sessionFixture();
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        language = useAdminLocale();
+        return () =>
+          h(
+            AdminApplication,
+            { session },
+            {
+              default: () =>
+                h(AdminField, {
+                  field,
+                  modelValue: draft.value,
+                  errors: [],
+                  readonly: false,
+                  busy: false,
+                  'onUpdate:modelValue': (value) => {
+                    draft.value = String(value ?? '');
+                  },
+                }),
+            },
+          );
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.find('input').exists()).toBe(true));
+  expect(wrapper.text()).toContain('Panel administratora');
+  expect(
+    wrapper
+      .getComponent(ApplicationSessionShell)
+      .props('navigation')
+      ?.map((entry) => entry.label),
+  ).toContain('Ustawienia własnej aplikacji');
+  const input = wrapper.get('input');
+  await input.setValue('Niezapisana nazwa');
+  language.locale.value = 'en';
+  await flushPromises();
+  expect(wrapper.text()).toContain('Administrator panel');
+  expect(wrapper.text()).toContain('Draft name');
+  expect(wrapper.get('input').element).toBe(input.element);
+  expect(draft.value).toBe('Niezapisana nazwa');
+  expect(wrapper.getComponent(ApplicationSessionShell).props('session')).toBe(
+    session,
+  );
+  expect(
+    wrapper
+      .getComponent(ApplicationSessionShell)
+      .props('navigation')
+      ?.map((entry) => entry.label),
+  ).toContain('Custom application settings');
+  expect(
+    vi
+      .mocked(window.fetch)
+      .mock.calls.filter(([url]) => String(url) === '/api/admin'),
+  ).toHaveLength(1);
+  language.locale.value = 'pl';
+  await input.setValue('');
+  await flushPromises();
+  expect(wrapper.text()).toContain('To pole jest wymagane.');
+  expect(wrapper.text()).toContain('Nazwa robocza');
+  expect(
+    vi
+      .mocked(window.fetch)
+      .mock.calls.filter(([, init]) => init?.method === 'POST'),
+  ).toHaveLength(0);
+});
+
+it('Admin bilingual password admission changes language without losing transient input or starting another proof', async () => {
+  localStorage.setItem('runa.locale', 'pl');
+  vi.mocked(window.fetch).mockImplementation(async () =>
+    respond({ reason: 'step_up_required' }, 403),
+  );
+  let language!: ReturnType<typeof useAdminLocale>;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        language = useAdminLocale();
+        return () =>
+          h(AdminApplication, { session: sessionFixture(), navigate: vi.fn() });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.find('input[name="current_password"]').exists()).toBe(true),
+  );
+  expect(wrapper.text()).toContain(
+    'Potwierdź hasło, aby wejść do panelu administratora.',
+  );
+  const input = wrapper.get('input[name="current_password"]');
+  await input.setValue('Transient password');
+  language.locale.value = 'en';
+  await flushPromises();
+  expect(wrapper.text()).toContain(
+    'Confirm your password to enter the administrator panel.',
+  );
+  expect(wrapper.text()).toContain('Current password');
+  expect(wrapper.get('input[name="current_password"]').element).toBe(
+    input.element,
+  );
+  expect((input.element as HTMLInputElement).value).toBe('Transient password');
+  expect(
+    vi
+      .mocked(window.fetch)
+      .mock.calls.filter(([url]) => String(url).endsWith('/step-up')),
+  ).toHaveLength(0);
+});
+
+it('Admin bilingual public translation supports explicit source maps and App overrides without changing business values', () => {
+  expect(adminText({ pl: 'Własny tytuł', en: 'Custom title' }, 'pl')).toBe(
+    'Własny tytuł',
+  );
+  expect(adminText({ pl: 'Własny tytuł', en: 'Custom title' }, 'en')).toBe(
+    'Custom title',
+  );
+  expect(adminText('Retry', 'pl', { Retry: 'Spróbuj jeszcze raz' })).toBe(
+    'Spróbuj jeszcze raz',
+  );
+  expect(adminText('App-specific title', 'pl')).toBe('App-specific title');
+  expect(adminText('Save', 'en')).toBe('Save');
+  expect(adminText({ pl: 'Save', en: 'Save' }, 'pl')).toBe('Save');
+  expect(adminText('constructor', 'pl')).toBe('constructor');
+  expect(
+    validateAdminField(
+      {
+        key: 'name',
+        type: 'text',
+        label: 'Name',
+        readonly: false,
+        sensitive: false,
+        filterable: false,
+        sortable: false,
+        lookup: false,
+        required: true,
+        max_length: 2,
+        choices: [],
+        multiple: false,
+        component: null,
+      },
+      'long',
+      'pl',
+    ),
+  ).toEqual(['Użyj najwyżej 2 znaków.']);
 });

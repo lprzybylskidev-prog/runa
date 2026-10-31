@@ -1,3 +1,5 @@
+export type AdminText = string | { readonly pl: string; readonly en: string };
+export type AdminMessages = Readonly<Record<string, string>>;
 import type { Component, ComputedRef, Ref, VNode } from 'vue';
 import type {
   ApplicationNavigate,
@@ -5,8 +7,9 @@ import type {
 } from '@/runa/auth';
 import type { ApplicationLayoutProps } from '@/runa/ui';
 import type { TableColumn, TableProvider, TableQuery } from '@/runa/ui';
+// String precedes Boolean in Vue runtime prop inference: an empty text draft stays a string.
 export type AdminJson =
-  null | boolean | number | string | AdminJson[] | { [key: string]: AdminJson };
+  string | number | boolean | null | AdminJson[] | { [key: string]: AdminJson };
 export type AdminFieldValue = AdminJson;
 export type AdminFieldPath = string;
 export interface AdminComponent {
@@ -23,7 +26,7 @@ export interface AdminRecord {
 export interface AdminFieldData {
   key: string;
   type: string;
-  label: string;
+  label: AdminText;
   readonly: boolean;
   sensitive: boolean;
   filterable: boolean;
@@ -37,7 +40,7 @@ export interface AdminFieldData {
 }
 export interface AdminCommandData {
   key: string;
-  title: string;
+  title: AdminText;
   mode: 'independent' | 'atomic';
   destructive: boolean;
   requirement: 'none' | 'password' | 'second_factor' | 'both';
@@ -51,7 +54,7 @@ export interface AdminCommandData {
 export interface AdminSectionData {
   view: 'record' | 'table';
   key: string;
-  title: string;
+  title: AdminText;
   readonly: boolean;
   required: boolean;
   component: AdminComponent | null;
@@ -62,7 +65,7 @@ export interface AdminSectionData {
 }
 export interface AdminWidgetData {
   id: string;
-  title: string;
+  title: AdminText;
   component: AdminComponent | null;
   values: Record<string, AdminJson>;
   observed_at: string | null;
@@ -73,7 +76,7 @@ export interface AdminPageData {
   schema_version: 1;
   owner: string;
   key: string;
-  title: string;
+  title: AdminText;
   generation: number;
   revision: string;
   component: AdminComponent | null;
@@ -85,13 +88,13 @@ export interface AdminBootstrap {
   revision: string;
   owners: {
     id: string;
-    title: string;
+    title: AdminText;
     default_page: string;
     pages: {
       key: string;
-      title: string;
+      title: AdminText;
       href: string;
-      group: string | null;
+      group: AdminText | null;
       order: number;
     }[];
   }[];
@@ -164,6 +167,7 @@ export interface AdminApplicationProps {
   navigate?: ApplicationNavigate | undefined;
   components?: AdminComponentRegistry | undefined;
   session?: ApplicationSessionController | undefined;
+  messages?: AdminMessages | undefined;
   collections?: Readonly<Record<string, AdminCollectionAdapters>> | undefined;
 }
 export type AdminLayoutProps = ApplicationLayoutProps & {
@@ -269,7 +273,7 @@ export interface AdminFormController {
   sections: ComputedRef<readonly AdminSectionData[]>;
   records: Ref<Record<string, AdminRecord>>;
   blocked: ComputedRef<boolean>;
-  confirmation: Ref<{ title: string; description: string } | undefined>;
+  confirmation: Ref<{ title: AdminText; description: string } | undefined>;
   confirm(accepted: boolean): void;
   beforeLeave(): Promise<boolean>;
   selectSubject(publicId: string | null): Promise<boolean>;
@@ -336,7 +340,7 @@ export interface AdminTableController {
   adapters: ComputedRef<AdminCollectionAdapters>;
   selected: Ref<string | null | undefined>;
   select(publicId: string | null): Promise<boolean>;
-  confirmation: Ref<string | undefined>;
+  confirmation: Ref<AdminText | undefined>;
   confirm(accepted: boolean): void;
 }
 export interface AdminCollectionAdapters {

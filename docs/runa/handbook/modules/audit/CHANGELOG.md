@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Localize the administrative history/detail presentation through shared Admin PL/EN copy while preserving immutable Audit records and technical identifiers.
+
 - Add reserved operational participation for atomic framework health/integration configuration, lifecycle phase history and first cooperative cancellation requests, without configuration values or runner tokens.
 
 - Preserve the 64-KiB management-record bound with explicit large-payload continuation; reconstruct complete immutable JSON through guarded reads.

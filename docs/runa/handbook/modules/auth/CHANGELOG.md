@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Follow the shared application language in administrative defaults and entry proof, retain translated policy setting names, and notify guest preference subscribers after write/reset so all mounted locale consumers stay synchronized.
+
 - Supply replaceable AuthOperationProofPage in MinimalLayout and PL/EN inline/page controls/errors; share the existing proof controller, support password/factor/both, and fence aborted factor reads even for an unchanged identity. Expose typed presentation contracts and an optional session-shell admission slot without starting another session.
 
 - Name the account-menu Admin entry `Panel administratora` / `Administrator panel` consistently with the Admin catalogue.

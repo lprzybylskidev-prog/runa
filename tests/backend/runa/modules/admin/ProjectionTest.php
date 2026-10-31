@@ -4,7 +4,10 @@ use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\ManagementBinding;
 use Runa\Contracts\Modules\ManagementCommandDefinition;
 use Runa\Contracts\Modules\ManagementOperation;
+use Runa\Contracts\Modules\ManagementPage;
 use Runa\Contracts\Modules\ManagementRead;
+use Runa\Contracts\Modules\ManagementSection;
+use Runa\Contracts\Modules\ManagementWidget;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\ModuleFramework\Api\ModuleDeclarations;
@@ -14,6 +17,7 @@ use Runa\ModuleFramework\Management\ManagementPages;
 use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Admin\Queries\Projection;
+use Runa\Modules\Auth\Management\AdministrationPages;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 use Tests\Fixtures\ModuleSources;
@@ -231,4 +235,21 @@ it('projects explicit collection intent without executing a handler and rejects 
         ->and($this->handlerClass::$calls)->toBe(0);
     $this->providerClass::$view = 'arbitrary';
     expect($this->declarations->discover()['diagnostics'])->toBe(['app' => 'admin_declaration_unavailable']);
+});
+
+it('retains bilingual management metadata without selecting a request language', function (): void {
+    $text = ['pl' => 'Profil użytkownika', 'en' => 'User profile'];
+    $section = new ManagementSection('profile', $text, 'runa.admin.enter', null, 'profile', []);
+    $page = new ManagementPage('profile', $text, 'runa.admin.enter', [$section], group: $text);
+    $command = new ManagementCommandDefinition('save', $text, new ManagementOperation(new ApiOperation('save', 'runa.admin.enter')), 'profile');
+    $widget = new ManagementWidget('profile', $text, 'runa.admin.enter', 'profile');
+    expect($page->title)->toBe($text)->and($page->group)->toBe($text)
+        ->and($section->title)->toBe($text)->and($command->title)->toBe($text)->and($widget->title)->toBe($text);
+    foreach ([['pl' => 'Profil'], ['pl' => '', 'en' => 'Profile'], ['pl' => [], 'en' => 'Profile'], ['pl' => 'Profil', 'en' => 'Profile', 'de' => 'Profil']] as $invalid) {
+        expect(fn () => new ManagementPage('profile', $invalid, 'runa.admin.enter', []))->toThrow(InvalidArgumentException::class);
+    }
+    expect(AdministrationPages::field('name', 'Name')->field->names)->toBe(['pl' => 'Nazwa', 'en' => 'Name'])
+        ->and(Runa\Modules\Permissions\Management\AdministrationPages::field('roles', 'Ordinary roles', 'uuid')->field->names)->toBe(['pl' => 'Zwykłe role', 'en' => 'Ordinary roles']);
+    $projected = $this->projection->page('app', 'users');
+    expect($projected['sections'][0]['fields'][0]['label'])->toBe($this->provider->section()->fields[0]->field->names);
 });

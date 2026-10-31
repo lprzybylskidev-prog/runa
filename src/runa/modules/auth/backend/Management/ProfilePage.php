@@ -47,7 +47,9 @@ final class ProfilePage implements ManagementPageProvider
     {
         $fields = [];
         foreach (['name' => 'Display name', 'first_name' => 'First name', 'surname' => 'Surname', 'login' => 'Login'] as $key => $label) {
-            $text = ['pl' => $label, 'en' => $label];
+            $text = ['pl' => match ($key) {
+                'name' => 'Nazwa wyświetlana', 'first_name' => 'Imię', 'surname' => 'Nazwisko', 'login' => 'Login'
+            }, 'en' => $label];
             $fields[] = new ManagementFieldAccess(new ManagementField($key, 'text', $text, $text, writable: true, maxLength: $key === 'login' ? 64 : 160),
                 'runa.auth.identities.read', 'runa.auth.profiles.manage');
         }

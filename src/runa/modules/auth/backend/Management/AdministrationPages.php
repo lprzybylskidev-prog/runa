@@ -27,6 +27,142 @@ use Runa\Modules\Auth\Definitions\IdentitySettings;
 /** Explicit source catalogue, never a request-provided method registry. */
 final class AdministrationPages implements ManagementPageProvider
 {
+    /** @var array<string, string> */
+    private const FIELD_NAMES = [
+        'Accounts' => 'Konta',
+        'Action' => 'Akcja',
+        'Activate At' => 'Termin aktywacji',
+        'Active' => 'Aktywne',
+        'Add secondary address' => 'Dodaj dodatkowy adres',
+        'All accounts (maximum 100)' => 'Wszystkie konta (maksymalnie 100)',
+        'Also revoke trusted devices' => 'Unieważnij również zaufane urządzenia',
+        'Apply lifecycle change' => 'Zastosuj zmianę cyklu życia',
+        'Approved' => 'Zatwierdzone',
+        'Attempt Locked Until' => 'Blokada prób do',
+        'Authentication blockers' => 'Przeszkody uwierzytelniania',
+        'Authentication policy' => 'Zasady uwierzytelniania',
+        'Bulk session revocation' => 'Zbiorcze unieważnianie sesji',
+        'Change secondary address' => 'Zmień dodatkowy adres',
+        'Changes' => 'Zmiany',
+        'Create account' => 'Utwórz konto',
+        'Creation' => 'Tworzenie',
+        'Credentials and sessions' => 'Dane uwierzytelniania i sesje',
+        'Current exception version (0 if absent)' => 'Bieżąca wersja wyjątku (0, jeśli brak)',
+        'Current policy revision' => 'Bieżąca rewizja zasad',
+        'Current preference revision' => 'Bieżąca rewizja preferencji',
+        'Current primary email' => 'Bieżący główny adres e-mail',
+        'Deactivate At' => 'Termin dezaktywacji',
+        'Deleted' => 'Usunięte',
+        'Device UUID' => 'UUID urządzenia',
+        'Display name' => 'Nazwa wyświetlana',
+        'Eligibility' => 'Warunki dostępu',
+        'Email' => 'E-mail',
+        'Enable selected flag' => 'Włącz wybraną flagę',
+        'Enabled' => 'Włączone',
+        'Entry and lifecycle' => 'Dostęp i cykl życia',
+        'Exceptions' => 'Wyjątki',
+        'Exceptions (latest 50)' => 'Wyjątki (ostatnie 50)',
+        'Expires At' => 'Termin wygaśnięcia',
+        'First Name' => 'Imię',
+        'First name' => 'Imię',
+        'History' => 'Historia',
+        'Invalidate invitation' => 'Unieważnij zaproszenie',
+        'Invitations' => 'Zaproszenia',
+        'Lifecycle' => 'Cykl życia',
+        'Lifecycle operation' => 'Operacja cyklu życia',
+        'Live sessions' => 'Aktywne sesje',
+        'Login' => 'Login',
+        'Name' => 'Nazwa',
+        'New email' => 'Nowy adres e-mail',
+        'Operation restrictions' => 'Ograniczenia operacji',
+        'Password Change Required' => 'Wymagana zmiana hasła',
+        'Permission' => 'Uprawnienie',
+        'Policy consequences' => 'Skutki zasad',
+        'Policy history (latest 50)' => 'Historia zasad (ostatnie 50)',
+        'Policy history and restore' => 'Historia i przywracanie zasad',
+        'Policy key' => 'Klucz zasady',
+        'Preferences' => 'Preferencje',
+        'Presentation and delivery' => 'Wygląd i dostarczanie',
+        'Primary Email' => 'Główny adres e-mail',
+        'Profile' => 'Profil',
+        'Reason' => 'Powód',
+        'Remove secondary address' => 'Usuń dodatkowy adres',
+        'Replace verified email' => 'Zastąp zweryfikowany adres e-mail',
+        'Request email change' => 'Zleć zmianę adresu e-mail',
+        'Request password reset' => 'Zleć reset hasła',
+        'Require verification' => 'Wymagaj weryfikacji',
+        'Reset' => 'Przywróć domyślne',
+        'Reset account preferences' => 'Zresetuj preferencje konta',
+        'Reset second factors' => 'Zresetuj drugie składniki',
+        'Restore consequences' => 'Skutki przywrócenia',
+        'Restore source revision' => 'Rewizja źródłowa do przywrócenia',
+        'Review and publish policy' => 'Przejrzyj i opublikuj zasady',
+        'Review and restore policy' => 'Przejrzyj i przywróć zasady',
+        'Review summary' => 'Podsumowanie przeglądu',
+        'Revoke all sessions' => 'Unieważnij wszystkie sesje',
+        'Revoke selected sessions and trust' => 'Unieważnij wybrane sesje i zaufanie',
+        'Revoke session' => 'Unieważnij sesję',
+        'Revoke trusted device' => 'Unieważnij zaufane urządzenie',
+        'Save' => 'Zapisz',
+        'Save profile' => 'Zapisz profil',
+        'Secondary' => 'Adresy dodatkowe',
+        'Secondary address UUID' => 'UUID dodatkowego adresu',
+        'Secondary addresses' => 'Dodatkowe adresy',
+        'Security' => 'Zabezpieczenia',
+        'Security Locked' => 'Blokada bezpieczeństwa',
+        'Selected or all accounts' => 'Wybrane lub wszystkie konta',
+        'Send or resend invitation' => 'Wyślij lub ponów zaproszenie',
+        'Session UUID' => 'UUID sesji',
+        'Sessions' => 'Sesje',
+        'Set' => 'Ustawiono',
+        'Set or revoke exception' => 'Ustaw lub odwołaj wyjątek',
+        'Settings' => 'Ustawienia',
+        'State' => 'Stan',
+        'Surname' => 'Nazwisko',
+        'Trust' => 'Zaufanie',
+        'Trusted devices' => 'Zaufane urządzenia',
+        'UTC deadline (empty clears)' => 'Termin UTC (puste usuwa termin)',
+        'UTC expiry (within 30 days)' => 'Wygaśnięcie UTC (do 30 dni)',
+        'User directory' => 'Lista użytkowników',
+        'Users' => 'Użytkownicy',
+        'Value (empty revokes)' => 'Wartość (puste odwołuje)',
+        'Verification required' => 'Wymagana weryfikacja',
+        'Verified' => 'Zweryfikowano',
+        'Verified replacement email' => 'Zweryfikowany adres zastępczy',
+        'activate' => 'aktywuj',
+        'active' => 'aktywne',
+        'add' => 'dodaj',
+        'address_id' => 'UUID adresu',
+        'approve' => 'zatwierdź',
+        'approved' => 'zatwierdzone',
+        'committed' => 'zatwierdzono',
+        'deactivate' => 'dezaktywuj',
+        'delete' => 'usuń',
+        'device_id' => 'UUID urządzenia',
+        'email' => 'e-mail',
+        'expires_at' => 'termin wygaśnięcia',
+        'key' => 'klucz',
+        'name' => 'nazwa',
+        'pending' => 'oczekuje',
+        'public_id' => 'publiczny UUID',
+        'reason' => 'powód',
+        'recovery_required' => 'wymagane odzyskanie',
+        'replace' => 'zastąp',
+        'require_password_change' => 'wymagaj zmiany hasła',
+        'restore' => 'przywróć',
+        'revision' => 'rewizja',
+        'running' => 'w toku',
+        'schedule_activation' => 'zaplanuj aktywację',
+        'schedule_deactivation' => 'zaplanuj dezaktywację',
+        'session_id' => 'UUID sesji',
+        'set_attempt_lock' => 'ustaw blokadę prób',
+        'set_expiry' => 'ustaw wygaśnięcie',
+        'set_security_lock' => 'ustaw blokadę bezpieczeństwa',
+        'value' => 'wartość',
+        'verified' => 'zweryfikowano',
+        'version' => 'wersja',
+    ];
+
     public function permissions(): array
     {
         return [];
@@ -123,7 +259,7 @@ final class AdministrationPages implements ManagementPageProvider
                         $choices = explode(',', substr($rule, 3));
                     }
                 }
-                $fields[] = self::field($setting->key, $setting->names['en'], $choices !== [] ? 'dictionary' : match ($setting->type) {
+                $fields[] = self::field($setting->key, $setting->names, $choices !== [] ? 'dictionary' : match ($setting->type) {
                     'boolean' => 'boolean', 'integer' => 'integer', default => 'text'
                 }, 'policy.write', 'policy.read', choices: $choices);
             }
@@ -140,7 +276,7 @@ final class AdministrationPages implements ManagementPageProvider
 
         return [new ManagementPage('policy', 'Authentication policy', 'runa.auth.policy.read', $sections, order: 20),
             new ManagementPage('bulk_sessions', 'Bulk session revocation', 'runa.auth.sessions.bulk_revoke', [new ManagementSection('bulk_sessions', 'Selected or all accounts', 'runa.auth.sessions.bulk_revoke', 'runa.auth.sessions.bulk_revoke', 'bulk_sessions', [
-                new ManagementFieldAccess(new ManagementField('public_ids', 'uuid', ['pl' => 'Accounts', 'en' => 'Accounts'], ['pl' => 'Selected UUIDs; leave empty in all mode.', 'en' => 'Selected UUIDs; leave empty in all mode.'], writable: true, multiple: true), 'runa.auth.sessions.bulk_revoke', 'runa.auth.sessions.bulk_revoke'),
+                new ManagementFieldAccess(new ManagementField('public_ids', 'uuid', ['pl' => 'Konta', 'en' => 'Accounts'], ['pl' => 'Wybrane UUID; pozostaw puste w trybie wszystkich kont.', 'en' => 'Selected UUIDs; leave empty in all mode.'], writable: true, multiple: true), 'runa.auth.sessions.bulk_revoke', 'runa.auth.sessions.bulk_revoke'),
                 self::field('all', 'All accounts (maximum 100)', 'boolean', 'sessions.bulk_revoke', 'sessions.bulk_revoke'), self::field('trust', 'Also revoke trusted devices', 'boolean', 'sessions.bulk_revoke', 'sessions.bulk_revoke'), self::field('summary', 'Review summary', read: 'sessions.bulk_revoke'),
             ], self::commandDefinitions('bulk_sessions'))], order: 30)];
     }
@@ -150,9 +286,10 @@ final class AdministrationPages implements ManagementPageProvider
         return array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), write: $grant, read: $grant), ['name', 'first_name', 'surname', 'login']);
     }
 
-    public static function field(string $key, string $label, string $type = 'text', ?string $write = null, string $read = 'profiles.read', array $choices = [], bool $filter = false): ManagementFieldAccess
+    /** @param string|array{pl:string,en:string} $label */
+    public static function field(string $key, string|array $label, string $type = 'text', ?string $write = null, string $read = 'profiles.read', array $choices = [], bool $filter = false): ManagementFieldAccess
     {
-        $text = ['pl' => $label, 'en' => $label];
+        $text = is_array($label) ? $label : ['pl' => self::FIELD_NAMES[$label] ?? $label, 'en' => $label];
 
         return new ManagementFieldAccess(new ManagementField($key, $type, $text, $text, filterable: $filter, writable: $write !== null, maxLength: $type === 'text' && $write !== null ? match ($key) {
             'name', 'first_name', 'surname' => 160, 'login' => 64, 'email', 'replacement_email' => 254, default => 1000

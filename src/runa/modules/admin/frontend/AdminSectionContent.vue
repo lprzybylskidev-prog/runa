@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { t: tr } = useAdminLocale();
 import { computed } from 'vue';
 import { Alert, Card } from '@/runa/ui';
 import type {
@@ -24,9 +26,11 @@ const replacement = computed(
 <template>
   <Card v-if="section.diagnostic">
     <template #header
-      ><h2>{{ section.title }}</h2></template
+      ><h2>{{ tr(section.title) }}</h2></template
     >
-    <Alert tone="warning">This section is currently unavailable.</Alert>
+    <Alert tone="warning">{{
+      tr('This section is currently unavailable.')
+    }}</Alert>
   </Card>
   <component
     v-else-if="replacement"
@@ -37,7 +41,7 @@ const replacement = computed(
   />
   <Card v-else>
     <template #header
-      ><h2>{{ section.title }}</h2></template
+      ><h2>{{ tr(section.title) }}</h2></template
     >
     <AdminTableSection
       v-if="section.view === 'table'"

@@ -271,6 +271,7 @@ export function createAccountPreferenceStore(
         throw new TypeError('Invalid preference.');
       if (account === null) {
         guest.write(scope, control, definition, value);
+        notify();
         return;
       }
       const entry = entries.get(id(serverScope(scope, control)));
@@ -289,6 +290,7 @@ export function createAccountPreferenceStore(
     reset(scope, control) {
       if (account === null) {
         guest.reset(scope, control);
+        notify();
         return;
       }
       void schedule({

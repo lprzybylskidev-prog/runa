@@ -1,3 +1,4 @@
+import { useAdminLocale } from './localization';
 import { computed, inject, onScopeDispose, ref, toValue, watch } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
 import type { TablePage, TableQuery, PreferenceStore } from '@/runa/ui';
@@ -9,6 +10,7 @@ import {
 } from '@/runa/ui';
 import type { OperationResult, ExportOperation, RowSelection } from '@/runa/ui';
 import type {
+  AdminText,
   AdminError,
   AdminRecord,
   AdminTableController,
@@ -33,6 +35,7 @@ export function useAdminTable(
     select?: (publicId: string | null) => Promise<boolean>;
   } = {},
 ): AdminTableController {
+  const { t: tr } = useAdminLocale();
   const resource = useAdminResource(page, sectionKey);
   const query = ref<TableQuery>(initialQuery());
   const validationError = ref<AdminError>();
@@ -42,7 +45,7 @@ export function useAdminTable(
     publicIds: [],
   });
   const selected = ref<string | null | undefined>();
-  const confirmation = ref<string>();
+  const confirmation = ref<AdminText>();
   let confirmResult: ((accepted: boolean) => void) | undefined;
   const registry = inject(
     adminCollectionsKey,
@@ -121,7 +124,7 @@ export function useAdminTable(
   const columns = computed(() =>
     (section.value?.fields ?? []).map((field) => ({
       key: field.key,
-      label: field.label,
+      label: tr(field.label),
       sortable: field.sortable && !field.sensitive,
       searchable: false,
       // The server owns matching; this function only declares a filter key to Table.
@@ -133,9 +136,9 @@ export function useAdminTable(
           return typeof value === 'object' &&
             !Array.isArray(value) &&
             value.set === true
-            ? 'Set'
-            : 'Not set';
-        if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+            ? tr('Set')
+            : tr('Not set');
+        if (typeof value === 'boolean') return value ? tr('Yes') : tr('No');
         if (typeof value === 'string' || typeof value === 'number')
           return value;
         return Array.isArray(value) ? value.join(', ') : null;

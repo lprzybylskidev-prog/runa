@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { AdminApplication } from '@/runa/admin';
+import { AdminApplication, useAdminLocale } from '@/runa/admin';
 import type {
   AdminApplicationProps,
   AdminApplicationSlots,
 } from '@/runa/admin';
 import CustomerAdminPage from './CustomerAdminPage.vue';
+const { t } = useAdminLocale();
 const props = defineProps<AdminApplicationProps>();
 defineSlots<AdminApplicationSlots>();
 </script>
@@ -19,7 +20,7 @@ defineSlots<AdminApplicationSlots>();
             @click.prevent="
               controller.navigate({ owner: owner.id, page: owner.default_page })
             "
-            >{{ owner.title }}</a
+            >{{ t(owner.title) }}</a
           >
         </li>
       </ul>

@@ -6,8 +6,9 @@ use Runa\ModuleFramework\Management\DeclarationRules as Rules;
 
 final readonly class ManagementCommandDefinition
 {
+    /** @param string|array{pl:string,en:string} $title */
     public function __construct(
-        public string $key, public string $title, public ManagementOperation $safety,
+        public string $key, public string|array $title, public ManagementOperation $safety,
         public string $binding, public string $mode = 'independent', public ?string $participant = null,
         public bool $destructive = false,
         public string $intent = 'action',

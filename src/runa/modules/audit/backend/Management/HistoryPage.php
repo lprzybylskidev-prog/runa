@@ -13,6 +13,29 @@ use Runa\Modules\Audit\Contracts\AuditReads;
 
 final class HistoryPage implements ManagementPageProvider
 {
+    /** @var array<string, string> */
+    private const FIELD_NAMES = [
+        'occurred_at' => 'Czas zdarzenia',
+        'module' => 'Moduł',
+        'action' => 'Akcja',
+        'actor_public_id' => 'Publiczny UUID wykonawcy',
+        'actor_kind' => 'Typ wykonawcy',
+        'actor_label' => 'Nazwa wykonawcy',
+        'outcome' => 'Wynik',
+        'correlation_id' => 'Identyfikator powiązania',
+        'entity_module' => 'Moduł obiektu',
+        'entity_type' => 'Typ obiektu',
+        'entity_public_id' => 'Publiczny UUID obiektu',
+        'from' => 'Od',
+        'until' => 'Do',
+        'entities' => 'Obiekty',
+        'changes' => 'Zmiany',
+        'context' => 'Kontekst',
+        'execution' => 'Wykonanie',
+        'payload_part' => 'Część danych',
+        'payload_next' => 'Następna część danych',
+    ];
+
     public function permissions(): array
     {
         return [];
@@ -42,12 +65,12 @@ final class HistoryPage implements ManagementPageProvider
     {
         $summary = [];
         foreach (['occurred_at', 'module', 'action', 'actor_public_id', 'actor_kind', 'actor_label', 'outcome', 'correlation_id', 'entity_module', 'entity_type', 'entity_public_id', 'from', 'until'] as $key) {
-            $text = ['pl' => ucwords(str_replace('_', ' ', $key)), 'en' => ucwords(str_replace('_', ' ', $key))];
+            $text = ['pl' => self::FIELD_NAMES[$key], 'en' => ucwords(str_replace('_', ' ', $key))];
             $summary[] = new ManagementFieldAccess(new ManagementField($key, 'text', $text, $text, filterable: ! in_array($key, ['occurred_at', 'actor_label'], true)), 'runa.audit.read');
         }
         $detail = $summary;
         foreach (['entities', 'changes', 'context', 'execution', 'payload_part', 'payload_next'] as $key) {
-            $text = ['pl' => ucfirst($key), 'en' => ucfirst($key)];
+            $text = ['pl' => self::FIELD_NAMES[$key], 'en' => ucfirst($key)];
             $detail[] = new ManagementFieldAccess(new ManagementField($key, 'text', $text, $text), 'runa.audit.read');
         }
 

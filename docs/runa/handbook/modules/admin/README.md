@@ -5,7 +5,7 @@
 This guide records the implementation status and remaining specification for
 RM-2026-016, targeting platform 0.7.0. Points 2–4 supply Admin 0.1.0 source,
 explicit installation history, entry security, declaration discovery and authorized
-bootstrap/page/section reads, the English session shell, page-read HTTP and public
+bootstrap/page/section reads, the PL/EN session shell, page-read HTTP and public
 frontend replacement seams. Point 5 adds named section-read HTTP and the public
 resource read controller, explicit cursor-table composition and automatic declared
 collection sections and controlled fields, then completes generated record forms,
@@ -120,7 +120,7 @@ Guarded PHP still applies normal gateway availability before calling entry.
 
 The default dispatcher selects Admin without changing App source. Shared
 ApplicationSessionShell places the advertised entry beside User panel in the
-account dropdown, retaining one session controller. Admin supplies English-scoped
+account dropdown, retaining one session controller. Admin supplies localized PL/EN
 ApplicationLayout, owner-left/page-top navigation, password confirmation and
 nested replacement providers. Bootstrap returns authorized owners/pages/widgets
 and current source-default presentation (revision 0). Auth declares Users, Authentication policy and Bulk session revocation pages; the catalogue includes only currently authorized pages. App providers can supply

@@ -25,7 +25,9 @@ User-facing frontend:
 
 Administration panel:
 
-- English only.
+- Polish default,
+- English secondary,
+- the same language preference as the application.
 
 ## Naming conventions
 

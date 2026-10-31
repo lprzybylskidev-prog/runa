@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from '@/runa/admin';
+const { t: tr } = useAdminLocale();
 import { computed, watch } from 'vue';
 import { Alert, Button, Card } from '@/runa/ui';
 import { AdminSection, useAdminResource } from '@/runa/admin';
@@ -54,7 +56,7 @@ const next = computed(() => {
 });
 function display(value: AdminJson): string {
   if (value === null) return '—';
-  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (typeof value === 'boolean') return value ? tr('Yes') : tr('No');
   return typeof value === 'object' ? JSON.stringify(value) : String(value);
 }
 async function older() {
@@ -95,16 +97,16 @@ function select(row: Record<string, AdminJson>) {
 <template>
   <Card>
     <template #header
-      ><h2>{{ section.title }}</h2></template
+      ><h2>{{ tr(section.title) }}</h2></template
     >
     <template v-if="collection">
       <Alert v-if="resource.error.value" tone="warning">{{
-        resource.error.value.message
+        tr(resource.error.value.message)
       }}</Alert>
       <p v-if="!rows.length" class="mb-4 text-sm text-muted">
-        No entries in this bounded result.
+        {{ tr('No entries in this bounded result.') }}
       </p>
-      <ul v-else class="mb-4 space-y-3" :aria-label="collection.label">
+      <ul v-else class="mb-4 space-y-3" :aria-label="tr(collection.label)">
         <li
           v-for="(row, index) in rows"
           :key="String(row.public_id ?? index)"
@@ -112,7 +114,7 @@ function select(row: Record<string, AdminJson>) {
         >
           <dl class="grid gap-2 text-sm sm:grid-cols-2">
             <div v-for="(value, key) in row" :key="key">
-              <dt class="font-semibold">{{ key }}</dt>
+              <dt class="font-semibold">{{ tr(String(key)) }}</dt>
               <dd class="break-words">{{ display(value) }}</dd>
             </div>
           </dl>
@@ -122,7 +124,7 @@ function select(row: Record<string, AdminJson>) {
             class="mt-2"
             :disabled="controller.busy.value"
             @click="select(row)"
-            >Use this entry</Button
+            >{{ tr('Use this entry') }}</Button
           >
         </li>
       </ul>
@@ -131,13 +133,13 @@ function select(row: Record<string, AdminJson>) {
           size="sm"
           :disabled="resource.busy.value || !next"
           @click="older"
-          >Older entries</Button
+          >{{ tr('Older entries') }}</Button
         >
         <Button
           size="sm"
           :disabled="resource.busy.value"
           @click="resource.clear()"
-          >Latest entries</Button
+          >{{ tr('Latest entries') }}</Button
         >
       </div>
     </template>

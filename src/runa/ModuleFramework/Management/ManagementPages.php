@@ -33,7 +33,7 @@ final readonly class ManagementPages
         private ModuleAvailability $availability, private ApplicationManagement $application,
         private ModuleApis $apis, private string $root, private bool $compiledOnly = false) {}
 
-    /** @return array{generation:int,revision:string,owners:array<string, array{title:string,pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}>,diagnostics:array<string,string>} */
+    /** @return array{generation:int,revision:string,owners:array<string, array{title:string|array{pl:string,en:string},pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}>,diagnostics:array<string,string>} */
     public function discover(): array
     {
         $snapshot = $this->registry->snapshot();
@@ -56,8 +56,9 @@ final readonly class ManagementPages
                 }
                 if ($providers !== []) {
                     $manifest = $this->declarations->manifest($record);
-                    $names = (object) $manifest->definition['name'];
-                    $owners[$record->id] = $this->collect($record->id, $providers, $names->en, $record);
+                    /** @var array{pl:string,en:string} $names */
+                    $names = (array) $manifest->definition['name'];
+                    $owners[$record->id] = $this->collect($record->id, $providers, $names, $record);
                 }
             } catch (Throwable) {
                 // Discard the entire conflicting owner; another owner cannot be shadowed.
@@ -118,9 +119,10 @@ final readonly class ManagementPages
     }
 
     /** @param list<ManagementPageProvider> $providers
-     * @return array{title:string,pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}
+     * @param  string|array{pl:string,en:string}  $title
+     * @return array{title:string|array{pl:string,en:string},pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}
      */
-    private function collect(string $owner, array $providers, string $title, ?ModuleRecord $record): array
+    private function collect(string $owner, array $providers, string|array $title, ?ModuleRecord $record): array
     {
         $components = [];
         $result = ['title' => $title, 'pages' => [], 'bindings' => [], 'contributions' => [], 'widgets' => []];

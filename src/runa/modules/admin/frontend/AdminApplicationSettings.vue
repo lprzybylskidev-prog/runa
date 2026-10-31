@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import { onMounted } from 'vue';
 import {
   Alert,
@@ -19,29 +21,32 @@ onMounted(settings.refresh);
   <slot :controller="settings">
     <div class="space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <h3 class="font-semibold">Application settings</h3>
-        <Button :disabled="controller.busy.value" @click="settings.refresh"
-          >Refresh current settings</Button
-        >
+        <h3 class="font-semibold">{{ tr('Application settings') }}</h3>
+        <Button :disabled="controller.busy.value" @click="settings.refresh">{{
+          tr('Refresh current settings')
+        }}</Button>
       </div>
       <p class="text-sm text-muted">
-        Presentation changes take effect without restart. Reset restores source
-        defaults.
+        {{
+          tr(
+            'Presentation changes take effect without restart. Reset restores source defaults.',
+          )
+        }}
       </p>
       <Alert v-if="settings.invalid.value" tone="warning">{{
-        settings.invalid.value
+        tr(settings.invalid.value)
       }}</Alert>
-      <Alert v-if="settings.saved.value" tone="success"
-        >Application settings saved.</Alert
-      >
-      <Alert v-if="!settings.valid.value" tone="warning"
-        >Correct the setting values before saving.</Alert
-      >
+      <Alert v-if="settings.saved.value" tone="success">{{
+        tr('Application settings saved.')
+      }}</Alert>
+      <Alert v-if="!settings.valid.value" tone="warning">{{
+        tr('Correct the setting values before saving.')
+      }}</Alert>
       <p
         v-if="settings.loaded.value && !settings.fields.value.length"
         class="text-sm text-muted"
       >
-        No application settings are available.
+        {{ tr('No application settings are available.') }}
       </p>
       <div
         v-for="field in settings.fields.value"
@@ -50,17 +55,17 @@ onMounted(settings.refresh);
       >
         <Checkbox
           v-if="field.type === 'boolean'"
-          :label="field.title"
+          :label="tr(field.title)"
           :model-value="settings.draft.value[field.key] === true"
           :disabled="controller.busy.value || !field.writable"
           @update:model-value="settings.edit(field.key, $event)"
         />
         <NumberInput
           v-else-if="field.type === 'integer'"
-          :label="field.title"
+          :label="tr(field.title)"
           :model-value="String(settings.draft.value[field.key] ?? '')"
           kind="integer"
-          locale="en"
+          :locale="adminLocale"
           :disabled="controller.busy.value || !field.writable"
           @update:model-value="
             settings.edit(
@@ -75,20 +80,20 @@ onMounted(settings.refresh);
         />
         <Select
           v-else-if="field.type === 'enum'"
-          :label="field.title"
+          :label="tr(field.title)"
           :model-value="
             typeof settings.draft.value[field.key] === 'string'
               ? String(settings.draft.value[field.key])
               : ''
           "
-          :options="field.choices.map((value) => ({ value, label: value }))"
-          locale="en"
+          :options="field.choices.map((value) => ({ value, label: tr(value) }))"
+          :locale="adminLocale"
           :disabled="controller.busy.value || !field.writable"
           @update:model-value="settings.edit(field.key, $event)"
         />
         <TextInput
           v-else
-          :label="field.title"
+          :label="tr(field.title)"
           :model-value="
             typeof settings.draft.value[field.key] === 'string'
               ? String(settings.draft.value[field.key])
@@ -98,26 +103,28 @@ onMounted(settings.refresh);
           :disabled="controller.busy.value || !field.writable"
           @update:model-value="settings.edit(field.key, $event)"
         />
-        <p v-if="!field.writable" class="text-xs text-muted">Read only.</p>
+        <p v-if="!field.writable" class="text-xs text-muted">
+          {{ tr('Read only.') }}
+        </p>
         <Button
           v-else
           :disabled="controller.busy.value"
           @click="settings.edit(field.key, null)"
-          >Reset {{ field.title }}</Button
+          >{{ tr('Reset') }} {{ tr(field.title) }}</Button
         >
         <Alert v-if="settings.conflicts.value.has(field.key)" tone="warning">
-          {{ field.title }} changed elsewhere. Current value:
-          {{ settings.base.value[field.key] ?? 'Source default' }}.
+          {{ tr(field.title) }} {{ tr('changed elsewhere. Current value:') }}
+          {{ settings.base.value[field.key] ?? tr('Source default') }}.
           <div class="mt-2 flex flex-wrap gap-3">
             <Button
               :disabled="controller.busy.value"
               @click="settings.resolve(field.key, false)"
-              >Use current value</Button
+              >{{ tr('Use current value') }}</Button
             >
             <Button
               :disabled="controller.busy.value"
               @click="settings.resolve(field.key, true)"
-              >Keep my value</Button
+              >{{ tr('Keep my value') }}</Button
             >
           </div>
         </Alert>
@@ -131,7 +138,7 @@ onMounted(settings.refresh);
           settings.conflicts.value.size > 0
         "
         @click="settings.save"
-        >Save application settings</Button
+        >{{ tr('Save application settings') }}</Button
       >
     </div>
   </slot>

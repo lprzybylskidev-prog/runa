@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import AdminOperationResult from './AdminOperationResult.vue';
 import {
   computed,
@@ -59,8 +61,9 @@ const settingRows = computed(() => {
           names &&
           typeof names === 'object' &&
           !Array.isArray(names) &&
-          typeof names.en === 'string'
-            ? names.en
+          typeof names.en === 'string' &&
+          typeof names.pl === 'string'
+            ? { en: names.en, pl: names.pl }
             : key,
       },
     ];
@@ -82,7 +85,7 @@ function choices(options: AdminJson | undefined) {
       : [];
   return items.map((value) => ({
     value: JSON.stringify(value),
-    label: String(value),
+    label: tr(String(value)),
   }));
 }
 function enumEdit(
@@ -258,33 +261,38 @@ onScopeDispose(() => {
       <h3 class="font-semibold">
         {{
           kind === 'settings'
-            ? 'Module settings'
+            ? tr('Module settings')
             : kind === 'health'
-              ? 'Health policy'
-              : 'Optional integrations'
+              ? tr('Health policy')
+              : tr('Optional integrations')
         }}
       </h3>
-      <Button :disabled="controller.busy.value" @click="load"
-        >Reload current state</Button
-      >
+      <Button :disabled="controller.busy.value" @click="load">{{
+        tr('Reload current state')
+      }}</Button>
     </div>
     <AdminOperationResult v-if="result" :result="result" />
     <template v-if="loaded">
-      <Alert v-if="kind === 'settings' && loaded.editable === false" tone="info"
-        >Auth policies use their dedicated reviewed policy page.</Alert
+      <Alert
+        v-if="kind === 'settings' && loaded.editable === false"
+        tone="info"
+        >{{
+          tr('Auth policies use their dedicated reviewed policy page.')
+        }}</Alert
       >
       <template v-if="kind === 'settings'">
         <p v-if="!settingRows.length" class="text-sm text-muted">
-          No settings are declared.
+          {{ tr('No settings are declared.') }}
         </p>
         <div v-for="row in settingRows" :key="row.key" class="space-y-2">
           <p v-if="row.definition.sensitive" class="text-xs text-muted">
-            {{ row.label }}: {{ row.entry.set ? 'Set' : 'Not set' }}. Only an
-            explicit replacement is submitted.
+            {{ tr(row.label) }}:
+            {{ row.entry.set ? tr('Set') : tr('Not set') }}.
+            {{ tr('Only an explicit replacement is submitted.') }}
           </p>
           <Checkbox
             v-if="row.definition.type === 'boolean'"
-            :label="row.label"
+            :label="tr(row.label)"
             :model-value="draft[row.key] === true"
             :disabled="
               controller.busy.value ||
@@ -295,10 +303,10 @@ onScopeDispose(() => {
           />
           <NumberInput
             v-else-if="row.definition.type === 'integer'"
-            :label="row.label"
+            :label="tr(row.label)"
             :model-value="String(draft[row.key] ?? '')"
             kind="integer"
-            locale="en"
+            :locale="adminLocale"
             :disabled="
               controller.busy.value ||
               loaded.editable === false ||
@@ -317,10 +325,10 @@ onScopeDispose(() => {
           />
           <Select
             v-else-if="row.definition.type === 'enum'"
-            :label="row.label"
+            :label="tr(row.label)"
             :model-value="JSON.stringify(draft[row.key])"
             :options="choices(row.definition.options)"
-            locale="en"
+            :locale="adminLocale"
             :disabled="
               controller.busy.value ||
               loaded.editable === false ||
@@ -332,10 +340,10 @@ onScopeDispose(() => {
           />
           <TextInput
             v-else-if="row.definition.type === 'array'"
-            :label="row.label + ' (JSON)'"
+            :label="tr(row.label) + ' (JSON)'"
             type="textarea"
             :model-value="raw[row.key] ?? ''"
-            :error="parseError"
+            :error="tr(parseError)"
             :disabled="
               controller.busy.value ||
               loaded.editable === false ||
@@ -347,7 +355,7 @@ onScopeDispose(() => {
             v-else-if="
               ['string', 'decimal'].includes(String(row.definition.type))
             "
-            :label="row.label"
+            :label="tr(row.label)"
             :type="row.definition.sensitive ? 'password' : 'text'"
             :model-value="
               typeof draft[row.key] === 'string'
@@ -365,8 +373,12 @@ onScopeDispose(() => {
             @update:model-value="edit(row.key, $event)"
           />
           <p v-else class="break-words text-sm text-muted">
-            {{ row.label }} uses a module-specific control. Supply an
-            operational editor replacement for this declared type.
+            {{ tr(row.label) }}
+            {{
+              tr(
+                'uses a module-specific control. Supply an operational editor replacement for this declared type.',
+              )
+            }}
           </p>
           <Button
             v-if="
@@ -376,14 +388,14 @@ onScopeDispose(() => {
             "
             :disabled="controller.busy.value"
             @click="edit(row.key, null)"
-            >Clear {{ row.label }}</Button
+            >{{ tr('Clear') }} {{ tr(row.label) }}</Button
           >
         </div>
       </template>
       <template v-else-if="kind !== 'health' || loaded.health_policy">
         <template v-if="kind === 'integrations'">
           <Select
-            label="Integration"
+            :label="tr('Integration')"
             :model-value="key"
             :options="
               Object.keys(integrations).map((value) => ({
@@ -392,12 +404,12 @@ onScopeDispose(() => {
               }))
             "
             :disabled="controller.busy.value"
-            locale="en"
+            :locale="adminLocale"
             @update:model-value="selectIntegration(String($event))"
           />
           <Checkbox
             v-if="key"
-            label="Enabled"
+            :label="tr('Enabled')"
             v-model="enabled"
             :disabled="controller.busy.value"
             @update:model-value="changed"
@@ -407,24 +419,24 @@ onScopeDispose(() => {
           v-if="kind === 'health' || key"
           :label="
             kind === 'health'
-              ? 'Source-validated health overrides (JSON)'
-              : 'Non-sensitive integration configuration (JSON)'
+              ? tr('Source-validated health overrides (JSON)')
+              : tr('Non-sensitive integration configuration (JSON)')
           "
           type="textarea"
           v-model="json"
-          :error="parseError"
+          :error="tr(parseError)"
           :disabled="controller.busy.value"
           @update:model-value="changed"
         />
       </template>
       <p v-else class="text-sm text-muted">
-        No editable health policy is available.
+        {{ tr('No editable health policy is available.') }}
       </p>
       <Button
         v-if="loaded.editable !== false && writable !== false"
         :disabled="controller.busy.value || !controller.dirty.value"
         @click="save"
-        >Save {{ kind }}</Button
+        >{{ tr('Save') }} {{ kind }}</Button
       >
     </template>
   </div>

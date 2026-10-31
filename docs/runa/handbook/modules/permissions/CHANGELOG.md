@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Localize administrative labels/actions/effective-permission columns through the shared Admin PL/EN presentation contract without changing grants, definition values or native action semantics.
+
 - Deliver source-owned Admin roles/presets/permission dictionaries, reviewed add/replace/copy/preset access and effective reads, dedicated protected authority and confirmed force-delete sections with native proof/Audit protocols.
 
 - Supply private AssignmentContribution/AssignmentEditor for ordinary reviewed user access in the Auth profile aggregate, guarded field lookups, exact owner revision and native both-factor action proof. Protected authority and bulk workflows remain independent.

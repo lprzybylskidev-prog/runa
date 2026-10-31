@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, nextTick, ref } from 'vue';
 import {
   Alert,
@@ -38,7 +40,7 @@ async function save() {
 <template>
   <Form
     ref="form"
-    label="Administrator panel editor"
+    :label="tr('Administrator panel editor')"
     :busy="controller.busy.value"
     :dirty="controller.dirty.value"
     :valid="!controller.blocked.value && !controller.conflicts.value.length"
@@ -47,19 +49,19 @@ async function save() {
     <slot :controller="controller" />
     <template #feedback>
       <FormNotifications
-        locale="en"
+        :locale="adminLocale"
         :attempt="attempt"
-        :error="controller.error.value?.message ?? ''"
-        :success="controller.notice.value"
+        :error="tr(controller.error.value?.message ?? '')"
+        :success="tr(controller.notice.value)"
       />
-      <Alert v-if="controller.blocked.value && atomic" tone="warning"
-        >Required editor content is unavailable. Saving is blocked.</Alert
-      >
+      <Alert v-if="controller.blocked.value && atomic" tone="warning">{{
+        tr('Required editor content is unavailable. Saving is blocked.')
+      }}</Alert>
     </template>
     <template #actions>
       <slot name="review" :controller="controller">
         <div v-if="controller.review.value" class="space-y-2 text-sm">
-          <p class="font-semibold">Reviewed differences</p>
+          <p class="font-semibold">{{ tr('Reviewed differences') }}</p>
           <div
             v-for="participant in controller.review.value.participants"
             :key="participant.id"
@@ -78,7 +80,7 @@ async function save() {
             controller.blocked.value || !!controller.conflicts.value.length
           "
           @click="controller.preview"
-          >Review changes</Button
+          >{{ tr('Review changes') }}</Button
         >
         <Button
           v-if="atomic"
@@ -87,19 +89,19 @@ async function save() {
           :disabled="
             controller.blocked.value || !!controller.conflicts.value.length
           "
-          >Save</Button
+          >{{ tr('Save') }}</Button
         >
-        <Button v-if="controller.dirty.value" @click="controller.reset"
-          >Discard changes</Button
-        >
+        <Button v-if="controller.dirty.value" @click="controller.reset">{{
+          tr('Discard changes')
+        }}</Button>
       </slot>
     </template>
   </Form>
   <ConfirmDialog
-    locale="en"
+    :locale="adminLocale"
     :model-value="!!controller.confirmation.value"
-    :title="controller.confirmation.value?.title ?? 'Confirm'"
-    :description="controller.confirmation.value?.description ?? ''"
+    :title="tr(controller.confirmation.value?.title ?? tr('Confirm'))"
+    :description="tr(controller.confirmation.value?.description ?? '')"
     @confirm="controller.confirm(true)"
     @cancel="controller.confirm(false)"
     @update:model-value="!$event && controller.confirm(false)"

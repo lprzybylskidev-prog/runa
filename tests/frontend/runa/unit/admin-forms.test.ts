@@ -93,6 +93,7 @@ const respond = (data: unknown, status = 200) =>
 let server: AdminRecord;
 let writes: Record<string, unknown>[];
 beforeEach(() => {
+  localStorage.setItem('runa.locale', 'en');
   server = record();
   writes = [];
   vi.spyOn(window, 'fetch').mockImplementation(async (_input, init) => {

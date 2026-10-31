@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { computed, defineComponent, h, provide } from 'vue';
+import { useAdminLocale, provideAdminMessages } from './localization';
+const { t: tr } = useAdminLocale(() => props.messages);
+import { computed, defineComponent, h, provide, toRef } from 'vue';
 import type { VNode } from 'vue';
 import {
   ApplicationSessionShell,
@@ -9,7 +11,6 @@ import {
 import { Alert, Button, MinimalLayout } from '@/runa/ui';
 import type { NavigationEntry } from '@/runa/ui';
 import type { AdminApplicationProps, AdminController } from './contracts';
-import { provideLocale } from '../../../resources/js/composables/useLocale';
 import { useAdmin } from './useAdmin';
 import { useAdminPresentation } from './presentation';
 import AdminLayout from './AdminLayout.vue';
@@ -19,6 +20,7 @@ import AdminPageContent from './AdminPageContent.vue';
 import AdminDashboard from './AdminDashboard.vue';
 import { adminCollectionsKey } from './collections';
 const props = defineProps<AdminApplicationProps>();
+provideAdminMessages(toRef(props, 'messages'));
 provide(
   adminCollectionsKey,
   computed(() => props.collections ?? {}),
@@ -27,7 +29,7 @@ defineSlots<{
   default?(scope: { controller: AdminController }): VNode[];
   loading?(): VNode[];
 }>();
-provideLocale(computed(() => 'en'));
+
 const controller = useAdmin({
   navigate: props.navigate,
   session: props.session,
@@ -49,7 +51,7 @@ const navigation = computed<NavigationEntry[]>(() => [
     key: 'dashboard',
     routeKey: 'admin.dashboard',
     moduleKey: 'runa.admin',
-    label: 'Administrator panel',
+    label: tr('Administrator panel'),
     href: '/admin',
     icon: 'adjustments-horizontal',
     availability: 'available',
@@ -58,7 +60,7 @@ const navigation = computed<NavigationEntry[]>(() => [
     key: owner.id,
     routeKey: owner.id + '.' + owner.default_page,
     moduleKey: owner.id,
-    label: owner.title,
+    label: tr(owner.title),
     href: '/admin/' + owner.id + '/' + owner.default_page,
     availability: 'available' as const,
   })) ?? []),
@@ -71,7 +73,7 @@ const topNavigation = computed<NavigationEntry[]>(
         key: page.key,
         routeKey: location.value!.owner + '.' + page.key,
         moduleKey: location.value!.owner,
-        label: page.title,
+        label: tr(page.title),
         href: page.href,
         availability: 'available',
       })) ?? [],
@@ -97,7 +99,6 @@ const validPath = computed(
       :navigation="navigation"
       :top-navigation="topNavigation"
       :current="current"
-      locale="en"
     >
       <template v-if="state !== 'ready'" #admission>
         <AdminEntryProof
@@ -112,24 +113,28 @@ const validPath = computed(
             "
             tone="danger"
           >
-            Session could not be loaded.
-            <Button @click="controller.session.refresh">Retry</Button>
+            {{ tr('Session could not be loaded.') }}
+            <Button @click="controller.session.refresh">{{
+              tr('Retry')
+            }}</Button>
           </Alert>
           <slot v-else-if="state === 'loading'" name="loading"
             ><component :is="presentation.loading ?? AdminLoading"
           /></slot>
           <Alert v-else tone="warning">
             {{
-              controller.error.value?.message ??
-              'The administrator panel is unavailable.'
+              tr(
+                controller.error.value?.message ??
+                  tr('The administrator panel is unavailable.'),
+              )
             }}
-            <Button @click="controller.refresh">Retry</Button>
+            <Button @click="controller.refresh">{{ tr('Retry') }}</Button>
           </Alert>
         </component>
       </template>
-      <Alert v-if="!validPath" tone="warning"
-        >The administrator panel is unavailable.</Alert
-      >
+      <Alert v-if="!validPath" tone="warning">{{
+        tr('The administrator panel is unavailable.')
+      }}</Alert>
       <slot v-else-if="bootstrap" :controller="controller">
         <AdminPageContent
           v-if="location"

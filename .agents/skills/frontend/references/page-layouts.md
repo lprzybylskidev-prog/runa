@@ -39,3 +39,8 @@ For password/2FA proof before entry or a sensitive operation, use the public Aut
 [operation-proof composition](../../../../docs/runa/handbook/modules/auth/entry-ui.md#operation-proof-composition)
 with its inline or MinimalLayout page default. Reuse the caller's session and
 proof controller; presentation replacements do not duplicate credential requests.
+
+Admin follows the shared application language preference (Polish default, English
+secondary), including module defaults and Auth entry proof. For localized metadata
+and App presentation catalogues, follow `docs/runa/handbook/modules/admin/frontend.md#polish-and-english-presentation`;
+preserve mounted controllers and dirty drafts when the language changes.

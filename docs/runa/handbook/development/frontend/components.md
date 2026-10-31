@@ -432,3 +432,8 @@ read reconciliation. Replace `AdminPresentation.applicationSettings` using the
 [controller contract](../../modules/admin/frontend.md#application-global-settings-and-runtime-branding).
 The shared shell's public presentation loader and IdentityProvider apply runtime
 branding without changing canonical identity.
+
+Admin defaults and their Auth/Permissions/Audit sections follow the shared PL/EN
+application preference. Public useAdminLocale/adminText handle localized AdminText
+metadata and App presentation messages; use them in replacements and pass the
+reactive locale to shared controls. See [Admin localization](../../modules/admin/frontend.md#polish-and-english-presentation).

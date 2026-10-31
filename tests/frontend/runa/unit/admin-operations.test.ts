@@ -1,4 +1,4 @@
-import { afterEach, expect, it, vi } from '@runa/testing/vitest';
+import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, flushPromises, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import {
@@ -19,6 +19,9 @@ import type {
   Profile,
 } from '@/runa/auth';
 enableAutoUnmount(afterEach);
+beforeEach(() => {
+  localStorage.setItem('runa.locale', 'en');
+});
 const id = '01900000-0000-7000-8000-000000000001';
 function admin(): AdminController {
   const session: ApplicationSessionController = {

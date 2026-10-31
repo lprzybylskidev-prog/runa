@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
 import {
   Checkbox,
@@ -24,9 +26,11 @@ watch(
   },
 );
 const messages = computed(() => [
-  ...props.errors,
+  ...props.errors.map(tr),
   ...(edited.value && !props.readonly
-    ? validateAdminField(props.field, props.modelValue)
+    ? validateAdminField(props.field, props.modelValue, adminLocale.value).map(
+        tr,
+      )
     : []),
 ]);
 const secretSet = computed(() => {
@@ -49,16 +53,16 @@ const items = computed(() =>
     : [],
 );
 const options = computed(() =>
-  props.field.choices.map((value) => ({ value, label: value })),
+  props.field.choices.map((value) => ({ value, label: tr(value) })),
 );
 const display = computed(() => {
-  if (props.field.sensitive) return secretSet.value ? 'Set' : 'Not set';
+  if (props.field.sensitive) return secretSet.value ? tr('Set') : tr('Not set');
   if (props.modelValue === null || props.modelValue === '') return '—';
   if (typeof props.modelValue === 'boolean')
-    return props.modelValue ? 'Yes' : 'No';
+    return props.modelValue ? tr('Yes') : tr('No');
   if (Array.isArray(props.modelValue)) return items.value.join(', ') || '—';
   return typeof props.modelValue === 'object'
-    ? 'Unavailable'
+    ? tr('Unavailable')
     : String(props.modelValue);
 });
 function update(value: AdminFieldValue) {
@@ -75,14 +79,14 @@ function integer(value: string | null) {
 <template>
   <FormField
     v-if="readonly || field.readonly"
-    :label="field.label"
-    :error="errors"
+    :label="tr(field.label)"
+    :error="errors.map(tr)"
   >
     <template #label="{ id }"
       ><span
         :id="`${id}-label`"
         class="block text-xs font-semibold text-muted"
-        >{{ field.label }}</span
+        >{{ tr(field.label) }}</span
       ></template
     >
     <template #default="{ id, describedBy }"
@@ -97,16 +101,16 @@ function integer(value: string | null) {
   </FormField>
   <TextInput
     v-else-if="field.sensitive"
-    :label="field.label"
+    :label="tr(field.label)"
     :model-value="text"
     type="password"
     autocomplete="new-password"
     :helper="
       secretSet
-        ? 'A value is set. Enter a replacement to change it.'
+        ? tr('A value is set. Enter a replacement to change it.')
         : text
-          ? 'Replacement value.'
-          : 'No value is set.'
+          ? tr('Replacement value.')
+          : tr('No value is set.')
     "
     :error="messages"
     :disabled="busy"
@@ -115,20 +119,22 @@ function integer(value: string | null) {
   />
   <FormField
     v-else-if="field.lookup && !lookup"
-    :label="field.label"
-    :error="errors"
+    :label="tr(field.label)"
+    :error="errors.map(tr)"
   >
-    <p class="text-sm text-muted">This lookup is currently unavailable.</p>
+    <p class="text-sm text-muted">
+      {{ tr('This lookup is currently unavailable.') }}
+    </p>
   </FormField>
   <Select
     v-else-if="field.lookup && field.multiple"
     :multiple="true"
-    :label="field.label"
+    :label="tr(field.label)"
     :model-value="items"
     :provider="lookup?.provider"
     :provider-search="lookup?.searchable ?? true"
     :selected-options="lookup?.selectedOptions ?? []"
-    locale="en"
+    :locale="adminLocale"
     :error="messages"
     :disabled="busy"
     :required="field.required"
@@ -137,13 +143,13 @@ function integer(value: string | null) {
   />
   <Select
     v-else-if="field.lookup || field.choices.length"
-    :label="field.label"
+    :label="tr(field.label)"
     :model-value="text ?? ''"
     :options="options"
     :provider="field.lookup ? lookup?.provider : undefined"
     :provider-search="lookup?.searchable ?? true"
     :selected-options="lookup?.selectedOptions ?? []"
-    locale="en"
+    :locale="adminLocale"
     :error="messages"
     :disabled="busy"
     :required="field.required"
@@ -152,7 +158,7 @@ function integer(value: string | null) {
   />
   <Checkbox
     v-else-if="field.type === 'boolean'"
-    :label="field.label"
+    :label="tr(field.label)"
     :model-value="typeof modelValue === 'boolean' ? modelValue : null"
     :error="messages"
     :disabled="busy"
@@ -161,10 +167,10 @@ function integer(value: string | null) {
   />
   <NumberInput
     v-else-if="field.type === 'integer'"
-    :label="field.label"
+    :label="tr(field.label)"
     :model-value="typeof modelValue === 'number' ? String(modelValue) : text"
     kind="integer"
-    locale="en"
+    :locale="adminLocale"
     :error="messages"
     :disabled="busy"
     :required="field.required"
@@ -172,10 +178,10 @@ function integer(value: string | null) {
   />
   <TagsInput
     v-else-if="field.type === 'uuid' && field.multiple"
-    :label="field.label"
+    :label="tr(field.label)"
     :model-value="items"
     :max-tags="100"
-    helper="Enter public UUIDs."
+    :helper="tr('Enter public UUIDs.')"
     :error="messages"
     :disabled="busy"
     :required="field.required"
@@ -183,7 +189,7 @@ function integer(value: string | null) {
   />
   <TextInput
     v-else-if="['text', 'dictionary', 'uuid', 'datetime'].includes(field.type)"
-    :label="field.label"
+    :label="tr(field.label)"
     :model-value="text"
     :error="messages"
     :disabled="busy"
@@ -191,14 +197,16 @@ function integer(value: string | null) {
     :nullable="field.type !== 'text'"
     :helper="
       field.type === 'datetime'
-        ? 'UTC timestamp, for example 2026-01-01T12:00:00Z.'
+        ? tr('UTC timestamp, for example 2026-01-01T12:00:00Z.')
         : field.type === 'uuid'
-          ? 'Public UUID.'
+          ? tr('Public UUID.')
           : ''
     "
     @update:model-value="update"
   />
-  <FormField v-else :label="field.label" :error="errors">
-    <p class="text-sm text-muted">This field is currently unavailable.</p>
+  <FormField v-else :label="tr(field.label)" :error="errors.map(tr)">
+    <p class="text-sm text-muted">
+      {{ tr('This field is currently unavailable.') }}
+    </p>
   </FormField>
 </template>

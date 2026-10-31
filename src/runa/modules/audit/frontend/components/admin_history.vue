@@ -1,21 +1,23 @@
 <script setup lang="ts">
+import { useAdminLocale } from '@/runa/admin';
+const { t: tr } = useAdminLocale();
 import { reactive } from 'vue';
 import { Button, TextInput } from '@/runa/ui';
 import { AdminRecordBrowser } from '@/runa/admin';
 import type { AdminPageProps, AdminTableController } from '@/runa/admin';
 defineProps<AdminPageProps>();
 const labels: Record<string, string> = {
-  module: 'Module',
-  action: 'Action',
-  actor_public_id: 'Actor UUID',
-  actor_kind: 'Actor kind',
-  outcome: 'Outcome',
-  correlation_id: 'Correlation',
-  entity_module: 'Entity module',
-  entity_type: 'Entity type',
-  entity_public_id: 'Entity UUID',
-  from: 'From (UTC ISO-8601)',
-  until: 'Until (UTC ISO-8601)',
+  module: tr('Module'),
+  action: tr('Action'),
+  actor_public_id: tr('Actor UUID'),
+  actor_kind: tr('Actor kind'),
+  outcome: tr('Outcome'),
+  correlation_id: tr('Correlation'),
+  entity_module: tr('Entity module'),
+  entity_type: tr('Entity type'),
+  entity_public_id: tr('Entity UUID'),
+  from: tr('From (UTC ISO-8601)'),
+  until: tr('Until (UTC ISO-8601)'),
 };
 const query = new URLSearchParams(window.location.search);
 const filters = reactive<Record<string, string | null>>(
@@ -57,7 +59,9 @@ function apply(table: AdminTableController) {
           @keydown.enter.prevent="apply(table)"
         />
       </div>
-      <Button class="mb-4" @click="apply(table)">Filter history</Button>
+      <Button class="mb-4" @click="apply(table)">{{
+        tr('Filter history')
+      }}</Button>
     </template>
   </AdminRecordBrowser>
 </template>

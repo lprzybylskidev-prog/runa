@@ -67,6 +67,7 @@ it('discovers only available module declarations without constructing business h
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     $found = $this->pages->discover();
     expect($found['owners'][$this->id]['pages'])->toHaveKey('index')->and($found['diagnostics'])->toBe([])
+        ->and(array_keys($found['owners'][$this->id]['title']))->toBe(['pl', 'en'])
         ->and(ApiCalls::$constructed)->toBe(0)->and(ApiCalls::$executed)->toBe(0);
     $class = $this->descriptor;
     foreach (['method' => 'missing', 'target' => 'app.undeclared', 'missingTargets' => true, 'duplicate' => true, 'component' => 'app.foreign.panel'] as $property => $value) {

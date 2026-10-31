@@ -21,8 +21,20 @@ final class DeclarationRules
         }
     }
 
-    public static function text(string $text): void
+    /** @param string|array{pl:string,en:string} $text */
+    public static function text(string|array $text): void
     {
+        if (is_array($text)) {
+            $keys = array_keys($text);
+            sort($keys);
+            if ($keys !== ['en', 'pl'] || ! is_string($text['pl']) || ! is_string($text['en'])) {
+                throw new InvalidArgumentException('Management text requires Polish and English.');
+            }
+            self::text($text['pl']);
+            self::text($text['en']);
+
+            return;
+        }
         if (trim($text) === '' || mb_strlen($text) > 160 || preg_match('/[\p{C}]/u', $text) !== 0) {
             throw new InvalidArgumentException('Invalid management text.');
         }

@@ -102,7 +102,6 @@ export function useAdmin(
     identity: () => (admitted(session) ? sessionStamp(session) : undefined),
     action: () => 'runa.admin.enter',
     requirement: () => 'password',
-    locale: () => 'en',
   });
   let epoch = 0,
     alive = true;

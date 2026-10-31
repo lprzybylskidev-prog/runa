@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { t: tr } = useAdminLocale();
 import { Card } from '@/runa/ui';
 import AdminOperations from './AdminOperations.vue';
 import type { AdminController } from './contracts';
@@ -15,7 +17,7 @@ const presentation = useAdminPresentation();
 </script>
 <template>
   <div class="space-y-6">
-    <h1 class="text-xl font-semibold">Administrator panel</h1>
+    <h1 class="text-xl font-semibold">{{ tr('Administrator panel') }}</h1>
     <component
       v-if="admin"
       :is="presentation.operations ?? AdminOperations"
@@ -25,7 +27,7 @@ const presentation = useAdminPresentation();
       v-if="!props.bootstrap.dashboard.widgets.length"
       class="text-sm text-muted"
     >
-      No dashboard widgets are available.
+      {{ tr('No dashboard widgets are available.') }}
     </p>
     <div v-else class="grid min-w-0 gap-6 lg:grid-cols-2">
       <AdminComponentBoundary
@@ -43,13 +45,13 @@ const presentation = useAdminPresentation();
         />
         <Card v-else>
           <template #header
-            ><h2>{{ widget.title }}</h2></template
+            ><h2>{{ tr(widget.title) }}</h2></template
           >
           <p v-if="widget.diagnostic" class="text-sm text-muted">
-            Widget information is unavailable or stale.
+            {{ tr('Widget information is unavailable or stale.') }}
           </p>
           <p v-else-if="!widget.observed_at" class="text-sm text-muted">
-            Observation time is unknown.
+            {{ tr('Observation time is unknown.') }}
           </p>
           <dl class="space-y-2 text-sm">
             <div
@@ -57,14 +59,14 @@ const presentation = useAdminPresentation();
               :key="key"
               class="flex flex-wrap gap-3"
             >
-              <dt class="text-muted">{{ key }}</dt>
+              <dt class="text-muted">{{ tr(String(key)) }}</dt>
               <dd class="min-w-0 break-words">
                 {{ typeof value === 'object' ? JSON.stringify(value) : value }}
               </dd>
             </div>
           </dl>
           <p v-if="widget.observed_at" class="mt-4 text-xs text-muted">
-            Observed
+            {{ tr('Observed') }}
             <time :datetime="widget.observed_at">{{ widget.observed_at }}</time>
           </p>
         </Card>

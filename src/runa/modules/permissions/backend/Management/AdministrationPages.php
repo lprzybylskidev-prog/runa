@@ -19,6 +19,64 @@ use Runa\Modules\Permissions\Contracts\PermissionsAuthority;
 /** Source-owned catalogue; metadata never supplies an actor or executes a method. */
 final class AdministrationPages implements ManagementPageProvider
 {
+    /** @var array<string, string> */
+    private const FIELD_NAMES = [
+        'Access' => 'Dostęp',
+        'Account access' => 'Dostęp konta',
+        'Affected accounts, presets and effective losses' => 'Konta i zestawy objęte zmianą oraz utracone uprawnienia',
+        'Apply access preset' => 'Zastosuj zestaw uprawnień',
+        'Apply ordinary assignments' => 'Zastosuj zwykłe przypisania',
+        'Apply preset UUID' => 'UUID zestawu do zastosowania',
+        'Assignment mode' => 'Tryb przypisania',
+        'Change protected authority' => 'Zmień chronione uprawnienia',
+        'Code' => 'Kod',
+        'Copy from account UUID' => 'UUID konta źródłowego',
+        'Copy ordinary assignments' => 'Kopiuj zwykłe przypisania',
+        'Definitions' => 'Definicje',
+        'Description En' => 'Opis (EN)',
+        'Description Pl' => 'Opis (PL)',
+        'Direct permissions' => 'Bezpośrednie uprawnienia',
+        'Effective changes and affected references' => 'Wynikowe zmiany i powiązania objęte zmianą',
+        'Effective permissions' => 'Efektywne uprawnienia',
+        'Force delete referenced custom role' => 'Wymuś usunięcie własnej roli z powiązaniami',
+        'Force deletion' => 'Wymuszone usunięcie',
+        'Grant protected membership' => 'Nadaj chronione członkostwo',
+        'Module' => 'Moduł',
+        'Name' => 'Nazwa',
+        'Name En' => 'Nazwa (EN)',
+        'Name Pl' => 'Nazwa (PL)',
+        'New preset from account UUID' => 'Nowy zestaw z konta o UUID',
+        'Next permission cursor' => 'Kursor następnej strony uprawnień',
+        'Ordinary access' => 'Zwykły dostęp',
+        'Ordinary roles' => 'Zwykłe role',
+        'Permission' => 'Uprawnienie',
+        'Permissions' => 'Uprawnienia',
+        'Practical effective changes' => 'Rzeczywiste zmiany uprawnień',
+        'Preset' => 'Zestaw',
+        'Presets' => 'Zestawy',
+        'Protected authority' => 'Chronione uprawnienia',
+        'Protected definition' => 'Definicja chroniona',
+        'Protected membership and eligibility review' => 'Przegląd chronionego członkostwa i warunków dostępu',
+        'Protected system definition' => 'Chroniona definicja systemowa',
+        'Role' => 'Rola',
+        'Roles' => 'Role',
+        'Save' => 'Zapisz',
+        'Save access' => 'Zapisz dostęp',
+        'Source owner' => 'Właściciel źródła',
+        'Users' => 'Użytkownicy',
+        'add' => 'dodaj',
+        'code' => 'kod',
+        'committed' => 'zatwierdzono',
+        'delete' => 'usuń',
+        'effective' => 'efektywne',
+        'public_id' => 'publiczny UUID',
+        'replace' => 'zastąp',
+        'revision' => 'rewizja',
+        'roles' => 'role',
+        'value' => 'wartość',
+        'version' => 'wersja',
+    ];
+
     public function permissions(): array
     {
         return [];
@@ -46,7 +104,7 @@ final class AdministrationPages implements ManagementPageProvider
 
     public static function field(string $key, string $title, string $type = 'text', ?string $write = null, bool $multiple = false, array $choices = []): ManagementFieldAccess
     {
-        $text = ['pl' => $title, 'en' => $title];
+        $text = ['pl' => self::FIELD_NAMES[$title] ?? $title, 'en' => $title];
         $reference = in_array($key, ['roles', 'permissions'], true);
 
         return new ManagementFieldAccess(new ManagementField($key, $type, $text, $text, writable: $write !== null,

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { t: tr } = useAdminLocale();
 import type { AdminPageProps, AdminPageSlots } from './contracts';
 import { useAdminPresentation } from './presentation';
 import AdminForm from './AdminForm.vue';
@@ -13,7 +15,7 @@ const presentation = useAdminPresentation();
     <div class="space-y-6">
       <slot name="heading" :controller="controller" :form="form">
         <h1 class="text-xl font-semibold">
-          {{ controller.page.value?.title }}
+          {{ tr(controller.page.value?.title ?? '') }}
         </h1>
       </slot>
       <slot :controller="controller" :form="form">
@@ -21,7 +23,7 @@ const presentation = useAdminPresentation();
           v-if="!controller.page.value?.sections.length"
           class="text-sm text-muted"
         >
-          No sections are available.
+          {{ tr('No sections are available.') }}
         </p>
         <AdminComponentBoundary
           v-for="section in controller.page.value?.sections ?? []"

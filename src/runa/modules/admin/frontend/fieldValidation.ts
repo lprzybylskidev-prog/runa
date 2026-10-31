@@ -1,3 +1,4 @@
+import { adminText } from './localization';
 import type { AdminFieldData, AdminFieldValue } from './contracts';
 
 const publicId =
@@ -24,7 +25,7 @@ function utcTimestamp(value: AdminFieldValue): boolean {
 }
 
 /** Static UX hints only; owning write validation remains authoritative. */
-export function validateAdminField(
+function validateField(
   field: AdminFieldData,
   value: AdminFieldValue,
 ): readonly string[] {
@@ -83,4 +84,14 @@ export function validateAdminField(
     default:
       return ['This field is currently unavailable.'];
   }
+}
+
+export function validateAdminField(
+  field: AdminFieldData,
+  value: AdminFieldValue,
+  locale: 'pl' | 'en' = 'en',
+): readonly string[] {
+  return validateField(field, value).map((message) =>
+    adminText(message, locale),
+  );
 }

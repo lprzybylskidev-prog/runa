@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from '@/runa/admin';
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
 import { Alert, Button, Card, Table } from '@/runa/ui';
 import type { TableColumn, TableQuery } from '@/runa/ui';
@@ -38,23 +40,20 @@ const rows = computed<Record<string, AdminJson>[]>(() => {
     return [];
   }
 });
-const columns: TableColumn<Record<string, AdminJson>>[] = [
-  'code',
-  'direct',
-  'roles',
-  'roles_truncated',
-  'available',
-  'effective',
-].map((key) => ({
-  key,
-  label: key.replaceAll('_', ' '),
-  value: (row) =>
-    typeof row[key] === 'boolean'
-      ? row[key]
-        ? 'Yes'
-        : 'No'
-      : String(row[key] ?? ''),
-}));
+const columns = computed<TableColumn<Record<string, AdminJson>>[]>(() =>
+  ['code', 'direct', 'roles', 'roles_truncated', 'available', 'effective'].map(
+    (key) => ({
+      key,
+      label: tr(key.replaceAll('_', ' ')),
+      value: (row) =>
+        typeof row[key] === 'boolean'
+          ? row[key]
+            ? tr('Yes')
+            : tr('No')
+          : String(row[key] ?? ''),
+    }),
+  ),
+);
 async function next() {
   const cursor = current.value?.values.next;
   if (typeof cursor === 'string')
@@ -68,35 +67,35 @@ async function next() {
 <template>
   <Card>
     <template #header
-      ><h2>{{ section.title }}</h2></template
+      ><h2>{{ tr(section.title) }}</h2></template
     >
     <Alert v-if="resource.error.value" tone="warning">{{
-      resource.error.value.message
+      tr(resource.error.value.message)
     }}</Alert>
     <Table
       mode="client"
       :loading="resource.busy.value || !record"
-      english
+      :english="adminLocale === 'en'"
       :searchable="false"
       :rows="rows"
       :query="query"
       @update:query="query = $event"
       :columns="columns"
       :row-key="(row: Record<string, AdminJson>) => String(row.code)"
-      caption="Current bounded permission page"
+      :caption="tr('Current bounded permission page')"
     />
     <div class="mt-3 flex gap-2">
       <Button
         size="sm"
         :disabled="resource.busy.value || !current?.values.next"
         @click="next"
-        >Next permissions</Button
+        >{{ tr('Next permissions') }}</Button
       >
       <Button
         size="sm"
         :disabled="resource.busy.value"
         @click="resource.clear()"
-        >First permissions</Button
+        >{{ tr('First permissions') }}</Button
       >
     </div>
   </Card>

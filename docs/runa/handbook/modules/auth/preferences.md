@@ -122,7 +122,7 @@ Guest `createPreferenceStore` retains validated versioned scoped localStorage an
 legacy `runa.locale`/`runa.theme` fallback; denied storage uses lifetime memory.
 Reset writes a tombstone so legacy data cannot reappear. Only guest changes write
 legacy keys. Account values never enter guest/legacy storage. All mounted consumers
-subscribe to account changes, and incoming hydration does not generate new saves.
+subscribe to account changes and guest writes/resets, and incoming hydration does not generate new saves.
 Initial locale/theme application to document attributes is also read-only: mounting
 a consumer while its account snapshot is pending must not write defaults back.
 Only subsequent deliberate value changes persist, with the existing hydration guard.

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { t: tr } = useAdminLocale();
 import { toRef } from 'vue';
 import { Alert, Button } from '@/runa/ui';
 import type {
@@ -33,10 +35,12 @@ const presentation = useAdminPresentation();
   />
   <Alert v-else-if="state !== 'ready' || !page" tone="warning">
     {{
-      controller.error.value?.message ??
-      'This administration page is unavailable.'
+      tr(
+        controller.error.value?.message ??
+          tr('This administration page is unavailable.'),
+      )
     }}
-    <Button @click="controller.refresh">Retry</Button>
+    <Button @click="controller.refresh">{{ tr('Retry') }}</Button>
   </Alert>
   <AdminComponentBoundary
     v-else

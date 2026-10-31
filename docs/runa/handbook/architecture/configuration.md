@@ -58,7 +58,7 @@ Temporary flags must have a removal plan and must not become permanent accidenta
 
 The administration panel is a mandatory core part of Runa and is not disableable.
 
-It is English-only.
+It follows the application language: Polish by default, with English available.
 
 It manages business settings. Exact business modules/settings are introduced by later roadmaps.
 

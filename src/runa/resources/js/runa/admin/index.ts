@@ -42,3 +42,8 @@ export type {
   AdminApplicationSetting,
   AdminApplicationSettingsController,
 } from '../../../../modules/admin/frontend/useAdminApplicationSettings';
+
+export {
+  useAdminLocale,
+  adminText,
+} from '../../../../modules/admin/frontend/localization';

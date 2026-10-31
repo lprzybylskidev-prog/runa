@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from '@/runa/admin';
+const { t: tr } = useAdminLocale();
 import { ref } from 'vue';
 import { Alert, Button, TextInput } from '@/runa/ui';
 import { AdminPage } from '@/runa/admin';
@@ -20,19 +22,19 @@ async function select() {
     <div class="flex flex-wrap items-end gap-3">
       <TextInput
         v-model="subject"
-        label="Account UUID (empty uses your account)"
-        :errors="invalid ? ['Enter a valid UUIDv7.'] : []"
+        :label="tr('Account UUID (empty uses your account)')"
+        :errors="invalid ? [tr('Enter a valid UUIDv7.')] : []"
         @keydown.enter.prevent="select"
       />
-      <Button :disabled="form.busy.value" @click="select"
-        >Select account</Button
-      >
+      <Button :disabled="form.busy.value" @click="select">{{
+        tr('Select account')
+      }}</Button>
     </div>
-    <Alert tone="info"
-      >Ordinary assignments, copy and presets preserve protected membership.
-      Each operation requires its own review and fresh both-factor proof.
-      Protected authority uses a separate action and confirmation.</Alert
-    >
+    <Alert tone="info">{{
+      tr(
+        'Ordinary assignments, copy and presets preserve protected membership. Each operation requires its own review and fresh both-factor proof. Protected authority uses a separate action and confirmation.',
+      )
+    }}</Alert>
     <AdminPage v-bind="props" />
   </div>
 </template>

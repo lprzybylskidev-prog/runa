@@ -371,3 +371,32 @@ it('a forbidden session refresh clears cached account preferences into a restric
     fetch.mockRestore();
   }
 });
+
+it('Admin bilingual guest preference subscribers receive writes and resets without an account request', () => {
+  const memory = new Map<string, string>();
+  let requests = 0;
+  const store = createAccountPreferenceStore(
+    createPreferenceStore({
+      read: (key) => memory.get(key) ?? null,
+      write: (key, value) => {
+        memory.set(key, value);
+      },
+      remove: (key) => {
+        memory.delete(key);
+      },
+    }),
+    async () => {
+      requests++;
+      return snapshot('unused');
+    },
+  );
+  const observed: string[] = [];
+  const stop = store.store.subscribe!(() =>
+    observed.push(store.store.read(scope, 'runa.theme', theme)),
+  );
+  store.store.write(scope, 'runa.theme', theme, 'dark');
+  store.store.reset(scope, 'runa.theme');
+  expect(observed).toEqual(['dark', 'system']);
+  expect(requests).toBe(0);
+  stop();
+});

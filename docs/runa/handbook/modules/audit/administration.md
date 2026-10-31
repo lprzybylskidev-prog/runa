@@ -1,7 +1,7 @@
 # Audit administration viewer
 
 Audit 1.1.0 supplies `runa.audit/history` Admin declarations, the private HistoryReader
-adapter and usable English defaults. Audit still has no backend dependency on Admin,
+adapter and usable Polish/English defaults. Audit still has no backend dependency on Admin,
 Auth or Permissions. Admin requires current entry/password proof; every read also
 resolves AuditReads 1.0.0 under current `runa.audit.read` and owning availability.
 The source-only `admin_history` forward edge from 1.0.5 to 1.1.0 transforms no data

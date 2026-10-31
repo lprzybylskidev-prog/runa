@@ -1,5 +1,5 @@
 /* eslint-disable vue/one-component-per-file -- Independent controlled-field and failure-isolation fixtures. */
-import { afterEach, expect, it, vi } from '@runa/testing/vitest';
+import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { defineComponent, h, nextTick, shallowRef, shallowReactive } from 'vue';
 import type { PropType } from 'vue';
@@ -16,6 +16,9 @@ import type {
 import type { SelectionProvider } from '@/runa/ui';
 import CustomerAdminField from './fixtures/customization/CustomerAdminField.vue';
 enableAutoUnmount(afterEach);
+beforeEach(() => {
+  localStorage.setItem('runa.locale', 'en');
+});
 function field(change: Partial<AdminFieldData> = {}): AdminFieldData {
   return {
     key: 'name',

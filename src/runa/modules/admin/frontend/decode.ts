@@ -1,4 +1,5 @@
 import type {
+  AdminText,
   AdminBootstrap,
   AdminComponent,
   AdminPageData,
@@ -72,6 +73,13 @@ function text(value: unknown, max = 256): string {
   if (typeof value !== 'string' || value.length > max)
     throw new TypeError('Invalid Admin text.');
   return value;
+}
+function localizedText(value: unknown, max = 256): AdminText {
+  if (typeof value === 'string') return text(value, max);
+  const v = object(value);
+  if (Object.keys(v).sort().join(',') !== 'en,pl')
+    throw new TypeError('Invalid Admin localized text.');
+  return { pl: text(v.pl, max), en: text(v.en, max) };
 }
 export function owner(value: unknown): string {
   const id = text(value, 128);
@@ -177,7 +185,7 @@ function field(value: unknown): AdminFieldData {
   return {
     key: operation(v.key),
     type: key(v.type),
-    label: text(v.label),
+    label: localizedText(v.label, 1024),
     readonly: boolean(v.readonly),
     sensitive: boolean(v.sensitive),
     filterable: boolean(v.filterable),
@@ -202,7 +210,7 @@ function command(value: unknown): AdminCommandData {
     throw new TypeError('Invalid Admin command.');
   return {
     key: operation(v.key),
-    title: text(v.title),
+    title: localizedText(v.title),
     mode: v.mode,
     destructive: boolean(v.destructive),
     requirement: v.requirement as AdminCommandData['requirement'],
@@ -225,7 +233,7 @@ function section(value: unknown): AdminSectionData {
   return {
     key: id,
     view: v.view,
-    title: text(v.title),
+    title: localizedText(v.title),
     readonly: boolean(v.readonly),
     required: boolean(v.required),
     component: nullable(v.component, component),
@@ -252,7 +260,7 @@ function widget(value: unknown): AdminWidgetData {
     throw new TypeError('Invalid Admin freshness.');
   return {
     id: text(v.id),
-    title: text(v.title),
+    title: localizedText(v.title),
     component: nullable(v.component, component),
     values: values(v.values),
     observed_at: observed,
@@ -299,9 +307,9 @@ export function decodeBootstrap(value: unknown): AdminBootstrap {
                   throw new TypeError('Invalid Admin page order.');
                 return {
                   key: k,
-                  title: text(p.title),
+                  title: localizedText(p.title),
                   href: p.href as string,
-                  group: nullable(p.group, text),
+                  group: nullable(p.group, localizedText),
                   order: p.order,
                 };
               },
@@ -312,7 +320,12 @@ export function decodeBootstrap(value: unknown): AdminBootstrap {
           const defaultPage = key(o.default_page);
           if (!pages.some((p) => p.key === defaultPage))
             throw new TypeError('Invalid Admin default page.');
-          return { id, title: text(o.title), default_page: defaultPage, pages };
+          return {
+            id,
+            title: localizedText(o.title),
+            default_page: defaultPage,
+            pages,
+          };
         },
         256,
       ),
@@ -340,7 +353,7 @@ export function decodePage(value: unknown): AdminPageData {
     schema_version: 1,
     owner: owner(v.owner),
     key: key(v.key),
-    title: text(v.title),
+    title: localizedText(v.title),
     generation: integer(v.generation),
     revision: text(v.revision),
     component: nullable(v.component, component),

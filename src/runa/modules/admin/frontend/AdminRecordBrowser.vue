@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { t: tr } = useAdminLocale();
 import { computed } from 'vue';
 import { Button, Card } from '@/runa/ui';
 import type {
@@ -26,7 +28,9 @@ const sections = computed(
 </script>
 <template>
   <div class="space-y-6">
-    <h1 class="text-xl font-semibold">{{ controller.page.value?.title }}</h1>
+    <h1 class="text-xl font-semibold">
+      {{ tr(controller.page.value?.title ?? '') }}
+    </h1>
     <Card>
       <slot name="toolbar" :table="table" />
       <Button
@@ -34,7 +38,7 @@ const sections = computed(
         class="mb-4"
         :disabled="form.busy.value"
         @click="table.select(null)"
-        >New custom definition</Button
+        >{{ tr('New custom definition') }}</Button
       >
       <AdminResourceTable :controller="table">
         <template #actions="{ row }"
@@ -42,7 +46,7 @@ const sections = computed(
             size="sm"
             :disabled="form.busy.value"
             @click="table.select(row.public_id)"
-            >Open record</Button
+            >{{ tr('Open record') }}</Button
           ></template
         >
       </AdminResourceTable>

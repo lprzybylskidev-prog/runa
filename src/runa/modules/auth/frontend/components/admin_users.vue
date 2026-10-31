@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from '@/runa/admin';
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref } from 'vue';
 import { Alert, Button, Card, Select, TextInput } from '@/runa/ui';
 import {
@@ -34,28 +36,32 @@ function filter() {
 </script>
 <template>
   <div class="space-y-6">
-    <h1 class="text-xl font-semibold">{{ controller.page.value?.title }}</h1>
+    <h1 class="text-xl font-semibold">
+      {{ tr(controller.page.value?.title ?? '') }}
+    </h1>
     <Card v-if="directory">
-      <template #header><h2>User directory</h2></template>
+      <template #header
+        ><h2>{{ tr('User directory') }}</h2></template
+      >
       <div class="mb-4 grid gap-4 sm:grid-cols-3">
         <TextInput
           v-model="search"
-          label="Name or authorized login"
+          :label="tr('Name or authorized login')"
           :maxlength="160"
           @keydown.enter.prevent="filter"
         />
         <Select
           v-model="state"
-          locale="en"
-          label="Account state"
+          :locale="adminLocale"
+          :label="tr('Account state')"
           :options="[
-            { value: 'current', label: 'Current accounts' },
-            { value: 'deleted', label: 'Deleted accounts' },
-            { value: 'all', label: 'All accounts' },
+            { value: 'current', label: tr('Current accounts') },
+            { value: 'deleted', label: tr('Deleted accounts') },
+            { value: 'all', label: tr('All accounts') },
           ]"
         />
         <div class="flex items-end">
-          <Button @click="filter">Filter accounts</Button>
+          <Button @click="filter">{{ tr('Filter accounts') }}</Button>
         </div>
       </div>
       <AdminResourceTable :controller="table">
@@ -64,7 +70,7 @@ function filter() {
             size="sm"
             :disabled="form.busy.value"
             @click="table.select(row.public_id)"
-            >Open account</Button
+            >{{ tr('Open account') }}</Button
           ></template
         >
       </AdminResourceTable>
@@ -73,10 +79,15 @@ function filter() {
       {{
         table.selected.value
           ? `Selected account: ${table.selected.value}`
-          : 'Account operations initially show your current account. Select another account from the directory.'
+          : tr(
+              'Account operations initially show your current account. Select another account from the directory.',
+            )
       }}
-      Lifecycle, email, invitation, security and policy actions run
-      independently. Profile and access use the shared Save.
+      {{
+        tr(
+          'Lifecycle, email, invitation, security and policy actions run independently. Profile and access use the shared Save.',
+        )
+      }}
     </Alert>
     <AdminForm :controller="form">
       <div class="space-y-6">

@@ -2,7 +2,7 @@
 
 # Admin frontend contract
 
-Status: points 4–5 deliver the English session shell, guarded reads and independent
+Status: points 4–5 deliver the PL/EN session shell, guarded reads and independent
 commands, compiled component resolution, presentation providers, generated record
 forms and cursor tables. Public facade `@/runa/admin` exports AdminApplication,
 AdminLayout, AdminPage, AdminSection, AdminForm, AdminField, AdminAction,
@@ -94,7 +94,7 @@ interface AdminFormController {
   sections: ComputedRef<readonly AdminSectionData[]>;
   records: Ref<Record<string, AdminRecord>>;
   blocked: ComputedRef<boolean>;
-  confirmation: Ref<{ title: string; description: string } | undefined>;
+  confirmation: Ref<{ title: AdminText; description: string } | undefined>;
   confirm(accepted: boolean): void;
   beforeLeave(): Promise<boolean>;
   selectSubject(publicId: string | null): Promise<boolean>;
@@ -185,7 +185,7 @@ function useAdminResource(
 `runa.admin.enter` password action. Render public `AdminEntryProof` with
 `controller: AdminController`, or bind that input and call `confirmEntry()` once
 on explicit submission. AdminEntryProof is a thin public AuthOperationProofPage consumer,
-with English title/description, a confirmed-to-bootstrap refresh and cancel-to-/app
+with localized PL/EN title/description, a confirmed-to-bootstrap refresh and cancel-to-/app
 navigation. Its Auth-owned page uses MinimalLayout before panel admission;
 ApplicationSessionShell keeps one session owner and renders the admission slot
 outside ApplicationLayout. AuthPresentation.operationProofPage/minimalLayout remain
@@ -199,7 +199,7 @@ revision fence protected reads.
 
 Composables mount once per keyed account/page; scope disposal aborts requests and
 removes listeners/dirty guards. They own cancellation, session/CSRF/proof handling,
-stale response rejection and English-scoped feedback. The same aggregate mutation
+stale response rejection and localized PL/EN feedback. The same aggregate mutation
 queue/revision is shared by forms and independent sections; no second competing
 controller for one record. useAdmin reuses a supplied session controller; otherwise
 it creates one through the existing Auth composable. The default AdminApplication
@@ -328,7 +328,7 @@ Policies remain authoritative. Missing/duplicate UUIDv7 row identities refuse
 rendering, with no fallback to internal IDs or row positions. Secrets display
 only Set/Not set; booleans use Yes/No, null uses the shared table placeholder.
 
-The supplied component is English and reuses Table's semantic tokens, horizontal
+The supplied component supports PL/EN and reuses Table's semantic tokens, horizontal
 keyboard scrolling, loading/empty/error feedback and previous/next controls.
 It emits no custom events. Slots are `toolbar({feedbackTarget: string})`,
 `filters({query: TableQuery, update(value: TableQuery): void})`,
@@ -465,7 +465,7 @@ without changing App routing. Public toolbar/filter/row/cell slots remain usable
 ## Delivered field composition
 
 Admin owns public `AdminField` and
-`validateAdminField(field: AdminFieldData, value: AdminFieldValue): readonly string[]`
+`validateAdminField(field: AdminFieldData, value: AdminFieldValue, locale?: 'pl'|'en'): readonly string[]`
 through `@/runa/admin`, implemented under Admin frontend and delivered as built
 presentation. Module and ordinary App consumers can compose controlled fields
 without a form controller, private imports, transport or another session owner.
@@ -480,7 +480,7 @@ busy state block update emissions, including emissions from custom replacements.
 These are UX guards; backend grants, field admission and validation remain authority.
 
 Defaults compose existing FormField/TextInput/NumberInput/Checkbox/Select/TagsInput.
-Text and dictionary choices use the shared English selection; dictionaries without
+Text and dictionary choices use the shared localized selection; dictionaries without
 choices use text. Integers emit safe numbers when complete, null when empty, and
 the exact incomplete/out-of-range string otherwise, so invalid drafts never round
 or reuse a stale valid value. UUID fields accept only public UUIDv7 values through
@@ -492,8 +492,7 @@ are associated text, including Yes/No and Set/Not set, rather than editable cont
 Secret set-state never fills a password input. Replacement text is transient
 controlled input, with no reveal control or persistence here; the owning consumer
 must erase it on account/authority/subject invalidation. Static validation checks
-required/max-length/choices/type/public UUID/UTC syntax only. It returns safe English
-messages and never echoes values. After an edit the default merges these hints
+required/max-length/choices/type/public UUID/UTC syntax only. It returns safe messages (English for omitted locale; supplied fields use the live locale) and never echoes values. After an edit the default merges these hints
 with supplied owner errors; untouched fields do not display required errors.
 Unicode length counts code points; IME input follows TextInput. Do not rely on
 native validation or truncate drafts with a native maxlength.
@@ -501,7 +500,7 @@ native validation or truncate drafts with a native maxlength.
 A lookup requires an explicit field-bound `lookup.provider`; otherwise it renders
 unavailable instead of accepting arbitrary free text. `selectedOptions` supplies
 labels for selected/off-page UUIDs. Select owns bounded cursor pages, cancellation,
-keyboard/focus and English feedback; the owning consumer supplies authorized
+keyboard/focus and PL/EN feedback; the owning consumer supplies authorized
 transport/filter semantics. Passing this presentation input grants no authority.
 useAdminForm supplies field-bound option providers automatically. The field
 component itself sends no write; Save/preview orchestration belongs to the form.
@@ -655,7 +654,7 @@ to the provider or default table. Binding diagnostics render a safe warning befo
 mounting any section presentation. Each section keeps its own render boundary, so
 one broken custom presentation does not hide healthy siblings.
 
-A source-declared table mounts one bounded collection lane, with English shared
+A source-declared table mounts one bounded collection lane, with localized shared
 controls, secret set-state and existing cursor/query/disposal behavior. Source
 `view` is presentation intent, never additional authority. The default `record`
 intent mounts one existing resource lane, reads the projected subject UUID (or
@@ -680,9 +679,9 @@ component setup/render/load failures to its boundary. Required form blocking is
 implemented by useAdminForm and field/section boundaries; source identity validation alone is not Save authorization.
 
 Defaults remain usable without configuration: ApplicationLayout, existing Form/
-FormSection/controls, Table/useTable, confirmation and feedback. Admin is English
-including shared controls/proof/errors; this scoped locale does not persist a
-change to the account's ordinary app language. Light/dark, responsive keyboard and
+FormSection/controls, Table/useTable, confirmation and feedback. Admin uses the same Polish/English preference as the application, including
+shared controls, proof and errors; changing language preserves mounted controllers
+and dirty drafts. Light/dark, responsive keyboard and
 focus behavior are required in final rendered acceptance. No runtime/template
 compiler, new framework, UI dependency or duplicated table backend.
 
@@ -832,7 +831,7 @@ its `saved` event requests safe dashboard read reconciliation after publication.
 `AdminOperationResult` accepts `{ result: AdminOperationData }` and renders native
 outcomes/IDs, health reasons and cooperative cancellation without inventing success.
 These views reuse Card/Select/TextInput/NumberInput/Checkbox/ConfirmDialog and
-remain English. Settings use native types and secret set-state; unsupported custom
+support PL/EN. Settings use native types and secret set-state; unsupported custom
 types require a module-specific editor replacement. Source-validated health overrides
 and non-sensitive integration maps use controlled JSON input.
 
@@ -869,7 +868,7 @@ maintenance/update/Core failure still blocks all protected HTTP.
 
 ## Application global settings and runtime branding
 
-`AdminApplicationSettings({controller: AdminOperationsController})` is the English
+`AdminApplicationSettings({controller: AdminOperationsController})` is the PL/EN
 default editor. Its default slot receives `{controller: AdminApplicationSettingsController}`;
 its exposed `settings` is the same controller. Replace it through
 `AdminPresentation.applicationSettings`, or use the public
@@ -906,3 +905,24 @@ Auth session changes and focus/visibility/history navigation. Per-app epochs can
 older reads; unmount cleans observers/listeners. It never stores branding in guest
 preferences or changes canonical IDs/versions. Custom roots may use the same loader
 and IdentityProvider; retain lifecycle fencing and source fallback.
+
+## Polish and English presentation
+
+Admin follows the existing application locale
+(Polish default, English secondary), without a separate Admin preference/session.
+Admin owns public `AdminText = string | {pl: string; en: string}` and
+`AdminMessages = Readonly<Record<string, string>>`. `useAdminLocale()` returns
+`{locale: Ref<'pl'|'en'>, t(text: AdminText): string}` for composition; `adminText(text,
+locale, messages?)` is its pure counterpart. Source English strings are translation
+keys; supplied Core presentation has a reviewed Polish catalogue. Unknown strings
+remain source text. Localized metadata maps select their explicit language.
+`AdminApplication.messages?: AdminMessages` extends/overrides the Polish catalogue
+for source-owned App/module presentation. Implementation stays in Admin frontend,
+public entrypoint `@/runa/admin`, bundled runtime presentation. Translations never
+change machine keys, business values or authorization. Field and owner display
+names retain both source locales in projection. Management page/section/command/
+widget titles and optional page groups accept English strings or explicit PL/EN
+maps; `DeclarationRules` validates both nonempty bounded language values. Existing
+backend technical diagnostics remain English; views translate reviewed UI labels
+and safe messages. Locale changes rerender presentation without reinitializing
+controllers, refetching protected data or discarding drafts.

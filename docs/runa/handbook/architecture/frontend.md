@@ -32,7 +32,7 @@ User-facing UI:
 - Polish is the default language.
 - English is the secondary language.
 
-The supplied administration panel is English-only; see the [Admin contract](../modules/admin/README.md) for delivered source and final acceptance status.
+The supplied administration panel supports Polish by default and English; see the [Admin contract](../modules/admin/README.md) for delivered source and final acceptance status.
 
 Backend, tooling, logs, source code, and documentation remain English-only.
 

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from '@/runa/admin';
+const { t: tr } = useAdminLocale();
 import { computed } from 'vue';
 import { Alert, Card } from '@/runa/ui';
 import { AdminSection } from '@/runa/admin';
@@ -33,9 +35,9 @@ const section = computed(() => ({
 </script>
 <template>
   <Card>
-    <Alert v-if="locked" tone="info" class="mb-4"
-      >Source and system definitions are read-only.</Alert
-    >
+    <Alert v-if="locked" tone="info" class="mb-4">{{
+      tr('Source and system definitions are read-only.')
+    }}</Alert>
     <AdminSection :section="section" :controller="controller" />
   </Card>
 </template>

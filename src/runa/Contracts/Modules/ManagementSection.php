@@ -7,9 +7,11 @@ use Runa\ModuleFramework\Management\DeclarationRules as Rules;
 final readonly class ManagementSection
 {
     /** @param list<ManagementFieldAccess> $fields
-     * @param list<ManagementCommandDefinition> $commands */
+     * @param  list<ManagementCommandDefinition>  $commands
+     * @param  string|array{pl:string,en:string}  $title
+     */
     public function __construct(
-        public string $key, public string $title, public string $readPermission,
+        public string $key, public string|array $title, public string $readPermission,
         public ?string $writePermission, public string $binding, public array $fields,
         public array $commands = [], public int $order = 0, public bool $required = true,
         public ?string $component = null, public int $schemaVersion = 1, public string $view = 'record',

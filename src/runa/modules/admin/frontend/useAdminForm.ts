@@ -22,6 +22,7 @@ import type {
   AdminError,
   AdminFieldLookup,
   AdminFormController,
+  AdminText,
   AdminJson,
   AdminPageController,
   AdminPreview,
@@ -70,7 +71,7 @@ export function useAdminForm(
   >({});
   const review = shallowRef<AdminPreview>();
   const commandReviews = ref<Record<string, AdminCommandReview>>({});
-  const confirmation = shallowRef<{ title: string; description: string }>();
+  const confirmation = shallowRef<{ title: AdminText; description: string }>();
   const failures = ref(new Set<string>());
   const editors = ref<Record<string, string | null>>({});
   const activated = ref(new Set<string>());
@@ -121,7 +122,7 @@ export function useAdminForm(
     confirmationResult = undefined;
     resolve?.(accepted);
   }
-  function ask(title: string, description: string): Promise<boolean> {
+  function ask(title: AdminText, description: string): Promise<boolean> {
     if (confirmationResult || !alive) return Promise.resolve(false);
     confirmation.value = { title, description };
     return new Promise((resolve) => {
@@ -529,7 +530,7 @@ export function useAdminForm(
         await (options.confirmLeave?.() ??
           ask(
             'Discard unsaved changes?',
-            `The unsaved changes in ${section?.title ?? 'this editor'} will be discarded.`,
+            'Your unsaved changes will be discarded when you leave this editor.',
           )),
       )
     );

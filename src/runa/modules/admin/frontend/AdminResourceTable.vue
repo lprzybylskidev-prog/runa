@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed } from 'vue';
 import {
   Table,
@@ -29,17 +31,17 @@ const exportColumns = computed(() =>
 </script>
 <template>
   <Alert v-if="controller.error.value" tone="warning">
-    {{ controller.error.value.message }}
+    {{ tr(controller.error.value.message) }}
     <Button
       size="sm"
       :disabled="controller.resource.busy.value"
       @click="controller.refresh"
-      >Retry</Button
+      >{{ tr('Retry') }}</Button
     >
   </Alert>
   <Table
     mode="server"
-    english
+    :english="adminLocale === 'en'"
     :searchable="false"
     :loading="controller.resource.busy.value"
     :columns="controller.columns.value"
@@ -47,7 +49,7 @@ const exportColumns = computed(() =>
     :provider="controller.provider.value"
     :query="controller.query.value"
     :row-key="(row: AdminRecord) => row.public_id!"
-    :caption="controller.section.value?.title ?? 'Records'"
+    :caption="tr(controller.section.value?.title ?? tr('Records'))"
     :page-sizes="[10, 25, 50, 100]"
     :selectable="
       !!controller.adapters.value.bulk ||
@@ -67,13 +69,13 @@ const exportColumns = computed(() =>
         <TablePreferences
           :controller="controller.views"
           :columns="controller.columns.value"
-          english
+          :english="adminLocale === 'en'"
         />
         <Button
           size="sm"
           :disabled="controller.resource.busy.value"
           @click="controller.refresh"
-          >Refresh</Button
+          >{{ tr('Refresh') }}</Button
         >
         <Button
           v-if="
@@ -83,7 +85,7 @@ const exportColumns = computed(() =>
           "
           size="sm"
           @click="controller.select(null)"
-          >New record</Button
+          >{{ tr('New record') }}</Button
         >
         <TableActions
           v-if="
@@ -98,7 +100,7 @@ const exportColumns = computed(() =>
           :selection="controller.selection.value"
           :columns="exportColumns"
           :feedback-target="scope.feedbackTarget"
-          english
+          :english="adminLocale === 'en'"
         />
       </slot>
     </template>
@@ -112,9 +114,9 @@ const exportColumns = computed(() =>
       #actions="scope"
     >
       <slot name="actions" v-bind="scope"
-        ><Button size="sm" @click="controller.select(scope.row.public_id)"
-          >Open record</Button
-        ></slot
+        ><Button size="sm" @click="controller.select(scope.row.public_id)">{{
+          tr('Open record')
+        }}</Button></slot
       >
     </template>
     <template
@@ -128,10 +130,10 @@ const exportColumns = computed(() =>
     </template>
   </Table>
   <ConfirmDialog
-    locale="en"
+    :locale="adminLocale"
     :model-value="!!controller.confirmation.value"
-    :title="controller.confirmation.value ?? 'Confirm bulk action'"
-    description="Continue with this action for the selected records?"
+    :title="tr(controller.confirmation.value ?? tr('Confirm bulk action'))"
+    :description="tr('Continue with this action for the selected records?')"
     @confirm="controller.confirm(true)"
     @cancel="controller.confirm(false)"
     @update:model-value="!$event && controller.confirm(false)"

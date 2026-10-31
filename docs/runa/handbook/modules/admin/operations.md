@@ -142,7 +142,7 @@ duplicate keys/providers and foreign Core replacement. Key syntax follows
 ApiOperation, max 64 settings and 32 logos; type `string|integer|boolean|enum`,
 non-secret scalar/null defaults, no callbacks/config paths. Strings maxLength
 1–4096, enum unique choices max 64 with safe key grammar; no implicit coercion.
-Titles max 160, same English/no-control rule as Admin descriptors. Defaults match
+Titles max 160, same plain-text/no-control rule as Admin descriptors. Defaults match
 the declared scalar type, never arbitrary objects.
 Reads return `{revision:int,values:array<string,scalar|null>}` filtered by current
 read grants; update accepts only known, readable+writable keys, checks grants and

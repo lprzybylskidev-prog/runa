@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Support Polish by default and English throughout Admin, shared controls, proof, errors and Core presentation. Preserve the application language preference and dirty controllers on switches; expose public AdminText/messages/useAdminLocale composition and retain bilingual metadata.
+
 - Replace the duplicated entry password form/request with AuthOperationProofPage/useOperationProof. Render pre-admission proof/loading/refusal outside ApplicationLayout; retain the shared session, fixed native action and explicit retry/cancel semantics.
 
 - Name the module catalogue entry `Panel administratora` / `Administrator panel`, matching the shared account menu, dashboard and English navigation/accessibility copy.

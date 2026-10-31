@@ -46,16 +46,16 @@ App providers select `view: 'table'` for automatic bounded collection compositio
 without changing handler capabilities or guessing intent from field names.
 
 ```php
-ManagementPage::__construct(string $key, string $title, string $permission,
-    array $sections, int $order = 0, ?string $group = null,
+ManagementPage::__construct(string $key, string|array $title, string $permission,
+    array $sections, int $order = 0, string|array|null $group = null,
     bool $default = false, ?string $component = null, int $schemaVersion = 1)
-ManagementSection::__construct(string $key, string $title, string $readPermission,
+ManagementSection::__construct(string $key, string|array $title, string $readPermission,
     ?string $writePermission, string $binding, array $fields,
     array $commands = [], int $order = 0, bool $required = true,
     ?string $component = null, int $schemaVersion = 1, string $view = 'record')
 ManagementFieldAccess::__construct(ManagementField $field, string $readPermission,
     ?string $writePermission = null, ?string $component = null)
-ManagementCommandDefinition::__construct(string $key, string $title,
+ManagementCommandDefinition::__construct(string $key, string|array $title,
     ManagementOperation $safety, string $binding,
     string $mode = 'independent', ?string $participant = null,
     bool $destructive = false, string $intent = 'action', ?string $proofAction = null)
@@ -65,7 +65,7 @@ ManagementBinding::__construct(string $key, string $handler, array $targets,
     ?string $participant = null)
 ManagementContribution::__construct(string $key, string $host,
     ManagementSection $section, int $order = 0)
-ManagementWidget::__construct(string $key, string $title, string $permission,
+ManagementWidget::__construct(string $key, string|array $title, string $permission,
     string $binding, int $order = 0, ?string $component = null)
 ```
 
@@ -88,8 +88,7 @@ existing native codes (including explicitly reviewed custom Permissions definiti
 plus their App-owned record Policies. New module-owned source dictionaries continue
 through explicit module install/update synchronization, never provider boot. An
 independent page does not require inventing a module or permission engine.
-Page keys additionally use `[a-z][a-z0-9_]{0,63}`. Title/group are English plain
-text, 1–160 characters, no control characters; group may be null. Order is within
+Page keys additionally use `[a-z][a-z0-9_]{0,63}`. Title/group accept English source text or explicit `{pl:string,en:string}` maps, 1–160 characters, no control characters; group may be null. Order is within
 ±1,000,000. Each provider has at most 32 pages, 128 bindings, 64 contributions and
 32 widgets; pages have at most 32 sections; each section retains the current
 64-field/32-command limits. Keys are unique within owner/type; at most one default
@@ -294,24 +293,24 @@ to camelCase only in local state. Complete shape notation (`?` means optional):
 
 ```text
 Bootstrap = {schema_version:1, generation:int, revision:string,
-  owners:[{id:string,title:string,default_page:string,
-    pages:[{key:string,title:string,href:string,group:string|null,order:int}]}],
+  owners:[{id:string,title:AdminText,default_page:string,
+    pages:[{key:string,title:AdminText,href:string,group:AdminText|null,order:int}]}],
   dashboard:{widgets:[Widget]}, presentation:{name:string,
     logo:{src:string,accessibleName:string}|null,revision:int}}
-Page = {schema_version:1, owner:string, key:string, title:string,
+Page = {schema_version:1, owner:string, key:string, title:AdminText,
   generation:int, revision:string, component:Component|null, sections:[Section]}
-Section = {key:string,title:string,view:'record'|'table',readonly:boolean,required:boolean,
+Section = {key:string,title:AdminText,view:'record'|'table',readonly:boolean,required:boolean,
   component:Component|null,fields:[Field],commands:[Command],record:Record|null,
   diagnostic:string|null}
-Field = {key:string,type:string,label:string,readonly:boolean,sensitive:boolean,
+Field = {key:string,type:string,label:AdminText,readonly:boolean,sensitive:boolean,
   filterable:boolean,sortable:boolean,lookup:boolean,
   required:boolean,max_length:int|null,choices:[string],multiple:boolean,
   component:Component|null}
-Command = {key:string,title:string,mode:'independent'|'atomic',destructive:boolean,
+Command = {key:string,title:AdminText,mode:'independent'|'atomic',destructive:boolean,
   requirement:'none'|'password'|'second_factor'|'both',preview_required:boolean,
   inputs:[string],bulk:boolean,action:string|null,available:boolean,
   intent:'action'|'save'|'create'|'delete'}
-Widget = {id:string,title:string,component:Component|null,values:JsonMap,
+Widget = {id:string,title:AdminText,component:Component|null,values:JsonMap,
   observed_at:string|null,expires_at:string|null,diagnostic:string|null}
 Component = {key:string,owner:string,manifest_hash:string|null,build_id:string|null}
 Record = {public_id:string|null,revision:string,values:JsonMap}
@@ -514,3 +513,14 @@ differences. Validation errors retain only command inputs with fixed messages.
 HTTP error scope entry versus operation distinguishes entrance proof from native
 operation proof. Aggregate routes execute source-bound native participants;
 [composition](composition.md) owns compatibility, revisions and transaction phases.
+
+Administration presentation supports Polish by default and English. ManagementPage,
+ManagementSection, ManagementCommandDefinition and ManagementWidget constructors
+accept `string|array{pl:string,en:string}` for title; ManagementPage group accepts
+that union or null. Each localized value is nonempty, plain text, at most 160
+characters and has exactly pl/en keys. Field label and owner title projection
+preserves both source locales instead of selecting English. Frontend `AdminText`
+uses the equivalent string/PL-EN-map union. Plain source strings can be translated
+through AdminApplication.messages; explicit language values take precedence. These
+are display values only: URLs, actions, permission keys and revisions stay unchanged.
+See the [presentation contract](frontend.md#polish-and-english-presentation).

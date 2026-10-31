@@ -6,10 +6,13 @@ use Runa\ModuleFramework\Management\DeclarationRules as Rules;
 
 final readonly class ManagementPage
 {
-    /** @param list<ManagementSection> $sections */
+    /** @param list<ManagementSection> $sections
+     * @param  string|array{pl:string,en:string}  $title
+     * @param  string|array{pl:string,en:string}|null  $group
+     */
     public function __construct(
-        public string $key, public string $title, public string $permission,
-        public array $sections, public int $order = 0, public ?string $group = null,
+        public string $key, public string|array $title, public string $permission,
+        public array $sections, public int $order = 0, public string|array|null $group = null,
         public bool $default = false, public ?string $component = null, public int $schemaVersion = 1,
     ) {
         Rules::key($key);

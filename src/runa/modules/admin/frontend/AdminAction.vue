@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { t: tr } = useAdminLocale();
 import { Button } from '@/runa/ui';
 import type { AdminActionEmits, AdminActionProps } from './contracts';
 defineProps<AdminActionProps>();
@@ -11,6 +13,6 @@ const emit = defineEmits<AdminActionEmits>();
     :tone="command.destructive ? 'danger' : 'primary'"
     variant="outline"
     @click="emit('invoke')"
-    >{{ command.title }}</Button
+    >{{ tr(command.title) }}</Button
   >
 </template>

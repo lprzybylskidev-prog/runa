@@ -20,7 +20,7 @@ const slotNames = () =>
   >[];
 </script>
 <template>
-  <ApplicationLayout v-bind="layoutProps" locale="en">
+  <ApplicationLayout v-bind="layoutProps">
     <template v-if="slots['sidebar-bottom']" #sidebar-bottom="scope">
       <slot name="sidebar-bottom" v-bind="scope" />
     </template>

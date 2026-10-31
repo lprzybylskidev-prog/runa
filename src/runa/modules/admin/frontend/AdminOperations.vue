@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import AdminOperationResult from './AdminOperationResult.vue';
 import { computed, ref, shallowRef, watch } from 'vue';
 import {
@@ -173,16 +175,18 @@ function format(value: AdminJson | undefined) {
         class="text-sm text-muted"
         role="status"
       >
-        Loading operational information…
+        {{ tr('Loading operational information…') }}
       </p>
       <Alert v-if="controller.error.value" tone="warning">{{
-        controller.error.value
+        tr(controller.error.value)
       }}</Alert>
       <Button
         :disabled="controller.busy.value"
         @click="showApplicationSettings"
         >{{
-          applicationSettings ? 'Back to operations' : 'Application settings'
+          applicationSettings
+            ? tr('Back to operations')
+            : tr('Application settings')
         }}</Button
       >
       <Card v-if="applicationSettings">
@@ -192,32 +196,38 @@ function format(value: AdminJson | undefined) {
         />
       </Card>
       <Card v-if="!applicationSettings && has('diagnostics.read')">
-        <template #header><h2>Runtime and module health</h2></template>
+        <template #header
+          ><h2>{{ tr('Runtime and module health') }}</h2></template
+        >
         <div class="space-y-4">
           <div class="flex flex-wrap items-end gap-3">
             <Select
-              label="Registry state"
+              :label="tr('Registry state')"
               v-model="filter"
               :options="[
-                { value: 'enabled', label: 'Registered and enabled' },
-                { value: 'registered', label: 'Registered' },
-                { value: 'all', label: 'All retained modules' },
+                { value: 'enabled', label: tr('Registered and enabled') },
+                { value: 'registered', label: tr('Registered') },
+                { value: 'all', label: tr('All retained modules') },
               ]"
-              locale="en"
+              :locale="adminLocale"
               :disabled="controller.busy.value"
             />
-            <Button :disabled="controller.busy.value" @click="refresh"
-              >Refresh observations</Button
-            >
+            <Button :disabled="controller.busy.value" @click="refresh">{{
+              tr('Refresh observations')
+            }}</Button>
           </div>
           <p v-if="controller.snapshot.value" class="text-sm text-muted">
-            Runa {{ controller.snapshot.value.platform_version }} · Application
+            {{ tr('Runa') }} {{ controller.snapshot.value.platform_version }} ·
+            {{ tr('Application') }}
             {{ controller.snapshot.value.application_version }} · PHP
             {{ format(controller.snapshot.value.runtime) }}
           </p>
           <p class="text-xs text-muted">
-            Reads use persisted observations. Diagnosis runs only when
-            explicitly requested.
+            {{
+              tr(
+                'Reads use persisted observations. Diagnosis runs only when explicitly requested.',
+              )
+            }}
           </p>
           <ul class="grid min-w-0 gap-4 md:grid-cols-2">
             <li
@@ -231,16 +241,19 @@ function format(value: AdminJson | undefined) {
                 >{{ module.id }}</Button
               >
               <p>
-                {{ module.available ? 'Available' : 'Unavailable' }} ·
-                {{ module.health }} ·
-                {{ module.enabled ? 'Enabled' : 'Disabled' }}
+                {{ module.available ? tr('Available') : tr('Unavailable') }} ·
+                {{ tr(String(module.health)) }} ·
+                {{ module.enabled ? tr('Enabled') : tr('Disabled') }}
               </p>
               <p>
-                Source {{ module.source_version ?? 'missing' }} · Installed
-                {{ module.installed_version ?? 'not installed' }}
+                {{ tr('Source') }}
+                {{ module.source_version ?? tr('missing') }} ·
+                {{ tr('Installed') }}
+                {{ module.installed_version ?? tr('not installed') }}
               </p>
               <p class="break-words text-xs text-muted">
-                Required: {{ format(module.required) }} · Optional:
+                {{ tr('Required:') }} {{ format(module.required) }} ·
+                {{ tr('Optional:') }}
                 {{ format(module.optional) }}
               </p>
               <p
@@ -265,19 +278,21 @@ function format(value: AdminJson | undefined) {
         </div>
       </Card>
       <Card v-if="!applicationSettings && capabilities.length">
-        <template #header><h2>Module operations</h2></template>
+        <template #header
+          ><h2>{{ tr('Module operations') }}</h2></template
+        >
         <div class="space-y-4">
           <div class="flex flex-wrap items-end gap-3">
             <TextInput
-              label="Module ID"
+              :label="tr('Module ID')"
               v-model="moduleInput"
-              helper="Select a module above or enter its declared ID."
+              :helper="tr('Select a module above or enter its declared ID.')"
               :disabled="controller.busy.value"
             />
             <Button
               :disabled="controller.busy.value || !moduleInput"
               @click="select()"
-              >Select module</Button
+              >{{ tr('Select module') }}</Button
             >
           </div>
           <template v-if="selected">
@@ -287,31 +302,31 @@ function format(value: AdminJson | undefined) {
                 v-if="has('health.diagnose')"
                 :disabled="controller.busy.value"
                 @click="command('health.diagnose', { module: selected })"
-                >Diagnose now</Button
+                >{{ tr('Diagnose now') }}</Button
               >
               <Button
                 v-if="has('health.configure') && has('diagnostics.read')"
                 :disabled="controller.busy.value"
                 @click="edit('health')"
-                >Health policy</Button
+                >{{ tr('Health policy') }}</Button
               >
               <Button
                 v-if="has('settings.read')"
                 :disabled="controller.busy.value"
                 @click="edit('settings')"
-                >Settings</Button
+                >{{ tr('Settings') }}</Button
               >
               <Button
                 v-if="has('integrations.manage')"
                 :disabled="controller.busy.value"
                 @click="edit('integrations')"
-                >Integrations</Button
+                >{{ tr('Integrations') }}</Button
               >
               <Button
                 v-if="has('work.read')"
                 :disabled="controller.busy.value"
                 @click="readWork"
-                >Active work</Button
+                >{{ tr('Active work') }}</Button
               >
             </div>
             <component
@@ -325,27 +340,30 @@ function format(value: AdminJson | undefined) {
               @saved="refresh"
             />
             <div v-if="has('modules.manage')" class="space-y-3">
-              <h3 class="font-semibold">Optional lifecycle</h3>
+              <h3 class="font-semibold">{{ tr('Optional lifecycle') }}</h3>
               <p class="text-xs text-muted">
-                Core targets are refused. Review all affected dependencies and
-                work before applying.
+                {{
+                  tr(
+                    'Core targets are refused. Review all affected dependencies and work before applying.',
+                  )
+                }}
               </p>
               <Select
-                label="Intent"
+                :label="tr('Intent')"
                 v-model="intent"
                 :options="
                   ['enable', 'disable', 'unregister'].map((value) => ({
                     value,
-                    label: value,
+                    label: tr(value),
                   }))
                 "
-                locale="en"
+                :locale="adminLocale"
                 :disabled="controller.busy.value"
                 @update:model-value="preview = undefined"
               />
-              <Button :disabled="controller.busy.value" @click="review"
-                >Preview transition</Button
-              >
+              <Button :disabled="controller.busy.value" @click="review">{{
+                tr('Preview transition')
+              }}</Button>
               <template v-if="preview">
                 <pre class="whitespace-pre-wrap break-words text-xs">{{
                   JSON.stringify({ ...preview, review: undefined }, null, 2)
@@ -360,16 +378,16 @@ function format(value: AdminJson | undefined) {
                       true,
                     )
                   "
-                  >Apply reviewed transition</Button
+                  >{{ tr('Apply reviewed transition') }}</Button
                 >
               </template>
             </div>
             <div v-if="work" class="space-y-3">
               <p v-if="work.truncated" class="text-sm text-muted">
-                Additional active work is omitted.
+                {{ tr('Additional active work is omitted.') }}
               </p>
               <p v-if="!activeWork.length" class="text-sm text-muted">
-                No active work.
+                {{ tr('No active work.') }}
               </p>
               <div
                 v-for="item in activeWork"
@@ -377,10 +395,13 @@ function format(value: AdminJson | undefined) {
                 class="space-y-2 border border-field p-3 text-sm"
               >
                 <p class="break-words">
-                  {{ item.operation }} · {{ item.status }} · {{ item.progress }}
+                  {{ item.operation }} · {{ tr(String(item.status)) }} ·
+                  {{ item.progress }}
                 </p>
                 <p v-if="item.cancellationRequested">
-                  Cancellation requested; completion is not confirmed.
+                  {{
+                    tr('Cancellation requested; completion is not confirmed.')
+                  }}
                 </p>
                 <p
                   v-if="item.limitations"
@@ -398,7 +419,7 @@ function format(value: AdminJson | undefined) {
                   @click="
                     command('work.cancel', { id: item.workId ?? null }, true)
                   "
-                  >Request cancellation</Button
+                  >{{ tr('Request cancellation') }}</Button
                 >
                 <Button
                   :disabled="controller.busy.value"
@@ -407,7 +428,7 @@ function format(value: AdminJson | undefined) {
                       .read('work.status', { id: item.workId ?? null })
                       .then((value) => (result = value))
                   "
-                  >Refresh work status</Button
+                  >{{ tr('Refresh work status') }}</Button
                 >
               </div>
             </div>
@@ -416,19 +437,19 @@ function format(value: AdminJson | undefined) {
             v-if="has('modules.manage') || has('settings.manage')"
             class="space-y-3"
           >
-            <h3 class="font-semibold">Retained operation</h3>
+            <h3 class="font-semibold">{{ tr('Retained operation') }}</h3>
             <TextInput
-              label="Operation UUID"
+              :label="tr('Operation UUID')"
               v-model="operationId"
               :disabled="controller.busy.value"
             />
             <Select
-              label="Operation owner"
+              :label="tr('Operation owner')"
               v-model="operationKind"
               :options="
                 [
-                  { value: 'modules', label: 'Optional lifecycle' },
-                  { value: 'settings', label: 'Module settings' },
+                  { value: 'modules', label: tr('Optional lifecycle') },
+                  { value: 'settings', label: tr('Module settings') },
                 ].filter((option) =>
                   has(
                     option.value === 'modules'
@@ -437,39 +458,42 @@ function format(value: AdminJson | undefined) {
                   ),
                 )
               "
-              locale="en"
+              :locale="adminLocale"
               :disabled="controller.busy.value"
             />
             <div class="flex flex-wrap gap-3">
               <Button
                 :disabled="controller.busy.value || !operationId"
                 @click="status"
-                >Read status</Button
+                >{{ tr('Read status') }}</Button
               >
               <Button
                 v-if="operationKind === 'modules' && has('modules.manage')"
                 :disabled="controller.busy.value || !operationId"
                 @click="command('modules.resume', { id: operationId })"
-                >Resume native workflow</Button
+                >{{ tr('Resume native workflow') }}</Button
               >
               <Button
                 v-if="operationKind === 'modules' && has('modules.manage')"
                 :disabled="controller.busy.value || !operationId"
                 @click="command('modules.cancel', { id: operationId }, true)"
-                >Cancel and compensate</Button
+                >{{ tr('Cancel and compensate') }}</Button
               >
               <Button
                 v-if="operationKind === 'settings' && has('settings.manage')"
                 :disabled="controller.busy.value || !operationId"
                 @click="command('settings.recover', { id: operationId }, true)"
-                >Recover settings</Button
+                >{{ tr('Recover settings') }}</Button
               >
             </div>
           </div>
           <AdminOperationResult v-if="result" :result="result" />
           <p class="text-xs text-muted">
-            Maintenance diagnostics and recovery use the supported CLI.
-            Installation, updates and operator commands are unavailable here.
+            {{
+              tr(
+                'Maintenance diagnostics and recovery use the supported CLI. Installation, updates and operator commands are unavailable here.',
+              )
+            }}
           </p>
         </div>
       </Card>
@@ -477,8 +501,8 @@ function format(value: AdminJson | undefined) {
   </slot>
   <ConfirmDialog
     :model-value="!!controller.confirmation.value"
-    :title="controller.confirmation.value ?? ''"
-    locale="en"
+    :title="tr(controller.confirmation.value ?? '')"
+    :locale="adminLocale"
     @confirm="controller.confirm(true)"
     @cancel="controller.confirm(false)"
     @update:model-value="!$event && controller.confirm(false)"

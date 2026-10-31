@@ -329,7 +329,7 @@ compatibility. Use [public test support](../../testing/strategy.md); application
 tests must not import private owner suites. Mounted public-facade consumers should
 exercise partial/full replacements, dirty reconciliation, forbidden/proof/session
 transitions and cleanup. Final browser acceptance covers responsive sizes, light/
-dark themes, keyboard/focus and English Admin text. Fixtures are examples, not a
+dark themes, keyboard/focus and PL/EN Admin text. Fixtures are examples, not a
 claim that every customer replacement has passed visual review.
 
 Owner fixtures exercise the generated business API without Admin, declaration
@@ -347,3 +347,9 @@ metadata never makes them compatible with aggregate Save. Environment/technical
 settings and source identity stay outside dynamic application branding. See
 [application settings](operations.md#application-settings-contracts-and-storage) for the approved
 safe-value declarations, runtime precedence and browser/mail/error fallback.
+
+Custom Admin views import useAdminLocale from `@/runa/admin`; render metadata with
+`t(page.title)`/`t(field.label)` and use its reactive locale for shared controls.
+Supply localized title/group maps in source declarations and/or a Polish message
+catalogue through AdminApplication.messages for App-owned English source strings.
+Do not key/remount an editor on locale or translate stored business values.

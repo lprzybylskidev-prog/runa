@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from '@/runa/admin';
+const { t: tr } = useAdminLocale();
 import { computed, watch } from 'vue';
 import { Alert, Button, Card } from '@/runa/ui';
 import { useAdminResource } from '@/runa/admin';
@@ -55,11 +57,11 @@ function history(entity: { module: string; type: string; public_id: string }) {
 <template>
   <Card>
     <p v-if="!record?.public_id" class="text-sm text-muted">
-      Select an event to read its immutable details.
+      {{ tr('Select an event to read its immutable details.') }}
     </p>
     <template v-else>
       <Alert v-if="resource.error.value" tone="warning">{{
-        resource.error.value.message
+        tr(resource.error.value.message)
       }}</Alert>
       <dl class="grid gap-4 sm:grid-cols-2">
         <div
@@ -74,37 +76,39 @@ function history(entity: { module: string; type: string; public_id: string }) {
               : ''
           "
         >
-          <dt class="text-xs font-semibold text-muted">{{ field.label }}</dt>
+          <dt class="text-xs font-semibold text-muted">
+            {{ tr(field.label) }}
+          </dt>
           <dd class="whitespace-pre-wrap break-words text-sm">
             {{ record.values[field.key] ?? '—' }}
           </dd>
         </div>
       </dl>
       <p class="mt-4 text-sm text-muted">
-        Payload part {{ record.values.payload_part ?? '1 / 1' }}. Large JSON
-        payloads continue across parts.
+        {{ tr('Payload part') }} {{ record.values.payload_part ?? '1 / 1' }}.
+        {{ tr('Large JSON payloads continue across parts.') }}
       </p>
       <div class="mt-3 flex gap-2">
         <Button
           size="sm"
           :disabled="resource.busy.value || !record.values.payload_next"
           @click="next"
-          >Next payload part</Button
+          >{{ tr('Next payload part') }}</Button
         >
         <Button
           size="sm"
           :disabled="resource.busy.value"
           @click="resource.clear()"
-          >First payload part</Button
+          >{{ tr('First payload part') }}</Button
         >
       </div>
-      <ul class="mt-4 space-y-2" aria-label="Related entity history">
+      <ul class="mt-4 space-y-2" :aria-label="tr('Related entity history')">
         <li
           v-for="entity in entities"
           :key="entity.module + ':' + entity.type + ':' + entity.public_id"
         >
           <a class="text-primary underline" :href="history(entity)"
-            >History: {{ entity.module }} / {{ entity.type }} /
+            >{{ tr('History:') }} {{ entity.module }} / {{ entity.type }} /
             {{ entity.public_id }}</a
           >
         </li>

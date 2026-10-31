@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed } from 'vue';
 import { Alert, Button, FormConflict, FormSection } from '@/runa/ui';
 import type { AdminSectionProps, AdminSectionSlots } from './contracts';
@@ -42,7 +44,7 @@ const conflicts = computed(() =>
 );
 </script>
 <template>
-  <FormSection :title="section.title" :columns="2">
+  <FormSection :title="tr(section.title)" :columns="2">
     <slot :section="section" :controller="controller">
       <Alert
         v-if="controller.operations.value[section.key]"
@@ -51,11 +53,14 @@ const conflicts = computed(() =>
       >
         {{
           controller.operations.value[section.key]!.status === 'pending'
-            ? 'This operation is pending.'
-            : 'This operation requires recovery.'
+            ? tr('This operation is pending.')
+            : tr('This operation requires recovery.')
         }}
-        Check its status through the owning module before submitting another
-        operation.
+        {{
+          tr(
+            'Check its status through the owning module before submitting another operation.',
+          )
+        }}
       </Alert>
       <Alert
         v-if="section.diagnostic || !record"
@@ -64,14 +69,14 @@ const conflicts = computed(() =>
       >
         {{
           section.diagnostic
-            ? 'This section is currently unavailable.'
-            : 'Loading the current record or waiting for a successful read.'
+            ? tr('This section is currently unavailable.')
+            : tr('Loading the current record or waiting for a successful read.')
         }}
         <Button
           size="sm"
           :disabled="controller.busy.value"
           @click="controller.refresh"
-          >Retry loading</Button
+          >{{ tr('Retry loading') }}</Button
         >
       </Alert>
       <AdminField
@@ -107,7 +112,7 @@ const conflicts = computed(() =>
       <FormConflict
         v-for="conflict in conflicts"
         :key="conflict.path"
-        locale="en"
+        :locale="adminLocale"
         :current="JSON.stringify(conflict.remote)"
         :busy="controller.busy.value"
         class="sm:col-span-2"
@@ -124,7 +129,7 @@ const conflicts = computed(() =>
             controller.commandReviews.value[`${section.key}:${command.key}`]
           "
         >
-          <p class="text-sm font-semibold">Reviewed differences</p>
+          <p class="text-sm font-semibold">{{ tr('Reviewed differences') }}</p>
           <dl class="space-y-2 text-sm">
             <div
               v-for="(value, key) in controller.commandReviews.value[
@@ -132,7 +137,7 @@ const conflicts = computed(() =>
               ]!.changes"
               :key="key"
             >
-              <dt class="font-semibold">{{ key }}</dt>
+              <dt class="font-semibold">{{ tr(String(key)) }}</dt>
               <dd class="break-words">{{ JSON.stringify(value) }}</dd>
             </div>
           </dl>
@@ -154,7 +159,7 @@ const conflicts = computed(() =>
             v-if="command.preview_required"
             :disabled="controller.busy.value || !command.available"
             @click="controller.reviewCommand(section.key, command.key)"
-            >Review {{ command.title }}</Button
+            >{{ tr('Review') }} {{ tr(command.title) }}</Button
           >
           <component
             :is="presentation.action ?? AdminAction"

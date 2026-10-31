@@ -29,7 +29,7 @@ impact_areas:
 
 ### What and why
 
-Create `runa.admin`, the final planned Core module, as an English administration
+Create `runa.admin`, the final planned Core module, as a Polish/English administration
 framework using the existing Application shell. Module authors declare reusable
 pages, entities, settings, actions, widgets and cross-module contributions once;
 installed, enabled, available and authorized contributions appear automatically.
@@ -43,6 +43,12 @@ a MINOR increment for substantial compatible functionality. The owner explicitly
 requested activation on 2026-10-29 after confirming ARCH-001–004. Baseline and
 predecessor order remain current. Activation does not change VERSION or approve
 an incompatible module MAJOR.
+
+2026-10-31 owner amendment: the entire supplied Admin panel now supports Polish
+(default) and English through the existing application preference. This supersedes
+all earlier English-only presentation decisions/evidence in this roadmap. Technical
+contracts, identifiers and operational output remain English. Translation changes
+must preserve session/proof ownership, grants and dirty drafts.
 
 ### Scope and exclusions
 
@@ -177,7 +183,7 @@ independent 1.0.0 only at verified creation closure; platform versioning is sepa
    expected revisions and reviewed previews. Failure rolls back writes, success
    Audit and consumed proof; safe refusal history follows root rollback. Settings,
    lifecycle, uploads and external effects retain their independent protocols.
-6. English-only usable defaults; light/dark, responsive and accessible. Shared form
+6. Polish-default/English-secondary usable defaults; light/dark, responsive and accessible. Shared form
    reconciliation preserves dirty drafts, uses aggregate mutation revisions,
    resolves overlap locally and never silently retries writes. Destructive actions
    confirm; existing owner review/proof requirements remain visible.
@@ -368,6 +374,14 @@ reassessment before resuming point 3; completed point history remains evidence.
     keep pre-admission content outside ApplicationLayout with one shared session owner.
   - Author failure/retry/fencing/layout/replacement regressions, run only necessary
     focused checks, refresh real assets and preserve manual acceptance as penultimate.
+- [x] 11a4. Apply owner-approved Polish/English Admin localization.
+  - Supersede the English-only rule in owner/customer guidance and current specs.
+  - Use the existing application language preference for all supplied Admin/Core
+    administration views, controls, proof, validation and feedback; preserve drafts.
+  - Supply source-owned bilingual metadata and a public presentation translation
+    contract for App/module extensions, with technical identifiers unchanged.
+  - Add focused language-switch/default/replacement regressions, prepare current
+    assets and keep owner manual acceptance and final verification open.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2019,3 +2033,64 @@ acceptance (includes type compilation, Vite and native error shells). Real local
 acceptance. No full suite, final quality gate, database reset or Docker cleanup was
 run. Development data/services, knowledge caches and test/build reports remain.
 Manual point 11b and final point 12 remain open.
+
+### Point 11a4 — Polish/English Admin and shared language preference
+
+On 2026-10-31 the owner explicitly replaced the English-only Admin rule with
+Polish-default/English-secondary presentation. This amendment supersedes the
+historical English scope recorded by earlier completed points. Owner/customer
+AGENTS, frontend skill references, localization/architecture/configuration guides,
+active architecture specification and current Admin/Core presentation contracts
+are synchronized; closed roadmaps and dated historical evidence remain unchanged.
+
+Removed fixed English scopes from AdminApplication/AdminLayout/entry proof and
+shared form/table/selection/notification/confirmation defaults. Admin and its
+Auth/Permissions/Audit screens now consume the existing account-aware application
+language preference. Reviewed source English UI copy has a Polish presentation
+catalogue; explicit source PL/EN metadata stays authoritative. Technical keys,
+UUIDs, requests, business values, backend diagnostics and Audit records retain
+their original identities/content. No separate language/session/authorization
+engine, dependency, database migration or runtime setting was introduced.
+
+Public AdminText, AdminMessages, useAdminLocale/adminText and
+AdminApplication.messages allow ordinary App/module presentation composition.
+Framework page/section/command/widget titles and optional groups accept bounded
+English strings or exact PL/EN maps. Field/owner projections retain both locales;
+Core field names have actual owning Polish values, including Auth policy names.
+English source-string titles use the shipped Polish catalogue; App-specific
+strings use explicit maps or the App message extension. Locale changes update
+headings/navigation/shared controls and errors without refetching protected data,
+resetting query/identity owners or remounting dirty forms. Source plain strings
+remain valid for intentionally untranslated labels; no obsolete adapter was added.
+
+Focused switching checks exposed and repaired two prerequisites: guest preference
+writes/resets did not notify other mounted display subscribers, and Vue inferred
+Boolean before String for AdminJson props, coercing an empty text draft to true.
+Guest writes/resets now notify through the existing adapter; the public JSON union
+places String first to preserve empty text while retaining nullable booleans.
+A constant leave-confirmation message avoids interpolating localized metadata
+objects into an English string. Confirmation titles retain their source text/map
+until presentation, so an open confirmation can follow a language change.
+
+Necessary focused verification (not final acceptance):
+
+- `python3 tools/maintainer/test-backend ../tests/backend/runa/modules/admin/ProjectionTest.php --filter='bilingual management metadata'`: **1 PASS, 12 assertions**, exit/cleanup 0. Covers source text/map retention, invalid maps and real Auth/Permissions field names plus field projection.
+- `python3 tools/maintainer/test-backend ../tests/backend/runa/Feature/ManagementPagesTest.php --filter='discovers only available module declarations'`: **1 PASS, 19 assertions**, exit/cleanup 0. Confirms bilingual module names survive manifest discovery without constructing owning business handlers.
+- `python3 tools/maintainer/test-frontend --filter='Admin bilingual|uses one supplied session|Admin entry proof|Admin fields render nullable booleans'`: **9 PASS**, exit/cleanup 0. Covers Polish defaults, live PL/EN navigation/metadata/validation, retained input DOM/draft/password, one shared session/no extra bootstrap/proof/business write, explicit maps/App overrides, guest write/reset notifications and unchanged nullable booleans.
+- Public translation regression rerun after consolidating dynamic validation copy: **1 PASS**, exit/cleanup 0. Existing English fixtures now explicitly select English rather than depending on the removed forced locale.
+
+Auth 2.0.0, Permissions 2.0.0, Audit 1.1.0 and Admin 0.1.0 remain the existing
+unreleased candidates under this active roadmap. Their changelogs include the
+localized presentation/metadata changes; no extra version-only upgrade edge is
+needed before their first verified closure. Platform remains the owner-approved
+prepared 0.7.0 candidate. Generator strings remain valid source declarations;
+public authoring/replacement examples describe localized maps and controls.
+
+`pnpm --dir src run build` prepares the current compiled application and native
+error assets for owner inspection, including type compilation. Manual owner
+acceptance in 11b and full affected-area final verification in 12 remain open.
+No full suites, quality release gate, deployment, database reset or manual owner
+acceptance is claimed. Supported backend runners reported successful worker
+cleanup with no disposable workers to remove; no other Docker resources were
+created or removed. Existing development services/data, model/knowledge caches
+and verification/build evidence are preserved.

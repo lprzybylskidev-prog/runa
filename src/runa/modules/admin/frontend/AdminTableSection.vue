@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useAdminLocale } from './localization';
+const { t: tr } = useAdminLocale();
 import { computed } from 'vue';
 import { Button } from '@/runa/ui';
 import type {
@@ -35,7 +37,7 @@ async function close() {
     v-if="table.selected.value !== undefined && section"
     class="mt-6 space-y-4"
   >
-    <Button size="sm" @click="close">Close record</Button>
+    <Button size="sm" @click="close">{{ tr('Close record') }}</Button>
     <AdminSection
       :key="table.selected.value ?? 'new'"
       :controller="form"

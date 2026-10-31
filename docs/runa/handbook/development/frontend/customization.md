@@ -68,7 +68,7 @@ never replace the supplied User panel/sign-out controls. Its minimal Admin
 advertisement stays in that dropdown and refreshes with session authority, without
 loading protected Admin metadata. See [Admin shell contracts](../../modules/admin/frontend.md#shared-session-shell-and-account-menu-seam).
 
-`AdminApplication` from `@/runa/admin` retains English entry proof and session
+`AdminApplication` from `@/runa/admin` retains localized PL/EN entry proof and session
 orchestration. Its default slot receives `{controller: AdminController}`; a
 customer may render its own navigation/page content there. Nested
 `AdminPresentationProvider` supports partial layout/page/section/widget/loading
