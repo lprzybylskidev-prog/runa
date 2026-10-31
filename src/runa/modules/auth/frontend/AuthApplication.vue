@@ -31,6 +31,8 @@ const current = computed(
     :current="current"
     :navigation="navigation"
     :top-navigation="topNavigation"
+    :navigation-loading="navigationLoading"
+    :content-loading="contentLoading"
     :locale="locale"
     :account-menu="accountMenu"
   >

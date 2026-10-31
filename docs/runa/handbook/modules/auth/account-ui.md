@@ -89,7 +89,9 @@ right. A taller neighboring card does not add space between details and password
 narrow screens retain the same reading order in one column. Saving one card does not submit or clear
 another card's draft. Preferences follows Account and security in the default navigation; sessions and
 optional histories follow it. These subviews appear in ApplicationLayout's top bar
-through public PageNavigation, without a second content tab row. The default
+through public PageNavigation, without a second content tab row. Its loading publisher stays mounted while the
+account is loading so the animated placeholder appears in the top bar; the
+account content skeleton contains no obsolete tab row. The default
 account destination is `/account`; `?tab=preferences|sessions|...` selects an
 available subview and supports Back/Forward. Unknown/unavailable tabs show Account
 and security. Modified clicks retain native link behavior. Pending writes block
@@ -323,7 +325,7 @@ factor proof, validation and authorization rules remain unchanged.
 ## Shared session composition
 
 AuthApplication now composes public ApplicationSessionShell with one optional
-caller-supplied ApplicationSessionController. It forwards navigation/topNavigation,
+caller-supplied ApplicationSessionController. It forwards navigation/topNavigation, navigationLoading/contentLoading,
 current, locale and source-owned accountMenu, plus the account-menu slot; account
 self-service and loading replacement retain their existing public contracts.
 Only the creator owns activity/heartbeat/request observation and disposal. The

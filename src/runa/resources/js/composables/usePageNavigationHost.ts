@@ -3,6 +3,7 @@ import type { InjectionKey } from 'vue';
 import type { NavigationEntry, RouteContext } from '../runa/ui/navigation';
 interface PageNavigationRegistration {
   entries: () => readonly NavigationEntry[];
+  loading: () => boolean;
   current: () => RouteContext | undefined;
   navigate: (href: string, event: MouseEvent) => void;
 }
@@ -20,6 +21,7 @@ export function usePageNavigationHost() {
   });
   return {
     entries: computed(() => page.value?.entries() ?? []),
+    loading: computed(() => page.value?.loading() ?? false),
     current: computed(() => page.value?.current()),
     navigate(href: string, event: MouseEvent): boolean {
       if (

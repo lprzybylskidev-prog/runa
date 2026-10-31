@@ -153,6 +153,7 @@ const contentReadiness = useViewReadiness({
     width="fluid"
     :home-href="welcomeEnabled ? '/' : '/app'"
     :navigation="navigation"
+    :navigation-loading="navigationLoading || !contentReadiness.ready.value"
     :top-navigation="topNavigation ?? []"
     :locale="props.locale"
     :current="current"
@@ -160,7 +161,9 @@ const contentReadiness = useViewReadiness({
     :user-name="userName"
     :user-avatar="avatar"
     :user-avatar-image="avatarImage"
-    :user-loading="!contentReadiness.ready.value"
+    :user-loading="
+      !contentReadiness.ready.value || contentLoading || navigationLoading
+    "
     :user-initials="initials"
   >
     <template #breadcrumbs>
@@ -185,7 +188,11 @@ const contentReadiness = useViewReadiness({
             :image="avatarImage"
             :initials="initials"
             :size="40"
-            :loading="!contentReadiness.ready.value"
+            :loading="
+              !contentReadiness.ready.value ||
+              contentLoading ||
+              navigationLoading
+            "
           />
           <div class="min-w-0">
             <p class="account-menu-name">{{ userName }}</p>
@@ -232,7 +239,10 @@ const contentReadiness = useViewReadiness({
         </div>
       </div>
     </template>
-    <slot v-if="!contentReadiness.ready.value" name="loading" :account="account"
+    <slot
+      v-if="!contentReadiness.ready.value || contentLoading"
+      name="loading"
+      :account="account"
       ><div aria-busy="true" class="space-y-6">
         <p role="status" class="sr-only">
           {{ text('Wczytywanie aplikacji', 'Loading application') }}

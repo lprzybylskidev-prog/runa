@@ -2,6 +2,7 @@
 import { useAdminLocale } from './localization';
 const { t: tr } = useAdminLocale();
 import { toRef } from 'vue';
+import { useAdminInitialReadiness } from './initialReadiness';
 import { Alert, Button } from '@/runa/ui';
 import type {
   AdminComponentRegistry,
@@ -22,6 +23,7 @@ const props = defineProps<{
 }>();
 const controller = useAdminPage(props.admin, toRef(props, 'location'));
 const { page, state } = controller;
+useAdminInitialReadiness(() => state.value !== 'loading');
 const form = useAdminForm(controller, {
   components: props.components,
   autoRead: false,

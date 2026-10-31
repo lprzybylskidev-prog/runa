@@ -29,6 +29,8 @@ export interface AuthAccountMenuEntry {
 export interface ApplicationSessionShellProps {
   session: ApplicationSessionController;
   navigation?: readonly NavigationEntry[] | undefined;
+  navigationLoading?: boolean | undefined;
+  contentLoading?: boolean | undefined;
   topNavigation?: readonly NavigationEntry[] | undefined;
   current?: RouteContext | undefined;
   locale?: 'pl' | 'en' | undefined;

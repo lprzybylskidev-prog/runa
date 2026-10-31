@@ -13,15 +13,6 @@ const text = (pl: string, en: string) => (locale.value === 'pl' ? pl : en);
     <p role="status" class="sr-only">
       {{ text('Wczytywanie konta', 'Loading account') }}
     </p>
-    <div aria-hidden="true" class="flex flex-wrap gap-2">
-      <Skeleton
-        v-for="width in ['w-64', 'w-32', 'w-40']"
-        :key="width"
-        :class="width"
-        shape="block"
-        class="account-tab-placeholder"
-      />
-    </div>
     <h2 class="text-xl font-semibold">
       {{ text('Konto i zabezpieczenia', 'Account and security') }}
     </h2>
@@ -85,7 +76,6 @@ const text = (pl: string, en: string) => (locale.value === 'pl' ? pl : en);
   </div>
 </template>
 <style scoped>
-.auth-account-loading .account-tab-placeholder[data-shape='block'] :deep(span),
 .auth-account-loading
   .account-field-placeholder[data-shape='block']
   :deep(span),

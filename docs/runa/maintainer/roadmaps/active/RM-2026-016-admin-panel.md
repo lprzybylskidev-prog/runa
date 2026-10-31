@@ -433,6 +433,14 @@ reassessment before resuming point 3; completed point history remains evidence.
     supplied private views, preserving operation/record actions inside content.
   - Synchronize contracts/instruction products, exercise focused navigation/guard
     regressions and prepare current assets before returning to owner acceptance.
+- [x] 11a11. Coordinate current navigation and Admin initial presentation.
+  - Remove obsolete content-tab placeholders and publish account navigation loading
+    in the header. Keep the Admin Application frame mounted during bootstrap.
+  - Register explicit initial Admin page, record, option, diagnostics and editor
+    dependencies with the existing readiness latch; reveal content and navigation
+    together after settlement, preserving background drafts and access fences.
+  - Synchronize public composition guidance, add focused delayed-read regressions,
+    prepare runnable assets and commit before repeating owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2418,3 +2426,52 @@ does not replace authenticated owner acceptance. Browser contexts were closed an
 the temporary helper removed. Existing development services, database data,
 knowledge/model caches and reports remain; no task Docker resources were created.
 Owner manual point 11b and final verification/release point 12 remain open.
+
+### Point 11a11 — Current navigation and coordinated Admin initial presentation
+
+Owner-reported loading repair after 11a10: account navigation now publishes before
+its dependent content, with animated loading in the real top bar and no obsolete
+content-tab skeleton. Public PageNavigation.loading and host loading support
+standalone/custom layouts; ApplicationLayout.navigationLoading supports initial
+sidebar/top-bar discovery. AuthApplication forwards navigationLoading/contentLoading
+to its single session shell. Its frame remains immediate and Admin keeps that
+Application frame during bootstrap; explicit entry proof/refusal retains its own
+admission presentation.
+
+The Admin content region reuses useViewReadiness, mounts authorized controllers in
+a hidden/inert subtree and waits for explicit initial dependencies. Page projection,
+record/collection reads, capabilities/diagnostics and selected settings/editor reads
+settle before content/navigation/avatar placeholders finish. Async presentation
+boundaries wait for renderer resolution and newly mounted read owners, retaining
+the existing 15-second failure bound. Terminal read errors reveal existing recovery
+controls. Interactive option searches and optional widgets retain local ownership;
+no global request counter, second session owner, extra read or minimum delay was
+introduced. Newly opened operational editors also use local public boundaries.
+The latch preserves drafts, focus and DOM during later reads; actual identity or
+access loss retains the existing protected-content/request fences.
+
+Canonical loading/page-layout/customization and Auth/Admin frontend guidance and
+both candidate changelogs are synchronized. Owner/customer AGENTS and frontend
+pattern references already require the same immediate-frame/local-loading contract
+and link these owning guides; neither instruction product needs duplicate rules.
+Backend/security guidance is unchanged: no authorization, transaction, storage,
+operator, dependency or migration change. Auth remains unreleased 2.0.0 and Admin
+its 0.1.0 creation candidate within prepared platform 0.7.0; other module versions
+and native upgrade edges are unchanged.
+
+Focused browser verification passed 24 cases (350 excluded), native exit 0 and
+cleanup 0. Coverage includes held bootstrap/capabilities/diagnostics, lazy renderer
+plus subsequent read, bounded renderer failure, retained dirty draft/focus, automatic
+record/table reads, entry proof/refusal, account/Admin URL subviews and standalone/
+header navigation loading. Log: .runtime/frontend/RM-2026-016-admin-loading-tests.log.
+The first diagnostic assertions used isVisible on a detached test subtree; mounting
+the presentation fixture into the browser document corrected that visibility check.
+Native failed reports/screenshots are preserved with successful evidence.
+
+The manual-runtime asset build passed TypeScript, Vite and native/static error
+rendering; log: .runtime/frontend/RM-2026-016-admin-loading-build.log. Nginx returned
+200 for /admin and /account and every linked build asset. Browser component checks
+exercise presentation; this is not authenticated owner manual acceptance or a final
+quality PASS. No Docker resources or database data were created/changed. Existing
+development services/data, knowledge/model caches and all reports remain. Owner
+manual point 11b and final verification/release point 12 remain open.

@@ -22,6 +22,7 @@ export interface ApplicationLayoutProps {
   locale?: Locale | undefined;
   navigation: readonly NavigationEntry[];
   topNavigation?: readonly NavigationEntry[] | undefined;
+  navigationLoading?: boolean | undefined;
   current?: RouteContext | undefined;
   title: string;
   description?: string | undefined;

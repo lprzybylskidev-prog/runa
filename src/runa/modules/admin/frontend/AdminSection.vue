@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
+import { useAdminInitialReadiness } from './initialReadiness';
 import { Alert, Button, FormConflict, FormSection } from '@/runa/ui';
 import type { AdminSectionProps, AdminSectionSlots } from './contracts';
 import { useAdminPresentation } from './presentation';
@@ -10,7 +11,11 @@ import AdminAction from './AdminAction.vue';
 import AdminCommandProof from './AdminCommandProof.vue';
 const props = defineProps<AdminSectionProps>();
 defineSlots<AdminSectionSlots>();
-void props.controller.activateSection(props.section.key);
+const initialSettled = ref(false);
+useAdminInitialReadiness(() => initialSettled.value);
+void props.controller.activateSection(props.section.key).finally(() => {
+  initialSettled.value = true;
+});
 const presentation = useAdminPresentation();
 const record = computed(
   () => props.controller.records.value[props.section.key],

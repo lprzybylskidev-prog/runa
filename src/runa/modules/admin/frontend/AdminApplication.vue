@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { useAdminLocale, provideAdminMessages } from './localization';
 const { t: tr } = useAdminLocale(() => props.messages);
-import { computed, defineComponent, h, provide, toRef } from 'vue';
+import { computed, defineComponent, h, provide, ref, toRef } from 'vue';
+import AdminReadiness from './AdminReadiness.vue';
 import type { VNode } from 'vue';
 import {
   ApplicationSessionShell,
@@ -35,6 +36,7 @@ const controller = useAdmin({
   session: props.session,
 });
 const { state, bootstrap, location } = controller;
+const contentReady = ref(false);
 const presentation = useAdminPresentation();
 const authPresentation = useAuthPresentation();
 const layout = defineComponent({
@@ -99,8 +101,10 @@ const validPath = computed(
       :navigation="navigation"
       :top-navigation="topNavigation"
       :current="current"
+      :content-loading="state === 'loading'"
+      :navigation-loading="state === 'loading' || !contentReady"
     >
-      <template v-if="state !== 'ready'" #admission>
+      <template v-if="state !== 'ready' && state !== 'loading'" #admission>
         <AdminEntryProof
           v-if="state === 'proof_required'"
           :controller="controller"
@@ -118,9 +122,6 @@ const validPath = computed(
               tr('Retry')
             }}</Button>
           </Alert>
-          <slot v-else-if="state === 'loading'" name="loading"
-            ><component :is="presentation.loading ?? AdminLoading"
-          /></slot>
           <Alert v-else tone="warning">
             {{
               tr(
@@ -132,24 +133,34 @@ const validPath = computed(
           </Alert>
         </component>
       </template>
-      <Alert v-if="!validPath" tone="warning">{{
-        tr('The administrator panel is unavailable.')
-      }}</Alert>
-      <slot v-else-if="bootstrap" :controller="controller">
-        <AdminPageContent
-          v-if="location"
-          :key="location.owner + ':' + location.page"
-          :admin="controller"
-          :location="location"
-          :components="components"
-        />
-        <AdminDashboard
-          v-else
-          :bootstrap="bootstrap"
-          :admin="controller"
-          :components="components"
-        />
-      </slot>
+      <template #loading
+        ><slot name="loading"
+          ><component :is="presentation.loading ?? AdminLoading" /></slot
+      ></template>
+      <AdminReadiness
+        v-if="bootstrap"
+        :key="current.href"
+        @ready="contentReady = $event"
+      >
+        <Alert v-if="!validPath" tone="warning">{{
+          tr('The administrator panel is unavailable.')
+        }}</Alert>
+        <slot v-else-if="bootstrap" :controller="controller">
+          <AdminPageContent
+            v-if="location"
+            :key="location.owner + ':' + location.page"
+            :admin="controller"
+            :location="location"
+            :components="components"
+          />
+          <AdminDashboard
+            v-else
+            :bootstrap="bootstrap"
+            :admin="controller"
+            :components="components"
+          />
+        </slot>
+      </AdminReadiness>
     </ApplicationSessionShell>
   </AuthPresentationProvider>
 </template>

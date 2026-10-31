@@ -28,6 +28,7 @@ import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
 import AppTopNavigation from '../components/AppTopNavigation.vue';
+import AppSkeleton from '../components/AppSkeleton.vue';
 import AppNavigation from '../components/AppNavigation.vue';
 import AppPreferenceControls from '../components/AppPreferenceControls.vue';
 import RunaLogo from '../components/RunaLogo.vue';
@@ -357,7 +358,9 @@ onScopeDispose(() => {
           {{ t('workspace') }}
         </p>
         <nav :aria-label="t('modules')">
+          <AppSkeleton v-if="navigationLoading" :lines="4" />
           <AppNavigation
+            v-else
             :entries="navigation"
             :current="current"
             :expanded="expanded"
@@ -423,7 +426,14 @@ onScopeDispose(() => {
               @scroll="updateTopOverflow"
               @wheel="scrollTopNavigation"
             >
+              <AppSkeleton
+                v-if="navigationLoading || pageNavigation.loading.value"
+                class="w-48"
+                :lines="1"
+                data-navigation-loading
+              />
               <AppTopNavigation
+                v-else
                 :entries="topEntries"
                 :current="pageNavigation.current.value ?? current"
                 @navigate="navigate"

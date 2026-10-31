@@ -52,7 +52,12 @@ slot (and MinimalLayout actions), never the frame. Custom layout replacements fo
 ownership outside presentation. Supplying readiness delegates initial preference
 hydration to that composing controller; the standalone preference-session
 initializer runs only when readiness is omitted (and no session owner/static or
-custom preferences apply). Heavy page content uses a separate boundary;
+custom preferences apply). `ApplicationSessionShell.contentLoading?: boolean` keeps the initial content
+placeholder while its owner discovers the page; `navigationLoading?: boolean`
+forwards discovery loading to the layout. Custom shell/layout replacements forward
+these props. PageNavigation publishes its own loading state to the top-bar host
+(see [page navigation](page-layouts.md#page-level-navigation-composition)).
+Heavy page content uses a separate boundary;
 never register every HTTP request as an application-wide prerequisite.
 
 ## Initial reveal and subsequent work
@@ -78,6 +83,23 @@ as success and sets aria-busy. Switching success/refreshing does not rerun conte
 entrance motion. Initial loading/error/empty retain their existing distinct slots;
 controllers decide whether a failure requires withdrawing protected content.
 
+## Admin initial content
+
+Admin retains ApplicationLayout throughout initial session/bootstrap discovery;
+MinimalLayout belongs to explicit entry proof and refusal. The supplied Admin
+content region mounts its authorized controllers behind a hidden, inert subtree
+while page declarations, record/table reads, capability/diagnostic reads and the
+initial selected settings/editor read settle. Lazy component boundaries wait for
+resolution or their existing bounded failure fallback. It reuses useViewReadiness and waits
+for projected children to register before revealing the region and navigation.
+Failed reads settle to existing explicit error/retry presentation; they do not
+keep a skeleton indefinitely. No extra reads or minimum delay are introduced.
+The region is scoped to the mounted account/session/page and removed on actual
+access loss. Later reads retain its DOM and drafts. Newly opened settings editors
+also use local boundaries; interactive option searches and optional widgets keep
+their own loading ownership. A replacement that starts independent asynchronous
+work must compose its own public readiness boundary.
+
 ## Image readiness
 
 `useImageReadiness(source: MaybeRefOrGetter<string>,
@@ -101,17 +123,17 @@ substitutes for guarded private image delivery.
 
 ## Supplied view audit
 
-| Consumer                                  | Initial dependencies and later behavior                                                                                                                                                                                                                                          |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| createApplication                         | Immediate root mount; bounded public identity/presentation reads and decoded logo update branding in place; failed background branding reads retain the last confirmed presentation.                                                                                             |
-| Auth entry                                | Existing entry/session controller and preference hydration before form reveal; entry pages without a session read use the existing one-time preference initializer. Heading focus also works after delayed presentation mount.                                                   |
-| Auth welcome                              | Immediate layout and static welcome content; navigation alone waits for options/session; no second layout-owned session read.                                                                                                                                                    |
-| ApplicationSessionShell / Admin admission | Immediate layout; initial content/avatar placeholders finish together after session/profile/preferences/image readiness or bounded fallback. Later reads preserve content; header/dropdown share the image owner. Background session/profile reads retain the shell and content. |
-| Auth account                              | Existing independent account/page loading and nondestructive read reconciliation remain; protected account content starts after shell admission/readiness.                                                                                                                       |
-| Admin bootstrap/page                      | Same-session observation revalidates in place. Request stamps still include every authority observation. Unchanged descriptors preserve object identity; denial removes protected content.                                                                                       |
-| Admin records/forms/operations            | Same-session observation fences requests/reviews without erasing drafts; actual context loss clears them. Unchanged resource projection retains confirmed values while reading. Removed fields follow the new projection.                                                        |
-| Admin tables                              | Revalidation resets stale cursor/selection intent but keeps current same-session filters; a different account/page clears them. Heavy reads do not block the shell.                                                                                                              |
-| Static/native HTTP errors                 | Immediate source/static preferences; no readiness dependency on session, image service or network.                                                                                                                                                                               |
+| Consumer                                  | Initial dependencies and later behavior                                                                                                                                                                                                                                                                  |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| createApplication                         | Immediate root mount; bounded public identity/presentation reads and decoded logo update branding in place; failed background branding reads retain the last confirmed presentation.                                                                                                                     |
+| Auth entry                                | Existing entry/session controller and preference hydration before form reveal; entry pages without a session read use the existing one-time preference initializer. Heading focus also works after delayed presentation mount.                                                                           |
+| Auth welcome                              | Immediate layout and static welcome content; navigation alone waits for options/session; no second layout-owned session read.                                                                                                                                                                            |
+| ApplicationSessionShell / Admin admission | Immediate layout; initial content/avatar placeholders finish together after session/profile/preferences/image readiness or bounded fallback. Later reads preserve content; header/dropdown share the image owner. Background session/profile reads retain the shell and content.                         |
+| Auth account                              | Existing independent account/page loading and nondestructive read reconciliation remain; protected account content starts after shell admission/readiness.                                                                                                                                               |
+| Admin bootstrap/page                      | Immediate Application frame; initial Admin content/navigation reveal waits for declared initial dependencies. Same-session observation revalidates in place. Request stamps still include every authority observation. Unchanged descriptors preserve object identity; denial removes protected content. |
+| Admin records/forms/operations            | Same-session observation fences requests/reviews without erasing drafts; actual context loss clears them. Unchanged resource projection retains confirmed values while reading. Removed fields follow the new projection.                                                                                |
+| Admin tables                              | Revalidation resets stale cursor/selection intent but keeps current same-session filters; a different account/page clears them. Heavy reads do not block the shell.                                                                                                                                      |
+| Static/native HTTP errors                 | Immediate source/static preferences; no readiness dependency on session, image service or network.                                                                                                                                                                                                       |
 
 Profile and preference snapshot reads have a five-second presentation timeout;
 image preparation has the separate 2.5-second bound. The session itself is required

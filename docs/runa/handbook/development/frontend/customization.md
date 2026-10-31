@@ -59,6 +59,7 @@ import { Button } from '@/runa/ui';
 ```
 
 `AuthApplication` accepts optional `session`, `navigation`, `topNavigation`,
+`navigationLoading`, `contentLoading`,
 `current`, `locale` and `accountMenu` composition inputs. It reuses the public
 `ApplicationSessionShell` from `@/runa/auth`; only the creator calls
 `useApplicationSession` and owns its disposal. The shell takes a required session

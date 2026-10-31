@@ -17,6 +17,16 @@ preview/Save through the shared form owner. Point 6 delivers server coordination
 and initial profile/access record adapters. Point 9 delivers operational dashboard,
 module settings, lifecycle and work controls. Point 10 delivers application global settings and runtime branding. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
 
+## Initial presentation
+
+The default Admin keeps the Application frame mounted during bootstrap and
+coordinates initial page/section/diagnostics/editor reads using the shared
+[readiness contract](../../development/frontend/loading.md#admin-initial-content).
+Navigation placeholders occupy the sidebar/top bar; no MinimalLayout loading
+interlude or content-tab placeholders are used. Replacements retain the existing
+shell controller and forward navigationLoading/contentLoading; independently
+loaded replacement regions compose public useViewReadiness/ViewBoundary.
+
 ## Controllers and public types
 
 The following types and implemented functions use that public facade. Function
@@ -685,7 +695,9 @@ non-null identity returns a safe supplied unavailable component and available=fa
 Module loaders are chosen only after owner/manifest/build/key agreement; App keys
 also require a matching explicit static registry entry. Use this resolver in full
 replacements; it does not import a path from metadata. Default rendering isolates
-component setup/render/load failures to its boundary. Required form blocking is
+component setup/render/load failures to its boundary. Initial async renderers
+and their mounted read owners participate in Admin readiness; each boundary settles
+a failed loader to its existing fallback within 15 seconds. Required form blocking is
 implemented by useAdminForm and field/section boundaries; source identity validation alone is not Save authorization.
 
 Defaults remain usable without configuration: ApplicationLayout, existing Form/
@@ -707,6 +719,8 @@ interface ApplicationSessionShellProps {
   session: ApplicationSessionController;
   navigation?: readonly NavigationEntry[];
   topNavigation?: readonly NavigationEntry[];
+  navigationLoading?: boolean;
+  contentLoading?: boolean;
   current?: RouteContext;
   locale?: 'pl' | 'en';
   accountMenu?: readonly AuthAccountMenuEntry[];
@@ -729,7 +743,7 @@ interface AuthAccountMenuEntry {
 
 NavigationEntry/RouteContext use public `@/runa/ui` types. The shell has no emitted
 events and never creates a session controller. AuthApplication accepts these same
-optional navigation/current/locale/accountMenu props and optional
+optional navigation/navigationLoading/contentLoading/current/locale/accountMenu props and optional
 `session?: ApplicationSessionController`, plus `account?: boolean`; it forwards
 the account-menu slot. Without a supplied session, the outer application creates
 one useApplicationSession controller. AdminApplication passes the same controller

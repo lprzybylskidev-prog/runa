@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAdminLocale } from './localization';
+import { useAdminInitialReadiness } from './initialReadiness';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import AdminOperationResult from './AdminOperationResult.vue';
 import {
@@ -12,6 +13,8 @@ import {
 } from 'vue';
 import {
   Alert,
+  ViewBoundary,
+  useViewReadiness,
   Button,
   Checkbox,
   NumberInput,
@@ -256,194 +259,211 @@ watch(
     parseError.value = '';
   },
 );
-onMounted(load);
+const initialSettled = ref(false);
+const readiness = useViewReadiness({
+  identity: 'editor',
+  required: initialSettled,
+});
+useAdminInitialReadiness(() => initialSettled.value);
+onMounted(async () => {
+  try {
+    await load();
+  } finally {
+    initialSettled.value = true;
+  }
+});
 onScopeDispose(() => {
   props.controller.dirty.value = false;
 });
 </script>
 <template>
-  <div class="space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <h3 class="font-semibold">
-        {{
-          kind === 'settings'
-            ? tr('Module settings')
-            : kind === 'health'
-              ? tr('Health policy')
-              : tr('Optional integrations')
-        }}
-      </h3>
-      <Button :disabled="controller.busy.value" @click="load">{{
-        tr('Reload current state')
-      }}</Button>
-    </div>
-    <AdminOperationResult v-if="result" :result="result" />
-    <template v-if="loaded">
-      <Alert
-        v-if="kind === 'settings' && loaded.editable === false"
-        tone="info"
-        >{{
-          tr('Auth policies use their dedicated reviewed policy page.')
-        }}</Alert
-      >
-      <template v-if="kind === 'settings'">
-        <p v-if="!settingRows.length" class="text-sm text-muted">
-          {{ tr('No settings are declared.') }}
-        </p>
-        <div v-for="row in settingRows" :key="row.key" class="space-y-2">
-          <p v-if="row.definition.sensitive" class="text-xs text-muted">
-            {{ tr(row.label) }}:
-            {{ row.entry.set ? tr('Set') : tr('Not set') }}.
-            {{ tr('Only an explicit replacement is submitted.') }}
+  <ViewBoundary
+    :readiness="readiness"
+    :label="tr('Loading the administrator panel')"
+  >
+    <div class="space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h3 class="font-semibold">
+          {{
+            kind === 'settings'
+              ? tr('Module settings')
+              : kind === 'health'
+                ? tr('Health policy')
+                : tr('Optional integrations')
+          }}
+        </h3>
+        <Button :disabled="controller.busy.value" @click="load">{{
+          tr('Reload current state')
+        }}</Button>
+      </div>
+      <AdminOperationResult v-if="result" :result="result" />
+      <template v-if="loaded">
+        <Alert
+          v-if="kind === 'settings' && loaded.editable === false"
+          tone="info"
+          >{{
+            tr('Auth policies use their dedicated reviewed policy page.')
+          }}</Alert
+        >
+        <template v-if="kind === 'settings'">
+          <p v-if="!settingRows.length" class="text-sm text-muted">
+            {{ tr('No settings are declared.') }}
           </p>
-          <Checkbox
-            v-if="row.definition.type === 'boolean'"
-            :label="tr(row.label)"
-            :model-value="draft[row.key] === true"
-            :disabled="
-              controller.busy.value ||
-              loaded.editable === false ||
-              writable === false
-            "
-            @update:model-value="edit(row.key, $event)"
-          />
-          <NumberInput
-            v-else-if="row.definition.type === 'integer'"
-            :label="tr(row.label)"
-            :model-value="String(draft[row.key] ?? '')"
-            kind="integer"
-            :locale="adminLocale"
-            :disabled="
-              controller.busy.value ||
-              loaded.editable === false ||
-              writable === false
-            "
-            @update:model-value="
-              edit(
-                row.key,
-                $event !== null &&
-                  /^-?\d+$/.test($event) &&
-                  Number.isSafeInteger(Number($event))
-                  ? Number($event)
-                  : $event,
-              )
-            "
-          />
-          <Select
-            v-else-if="row.definition.type === 'enum'"
-            :label="tr(row.label)"
-            :model-value="JSON.stringify(draft[row.key])"
-            :options="choices(row.definition.options)"
-            :locale="adminLocale"
-            :disabled="
-              controller.busy.value ||
-              loaded.editable === false ||
-              writable === false
-            "
-            @update:model-value="
-              enumEdit(row.key, row.definition.options, $event)
-            "
-          />
+          <div v-for="row in settingRows" :key="row.key" class="space-y-2">
+            <p v-if="row.definition.sensitive" class="text-xs text-muted">
+              {{ tr(row.label) }}:
+              {{ row.entry.set ? tr('Set') : tr('Not set') }}.
+              {{ tr('Only an explicit replacement is submitted.') }}
+            </p>
+            <Checkbox
+              v-if="row.definition.type === 'boolean'"
+              :label="tr(row.label)"
+              :model-value="draft[row.key] === true"
+              :disabled="
+                controller.busy.value ||
+                loaded.editable === false ||
+                writable === false
+              "
+              @update:model-value="edit(row.key, $event)"
+            />
+            <NumberInput
+              v-else-if="row.definition.type === 'integer'"
+              :label="tr(row.label)"
+              :model-value="String(draft[row.key] ?? '')"
+              kind="integer"
+              :locale="adminLocale"
+              :disabled="
+                controller.busy.value ||
+                loaded.editable === false ||
+                writable === false
+              "
+              @update:model-value="
+                edit(
+                  row.key,
+                  $event !== null &&
+                    /^-?\d+$/.test($event) &&
+                    Number.isSafeInteger(Number($event))
+                    ? Number($event)
+                    : $event,
+                )
+              "
+            />
+            <Select
+              v-else-if="row.definition.type === 'enum'"
+              :label="tr(row.label)"
+              :model-value="JSON.stringify(draft[row.key])"
+              :options="choices(row.definition.options)"
+              :locale="adminLocale"
+              :disabled="
+                controller.busy.value ||
+                loaded.editable === false ||
+                writable === false
+              "
+              @update:model-value="
+                enumEdit(row.key, row.definition.options, $event)
+              "
+            />
+            <TextInput
+              v-else-if="row.definition.type === 'array'"
+              :label="tr(row.label) + ' (JSON)'"
+              type="textarea"
+              :model-value="raw[row.key] ?? ''"
+              :error="tr(parseError)"
+              :disabled="
+                controller.busy.value ||
+                loaded.editable === false ||
+                writable === false
+              "
+              @update:model-value="arrayEdit(row.key, $event)"
+            />
+            <TextInput
+              v-else-if="
+                ['string', 'decimal'].includes(String(row.definition.type))
+              "
+              :label="tr(row.label)"
+              :type="row.definition.sensitive ? 'password' : 'text'"
+              :model-value="
+                typeof draft[row.key] === 'string'
+                  ? (draft[row.key] as string)
+                  : draft[row.key] === null
+                    ? null
+                    : JSON.stringify(draft[row.key])
+              "
+              :disabled="
+                controller.busy.value ||
+                loaded.editable === false ||
+                writable === false
+              "
+              autocomplete="off"
+              @update:model-value="edit(row.key, $event)"
+            />
+            <p v-else class="break-words text-sm text-muted">
+              {{ tr(row.label) }}
+              {{
+                tr(
+                  'uses a module-specific control. Supply an operational editor replacement for this declared type.',
+                )
+              }}
+            </p>
+            <Button
+              v-if="
+                row.definition.nullable &&
+                loaded.editable !== false &&
+                writable !== false
+              "
+              :disabled="controller.busy.value"
+              @click="edit(row.key, null)"
+              >{{ tr('Clear') }} {{ tr(row.label) }}</Button
+            >
+          </div>
+        </template>
+        <template v-else-if="kind !== 'health' || loaded.health_policy">
+          <template v-if="kind === 'integrations'">
+            <Select
+              :label="tr('Integration')"
+              :model-value="key"
+              :options="
+                Object.keys(integrations).map((value) => ({
+                  value,
+                  label: value,
+                }))
+              "
+              :disabled="controller.busy.value"
+              :locale="adminLocale"
+              @update:model-value="selectIntegration(String($event))"
+            />
+            <Checkbox
+              v-if="key"
+              :label="tr('Enabled')"
+              v-model="enabled"
+              :disabled="controller.busy.value"
+              @update:model-value="changed"
+            />
+          </template>
           <TextInput
-            v-else-if="row.definition.type === 'array'"
-            :label="tr(row.label) + ' (JSON)'"
+            v-if="kind === 'health' || key"
+            :label="
+              kind === 'health'
+                ? tr('Source-validated health overrides (JSON)')
+                : tr('Non-sensitive integration configuration (JSON)')
+            "
             type="textarea"
-            :model-value="raw[row.key] ?? ''"
+            v-model="json"
             :error="tr(parseError)"
-            :disabled="
-              controller.busy.value ||
-              loaded.editable === false ||
-              writable === false
-            "
-            @update:model-value="arrayEdit(row.key, $event)"
-          />
-          <TextInput
-            v-else-if="
-              ['string', 'decimal'].includes(String(row.definition.type))
-            "
-            :label="tr(row.label)"
-            :type="row.definition.sensitive ? 'password' : 'text'"
-            :model-value="
-              typeof draft[row.key] === 'string'
-                ? (draft[row.key] as string)
-                : draft[row.key] === null
-                  ? null
-                  : JSON.stringify(draft[row.key])
-            "
-            :disabled="
-              controller.busy.value ||
-              loaded.editable === false ||
-              writable === false
-            "
-            autocomplete="off"
-            @update:model-value="edit(row.key, $event)"
-          />
-          <p v-else class="break-words text-sm text-muted">
-            {{ tr(row.label) }}
-            {{
-              tr(
-                'uses a module-specific control. Supply an operational editor replacement for this declared type.',
-              )
-            }}
-          </p>
-          <Button
-            v-if="
-              row.definition.nullable &&
-              loaded.editable !== false &&
-              writable !== false
-            "
-            :disabled="controller.busy.value"
-            @click="edit(row.key, null)"
-            >{{ tr('Clear') }} {{ tr(row.label) }}</Button
-          >
-        </div>
-      </template>
-      <template v-else-if="kind !== 'health' || loaded.health_policy">
-        <template v-if="kind === 'integrations'">
-          <Select
-            :label="tr('Integration')"
-            :model-value="key"
-            :options="
-              Object.keys(integrations).map((value) => ({
-                value,
-                label: value,
-              }))
-            "
-            :disabled="controller.busy.value"
-            :locale="adminLocale"
-            @update:model-value="selectIntegration(String($event))"
-          />
-          <Checkbox
-            v-if="key"
-            :label="tr('Enabled')"
-            v-model="enabled"
             :disabled="controller.busy.value"
             @update:model-value="changed"
           />
         </template>
-        <TextInput
-          v-if="kind === 'health' || key"
-          :label="
-            kind === 'health'
-              ? tr('Source-validated health overrides (JSON)')
-              : tr('Non-sensitive integration configuration (JSON)')
-          "
-          type="textarea"
-          v-model="json"
-          :error="tr(parseError)"
-          :disabled="controller.busy.value"
-          @update:model-value="changed"
-        />
+        <p v-else class="text-sm text-muted">
+          {{ tr('No editable health policy is available.') }}
+        </p>
+        <Button
+          v-if="loaded.editable !== false && writable !== false"
+          :disabled="controller.busy.value || !controller.dirty.value"
+          @click="save"
+          >{{ tr('Save') }} {{ kind }}</Button
+        >
       </template>
-      <p v-else class="text-sm text-muted">
-        {{ tr('No editable health policy is available.') }}
-      </p>
-      <Button
-        v-if="loaded.editable !== false && writable !== false"
-        :disabled="controller.busy.value || !controller.dirty.value"
-        @click="save"
-        >{{ tr('Save') }} {{ kind }}</Button
-      >
-    </template>
-  </div>
+    </div>
+  </ViewBoundary>
 </template>

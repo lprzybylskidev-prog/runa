@@ -356,6 +356,14 @@ const passwordHint = computed(() =>
     @retry="account.retryHistoryDetail"
   />
 
+  <PageNavigation
+    :entries="navigationEntries"
+    :current="navigationCurrent"
+    :label="text('Ustawienia konta', 'Account settings')"
+    :disabled="busy"
+    :loading="!ready && !failure"
+    @navigate="navigateTab"
+  />
   <component
     :is="presentation.accountLoading ?? AuthAccountLoading"
     v-if="!ready && !failure"
@@ -367,13 +375,6 @@ const passwordHint = computed(() =>
     :inert="display.changingPreference.value || undefined"
     @submit.capture="feedbackAttempt++"
   >
-    <PageNavigation
-      :entries="navigationEntries"
-      :current="navigationCurrent"
-      :label="text('Ustawienia konta', 'Account settings')"
-      :disabled="busy"
-      @navigate="navigateTab"
-    />
     <div
       class="flex flex-wrap items-center justify-between gap-3"
       data-account-heading

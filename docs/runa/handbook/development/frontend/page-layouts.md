@@ -157,20 +157,29 @@ selection, save/retry/review and other use-case actions remain content controls.
 UI owns public `PageNavigation` and `usePageNavigationHost` consumption/composition
 from `@/runa/ui`, implemented in shared components/composables, delivered in the
 frontend runtime. PageNavigation accepts `entries: readonly NavigationEntry[]`,
-`current?: RouteContext`, `label?: string`, `disabled?: boolean`; it emits
+`current?: RouteContext`, `label?: string`, `disabled?: boolean`,
+`loading?: boolean`; it emits
 `navigate(href: string, event: MouseEvent)`. In an ApplicationLayout subtree it
 registers with that layout's host and renders no duplicate content menu. Without
 a host, it supplies a labeled standalone navigation fallback with controlled
 buttons, keeping independent presentation usable. Latest mounted publisher owns
 the page context; disposal removes its registration without clearing a newer one.
 
-`usePageNavigationHost()` returns readonly computed `entries`, `current`,
+Publish PageNavigation before dependent content is ready and set loading while its
+initial data settles. Loading renders an animated skeleton in the actual header
+(or standalone fallback), withholding actionable links without a duplicate content
+placeholder.
+
+`usePageNavigationHost()` returns readonly computed `entries`, `current`, `loading`,
 and `navigate(href,event): boolean` for a custom App layout to compose the existing
 top navigation. Call once in layout setup; retain the same mounted layout instance
 when page entries change. It handles only available registered links and delegates
 selection/guards to the publishing controller. Explicit layout topNavigation
 entries remain supported; page entries join that top bar without replacing sidebar
-context. Neither helper starts sessions, authorizes access or performs writes.
+context. Custom layouts render a local skeleton while host loading is true.
+`ApplicationLayout.navigationLoading?: boolean` supplies the same placeholder for
+initial sidebar/top navigation discovery before a page publisher mounts. Neither
+helper starts sessions, authorizes access or performs writes.
 
 `usePageResolver` also returns readonly current `href: ComputedRef<string>` alongside its
 existing methods/current descriptor so query-driven subviews react to deliberate

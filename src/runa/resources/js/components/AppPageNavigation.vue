@@ -3,12 +3,14 @@ import { computed, shallowRef, watch } from 'vue';
 import type { NavigationEntry, RouteContext } from '../runa/ui/navigation';
 import { registerPageNavigation } from '../composables/usePageNavigationHost';
 import AppButton from './AppButton.vue';
+import AppSkeleton from './AppSkeleton.vue';
 const props = withDefaults(
   defineProps<{
     entries: readonly NavigationEntry[];
     current?: RouteContext | undefined;
     label?: string;
     disabled?: boolean;
+    loading?: boolean;
   }>(),
   { current: undefined, label: 'Page navigation', disabled: false },
 );
@@ -50,14 +52,16 @@ function leaves(items: readonly NavigationEntry[]): readonly NavigationEntry[] {
 const fallbackEntries = computed(() => leaves(publishedEntries.value));
 const hosted = registerPageNavigation({
   entries: () => publishedEntries.value,
+  loading: () => props.loading ?? false,
   current: () => publishedCurrent.value,
   navigate: (href, event) => emit('navigate', href, event),
 });
 </script>
 <template>
   <nav v-if="!hosted" class="flex flex-wrap gap-2" :aria-label="label">
+    <AppSkeleton v-if="loading" class="w-48" :lines="1" />
     <AppButton
-      v-for="entry in fallbackEntries"
+      v-for="entry in loading ? [] : fallbackEntries"
       :key="entry.key"
       :variant="
         entry.routeKey === publishedCurrent?.routeKey ? 'solid' : 'outline'

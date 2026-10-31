@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Publish account navigation loading in the top bar, remove obsolete content tab placeholders and expose shell contentLoading/navigationLoading for initial page discovery.
+
 - Move account subview navigation into the shared top bar via UI PageNavigation, with query deep links, browser history and pending-write protection. Keep standalone presentation usable. Included in the existing unreleased candidate; no migration or version-only upgrade edge.
 
 - Coordinate initial application content/avatar placeholder completion inside the immediately rendered layout; retain the readiness latch across background reads and bound image failures/timeouts.

@@ -22,10 +22,13 @@ import type {
 import AdminApplicationSettings from './AdminApplicationSettings.vue';
 import AdminOperationalEditor from './AdminOperationalEditor.vue';
 import { useAdminPresentation } from './presentation';
+import { useAdminInitialReadiness } from './initialReadiness';
 const props = defineProps<{ admin: AdminController }>();
 const controller = useAdminOperations(props.admin);
 const presentation = useAdminPresentation();
 const capabilitiesReady = ref(false);
+const initialSettled = ref(false);
+const initialReadiness = useAdminInitialReadiness(() => initialSettled.value);
 const capabilities = ref<string[]>([]),
   filter = ref('enabled');
 const moduleInput = ref(''),
@@ -289,6 +292,7 @@ watch(
     capabilitiesReady.value = true;
     await nextTick();
     if (!applicationSettings.value && !editor.value) await refresh();
+    initialSettled.value = true;
   },
   { immediate: true },
 );
@@ -330,6 +334,9 @@ function format(value: AdminJson | undefined) {
       }}</Alert>
       <PageNavigation
         :entries="navigationEntries"
+        :loading="
+          initialReadiness ? !initialReadiness.ready.value : !initialSettled
+        "
         :current="navigationCurrent"
         :label="tr('Administrator panel')"
         :disabled="controller.busy.value"

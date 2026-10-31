@@ -19,6 +19,7 @@ import {
 import { adminFailure, refuseAdmin, sessionStamp } from './useAdmin';
 import { pageOwners } from './pageContext';
 import { pageRuntime } from './runtime';
+import { useAdminInitialReadiness } from './initialReadiness';
 import { writeFailure } from './writeFailure';
 
 function readQuery(query: AdminReadQuery) {
@@ -51,6 +52,7 @@ export function useAdminResource(
   let writeAbort = new AbortController();
   const busy = ref(false),
     status = ref<AdminState>('ready');
+  useAdminInitialReadiness(() => !busy.value);
   const admin = pageOwners.get(page);
   const descriptor = computed(() =>
     page.page.value?.sections.find((s) => s.key === section),

@@ -108,3 +108,37 @@ it('standalone page navigation retains a controlled labeled fallback', async () 
   await w.setProps({ disabled: true });
   expect(w.get('button').attributes('disabled')).toBeDefined();
 });
+
+it('page navigation publishes its loading placeholder in the header before links settle', async () => {
+  const loading = ref(true);
+  const w = mount(
+    defineComponent({
+      setup: () => () =>
+        h(
+          ApplicationLayout,
+          {
+            title: 'Account',
+            navigation: [],
+            preferenceStore: createPreferenceStore(),
+          },
+          {
+            default: () =>
+              h(PageNavigation, {
+                entries: [entry('details')],
+                loading: loading.value,
+              }),
+          },
+        ),
+    }),
+  );
+  await flushPromises();
+  const frame = w.get('.application-page').element;
+  expect(w.find('header [data-navigation-loading]').exists()).toBe(true);
+  expect(w.find('header .shell-top-nav a').exists()).toBe(false);
+  expect(w.find('main nav').exists()).toBe(false);
+  loading.value = false;
+  await flushPromises();
+  expect(w.find('header [data-navigation-loading]').exists()).toBe(false);
+  expect(w.get('header .shell-top-nav a').text()).toBe('details');
+  expect(w.get('.application-page').element).toBe(frame);
+});

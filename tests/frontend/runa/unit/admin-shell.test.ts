@@ -1,7 +1,14 @@
 /* eslint-disable vue/one-component-per-file -- Independent mounted controller and presentation fixtures. */
 import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, flushPromises, mount } from '@runa/testing/vue';
-import { computed, defineComponent, h, ref, shallowRef } from 'vue';
+import {
+  computed,
+  defineAsyncComponent,
+  defineComponent,
+  h,
+  ref,
+  shallowRef,
+} from 'vue';
 import type { Component, PropType } from 'vue';
 import {
   AdminApplication,
@@ -45,6 +52,9 @@ import type {
 } from '@/runa/admin';
 import { accountPreferences } from '../../../../src/runa/modules/auth/frontend/preferences/session';
 
+import AdminReadiness from '../../../../src/runa/modules/admin/frontend/AdminReadiness.vue';
+import AdminComponentBoundary from '../../../../src/runa/modules/admin/frontend/AdminComponentBoundary.vue';
+import { useAdminInitialReadiness } from '../../../../src/runa/modules/admin/frontend/initialReadiness';
 import CustomerAdmin from './fixtures/customization/CustomerAdmin.vue';
 import CustomerAdminTable from './fixtures/customization/CustomerAdminTable.vue';
 import CustomerAdminSection from './fixtures/customization/CustomerAdminSection.vue';
@@ -2182,4 +2192,132 @@ it('Admin revalidation clears transient proof when background bootstrap admits t
   await vi.waitFor(() => expect(admin.state.value).toBe('ready'));
   expect(admin.entryProof.password.value).toBe('');
   expect(admin.entryProof.open.value).toBe(false);
+});
+
+it('Admin initial readiness keeps the Application frame through bootstrap and delayed diagnostics', async () => {
+  let finishBootstrap!: (value: Response) => void;
+  let finishCapabilities!: (value: Response) => void;
+  let finishDiagnostics!: (value: Response) => void;
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const path = String(input);
+    if (path === '/api/admin')
+      return new Promise((resolve) => {
+        finishBootstrap = resolve;
+      });
+    if (path.includes('/operations/capabilities'))
+      return new Promise((resolve) => {
+        finishCapabilities = resolve;
+      });
+    if (path.includes('/operations/diagnostics'))
+      return new Promise((resolve) => {
+        finishDiagnostics = resolve;
+      });
+    return respond({ data: { available: true } });
+  });
+  const wrapper = mount(AdminApplication, {
+    attachTo: document.body,
+    props: { session: sessionFixture() },
+  });
+  await flushPromises();
+  const frame = wrapper.get('.application-page').element;
+  expect(wrapper.find('.minimal-page').exists()).toBe(false);
+  finishBootstrap(respond({ data: bootstrap() }));
+  await flushPromises();
+  await vi.waitFor(() => expect(finishCapabilities).toBeTypeOf('function'));
+  expect(wrapper.get('[data-admin-content]').isVisible()).toBe(false);
+  expect(wrapper.find('[data-navigation-loading]').exists()).toBe(true);
+  finishCapabilities(respond({ data: { capabilities: ['diagnostics.read'] } }));
+  await flushPromises();
+  await vi.waitFor(() => expect(finishDiagnostics).toBeTypeOf('function'));
+  expect(wrapper.get('[data-admin-content]').isVisible()).toBe(false);
+  finishDiagnostics(
+    respond({
+      data: {
+        modules: [],
+        platform_version: '0.7.0',
+        application_version: '0.1.0',
+      },
+    }),
+  );
+  await flushPromises();
+  await vi.waitFor(() =>
+    expect(wrapper.get('[data-admin-content]').isVisible()).toBe(true),
+  );
+  expect(wrapper.find('[data-navigation-loading]').exists()).toBe(false);
+  expect(wrapper.get('.application-page').element).toBe(frame);
+});
+
+it('Admin initial readiness waits for a lazy renderer and its read without hiding a later dirty draft', async () => {
+  const settled = ref(false);
+  let finish!: (component: Component) => void;
+  const lazy = defineAsyncComponent(
+    () =>
+      new Promise<Component>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const wrapper = mount(AdminReadiness, {
+    attachTo: document.body,
+    slots: {
+      default: () =>
+        h(
+          AdminComponentBoundary,
+          { identity: 'lazy-page' },
+          { default: () => h(lazy) },
+        ),
+    },
+  });
+  await flushPromises();
+  expect(wrapper.get('[data-admin-content]').isVisible()).toBe(false);
+  finish(
+    defineComponent({
+      setup() {
+        useAdminInitialReadiness(() => settled.value);
+        return () => h('input', { 'aria-label': 'Draft' });
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.find('input').exists()).toBe(true));
+  expect(wrapper.get('[data-admin-content]').isVisible()).toBe(false);
+  settled.value = true;
+  await vi.waitFor(() =>
+    expect(wrapper.get('[data-admin-content]').isVisible()).toBe(true),
+  );
+  const input = wrapper.get('input');
+  await input.setValue('Retained draft');
+  input.element.focus();
+  settled.value = false;
+  await flushPromises();
+  expect(wrapper.get('[data-admin-content]').isVisible()).toBe(true);
+  expect(wrapper.get('input').element).toBe(input.element);
+  expect(document.activeElement).toBe(input.element);
+  expect(input.element.value).toBe('Retained draft');
+});
+
+it('Admin initial readiness settles a stalled lazy renderer to the bounded failure fallback', async () => {
+  vi.useFakeTimers();
+  const lazy = defineAsyncComponent(() => new Promise<Component>(() => {}));
+  const failure = vi.fn();
+  const wrapper = mount(AdminReadiness, {
+    attachTo: document.body,
+    slots: {
+      default: () =>
+        h(
+          AdminComponentBoundary,
+          { identity: 'stalled', onFailure: failure },
+          { default: () => h(lazy) },
+        ),
+    },
+  });
+  try {
+    await vi.advanceTimersByTimeAsync(14999);
+    expect(wrapper.get('[data-admin-content]').isVisible()).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(wrapper.get('[data-admin-content]').isVisible()).toBe(true);
+    expect(failure).toHaveBeenCalledWith(true);
+    expect(wrapper.text()).toContain('unavailable');
+  } finally {
+    wrapper.unmount();
+    vi.useRealTimers();
+  }
 });

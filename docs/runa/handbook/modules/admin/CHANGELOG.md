@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Keep the Application frame throughout bootstrap and coordinate initial page, section, table, diagnostics and selected editor settlement before revealing content/navigation; retain drafts during background reads.
+
 - Move dashboard application settings and grant-filtered module editor links into the shared top bar. Preserve dirty confirmation, URL/history selection and explicit reads; serialize initial capabilities before deep-linked editor loading. Included in the existing unreleased candidate; no migration or version-only upgrade edge.
 
 - Render layout frames immediately and keep loading placeholders local to dependent content/avatar elements; public branding and profile/image reads never hide the page frame.
