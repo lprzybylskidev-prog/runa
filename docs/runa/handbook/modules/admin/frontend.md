@@ -64,10 +64,11 @@ interface AdminController {
   bootstrap: Ref<AdminBootstrap | undefined>;
   location: ComputedRef<AdminLocation | undefined>;
   error: Ref<AdminError | undefined>;
-  entryProof: { password: Ref<string>; busy: ComputedRef<boolean> };
+  entryProof: OperationProofController;
   refresh(): Promise<void>;
   navigate(location: AdminLocation): Promise<boolean>;
   confirmEntry(): Promise<void>;
+  cancelEntry(): void;
 }
 interface AdminPageController {
   state: ComputedRef<AdminState>;
@@ -180,10 +181,15 @@ function useAdminResource(
 ): AdminResourceController;
 ```
 
-`entryProof.password` is transient input for the fixed native
+`entryProof` is the public Auth OperationProofController for the fixed native
 `runa.admin.enter` password action. Render public `AdminEntryProof` with
 `controller: AdminController`, or bind that input and call `confirmEntry()` once
-on explicit submission. It has no slots or emitted events. Confirmation clears
+on explicit submission. AdminEntryProof is a thin public AuthOperationProofPage consumer,
+with English title/description, a confirmed-to-bootstrap refresh and cancel-to-/app
+navigation. Its Auth-owned page uses MinimalLayout before panel admission;
+ApplicationSessionShell keeps one session owner and renders the admission slot
+outside ApplicationLayout. AuthPresentation.operationProofPage/minimalLayout remain
+replaceable. AdminEntryProof has no slots or emitted events. Confirmation clears
 the password, admits no duplicate submission and refreshes only bootstrap;
 account/session invalidation and disposal erase it. Failure never replays a
 business operation. `authorityRevision` on ApplicationSessionController increments

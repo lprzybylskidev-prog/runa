@@ -129,3 +129,10 @@ shared controls inherit that locale without persisting an account-language chang
 the language cycle is hidden while the theme control remains usable. Standalone
 layouts bootstrap account preferences; inside the session shell they reuse its
 session admission rather than issuing another session read.
+
+For action proof before application admission, ApplicationSessionShell and
+AuthApplication expose an optional admission slot outside ApplicationLayout;
+native paused-session reauthentication retains priority. Admin uses this slot for
+AuthOperationProofPage (MinimalLayout), loading and refusals. The slot is a
+presentation boundary, not authorization. Keep one shared session controller and
+an identity-bound Auth proof controller; see the [Auth proof contract](../../modules/auth/entry-ui.md#operation-proof-composition).

@@ -126,10 +126,11 @@ export interface AdminController {
   location: ComputedRef<AdminLocation | undefined>;
   error: Ref<AdminError | undefined>;
   /** Transient input, erased after submission, account invalidation and disposal. */
-  entryProof: { password: Ref<string>; busy: ComputedRef<boolean> };
+  entryProof: import('@/runa/auth').OperationProofController;
   refresh(): Promise<void>;
   navigate(location: AdminLocation): Promise<boolean>;
   confirmEntry(): Promise<void>;
+  cancelEntry(): void;
 }
 export interface AdminPageController {
   state: ComputedRef<AdminState>;

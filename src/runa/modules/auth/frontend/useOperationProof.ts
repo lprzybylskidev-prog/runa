@@ -7,6 +7,8 @@ import {
   factorMethods,
 } from './entry';
 import type { FactorMethod } from './entry';
+import { useLocale } from '../../../resources/js/composables/useLocale';
+import { operationProofCopy } from './operationProofCopy';
 
 export type ProofRequirement = 'none' | 'password' | 'second_factor' | 'both';
 /** Uses the caller's admitted session identity; never owns a second session or retries a business write. */
@@ -14,15 +16,23 @@ export function useOperationProof(options: {
   identity: () => string | undefined;
   action: () => string;
   requirement: () => ProofRequirement;
+  locale?: () => 'pl' | 'en';
 }) {
+  const { locale } = useLocale();
+  const copy = computed(() =>
+    operationProofCopy(options.locale?.() ?? locale.value),
+  );
   const password = ref(''),
     code = ref(''),
     method = ref<FactorMethod>('totp');
   const methods = shallowRef<readonly FactorMethod[]>([]);
   const open = ref(false),
     busy = ref(false),
-    confirmed = ref(false),
-    error = ref('');
+    confirmed = ref(false);
+  const errorKey = ref<'failed' | 'noMethod' | 'fields' | ''>('');
+  const error = computed(() =>
+    errorKey.value ? copy.value[errorKey.value] : '',
+  );
   let epoch = 0,
     alive = true,
     abort = new AbortController();
@@ -42,20 +52,19 @@ export function useOperationProof(options: {
     open.value = false;
     busy.value = false;
     confirmed.value = false;
-    error.value = '';
+    errorKey.value = '';
   }
   async function perform(action: (signal: AbortSignal) => Promise<void>) {
     if (!alive || busy.value || !options.identity()) return;
     const own = ++epoch,
       stamp = identity();
     busy.value = true;
-    error.value = '';
+    errorKey.value = '';
     try {
       await action(abort.signal);
     } catch {
       if (alive && own === epoch && stamp === identity())
-        error.value =
-          'Proof confirmation could not be completed. Try again explicitly.';
+        errorKey.value = 'failed';
     } finally {
       if (own === epoch) {
         password.value = '';
@@ -71,11 +80,10 @@ export function useOperationProof(options: {
     await perform(async (signal) => {
       if (['second_factor', 'both'].includes(options.requirement())) {
         const security = decodeSecurity(await authGet('security', signal));
-        if (!alive || stamp !== identity()) return;
+        if (!alive || stamp !== identity() || signal.aborted) return;
         methods.value = factorMethods(security);
         method.value = methods.value[0] ?? 'totp';
-        if (!methods.value.length)
-          error.value = 'No eligible proof method is available.';
+        if (!methods.value.length) errorKey.value = 'noMethod';
       }
     });
   }
@@ -87,7 +95,7 @@ export function useOperationProof(options: {
       (['second_factor', 'both'].includes(requirement) &&
         (!code.value || !methods.value.includes(method.value)))
     ) {
-      error.value = 'Complete the required proof fields.';
+      errorKey.value = 'fields';
       return;
     }
     await perform(async (signal) => {
@@ -97,9 +105,12 @@ export function useOperationProof(options: {
           {
             action: options.action(),
             requirement,
-            current_password: password.value,
-            method: method.value,
-            code: code.value,
+            ...(['password', 'both'].includes(requirement)
+              ? { current_password: password.value }
+              : {}),
+            ...(['second_factor', 'both'].includes(requirement)
+              ? { method: method.value, code: code.value }
+              : {}),
           },
           signal,
         ),

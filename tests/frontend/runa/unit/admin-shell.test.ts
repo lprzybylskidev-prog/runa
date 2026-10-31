@@ -18,7 +18,12 @@ import {
   AdminResourceTable,
   useAdminPresentation,
 } from '@/runa/admin';
-import { ApplicationSessionShell } from '@/runa/auth';
+import {
+  ApplicationSessionShell,
+  AuthOperationProofPage,
+  AuthPresentationProvider,
+  useOperationProof,
+} from '@/runa/auth';
 import type {
   ActivitySession,
   ApplicationSessionController,
@@ -1400,4 +1405,326 @@ it('application settings retain drafts after confirmed Audit refusal while real 
   expect(admin.state.value).toBe('unavailable');
   expect(settings.draft.value).toEqual({});
   expect(fetch).toHaveBeenCalledTimes(calls + 2);
+});
+
+it('Admin entry proof renders Auth MinimalLayout before admission and retries without duplicating password requests', async () => {
+  window.history.replaceState({}, '', '/admin');
+  let confirmed = false,
+    attempts = 0;
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    if (String(input) === '/api/runa/auth/step-up') {
+      attempts++;
+      confirmed = attempts > 1;
+      return confirmed
+        ? respond({ data: { confirmed: true } })
+        : respond({ reason: 'invalid_credentials' }, 422);
+    }
+    if (String(input) === '/api/admin')
+      return confirmed
+        ? respond({ data: bootstrap() })
+        : respond({ reason: 'step_up_required' }, 403);
+    return respond({ reason: 'not_found' }, 404);
+  });
+  const minimal = defineComponent({
+    setup:
+      (_, { slots }) =>
+      () =>
+        h('section', { 'data-test': 'auth-minimal' }, slots.default?.()),
+  });
+  const wrapper = mount(
+    defineComponent({
+      setup: () => () =>
+        h(
+          AuthPresentationProvider,
+          { components: { minimalLayout: minimal } },
+          {
+            default: () =>
+              h(
+                AdminApplication,
+                { session: sessionFixture(), navigate: vi.fn() },
+                { default: () => h('p', 'Admitted panel') },
+              ),
+          },
+        ),
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.find('input[name="current_password"]').exists()).toBe(true),
+  );
+  expect(wrapper.find('[data-test="auth-minimal"]').exists()).toBe(true);
+  expect(wrapper.text()).not.toContain('Application');
+  expect(wrapper.text()).not.toContain('Admitted panel');
+  await wrapper
+    .get('input[name="current_password"]')
+    .setValue('Wrong password');
+  await wrapper.get('form').trigger('submit');
+  await vi.waitFor(() => expect(attempts).toBe(1));
+  await flushPromises();
+  expect(
+    (wrapper.get('input[name="current_password"]').element as HTMLInputElement)
+      .value,
+  ).toBe('');
+  expect(wrapper.find('[data-test="auth-minimal"]').exists()).toBe(true);
+  await wrapper
+    .get('input[name="current_password"]')
+    .setValue('Correct password');
+  await wrapper.get('form').trigger('submit');
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Admitted panel'));
+  expect(attempts).toBe(2);
+  expect(wrapper.find('[data-test="auth-minimal"]').exists()).toBe(false);
+});
+
+it('Auth operation proof uses Polish defaults, confirms only identity and cancels transient input', async () => {
+  let proof!: ReturnType<typeof useOperationProof>;
+  const confirmed = vi.fn(),
+    cancel = vi.fn();
+  vi.mocked(window.fetch).mockImplementation(async () =>
+    respond({ data: { confirmed: true } }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        proof = useOperationProof({
+          identity: () => identity,
+          action: () => 'app.example',
+          requirement: () => 'password',
+          locale: () => 'pl',
+        });
+        return () =>
+          h(AuthOperationProofPage, {
+            controller: proof,
+            locale: 'pl',
+            onConfirmed: confirmed,
+            onCancel: cancel,
+          });
+      },
+    }),
+  );
+  await flushPromises();
+  expect(wrapper.text()).toContain('Potwierdź operację');
+  await wrapper.get('form').trigger('submit');
+  expect(proof.error.value).toBe('Uzupełnij wymagane pola potwierdzenia.');
+  const proofRequests = () =>
+    vi
+      .mocked(window.fetch)
+      .mock.calls.filter(([url]) => String(url) === '/api/runa/auth/step-up');
+  expect(proofRequests()).toHaveLength(0);
+  await wrapper
+    .get('input[name="current_password"]')
+    .setValue('Private password');
+  await wrapper.get('form').trigger('submit');
+  await vi.waitFor(() => expect(confirmed).toHaveBeenCalledOnce());
+  expect(proof.password.value).toBe('');
+  expect(proofRequests()).toHaveLength(1);
+  proof.password.value = 'Never persisted';
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Anuluj')!
+    .trigger('click');
+  expect(cancel).toHaveBeenCalledOnce();
+  expect(proof.password.value).toBe('');
+  expect(proof.confirmed.value).toBe(false);
+});
+
+it('Auth operation proof ignores an aborted factor response after reset for the same identity', async () => {
+  let proof!: ReturnType<typeof useOperationProof>,
+    finish!: (response: Response) => void;
+  vi.mocked(window.fetch).mockImplementation(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  mount(
+    defineComponent({
+      setup() {
+        proof = useOperationProof({
+          identity: () => identity,
+          action: () => 'app.example',
+          requirement: () => 'both',
+        });
+        return () => h('div');
+      },
+    }),
+  );
+  const pending = proof.begin();
+  proof.reset();
+  finish(
+    respond({
+      data: {
+        required: 'optional',
+        enrolled: ['totp'],
+        email_verified: true,
+        totp_enabled: true,
+        email_otp_enabled: false,
+        recovery_codes_enabled: true,
+        password_change_factor: false,
+        trusted_devices_enabled: false,
+      },
+    }),
+  );
+  await pending;
+  expect(proof.methods.value).toEqual([]);
+  expect(proof.open.value).toBe(false);
+});
+
+it.each(['second_factor', 'both'] as const)(
+  'Auth operation proof supports %s through eligible native factor controls',
+  async (requirement) => {
+    let proof!: ReturnType<typeof useOperationProof>;
+    const writes: { url: string; body: unknown }[] = [];
+    vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+      const url = String(input);
+      if (init?.method === 'POST') {
+        writes.push({ url, body: JSON.parse(String(init.body)) });
+        return respond({ data: { confirmed: true } });
+      }
+      if (url === '/api/runa/auth/security')
+        return respond({
+          data: {
+            required: 'optional',
+            enrolled: ['email'],
+            email_verified: true,
+            totp_enabled: false,
+            email_otp_enabled: true,
+            recovery_codes_enabled: false,
+            password_change_factor: false,
+            trusted_devices_enabled: false,
+          },
+        });
+      return respond({ reason: 'not_found' }, 404);
+    });
+    const confirmed = vi.fn();
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          proof = useOperationProof({
+            identity: () => identity,
+            action: () => 'app.example',
+            requirement: () => requirement,
+            locale: () => 'en',
+          });
+          return () =>
+            h(AuthOperationProofPage, {
+              controller: proof,
+              locale: 'en',
+              onConfirmed: confirmed,
+            });
+        },
+      }),
+    );
+    await vi.waitFor(() => expect(proof.methods.value).toEqual(['email']));
+    expect(wrapper.find('input[name="current_password"]').exists()).toBe(
+      requirement === 'both',
+    );
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Send code')!
+      .trigger('click');
+    await flushPromises();
+    if (requirement === 'both')
+      await wrapper
+        .get('input[name="current_password"]')
+        .setValue('Private password');
+    await wrapper.get('input[name="verification_code"]').setValue('123456');
+    await wrapper.get('form').trigger('submit');
+    await vi.waitFor(() => expect(confirmed).toHaveBeenCalledOnce());
+    expect(writes).toEqual([
+      { url: '/api/runa/auth/security/email-send', body: {} },
+      {
+        url: '/api/runa/auth/step-up',
+        body: {
+          action: 'app.example',
+          requirement,
+          ...(requirement === 'both'
+            ? { current_password: 'Private password' }
+            : {}),
+          method: 'email',
+          code: '123456',
+        },
+      },
+    ]);
+    expect(proof.password.value).toBe('');
+    expect(proof.code.value).toBe('');
+  },
+);
+
+it('Auth operation proof allows a full page replacement with the supplied controller and scoped content', async () => {
+  let proof!: ReturnType<typeof useOperationProof>;
+  const cancel = vi.fn();
+  const replacement = defineComponent({
+    props: {
+      controller: {
+        type: Object as PropType<ReturnType<typeof useOperationProof>>,
+        required: true,
+      },
+      title: { type: String, required: true },
+    },
+    emits: ['cancel'],
+    setup:
+      (props, { slots, emit }) =>
+      () =>
+        h('section', [
+          h('h1', String(props.title)),
+          slots.default?.({ controller: props.controller }),
+          h('button', { onClick: () => emit('cancel') }, 'Custom cancel'),
+        ]),
+  });
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        proof = useOperationProof({
+          identity: () => identity,
+          action: () => 'app.example',
+          requirement: () => 'password',
+        });
+        return () =>
+          h(
+            AuthPresentationProvider,
+            { components: { operationProofPage: replacement } },
+            {
+              default: () =>
+                h(
+                  AuthOperationProofPage,
+                  {
+                    controller: proof,
+                    title: 'Custom proof',
+                    onCancel: cancel,
+                  },
+                  {
+                    default: ({ controller }: { controller: typeof proof }) =>
+                      h(
+                        'p',
+                        controller === proof
+                          ? 'Shared controller'
+                          : 'Wrong owner',
+                      ),
+                  },
+                ),
+            },
+          );
+      },
+    }),
+  );
+  expect(wrapper.text()).toContain('Custom proof');
+  expect(wrapper.text()).toContain('Shared controller');
+  expect(wrapper.find('form').exists()).toBe(false);
+  await wrapper.get('button').trigger('click');
+  expect(cancel).toHaveBeenCalledOnce();
+});
+
+it('Admin entry proof preserves a retry when the shared session read fails before admission', async () => {
+  const session = sessionFixture();
+  session.session.value = undefined;
+  session.failure.value = 'failed';
+  const wrapper = mount(AdminApplication, {
+    props: { session, navigate: vi.fn() },
+  });
+  await flushPromises();
+  expect(wrapper.text()).toContain('Session could not be loaded.');
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Retry')!
+    .trigger('click');
+  expect(session.refresh).toHaveBeenCalledOnce();
 });

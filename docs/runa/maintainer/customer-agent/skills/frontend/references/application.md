@@ -18,3 +18,8 @@ Maintain application-specific patterns in local guidance/docs/app. Ordinary App
 code and optional app modules are supported; copied owner files or a Contracts
 namespace never authorize platform/internal APIs. Preserve installed local
 extensions during reviewed updates. This default contains no owner-only procedure.
+
+For password/2FA proof before entry or a sensitive operation, use the public Auth
+`docs/runa/handbook/modules/auth/entry-ui.md#operation-proof-composition`
+with its inline or MinimalLayout page default. Reuse the caller's session and
+proof controller; presentation replacements do not duplicate credential requests.

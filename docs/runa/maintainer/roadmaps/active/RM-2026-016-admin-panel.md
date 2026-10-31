@@ -358,6 +358,16 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Use `Panel administratora` / `Administrator panel` consistently in menu/catalogue,
     English dashboard/navigation and related accessibility/entry copy. Update existing
     consumer expectations and refresh local registry/assets before manual handover.
+- [x] 11a3. Complete Auth operation-proof presentation and native Admin entry composition.
+  - Review original Auth roadmap requirements against delivered entry/account/admin
+    presentations; record confirmed gaps and bounded source coverage without editing history.
+  - Deliver an Auth-owned replaceable MinimalLayout proof page for password/factor/both,
+    localize shared inline/page proof controls and feedback in PL/EN, reuse one owning
+    proof controller and preserve native action/session binding and secret erasure.
+  - Replace Admin's duplicate proof request/form with the public Auth page/controller;
+    keep pre-admission content outside ApplicationLayout with one shared session owner.
+  - Author failure/retry/fencing/layout/replacement regressions, run only necessary
+    focused checks, refresh real assets and preserve manual acceptance as penultimate.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -1956,3 +1966,56 @@ shell prerequisites passed; output is preserved in
 document returns HTTP 200. No new tests are needed for the label correction;
 existing browser expectations are updated for final acceptance. No full quality
 gate or Docker/data cleanup was run. Manual owner acceptance in 11b remains open.
+
+### Point 11a3 — Auth proof presentation and Admin admission repair
+
+Owner requested the original Auth roadmap review and immediate repair of all
+confirmed presentation gaps found in this bounded review. Historical RM-2026-011
+remains unchanged. Its shared public step-up requirement explicitly includes
+password, factor or both and native identity/session/action binding. Its entry UI
+point requires MinimalLayout; its general frontend decision requires usable,
+replaceable defaults. A standalone operation-proof page was missing from the
+combination of those delivered capabilities; the historical entry-screen list did
+not explicitly name a new step-up URL.
+
+| Requirement/source inspected                                                     | Current presentation coverage and finding                                                                                                                                                                                                                   |
+| -------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RM-2026-011 shared step-up contract; Auth StepUp and useOperationProof           | Native backend proof already existed. Admin bypassed the shared frontend controller with its own credential request/form. Replaced with the public Auth controller/page.                                                                                    |
+| Entry/restricted flows; entry.ts, AuthEntryFlow/useAuthEntry                     | Login, registration, invitations, reset/recovery, verification/reverification, forced password change, 2FA/enrollment/recovery have source-backed screen branches. No other missing default screen identified in this group.                                |
+| Account flows; AuthAccountDefault/Editor/Security/Preferences and useAuthAccount | Details/password, secondary email, avatar, factors/recovery, sessions/trusted devices, preferences and history have default sections/dialogs. Account proof already has PL/EN controls. No missing default identified in this group.                        |
+| General usable defaults/replacement and MinimalLayout                            | Added AuthOperationProofPage, shared private fields and full-page/default-slot/events/layout replacement contracts. Admin admission previously rendered proof inside ApplicationLayout; now uses the shared shell admission slot before application chrome. |
+| PL/EN shared proof controls/errors                                               | Existing inline operation proof was English-only. Inline and page now share PL/EN labels and safe feedback; Admin retains its scoped English locale.                                                                                                        |
+| Cancellation source review                                                       | A cancelled factor-options read could restore methods for the same unchanged identity after reset. Added the aborted-signal fence and a delayed-response regression.                                                                                        |
+
+This is source coverage for the listed public frontend flows, not a full Auth
+functional/security audit or acceptance PASS. Trusted operator/CLI-only operations
+are not missing web views. Existing owning backend admission/step-up policy stays
+in force; no new route, session owner, proof engine, grant or business write was
+introduced. The page emits successful confirmation; Admin then reads bootstrap.
+Failed proof stays retryable and clears credentials, cancellation returns to /app,
+and a failed initial session read retains an explicit Retry action.
+
+Public contracts/current-state guides and component/layout/customization references
+are synchronized. Owner frontend reference and customer frontend guidance both
+point to the canonical Auth composition contract. Root owner/customer contracts
+already require supplied defaults, supported replacements and one session owner;
+no new constitution or root-rule duplication is needed. Auth 2.0.0 and Admin 0.1.0
+remain their existing unreleased candidates; the public controller/presentation
+changes are included there, with no manifest-only version edge or migration.
+
+Necessary focused checks: `python3 tools/maintainer/test-frontend
+--filter='Admin entry proof|Auth operation proof'`: **8 passed**, native exit 0,
+cleanup 0. These cover native fixed action/single submission, MinimalLayout before
+admission and wrong-password retry, PL defaults/local validation/secret clearing,
+password plus eligible factor/email and combined proof, aborted-read fencing,
+full-page replacement/controller-slot forwarding, and failed-session retry.
+The initial assertion counted MinimalLayout's ordinary preference-session read as
+a proof request; corrected it to assert the native proof endpoint and mutation
+count specifically. No extra session owner was introduced in Admin composition.
+
+Current assets are prepared with `pnpm --dir src run build` for owner frontend
+acceptance (includes type compilation, Vite and native error shells). Real local
+`/admin` and `/auth/login` return HTTP 200. This does not claim authenticated owner
+acceptance. No full suite, final quality gate, database reset or Docker cleanup was
+run. Development data/services, knowledge caches and test/build reports remain.
+Manual point 11b and final point 12 remain open.

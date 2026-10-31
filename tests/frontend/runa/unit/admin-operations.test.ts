@@ -59,10 +59,25 @@ function admin(): AdminController {
     bootstrap: shallowRef(),
     location: computed(() => undefined),
     error: shallowRef(),
-    entryProof: { password: ref(''), busy: computed(() => false) },
+    entryProof: {
+      password: ref(''),
+      code: ref(''),
+      method: ref('totp'),
+      methods: shallowRef([]),
+      open: ref(false),
+      busy: ref(false),
+      confirmed: ref(false),
+      error: computed(() => ''),
+      requirement: computed(() => 'password'),
+      begin: vi.fn(async () => {}),
+      confirm: vi.fn(async () => {}),
+      sendEmail: vi.fn(async () => {}),
+      reset: vi.fn(),
+    },
     refresh: vi.fn(async () => {}),
     navigate: vi.fn(async () => true),
     confirmEntry: vi.fn(async () => {}),
+    cancelEntry: vi.fn(),
   };
 }
 const response = (data: AdminOperationData, status = 200) =>

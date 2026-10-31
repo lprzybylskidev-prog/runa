@@ -117,6 +117,7 @@ const initials = computed(
 </script>
 <template>
   <AuthEntry v-if="paused" page="login" :authenticated="authenticated" />
+  <slot v-else-if="$slots.admission" name="admission" />
   <component
     :is="presentation.applicationLayout ?? ApplicationLayout"
     v-else

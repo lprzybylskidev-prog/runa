@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Replace the duplicated entry password form/request with AuthOperationProofPage/useOperationProof. Render pre-admission proof/loading/refusal outside ApplicationLayout; retain the shared session, fixed native action and explicit retry/cancel semantics.
+
 - Name the module catalogue entry `Panel administratora` / `Administrator panel`, matching the shared account menu, dashboard and English navigation/accessibility copy.
 
 - Complete opt-in module generator integration and working independent App/public presentation examples; document all authoring topics, exact overwrite consent, settings-provider ownership and customer update preservation. Remain at development 0.1.0 until verified creation closure.

@@ -132,6 +132,28 @@ restricted-session refresh resumes. Codes stay print-hidden and in memory only.
 
 ## Operation proof composition
 
+Auth supplies a standalone operation-proof page alongside its inline composition.
+Public source owner: Auth; ordinary App/module
+consumers import `@/runa/auth`. Implementation stays in Auth frontend; no new HTTP
+route, proof engine or session owner is introduced. Public signatures:
+`AuthOperationProofPage({controller: OperationProofController, locale?: 'pl'|'en',
+title?: string, description?: string, homeHref?: string})`, default slot
+`{controller: OperationProofController}`, events `confirmed()` and `cancel()`.
+The page reuses the controller and renders through the replaceable Auth MinimalLayout;
+`AuthPresentation.operationProofPage` replaces the full page with the same contract.
+`useAuthPresentation(): ComputedRef<AuthPresentation>` is public for composition.
+The controller accepts optional `locale: () => 'pl'|'en'`; its readonly error becomes
+`ComputedRef<string>`. Inline AuthOperationProof additionally accepts optional locale.
+Both supplied presentations support PL/EN; none automatically executes a business
+mutation. `ApplicationSessionShellSlots.admission(): VNode[]` optionally renders
+the caller's pre-admission view outside ApplicationLayout, after native session
+reauthentication selection. AuthApplication forwards it. Registration/presentation
+does not change server-side authorization. A page replacement initializes the supplied
+controller with begin(), binds its transient fields and emits confirmed only after
+confirm() succeeds; cancel resets the controller before emitting cancel. The page
+never constructs another proof controller. Keep the controller locale getter aligned
+with an explicit page locale; omitted locales follow the surrounding presentation.
+
 Auth owns public useOperationProof/AuthOperationProof through `@/runa/auth`,
 implemented under Auth frontend and bundled presentation. Administrative App/module
 consumers retain their existing session owner; this controller never starts one.
@@ -144,16 +166,17 @@ function useOperationProof(options: {
   identity: () => string | undefined;
   action: () => string;
   requirement: () => ProofRequirement;
+  locale?: () => 'pl' | 'en';
 }): OperationProofController;
 ```
 
 OperationProofController has password/code Ref<string>, method Ref<FactorMethod>,
 methods Ref<readonly FactorMethod[]>, open/busy/confirmed Ref<boolean>, error
-Ref<string>, requirement ComputedRef<ProofRequirement>, begin/confirm/sendEmail
+ComputedRef<string>, requirement ComputedRef<ProofRequirement>, begin/confirm/sendEmail
 methods returning Promise<void> and reset():void. FactorMethod is totp/email/recovery.
-AuthOperationProof accepts only controller:OperationProofController; it has no
+AuthOperationProof accepts controller:OperationProofController and optional locale:'pl'|'en'; it has no
 slots/events. Headless consumers use the same controller with their own controls.
-The supplied presentation is English and composes existing public field/buttons.
+Both supplied presentations use shared PL/EN copy and existing public fields/buttons.
 
 begin reads native security options only when a factor is required. Eligibility
 uses the existing Auth required/enrolled/enabled/recovery rules. confirm uses

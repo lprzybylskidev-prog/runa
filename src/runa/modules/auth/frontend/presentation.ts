@@ -10,6 +10,7 @@ export interface AuthPresentation {
   minimalLayout?: Component;
   applicationLayout?: Component;
   entry?: Component;
+  operationProofPage?: Component;
   account?: Component;
   accountLoading?: Component;
   historyDetail?: Component;

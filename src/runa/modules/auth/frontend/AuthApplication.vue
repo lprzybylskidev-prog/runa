@@ -34,6 +34,9 @@ const current = computed(
     :locale="locale"
     :account-menu="accountMenu"
   >
+    <template v-if="$slots.admission" #admission
+      ><slot name="admission"
+    /></template>
     <template v-if="$slots['account-menu']" #account-menu="scope"
       ><slot name="account-menu" v-bind="scope"
     /></template>

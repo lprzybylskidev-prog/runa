@@ -1,5 +1,5 @@
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
-import { useApplicationSession } from '@/runa/auth';
+import { useApplicationSession, useOperationProof } from '@/runa/auth';
 import { ApiError, request } from '@/runa/http';
 import type {
   ApplicationNavigate,
@@ -98,13 +98,15 @@ export function useAdmin(
   const error = shallowRef<AdminError>();
   const status = ref<AdminState>('loading');
   const path = ref(window.location.pathname);
-  const password = ref(''),
-    busy = ref(false);
+  const entryProof = useOperationProof({
+    identity: () => (admitted(session) ? sessionStamp(session) : undefined),
+    action: () => 'runa.admin.enter',
+    requirement: () => 'password',
+    locale: () => 'en',
+  });
   let epoch = 0,
-    alive = true,
-    proofEpoch = 0;
-  let abort = new AbortController(),
-    proofAbort = new AbortController();
+    alive = true;
+  let abort = new AbortController();
   const state = computed<AdminState>(() =>
     admitted(session) ? status.value : 'loading',
   );
@@ -117,7 +119,7 @@ export function useAdmin(
   });
   function clear() {
     bootstrap.value = undefined;
-    password.value = '';
+    entryProof.reset();
   }
   function fail(cause: unknown) {
     ++epoch;
@@ -126,6 +128,7 @@ export function useAdmin(
     const failure = adminFailure(cause);
     error.value = failure.error;
     status.value = failure.state;
+    if (failure.state === 'proof_required') void entryProof.begin();
   }
   async function refresh() {
     const own = ++epoch,
@@ -163,51 +166,13 @@ export function useAdmin(
     });
   }
   async function confirmEntry() {
-    if (busy.value || state.value !== 'proof_required' || !password.value)
-      return;
-    const own = ++proofEpoch,
-      stamp = sessionStamp(session);
-    busy.value = true;
-    error.value = undefined;
-    proofAbort.abort();
-    proofAbort = new AbortController();
-    try {
-      const response = object(
-        await request('/runa/auth/step-up', {
-          method: 'POST',
-          signal: proofAbort.signal,
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'runa.admin.enter',
-            requirement: 'password',
-            current_password: password.value,
-          }),
-        }),
-      );
-      if (!alive || own !== proofEpoch || stamp !== sessionStamp(session))
-        return;
-      if (object(response.data).confirmed !== true)
-        throw new TypeError('Entry proof was not confirmed.');
-      await refresh();
-    } catch (cause) {
-      if (alive && own === proofEpoch && stamp === sessionStamp(session)) {
-        const failure = adminFailure(cause);
-        if (failure.state === 'forbidden' || failure.state === 'unavailable')
-          fail(cause);
-        else {
-          error.value = {
-            reason: 'entry_confirmation_failed',
-            message: 'Password confirmation failed. Try again.',
-          };
-          status.value = 'proof_required';
-        }
-      }
-    } finally {
-      if (own === proofEpoch) {
-        password.value = '';
-        busy.value = false;
-      }
-    }
+    if (state.value !== 'proof_required') return;
+    await entryProof.confirm();
+    if (entryProof.confirmed.value) await refresh();
+  }
+  function cancelEntry() {
+    entryProof.reset();
+    go('/app');
   }
   const controller: AdminController = {
     session,
@@ -215,18 +180,16 @@ export function useAdmin(
     bootstrap,
     location,
     error,
-    entryProof: { password, busy: computed(() => busy.value) },
+    entryProof,
     refresh,
     navigate,
     confirmEntry,
+    cancelEntry,
   };
   refusals.set(controller, fail);
   const stop = watch(
     () => sessionStamp(session),
     () => {
-      ++proofEpoch;
-      proofAbort.abort();
-      busy.value = false;
       clear();
       void refresh();
     },
@@ -239,9 +202,7 @@ export function useAdmin(
   onScopeDispose(() => {
     alive = false;
     ++epoch;
-    ++proofEpoch;
     abort.abort();
-    proofAbort.abort();
     clear();
     stop();
     refusals.delete(controller);

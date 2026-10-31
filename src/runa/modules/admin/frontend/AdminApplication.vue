@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { computed, defineComponent, h, provide } from 'vue';
 import type { VNode } from 'vue';
-import { ApplicationSessionShell, AuthPresentationProvider } from '@/runa/auth';
-import { Alert, Button } from '@/runa/ui';
+import {
+  ApplicationSessionShell,
+  AuthPresentationProvider,
+  useAuthPresentation,
+} from '@/runa/auth';
+import { Alert, Button, MinimalLayout } from '@/runa/ui';
 import type { NavigationEntry } from '@/runa/ui';
 import type { AdminApplicationProps, AdminController } from './contracts';
 import { provideLocale } from '../../../resources/js/composables/useLocale';
@@ -30,6 +34,7 @@ const controller = useAdmin({
 });
 const { state, bootstrap, location } = controller;
 const presentation = useAdminPresentation();
+const authPresentation = useAuthPresentation();
 const layout = defineComponent({
   inheritAttrs: false,
   setup: (_, context) => () =>
@@ -94,24 +99,38 @@ const validPath = computed(
       :current="current"
       locale="en"
     >
-      <slot v-if="state === 'loading'" name="loading"
-        ><component :is="presentation.loading ?? AdminLoading"
-      /></slot>
-      <AdminEntryProof
-        v-else-if="state === 'proof_required'"
-        :controller="controller"
-      />
-      <Alert
-        v-else-if="state !== 'ready' || !bootstrap || !validPath"
-        tone="warning"
+      <template v-if="state !== 'ready'" #admission>
+        <AdminEntryProof
+          v-if="state === 'proof_required'"
+          :controller="controller"
+        />
+        <component v-else :is="authPresentation.minimalLayout ?? MinimalLayout">
+          <Alert
+            v-if="
+              !controller.session.loading.value &&
+              !controller.session.session.value
+            "
+            tone="danger"
+          >
+            Session could not be loaded.
+            <Button @click="controller.session.refresh">Retry</Button>
+          </Alert>
+          <slot v-else-if="state === 'loading'" name="loading"
+            ><component :is="presentation.loading ?? AdminLoading"
+          /></slot>
+          <Alert v-else tone="warning">
+            {{
+              controller.error.value?.message ??
+              'The administrator panel is unavailable.'
+            }}
+            <Button @click="controller.refresh">Retry</Button>
+          </Alert>
+        </component>
+      </template>
+      <Alert v-if="!validPath" tone="warning"
+        >The administrator panel is unavailable.</Alert
       >
-        {{
-          controller.error.value?.message ??
-          'The administrator panel is unavailable.'
-        }}
-        <Button @click="controller.refresh">Retry</Button>
-      </Alert>
-      <slot v-else :controller="controller">
+      <slot v-else-if="bootstrap" :controller="controller">
         <AdminPageContent
           v-if="location"
           :key="location.owner + ':' + location.page"

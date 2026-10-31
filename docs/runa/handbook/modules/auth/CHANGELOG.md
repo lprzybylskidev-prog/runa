@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Supply replaceable AuthOperationProofPage in MinimalLayout and PL/EN inline/page controls/errors; share the existing proof controller, support password/factor/both, and fence aborted factor reads even for an unchanged identity. Expose typed presentation contracts and an optional session-shell admission slot without starting another session.
+
 - Name the account-menu Admin entry `Panel administratora` / `Administrator panel` consistently with the Admin catalogue.
 
 - Supply private source-declared ProfilePage/ProfileEditor for native atomic naming/login replacement. Default record reads select the actor; explicit authorized reads use public UUIDs. Add complete Auth-owned Users, policy/history/restore and selected/all session administration. Supply guarded AuthAdministration 1.0.0 with bounded cursor directory, grant-filtered profile and lifecycle reads; preserve native independent action/Audit/proof protocols. Include these additive changes in the unreleased 2.0.0 candidate without a new migration or version-only upgrade edge.

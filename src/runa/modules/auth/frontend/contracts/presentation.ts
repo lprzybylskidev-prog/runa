@@ -35,6 +35,7 @@ export interface ApplicationSessionShellProps {
   accountMenu?: readonly AuthAccountMenuEntry[] | undefined;
 }
 export interface ApplicationSessionShellSlots {
+  admission?(): VNode[];
   loading?(scope: { account: boolean }): VNode[];
   default?(scope: { session: ActivitySession }): VNode[];
   'account-menu'?(scope: {
@@ -88,3 +89,17 @@ export type AuthMinimalLayoutProps = MinimalLayoutProps;
 export type AuthMinimalLayoutSlots = MinimalLayoutSlots;
 export type AuthApplicationLayoutProps = ApplicationLayoutProps;
 export type AuthApplicationLayoutSlots = ApplicationLayoutSlots;
+
+export interface AuthOperationProofPageProps {
+  controller: import('../useOperationProof').OperationProofController;
+  locale?: 'pl' | 'en' | undefined;
+  title?: string | undefined;
+  description?: string | undefined;
+  homeHref?: string | undefined;
+}
+export interface AuthOperationProofPageSlots {
+  default?(scope: {
+    controller: import('../useOperationProof').OperationProofController;
+  }): VNode[];
+}
+export type AuthOperationProofPageEmits = { confirmed: []; cancel: [] };

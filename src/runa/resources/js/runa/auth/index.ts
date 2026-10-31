@@ -81,3 +81,6 @@ export const AuthAdminSection = defineAsyncComponent(
   () =>
     import('../../../../modules/auth/frontend/components/admin_section.vue'),
 );
+
+export { default as AuthOperationProofPage } from '../../../../modules/auth/frontend/AuthOperationProofPage.vue';
+export { useAuthPresentation } from '../../../../modules/auth/frontend/presentation';
