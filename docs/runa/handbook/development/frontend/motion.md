@@ -74,3 +74,8 @@ refresh. Module cards use semantic status colors and 160ms border/background
 feedback; reduced motion keeps static cues. Module operations reuse Dialog's
 existing modal entrance/exit and Tabs' retained-panel motion, without a separate
 page animation or request delay.
+
+Modal diagnosis keeps its current panel and shows progress only in Diagnose now.
+Active work and operation-history reads use their own Button/Spinner feedback;
+confirmed empty tables keep the column frame. Refresh retains loaded rows and
+uses the same shared reduced-motion behavior without another content entrance.

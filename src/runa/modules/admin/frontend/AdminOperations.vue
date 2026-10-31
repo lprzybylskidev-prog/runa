@@ -3,6 +3,8 @@ import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import AdminOperationResult from './AdminOperationResult.vue';
 import AdminModuleCard from './AdminModuleCard.vue';
+import AdminOperationHistory from './AdminOperationHistory.vue';
+import type { TableColumn, TableQuery } from '@/runa/ui';
 import { computed, nextTick, ref, shallowRef, watch } from 'vue';
 import {
   PageNavigation,
@@ -10,7 +12,6 @@ import {
   Tabs,
   Spinner,
   Badge,
-  Accordion,
   useIdentity,
   getModulePresentation,
   usePageResolver,
@@ -19,7 +20,7 @@ import {
   Card,
   ConfirmDialog,
   Select,
-  TextInput,
+  Table,
 } from '@/runa/ui';
 import type { AdminController, AdminJson } from './contracts';
 import { useAdminOperations } from './useAdminOperations';
@@ -35,7 +36,20 @@ const props = defineProps<{ admin: AdminController }>();
 const controller = useAdminOperations(props.admin);
 const presentation = useAdminPresentation();
 const identity = useIdentity();
-const recoveryOpen = ref(false);
+const pendingCommand = ref<AdminOperationCommand>();
+const workLoading = ref(false);
+const workLoaded = ref(false);
+const diagnosticsLoading = ref(false);
+let diagnosticsRequest = 0;
+const workOpened = ref(false);
+let workRequest = 0;
+let commandRequest = 0;
+const workQuery = ref<TableQuery>({
+  page: 1,
+  perPage: 10,
+  sort: null,
+  filters: {},
+});
 const capabilitiesReady = ref(false);
 const initialSettled = ref(false);
 const initialReadiness = useAdminInitialReadiness(() => initialSettled.value);
@@ -106,8 +120,6 @@ const editor = ref<'settings' | 'health' | 'integrations'>();
 const work = shallowRef<AdminOperationData>();
 const preview = shallowRef<AdminOperationData>();
 const result = shallowRef<AdminOperationData>();
-const operationId = ref('');
-const operationKind = ref('modules');
 const intent = ref('disable');
 const has = (permission: string) => capabilities.value.includes(permission);
 watch(
@@ -117,11 +129,9 @@ watch(
     const module = url.searchParams.get('module') ?? '';
     if (selected.value !== module) {
       selected.value = module;
-      work.value = undefined;
+      clearWork();
       preview.value = undefined;
       result.value = undefined;
-      operationId.value = '';
-      recoveryOpen.value = false;
     }
     const section = url.searchParams.get('section');
     editor.value =
@@ -159,7 +169,14 @@ const activeWork = computed(() => {
     : [];
 });
 async function refresh() {
-  if (has('diagnostics.read')) await controller.refresh(filter.value);
+  if (!has('diagnostics.read')) return;
+  const own = ++diagnosticsRequest;
+  diagnosticsLoading.value = true;
+  try {
+    await controller.refresh(filter.value);
+  } finally {
+    if (own === diagnosticsRequest) diagnosticsLoading.value = false;
+  }
 }
 async function select(module: string) {
   const url = new URL(sectionHref(false), window.location.origin);
@@ -178,13 +195,12 @@ const selectedModule = computed(() =>
   modules.value.find((module) => module.id === selected.value),
 );
 const moduleTabs = computed(() => [
-  { id: 'overview', label: tr('Overview'), disabled: controller.busy.value },
+  { id: 'overview', label: tr('Overview') },
   ...(has('health.configure') && has('diagnostics.read')
     ? [
         {
           id: 'health',
           label: tr('Health policy'),
-          disabled: controller.busy.value,
         },
       ]
     : []),
@@ -193,7 +209,6 @@ const moduleTabs = computed(() => [
         {
           id: 'settings',
           label: tr('Settings'),
-          disabled: controller.busy.value,
         },
       ]
     : []),
@@ -202,13 +217,15 @@ const moduleTabs = computed(() => [
         {
           id: 'integrations',
           label: tr('Integrations'),
-          disabled: controller.busy.value,
         },
       ]
     : []),
 ]);
 async function changeModuleTab(tab: string) {
-  if (!moduleTabs.value.some((item) => item.id === tab && !item.disabled))
+  if (
+    controller.busy.value ||
+    !moduleTabs.value.some((item) => item.id === tab)
+  )
     return;
   await pageNavigation.navigate(
     sectionHref(
@@ -223,11 +240,9 @@ async function closeModule() {
   url.searchParams.delete('module');
   url.searchParams.delete('section');
   if (await pageNavigation.navigate(url.pathname + url.search + url.hash)) {
-    work.value = undefined;
+    clearWork();
     preview.value = undefined;
     result.value = undefined;
-    operationId.value = '';
-    recoveryOpen.value = false;
     controller.dirty.value = false;
   }
 }
@@ -273,43 +288,43 @@ async function command(
   input: AdminOperationData,
   destructive = false,
 ) {
-  const response = await controller.execute(name, input, destructive);
-  if (response) {
-    result.value = response;
-    const transition = response.transition;
+  const own = ++commandRequest;
+  const context = controller.contextRevision.value;
+  pendingCommand.value = name;
+  if (name === 'health.diagnose') result.value = undefined;
+  try {
+    const response = await controller.execute(name, input, destructive);
     if (
-      transition &&
-      typeof transition === 'object' &&
-      !Array.isArray(transition) &&
-      typeof transition.operationId === 'string'
+      response &&
+      own === commandRequest &&
+      context === controller.contextRevision.value
     ) {
-      operationId.value = transition.operationId;
-      operationKind.value = name.startsWith('settings.')
-        ? 'settings'
-        : 'modules';
+      result.value = response;
+      preview.value = undefined;
+      const changedWork = response.work;
+      if (
+        changedWork &&
+        typeof changedWork === 'object' &&
+        !Array.isArray(changedWork) &&
+        work.value &&
+        Array.isArray(work.value.work)
+      ) {
+        work.value = {
+          ...work.value,
+          work: work.value.work.map((item) =>
+            item &&
+            typeof item === 'object' &&
+            !Array.isArray(item) &&
+            item.workId === changedWork.workId
+              ? changedWork
+              : item,
+          ),
+        };
+      }
+      await refresh();
     }
-    preview.value = undefined;
-    const changedWork = response.work;
-    if (
-      changedWork &&
-      typeof changedWork === 'object' &&
-      !Array.isArray(changedWork) &&
-      work.value &&
-      Array.isArray(work.value.work)
-    ) {
-      work.value = {
-        ...work.value,
-        work: work.value.work.map((item) =>
-          item &&
-          typeof item === 'object' &&
-          !Array.isArray(item) &&
-          item.workId === changedWork.workId
-            ? changedWork
-            : item,
-        ),
-      };
-    }
-    await refresh();
+  } finally {
+    if (own === commandRequest) pendingCommand.value = undefined;
   }
 }
 async function review() {
@@ -318,27 +333,77 @@ async function review() {
     intent: intent.value,
   });
 }
-async function status() {
-  result.value = await controller.read(
-    operationKind.value === 'settings' ? 'settings.status' : 'modules.status',
-    { id: operationId.value },
+async function historyAction(name: AdminOperationCommand, id: string) {
+  await command(
+    name,
+    { id },
+    name === 'modules.cancel' || name === 'settings.recover',
   );
 }
-async function readWork() {
-  const next = await controller.read('work', { module: selected.value });
-  if (next) work.value = next;
+function clearWork() {
+  workRequest++;
+  workQuery.value = { ...workQuery.value, page: 1 };
+  work.value = undefined;
+  workOpened.value = false;
+  workLoaded.value = false;
+  workLoading.value = false;
 }
+async function readWork() {
+  if (workLoading.value || controller.busy.value || controller.refreshing.value)
+    return;
+  const own = ++workRequest;
+  workOpened.value = true;
+  workLoading.value = true;
+  const module = selected.value;
+  try {
+    const next = await controller.read('work', { module });
+    if (next && own === workRequest && module === selected.value) {
+      work.value = next;
+      workLoaded.value = true;
+    }
+  } finally {
+    if (own === workRequest) workLoading.value = false;
+  }
+}
+const workColumnState = [
+  { key: 'operation', visible: true, width: 220 },
+  { key: 'status', visible: true, width: 200 },
+  { key: 'progress', visible: true, width: 120 },
+];
+const workColumns = computed<TableColumn<AdminOperationData>[]>(() => [
+  {
+    key: 'operation',
+    label: tr('Operation'),
+    value: (row) =>
+      typeof row.operation === 'string' ? tr(row.operation) : '—',
+  },
+  {
+    key: 'status',
+    label: tr('Status'),
+    value: (row) => (typeof row.status === 'string' ? tr(row.status) : '—'),
+  },
+  {
+    key: 'progress',
+    label: tr('Progress'),
+    value: (row) =>
+      typeof row.progress === 'string' || typeof row.progress === 'number'
+        ? String(row.progress)
+        : '—',
+  },
+]);
+
 watch(
   () => [controller.contextRevision.value, props.admin.state.value],
   async () => {
+    commandRequest++;
+    pendingCommand.value = undefined;
     capabilitiesReady.value = false;
     capabilities.value = [];
     selected.value = '';
     editor.value = undefined;
-    work.value = undefined;
+    clearWork();
     preview.value = undefined;
     result.value = undefined;
-    operationId.value = '';
     if (props.admin.state.value !== 'ready') return;
     const context = controller.contextRevision.value;
     const value = await controller.read('capabilities');
@@ -437,14 +502,14 @@ defineExpose({ controller });
         </dl>
         <section
           class="space-y-5"
-          :aria-busy="controller.refreshing.value"
+          :aria-busy="diagnosticsLoading"
           data-module-diagnostics
         >
           <div class="flex flex-wrap items-end justify-between gap-4">
             <h2 class="py-3 text-base font-semibold">{{ tr('Modules') }}</h2>
             <div class="flex flex-wrap items-center gap-4">
               <span
-                v-if="controller.refreshing.value"
+                v-if="diagnosticsLoading"
                 class="flex items-center gap-2 text-xs text-muted"
                 data-diagnostics-refresh
                 ><Spinner
@@ -505,15 +570,6 @@ defineExpose({ controller });
       <Alert v-if="controller.error.value" tone="warning">{{
         tr(controller.error.value)
       }}</Alert>
-      <div
-        v-if="controller.refreshing.value"
-        class="flex items-center gap-2 text-xs text-muted"
-      >
-        <Spinner size="sm" :label="tr('Loading module information')" /><span
-          aria-hidden="true"
-          >{{ tr('Loading module information') }}</span
-        >
-      </div>
       <Tabs
         :model-value="editor ?? 'overview'"
         :items="moduleTabs"
@@ -533,15 +589,16 @@ defineExpose({ controller });
               <Button
                 v-if="has('health.diagnose')"
                 variant="outline"
-                :busy="controller.busy.value"
+                :busy="pendingCommand === 'health.diagnose'"
+                :disabled="controller.busy.value"
                 @click="command('health.diagnose', { module: selected })"
                 >{{ tr('Diagnose now') }}</Button
               >
               <Button
                 v-if="has('work.read')"
                 variant="outline"
-                :busy="controller.refreshing.value"
-                :disabled="controller.busy.value"
+                :busy="workLoading"
+                :disabled="controller.busy.value || controller.refreshing.value"
                 @click="readWork"
                 >{{ tr('Active work') }}</Button
               >
@@ -660,112 +717,6 @@ defineExpose({ controller });
                 >
               </template>
             </div>
-            <div v-if="work" class="space-y-3">
-              <p v-if="work.truncated" class="text-sm text-muted">
-                {{ tr('Additional active work is omitted.') }}
-              </p>
-              <p v-if="!activeWork.length" class="text-sm text-muted">
-                {{ tr('No active work.') }}
-              </p>
-              <div
-                v-for="item in activeWork"
-                :key="String(item.workId)"
-                class="space-y-2 border border-field p-3 text-sm"
-              >
-                <p class="break-words">
-                  {{ item.operation }} · {{ tr(String(item.status)) }} ·
-                  {{ item.progress }}
-                </p>
-                <p v-if="item.cancellationRequested">
-                  {{
-                    tr('Cancellation requested; completion is not confirmed.')
-                  }}
-                </p>
-                <p
-                  v-if="item.limitations"
-                  class="break-words text-xs text-muted"
-                >
-                  {{ item.limitations }}
-                </p>
-                <Button
-                  v-if="
-                    has('work.cancel') &&
-                    item.cancellable &&
-                    !item.cancellationRequested
-                  "
-                  :disabled="controller.busy.value"
-                  @click="
-                    command('work.cancel', { id: item.workId ?? null }, true)
-                  "
-                  >{{ tr('Request cancellation') }}</Button
-                >
-                <Button
-                  :disabled="controller.busy.value"
-                  @click="
-                    controller
-                      .read('work.status', { id: item.workId ?? null })
-                      .then((value) => (result = value))
-                  "
-                  >{{ tr('Refresh work status') }}</Button
-                >
-              </div>
-            </div>
-            <Accordion
-              v-if="has('modules.manage') || has('settings.manage')"
-              v-model="recoveryOpen"
-              :label="tr('Retained operation')"
-            >
-              <TextInput
-                :label="tr('Operation UUID')"
-                v-model="operationId"
-                :disabled="controller.busy.value"
-              />
-              <Select
-                :label="tr('Operation owner')"
-                v-model="operationKind"
-                :options="
-                  [
-                    { value: 'modules', label: tr('Optional lifecycle') },
-                    { value: 'settings', label: tr('Module settings') },
-                  ].filter((option) =>
-                    has(
-                      option.value === 'modules'
-                        ? 'modules.manage'
-                        : 'settings.manage',
-                    ),
-                  )
-                "
-                :locale="adminLocale"
-                :disabled="controller.busy.value"
-              />
-              <div class="flex flex-wrap gap-3">
-                <Button
-                  :disabled="controller.busy.value || !operationId"
-                  @click="status"
-                  >{{ tr('Read status') }}</Button
-                >
-                <Button
-                  v-if="operationKind === 'modules' && has('modules.manage')"
-                  :disabled="controller.busy.value || !operationId"
-                  @click="command('modules.resume', { id: operationId })"
-                  >{{ tr('Resume native workflow') }}</Button
-                >
-                <Button
-                  v-if="operationKind === 'modules' && has('modules.manage')"
-                  :disabled="controller.busy.value || !operationId"
-                  @click="command('modules.cancel', { id: operationId }, true)"
-                  >{{ tr('Cancel and compensate') }}</Button
-                >
-                <Button
-                  v-if="operationKind === 'settings' && has('settings.manage')"
-                  :disabled="controller.busy.value || !operationId"
-                  @click="
-                    command('settings.recover', { id: operationId }, true)
-                  "
-                  >{{ tr('Recover settings') }}</Button
-                >
-              </div>
-            </Accordion>
           </div>
         </template>
         <template
@@ -786,6 +737,74 @@ defineExpose({ controller });
         </template>
       </Tabs>
       <AdminOperationResult v-if="result" :result="result" />
+      <component
+        v-if="has('modules.manage') || has('settings.manage')"
+        :is="presentation.operationHistory ?? AdminOperationHistory"
+        :key="selected"
+        :controller="controller"
+        :module="selected"
+        :pending="!!pendingCommand"
+        @execute="historyAction"
+      />
+      <section
+        v-if="workOpened"
+        class="space-y-3 border-t border-line pt-5"
+        :aria-busy="workLoading"
+        data-active-work
+      >
+        <h3 class="font-semibold">{{ tr('Active work') }}</h3>
+        <Table
+          v-model:query="workQuery"
+          mode="client"
+          :rows="activeWork"
+          :columns="workColumns"
+          :column-state="workColumnState"
+          :row-key="(row) => String(row.workId)"
+          :loading="workLoading && !workLoaded"
+          retain-empty-frame
+          :english="adminLocale === 'en'"
+          :searchable="false"
+          :caption="tr('Active work')"
+        >
+          <template #cell-status="{ row }"
+            ><Badge :tone="row.cancellationRequested ? 'warning' : 'info'">{{
+              row.cancellationRequested
+                ? tr('Cancellation requested; completion is not confirmed.')
+                : tr(String(row.status))
+            }}</Badge></template
+          >
+          <template #actions="{ row }">
+            <Button
+              v-if="
+                has('work.cancel') &&
+                row.cancellable &&
+                !row.cancellationRequested
+              "
+              size="sm"
+              tone="warning"
+              :disabled="controller.busy.value"
+              @click="command('work.cancel', { id: row.workId ?? null }, true)"
+              >{{ tr('Request cancellation') }}</Button
+            >
+            <Button
+              size="sm"
+              :disabled="controller.busy.value || controller.refreshing.value"
+              @click="
+                controller
+                  .read('work.status', { id: row.workId ?? null })
+                  .then((value) => {
+                    if (value) result = value;
+                  })
+              "
+              >{{ tr('Refresh work status') }}</Button
+            >
+          </template>
+        </Table>
+        <p v-if="work?.truncated" class="text-xs text-muted">
+          {{ tr('Additional active work is omitted.') }}
+        </p>
+      </section>
+
       <template #footer
         ><Button
           variant="outline"

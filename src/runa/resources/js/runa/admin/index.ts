@@ -49,3 +49,5 @@ export {
 } from '../../../../modules/admin/frontend/localization';
 
 export { default as AdminModuleCard } from '../../../../modules/admin/frontend/AdminModuleCard.vue';
+
+export { default as AdminOperationHistory } from '../../../../modules/admin/frontend/AdminOperationHistory.vue';

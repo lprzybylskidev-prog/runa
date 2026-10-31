@@ -29,6 +29,7 @@ use Runa\ModuleFramework\Management\ApplicationManagement;
 use Runa\ModuleFramework\Management\ManagementPages;
 use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleHealth;
+use Runa\ModuleFramework\ModuleOperationHistory;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Admin\Contracts\AdminAccess;
@@ -1597,4 +1598,70 @@ SOURCE);
         File::deleteDirectory($directory);
         unlink($asset);
     }
+});
+
+it('module operation history scopes kinds and modules, paginates safely and never selects private payloads', function (): void {
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    $this->getJson('/api/admin/operations/history?module=runa.auth')->assertForbidden();
+    $insert = function (string $intent, string $target, array $affected, string $status): string {
+        $id = (string) Str::uuid7();
+        DB::table('shared.module_transitions')->insert(['public_id' => $id, 'intent' => $intent, 'target' => $target,
+            'affected' => json_encode($affected, JSON_THROW_ON_ERROR), 'generation' => 1,
+            'payload' => 'PRIVATE_RECOVERY_SNAPSHOT_NOT_TO_BE_DECRYPTED', 'status' => $status, 'created_at' => now(), 'updated_at' => now()]);
+
+        return $id;
+    };
+    $one = $insert('enable', 'runa.auth', ['runa.auth'], 'succeeded');
+    $two = $insert('disable', 'runa.audit', ['runa.audit', 'runa.auth'], 'failed');
+    $settings = $insert('settings', 'runa.auth', ['runa.auth'], 'succeeded');
+    $unrelated = $insert('enable', 'runa.audit', ['runa.audit'], 'refused');
+    ($this->adminGrant)('runa.admin.modules.manage');
+    $response = $this->getJson('/api/admin/operations/history?module=runa.auth&limit=1')->assertOk()->assertHeader('Cache-Control', 'no-store, private');
+    $ids = [$one, $two];
+    rsort($ids);
+    expect($response->json('data.operations'))->toHaveCount(1)
+        ->and($response->json('data.operations.0.public_id'))->toBe($ids[0])
+        ->and($response->json('data.operations.0.actions'))->toBe(['modules.status'])
+        ->and($response->getContent())->not->toContain('PRIVATE_RECOVERY', 'payload', 'generation', 'publication_generation', 'settings_values');
+    $next = $this->getJson('/api/admin/operations/history?'.http_build_query(['module' => 'runa.auth', 'limit' => 1, 'cursor' => $response->json('data.next_cursor')]))->assertOk();
+    expect($next->json('data.operations.0.public_id'))->toBe($ids[1])->and($next->json('data.next_cursor'))->toBeNull();
+    ($this->adminGrant)('runa.admin.settings.manage');
+    $all = $this->getJson('/api/admin/operations/history?module=runa.auth')->assertOk()->json('data.operations');
+    expect(array_column($all, 'public_id'))->toContain($one, $two, $settings)->not->toContain($unrelated);
+    $this->getJson('/api/admin/operations/history?module=runa.auth&limit=101')->assertUnprocessable();
+    $this->getJson('/api/admin/operations/history?module=runa.auth&cursor=invalid')->assertUnprocessable();
+    $this->getJson('/api/admin/operations/history?module=runa.auth&actor=forged')->assertUnprocessable();
+    $this->getJson('/api/admin/operations/history?module=app.unknown')->assertNotFound();
+});
+
+it('module operation history settings authority does not reveal lifecycle changes', function (): void {
+    foreach (['runa.admin.enter', 'runa.admin.settings.manage'] as $permission) {
+        ($this->adminGrant)($permission);
+    }
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    $inserted = [];
+    foreach (['enable', 'settings'] as $intent) {
+        $inserted[$intent] = (string) Str::uuid7();
+        DB::table('shared.module_transitions')->insert(['public_id' => $inserted[$intent], 'intent' => $intent, 'target' => 'runa.auth', 'affected' => '["runa.auth"]', 'generation' => 1, 'payload' => 'PRIVATE', 'status' => 'succeeded', 'created_at' => now(), 'updated_at' => now()]);
+    }
+    $rows = $this->getJson('/api/admin/operations/history?module=runa.auth')->assertOk()->json('data.operations');
+    expect(array_values(array_unique(array_column($rows, 'intent'))))->toBe(['settings'])
+        ->and(array_column($rows, 'public_id'))->toContain($inserted['settings'])->not->toContain($inserted['enable']);
+    foreach ($rows as $row) {
+        expect($row['actions'])->toBe(['settings.status']);
+    }
+});
+
+it('module operation history advertises recovery only for active native states', function (): void {
+    $id = (string) Str::uuid7();
+    DB::table('shared.module_transitions')->insert(['public_id' => $id, 'intent' => 'settings', 'target' => 'runa.auth', 'affected' => '["runa.auth"]', 'generation' => 1, 'payload' => 'PRIVATE', 'status' => 'recovery_required', 'created_at' => now(), 'updated_at' => now()]);
+    $history = app(ModuleOperationHistory::class);
+    expect($history->read('runa.auth', ['settings'])['operations'][0]['actions'])->toBe(['settings.status', 'settings.recover']);
+    DB::table('shared.module_transitions')->where('public_id', $id)->update(['intent' => 'disable']);
+    expect($history->read('runa.auth', ['disable'])['operations'][0]['actions'])->toBe(['modules.status', 'modules.resume', 'modules.cancel']);
+    DB::table('shared.module_transitions')->where('public_id', $id)->update(['status' => 'failed']);
+    expect($history->read('runa.auth', ['disable'])['operations'][0]['actions'])->toBe(['modules.status']);
 });

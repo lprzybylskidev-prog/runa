@@ -858,8 +858,10 @@ widgets. `AdminOperations` props: `{ admin: AdminController }`; default slot:
 module: string; kind: 'settings' | 'health' | 'integrations'; writable?: boolean }`.
 `AdminPresentation.operationalEditor?: Component` replaces it with the same props;
 its `saved` event requests safe dashboard read reconciliation after publication.
-`AdminOperationResult` accepts `{ result: AdminOperationData }` and renders native
-outcomes/IDs, health reasons and cooperative cancellation without inventing success.
+`AdminOperationResult` accepts `{ result: AdminOperationData }`. Diagnostic outcomes
+use semantic health/blocked colors and safe reasons without redundant module identity;
+other native results retain their operation IDs and cooperative cancellation without
+inventing success.
 These views reuse Card/Select/TextInput/NumberInput/Checkbox/ConfirmDialog and
 support PL/EN. Settings use native types and secret set-state; unsupported custom
 types require a module-specific editor replacement. Source-validated health overrides
@@ -893,7 +895,7 @@ removes prior snapshots; a cancelled write may have completed on the server.
 Lifecycle preview retains affected modules/active work and an opaque actor-bound
 review. Changing the intent/target discards it; Apply confirms the reviewed input
 and native execution rechecks it. Pending/recovery/failed results remain visible.
-Retained operation UUID controls invoke only native status/resume/cancel/recover;
+Operation history rows invoke only their permitted native status/resume/cancel/recover;
 maintenance/update/Core failure still blocks all protected HTTP.
 
 Operational controller `refreshing: ComputedRef<boolean>` describes reads; `busy`
@@ -1012,3 +1014,31 @@ never run diagnosis or replay writes. Runtime identity uses the public applicati
 identity's name and the diagnostic snapshot's versions (validated application and
 platform manifests); PHP renders the safe runtime.php scalar. Platform name remains
 canonical Runa. Empty widget collections render no empty-state message.
+
+### Modal read feedback and native history
+
+Module overview keeps its selected panel mounted while write controls are disabled;
+disabling every tab must not withdraw the active panel. Diagnosis, active-work and
+history each own their pending indicator, not the shared optional-read indicator.
+Diagnostic results use success/warning/danger according to health/blocked state,
+show the outcome and localized safe reasons, and omit redundant module identity.
+
+The manual operation UUID/type form is replaced by a module operation history
+Table. It includes succeeded/refused/failed and active transitions, paged through
+the guarded history read in the operations contract. Per-row native status/recovery
+controls use backend-advertised actions and existing confirmations; terminal rows
+never imply a generic undo. History is initially read when the module opens, after
+other initial reads settle. Failed reads retain explicit retry; confirmed context/write invalidation requests
+a fresh read. Writes are never replayed.
+The active-work Table mounts at the modal bottom on the first explicit Active work
+click, including an empty state; later clicks refresh it in place. Both tables use
+public Table and keep rows/focus during refresh, with module/session request fences.
+
+Admin owns runtime public `AdminOperationHistory` from `@/runa/admin` with props
+`{controller: AdminOperationsController; module: string; pending?: boolean}`. It owns only paged safe
+history reads/presentation, with existing session-fenced controller and request
+identity cleanup; it emits `execute(command: AdminOperationCommand, id: string)`
+for the parent's shared write/confirmation lane. `AdminPresentation.operationHistory`
+replaces it with that same contract. Implementation is
+src/runa/modules/admin/frontend/AdminOperationHistory.vue. It uses Table, local
+read progress/error/retry and backend-projected per-row actions, never raw UUID entry.

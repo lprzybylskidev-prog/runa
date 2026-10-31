@@ -17,6 +17,7 @@ export type AdminOperationView =
   | 'module'
   | 'settings'
   | 'integrations'
+  | 'history'
   | 'work'
   | 'work.status'
   | 'modules.status'

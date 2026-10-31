@@ -144,3 +144,11 @@ optional for bulk-only/print-only composition; absent export capabilities hide
 export settings and formats. Unknown cursor counts never imply all-page selection.
 Owner/customer table
 references route here; no separate table engine or preference store is introduced.
+
+`Table.retainEmptyFrame?: boolean` (default false) keeps column headers and an
+accessible empty row when the current result is empty, rather than replacing the
+table with EmptyState. Public Table still owns sorting/columns/selection; the prop
+adds presentation only. For already loaded client data, keep rows and pass loading
+only for the initial read; indicate subsequent refresh in the owning toolbar and
+aria-busy region. Admin history/work tables use this composition to preserve
+focus/rows and retain visible empty table structure.

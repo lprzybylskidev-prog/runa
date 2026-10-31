@@ -32,6 +32,7 @@ const props = withDefaults(
   defineProps<{
     mode: 'client' | 'server';
     loading?: boolean;
+    retainEmptyFrame?: boolean;
     rows?: readonly Row[];
     provider?: TableProvider<Row> | undefined;
     columns: readonly TableColumn<Row>[];
@@ -48,6 +49,7 @@ const props = withDefaults(
   }>(),
   {
     loading: false,
+    retainEmptyFrame: false,
     columnState: undefined,
     rows: () => [],
     provider: undefined,
@@ -332,7 +334,10 @@ function changePage(value: number) {
         :count="selectedCount"
       />
     </div>
-    <div v-if="state !== 'success'" class="p-4">
+    <div
+      v-if="state !== 'success' && !(retainEmptyFrame && state === 'empty')"
+      class="p-4"
+    >
       <AppAsyncContent
         action-size="sm"
         :state="state"
@@ -447,6 +452,23 @@ function changePage(value: number) {
           </tr>
         </thead>
         <tbody>
+          <tr v-if="state === 'empty' && retainEmptyFrame">
+            <td
+              :colspan="
+                Math.max(
+                  1,
+                  visibleColumns.length +
+                    (selectable ? 1 : 0) +
+                    ($slots.actions ? 1 : 0),
+                )
+              "
+              class="px-4 py-8 text-center text-muted"
+            >
+              <span role="status">{{
+                text('Brak wyników', 'No results')
+              }}</span>
+            </td>
+          </tr>
           <tr
             v-for="row in page?.rows"
             :key="rowKey(row)"

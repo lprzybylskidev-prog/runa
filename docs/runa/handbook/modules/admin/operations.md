@@ -316,7 +316,8 @@ Unknown keys, stale generations, malformed UUIDs and unreviewed lifecycle writes
 fail closed. Every invocation rechecks entry/password proof and its exact grant.
 
 Read views: `capabilities` (entry-only safe grant advertisement), `diagnostics` (`filter=enabled|registered|all`), `module` (`module`),
-`settings` (`module`), `integrations` (`module`), `work` (`module`, optional
+`settings` (`module`), `integrations` (`module`), `history` (`module`, optional UUIDv7
+`cursor`, `limit=1..100`; per-kind management authority), `work` (`module`, optional
 `limit=1..1000`), `work.status` (`id`), `modules.status` (`id`), `settings.status`
 (`id`). Module reads isolate unavailable settings/integration/health declarations.
 Configuration values are projected only under their owning grants; settings
@@ -346,3 +347,27 @@ transition reservation/durable phases/publication/compensation and first coopera
 cancellation requests record inside their actual PostgreSQL write transaction.
 Installed Audit refusal rolls back that boundary. Framework-only installations
 without Audit retain a no-op participant. Settings use existing SettingsParticipant.
+
+## Module operation history
+
+AdminOperations.read('history', ['module' => string, 'cursor' => optional UUIDv7,
+'limit' => optional int 1..100, default 25]) returns
+`{operations:list<{public_id:string,target:string,intent:'enable'|'disable'|'unregister'|'settings',status:string,created_at:string,updated_at:string,actions:list<string>}>,next_cursor:?string}`.
+This additive guarded AdminOperations 1.0.0 read is runtime-delivered through the
+existing named operational route, owned by Admin's trusted framework adapter.
+Existing entry/session/password/availability admission applies. modules.manage
+permits lifecycle rows; settings.manage permits settings rows. Neither grant
+exposes the other kind. Empty authority is refused. Rows match the selected target
+or include it in the affected module set; newest UUIDv7 first with exclusive cursor.
+Only safe metadata is selected; private encrypted payloads, snapshots, tokens,
+internal IDs and setting values never cross this read. Actions advertise native
+status/resume/cancel or settings status/recover only for the row's allowed kind and
+state. Execution retains its independent current grant/native-state checks.
+
+Framework owns internal ModuleOperationHistory::read(string $module, array $intents,
+?string $cursor = null, int $limit = 25): array at
+src/runa/ModuleFramework/ModuleOperationHistory.php. It is a trusted-integration
+read engine over shared.module_transitions, delivered at runtime, not a customer
+extension/consumption API. No new persistence, migration or Audit write is involved.
+History describes recorded lifecycle/settings operations, not all module activity;
+other business changes retain their owning Audit history.

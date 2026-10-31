@@ -14,7 +14,7 @@ final class OperationRequest extends FormRequest
     /** Owning adapter validates command-specific keys and exact scalar types. @return array<string,list<string>> */
     public function rules(): array
     {
-        return ['module' => ['sometimes', 'string', 'max:128'], 'id' => ['sometimes', 'uuid:7'],
+        return ['module' => ['sometimes', 'string', 'max:128'], 'id' => ['sometimes', 'uuid:7'], 'cursor' => ['sometimes', 'uuid:7'],
             'filter' => ['sometimes', 'string', 'in:enabled,registered,all'],
             'generation' => ['sometimes', 'integer', 'min:1'], 'revision' => ['sometimes', 'integer', 'min:0'],
             'limit' => ['sometimes', 'integer', 'min:1', 'max:1000'],

@@ -4,6 +4,7 @@ import { Badge, Icon, getModulePresentation } from '@/runa/ui';
 import type { BadgeTone } from '@/runa/ui';
 import type { AdminModuleCardProps, AdminJson } from './contracts';
 import { useAdminLocale } from './localization';
+import { adminReasonNames } from './operationMessages';
 const props = withDefaults(defineProps<AdminModuleCardProps>(), {
   interactive: true,
   details: false,
@@ -32,25 +33,6 @@ const status = computed(() =>
           ? 'Healthy'
           : 'Check required',
 );
-const reasonNames: Readonly<Record<string, string>> = {
-  disabled: 'The module is disabled.',
-  not_registered: 'The module is not registered.',
-  source_missing: 'Module source is missing.',
-  not_installed: 'The module is not installed.',
-  health_expired: 'Health observations have expired.',
-  health_unknown: 'Health has not been confirmed.',
-  health_unhealthy: 'A health check failed.',
-  unhealthy: 'A health check failed.',
-  runtime_version: 'Source and installed versions do not match.',
-  installed_data_incompatible: 'Installed data requires an update.',
-  transition_fenced: 'A module operation is in progress.',
-  dependency_version_or_owner:
-    'A required dependency is unavailable or incompatible.',
-  dependency_version: 'A required dependency is incompatible.',
-  required_cycle: 'Required dependencies contain a cycle.',
-  availability_changed: 'Module availability changed. Refresh its state.',
-  lifecycle_policy_unavailable: 'The lifecycle policy is unavailable.',
-};
 const reasons = computed(() =>
   Array.isArray(props.module.reasons)
     ? [
@@ -58,7 +40,9 @@ const reasons = computed(() =>
           props.module.reasons
             .filter((reason): reason is string => typeof reason === 'string')
             .map((reason) =>
-              tr(reasonNames[reason] ?? 'The module requires verification.'),
+              tr(
+                adminReasonNames[reason] ?? 'The module requires verification.',
+              ),
             ),
         ),
       ]
@@ -146,13 +130,15 @@ function date(value: AdminJson | undefined) {
     </ul>
     <template v-if="details">
       <div class="flex flex-wrap gap-2">
-        <Badge>{{
+        <Badge tone="info">{{
           module.kind === 'core' ? tr('Core module') : tr('Optional module')
         }}</Badge
-        ><Badge>{{
+        ><Badge :tone="module.registered ? 'success' : 'warning'">{{
           module.registered ? tr('Registered') : tr('Not registered')
         }}</Badge
-        ><Badge>{{ module.enabled ? tr('Enabled') : tr('Disabled') }}</Badge>
+        ><Badge :tone="module.enabled ? 'success' : 'neutral'">{{
+          module.enabled ? tr('Enabled') : tr('Disabled')
+        }}</Badge>
       </div>
       <dl
         v-for="[key, title] in [

@@ -14,6 +14,7 @@ use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\Events\ModuleIntegrations;
 use Runa\ModuleFramework\HealthPolicies;
 use Runa\ModuleFramework\ModuleHealth;
+use Runa\ModuleFramework\ModuleOperationHistory;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
 use Runa\Settings\SettingStore;
@@ -30,7 +31,7 @@ final readonly class AdminOperations
         private AdminDiagnostics $diagnostics, private ApplicationIdentity $identity,
         private ModuleHealth $health, private HealthPolicies $healthPolicies,
         private ModuleTransitions $transitions, private ModuleSettings $settings,
-        private ModuleIntegrations $integrations, private ModuleWork $work, private Encrypter $encrypter, private AdminOperationalAuthority $authority) {}
+        private ModuleIntegrations $integrations, private ModuleWork $work, private Encrypter $encrypter, private AdminOperationalAuthority $authority, private ModuleOperationHistory $operationHistory) {}
 
     /** @param array<string,mixed> $input @return array<string,mixed> */
     public function read(string $view, array $input = []): array
@@ -44,6 +45,7 @@ final readonly class AdminOperations
                 'settings' => ['settings.read', ['module']],
                 'integrations' => ['integrations.manage', ['module']],
                 'work' => ['work.read', ['module', 'limit']],
+                'history' => ['enter', ['module', 'cursor', 'limit']],
                 'work.status' => ['work.read', ['id']],
                 'modules.status' => ['modules.manage', ['id']],
                 'settings.status' => ['settings.manage', ['id']],
@@ -54,6 +56,7 @@ final readonly class AdminOperations
             return $this->admit($view, $permission, function () use ($view, $input): array {
                 return match ($view) {
                     'capabilities' => ['capabilities' => $this->capabilities()],
+                    'history' => $this->operationHistory($input),
                     'application' => app(ApplicationSettings::class)->read() + ['definitions' => app(SettingStore::class)->definitions()],
                     'diagnostics' => $this->diagnostics->snapshot($this->text($input, 'filter', 'enabled')) + [
                         'platform_version' => $this->identity->platformVersion,
@@ -197,6 +200,32 @@ final readonly class AdminOperations
                 $result[] = $permission;
             } catch (OperationRejected) { /* Advertisement never substitutes for command authorization. */
             }
+        }
+
+        return $result;
+    }
+
+    /** @param array<string,mixed> $input @return array<string,mixed> */
+    private function operationHistory(array $input): array
+    {
+        $module = $this->moduleId($input);
+        $contexts = [];
+        $intents = [];
+        foreach (['modules.manage' => ['enable', 'disable', 'unregister'], 'settings.manage' => ['settings']] as $permission => $allowed) {
+            try {
+                $contexts[] = $this->guard->enter('runa.admin', new ApiOperation('history', 'runa.admin.'.$permission));
+                array_push($intents, ...$allowed);
+            } catch (OperationRejected) {
+                // Each kind retains its existing native status/recovery authority.
+            }
+        }
+        if ($intents === []) {
+            throw new OperationRejected('admin_history_forbidden', 'runa.admin', 'history', 403);
+        }
+        $cursor = array_key_exists('cursor', $input) ? $this->uuid(['id' => $input['cursor']]) : null;
+        $result = $this->operationHistory->read($module, $intents, $cursor, $this->integer($input, 'limit', 25, 100));
+        foreach ($contexts as $context) {
+            $this->guard->assertCurrent($context);
         }
 
         return $result;

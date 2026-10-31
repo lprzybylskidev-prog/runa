@@ -2,6 +2,28 @@ import type { AdminMessages } from './contracts';
 
 /** Reviewed Polish presentation for source-owned Admin/Core labels; never business values. */
 export const adminMessages: AdminMessages = {
+  'Diagnostic result': 'Wynik diagnostyki',
+  'Module enabled': 'Włączenie modułu',
+  'Module disabled': 'Wyłączenie modułu',
+  'Module unregistered': 'Wyrejestrowanie modułu',
+  'A health check could not complete.':
+    'Kontrola stanu nie mogła się zakończyć.',
+  'Another health check is in progress.': 'Trwa już inna kontrola stanu.',
+  'Health policy is unavailable.':
+    'Polityka monitorowania stanu jest niedostępna.',
+  compensating: 'wycofywanie skutków',
+  preparing: 'przygotowywanie',
+  succeeded: 'zakończona',
+  Status: 'Stan',
+  Operation: 'Operacja',
+  'Last change': 'Ostatnia zmiana',
+  Started: 'Rozpoczęto',
+  'Settings change': 'Zmiana ustawień',
+  'Unable to load operation history.':
+    'Nie udało się wczytać historii operacji.',
+  'Load older operations': 'Wczytaj starsze operacje',
+  'Refresh history': 'Odśwież historię',
+  'Operation history': 'Historia operacji',
   'Loading module information': 'Wczytywanie informacji o module',
   'Planned changes': 'Planowane zmiany',
   'Affected modules': 'Moduły objęte zmianą',

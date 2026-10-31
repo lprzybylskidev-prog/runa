@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Replace manual retained-operation UUID entry with bounded native lifecycle/settings history and grant/state-filtered row controls. Keep diagnostic modal panels mounted during writes, localize operation progress, color status badges/results and show active work in a persistent table with explicit refresh. History selects safe metadata only; private transition payloads are never read or decrypted.
+
 - Refine the dashboard with source-shared module icons, semantic status cards and readable runtime identity. Automatically refresh module-state filtering with a local spinner and latest-filter fencing. Move module operations into guarded, deep-linkable dialogs with scoped tabs and readable native previews; remove empty widget and redundant diagnostic copy.
 
 - Keep the Application frame throughout bootstrap and coordinate initial page, section, table, diagnostics and selected editor settlement before revealing content/navigation; retain drafts during background reads.

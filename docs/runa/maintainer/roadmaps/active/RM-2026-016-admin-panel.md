@@ -450,6 +450,18 @@ reassessment before resuming point 3; completed point history remains evidence.
     URL/history, request fencing and native lifecycle/work/recovery contracts.
   - Synchronize public defaults/composition and instruction-product assessment,
     run focused uncertainty checks and prepare current assets before acceptance.
+- [x] 11a13. Repair modal operation feedback and deliver native operation history.
+  - Owner authorizes the six reported modal corrections plus a history table in
+    place of manual UUID entry: colored badges, retained content during diagnosis,
+    operation-local progress and semantic diagnostic outcome without redundant IDs.
+  - Active work opens a stable table at the bottom, including empty state; every
+    deliberate click refreshes it. Native lifecycle/settings history includes
+    completed/failed/in-progress changes and only currently allowed row actions.
+  - Reuse the durable framework transition ledger with bounded cursor reads and
+    existing per-kind management grants; never expose/decrypt private payloads or
+    introduce another history store. Preserve native review/recovery/Audit guards.
+  - Synchronize public contracts/instruction assessment, cover focused races,
+    refusal/redaction/pagination and prepare current assets before owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2554,3 +2566,89 @@ do not replace authenticated owner acceptance. Browser contexts were closed and
 temporary diagnostic/edit helpers removed. No Docker resources or database data
 were created/changed; existing services/data, knowledge/model caches and all reports
 remain preserved. Manual owner point 11b and final verification/release 12 stay open.
+
+### Point 11a13 — Stable modal feedback, active work and native operation history
+
+After the owner's clarification/approval, implemented the six modal corrections
+and replaced the manual retained-operation UUID/type form with history of native
+lifecycle and module-settings changes. No new persistence or migration is needed:
+framework-owned ModuleOperationHistory reads only safe metadata columns from the
+existing durable shared.module_transitions ledger. It includes terminal and active
+operations targeting/affecting the selected module, with exclusive newest-first
+UUIDv7 cursors, default 25 / maximum 100 rows and no private payload selection or
+decryption. Guarded AdminOperations.read('history') reuses existing entry/proof/
+availability and per-kind management grants, asserts current authority after the
+read and advertises only native actions appropriate to current kind/state. Native
+status/resume/cancel/recover keep their existing execution/refusal/Audit semantics.
+No generic undo or browser maintenance exception was introduced.
+
+The public AdminOperationHistory default uses Table, dates/type/status and guarded
+row controls, initial/explicit refresh, cursor continuation, localized state badges
+and a public presentation replacement seam. It shares the owning operation lane
+without another session owner. Private snapshots/tokens/settings values/internal
+IDs never enter its response. Module/context changes fence old results and clear
+history/work ownership. Failed history reads retain explicit recovery; successful
+write/context invalidations reconcile reads without replaying writes.
+
+The disappearing modal was caused by marking all Tabs items disabled during a
+write: the shared Tabs contract intentionally has no active panel in that state.
+Module tabs now retain availability/selection while Dialog's native busy fieldset
+and the existing navigation guard disable changes. Diagnosis/work/history own
+separate pending feedback; diagnostic refresh no longer spins Active work. Core,
+registration and enabled badges use semantic colors. Diagnostic results use green
+success, warning for degraded/unknown/blocked and danger for failed/unhealthy;
+they show the outcome and safe explanatory reasons without repeating module ID.
+Native progress renders as readable items rather than raw object serialization.
+
+The first Active work click mounts its Table at the modal bottom even for an empty
+result; subsequent clicks refresh it. Confirmed data/empty frames remain through
+pending reads. Reusable Table.retainEmptyFrame is explicit/default-false and keeps
+headers with an accessible empty row; both history/work defaults adopt it. Fixed
+column-state widths preserve readable dates/statuses and local horizontal access
+on phones, without overflowing the document. Other Table consumers retain their
+existing empty-state contract. Optional diagnostic/history/work reads preserve the
+frame and existing drafts/focus; true access/identity loss retains protected cleanup.
+
+Synchronized canonical Admin operations/frontend, loading/motion/table guides and
+the Admin candidate changelog. Owner/customer AGENTS and domain skills already
+route to these contracts and require the same guarded public APIs, presentation
+replacement and local readiness; neither product needs duplicated procedures or
+new constitution rules. The framework query is a documented trusted integration
+internal, not a customer API. The additive fixed history read remains within the
+unreleased AdminOperations 1.0.0 / Admin creation 0.1.0 candidate. Platform remains
+prepared 0.7.0; Auth/Permissions/Audit versions, existing native upgrade edges,
+release metadata, dependencies and database schema are unchanged.
+
+Necessary focused native backend checks passed 3 cases / 38 assertions using
+python3 tools/maintainer/test-backend --parallel --processes=1
+--filter='module operation history'. They cover exact kind grants, target/affected
+scope, no payload reads (including deliberately undecryptable fixture payloads),
+cursor/limit/input refusal, unknown modules and state-limited actions. Log:
+.runtime/frontend/RM-2026-016-operation-history-backend-final.log. An initial
+unisolated run was refused by the fixture's existing-Core-schema guard; the
+supported one-worker transport preserves that base. Fixture assertions were
+corrected to retain legitimate pre-existing settings history instead of assuming
+an empty ledger. The runner's guarded cleanup removed runa_test_test_1, exit 0 /
+cleanup 0; the base/development databases were preserved.
+
+Focused browser regressions passed 17 cases (364 excluded), native exit 0 / cleanup 0. Coverage holds diagnosis responses while asserting the panel/card stays mounted
+and unrelated buttons do not spin, verifies semantic diagnostic/badge tones and
+nonduplicated identity, empty/repeated work table reads, native history paging/row
+actions and existing guards/initial readiness/navigation/filter races. Log:
+.runtime/frontend/RM-2026-016-modal-operations-tests-final.log. The initially
+missing empty table frame exposed the need for the explicit public Table option;
+its failed native screenshot/log and later successful evidence remain preserved.
+These are focused implementation checks, not complete backend/frontend area PASS.
+
+The manual-runtime build passed TypeScript, Vite and native/static error rendering;
+log: .runtime/frontend/RM-2026-016-modal-operations-build.log. A controlled visual
+diagnostic against the actual Nginx-served build inspected held diagnosis, empty
+work and populated history/work at PL/dark/1440px and EN/light/390px. Six screenshots
+and report.json remain under
+.runtime/artifacts/playwright/runa/RM-2026-016-modal-operations/. Both contexts
+reported no page errors/document overflow and exactly two deliberate work reads.
+Browser contexts were closed and temporary diagnostic/edit helpers removed. This
+does not replace authenticated owner acceptance. No Docker resources or application
+DB data were created/reset; development services/data, model/knowledge caches and
+verification artifacts remain. Owner manual point 11b and final quality/release
+point 12 stay open.

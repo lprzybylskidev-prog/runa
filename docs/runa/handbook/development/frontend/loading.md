@@ -151,3 +151,10 @@ primitives instead of adding page-wide loading flags/timers. Review cold cache,
 slow/failed images, tab return, a dirty editor, access loss/account switch during
 an in-flight read and disposal. Automated regressions supplement rendered owner
 acceptance; they do not replace it.
+
+Admin operation feedback is scoped to the initiating operation: diagnosis, work
+reads and history reads have independent pending indicators. Keep the active tab
+selected while its containing Dialog fieldset disables mutation controls; marking
+all tab items unavailable would remove every panel. History/work Table frames
+remain visible for confirmed empty reads and keep existing rows through refresh.
+Module/context changes invalidate pending result ownership before clearing tables.

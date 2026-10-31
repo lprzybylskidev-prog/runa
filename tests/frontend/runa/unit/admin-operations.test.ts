@@ -707,3 +707,213 @@ it('an operations slot replacement owns its module dialog presentation', async (
   await vi.waitFor(() => expect(w.text()).toContain('Custom operations'));
   expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 });
+
+it('module diagnosis retains its panel and limits progress to the clicked operation; active work refreshes its table', async () => {
+  const { AdminOperationResult } = await import('@/runa/admin');
+  let finishDiagnosis!: (response: Response) => void;
+  const workReads: ((response: Response) => void)[] = [];
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const path = String(input).split('?')[0]!;
+    if (path.endsWith('/capabilities'))
+      return response({
+        capabilities: [
+          'diagnostics.read',
+          'health.diagnose',
+          'work.read',
+          'modules.manage',
+        ],
+      });
+    if (path.endsWith('/diagnostics'))
+      return response({
+        modules: [
+          {
+            id: 'app.safe',
+            kind: 'optional',
+            registered: true,
+            enabled: true,
+            available: true,
+            health: 'healthy',
+          },
+        ],
+      });
+    if (path.endsWith('/history'))
+      return response({ operations: [], next_cursor: null });
+    if (path.endsWith('/health.diagnose'))
+      return new Promise((finish) => {
+        finishDiagnosis = finish;
+      });
+    if (path.endsWith('/work'))
+      return new Promise((finish) => workReads.push(finish));
+    return response({});
+  });
+  const w = mount(AdminOperations, {
+    props: { admin: admin() },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(w.find('[data-module="app.safe"] button').exists()).toBe(true),
+  );
+  await w.get('[data-module="app.safe"] button').trigger('click');
+  const button = (label: string) =>
+    Array.from(
+      document.body.querySelectorAll<HTMLButtonElement>(
+        '[role="dialog"] button',
+      ),
+    ).find((button) => button.textContent?.trim() === label)!;
+  await vi.waitFor(() => expect(button('Diagnose now')?.disabled).toBe(false));
+  const panel = document.body.querySelector<HTMLElement>('[role="tabpanel"]')!;
+  const card = panel.querySelector('[data-module="app.safe"]');
+  button('Diagnose now').click();
+  await vi.waitFor(() => expect(finishDiagnosis).toBeTypeOf('function'));
+  expect(panel.hidden).toBe(false);
+  expect(panel.querySelector('[data-module="app.safe"]')).toBe(card);
+  expect(button('Diagnose now').getAttribute('aria-busy')).toBe('true');
+  expect(button('Active work').getAttribute('aria-busy')).not.toBe('true');
+  finishDiagnosis(
+    response({
+      module: 'app.safe',
+      health: 'healthy',
+      blocked: false,
+      reasons: [],
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(w.findComponent(AdminOperationResult).exists()).toBe(true),
+  );
+  const result = w.getComponent(AdminOperationResult);
+  expect(result.attributes('data-tone')).toBe('success');
+  expect(result.text()).not.toContain('app.safe');
+  expect(panel.hidden).toBe(false);
+  await vi.waitFor(() => expect(button('Active work').disabled).toBe(false));
+  button('Active work').click();
+  await vi.waitFor(() => expect(workReads).toHaveLength(1));
+  expect(document.body.querySelector('[data-active-work]')).not.toBeNull();
+  expect(button('Active work').getAttribute('aria-busy')).toBe('true');
+  workReads[0]!(response({ work: [], truncated: false }));
+  await vi.waitFor(() =>
+    expect(button('Active work').getAttribute('aria-busy')).not.toBe('true'),
+  );
+  expect(
+    document.body.querySelector('[data-active-work] table'),
+  ).not.toBeNull();
+  button('Active work').click();
+  await vi.waitFor(() => expect(workReads).toHaveLength(2));
+  workReads[1]!(
+    response({
+      work: [
+        {
+          workId: id,
+          operation: 'Report export',
+          status: 'pending',
+          progress: '1/5',
+        },
+      ],
+      truncated: false,
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(
+      document.body.querySelector('[data-active-work]')?.textContent,
+    ).toContain('Report export'),
+  );
+});
+
+it('diagnostic outcomes use semantic colors and explain failures without duplicating the module identity', async () => {
+  const { AdminOperationResult, AdminModuleCard } =
+    await import('@/runa/admin');
+  const result = mount(AdminOperationResult, {
+    props: {
+      result: {
+        module: 'runa.admin',
+        health: 'unhealthy',
+        blocked: true,
+        reasons: ['health_check_error'],
+      },
+    },
+  });
+  expect(result.attributes('data-tone')).toBe('danger');
+  expect(result.text()).toContain('A health check could not complete.');
+  expect(result.text()).not.toContain('runa.admin');
+  await result.setProps({
+    result: {
+      module: 'runa.admin',
+      health: 'degraded',
+      blocked: false,
+      reasons: [],
+    },
+  });
+  expect(result.attributes('data-tone')).toBe('warning');
+  const card = mount(AdminModuleCard, {
+    props: {
+      module: {
+        id: 'runa.admin',
+        kind: 'core',
+        registered: true,
+        enabled: true,
+        available: true,
+        health: 'healthy',
+      },
+      details: true,
+      interactive: false,
+    },
+  });
+  expect(
+    card.findAll('.app-badge').map((badge) => badge.attributes('data-tone')),
+  ).toEqual(['success', 'info', 'success', 'success']);
+});
+
+it('native operation history renders safe rows and row actions with paged reads instead of UUID input', async () => {
+  const { AdminOperationHistory } = await import('@/runa/admin');
+  const row = {
+    public_id: id,
+    target: 'app.safe',
+    intent: 'disable',
+    status: 'pending',
+    created_at: '2026-10-31T10:00:00Z',
+    updated_at: '2026-10-31T10:01:00Z',
+    actions: ['modules.status', 'modules.resume', 'modules.cancel'],
+  };
+  const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.searchParams.has('cursor'))
+      return response({
+        operations: [
+          {
+            ...row,
+            public_id: '01900000-0000-7000-8000-000000000002',
+            intent: 'settings',
+            status: 'succeeded',
+            actions: ['settings.status'],
+          },
+        ],
+        next_cursor: null,
+      });
+    return response({ operations: [row], next_cursor: id });
+  });
+  const { controller } = harness();
+  const w = mount(AdminOperationHistory, {
+    props: { controller, module: 'app.safe' },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() => expect(w.text()).toContain('Resume native workflow'));
+  expect(w.find('input[name="id"]').exists()).toBe(false);
+  expect(fetch.mock.calls[0]?.[0]).toContain('module=app.safe');
+  await w
+    .findAll('button')
+    .find((button) => button.text() === 'Resume native workflow')!
+    .trigger('click');
+  expect(w.emitted('execute')?.[0]).toEqual(['modules.resume', id]);
+  await w
+    .findAll('button')
+    .find((button) => button.text() === 'Load older operations')!
+    .trigger('click');
+  await vi.waitFor(() => expect(w.text()).toContain('Settings change'));
+  expect(
+    fetch.mock.calls.some(([url]) => String(url).includes('cursor=' + id)),
+  ).toBe(true);
+  expect(
+    w
+      .findAll('button')
+      .filter((button) => button.text() === 'Resume native workflow'),
+  ).toHaveLength(1);
+});
