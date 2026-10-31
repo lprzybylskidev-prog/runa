@@ -21,6 +21,8 @@ final class OperationRequest extends FormRequest
             'review' => ['sometimes', 'string', 'max:32768'], 'intent' => ['sometimes', 'in:enable,disable,unregister'],
             'key' => ['sometimes', 'string', 'max:128'], 'enabled' => ['sometimes', 'boolean'],
             'confirmed' => ['sometimes', 'boolean'], 'patch' => ['sometimes', 'array'],
+            'images' => ['sometimes', 'array:logo,logo_icon,favicon'],
+            'images.*' => ['string', 'max:700000'],
             'config' => ['sometimes', 'array'], 'overrides' => ['sometimes', 'array']];
     }
 

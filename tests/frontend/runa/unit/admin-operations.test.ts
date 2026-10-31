@@ -272,18 +272,26 @@ it('application settings defaults compose readonly typed fields and source reset
   vi.spyOn(window, 'fetch').mockResolvedValue(response(state));
   const wrapper = mount(AdminApplicationSettings, { props: { controller } });
   await flushPromises();
-  expect(wrapper.text()).toContain('Application settings');
+  expect(wrapper.find('h3').exists()).toBe(false);
   await vi.waitFor(() => expect(wrapper.text()).toContain('Read only.'));
   expect(wrapper.find('input[disabled]').exists()).toBe(true);
   const reset = wrapper
     .findAll('button')
-    .find((button) => button.text() === 'Reset Displayed application name');
+    .find(
+      (button) =>
+        button.attributes('aria-label') ===
+        'Restore defaults: Displayed application name',
+    );
   await reset!.trigger('click');
   expect(controller.dirty.value).toBe(true);
   expect(
     wrapper
       .findAll('button')
-      .some((button) => button.text() === 'Reset Business label'),
+      .some(
+        (button) =>
+          button.attributes('aria-label') ===
+          'Restore defaults: Business label',
+      ),
   ).toBe(false);
 });
 it('application settings clear private drafts when the account context changes', async () => {
@@ -1282,3 +1290,182 @@ it.each(['runa.auth', 'runa.audit', 'runa.permissions', 'app.reference'])(
     ).toBe(false);
   },
 );
+
+async function brandingFile(color: string): Promise<File> {
+  const canvas = document.createElement('canvas');
+  canvas.width = 80;
+  canvas.height = 40;
+  const context = canvas.getContext('2d')!;
+  context.fillStyle = color;
+  context.fillRect(0, 0, 80, 40);
+  const blob = await new Promise<Blob>((resolve) =>
+    canvas.toBlob((value) => resolve(value!), 'image/png'),
+  );
+  return new File([blob], 'brand.png', { type: 'image/png' });
+}
+const brandingState = (revision = 1): AdminOperationData => ({
+  revision,
+  values: {
+    'presentation.name': null,
+    'presentation.logo': null,
+    'presentation.favicon': 'automatic',
+    'presentation.locale': 'pl',
+    'presentation.theme': 'system',
+    'presentation.timezone': 'Europe/Warsaw',
+  },
+  definitions: {
+    'presentation.name': {
+      title: 'Displayed application name',
+      type: 'string',
+      max_length: 160,
+      choices: [],
+      default: null,
+      writable: true,
+    },
+    'presentation.logo': {
+      title: 'Application logo',
+      type: 'enum',
+      choices: ['uploaded'],
+      default: null,
+      writable: true,
+    },
+    'presentation.favicon': {
+      title: 'Application favicon',
+      type: 'enum',
+      choices: ['automatic', 'uploaded'],
+      default: 'automatic',
+      writable: true,
+    },
+    'presentation.locale': {
+      title: 'Default language',
+      type: 'enum',
+      choices: ['pl', 'en'],
+      default: 'pl',
+      writable: true,
+    },
+    'presentation.theme': {
+      title: 'Default theme',
+      type: 'enum',
+      choices: ['system', 'light', 'dark'],
+      default: 'system',
+      writable: true,
+    },
+    'presentation.timezone': {
+      title: 'Default timezone',
+      type: 'timezone',
+      choices: ['Europe/Warsaw', 'UTC', 'America/New_York'],
+      default: 'Europe/Warsaw',
+      writable: true,
+    },
+  },
+  presentation: { name: 'Runa', logo: null, favicon: null },
+});
+
+it('application branding converts a logo to PNG and a square favicon, preserving images on conflict', async () => {
+  const fetch = vi
+    .spyOn(window, 'fetch')
+    .mockResolvedValue(response(brandingState()));
+  let settings!: ReturnType<typeof useAdminApplicationSettings>;
+  const { controller } = harness(admin(), (operations) => {
+    settings = useAdminApplicationSettings(operations);
+  });
+  await settings.refresh();
+  await settings.selectImage('logo', [await brandingFile('red')]);
+  expect(settings.dirty.value).toBe(true);
+  const preview = new Image();
+  preview.src = settings.previewImage('favicon')!;
+  await preview.decode();
+  expect([preview.naturalWidth, preview.naturalHeight]).toEqual([64, 64]);
+  fetch.mockResolvedValue(response({}, 409));
+  await settings.save();
+  const posted = JSON.parse(String(fetch.mock.calls.at(-1)?.[1]?.body));
+  expect(posted.patch).toEqual({ 'presentation.logo': 'uploaded' });
+  expect(posted.images.logo).toBeTypeOf('string');
+  expect(posted.images.logo_icon).toBeTypeOf('string');
+  expect(controller.conflict.value).toBe(true);
+  expect(settings.imageFiles.value.logo).toHaveLength(1);
+  const remote = brandingState(2);
+  (remote.values as AdminOperationData)['presentation.logo'] = 'uploaded';
+  remote.presentation = {
+    name: 'Runa',
+    logo: { src: '/remote.png', accessibleName: 'Remote' },
+    favicon: '/remote-icon.png',
+  };
+  fetch.mockResolvedValueOnce(response(remote));
+  await settings.refresh();
+  expect(settings.conflicts.value.has('presentation.logo')).toBe(true);
+  settings.resolve('presentation.logo', true);
+
+  const before = settings.previewImage('favicon');
+  await settings.selectImage('favicon', [await brandingFile('blue')]);
+  expect(settings.previewImage('favicon')).not.toBe(before);
+  settings.edit('presentation.favicon', null);
+  expect(settings.previewImage('favicon')).toBe(before);
+  const calls = fetch.mock.calls.length;
+  await settings.selectImage('logo', [
+    new File(['<svg/>'], 'logo.svg', { type: 'image/svg+xml' }),
+  ]);
+  expect(settings.imageError.value).toContain('PNG, JPEG or WebP');
+  expect(fetch).toHaveBeenCalledTimes(calls);
+});
+
+it('application branding fences pending file preparation on account loss', async () => {
+  vi.spyOn(window, 'fetch').mockResolvedValue(response(brandingState()));
+  let settings!: ReturnType<typeof useAdminApplicationSettings>;
+  const { owner } = harness(admin(), (operations) => {
+    settings = useAdminApplicationSettings(operations);
+  });
+  await settings.refresh();
+  const file = await brandingFile('red');
+  const pending = settings.selectImage('logo', [file]);
+  owner.session.session.value = undefined;
+  await pending;
+  await flushPromises();
+  expect(settings.fields.value).toEqual([]);
+  expect(settings.imageFiles.value.logo).toEqual([]);
+  expect(settings.previewImage('logo')).toBeUndefined();
+});
+
+it('application settings use one main heading, bounded fields and adjacent restore buttons', async () => {
+  window.history.replaceState({}, '', '/admin?section=application');
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    String(input).endsWith('/capabilities')
+      ? response({ capabilities: [] })
+      : response(brandingState()),
+  );
+  const w = mount(AdminOperations, {
+    props: { admin: admin() },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(w.findAll('h1').map((heading) => heading.text())).toEqual([
+      'Application settings',
+    ]),
+  );
+  await vi.waitFor(() =>
+    expect(w.find('input[type="file"]').exists()).toBe(true),
+  );
+  expect(
+    w
+      .findAll('h2,h3')
+      .some((heading) => heading.text() === 'Application settings'),
+  ).toBe(false);
+  const buttons = w
+    .findAll('button')
+    .filter((button) => button.text() === 'Restore defaults');
+  expect(buttons).toHaveLength(6);
+  for (const button of buttons) {
+    expect(button.attributes('aria-label')).toContain('Restore defaults:');
+    expect(
+      button.element.parentElement?.querySelector(
+        'input,button[aria-haspopup="dialog"]',
+      ),
+    ).not.toBeNull();
+  }
+  expect(
+    w
+      .findAll('input')
+      .filter((input) => input.attributes('type') !== 'file')
+      .every((input) => input.element.getBoundingClientRect().width < 768),
+  ).toBe(true);
+});

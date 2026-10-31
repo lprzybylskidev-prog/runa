@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatApplicationInstant } from '@/runa/ui';
 import { computed } from 'vue';
 import { Badge, Icon, getModulePresentation } from '@/runa/ui';
 import type { BadgeTone } from '@/runa/ui';
@@ -69,7 +70,7 @@ function date(value: AdminJson | undefined) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? '—'
-    : date.toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB');
+    : formatApplicationInstant(date, locale.value);
 }
 </script>
 <template>

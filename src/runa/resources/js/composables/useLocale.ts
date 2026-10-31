@@ -1,3 +1,4 @@
+import { useApplicationDisplayDefaults } from '../runa/ui/displayDefaults';
 import { defaultPreferenceStore } from '../../../modules/auth/frontend/preferences/session';
 import { computed, inject, onScopeDispose, provide, ref, watch } from 'vue';
 import type { InjectionKey, Ref } from 'vue';
@@ -26,16 +27,28 @@ export function useLocale(override?: Readonly<Ref<Locale | undefined>>) {
       t: (key: MessageKey): string => messages[locale.value][key],
     };
   }
-  const saved = readPreference('runa.locale');
-  const locale = ref<Locale>(saved === 'en' ? 'en' : 'pl');
+  const defaults = useApplicationDisplayDefaults();
+  const resolve = (): Locale => {
+    const saved = readPreference('runa.locale');
+    return saved === 'en' || saved === 'pl' ? saved : defaults.value.locale;
+  };
+  const locale = ref<Locale>(resolve());
   let syncing = false;
   const unsubscribe = defaultPreferenceStore.subscribe?.(() => {
-    const saved = readPreference('runa.locale');
     syncing = true;
-    locale.value = saved === 'en' ? 'en' : 'pl';
+    locale.value = resolve();
     syncing = false;
   });
   if (unsubscribe) onScopeDispose(unsubscribe);
+  watch(
+    defaults,
+    () => {
+      syncing = true;
+      locale.value = resolve();
+      syncing = false;
+    },
+    { flush: 'sync' },
+  );
   // Apply initial presentation without treating hydration/mount as a user edit.
   document.documentElement.lang = locale.value;
   watch(

@@ -78,9 +78,7 @@ function validateField(
         : ['Choose valid public UUIDs.'];
     }
     case 'datetime':
-      return utcTimestamp(value)
-        ? []
-        : ['Enter a UTC timestamp, for example 2026-01-01T12:00:00Z.'];
+      return utcTimestamp(value) ? [] : ['Enter a valid date and time.'];
     default:
       return ['This field is currently unavailable.'];
   }

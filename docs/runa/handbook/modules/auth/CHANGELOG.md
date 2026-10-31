@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Consume application defaults without overwriting account/browser choices; format supplied account/session/history instants in the application timezone and reuse the public raster container inspection helper.
+
 - Include bounded initial Admin-entry advertisement in shared shell readiness; keep content/menu coherent with account preference hydration and hide temporary theme/language controls until navigation settles. Preserve background menu revalidation and identity fences.
 
 - Compose shared breadcrumbs from the active layout page context, with linked area/module ancestors and the current Admin/account subview, including query navigation.

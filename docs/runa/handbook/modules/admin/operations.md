@@ -129,14 +129,15 @@ ApplicationLogo::__construct(string $key, string $src, string $accessibleName)
 // Container-owned public adapters, not new service bindings supplied by requests.
 ApplicationSettings::register(ApplicationSettingProvider $provider): void
 ApplicationSettings::read(): array
-ApplicationSettings::update(array $patch, int $expectedRevision): array
+ApplicationSettings::update(array $patch, int $expectedRevision, ?ApplicationImages $images = null): array
 ApplicationPresentation::read(): array
 ```
 
 Register only during trusted App bootstrap, frozen before request use; refuse
-duplicate keys/providers and foreign Core replacement. Key syntax follows
-ApiOperation, max 64 settings and 32 logos; type `string|integer|boolean|enum`,
-non-secret scalar/null defaults, no callbacks/config paths. Strings maxLength
+duplicate keys/providers and foreign Core replacement. Logo key uploaded is reserved
+for runtime raster assets. Key syntax follows
+ApiOperation, max 64 settings and 32 logos; type `string|integer|boolean|enum|timezone`,
+non-secret scalar/null defaults, no callbacks/config paths. Timezone values use validated IANA identifiers. Strings maxLength
 1–4096, enum unique choices max 64 with safe key grammar; no implicit coercion.
 Titles max 160, same plain-text/no-control rule as Admin descriptors. Defaults match
 the declared scalar type, never arbitrary objects.
@@ -177,12 +178,13 @@ provider. Module settings and Admin lifecycle do not own this global store.
 
 The supplied scaffold remains minimal: no sample business settings. Platform
 presentation has built-in optional keys `presentation.name` (string, 1–160) and
-`presentation.logo` (enum of source-owned logo keys); App can declare safe extra
-values using the provider. Built-in changes require `runa.admin.application.read`
+`presentation.logo` (source-owned logo keys or uploaded). Built-ins also cover
+language/theme/timezone defaults and automatic/custom favicon; see the uploaded
+branding contract below. App can declare up to 58 safe extra values using the provider. Built-in changes require `runa.admin.application.read`
 and `runa.admin.application.manage`; extra keys retain their declared grants.
-Null removes the runtime override and restores source fallback. No generic upload
-system: customer deploys logo assets through App source/public assets, declares
-same-origin approved URLs in ApplicationLogo and selects a key stored in DB.
+Null removes a runtime override and restores source fallback. Deployed logo assets
+remain selectable through ApplicationLogo; uploaded logo/favicon PNGs use the bounded
+transactional contract below rather than arbitrary paths or a generic file library.
 Source validation rejects credentials, query/fragment, traversal, remote origins,
 data/javascript URLs, markup and non-image assets. Only reviewed PNG/JPEG/WebP/SVG
 static assets already served under existing CSP are selectable; SVG is source-owned
@@ -192,7 +194,7 @@ trusted code, never an administrator-uploaded string. No outbound URL fetching.
 
 Owner: platform for storage/adapters, App for declarations and assets. Audience:
 ordinary trusted App PHP, including optional App module consumers. Entry points
-are the two container-owned `Runa\Support\Settings` adapters above and the three
+are the two container-owned `Runa\Support\Settings` adapters above and the four
 `Runa\Contracts\Settings` declarations. Runtime delivery includes the platform
 migration; internal `Runa\Settings` engines are not customer imports. Registration
 requires a real `App\` class under `src/app`, excluding module provider classes;
@@ -256,21 +258,21 @@ and revision 0. Maintenance behavior is unchanged.
 ## Presentation precedence and consumers
 
 `ApplicationPresentation::read(): array` returns the non-secret public projection
-`{name:string,logo:array{src:string,accessibleName:string}|null,revision:int}`,
-using only the two approved presentation keys, never all app settings. This is
+`{name:string,logo:array{src:string,accessibleName:string}|null,favicon:?string,defaults:array,revision:int}`,
+using only approved name/logo/favicon/display-default fields, never all app settings. This is
 available separately through named GET `/api/presentation`, route
 `runa.presentation.show`; no Admin grant required for already public branding.
 Canonical `/api/identity` and its keys/manifest validation remain unchanged.
 Admin bootstrap includes the same projection. No-store/revalidation prevents a
 stale browser override being treated as current after an update/account change.
 
-| Consumer                                           | Effective presentation and failure behavior                                                                                                  |
-| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| Browser app/Admin shared branding                  | Valid persisted override → app manifest default → code-owned Runa default; each current read sees committed revision without restart         |
-| Server-rendered normal errors/mail                 | Same validated runtime projection when DB is available; source defaults on storage failure; no recursive DB failure rendering                |
-| Static/native emergency errors and build artifacts | Validated build-time manifest/Runa defaults only; no database access or baked runtime customer override                                      |
-| Existing explicit technical mail-logo/CID config   | Preserve developer-owned transport/CID mechanics; adapt selected source asset only through that policy, never load a DB path/remote logo URL |
-| Canonical identity/version/compatibility           | Always source-owned, unaffected by presentation settings                                                                                     |
+| Consumer                                           | Effective presentation and failure behavior                                                                                                                                  |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Browser app/Admin shared branding                  | Valid persisted override → app manifest default → code-owned Runa default; each current read sees committed revision without restart                                         |
+| Server-rendered normal errors/mail                 | Same validated runtime projection when DB is available; source defaults on storage failure; no recursive DB failure rendering                                                |
+| Static/native emergency errors and build artifacts | Validated build-time manifest/Runa defaults only; no database access or baked runtime customer override                                                                      |
+| Existing explicit technical mail-logo/CID config   | Preserve developer-owned transport/CID mechanics; attach validated source assets or uploaded PNG bytes through CID, never fetch a remote logo or accept a DB filesystem path |
+| Canonical identity/version/compatibility           | Always source-owned, unaffected by presentation settings                                                                                                                     |
 
 The Runa logo remains in protected code. Customer selection and displayed-name
 overrides persist in the database; customers own their approved asset catalogue.
@@ -382,3 +384,34 @@ work payloads or introducing another store. Active-only lifecycle fences retain
 active() unchanged. AdminOperations.read('work', ['module' => string, optional
 'limit' => int]) uses history with the existing work.read grant and explicit
 truncation. Terminal evidence offers status reads, never cancellation/replay.
+
+## Display defaults and uploaded branding
+
+The platform owns optional built-ins presentation.locale (pl/en, source pl),
+presentation.theme (system/light/dark, source system), presentation.timezone (IANA,
+source Europe/Warsaw) and presentation.favicon (automatic/uploaded). Explicit
+account/browser language/theme wins over application defaults; timezone affects
+instant presentation, never UTC storage or date-only values.
+
+Platform public value Runa\Contracts\Settings\ApplicationImages lives in
+src/runa/Contracts/Settings/ApplicationImages.php (runtime). Constructor
+`__construct(array $png)` accepts raw validated PNG bytes keyed logo/logo_icon/favicon;
+logo and its generated 64px icon are paired. The owning extension is
+`ApplicationSettings::update(array $patch, int $expectedRevision, ?ApplicationImages $images = null): array`.
+Admin application.update transports optional base64 images with its existing patch,
+revision and authority; a single transaction publishes settings, binary assets and
+redacted Audit. PNG is bounded to 512 KiB/1024px for logos and 32 KiB/exactly64px for
+icons. Shared public Runa\Support\Images\RasterImageContent::safe(string $bytes,
+string $mime): bool lives under src/runa/Support/Images; its internal format parser
+under src/runa/Images is reused by Auth and settings. It validates container metadata,
+not a complete pixel decoder. Browser Canvas decodes bounded PNG/JPEG/WebP input,
+preserves aspect ratio/transparency and generates PNG without original metadata.
+
+Binary columns branding_logo/branding_logo_icon/branding_favicon share the existing
+protected singleton and revision, so refusal/rollback cannot orphan files. Public
+GET /api/presentation/assets/{kind}/{hash}.png serves only current logo/icon/favicon
+bytes matching their SHA-256, fixed image/png, nosniff and immutable cache headers.
+Public presentation projects selected URLs and display defaults, never raw bytes.
+Custom favicon wins over automatic uploaded-logo icon; resets restore automatic/source
+presentation. Static/emergency build assets remain source-owned. Runtime mail logo
+URLs remain same-origin and do not trigger outbound image fetches.

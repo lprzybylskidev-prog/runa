@@ -4,6 +4,7 @@ const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed } from 'vue';
 import {
   Table,
+  formatApplicationInstant,
   Button,
   Alert,
   ConfirmDialog,
@@ -121,12 +122,24 @@ const exportColumns = computed(() =>
     </template>
     <template
       v-for="column in controller.columns.value.filter(
-        (field) => $slots[`cell-${field.key}`],
+        (field) =>
+          $slots[`cell-${field.key}`] ||
+          controller.section.value?.fields.some(
+            (declared) =>
+              declared.key === field.key && declared.type === 'datetime',
+          ),
       )"
       :key="column.key"
       #[`cell-${column.key}`]="scope"
     >
-      <slot :name="`cell-${column.key}`" v-bind="scope" />
+      <slot :name="`cell-${column.key}`" v-bind="scope">{{
+        typeof scope.row.values[column.key] === 'string'
+          ? formatApplicationInstant(
+              String(scope.row.values[column.key]),
+              adminLocale,
+            )
+          : '—'
+      }}</slot>
     </template>
   </Table>
   <ConfirmDialog

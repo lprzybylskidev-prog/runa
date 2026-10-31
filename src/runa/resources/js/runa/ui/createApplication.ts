@@ -6,6 +6,7 @@ import {
   computed,
   shallowRef,
 } from 'vue';
+import { applyApplicationDisplayDefaults } from './displayDefaults';
 import { useTheme } from '../../composables/useTheme';
 import { useLocale } from '../../composables/useLocale';
 import { useImageReadiness } from '../../composables/useImageReadiness';
@@ -34,6 +35,28 @@ export function createApplication(root: Component) {
       let alive = true,
         epoch = 0;
       let abort = new AbortController();
+      const sourceIcons = Array.from(
+        document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]'),
+      ).map((element) => ({
+        element,
+        href: element.getAttribute('href'),
+        type: element.getAttribute('type'),
+        sizes: element.getAttribute('sizes'),
+      }));
+      const dynamicIcon = document.createElement('link');
+      dynamicIcon.rel = 'icon';
+      dynamicIcon.type = 'image/png';
+      dynamicIcon.sizes.value = '64x64';
+      function applyIcon(src?: string | null) {
+        dynamicIcon.remove();
+        if (src) {
+          for (const { element } of sourceIcons) element.remove();
+          dynamicIcon.href = src;
+          document.head.append(dynamicIcon);
+        } else
+          for (const { element } of sourceIcons)
+            if (!element.isConnected) document.head.append(element);
+      }
       async function refresh() {
         const own = ++epoch;
         abort.abort();
@@ -43,7 +66,11 @@ export function createApplication(root: Component) {
         );
         if (alive && own === epoch) {
           // A failed background read keeps the last confirmed public presentation.
-          if (next) presentation.value = next;
+          if (next) {
+            presentation.value = next;
+            applyApplicationDisplayDefaults(next.defaults);
+            applyIcon(next.favicon);
+          }
         }
       }
       void loadApplicationIdentity().then((resolved) => {
@@ -76,6 +103,8 @@ export function createApplication(root: Component) {
         epoch++;
         abort.abort();
         stop();
+        applyIcon(null);
+        applyApplicationDisplayDefaults();
         window.removeEventListener('focus', refresh);
         window.removeEventListener('popstate', refresh);
         document.removeEventListener('visibilitychange', visible);

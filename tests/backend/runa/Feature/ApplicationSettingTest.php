@@ -14,3 +14,8 @@ it('preserves strict safe scalar types and nullable source fallback', function (
     expect(fn () => new ApplicationSetting('business.label', 'string', 'Too long', 'Label', 'app.orders.read', 'app.orders.manage', 2))->toThrow(InvalidArgumentException::class);
     expect(fn () => new ApplicationSetting('business.flag', 'boolean', 'true', 'Flag', 'app.orders.read', 'app.orders.manage'))->toThrow(InvalidArgumentException::class);
 });
+
+it('validates IANA display timezone without allowing arbitrary configuration values', function (): void {
+    $setting = new ApplicationSetting('presentation.timezone', 'timezone', 'Europe/Warsaw', 'Timezone', 'runa.admin.application.read', 'runa.admin.application.manage');
+    expect($setting->accepts('America/New_York'))->toBeTrue()->and($setting->accepts('UTC'))->toBeTrue()->and($setting->accepts('Mars/Olympus'))->toBeFalse()->and($setting->accepts(3600))->toBeFalse()->and($setting->accepts(null))->toBeTrue();
+});

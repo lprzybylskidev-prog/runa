@@ -32,7 +32,7 @@ final class SettingRegistry
         $this->source->inspect($provider::class);
         $settings = $provider->settings();
         $logos = $provider->logos();
-        if (! array_is_list($settings) || ! array_is_list($logos) || count($settings) + count($this->settings) > 62
+        if (! array_is_list($settings) || ! array_is_list($logos) || count($settings) + count($this->settings) > 58
             || count($logos) + count($this->logos) > 32) {
             throw new InvalidArgumentException('Invalid application settings catalogue.');
         }
@@ -45,7 +45,7 @@ final class SettingRegistry
             $nextSettings[$setting->key] = $setting;
         }
         foreach ($logos as $logo) {
-            if (! $logo instanceof ApplicationLogo || isset($nextLogos[$logo->key])) {
+            if (! $logo instanceof ApplicationLogo || $logo->key === 'uploaded' || isset($nextLogos[$logo->key])) {
                 throw new InvalidArgumentException('Invalid or duplicate application logo.');
             }
             $nextLogos[$logo->key] = $logo;
@@ -65,8 +65,12 @@ final class SettingRegistry
     {
         $this->freeze();
         $settings = $this->settings + [
+            'presentation.locale' => new ApplicationSetting('presentation.locale', 'enum', 'pl', 'Default language', 'runa.admin.application.read', 'runa.admin.application.manage', choices: ['pl', 'en']),
+            'presentation.theme' => new ApplicationSetting('presentation.theme', 'enum', 'system', 'Default theme', 'runa.admin.application.read', 'runa.admin.application.manage', choices: ['system', 'light', 'dark']),
+            'presentation.timezone' => new ApplicationSetting('presentation.timezone', 'timezone', 'Europe/Warsaw', 'Default timezone', 'runa.admin.application.read', 'runa.admin.application.manage'),
+            'presentation.favicon' => new ApplicationSetting('presentation.favicon', 'enum', 'automatic', 'Application favicon', 'runa.admin.application.read', 'runa.admin.application.manage', choices: ['automatic', 'uploaded']),
             'presentation.name' => new ApplicationSetting('presentation.name', 'string', null, 'Displayed application name', 'runa.admin.application.read', 'runa.admin.application.manage', 160),
-            'presentation.logo' => new ApplicationSetting('presentation.logo', 'enum', null, 'Application logo', 'runa.admin.application.read', 'runa.admin.application.manage', choices: array_keys($this->logos)),
+            'presentation.logo' => new ApplicationSetting('presentation.logo', 'enum', null, 'Application logo', 'runa.admin.application.read', 'runa.admin.application.manage', choices: [...array_keys($this->logos), 'uploaded']),
         ];
         ksort($settings);
 

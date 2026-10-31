@@ -21,9 +21,20 @@ final class HttpErrorPage
 
         $presentation = app(ApplicationPresentation::class)->read();
 
+        // Maintenance keeps the existing HTTP exceptions: DB-backed image endpoints
+        // cannot be fetched there, so use the source asset instead of a broken logo.
+        $logo = $presentation['logo'];
+        $favicon = $presentation['favicon'];
+        if ($status === 503) {
+            if (str_starts_with($logo['src'] ?? '', '/api/presentation/assets/')) {
+                $logo = $identity->logo;
+            }
+            $favicon = null;
+        }
+
         return $this->data($status, $locale, in_array($theme, ['light', 'dark'], true) ? $theme : 'system',
             $presentation['name'], $identity->applicationVersion,
-            $identity->platformVersion, is_string($id) ? $id : '') + ['logo' => $presentation['logo']];
+            $identity->platformVersion, is_string($id) ? $id : '') + ['logo' => $logo, 'favicon' => $favicon];
     }
 
     /** @return array<string, mixed> */

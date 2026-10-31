@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatApplicationInstant } from '@/runa/ui';
 import { Dialog, Button, Spinner, Alert } from '@/runa/ui';
 import type { HistoryValue } from './historyDetails';
 import type {
@@ -129,11 +130,7 @@ function value(v: HistoryValue): string {
       <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
         <dt>{{ text('Data', 'Date') }}</dt>
         <dd>
-          {{
-            new Date(detail.occurred_at).toLocaleString(
-              locale === 'pl' ? 'pl-PL' : 'en-GB',
-            )
-          }}
+          {{ formatApplicationInstant(detail.occurred_at, locale) }}
         </dd>
         <dt>{{ text('Wynik', 'Outcome') }}</dt>
         <dd>

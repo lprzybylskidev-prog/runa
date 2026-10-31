@@ -4,6 +4,7 @@ namespace Runa\Mail;
 
 use Illuminate\Mail\Events\MessageSending;
 use Runa\Identity\ApplicationIdentity;
+use Runa\Settings\SettingStore;
 use Runa\Support\Settings\ApplicationPresentation;
 use Symfony\Component\Mime\Part\DataPart;
 
@@ -18,6 +19,9 @@ final class MailBranding
 
     public function logo(): ?string
     {
+        if ($this->uploadedLogo() !== null) {
+            return 'cid:'.self::LOGO_CID;
+        }
         $url = config('branding.mail_logo_url');
         $selected = app(ApplicationPresentation::class)->read()['logo'];
         $source = app(ApplicationIdentity::class)->logo;
@@ -43,10 +47,24 @@ final class MailBranding
         if (! is_string($html) || ! str_contains($html, 'cid:'.self::LOGO_CID)) {
             return;
         }
+        $uploaded = $this->uploadedLogo();
+        if ($uploaded !== null) {
+            $event->message->addPart((new DataPart($uploaded, 'logo.png', 'image/png'))->asInline()->setContentId(self::LOGO_CID));
+
+            return;
+        }
         $path = $this->logoPath();
         if ($path !== null) {
             $event->message->addPart(DataPart::fromPath($path)->asInline()->setContentId(self::LOGO_CID));
         }
+    }
+
+    private function uploadedLogo(): ?string
+    {
+        $src = app(ApplicationPresentation::class)->read()['logo']['src'] ?? null;
+
+        return is_string($src) && preg_match('~\A/api/presentation/assets/logo/([a-f0-9]{64})[.]png\z~D', $src, $match)
+            ? app(SettingStore::class)->asset('logo', $match[1]) : null;
     }
 
     private function logoPath(): ?string

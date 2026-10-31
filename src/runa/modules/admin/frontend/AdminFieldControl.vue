@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import {
+  DateTimeInput,
+  useApplicationDisplayDefaults,
+  formatApplicationInstant,
+} from '@/runa/ui';
+const displayDefaults = useApplicationDisplayDefaults();
 import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
@@ -45,6 +51,22 @@ const secretSet = computed(() => {
 const text = computed(() =>
   typeof props.modelValue === 'string' ? props.modelValue : null,
 );
+const temporalDraft = ref('');
+const temporalValue = ref<string | null>(null);
+watch(
+  () => [props.field, props.modelValue] as const,
+  ([field, value]) => {
+    if (
+      value === null ||
+      (typeof value === 'string' && !validateAdminField(field, value).length)
+    )
+      temporalValue.value = typeof value === 'string' ? value : null;
+  },
+  { immediate: true, flush: 'sync' },
+);
+function temporalValidity(valid: boolean) {
+  if (!valid && temporalDraft.value) update(temporalDraft.value);
+}
 const items = computed(() =>
   Array.isArray(props.modelValue)
     ? props.modelValue.filter(
@@ -58,6 +80,8 @@ const options = computed(() =>
 const display = computed(() => {
   if (props.field.sensitive) return secretSet.value ? tr('Set') : tr('Not set');
   if (props.modelValue === null || props.modelValue === '') return '—';
+  if (props.field.type === 'datetime' && typeof props.modelValue === 'string')
+    return formatApplicationInstant(props.modelValue, adminLocale.value);
   if (typeof props.modelValue === 'boolean')
     return props.modelValue ? tr('Yes') : tr('No');
   if (Array.isArray(props.modelValue)) return items.value.join(', ') || '—';
@@ -187,21 +211,30 @@ function integer(value: string | null) {
     :required="field.required"
     @update:model-value="update([...$event])"
   />
+  <DateTimeInput
+    v-else-if="field.type === 'datetime'"
+    :label="tr(field.label)"
+    :model-value="temporalValue"
+    :locale="adminLocale"
+    :time-zone="displayDefaults.timezone"
+    :zone-label="tr('Time zone')"
+    :invalid-message="tr('Enter a valid date and time.')"
+    :error="messages"
+    :disabled="busy"
+    :required="field.required"
+    @draft="temporalDraft = $event"
+    @validity="temporalValidity"
+    @update:model-value="update"
+  />
   <TextInput
-    v-else-if="['text', 'dictionary', 'uuid', 'datetime'].includes(field.type)"
+    v-else-if="['text', 'dictionary', 'uuid'].includes(field.type)"
     :label="tr(field.label)"
     :model-value="text"
     :error="messages"
     :disabled="busy"
     :required="field.required"
     :nullable="field.type !== 'text'"
-    :helper="
-      field.type === 'datetime'
-        ? tr('UTC timestamp, for example 2026-01-01T12:00:00Z.')
-        : field.type === 'uuid'
-          ? tr('Public UUID.')
-          : ''
-    "
+    :helper="field.type === 'uuid' ? tr('Public UUID.') : ''"
     @update:model-value="update"
   />
   <FormField v-else :label="tr(field.label)" :error="errors.map(tr)">

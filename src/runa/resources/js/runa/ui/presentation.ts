@@ -1,3 +1,4 @@
+import type { ApplicationDisplayDefaults } from './displayDefaults';
 import { request } from '../../lib/http';
 import { safeBrandUrl } from './identity';
 export interface ApplicationPresentation {
@@ -7,6 +8,8 @@ export interface ApplicationPresentation {
     readonly accessibleName: string;
   } | null;
   readonly revision: number;
+  readonly favicon?: string | null;
+  readonly defaults?: ApplicationDisplayDefaults;
 }
 /** Public branding only. Failure clears the override back to canonical source defaults. */
 export async function loadApplicationPresentation(
@@ -44,8 +47,44 @@ export async function loadApplicationPresentation(
         typeof logo.accessibleName !== 'string')
     )
       return;
+    const raw = 'defaults' in data ? data.defaults : undefined;
+    let defaults: ApplicationDisplayDefaults | undefined;
+    if (
+      raw &&
+      typeof raw === 'object' &&
+      'locale' in raw &&
+      'theme' in raw &&
+      'timezone' in raw
+    ) {
+      if (
+        (raw.locale !== 'pl' && raw.locale !== 'en') ||
+        (raw.theme !== 'system' &&
+          raw.theme !== 'light' &&
+          raw.theme !== 'dark') ||
+        typeof raw.timezone !== 'string'
+      )
+        return;
+      try {
+        new Intl.DateTimeFormat('en', { timeZone: raw.timezone });
+      } catch {
+        return;
+      }
+      defaults = {
+        locale: raw.locale,
+        theme: raw.theme,
+        timezone: raw.timezone,
+      };
+    }
+    const favicon = 'favicon' in data ? data.favicon : null;
+    if (
+      favicon !== null &&
+      (typeof favicon !== 'string' || !safeBrandUrl(favicon))
+    )
+      return;
     return {
       name: data.name,
+      favicon,
+      ...(defaults ? { defaults } : {}),
       revision: data.revision,
       logo:
         logo === null

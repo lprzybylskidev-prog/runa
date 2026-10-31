@@ -7,6 +7,7 @@ use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Validation\ValidationException;
 use Runa\Contracts\Modules\AdministrativePreview;
 use Runa\Contracts\Modules\ApiOperation;
+use Runa\Contracts\Settings\ApplicationImages;
 use Runa\Identity\ApplicationIdentity;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
@@ -18,6 +19,7 @@ use Runa\Settings\SettingStore;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Work\ModuleWork;
+use Runa\Support\Settings\ApplicationPresentation;
 use Runa\Support\Settings\ApplicationSettings;
 
 /** Fixed trusted integration. Never accepts an engine method, actor or executable metadata. */
@@ -52,7 +54,7 @@ final readonly class AdminOperations
                 return match ($view) {
                     'capabilities' => ['capabilities' => $this->capabilities()],
                     'history' => $this->operationHistory($input),
-                    'application' => app(ApplicationSettings::class)->read() + ['definitions' => app(SettingStore::class)->definitions()],
+                    'application' => app(ApplicationSettings::class)->read() + ['definitions' => app(SettingStore::class)->definitions(), 'presentation' => app(ApplicationPresentation::class)->read()],
                     'diagnostics' => $this->diagnostics->snapshot($this->text($input, 'filter', 'enabled')) + [
                         'platform_version' => $this->identity->platformVersion,
                         'application_version' => $this->identity->applicationVersion,
@@ -74,7 +76,7 @@ final readonly class AdminOperations
     {
         return $this->safe(function () use ($command, $input): array {
             [$permission, $keys, $independent] = match ($command) {
-                'application.update' => ['enter', ['revision', 'patch'], false],
+                'application.update' => ['enter', ['revision', 'patch', 'images'], false],
                 'health.diagnose' => ['health.diagnose', ['module'], true],
                 'modules.preview' => ['modules.manage', ['module', 'intent'], false],
                 'modules.apply' => ['modules.manage', ['review', 'confirmed'], true],
@@ -88,7 +90,7 @@ final readonly class AdminOperations
             return $this->admit($command, $permission, function () use ($command, $input): array {
                 switch ($command) {
                     case 'application.update':
-                        return app(ApplicationSettings::class)->update($this->map($input, 'patch'), $this->integer($input, 'revision'));
+                        return app(ApplicationSettings::class)->update($this->map($input, 'patch'), $this->integer($input, 'revision'), $this->images($input));
                     case 'health.diagnose':
                         $module = $this->moduleId($input);
                         $result = $this->health->diagnose($module);
@@ -243,6 +245,27 @@ final readonly class AdminOperations
     }
 
     /** @param array<string,mixed> $input */
+    private function images(array $input): ?ApplicationImages
+    {
+        if (! array_key_exists('images', $input)) {
+            return null;
+        }
+        $images = $this->map($input, 'images');
+        $decoded = [];
+        foreach ($images as $key => $encoded) {
+            if (! is_string($encoded) || strlen($encoded) > 700000 || ($bytes = base64_decode($encoded, true)) === false) {
+                throw $this->invalid();
+            }
+            $decoded[$key] = $bytes;
+        }
+        try {
+            return new ApplicationImages($decoded);
+        } catch (\InvalidArgumentException) {
+            throw $this->invalid();
+        }
+    }
+
+    /** @param array<string,mixed> $input */
     private function moduleId(array $input): string
     {
         $module = $this->text($input, 'module');
@@ -256,7 +279,7 @@ final readonly class AdminOperations
     /** @param array<string,mixed> $input @param list<string> $keys */
     private function keys(array $input, array $keys): void
     {
-        if (array_diff(array_keys($input), $keys) !== [] || strlen(json_encode($input, JSON_THROW_ON_ERROR)) > 65536) {
+        if (array_diff(array_keys($input), $keys) !== [] || strlen(json_encode($input, JSON_THROW_ON_ERROR)) > (in_array('images', $keys, true) ? 1048576 : 65536)) {
             throw $this->invalid();
         }
     }

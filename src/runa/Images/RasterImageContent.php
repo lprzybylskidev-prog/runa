@@ -1,9 +1,9 @@
 <?php
 
-namespace Runa\Modules\Auth\Support;
+namespace Runa\Images;
 
 /** Inspect container metadata, never interpret compressed pixels as source code. */
-final class AvatarImageContent
+final class RasterImageContent
 {
     public static function safe(string $bytes, string $mime): bool
     {

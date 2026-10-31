@@ -241,3 +241,9 @@ including structured declared preferences. Complete reset emits individual setti
 and notification reset details plus an aggregate count, in the same transaction.
 Existing events are immutable; missing old values cannot be reconstructed. Audit
 structural/redaction limits apply and refusal rolls back both write and revision.
+
+Application language/theme defaults apply when no explicit account/browser
+preference exists. Hydrating/changing application defaults never persists a user
+preference. Public useApplicationDisplayDefaults/formatApplicationInstant supplies
+the display timezone without changing UTC storage or date-only values. See
+[application presentation](../admin/frontend.md#application-display-defaults-image-drafts-and-page-headings).

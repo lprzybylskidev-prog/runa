@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatApplicationInstant } from '@/runa/ui';
 import { computed, ref, watch } from 'vue';
 import {
   PageNavigation,
@@ -232,9 +233,7 @@ function timestamp(value: string | undefined): number | null {
 }
 function date(value: string | undefined) {
   const time = timestamp(value);
-  return time === null
-    ? '—'
-    : new Date(time).toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB');
+  return time === null ? '—' : formatApplicationInstant(time, locale.value);
 }
 function compareDates(a: string | undefined, b: string | undefined): number {
   const first = timestamp(a),

@@ -354,3 +354,10 @@ The Integration/Core bridge and OperationalParticipant remain reserved framework
 integration; consumers cannot write Audit or invoke engines through them. Public
 Vue replacements use AdminOperations/useAdminOperations from `@/runa/admin` and
 retain the shared AdminController/session owner.
+
+Application-branding consumers use ApplicationImages and the ApplicationSettings
+update adapter. Shared raster inspection uses Support/Images/RasterImageContent,
+not the internal Images parser. Complete signatures/limits/ownership:
+[application branding](../modules/admin/operations.md#display-defaults-and-uploaded-branding).
+Public frontend defaults/instant formatting remain in the UI facade; see
+[settings presentation](../modules/admin/frontend.md#application-display-defaults-image-drafts-and-page-headings).

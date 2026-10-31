@@ -499,14 +499,15 @@ Each field has its own render boundary. Read-only descriptor/consumer state and
 busy state block update emissions, including emissions from custom replacements.
 These are UX guards; backend grants, field admission and validation remain authority.
 
-Defaults compose existing FormField/TextInput/NumberInput/Checkbox/Select/TagsInput.
+Defaults compose existing FormField/TextInput/NumberInput/Checkbox/Select/TagsInput/DateTimeInput.
 Text and dictionary choices use the shared localized selection; dictionaries without
 choices use text. Integers emit safe numbers when complete, null when empty, and
 the exact incomplete/out-of-range string otherwise, so invalid drafts never round
 or reuse a stale valid value. UUID fields accept only public UUIDv7 values through
 static hints; multiple UUIDs use TagsInput when there is no reference lookup.
-UTC timestamps use an explicit RFC3339 text control without implicit browser-timezone
-conversion. Boolean null retains the shared indeterminate state. Read-only values
+Datetime controls show the application display timezone and emit UTC instants through
+the shared DST-aware DateTimeInput. Invalid/ambiguous local drafts invalidate the
+form rather than silently retaining a previous valid value. Boolean null retains the shared indeterminate state. Read-only values
 are associated text, including Yes/No and Set/Not set, rather than editable controls.
 
 Secret set-state never fills a password input. Replacement text is transient
@@ -929,11 +930,11 @@ string|number|boolean|null>>`, `dirty/valid: ComputedRef<boolean>`,
 `conflicts: Ref<Set<string>>`, `invalid: Ref<string>`, `loaded/saved: Ref<boolean>`,
 `refresh(): Promise<void>`, `edit(key, value): void`,
 `resolve(key, keepDraft): void`, `save(): Promise<void>`.
-Each field has `key,title,type,maxLength,choices,writable`; definitions and values
+Each field has `key,title,type,maxLength,choices,writable,defaultValue`; definitions and values
 are server-authorized. Disable controls while operations are busy. Show invalid,
 operation error/conflict and saved feedback; never infer write authority from the
 presence of a field. Null/reset restores its source default. No technical settings
-or asset upload control is supplied.
+is supplied. Bounded logo/favicon upload controls are supplied.
 
 Reuse the passed operational controller rather than creating another session or
 write lane. Refresh merges disjoint reads, preserves dirty edits and exposes
@@ -943,7 +944,7 @@ through the existing dirty-navigation confirmation. Full App replacement retains
 these protocols; it does not copy private session/security code.
 
 `@/runa/ui` also exports the public `ApplicationPresentation` type
-`{name,logo,revision}` and `loadApplicationPresentation(signal?: AbortSignal):
+`{name,logo,favicon,defaults,revision}` and `loadApplicationPresentation(signal?: AbortSignal):
 Promise<ApplicationPresentation | undefined>`. Failure returns undefined so a
 consumer can restore source defaults. `createApplication` hydrates presentation
 separately from canonical identity and refreshes after application-setting writes,
@@ -1068,3 +1069,35 @@ no-link fallback. Initial account preference hydration also masks language/theme
 controls through the same layout readiness. Background advertisement reads keep
 the existing presentation until confirmed denial/failure; identity/access loss
 withdraws it immediately. No extra session owner or authorization cache is added.
+
+### Application display defaults, image drafts and page headings
+
+AdminOperations owns the main Modules/Application settings heading, derived from
+its existing query navigation. AdminDashboard does not duplicate it; custom
+operations presentations own their heading. Module/settings cards omit their
+small duplicate titles. Settings rows have a bounded 48rem width, adjacent Restore
+defaults buttons with field-specific accessible names and narrow-screen wrapping.
+
+AdminApplicationSettingsController additionally exposes imageFiles
+`Ref<{logo: File[]; favicon: File[]}>`, imageBusy `Ref<boolean>`, imageError
+`Ref<string>`, `selectImage(kind: 'logo'|'favicon', files: readonly File[]): Promise<void>`
+and `previewImage(kind: 'logo'|'favicon'): string|undefined`. PNG/JPEG/WebP inputs
+are limited to 4 MiB/4096px. Canvas preserves aspect ratio/transparency, strips
+original metadata and prepares a bounded PNG logo and 64px square icon. Files
+remain drafts until Save publishes patch and images under one revision. Failures
+retain files; overlapping image replacements require local resolution; identity
+loss/unmount fences conversion and clears images. Reset favicon restores the logo
+icon; custom favicon wins. No original SVG upload, remote fetch or media library.
+
+`@/runa/ui` exports `useApplicationDisplayDefaults()` returning a deeply readonly
+Ref of ApplicationDisplayDefaults, and
+`formatApplicationInstant(value: string|number|Date, locale: 'pl'|'en'): string`.
+Implementation: src/runa/resources/js/runa/ui/displayDefaults.ts; platform-owned
+public runtime consumption. ApplicationDisplayDefaults is `{locale:'pl'|'en';
+theme:'system'|'light'|'dark'; timezone:string}`. The application hydrates defaults
+through presentation without preference writes; explicit account/browser choices
+win. Runtime favicon replaces source icon links and restores them on reset/disposal.
+Supplied Auth/Admin instant displays and Admin datetime table/form defaults use
+this timezone; exports/storage retain UTC and date-only values stay calendar dates.
+Custom views consume these public helpers; explicit business-form timezones retain
+owning conversion and DST behavior.

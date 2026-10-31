@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatApplicationInstant } from '@/runa/ui';
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { Alert, Badge, Button, Table } from '@/runa/ui';
 import type { TableColumn, TableQuery } from '@/runa/ui';
@@ -46,7 +47,7 @@ function date(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? '—'
-    : date.toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB');
+    : formatApplicationInstant(date, locale.value);
 }
 const columns = computed<TableColumn<HistoryRow>[]>(() => [
   {

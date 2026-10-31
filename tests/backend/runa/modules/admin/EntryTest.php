@@ -4,6 +4,7 @@ use App\Settings\PointTenFixture\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Http\Request;
+use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -61,6 +62,7 @@ use Runa\Support\Modules\Data\ModuleTransactions;
 use Runa\Support\Modules\Development\ModuleContractSuite;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Work\ModuleWork;
+use Symfony\Component\Mime\Email;
 use Tests\Fixtures\AggregateCompetition;
 use Tests\Fixtures\CoreModuleStorage;
 use Tests\Fixtures\ModuleSources;
@@ -1681,5 +1683,65 @@ it('reads bounded task history including terminal work without exposing private 
         expect(fn () => $work->history($fixture->id, 0))->toThrow(RuntimeException::class);
     } finally {
         $fixture->remove();
+    }
+});
+
+it('publishes display defaults and uploaded logo icons atomically with revision grants and Audit', function (): void {
+    foreach (['enter', 'application.read', 'application.manage'] as $permission) {
+        ($this->adminGrant)('runa.admin.'.$permission);
+    }
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    $before = DB::table('shared.application_settings')->where('singleton', 1)->first();
+    $png = static function (int $width, int $height, string $pixel): string {
+        $chunk = static fn (string $type, string $data): string => pack('N', strlen($data)).$type.$data.pack('N', crc32($type.$data));
+
+        return "\x89PNG\r\n\x1a\n".$chunk('IHDR', pack('NNCCCCC', $width, $height, 8, 6, 0, 0, 0)).$chunk('IDAT', gzcompress(str_repeat("\0".str_repeat($pixel, $width), $height))).$chunk('IEND', '');
+    };
+    $logo = $png(80, 40, "\xff\0\0\xff");
+    $icon = $png(64, 64, "\xff\0\0\xff");
+    $custom = $png(64, 64, "\0\0\xff\xff");
+    $revision = (int) $before->revision;
+    $request = ['revision' => $revision, 'patch' => ['presentation.logo' => 'uploaded', 'presentation.locale' => 'en', 'presentation.theme' => 'dark', 'presentation.timezone' => 'America/New_York'], 'images' => ['logo' => base64_encode($logo), 'logo_icon' => base64_encode($icon)]];
+    try {
+        $this->postJson('/api/admin/operations/application.update', $request)->assertOk()->assertJsonPath('data.revision', ++$revision);
+        $presentation = $this->getJson('/api/presentation')->assertOk()->assertJsonPath('data.defaults.locale', 'en')->assertJsonPath('data.defaults.theme', 'dark')->assertJsonPath('data.defaults.timezone', 'America/New_York')->json('data');
+        $this->get($presentation['logo']['src'])->assertOk()->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff')->assertContent($logo);
+        $this->get($presentation['favicon'])->assertOk()->assertContent($icon);
+        $this->get('/api/presentation/assets/logo/'.str_repeat('0', 64).'.png')->assertNotFound();
+        expect(app(MailBranding::class)->logo())->toStartWith('cid:');
+        expect(app(HttpErrorPage::class)->forRequest(503, Request::create('/maintenance'))['logo'])->toBe(app(ApplicationIdentity::class)->logo);
+        $message = new Email;
+        $message->html('<img src="'.app(MailBranding::class)->logo().'">');
+        app(MailBranding::class)->attachLogo(new MessageSending($message));
+        expect($message->getAttachments())->toHaveCount(1);
+        expect($message->getAttachments()[0]->getBody())->toBe($logo);
+        $this->postJson('/api/admin/operations/application.update', $request)->assertConflict();
+        $this->postJson('/api/admin/operations/application.update', ['revision' => $revision, 'patch' => ['presentation.timezone' => 'invalid/timezone']])->assertUnprocessable();
+        DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT branding_audit_refusal CHECK (action <> 'application.settings.changed') NOT VALID");
+        try {
+            $this->postJson('/api/admin/operations/application.update', ['revision' => $revision, 'patch' => ['presentation.favicon' => 'uploaded'], 'images' => ['favicon' => base64_encode($custom)]])->assertServiceUnavailable();
+        } finally {
+            DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT branding_audit_refusal');
+        }
+        $this->getJson('/api/presentation')->assertOk()->assertJsonPath('data.favicon', $presentation['favicon'])->assertJsonPath('data.revision', $revision);
+        $this->postJson('/api/admin/operations/application.update', ['revision' => $revision, 'patch' => ['presentation.favicon' => 'uploaded'], 'images' => ['favicon' => base64_encode($custom)]])->assertOk();
+        $revision++;
+        $customUrl = $this->getJson('/api/presentation')->assertOk()->json('data.favicon');
+        $this->get($customUrl)->assertOk()->assertContent($custom);
+        $this->postJson('/api/admin/operations/application.update', ['revision' => $revision, 'patch' => ['presentation.favicon' => null]])->assertOk();
+        $revision++;
+        $this->getJson('/api/presentation')->assertOk()->assertJsonPath('data.favicon', $presentation['favicon']);
+        $this->get($customUrl)->assertNotFound();
+        $this->postJson('/api/admin/operations/application.update', ['revision' => $revision, 'patch' => ['presentation.logo' => null, 'presentation.locale' => null, 'presentation.theme' => null, 'presentation.timezone' => null]])->assertOk();
+        $revision++;
+        $this->getJson('/api/presentation')->assertOk()->assertJsonPath('data.favicon', null)->assertJsonPath('data.defaults.locale', 'pl')->assertJsonPath('data.defaults.theme', 'system')->assertJsonPath('data.defaults.timezone', 'Europe/Warsaw');
+        $this->get($presentation['logo']['src'])->assertNotFound();
+        $this->postJson('/api/admin/operations/application.update', ['revision' => $revision, 'patch' => ['presentation.logo' => 'uploaded']])->assertUnprocessable();
+        $this->postJson('/api/admin/operations/application.update', ['revision' => $revision, 'patch' => ['presentation.logo' => 'uploaded'], 'images' => ['logo' => base64_encode($logo), 'logo_icon' => base64_encode($logo)]])->assertUnprocessable();
+        $this->postJson('/api/admin/operations/application.update', ['revision' => $revision, 'patch' => ['presentation.favicon' => 'uploaded'], 'images' => ['favicon' => base64_encode($custom.'<script>')]])->assertUnprocessable();
+        expect(DB::table('runa_audit.events')->where('action', 'application.settings.changed')->latest('id')->value('context'))->not->toContain(base64_encode($logo));
+    } finally {
+        DB::table('shared.application_settings')->where('singleton', 1)->update(['values' => $before->values, 'revision' => $before->revision, 'updated_at' => $before->updated_at, 'branding_logo' => null, 'branding_logo_icon' => null, 'branding_favicon' => null]);
     }
 });

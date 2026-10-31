@@ -218,3 +218,8 @@ The [Auth administration guide](administration.md) owns directory/profile read
 projection, primary/secondary address action presentation and the full current
 administrative grants/proofs/revisions map. These independent workflows use the
 same owning APIs; they never join the profile/access atomic Save.
+
+Raster container inspection is shared with application branding through platform
+public `Runa\Support\Images\RasterImageContent::safe(string $bytes, string $mime): bool`.
+Its internal parser lives under src/runa/Images. Avatar storage/publication/cleanup
+remain Auth-owned. This checks container metadata, not complete pixel decoding.

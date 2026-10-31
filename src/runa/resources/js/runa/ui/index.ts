@@ -192,3 +192,9 @@ export { usePageNavigationHost } from '../../composables/usePageNavigationHost';
 
 export { moduleCatalogue, getModulePresentation } from './modulePresentation';
 export type { ModulePresentation } from './modulePresentation';
+
+export {
+  useApplicationDisplayDefaults,
+  formatApplicationInstant,
+} from './displayDefaults';
+export type { ApplicationDisplayDefaults } from './displayDefaults';

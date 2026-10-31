@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file -- Independent application lifecycle and display-default fixtures. */
 import { afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, flushPromises } from '@runa/testing/vue';
 import { defineComponent, h } from 'vue';
@@ -23,6 +24,7 @@ it('projects public presentation only and rejects unsafe logo transport', async 
     name: 'Atlas',
     logo: { src: '/atlas.png', accessibleName: 'Atlas logo' },
     revision: 4,
+    favicon: null,
   });
   vi.mocked(window.fetch).mockResolvedValueOnce(
     response({
@@ -76,5 +78,78 @@ it('hydrates the shared shell and updates presentation after a current publicati
   } finally {
     app.unmount();
     root.remove();
+  }
+});
+
+it('hydrates application display defaults and favicon while retaining explicit user preferences', async () => {
+  const { useLocale } =
+    await import('../../../../src/runa/resources/js/composables/useLocale');
+  const { useTheme } =
+    await import('../../../../src/runa/resources/js/composables/useTheme');
+  const { savePreference } =
+    await import('../../../../src/runa/resources/js/lib/preferences');
+  const { guestPreferenceStore } =
+    await import('../../../../src/runa/modules/auth/frontend/preferences/session');
+  const { formatApplicationInstant } = await import('@/runa/ui');
+  const scope = {
+    applicationId: 'runa',
+    moduleKey: 'display',
+    viewKey: 'global',
+  };
+  guestPreferenceStore.reset(scope, 'runa.locale');
+  guestPreferenceStore.reset(scope, 'runa.theme');
+  localStorage.removeItem('runa.locale');
+  localStorage.removeItem('runa.theme');
+  const favicon =
+    '/api/presentation/assets/logo_icon/' + 'a'.repeat(64) + '.png';
+  let timezone = 'America/New_York';
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    String(input).endsWith('/presentation')
+      ? response({
+          name: 'Atlas',
+          logo: null,
+          revision: 2,
+          favicon,
+          defaults: { locale: 'en', theme: 'dark', timezone },
+        })
+      : response({}),
+  );
+  const root = document.createElement('div');
+  document.body.append(root);
+  const app = createApplication(
+    defineComponent({
+      setup() {
+        const { locale } = useLocale();
+        const { theme } = useTheme();
+        return () =>
+          h(
+            'p',
+            `${locale.value}/${theme.value}/${formatApplicationInstant('2026-01-01T12:00:00Z', 'en')}`,
+          );
+      },
+    }),
+  );
+  try {
+    app.mount(root);
+    await vi.waitFor(() => expect(root.textContent).toContain('en/dark/'));
+    expect(root.textContent).toContain('07:00:00');
+    expect(
+      document
+        .querySelector('link[rel="icon"][type="image/png"]')
+        ?.getAttribute('href'),
+    ).toBe(favicon);
+    savePreference('runa.locale', 'pl');
+    savePreference('runa.theme', 'light');
+    timezone = 'UTC';
+    await request('/admin/operations/application.update', { method: 'POST' });
+    await vi.waitFor(() => expect(root.textContent).toContain('pl/light/'));
+    await vi.waitFor(() => expect(root.textContent).toContain('12:00:00'));
+  } finally {
+    app.unmount();
+    root.remove();
+    guestPreferenceStore.reset(scope, 'runa.locale');
+    guestPreferenceStore.reset(scope, 'runa.theme');
+    localStorage.removeItem('runa.locale');
+    localStorage.removeItem('runa.theme');
   }
 });

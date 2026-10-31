@@ -2,6 +2,31 @@ import type { AdminMessages } from './contracts';
 
 /** Reviewed Polish presentation for source-owned Admin/Core labels; never business values. */
 export const adminMessages: AdminMessages = {
+  'Choose image': 'Wybierz obraz',
+  'No image selected': 'Nie wybrano obrazu',
+  'Remove image': 'Usuń obraz',
+  'Default language': 'Domyślny język',
+  'Default theme': 'Domyślny motyw',
+  'Default timezone': 'Domyślna strefa czasowa',
+  'Application favicon': 'Favicon aplikacji',
+  'Restore defaults': 'Przywróć domyślne',
+  'Deployed logo': 'Logo z aplikacji',
+  'A favicon is generated automatically from the logo.':
+    'Favicon jest automatycznie tworzona z logo.',
+  'Leave empty to use the favicon generated from the logo.':
+    'Pozostaw puste, aby używać favicony utworzonej z logo.',
+  'Choose a PNG, JPEG or WebP image up to 4 MiB.':
+    'Wybierz obraz PNG, JPEG lub WebP do 4 MiB.',
+  'The image could not be read.': 'Nie udało się odczytać obrazu.',
+  'Image dimensions must not exceed 4096 pixels.':
+    'Wymiary obrazu nie mogą przekraczać 4096 pikseli.',
+  'The prepared image is too large. Choose a simpler image.':
+    'Przygotowany obraz jest za duży. Wybierz prostszy obraz.',
+  Polish: 'Polski',
+  English: 'English',
+  System: 'Systemowy',
+  Light: 'Jasny',
+  Dark: 'Ciemny',
   'Diagnostic result': 'Wynik diagnostyki',
   'Module enabled': 'Włączenie modułu',
   'Module disabled': 'Wyłączenie modułu',
@@ -160,8 +185,8 @@ export const adminMessages: AdminMessages = {
   'Discard unsaved operational settings?':
     'Odrzucić niezapisane ustawienia operacyjne?',
   Enabled: 'Włączone',
-  'Enter a UTC timestamp, for example 2026-01-01T12:00:00Z.':
-    'Wpisz datę i czas UTC, np. 2026-01-01T12:00:00Z.',
+  'Enter a valid date and time.': 'Wpisz prawidłową datę i godzinę.',
+  'Time zone': 'Strefa czasowa',
   'Enter a text value.': 'Wpisz wartość tekstową.',
   'Enter a valid JSON array.': 'Wpisz prawidłową tablicę JSON.',
   'Enter a valid UUIDv7.': 'Wpisz prawidłowy UUIDv7.',
@@ -302,8 +327,6 @@ export const adminMessages: AdminMessages = {
   'This operation requires recovery.': 'Ta operacja wymaga odzyskania.',
   'This section is currently unavailable.':
     'Ta sekcja jest chwilowo niedostępna.',
-  'UTC timestamp, for example 2026-01-01T12:00:00Z.':
-    'Data i czas UTC, np. 2026-01-01T12:00:00Z.',
   Unavailable: 'Niedostępne',
   'Until (UTC ISO-8601)': 'Do (UTC ISO-8601)',
   'Use current value': 'Użyj bieżącej wartości',

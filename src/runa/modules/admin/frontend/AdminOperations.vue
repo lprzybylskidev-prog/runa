@@ -561,6 +561,9 @@ defineExpose({ controller });
 <template>
   <slot :controller="controller">
     <div class="space-y-6">
+      <h1 class="text-xl font-semibold">
+        {{ tr(applicationSettings ? 'Application settings' : 'Modules') }}
+      </h1>
       <Alert v-if="controller.error.value && !selected" tone="warning"
         >{{ tr(controller.error.value)
         }}<Button @click="refresh()">{{ tr('Retry') }}</Button></Alert
@@ -625,8 +628,7 @@ defineExpose({ controller });
           :aria-busy="diagnosticsLoading"
           data-module-diagnostics
         >
-          <div class="flex flex-wrap items-end justify-between gap-4">
-            <h2 class="py-3 text-base font-semibold">{{ tr('Modules') }}</h2>
+          <div class="flex flex-wrap items-end justify-end gap-4">
             <div class="flex flex-wrap items-center gap-4">
               <span
                 v-if="diagnosticsLoading && !filterLoading"

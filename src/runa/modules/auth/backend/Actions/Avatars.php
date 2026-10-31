@@ -15,9 +15,9 @@ use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Models\User;
-use Runa\Modules\Auth\Support\AvatarImageContent;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
+use Runa\Support\Images\RasterImageContent;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Storage\ModuleStorage;
 
@@ -57,7 +57,7 @@ final readonly class Avatars
         }
         $contents = $file->getContent();
         $type = $file->getMimeType();
-        if (! is_string($type) || ! AvatarImageContent::safe($contents, $type)) {
+        if (! is_string($type) || ! RasterImageContent::safe($contents, $type)) {
             $this->refuse('avatar_invalid', 422);
         }
         $extension = match ($type) {

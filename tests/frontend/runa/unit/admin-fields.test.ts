@@ -138,7 +138,7 @@ it('Admin fields keep secret set-state out of password inputs and erase presenta
   expect(wrapper.html()).not.toContain('[object Object]');
 });
 
-it('Admin fields render nullable booleans and UTC hints while preserving typed edits', async () => {
+it('Admin fields render nullable booleans and application timezone edits while preserving UTC values', async () => {
   const { value, wrapper } = controlled(
     field({ type: 'boolean', label: 'Enabled' }),
   );
@@ -148,12 +148,17 @@ it('Admin fields render nullable booleans and UTC hints while preserving typed e
   const datetime = controlled(field({ type: 'datetime', label: 'Deadline' }));
   await datetime.wrapper.get('input').setValue('2026-10-30T12:00:00+02:00');
   expect(datetime.wrapper.get('input').attributes('aria-invalid')).toBe('true');
-  await datetime.wrapper.get('input').setValue('2026-10-30T10:00:00Z');
-  expect(datetime.value.value).toBe('2026-10-30T10:00:00Z');
+  await datetime.wrapper.get('input').setValue('2026-10-30 11:00:00');
+  expect(datetime.value.value).toBe('2026-10-30T10:00:00.000Z');
   expect(
     datetime.wrapper.get('input').attributes('aria-invalid'),
   ).toBeUndefined();
-  await datetime.wrapper.get('input').setValue('2026-02-30T10:00:00Z');
+  await datetime.wrapper.get('input').setValue('2026-03-29 02:30:00');
+  expect(datetime.wrapper.get('input').attributes('aria-invalid')).toBe('true');
+  expect(
+    validateAdminField(field({ type: 'datetime' }), datetime.value.value),
+  ).not.toEqual([]);
+  await datetime.wrapper.get('input').setValue('2026-02-30 10:00:00');
   expect(datetime.wrapper.get('input').attributes('aria-invalid')).toBe('true');
 });
 

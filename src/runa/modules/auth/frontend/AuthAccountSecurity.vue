@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { formatApplicationInstant } from '@/runa/ui';
 import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
   Button,
@@ -237,7 +238,7 @@ function date(value?: string) {
     ? new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z')
     : null;
   return d && !Number.isNaN(d.getTime())
-    ? d.toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB')
+    ? formatApplicationInstant(d, locale.value)
     : '—';
 }
 function time(value?: string) {

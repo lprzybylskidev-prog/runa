@@ -469,3 +469,8 @@ platform icons use one source-owned map and unknown modules use layers-intersect
 with their ID as the name. Welcome filters this catalogue to platform modules;
 Admin applies it only to already authorized owners/diagnostic results. This source
 catalogue does not describe installation, health, enabled state or access.
+
+Application branding reuses FileInput, Select, fields and Button. Image draft/Canvas
+behavior belongs to the public [settings presentation](../../modules/admin/frontend.md#application-display-defaults-image-drafts-and-page-headings).
+Public useApplicationDisplayDefaults/formatApplicationInstant provides shared
+display defaults and instant formatting; explicit user preferences win.

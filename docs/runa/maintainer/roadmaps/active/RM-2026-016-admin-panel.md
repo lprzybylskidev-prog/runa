@@ -544,6 +544,21 @@ reassessment before resuming point 3; completed point history remains evidence.
     lifecycle/diagnosis/history and module deep links.
   - Prepare current assets/data, record focused uncertainty checks and instruction
     assessment, and commit before repeated owner acceptance.
+- [x] 11a23. Deliver application display defaults, uploaded branding and settings layout.
+  - Owner request, 2026-10-31: add default PL/EN language, system/light/dark theme
+    and IANA display timezone; preserve explicit account/browser preferences and UTC
+    storage. Source defaults are pl/system/Europe/Warsaw.
+  - Allow PNG/JPEG/WebP logo uploads, automatically fit a transparent square PNG
+    favicon and allow an independent custom favicon. Use browser Canvas rasterization,
+    bounded backend PNG validation and transactional binary columns on the existing
+    application-settings singleton, with its revision/grants/Audit. No new dependency,
+    external file lifecycle or generic upload system. Custom favicon wins; reset
+    restores automatic logo favicon and source assets when logo is reset.
+  - Application settings/Modules use their own main headings; remove the duplicate
+    small headings. Bound field widths and align localized Restore defaults buttons
+    beside fields, wrapping on narrow screens. Preserve shared controls/replacements.
+  - Synchronize public contracts, source consumers and tests, prepare assets/data,
+    record focused checks and commit before repeated owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3259,3 +3274,103 @@ and bounded retrieval was checked against original sources. No dependency,
 runtime configuration or Docker resource change was made. Development/test data,
 active services, model/Qdrant caches and all reports remain preserved. Owner manual
 acceptance 11b and final verification/release 12 remain open.
+
+### Point 11a23 — Application display defaults, uploaded branding and settings presentation
+
+The owner selects default language/theme/timezone and uploaded logo with automatic
+favicon plus an independent custom favicon. This explicitly extends point 10's
+former deployed-assets-only scope; a generic media library remains excluded.
+Source defaults are pl/system/Europe/Warsaw. ApplicationSetting adds validated IANA
+timezone, and the source catalogue reserves six presentation keys, leaving 58 App
+extensions. Public presentation projects only approved display defaults and selected
+asset URLs. Existing account/browser language/theme overrides win; hydration does
+not write preferences. UTC storage and calendar-only dates remain unchanged.
+
+The container has no GD/Imagick. Reuse the established browser rasterization pattern
+without a dependency/container change: bounded PNG/JPEG/WebP input becomes a
+metadata-stripped PNG logo and transparent, aspect-preserving 64px square favicon.
+Backend validates MIME/container metadata, dimensions and byte limits through the
+shared platform raster helper extracted from Auth, without claiming full pixel
+decoding. Public ApplicationImages and ApplicationSettings update signatures,
+source placement, consumers and runtime delivery are documented before exposure.
+Auth's private helper is removed; its unchanged parser now has a explicit public
+platform consumption facade and explicit source-boundary inventory.
+
+A forward migration adds three nullable bounded bytea columns to the existing
+protected shared.application_settings singleton. Tiny branding assets and settings
+publish under one existing aggregate revision, grants and explicit redacted Audit;
+rollback cannot leave orphan filesystem objects. The paired logo/icon is written in
+one SQL statement so its database invariant holds throughout. Custom favicon takes
+precedence; resetting it restores the generated icon, and resetting logo restores
+source branding. Current hash-addressed public PNG responses use fixed MIME,
+nosniff and immutable cache headers; arbitrary paths, raw originals, remote fetching
+and SVG upload are refused. Mail attaches selected PNG bytes through native CID;
+normal error output receives the favicon, while static/emergency/503 assets stay source
+without adding a maintenance HTTP exception.
+
+AdminOperations now owns the Modules/Application settings main heading; duplicate
+small headings are gone. Settings rows are bounded to 48rem; Restore defaults has
+short PL/EN copy, a field-specific accessible name and adjacent desktop alignment,
+with narrow-screen wrapping. Shared FileInput owns selection/drop/accessibility;
+image preparation, previews, pending drafts and explicit Save belong to the settings
+controller and remain available through its public replacement seam. Failed writes
+retain images, remote image replacement conflicts even when the scalar choice is
+still uploaded, and identity loss/disposal fences late conversions. Invalid files
+remain dirty until corrected/reset. Native Auth/Admin instant displays and Admin
+read-only/table/datetime editing use the public display timezone helper. Datetime
+editing preserves UTC writes and blocks invalid/DST-gap/ambiguous drafts rather
+than submitting the previous valid value; UTC exports remain raw owning data.
+
+Focused supported backend execution passed 5 cases / 127 assertions, parallel /
+processes=1, native exit/cleanup 0, in
+.runtime/frontend/RM-2026-016-application-branding-backend-ready.log. Coverage:
+strict IANA values, source catalogue/grants, fallback without storage creation,
+unchanged canonical identity, atomic images/settings/Audit, stale writes, custom
+favicon/reset precedence, fixed asset MIME/hash refusal, native CID and malformed
+PNG rejection. Initial execution exposed the immediate paired-image constraint;
+one-statement publication fixed it, then the same selection passed. The runner
+removed only runa_test_test_1, preserving base/development data and failed reports.
+A subsequent 1-case/49-assertion focused execution passed the explicit uploaded-brand
+503 source fallback without a maintenance exception; evidence:
+.runtime/frontend/RM-2026-016-application-branding-backend-maintenance.log.
+
+Focused frontend execution and current TypeScript/Vite/native-error build are
+recorded in .runtime/frontend/RM-2026-016-application-branding-frontend-accepted.log
+and .runtime/frontend/RM-2026-016-application-branding-build-accepted.log. The focused
+selection covers 10 cases: public presentation, preference precedence/timezone,
+actual Canvas icon generation, conflict/file retention and image-overlap resolution,
+late identity fencing, typed settings/default resets, page heading/adjacent controls
+and UTC/DST-aware form editing. Initial UI assertions used a readonly fixture state
+and the wrong shared Select selector; corrected to real identity loss and the public
+trigger contract. These focused checks do not claim broad gate PASS.
+
+A controlled inspection of the served build checked PL/dark/1440px and
+EN/light/390px: one correct main heading, no duplicate heading, bounded input widths
+(603px/300px), localized uploads/default controls, real image preparation/previews,
+module navigation and no page errors/document overflow. Source/assets and isolated
+synthetic account/operation responses were used, with no application business writes.
+Evidence: .runtime/artifacts/playwright/runa/RM-2026-016-application-branding/ and
+.runtime/frontend/RM-2026-016-application-branding-browser-final.log. Focused direct
+browser orchestration was used to inspect current served assets rather than running
+broad E2E acceptance before final verification. Existing E2E heading/reset assertions
+were synchronized without running the broad suite.
+
+Local read-only preflight identified environment local/database runa, no pending
+transitions and absent image columns. The additive owner forward migration passed
+in .runtime/frontend/RM-2026-016-application-branding-forward.log; no existing values,
+images, Audit history or module state were reset. Nginx /admin, /api/ready and all
+16 entry-linked assets return 200; unauthenticated Admin entry remains 401 and public
+defaults are pl/system/Europe/Warsaw. Evidence:
+.runtime/frontend/RM-2026-016-application-branding-http.json. Current assets/data are
+ready for owner review at http://localhost:8080/admin?section=application.
+
+Synchronized owning Admin/frontend/settings contracts, public API/database/image
+and Auth preference/profile guidance, component references and candidate changelogs.
+Owner/customer AGENTS and skills already defer these specific contracts to canonical
+handbook guidance; neither contains an obsolete upload procedure or needs duplicate
+rules. Admin 0.1.0/Auth 2.0.0 remain unreleased candidates in the same 0.7.0 creation/
+transaction roadmap; no independent version-only upgrade edge is added for this
+point. Release metadata is unchanged. No new Composer/pnpm dependency, runtime
+configuration or Docker resource was introduced. Active services, development/base
+test data, model/Qdrant caches and all evidence are preserved. Manual acceptance
+11b and final affected-area verification/release 12 remain open.

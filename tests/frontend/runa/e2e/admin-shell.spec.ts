@@ -98,7 +98,7 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
     const password = page.getByLabel('Current password', { exact: true });
     await expect(
       password.or(
-        page.getByRole('heading', { name: 'Administrator panel', exact: true }),
+        page.getByRole('heading', { name: /^(Modules|Moduły)$/, exact: true }),
       ),
     ).toBeVisible();
     if (await password.count()) {
@@ -108,7 +108,7 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
         .click();
     }
     await expect(
-      page.getByRole('heading', { name: 'Administrator panel', exact: true }),
+      page.getByRole('heading', { name: /^(Modules|Moduły)$/, exact: true }),
     ).toBeVisible();
     await expect(
       page.getByText('No dashboard widgets are available.'),
@@ -736,7 +736,7 @@ test('Admin operations: persisted health, explicit cooperative cancellation and 
     const password = page.getByLabel('Current password', { exact: true });
     await expect(
       password.or(
-        page.getByRole('heading', { name: 'Administrator panel', exact: true }),
+        page.getByRole('heading', { name: /^(Modules|Moduły)$/, exact: true }),
       ),
     ).toBeVisible();
     if (await password.count()) {
@@ -844,7 +844,7 @@ test('application global settings compose responsive light and dark defaults wit
     const password = page.getByLabel('Current password', { exact: true });
     await expect(
       password.or(
-        page.getByRole('heading', { name: 'Administrator panel', exact: true }),
+        page.getByRole('heading', { name: /^(Modules|Moduły)$/, exact: true }),
       ),
     ).toBeVisible();
     if (await password.count()) {
@@ -879,7 +879,7 @@ test('application global settings compose responsive light and dark defaults wit
     });
     await page
       .getByRole('button', {
-        name: 'Reset Displayed application name',
+        name: 'Restore defaults: Displayed application name',
         exact: true,
       })
       .click();

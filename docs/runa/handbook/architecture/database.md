@@ -312,3 +312,10 @@ App owns source declarations, selected business/presentation values and assets.
 Public adapters enforce native grants, optimistic revision and explicit redacted
 Audit in the same default PostgreSQL transaction; see
 [global settings contracts](../modules/admin/operations.md#application-settings-contracts-and-storage).
+
+Application branding keeps three bounded binary PNG values on the existing
+shared.application_settings singleton: branding_logo (512 KiB), paired
+branding_logo_icon and independent branding_favicon (32 KiB each). Their forward
+migration is platform-owned. Values, images, revision and explicit Audit publish
+atomically; no filesystem cleanup ledger or business entity is introduced. Existing
+database backup/recovery covers these public assets.
