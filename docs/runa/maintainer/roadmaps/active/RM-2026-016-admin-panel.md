@@ -499,7 +499,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     ordinary background refresh retains confirmed cards.
   - Prepare current assets/data, record focused checks and instruction assessment,
     and commit before repeating owner acceptance.
-- [ ] 11a18. Put module controls first and review lifecycle actions in a dialog.
+- [x] 11a18. Put module controls first and review lifecycle actions in a dialog.
   - Owner decision, 2026-10-31: retain enable/disable/unregister semantics;
     installation stays outside Admin. Registration and installed data remain
     distinct; do not relabel unregister as uninstall.
@@ -3003,5 +3003,12 @@ operation responses made no application business writes. Browser contexts closed
 temporary diagnostic helper removed. No Docker resources were created/removed;
 active services/data, knowledge/model caches and all reports remain preserved.
 
-Implementation commit and post-hook asset/HTTP readiness remain to finish this
-point. Owner acceptance 11b and final verification/release 12 remain open.
+Implementation is committed at f26229e3 with mandatory hooks passing; hooks left
+the tested/built frontend source unchanged. Current Nginx /admin and /api/ready
+return HTTP 200; unauthenticated /api/admin/entry remains 401, and all 16
+entry-linked assets return 200. Evidence:
+.runtime/frontend/RM-2026-016-lifecycle-controls-http.json. No additional build or
+suite was necessary after the unchanged-source hook checks. The working application
+at http://localhost:8080/admin is ready for repeated owner acceptance. Point 11a18
+is complete; owner acceptance 11b and final verification/release 12 remain open.
+No broad gates, database operations or infrastructure cleanup were performed.
