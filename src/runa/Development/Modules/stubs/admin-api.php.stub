@@ -1,0 +1,17 @@
+<?php
+
+namespace {{namespace}}\Definitions;
+
+use {{namespace}}\Contracts\{{name}}Tools;
+use {{namespace}}\Handlers\{{name}}ToolsHandler;
+use {{namespace}}\Proxies\{{name}}ToolsProxy;
+use Runa\Contracts\Modules\{ApiDefinition, ApiOperation, ApiProvider};
+
+final class {{name}}ToolsApi implements ApiProvider
+{
+    public function definition(): ApiDefinition
+    {
+        return new ApiDefinition({{name}}Tools::class, {{name}}ToolsProxy::class, {{name}}ToolsHandler::class,
+            '1.0.0', ['normalize' => new ApiOperation('{{key}}.normalize', '{{key}}.use')]);
+    }
+}

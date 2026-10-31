@@ -20,6 +20,7 @@ Run in local/testing development, from the repository root:
 ./bin/artisan runa:make:module app.documents api DocumentLookup
 ./bin/artisan runa:make:module app.documents component DocumentSummary
 ./bin/artisan runa:make:module app.documents test DocumentContractTest
+./bin/artisan runa:make:module app.documents admin Document
 ```
 
 The default previews complete candidate contents, repository-relative paths and current/candidate SHA-256 hashes as JSON Lines. Add `--write` to apply. Names are simple PascalCase identifiers; the module ID is explicit and owner-qualified. New skeletons are Optional, version `0.1.0`, initially unregistered. Their minimal lifecycle policy is stateless and accepts null/current installed versions. Replace that policy before introducing persistent data, asynchronous work or external effects. No business feature or Core/Auth/Permissions mock is generated.
@@ -29,6 +30,15 @@ A skeleton writes `module.json`, an owned lifecycle policy in `src/<owner>/modul
 Controllers are invokable 501 stubs under `backend/Http/Controllers` with a manifest-registered `HttpProvider`; the framework derives named `<owner>.<code>.<operation>` routes under `/api/<owner>/<code>/...` and centrally guards ingress. API generation supplies a typed public interface, guarded proxy, refusing implementation in `backend/Handlers`, proxy in `backend/Proxies` and registered `ApiProvider`. Implement business behavior and server authorization before use. Substantial writes need Form Requests/Actions/JsonResources. Models extend ModuleModel with an explicit owned schema/table. Migration stubs use ModuleSchema identity/UUIDv7 primitives, UTC timestamps/soft deletion and refuse destructive rollback without a module recovery plan. Generation never runs migrations, synchronization, activation or installed-version publication.
 
 Existing files require an explicit repeated `--overwrite=repository/path=SHA256`, using the current hash from the reviewed preview. This includes `module.json` when a controller/API adds a declaration. Every existing target needs its own authorization; unknown paths and stale hashes fail before writes. There is no blanket force option. Skeleton roots can never be overwritten. The generator serializes its own writers, rejects collisions/symlinks and restores its generated files if complete-layout validation fails. As with all trusted source tooling, do not concurrently replace source directories using other processes.
+
+The opt-in `admin` element emits a working stateless text-tool API, management
+pages/navigation/entities/forms/table/action/widget/contribution, an owned section
+component, immediate settings provider and central test/guide. It does not depend
+on Admin for business execution or grant access. A competing settings provider is
+refused; merge with the owning provider deliberately. See the complete
+[Admin generator and consumer examples](../modules/admin/examples.md) for output,
+public signatures, extension/replacement patterns and persistence limitations.
+Manifest declaration/docs edits require their exact current overwrite hash.
 
 Runa-owned generation additionally requires a receipt-free owner checkout with its real `.git` directory, maintainer tooling and owner contract. Copied owner files in a customer acquisition do not grant permission. Production refuses generation; source/runtime operator diagnostics remain available; no module-management HTTP write endpoint exists.
 

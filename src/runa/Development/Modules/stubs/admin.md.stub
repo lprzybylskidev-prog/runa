@@ -1,0 +1,42 @@
+# {{name}} Admin example
+
+Generated opt-in source for `{{id}}`. Review and format before explicit source
+synchronization/install/enable. Generation does not change registry or grants.
+The module keeps its existing independent version; assess its release and install
+history before delivering these source/settings changes to existing installations.
+
+The working example normalizes text without storing user submissions. Its owning
+`{{namespace}}\Contracts\{{name}}Tools::normalize(string $text): string` is API
+1.0.0; resolve it through ModuleApis for `{{id}}`, requiring native permission
+`{{id}}.{{key}}.use`. It works without Admin. The generated handler validates
+160-character text and refuses controls. No domain record, UUID or Audit success
+is invented for a calculation. Do not turn this adapter into a persisted Save
+without owning validation, record Policies, revisions, transaction and Audit.
+
+Admin discovers the declared `{{key}}` page in Tools, generated form/action,
+read-only single-row table, widget and owned summary contribution. The default
+section component is `{{id}}.{{key}}_section`, discovered by the existing build
+registry; no dynamic import path is accepted from HTTP. The widget has unknown
+observation freshness: reading a setting is not a health observation. The stateless
+table row has no public ID and cannot be selected as a durable entity.
+
+Module settings expose `{{key}}_text` as an immediate default, separately from
+calculation results. Use the existing guarded Admin module-settings workflow and
+its operation grants/revisions/Audit; settings do not join aggregate Save.
+The source-owned settings provider is singular. Existing provider owners must
+merge definitions deliberately instead of generating a second provider.
+
+To contribute to a foreign host, change the explicit contribution host in
+`{{name}}Management`, retain owned section/binding/component/permissions and add
+the owning module as an optional manifest dependency. Host absence/denial must
+not prevent the business API from working. Never add a required Admin dependency.
+
+Application-owned partial/full replacements compose `@/runa/admin` public props,
+controllers and AdminPresentationProvider. Keep one shared Auth session shell;
+do not copy security or import private adapters. See
+`docs/runa/handbook/modules/admin/examples.md` for working consumer patterns,
+registration, atomic participation, testing and limitations.
+
+Run the generated owning test using `{{test_command}}`. Add application-specific
+record-policy, denial, dirty-draft, rollback and rendered replacement scenarios
+when extending the example. Delivery/update must preserve these application files.

@@ -1,4 +1,4 @@
-/** Public Admin session/read controllers and presentation. Business forms arrive separately. */
+/** Public Admin controllers and replaceable presentation; owning APIs retain business authority. */
 export { default as AdminApplication } from '../../../../modules/admin/frontend/AdminApplication.vue';
 export { default as AdminLayout } from '../../../../modules/admin/frontend/AdminLayout.vue';
 export { default as AdminLoading } from '../../../../modules/admin/frontend/AdminLoading.vue';

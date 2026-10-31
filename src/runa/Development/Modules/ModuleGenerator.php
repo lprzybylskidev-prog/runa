@@ -55,7 +55,7 @@ final readonly class ModuleGenerator
             $files[$docs.'/README.md'] = $this->stub('README.md', $tokens);
             $files[$docs.'/CHANGELOG.md'] = $this->stub('CHANGELOG.md', $tokens);
         } else {
-            if (! in_array($type, ['controller', 'model', 'migration', 'service', 'action', 'api', 'component', 'test'], true)
+            if (! in_array($type, ['controller', 'model', 'migration', 'service', 'action', 'api', 'component', 'test', 'admin'], true)
                 || $name === null || preg_match('/\A[A-Z][A-Za-z0-9]{0,79}\z/D', $name) !== 1) {
                 throw new InvalidArgumentException('Select a supported element and a simple PascalCase name.');
             }
@@ -77,7 +77,11 @@ final readonly class ModuleGenerator
             if ($source === null) {
                 throw new InvalidArgumentException('Generate elements only inside a valid existing module.');
             }
-            $tokens += ['name' => $name, 'table' => Str::snake(Str::pluralStudly($name)), 'slug' => Str::kebab($name), 'operation' => Str::snake($name).'.read'];
+            $tokens += ['name' => $name, 'key' => Str::snake($name), 'table' => Str::snake(Str::pluralStudly($name)), 'slug' => Str::kebab($name), 'operation' => Str::snake($name).'.read'];
+            if ($type === 'admin' && (strlen($tokens['key']) > 48
+                || array_diff($source->manifest->definition['declarations']->settings, [$namespace.'\\Definitions\\'.$name.'Settings']) !== [])) {
+                throw new InvalidArgumentException('Admin examples need a name of at most 48 snake_case bytes and no other settings provider. Extend existing settings deliberately.');
+            }
             $module->table($tokens['table']);
             $templates = match ($type) {
                 'controller' => ['backend/Http/Controllers/'.$name.'.php' => 'controller.php', 'backend/Definitions/'.$name.'Http.php' => 'http.php'],
@@ -86,23 +90,46 @@ final readonly class ModuleGenerator
                 'api' => ['backend/Contracts/'.$name.'.php' => 'contract.php', 'backend/Handlers/'.$name.'Handler.php' => 'handler.php', 'backend/Proxies/'.$name.'Proxy.php' => 'proxy.php', 'backend/Definitions/'.$name.'Api.php' => 'api.php'],
                 'component' => ['frontend/components/'.Str::snake($name).'.vue' => 'component.vue'],
                 'test' => [$name.'.php' => 'test.php'],
+                'admin' => [
+                    'backend/Contracts/'.$name.'Tools.php' => 'admin-contract.php',
+                    'backend/Handlers/'.$name.'ToolsHandler.php' => 'admin-handler.php',
+                    'backend/Proxies/'.$name.'ToolsProxy.php' => 'admin-proxy.php',
+                    'backend/Definitions/'.$name.'ToolsApi.php' => 'admin-api.php',
+                    'backend/Definitions/'.$name.'Management.php' => 'admin-management.php',
+                    'backend/Definitions/'.$name.'Settings.php' => 'admin-settings.php',
+                    'backend/Management/'.$name.'Adapter.php' => 'admin-adapter.php',
+                    'frontend/components/'.$tokens['key'].'_section.vue' => 'admin-section.vue',
+                ],
                 default => ['backend/'.($type === 'action' ? 'Actions' : 'Services').'/'.$name.'.php' => $type.'.php'],
             };
             foreach ($templates as $path => $stub) {
                 $files[($type === 'test' ? $tests : $directory).'/'.$path] = $this->stub($stub, $tokens);
             }
-            if (in_array($type, ['controller', 'api'], true)) {
+            if ($type === 'admin') {
+                $files[$docs.'/'.$name.'Admin.md'] = $this->stub('admin.md', $tokens);
+                $files[$tests.'/'.$name.'AdminTest.php'] = $this->stub('admin-test.php', $tokens);
+            }
+            if (in_array($type, ['controller', 'api', 'admin'], true)) {
                 $manifest = json_decode((string) file_get_contents($this->root.'/'.$directory.'/module.json'), true, flags: JSON_THROW_ON_ERROR);
                 if (! is_array($manifest) || ! is_array($manifest['declarations'] ?? null)) {
                     throw new RuntimeException('Invalid module manifest.');
                 }
-                $category = $type === 'api' ? 'apis' : 'http';
-                $class = $namespace.'\\Definitions\\'.$name.($type === 'api' ? 'Api' : 'Http');
-                $entries = $manifest['declarations'][$category];
-                if (! is_array($entries)) {
-                    throw new RuntimeException('Invalid module declarations.');
+                if ($type === 'admin' && ! in_array($docs.'/'.$name.'Admin.md', $manifest['docs'], true)) {
+                    $manifest['docs'][] = $docs.'/'.$name.'Admin.md';
+                    $files[$directory.'/module.json'] = $this->json($manifest);
                 }
-                if (! in_array($class, $entries, true)) {
+                $registrations = $type === 'admin'
+                    ? ['apis' => $name.'ToolsApi', 'management' => $name.'Management', 'settings' => $name.'Settings']
+                    : [($type === 'api' ? 'apis' : 'http') => $name.($type === 'api' ? 'Api' : 'Http')];
+                foreach ($registrations as $category => $declaration) {
+                    $class = $namespace.'\\Definitions\\'.$declaration;
+                    $entries = $manifest['declarations'][$category];
+                    if (! is_array($entries)) {
+                        throw new RuntimeException('Invalid module declarations.');
+                    }
+                    if (in_array($class, $entries, true)) {
+                        continue;
+                    }
                     $entries[] = $class;
                     $manifest['declarations'][$category] = $entries;
                     // Preserve empty JSON objects in dependency maps.

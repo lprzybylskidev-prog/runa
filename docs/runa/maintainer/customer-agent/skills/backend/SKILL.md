@@ -5,6 +5,11 @@ description: Runa customer guidance for application use cases, transactions, pub
 
 # Runa application backend
 
+For opt-in Admin generation and independent application pages, follow
+`docs/runa/handbook/modules/admin/examples.md`. Generated source stays App-owned;
+review exact file overwrite hashes and preserve the owning settings provider.
+Generation does not install modules, assign grants or authorize protected edits.
+
 Load for application use cases, transactions, public integrations and failure handling. Read the active application roadmap, query available local knowledge and inspect analogous App code. Project rules override generic advice. Load references/application.md only when needed. Preserve protected platform source.
 
 Use `docs/runa/handbook/architecture/public-api.md` to distinguish supported

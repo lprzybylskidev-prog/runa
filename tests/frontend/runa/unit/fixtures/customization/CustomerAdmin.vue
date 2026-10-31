@@ -4,6 +4,7 @@ import type {
   AdminApplicationProps,
   AdminApplicationSlots,
 } from '@/runa/admin';
+import CustomerAdminPage from './CustomerAdminPage.vue';
 const props = defineProps<AdminApplicationProps>();
 defineSlots<AdminApplicationSlots>();
 </script>
@@ -22,6 +23,12 @@ defineSlots<AdminApplicationSlots>();
           >
         </li>
       </ul>
+      <CustomerAdminPage
+        v-if="controller.location.value"
+        :admin="controller"
+        :location="controller.location.value"
+        :components="props.components"
+      />
     </main>
   </AdminApplication>
 </template>

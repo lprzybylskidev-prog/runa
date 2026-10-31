@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Complete opt-in module generator integration and working independent App/public presentation examples; document all authoring topics, exact overwrite consent, settings-provider ownership and customer update preservation. Remain at development 0.1.0 until verified creation closure.
+
 - Deliver platform-owned application global settings with App-declared safe values/assets, positive revisions, exact grants and atomic redacted Audit; add no-restart public browser/mail/native-error presentation with source-only emergency fallback and replaceable shared-controller editor.
 
 - Deliver guarded operational dashboard, Optional lifecycle review/status/recovery, module settings/integrations/health/work controls and public replacement/controller seams; preserve CLI-only maintenance and native independent runners.
@@ -26,7 +28,7 @@
 - Establish the Core module with explicit initialization history and required Audit/Auth/Permissions prerequisites; no Admin storage or automatic request-time installation.
 - Supply guarded AdminAccess 1.0.0 bootstrap and named `/api/admin` transport, current native grants, operational session and reusable 300-second password proof.
 - Add fixed private entry/diagnostics framework adapters with bounded safe projections; no management mutation or generic engine dispatch.
-- Declare later API methods fail closed until their owning implementation points. Atomic Save is delivered; final rendered acceptance and settings remain planned; release acceptance is pending.
+- Deliver aggregate preview/Save, independent commands and application/module settings through their owning protocols; final rendered/release acceptance remains pending.
 
 - Require native Auth/Permissions ^2.0.0 under the approved transaction redesign; Audit remains ^1.0.0.
 

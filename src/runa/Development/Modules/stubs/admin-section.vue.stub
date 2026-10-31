@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { AdminSection } from '@/runa/admin';
+import type { AdminSectionPresentationProps } from '@/runa/admin';
+defineProps<AdminSectionPresentationProps>();
+</script>
+<template>
+  <div class="space-y-3">
+    <p class="text-sm text-muted">Calculations are temporary. Configure defaults in module settings.</p>
+    <AdminSection :section="section" :controller="controller" />
+  </div>
+</template>

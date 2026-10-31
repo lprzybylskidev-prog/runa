@@ -137,7 +137,7 @@ export interface AdminPageController {
   error: Ref<AdminError | undefined>;
   refresh(): Promise<void>;
 }
-/** Live section replacement props; editable form orchestration follows separately. */
+/** Live section replacement props sharing the owning page form controller. */
 export interface AdminSectionPresentationProps {
   section: AdminSectionData;
   page: AdminPageController;
@@ -184,7 +184,7 @@ export interface AdminEntryProofProps {
   controller: AdminController;
 }
 
-/** Resource reads are delivered; form and write coordination follow separately. */
+/** Bounded authorized resource query shared by default and custom presentations. */
 export interface AdminRecordQuery {
   kind: 'record' | 'page';
   public_id?: string;

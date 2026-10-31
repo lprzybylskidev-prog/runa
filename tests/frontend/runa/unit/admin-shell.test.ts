@@ -38,6 +38,7 @@ import { accountPreferences } from '../../../../src/runa/modules/auth/frontend/p
 
 import CustomerAdmin from './fixtures/customization/CustomerAdmin.vue';
 import CustomerAdminTable from './fixtures/customization/CustomerAdminTable.vue';
+import CustomerAdminSection from './fixtures/customization/CustomerAdminSection.vue';
 import { builds } from 'virtual:runa-module-components';
 enableAutoUnmount(afterEach);
 const identity = '01900000-0000-7000-8000-000000000001';
@@ -374,6 +375,59 @@ it('keeps full customer Admin content behind the public session and entry contro
   expect(wrapper.find('[data-customer-admin]').exists()).toBe(false);
   expect(session.logout).not.toHaveBeenCalled();
 });
+
+it.each([false, true])(
+  'composes a customer section with the public form owner inside a full replacement: %s',
+  async (full) => {
+    window.history.replaceState({}, '', '/admin/app/settings');
+    vi.mocked(window.fetch).mockImplementation(async (input) => {
+      const url = new URL(String(input), window.location.origin);
+      if (url.pathname === '/api/admin/entry')
+        return respond({ data: { available: true } });
+      if (url.pathname === '/api/admin') return respond({ data: bootstrap() });
+      if (url.pathname === '/api/admin/app/settings') {
+        const data = resourcePage();
+        data.sections[0]!.fields = data.sections[0]!.fields.slice(0, 1);
+        return respond({ data });
+      }
+      return respond({
+        data: {
+          public_id: null,
+          revision: 'r1',
+          values: { name: 'Customer-visible record' },
+        },
+      });
+    });
+    const session = sessionFixture();
+    const wrapper = mount(
+      defineComponent({
+        setup: () => () =>
+          h(
+            AdminPresentationProvider,
+            { components: { section: CustomerAdminSection } },
+            {
+              default: () =>
+                h(full ? CustomerAdmin : AdminApplication, { session }),
+            },
+          ),
+      }),
+    );
+    await vi.waitFor(() =>
+      expect(wrapper.find('[data-customer-section]').exists()).toBe(true),
+    );
+    await vi.waitFor(() =>
+      expect(wrapper.text()).toContain('Customer-visible record'),
+    );
+    expect(wrapper.find('input').exists()).toBe(false);
+    const section = wrapper.getComponent(CustomerAdminSection);
+    expect(section.props('controller').sections.value[0]?.key).toBe('profile');
+    expect(wrapper.find('[data-customer-page]').exists()).toBe(full);
+    session.paused.value = true;
+    await flushPromises();
+    expect(wrapper.find('[data-customer-section]').exists()).toBe(false);
+    expect(session.logout).not.toHaveBeenCalled();
+  },
+);
 
 function resourcePage(): AdminPageData {
   return {

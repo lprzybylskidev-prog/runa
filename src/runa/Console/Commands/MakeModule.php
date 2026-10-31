@@ -8,7 +8,7 @@ use Throwable;
 
 final class MakeModule extends Command
 {
-    protected $signature = 'runa:make:module {module : Full app.code or runa.code identity} {type=module : module/controller/model/migration/service/action/api/component/test} {name? : Simple PascalCase element name} {--write : Apply the displayed plan} {--overwrite=* : Exact repository-relative path=SHA256 authorization}';
+    protected $signature = 'runa:make:module {module : Full app.code or runa.code identity} {type=module : module/controller/model/migration/service/action/api/component/test/admin} {name? : Simple PascalCase element name} {--write : Apply the displayed plan} {--overwrite=* : Exact repository-relative path=SHA256 authorization}';
 
     protected $description = 'Preview or generate owned module source and central documentation in development';
 

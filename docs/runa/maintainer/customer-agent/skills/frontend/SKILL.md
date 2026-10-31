@@ -5,6 +5,10 @@ description: Runa customer guidance for accessible responsive UI, public compone
 
 # Runa application frontend
 
+Working Admin partial/full consumers and the authoring map live in
+`docs/runa/handbook/modules/admin/examples.md`. Application replacements compose
+public controllers and retain platform session/proof handling without protected edits.
+
 Load for accessible responsive UI, public components, forms, tables and page patterns. Read the active application roadmap, query available local knowledge and inspect analogous App code. Project rules override generic advice. Load references/application.md only when needed. Preserve protected platform source.
 
 Use `docs/runa/handbook/architecture/public-api.md` to distinguish supported

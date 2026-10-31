@@ -13,6 +13,8 @@ independent commands/previews, reconciliation, dirty navigation and owning
 collection adapter composition. Point 6 supplies native atomic preview/Save,
 source-owned participants and initial Auth profile/Permissions assignment composition.
 Point 7 delivers complete [Auth administration](../auth/administration.md). Point 8 supplies [Permissions administration](../permissions/administration.md) and the [Audit viewer](../audit/administration.md); point 9 supplies guarded framework operations and module settings. Point 10 delivers guarded application global settings and no-restart presentation.
+Point 11 supplies opt-in generator bundles and [working consumer examples](examples.md),
+including independent App pages and partial/full presentation composition.
 Existing Auth, Permissions, Audit and framework APIs retain their current contracts.
 Source implementation and focused checks do not establish rendered or release acceptance.
 
@@ -28,6 +30,7 @@ Read the contracts in dependency order:
 2. [Atomic participation and compatibility](composition.md).
 3. [Frontend controllers and replacement](frontend.md).
 4. [Core coverage, framework operations and settings](operations.md).
+5. [Generator, consumer examples and authoring map](examples.md).
 
 ## Ownership and supported entrypoints
 
@@ -76,7 +79,7 @@ source versions below are not a claim of completed release acceptance.
 | Permissions   | 2.0.0                                     | PermissionsAccess API 2.0.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions.                           |
 | Audit         | Current 1.1.0 candidate                   | Owning read/record contracts stay at 1.0.0; point 8 supplies the guarded read-only viewer.                                                                        |
 | Framework API | 1.0.0                                     | New trusted transaction extension; constructor changes remain internal.                                                                                           |
-| App scaffold  | Keep 0.0.0                                | Widen its Runa range to >=0.2.1 <0.8.0 in the owning integration point.                                                                                           |
+| App scaffold  | 0.0.0                                     | Its supplied Runa range is >=0.2.1 <0.8.0; customer ranges remain application-owned.                                                                              |
 
 Auth/Permissions and Admin require platform `>=0.7.0 <0.8.0`. Audit now requires the same target platform range for its supplied Admin defaults. Do not rewrite customer manifests automatically. Retain
 actually published migration/upgrade identities and append required forward

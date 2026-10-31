@@ -1,5 +1,9 @@
 # Page Layouts reference
 
+Working Admin partial/full consumers and the authoring map live in
+`docs/runa/handbook/modules/admin/examples.md`. Keep examples out of the minimal
+application scaffold and compose public controllers rather than copying internals.
+
 Use for shell/page composition, welcome, account and native-error defaults.
 
 The authoritative delivered contract is [the public page-layouts guide](../../../../docs/runa/handbook/development/frontend/page-layouts.md).

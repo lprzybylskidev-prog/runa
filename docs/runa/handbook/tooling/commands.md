@@ -305,7 +305,7 @@ Trusted versioned combined management metadata: localized identity, status/root 
 
 ### `php artisan runa:make:module <owner.code> [type] [name]`
 
-Development-only owned source generator. Defaults to a complete nonmutating JSON Lines preview. `--write` applies; repeated `--overwrite=repository/path=SHA256` explicitly authorizes each existing target, including changed manifest declarations. Types: module, controller, model, migration, service, action, api, component and test. Central owner docs/test scaffold and safe refusing stubs follow the [module development guide](../development/modules.md). No registry/migration/activation side effect; Runa generation additionally requires a receipt-free owner checkout.
+Development-only owned source generator. Defaults to a complete nonmutating JSON Lines preview. `--write` applies; repeated `--overwrite=repository/path=SHA256` explicitly authorizes each existing target, including changed manifest declarations. Types: module, controller, model, migration, service, action, api, component, test and opt-in admin. The admin element supplies a working stateless owning API and public management/presentation consumers; see [Admin examples](../modules/admin/examples.md). Central owner docs/test scaffold and safe refusing stubs follow the [module development guide](../development/modules.md). No registry/migration/activation side effect; Runa generation additionally requires a receipt-free owner checkout.
 
 ### `php artisan runa:modules:check <runa|app>`
 

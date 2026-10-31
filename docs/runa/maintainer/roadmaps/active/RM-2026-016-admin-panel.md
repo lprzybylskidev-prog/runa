@@ -309,7 +309,7 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Keep technical/.env/source compatibility fields read-only; no infrastructure
     controls or generic asset/upload subsystem. Author no-restart persistence,
     ownership/rollback/CSP/fallback and customer extension cases; document classification.
-- [ ] 11. Complete generator, consumer examples and documentation integration.
+- [x] 11. Complete generator, consumer examples and documentation integration.
   - Prerequisites: 1–10.
   - Extend runa:make:module opt-in scaffolding for pages/navigation/entities/forms/
     tables/settings/actions/widgets/contributions/custom components/permissions.
@@ -1716,3 +1716,78 @@ clearing: 1 scenario PASS, 4.19 seconds, native exit 0 / cleanup 0. The canonica
 frontend contract is synchronized. This is the same point's failure behavior;
 no gate, authority or architecture policy changes. Completion commits use mandatory
 formatting/lint/secret/freshness hooks; the first implementation commit is 860c9758.
+
+## Point 11 completion — Generator and consumer integration — 2026-10-31
+
+Delivered the development-only opt-in `runa:make:module <module> admin <Name>`
+bundle: owning public typed calculation API/guarded proxy/handler, management
+page/navigation/entity/record form/independent action/table/widget/owned contribution,
+custom section component and immediate module settings. Central module guide/test
+and API/management/settings/docs manifest registration join the same reviewed plan.
+The runnable example normalizes text without persisting submissions; owning
+business execution has no Admin dependency. Configuration uses the existing
+independent module-settings runner and its grants/revisions/Audit. This example
+does not invent a durable entity, a Save mutation or a health observation.
+
+Preserved nonmutating preview, exact per-file SHA-256 consent, source ownership,
+customer-to-Runa and production refusal, symlink/path checks and preflight before
+writes. Refuse competing settings providers rather than append a second owner or
+overwrite validation/recovery; generated key spelling is bounded. Calculations
+check the native settings generation/revision, avoiding a value-hash ABA token.
+Foreign contributions require an explicit optional host dependency and owning
+subject policy; the generated singleton does not pretend to support UUID subjects.
+
+The public [authoring/examples guide](../../../handbook/modules/admin/examples.md)
+maps all 18 developer topics to their canonical procedures and supplies executable
+independent App page/reader, lazy registration, partial section and full content/
+page consumer examples. Private consumer fixtures compose only public Admin/UI
+facades and one owning session/page/form controller; paused sessions hide custom
+content. Update-review fixtures now explicitly preserve App Admin components,
+providers, generated adapters, central module docs/tests and application customizations.
+The minimal App stays unchanged except its agreed compatibility range widening
+to >=0.2.1 <0.8.0; version remains 0.0.0. Existing customer ranges are not rewritten.
+Admin remains development 0.1.0 until verified creation closure; no module API,
+install/upgrade edge, storage migration, dependency or welcome icon change is needed
+for this authoring integration. Its current catalogue/defaults remain in place.
+
+### Grounding and focused checks
+
+Knowledge status was current (204 documents / 10,023 chunks, no missing/orphan
+chunks). Bounded current-intent retrieval located Admin frontend/native ownership;
+original public/declaration/composition/source-placement/module/security guides,
+generator/stubs/command, source/runtime fixture and customer update-review sources
+were opened. Relevant backend/Laravel/security/frontend/Vue/Tailwind skills and
+component/form/page references were loaded. Boost supplied Laravel 13.37.0 and
+version-aware Artisan/validation documentation. No broad implementation-stage
+suite, static analysis, build, native installation/update or scanner was run.
+
+Small supported checks resolved actual generated class/metadata/import/consent
+compatibility, executable public PHP examples, controller composition and whether
+the updater classifies the added nested customer paths as preserved:
+
+- `python3 tools/maintainer/test-backend ../tests/backend/runa/Feature/ModuleDevelopmentTest.php --filter='opt-in Admin|oversized Admin'`: **2 passed**, 46 assertions, exit/cleanup 0.
+- `python3 tools/maintainer/test-backend ../tests/backend/runa/Feature/ModuleDevelopmentTest.php --filter='documented independent'`: **1 passed**, 8 assertions, exit/cleanup 0.
+- `python3 tools/maintainer/test-frontend --filter='customer section with the public form owner'`: **2 passed**, exit/cleanup 0. These mounted consumers do not replace final responsive/theme/Core/browser acceptance.
+- `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_update.py --filter=frontend_and_error_customizations_remain_application_owned_across_review`: **1 passed**, exit/cleanup 0; native update acceptance remains point 12.
+
+Initial focused runs found fixture/object-shape and readonly/fragment-marker
+mistakes; these were corrected and the same selected cases passed. Native reports
+and browser failure evidence remain under `.runtime/python/reports` and
+`.runtime/artifacts/playwright`; Vite's generated runner emitted its existing
+dynamic-import analysis warning. All excluded checks remain unexecuted, not PASS.
+
+### Documentation and instruction products
+
+Synchronized Admin delivery status/API method list, module authoring, command
+catalogue, changelog and supplied App compatibility. Owner backend skill and
+frontend page reference plus separately authored customer backend/frontend skills
+route to the canonical examples without duplicating procedures. Root and customer
+AGENTS, Laravel/security/database/Vue/Tailwind entrypoints need no change: existing
+ownership, grants, exact overwrite, session and public-facade rules already govern
+this capability; no new operating authority or exception is introduced.
+
+Mandatory commit hooks/fresh knowledge remain required. No task-created Docker
+containers/networks/images/volumes need removal. Supported test cleanup removed no
+worker databases and preserved the base/development databases, active services,
+Qdrant/model caches and all verification evidence. Point 11 is complete; point 12
+is next. The roadmap/release remain active/open; no final gate or release is claimed.

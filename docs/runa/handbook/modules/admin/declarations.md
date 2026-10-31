@@ -7,7 +7,7 @@ field-bound options, typed widget results and source-bound component/build
 projection. Point 4 adds compiled resolution, the shared session shell, entry
 advertisement and page-read/document HTTP. Point 5 adds section-read HTTP, the frontend resource read lane, independent
 write/preview HTTP and generated forms. Point 6 delivers native atomic coordination
-and profile/access adapters; point 7 adds complete Auth administrative declarations. Point 8 adds owning Permissions pages and the immutable Audit viewer; framework operations/settings retain points 9–10. See
+and profile/access adapters; point 7 adds complete Auth administrative declarations. Point 8 adds owning Permissions pages and the immutable Audit viewer; points 9–10 deliver framework operations and settings. Point 11 adds [generator and consumer examples](examples.md). See
 [ownership and delivery](README.md). Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
 belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.
@@ -216,11 +216,9 @@ participation becoming unavailable blocks Save; independent pages remain usable.
 
 ## App registration and guarded Admin API
 
-AdminAccess bootstrap/page/read and AdminRegistry are implemented.
-Preview/save/command fail closed after entry checks. Handler interfaces are
-delivered; Core business handlers follow in their owning points.
-In the route table below, document routes, entry, bootstrap and page.read are
-implemented, including section-read HTTP in point 5. Write HTTP routes remain planned.
+AdminAccess reads, independent command/previewCommand, native aggregate preview/save
+and AdminRegistry are implemented. All routes below are delivered; owning Core
+handlers and framework operations retain their documented independent protocols.
 
 Admin contracts live in `Runa\Modules\Admin\Contracts`:
 
@@ -238,6 +236,7 @@ interface AdminAccess
     public function preview(string $owner, string $page, array $input): array;
     public function save(string $owner, string $page, array $input): array;
     public function command(string $owner, string $page, string $section, array $input): array;
+    public function previewCommand(string $owner, string $page, string $section, array $input): array;
 }
 ```
 

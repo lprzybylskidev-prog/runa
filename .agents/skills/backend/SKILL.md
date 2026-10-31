@@ -5,6 +5,11 @@ description: 'Runa backend engineering guidance for application structure, failu
 
 # Runa Backend
 
+For opt-in Admin generation and independent App pages, follow
+`docs/runa/handbook/modules/admin/examples.md`. Review exact overwrite hashes,
+singular settings-provider ownership and generated business/presentation boundaries;
+generation never installs modules or grants permissions.
+
 Use this skill for backend architecture and implementation choices that are broader than Laravel syntax.
 
 Before acting:
