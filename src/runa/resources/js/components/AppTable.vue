@@ -51,7 +51,7 @@ const props = withDefaults(
     refreshing?: boolean;
     refreshDisabled?: boolean;
     exportAllowed?: boolean;
-    exportColumns?: readonly ExportColumn<Row>[];
+    exportColumns?: readonly ExportColumn<Row>[] | undefined;
     exportRows?:
       ((signal: globalThis.AbortSignal) => Promise<readonly Row[]>) | undefined;
     rows?: readonly Row[];

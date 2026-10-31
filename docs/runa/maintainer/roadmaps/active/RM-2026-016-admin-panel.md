@@ -579,7 +579,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     route to the canonical field/recovery/modal contract before implementation.
   - Synchronize owner/customer skill products and provenance without copying the
     handbook procedure or changing runtime behavior.
-- [ ] 11a27. Unify module record browsers and system table controls.
+- [x] 11a27. Unify module record browsers and system table controls.
   - Owner request, 2026-10-31: review Auth, Permissions and Audit together for
     every reported module-view defect. Compact desktop filters to six columns,
     use declared dictionary choices, filter automatically and provide icon-only
@@ -3538,12 +3538,37 @@ concurrent invocation correctly refused the suite lock; it was rerun sequentiall
 Earlier focused frontend failures exposed a recursive column/query loop and stale
 English/inline-editor assumptions; the corrected selection passed. Reports remain.
 
-The current asset build passed in
-`.runtime/frontend/RM-2026-016-tables-build.log`; refresh it after final UI edits.
-Read-only local module planning reports only Permissions `table_exports`, no pending
-module migrations or other upgrades. Commit the implementation, then use the
-supported forward modules phase for the actual candidate commit and inspect the
-real endpoint/assets before completing this point.
+The current asset build passes in
+`.runtime/frontend/RM-2026-016-tables-build.log`, including TypeScript and native
+error assets. The final optional-default correction explicitly includes undefined
+under strict exactOptionalPropertyTypes. Two existing custom-adapter cases also
+pass in `.runtime/frontend/RM-2026-016-tables-adapters.log`; authorized fixtures now
+explicitly supply the projected export grant. Total focused frontend coverage is
+eight cases, with no broad suite/gate claim.
+
+Read-only local preflight verified local/database runa, no active transitions and
+only Permissions `table_exports` pending, with no module migrations/other upgrades.
+Implementation commit `d10bfc94` passed mandatory hooks. The supported forward
+modules phase for that exact commit completed in
+`.runtime/frontend/RM-2026-016-tables-forward.log`; Permissions source/installed
+version is 2.1.0, availability is healthy, exactly one shared export declaration
+exists and no transition remains. This preserves accounts/assignments/history.
+No schema migration or data reset occurred.
+
+Focused rendered inspection of current Nginx assets used controlled synthetic API
+responses without business writes for all three module browsers at 1440px PL/dark
+and Audit at 390px EN/light. Six desktop filters share one row (about 163px each);
+real shared Selects, grouped trailing preferences/actions, owning refresh reads,
+Details dialog/close and CSV authorization/download work. There are no page errors
+or document overflow. Evidence:
+`.runtime/artifacts/playwright/runa/RM-2026-016-tables/report.json` and screenshots,
+`.runtime/frontend/RM-2026-016-tables-browser.log`. The diagnostic used native
+close-dialog accessible names and explicit account locale/theme responses after
+initial fixture corrections; earlier failure reports are not gate results.
+Real module-page documents and /api/ready return 200, entry/export endpoints deny
+unauthenticated requests with 401, and all entry-linked built assets return 200:
+`.runtime/frontend/RM-2026-016-tables-http.json`. Current application is ready for
+owner review at http://localhost:8080/admin. Owner acceptance remains pending.
 
 Canonical tables/components, Admin, Auth profile, Permissions and module/central
 changelogs are synchronized. Both owner and customer frontend references now route
