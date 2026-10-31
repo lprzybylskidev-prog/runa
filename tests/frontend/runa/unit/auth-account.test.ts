@@ -2334,7 +2334,7 @@ it('trusted management appears only while an active device exists and disappears
   expect(card.text()).not.toContain('Zarządzaj urządzeniami');
 });
 
-it('shell reveals header and content together after profile hydration and retains them during background reads', async () => {
+it('shell renders immediately with a local avatar skeleton and retains content during profile refresh', async () => {
   const implementation = vi.mocked(window.fetch).getMockImplementation()!;
   let releaseProfile!: () => void;
   let profileGate = new Promise<void>((resolve) => {
@@ -2349,8 +2349,11 @@ it('shell reveals header and content together after profile hydration and retain
     attachTo: document.body,
   });
   await flushPromises();
-  expect(w.findComponent(ApplicationLayout).exists()).toBe(false);
-  expect(w.find('input[aria-label="Draft"]').exists()).toBe(false);
+  expect(w.findComponent(ApplicationLayout).exists()).toBe(true);
+  await vi.waitFor(() =>
+    expect(w.find('input[aria-label="Draft"]').exists()).toBe(true),
+  );
+  expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(true);
   releaseProfile();
   await vi.waitFor(() =>
     expect(w.findComponent(ApplicationLayout).exists()).toBe(true),

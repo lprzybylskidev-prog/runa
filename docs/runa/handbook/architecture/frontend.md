@@ -486,7 +486,7 @@ source-owned. Customer styling and presentation seams remain App-owned.
 ## Initial readiness and background reads
 
 Use the public [view readiness contract](../development/frontend/loading.md) for
-initial shell/page dependencies, bounded image decode/fallback and independent
-regions. Background reads preserve mounted content, focus and drafts; real
+immediately rendered layout frames, local content/element loading dependencies,
+bounded image decode/fallback and independent regions. Background reads preserve mounted content, focus and drafts; real
 identity/access loss clears protected state. The existing session/security owner
 continues to fence requests; presentation readiness grants no authority.

@@ -4,6 +4,9 @@ import { enableAutoUnmount, flushPromises, mount } from '@runa/testing/vue';
 import { defineComponent, h, ref } from 'vue';
 import {
   Avatar,
+  MinimalLayout,
+  ApplicationLayout,
+  createPreferenceStore,
   AsyncContent,
   ViewBoundary,
   useViewReadiness,
@@ -161,7 +164,7 @@ it('async content refresh retains the same editable success region', async () =>
   expect((input.element as HTMLInputElement).value).toBe('Draft');
 });
 
-it('application startup waits for public presentation and keeps the root mounted on failed background hydration', async () => {
+it('application startup mounts immediately while branding is pending and retains the root during refresh', async () => {
   const { createApplication } = await import('@/runa/ui');
   let finish!: (value: Response) => void;
   let initial = true;
@@ -191,10 +194,12 @@ it('application startup waits for public presentation and keeps the root mounted
   app.mount(host);
   try {
     await flushPromises();
-    expect(host.querySelector('input')).toBeNull();
+    expect(host.querySelector('input')).not.toBeNull();
+    const initialRoot = host.querySelector('input');
     finish(json({ name: 'Prepared brand', logo: null, revision: 1 }));
     await vi.waitFor(() => expect(host.querySelector('input')).not.toBeNull());
     const input = host.querySelector('input')!;
+    expect(input).toBe(initialRoot);
     input.value = 'Draft';
     input.focus();
     initial = false;
@@ -208,3 +213,51 @@ it('application startup waits for public presentation and keeps the root mounted
     host.remove();
   }
 });
+
+it.each(['minimal', 'application'] as const)(
+  'the %s layout keeps its frame visible while only content is loading',
+  async (kind) => {
+    const required = ref(false);
+    const w = mount(
+      defineComponent({
+        setup() {
+          const readiness = useViewReadiness({ identity: 'page', required });
+          return () =>
+            kind === 'minimal'
+              ? h(
+                  MinimalLayout,
+                  {
+                    readiness,
+                    staticPreferences: { locale: 'pl', theme: 'dark' },
+                  },
+                  { default: () => h('input', { 'data-ready-content': '' }) },
+                )
+              : h(
+                  ApplicationLayout,
+                  {
+                    readiness,
+                    navigation: [],
+                    title: 'Page heading',
+                    preferenceStore: createPreferenceStore(),
+                  },
+                  { default: () => h('input', { 'data-ready-content': '' }) },
+                );
+        },
+      }),
+    );
+    const frame = w.get(
+      kind === 'minimal' ? '.minimal-page' : '.application-page',
+    ).element;
+    expect(w.find('header').exists()).toBe(true);
+    expect(w.find('main').exists()).toBe(true);
+    expect(w.find('footer').exists()).toBe(true);
+    expect(w.find('main [data-view-phase="loading"]').exists()).toBe(true);
+    expect(w.find('input[data-ready-content]').exists()).toBe(false);
+    required.value = true;
+    await flushPromises();
+    expect(
+      w.get(kind === 'minimal' ? '.minimal-page' : '.application-page').element,
+    ).toBe(frame);
+    expect(w.find('input[data-ready-content]').exists()).toBe(true);
+  },
+);

@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Render layout frames immediately and keep loading placeholders local to dependent content/avatar elements; public branding and profile/image reads never hide the page frame.
+
 - Share identity-scoped initial view/image readiness, bounded decoded-avatar fallback and nondestructive same-session refresh through the public UI contract.
 
 - Keep the known Admin menu advertisement during same-session revalidation, ignore unchanged activity observations and hide on denial/failure or immediate identity invalidation. Preserve stale-response fencing without a second session or polling loop.

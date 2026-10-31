@@ -18,7 +18,7 @@ When welcome is enabled, the default `/app` has Home / Application breadcrumbs a
 `main.ts` imports the shared CSS through `@/runa/ui/styles.css` and mounts
 `createApplication(App)` from `@/runa/ui`. This public helper returns a Vue App,
 so customers can install their own plugins before mounting. It hydrates public
-identity and public presentation before the first root reveal, including bounded logo decoding; failed initial requests retain source defaults and failed background reads retain confirmed branding. See [view readiness](loading.md). Runtime name/logo overrides use the [application settings contract](../../modules/admin/operations.md#application-settings-contracts-and-storage) and [public loader/controller seams](../../modules/admin/frontend.md#application-global-settings-and-runtime-branding).
+identity and public presentation in place after immediate root/layout mounting, including bounded logo decoding; failed initial requests retain source defaults and failed background reads retain confirmed branding. See [view readiness](loading.md). Runtime name/logo overrides use the [application settings contract](../../modules/admin/operations.md#application-settings-contracts-and-storage) and [public loader/controller seams](../../modules/admin/frontend.md#application-global-settings-and-runtime-branding).
 
 The retained application files are manifest/dependency files, the HTML entry,
 Vue root/bootstrap, named welcome route, provider/seed/test/config extension
@@ -279,9 +279,10 @@ this optional read never blocks a valid session and is fenced against stale resu
 Custom ApplicationLayout wrappers forward userAvatar, userAvatarImage, userLoading,
 homeHref and breadcrumbs. The controller exposes loading for initial session
 validation and refreshing for background validation. profileLoading describes the
-optional profile read. The supplied shell waits for first profile/preferences and
-prepared image readiness before revealing the header/content, then retains them
-through background reads. Its avatar owner is shared with the dropdown. These
+optional profile read. The supplied shell mounts its layout immediately, gates protected content only
+on session admission and shows profile/avatar skeletons in their own slots.
+Profile/preferences/image reads never hide the layout or unrelated content;
+background reads retain mounted content. Its avatar owner is shared with the dropdown. These
 presentation fields never establish authorization. For custom shells, compose the
 public [view/image readiness contract](loading.md), include account/session identity,
 use bounded optional fallbacks and retain strict controller request fences.

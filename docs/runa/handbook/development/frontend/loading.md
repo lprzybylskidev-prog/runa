@@ -1,6 +1,8 @@
 # View readiness and background refresh
 
-Runa views reveal a usable initial state, then refresh their data in place.
+Runa renders layout frames immediately, with loading placeholders only inside
+the elements or content regions waiting for data. Never replace the application
+root, header/sidebar, backdrop, illustration or footer with a page-wide skeleton.
 A session response, HTTP completion or known image URL alone does not establish
 presentation readiness. Authentication and authorization remain the owning
 controller's responsibility; this contract never grants access.
@@ -42,8 +44,9 @@ identity invalidation. It adds no minimum delay, page animation or focus change.
 Both `MinimalLayoutProps` and `ApplicationLayoutProps` accept optional
 `readiness?: ViewReadiness`. Their defaults render immediately for independent
 composition and static/native error delivery. Supplied Auth entry/welcome provide
-their owning controller's readiness; the private ApplicationSessionShell owns its
-outer boundary. Custom layout replacements forward readiness and keep controller
+their owning controller's readiness; ApplicationSessionShell mounts its layout immediately and gates only protected
+content on session validation. Layout readiness controls only the content/default
+slot (and MinimalLayout actions), never the frame. Custom layout replacements forward readiness and keep controller
 ownership outside presentation. Supplying readiness delegates initial preference
 hydration to that composing controller; the standalone preference-session
 initializer runs only when readiness is omitted (and no session owner/static or
@@ -52,11 +55,12 @@ never register every HTTP request as an application-wide prerequisite.
 
 ## Initial reveal and subsequent work
 
-Declare essential shell dependencies: public branding, saved locale/theme,
-validated session where required, profile identity and prepared avatar. Optional
-presentation failures settle to source branding/default preferences/session
-initials. They must not invalidate an otherwise valid session. The initial
-placeholder is explicit and does not mount protected forms before admission.
+Declare dependencies per element/region: branding uses source defaults while
+hydrating; preferences apply through their existing subscriber; profile/avatars
+show their own bounded skeleton/fallback. A slow avatar must not delay the layout
+or an unrelated form/table. A region that depends on an API uses its own skeleton
+in the space it will occupy. Session admission still gates protected content,
+not the public layout structure. Initial placeholders never mount protected forms.
 
 Once revealed, reads keep the same DOM, focus, validation and dirty drafts.
 Refresh failures provide retry/feedback beside retained content where the owning
@@ -96,10 +100,10 @@ substitutes for guarded private image delivery.
 
 | Consumer                                  | Initial dependencies and later behavior                                                                                                                                                                                        |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| createApplication                         | Bounded public identity/presentation reads and decoded logo before mounting the root; failed background branding reads retain the last confirmed presentation.                                                                 |
+| createApplication                         | Immediate root mount; bounded public identity/presentation reads and decoded logo update branding in place; failed background branding reads retain the last confirmed presentation.                                           |
 | Auth entry                                | Existing entry/session controller and preference hydration before form reveal; entry pages without a session read use the existing one-time preference initializer. Heading focus also works after delayed presentation mount. |
-| Auth welcome                              | Existing options/session read and account preferences before reveal; no second layout-owned session read.                                                                                                                      |
-| ApplicationSessionShell / Admin admission | Existing session owner, first profile/preference settlement and prepared avatar; header/dropdown share the image owner. Background session/profile reads retain the shell and content.                                         |
+| Auth welcome                              | Immediate layout and static welcome content; navigation alone waits for options/session; no second layout-owned session read.                                                                                                  |
+| ApplicationSessionShell / Admin admission | Immediate layout; session admission gates private content only. Profile/avatar use local placeholders; header/dropdown share the image owner. Background session/profile reads retain the shell and content.                   |
 | Auth account                              | Existing independent account/page loading and nondestructive read reconciliation remain; protected account content starts after shell admission/readiness.                                                                     |
 | Admin bootstrap/page                      | Same-session observation revalidates in place. Request stamps still include every authority observation. Unchanged descriptors preserve object identity; denial removes protected content.                                     |
 | Admin records/forms/operations            | Same-session observation fences requests/reviews without erasing drafts; actual context loss clears them. Unchanged resource projection retains confirmed values while reading. Removed fields follow the new projection.      |

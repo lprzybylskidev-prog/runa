@@ -278,257 +278,254 @@ onScopeDispose(() => {
 });
 </script>
 <template>
-  <AppViewBoundary :readiness="props.readiness ?? standaloneReadiness">
-    <div
-      :class="[
-        'application-page',
-        {
-          'has-sidebar': sidebar,
-          'sidebar-collapsed': sidebarCollapsed,
-          'workspace-fluid': width === 'fluid',
-        },
-      ]"
-      :inert="changingPreference"
-      :aria-busy="changingPreference"
+  <div
+    :class="[
+      'application-page',
+      {
+        'has-sidebar': sidebar,
+        'sidebar-collapsed': sidebarCollapsed,
+        'workspace-fluid': width === 'fluid',
+      },
+    ]"
+    :inert="changingPreference"
+    :aria-busy="changingPreference"
+  >
+    <AppBackdrop />
+    <a :href="`#${contentId}`" class="skip-link">{{ t('skip') }}</a>
+    <Transition name="shell-backdrop">
+      <button
+        v-if="drawer && sidebar"
+        class="shell-drawer-backdrop"
+        type="button"
+        tabindex="-1"
+        :aria-label="t('closeNavigation')"
+        @click="closeDrawer()"
+      />
+    </Transition>
+    <aside
+      v-if="sidebar"
+      :id="drawerId"
+      ref="sidebarElement"
+      :class="['shell-sidebar', { 'drawer-open': drawer }]"
+      :role="mobile && drawer ? 'dialog' : undefined"
+      :aria-modal="mobile && drawer ? true : undefined"
+      :aria-label="t('modules')"
+      :inert="mobile && !drawer"
     >
-      <AppBackdrop />
-      <a :href="`#${contentId}`" class="skip-link">{{ t('skip') }}</a>
-      <Transition name="shell-backdrop">
-        <button
-          v-if="drawer && sidebar"
-          class="shell-drawer-backdrop"
-          type="button"
-          tabindex="-1"
+      <div class="shell-brand-row">
+        <a
+          :href="homeHref"
+          class="shell-brand"
+          :aria-label="identity.applicationName"
+        >
+          <span class="brand-mark">
+            <img
+              v-if="identity.logo && !logoFailed"
+              :src="identity.logo.src"
+              :alt="identity.logo.accessibleName"
+              class="max-h-7 max-w-7 object-contain"
+              @error="logoFailed = true"
+            />
+            <RunaLogo v-else />
+          </span>
+          <span v-if="!sidebarCollapsed"
+            >{{ brandName
+            }}<span class="text-primary" aria-hidden="true">.</span></span
+          >
+        </a>
+        <AppButton
+          v-if="mobile"
+          icon-only
+          class="shell-group-toggle"
           :aria-label="t('closeNavigation')"
           @click="closeDrawer()"
-        />
-      </Transition>
-      <aside
-        v-if="sidebar"
-        :id="drawerId"
-        ref="sidebarElement"
-        :class="['shell-sidebar', { 'drawer-open': drawer }]"
-        :role="mobile && drawer ? 'dialog' : undefined"
-        :aria-modal="mobile && drawer ? true : undefined"
-        :aria-label="t('modules')"
-        :inert="mobile && !drawer"
-      >
-        <div class="shell-brand-row">
-          <a
-            :href="homeHref"
-            class="shell-brand"
-            :aria-label="identity.applicationName"
-          >
-            <span class="brand-mark">
-              <img
-                v-if="identity.logo && !logoFailed"
-                :src="identity.logo.src"
-                :alt="identity.logo.accessibleName"
-                class="max-h-7 max-w-7 object-contain"
-                @error="logoFailed = true"
-              />
-              <RunaLogo v-else />
-            </span>
-            <span v-if="!sidebarCollapsed"
-              >{{ brandName
-              }}<span class="text-primary" aria-hidden="true">.</span></span
-            >
-          </a>
-          <AppButton
-            v-if="mobile"
-            icon-only
-            class="shell-group-toggle"
-            :aria-label="t('closeNavigation')"
-            @click="closeDrawer()"
-          >
-            ×
-          </AppButton>
-        </div>
-        <div class="shell-sidebar-scroll">
-          <p v-if="!sidebarCollapsed" class="shell-eyebrow">
-            {{ t('workspace') }}
-          </p>
-          <nav :aria-label="t('modules')">
-            <AppNavigation
-              :entries="navigation"
-              :current="current"
-              :expanded="expanded"
-              :collapsed="sidebarCollapsed"
-              @navigate="navigate"
-              @toggle="toggleGroup"
-            />
-          </nav>
-          <slot
-            v-if="!sidebarCollapsed"
-            name="sidebar-bottom"
-            :t="t"
-            :collapsed="sidebarCollapsed"
-          />
-        </div>
-        <div class="shell-sidebar-bottom">
-          <span class="shell-platform"
-            ><template v-if="!sidebarCollapsed">RUNA / </template
-            >{{ identity.platformVersion }}</span
-          >
-        </div>
-      </aside>
-      <div class="shell-body" :inert="drawer && mobile">
-        <header
-          class="shell-header"
-          :class="{ 'shell-header-minimal': !topbar }"
         >
-          <div class="shell-header-start">
-            <AppButton
-              v-if="sidebar"
-              ref="drawerTrigger"
-              icon-only
-              class="shell-sidebar-toggle"
-              size="sm"
-              :aria-label="
-                mobile
-                  ? t('openNavigation')
-                  : sidebarCollapsed
-                    ? t('expandNavigation')
-                    : t('collapseNavigation')
-              "
-              :aria-expanded="mobile ? drawer : !sidebarCollapsed"
-              :aria-controls="drawerId"
-              @click="mobile ? openDrawer() : (collapsed = !collapsed)"
-            >
-              <span class="shell-toggle-icon" aria-hidden="true"
-                ><span /><span /><span
-              /></span>
-            </AppButton>
-            <a v-if="!sidebar" :href="homeHref" class="shell-brand"
-              ><span class="brand-mark"><RunaLogo /></span
-              ><span>{{ brandName }}</span></a
-            >
-            <div
-              v-if="topbar"
-              class="shell-top-nav-frame"
-              :class="{
-                'has-overflow-left': topOverflow.left,
-                'has-overflow-right': topOverflow.right,
-              }"
-            >
-              <nav
-                ref="topNavElement"
-                class="shell-top-nav"
-                :aria-label="t('areas')"
-                @scroll="updateTopOverflow"
-                @wheel="scrollTopNavigation"
-              >
-                <AppTopNavigation
-                  :entries="topNavigation"
-                  :current="current"
-                  @navigate="navigate"
-                />
-              </nav>
-            </div>
-          </div>
-          <div class="shell-header-controls" data-print-hide>
-            <AppPreferenceControls
-              size="sm"
-              :fixed-locale="!!props.locale"
-              :locale="locale"
-              :theme="theme"
-              :theme-label="themeLabel"
-              :language-label="languageLabel"
-              :t="t"
-              @change="changePreference"
-            />
-            <AppPopover
-              v-if="topbar"
-              :label="`${t('userMenu')}: ${userName}`"
-              align="end"
-            >
-              <template #trigger="{ toggle, open, panelId }">
-                <AppButton
-                  icon-only
-                  class="shell-avatar-button"
-                  :aria-label="`${t('userMenu')}: ${userName}`"
-                  :aria-expanded="open"
-                  :aria-controls="panelId"
-                  aria-haspopup="dialog"
-                  @click="toggle"
-                  ><AppAvatar
-                    :src="userAvatar"
-                    :image="userAvatarImage"
-                    :loading="userLoading"
-                    :initials="userInitials"
-                    :size="40"
-                /></AppButton>
-              </template>
-              <div class="shell-profile-panel">
-                <slot name="user-menu" :t="t"
-                  ><p class="font-semibold">{{ userName }}</p>
-                  <p class="mt-2 text-xs text-muted">
-                    {{ t('accountUnavailable') }}
-                  </p></slot
-                >
-              </div>
-            </AppPopover>
-          </div>
-        </header>
-        <main :id="contentId" tabindex="-1" class="shell-workspace">
-          <AppPreferenceFeedback :locale="locale" />
-          <header
-            v-if="title || $slots.heading || $slots.actions"
-            class="shell-heading"
+          ×
+        </AppButton>
+      </div>
+      <div class="shell-sidebar-scroll">
+        <p v-if="!sidebarCollapsed" class="shell-eyebrow">
+          {{ t('workspace') }}
+        </p>
+        <nav :aria-label="t('modules')">
+          <AppNavigation
+            :entries="navigation"
+            :current="current"
+            :expanded="expanded"
+            :collapsed="sidebarCollapsed"
+            @navigate="navigate"
+            @toggle="toggleGroup"
+          />
+        </nav>
+        <slot
+          v-if="!sidebarCollapsed"
+          name="sidebar-bottom"
+          :t="t"
+          :collapsed="sidebarCollapsed"
+        />
+      </div>
+      <div class="shell-sidebar-bottom">
+        <span class="shell-platform"
+          ><template v-if="!sidebarCollapsed">RUNA / </template
+          >{{ identity.platformVersion }}</span
+        >
+      </div>
+    </aside>
+    <div class="shell-body" :inert="drawer && mobile">
+      <header class="shell-header" :class="{ 'shell-header-minimal': !topbar }">
+        <div class="shell-header-start">
+          <AppButton
+            v-if="sidebar"
+            ref="drawerTrigger"
+            icon-only
+            class="shell-sidebar-toggle"
+            size="sm"
+            :aria-label="
+              mobile
+                ? t('openNavigation')
+                : sidebarCollapsed
+                  ? t('expandNavigation')
+                  : t('collapseNavigation')
+            "
+            :aria-expanded="mobile ? drawer : !sidebarCollapsed"
+            :aria-controls="drawerId"
+            @click="mobile ? openDrawer() : (collapsed = !collapsed)"
           >
-            <div>
-              <slot name="heading" :t="t"
-                ><h1>{{ title }}</h1>
-                <p v-if="description" class="shell-description">
-                  {{ description }}
+            <span class="shell-toggle-icon" aria-hidden="true"
+              ><span /><span /><span
+            /></span>
+          </AppButton>
+          <a v-if="!sidebar" :href="homeHref" class="shell-brand"
+            ><span class="brand-mark"><RunaLogo /></span
+            ><span>{{ brandName }}</span></a
+          >
+          <div
+            v-if="topbar"
+            class="shell-top-nav-frame"
+            :class="{
+              'has-overflow-left': topOverflow.left,
+              'has-overflow-right': topOverflow.right,
+            }"
+          >
+            <nav
+              ref="topNavElement"
+              class="shell-top-nav"
+              :aria-label="t('areas')"
+              @scroll="updateTopOverflow"
+              @wheel="scrollTopNavigation"
+            >
+              <AppTopNavigation
+                :entries="topNavigation"
+                :current="current"
+                @navigate="navigate"
+              />
+            </nav>
+          </div>
+        </div>
+        <div class="shell-header-controls" data-print-hide>
+          <AppPreferenceControls
+            size="sm"
+            :fixed-locale="!!props.locale"
+            :locale="locale"
+            :theme="theme"
+            :theme-label="themeLabel"
+            :language-label="languageLabel"
+            :t="t"
+            @change="changePreference"
+          />
+          <AppPopover
+            v-if="topbar"
+            :label="`${t('userMenu')}: ${userName}`"
+            align="end"
+          >
+            <template #trigger="{ toggle, open, panelId }">
+              <AppButton
+                icon-only
+                class="shell-avatar-button"
+                :aria-label="`${t('userMenu')}: ${userName}`"
+                :aria-expanded="open"
+                :aria-controls="panelId"
+                aria-haspopup="dialog"
+                @click="toggle"
+                ><AppAvatar
+                  :src="userAvatar"
+                  :image="userAvatarImage"
+                  :loading="userLoading"
+                  :initials="userInitials"
+                  :size="40"
+              /></AppButton>
+            </template>
+            <div class="shell-profile-panel">
+              <slot name="user-menu" :t="t"
+                ><p class="font-semibold">{{ userName }}</p>
+                <p class="mt-2 text-xs text-muted">
+                  {{ t('accountUnavailable') }}
                 </p></slot
               >
             </div>
-            <div v-if="$slots.actions" class="shell-actions" data-print-hide>
-              <slot name="actions" :t="t" />
-            </div>
-          </header>
-          <div v-if="$slots.breadcrumbs" class="shell-breadcrumbs">
-            <slot name="breadcrumbs" :t="t" />
-          </div>
-          <section
-            v-if="$slots.statistics"
-            class="shell-statistics"
-            :aria-label="t('statistics')"
-          >
-            <slot name="statistics" :t="t" />
-          </section>
-          <div v-if="$slots.toolbar" class="shell-toolbar" data-print-hide>
-            <slot name="toolbar" :t="t" />
-          </div>
-          <div
-            :class="[
-              'shell-content-grid',
-              { 'has-supplementary': $slots.supplementary },
-            ]"
-          >
-            <div class="shell-content">
-              <slot name="content" :t="t"><slot :t="t" /></slot>
-            </div>
-            <aside
-              v-if="$slots.supplementary"
-              class="shell-supplementary"
-              :aria-label="t('supplementary')"
+          </AppPopover>
+        </div>
+      </header>
+      <main :id="contentId" tabindex="-1" class="shell-workspace">
+        <AppPreferenceFeedback :locale="locale" />
+        <header
+          v-if="title || $slots.heading || $slots.actions"
+          class="shell-heading"
+        >
+          <div>
+            <slot name="heading" :t="t"
+              ><h1>{{ title }}</h1>
+              <p v-if="description" class="shell-description">
+                {{ description }}
+              </p></slot
             >
-              <slot name="supplementary" :t="t" />
-            </aside>
           </div>
-        </main>
-        <slot v-if="footer?.visible !== false" name="footer" :t="t"
-          ><AppFooter :options="footer" :powered-by-label="t('poweredBy')"
-        /></slot>
-      </div>
+          <div v-if="$slots.actions" class="shell-actions" data-print-hide>
+            <slot name="actions" :t="t" />
+          </div>
+        </header>
+        <div v-if="$slots.breadcrumbs" class="shell-breadcrumbs">
+          <slot name="breadcrumbs" :t="t" />
+        </div>
+        <section
+          v-if="$slots.statistics"
+          class="shell-statistics"
+          :aria-label="t('statistics')"
+        >
+          <slot name="statistics" :t="t" />
+        </section>
+        <div v-if="$slots.toolbar" class="shell-toolbar" data-print-hide>
+          <slot name="toolbar" :t="t" />
+        </div>
+        <div
+          :class="[
+            'shell-content-grid',
+            { 'has-supplementary': $slots.supplementary },
+          ]"
+        >
+          <div class="shell-content">
+            <AppViewBoundary :readiness="props.readiness ?? standaloneReadiness"
+              ><slot name="content" :t="t"><slot :t="t" /></slot
+            ></AppViewBoundary>
+          </div>
+          <aside
+            v-if="$slots.supplementary"
+            class="shell-supplementary"
+            :aria-label="t('supplementary')"
+          >
+            <slot name="supplementary" :t="t" />
+          </aside>
+        </div>
+      </main>
+      <slot v-if="footer?.visible !== false" name="footer" :t="t"
+        ><AppFooter :options="footer" :powered-by-label="t('poweredBy')"
+      /></slot>
     </div>
-    <AppLoadingOverlay
-      :active="coverVisible"
-      :label="t('applyingPreferences')"
-      @covered="applyPreference"
-      @revealed="finishPreferenceChange"
-    />
-  </AppViewBoundary>
+  </div>
+  <AppLoadingOverlay
+    :active="coverVisible"
+    :label="t('applyingPreferences')"
+    @covered="applyPreference"
+    @revealed="finishPreferenceChange"
+  />
 </template>

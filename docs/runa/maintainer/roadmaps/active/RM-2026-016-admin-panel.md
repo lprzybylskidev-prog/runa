@@ -407,6 +407,14 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Synchronize public composition contracts and both instruction products, cover
     delayed/error/identity-switch/background-read scenarios with focused checks,
     and build runnable assets before repeating owner acceptance.
+- [x] 11a8. Keep layouts visible from startup and localize loading placeholders.
+  - Owner correction to 11a7: never gate the application root or whole layout on
+    branding, preferences, profile or avatar reads. Render the normal frame immediately.
+  - Apply readiness only to the dependent content/control region; keep the avatar's
+    own skeleton, bounded decode fallback and shared image owner. Preserve background
+    refresh/draft behavior and protected-content session admission.
+  - Synchronize current public/agent guidance and focused rendered regressions,
+    prepare current assets and commit before returning to manual acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2259,3 +2267,45 @@ not authenticated owner acceptance or a full quality PASS. Full suites/gates and
 release closure remain point 12, after explicit owner acceptance in 11b. No Docker
 resources, database changes or destructive operations were needed; development
 services/data, caches and reports are preserved.
+
+### Point 11a8 — Immediate frames, local loading regions
+
+The owner rejected the whole-page loading placeholder produced by 11a7. This
+correction supersedes that point's initial shell/root reveal decision: layouts
+render immediately and only dependent content/elements display loading states.
+Removed the root branding gate and the outer ApplicationSessionShell readiness
+gate. MinimalLayout and ApplicationLayout now apply their public readiness prop
+only to content/default (plus MinimalLayout actions), retaining the actual header,
+backdrop, illustration/navigation and footer throughout loading. Welcome renders
+its static content immediately and waits only in navigation. The session shell
+still mounts protected content only after session validation; profile/avatar
+metadata use the shared avatar's own animated placeholder/fallback. The decoded
+image owner, bounded waits and nondestructive refresh/draft/security behavior
+from 11a7 remain.
+
+The public loading/layout/customization, Auth account and Admin branding contracts
+and candidate changelogs are synchronized. Root/customer AGENTS explicitly require
+immediate frames with local loading. Existing frontend pattern references already
+link the canonical guide and need no duplicate procedure. No backend API, module
+upgrade edge, dependency or release decision changed; existing unreleased platform
+0.7.0, Auth 2.0.0 and Admin 0.1.0 candidates remain appropriate.
+
+Focused browser regressions passed 12 cases (348 excluded), native exit 0 and
+cleanup 0: both layout frames remain mounted while their content waits; root
+mounts while branding waits; shell content is independent of the profile read;
+image/entry readiness and same-session Admin proof refresh remain guarded. A test
+selector was narrowed to its content input to exclude native preference controls.
+The asset build passed TypeScript, Vite and native/static error rendering; log:
+.runtime/frontend/RM-2026-016-local-loading-build.log.
+
+A focused Playwright visual diagnostic against the actual development Nginx
+endpoint deliberately held identity/presentation/entry-options/session responses.
+Inspected four retained screenshots under
+.runtime/artifacts/playwright/RM-2026-016-local-loading/: login desktop dark PL,
+login mobile light EN, application desktop light EN and application mobile dark PL.
+Each retained its real frame/header/footer with local animated placeholders and
+no horizontal overflow. Releasing reads completed normal guest sign-in rendering.
+This is loading-state evidence, not authenticated owner manual acceptance. The
+browser/context resources were closed; no Docker resources or data were changed.
+All screenshots/build/test reports and existing services/data/caches are preserved.
+Manual point 11b and final verification/release point 12 remain open.

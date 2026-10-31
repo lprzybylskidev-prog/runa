@@ -139,7 +139,8 @@ an identity-bound Auth proof controller; see the [Auth proof contract](../../mod
 
 ## Initial presentation readiness
 
-Both layouts accept optional readiness: ViewReadiness; ApplicationLayout also
+Both layouts always render their frame immediately. Optional readiness: ViewReadiness
+controls the content/default region only (including MinimalLayout actions); ApplicationLayout also
 accepts userAvatarImage: ImageReadiness for a prepared shared avatar. Defaults
 remain immediately usable for independent/static composition. Supplied Auth
 screens and the shared session shell declare initial dependencies and preserve

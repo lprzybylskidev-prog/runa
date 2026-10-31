@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Render layout frames immediately and keep loading placeholders local to dependent content/avatar elements; public branding and profile/image reads never hide the page frame.
+
 - Retain admitted pages, record/operational drafts and same-session filters during background validation while fencing old requests and clearing real access/identity loss.
 
 - Retain the pre-admission Auth password form/input during same-session background bootstrap revalidation. Clear proof on real denial, identity invalidation or successful admission; keep protected-read authority fences. Stop unchanged activity from refetching page descriptors.

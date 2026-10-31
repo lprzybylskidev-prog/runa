@@ -3,15 +3,11 @@ import {
   h,
   onMounted,
   onScopeDispose,
-  ref,
   computed,
   shallowRef,
 } from 'vue';
 import { useTheme } from '../../composables/useTheme';
 import { useLocale } from '../../composables/useLocale';
-import AppSkeleton from '../../components/AppSkeleton.vue';
-import ViewBoundary from '../../components/AppViewBoundary.vue';
-import { useViewReadiness } from '../../composables/useViewReadiness';
 import { useImageReadiness } from '../../composables/useImageReadiness';
 import type { Component } from 'vue';
 import IdentityProvider from '../../components/AppIdentityProvider.vue';
@@ -25,25 +21,16 @@ import { observeRequests } from '../../lib/http';
 export function createApplication(root: Component) {
   return createApp({
     setup() {
-      const { locale } = useLocale();
+      useLocale();
       useTheme();
       const identity = shallowRef(defaultIdentity);
       const presentation = shallowRef<ApplicationPresentation>();
-      const identitySettled = ref(false),
-        presentationSettled = ref(false);
       const logoSource = computed(() =>
         presentation.value
           ? (presentation.value.logo?.src ?? '')
           : (identity.value.logo?.src ?? ''),
       );
       const logo = useImageReadiness(logoSource);
-      const readiness = useViewReadiness({
-        identity: 'application',
-        required: () =>
-          identitySettled.value &&
-          presentationSettled.value &&
-          logo.settled.value,
-      });
       let alive = true,
         epoch = 0;
       let abort = new AbortController();
@@ -57,13 +44,11 @@ export function createApplication(root: Component) {
         if (alive && own === epoch) {
           // A failed background read keeps the last confirmed public presentation.
           if (next) presentation.value = next;
-          presentationSettled.value = true;
         }
       }
       void loadApplicationIdentity().then((resolved) => {
         if (alive) {
           identity.value = resolved;
-          identitySettled.value = true;
         }
       });
       const stop = observeRequests((event) => {
@@ -116,28 +101,7 @@ export function createApplication(root: Component) {
                     : {}),
                 },
           },
-          {
-            default: () =>
-              h(
-                ViewBoundary,
-                {
-                  readiness,
-                  label:
-                    locale.value === 'pl'
-                      ? 'Wczytywanie aplikacji'
-                      : 'Loading application',
-                },
-                {
-                  loading: () =>
-                    h(
-                      'div',
-                      { class: 'min-h-dvh p-6 sm:p-10' },
-                      h(AppSkeleton, { lines: 3 }),
-                    ),
-                  default: () => h(root),
-                },
-              ),
-          },
+          { default: () => h(root) },
         );
       };
     },

@@ -925,7 +925,7 @@ Promise<ApplicationPresentation | undefined>`. Failure returns undefined so a
 consumer can restore source defaults. `createApplication` hydrates presentation
 separately from canonical identity and refreshes after application-setting writes,
 Auth session changes and focus/visibility/history navigation. Per-app epochs cancel
-older reads; unmount cleans observers/listeners. First reveal also waits for bounded logo decoding; failed background reads retain confirmed presentation. It never stores branding in guest
+older reads; unmount cleans observers/listeners. The root/layout renders immediately while logo decoding updates branding in place; failed background reads retain confirmed presentation. It never stores branding in guest
 preferences or changes canonical IDs/versions. Custom roots may use the same loader
 and IdentityProvider; retain lifecycle fencing and source fallback.
 
