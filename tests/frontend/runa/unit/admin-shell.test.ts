@@ -190,7 +190,7 @@ it('uses one supplied session, scopes English controls and places Admin entry on
   const shell = w.getComponent(ApplicationSessionShell);
   expect(shell.props('session')).toBe(session);
   expect(shell.props('navigation')?.map((n) => n.label)).toEqual([
-    'Administration',
+    'Administrator panel',
     'Application settings',
   ]);
   const button = w
@@ -201,7 +201,7 @@ it('uses one supplied session, scopes English controls and places Admin entry on
   await flushPromises();
   const menu = document.querySelector('.account-menu')!;
   expect(menu.querySelector('a[href="/admin"]')?.textContent).toContain(
-    'Administration',
+    'Administrator panel',
   );
   expect(menu.querySelector('a[href="/account"]')?.textContent).toContain(
     'User panel',

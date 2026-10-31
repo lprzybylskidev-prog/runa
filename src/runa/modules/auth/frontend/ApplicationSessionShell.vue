@@ -173,7 +173,9 @@ const initials = computed(
             "
           >
             <Icon name="adjustments-horizontal" :size="18" />
-            <span>{{ text('Panel administratora', 'Administration') }}</span>
+            <span>{{
+              text('Panel administratora', 'Administrator panel')
+            }}</span>
           </a>
           <slot name="account-menu" :session="session" :entries="entries">
             <a

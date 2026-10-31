@@ -354,6 +354,10 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Replace the Polish account-menu entry and module catalogue name with
     `Panel administratora`, refresh local registry metadata/current assets and
     preserve English-only Admin presentation. No grant/route/security change.
+- [x] 11a2. Complete the requested panel rename in both supported languages.
+  - Use `Panel administratora` / `Administrator panel` consistently in menu/catalogue,
+    English dashboard/navigation and related accessibility/entry copy. Update existing
+    consumer expectations and refresh local registry/assets before manual handover.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -1932,3 +1936,23 @@ output remains in `.runtime/frontend/manual-acceptance-label-build.log`. Actual
 home/Admin document requests return HTTP 200. No extra tests were added for this
 label-only correction, no broad quality gate was run and no Docker/data cleanup
 was needed. Owner manual acceptance in 11b remains open.
+
+## Point 11a2 — Complete bilingual panel naming — 2026-10-31
+
+The owner clarified that a requested UI rename applies to both supported languages.
+The earlier Polish-only change was incomplete. The menu and module catalogue now
+use `Panel administratora` / `Administrator panel`; the English dashboard heading,
+navigation, loading/editor accessibility labels and entry/unavailable copy use the
+same panel name. Existing mounted/E2E consumer expectations, public example and
+current candidate changelogs are synchronized. Technical identities/routes, native
+grants/security and existing unreleased module versions are unchanged. Existing
+locale/presentation guidance in both instruction products already applies; no new
+operating rule or public contract is required.
+
+Explicit module synchronization refreshed the manifest at generation 182 without
+data installation or permission changes. The supported asset build with type/error
+shell prerequisites passed; output is preserved in
+`.runtime/frontend/manual-acceptance-bilingual-label-build.log`. The actual Admin
+document returns HTTP 200. No new tests are needed for the label correction;
+existing browser expectations are updated for final acceptance. No full quality
+gate or Docker/data cleanup was run. Manual owner acceptance in 11b remains open.

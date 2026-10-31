@@ -7,7 +7,7 @@
   "framework_api": "^1.0.0",
   "name": {
     "pl": "Panel administratora",
-    "en": "Administration"
+    "en": "Administrator panel"
   },
   "description": {
     "pl": "Panel administracyjny z kontrolą dostępu i rozszerzeniami modułów.",

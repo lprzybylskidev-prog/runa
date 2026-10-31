@@ -33,18 +33,24 @@ export function adminFailure(error: unknown): {
         state: 'proof_required',
         error: {
           reason,
-          message: 'Confirm your password to enter administration.',
+          message: 'Confirm your password to enter the administrator panel.',
         },
       };
     if (error.status === 401 || error.status === 403)
       return {
         state: 'forbidden',
-        error: { reason, message: 'Administration access is not available.' },
+        error: {
+          reason,
+          message: 'Administrator panel access is not available.',
+        },
       };
     if (error.status === 404 || error.status === 409 || error.status === 503)
       return {
         state: 'unavailable',
-        error: { reason, message: 'Administration is currently unavailable.' },
+        error: {
+          reason,
+          message: 'The administrator panel is currently unavailable.',
+        },
       };
   }
   return {

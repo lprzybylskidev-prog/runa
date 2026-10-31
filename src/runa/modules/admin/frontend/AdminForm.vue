@@ -38,7 +38,7 @@ async function save() {
 <template>
   <Form
     ref="form"
-    label="Administration editor"
+    label="Administrator panel editor"
     :busy="controller.busy.value"
     :dirty="controller.dirty.value"
     :valid="!controller.blocked.value && !controller.conflicts.value.length"

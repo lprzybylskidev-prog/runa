@@ -98,7 +98,7 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
     const password = page.getByLabel('Current password', { exact: true });
     await expect(
       password.or(
-        page.getByRole('heading', { name: 'Administration', exact: true }),
+        page.getByRole('heading', { name: 'Administrator panel', exact: true }),
       ),
     ).toBeVisible();
     if (await password.count()) {
@@ -108,7 +108,7 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
         .click();
     }
     await expect(
-      page.getByRole('heading', { name: 'Administration', exact: true }),
+      page.getByRole('heading', { name: 'Administrator panel', exact: true }),
     ).toBeVisible();
     await expect(
       page.getByText('No dashboard widgets are available.'),
@@ -121,7 +121,10 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
       accountMenu.getByRole('link', { name: 'User panel', exact: true }),
     ).toBeVisible();
     await expect(
-      accountMenu.getByRole('link', { name: 'Administration', exact: true }),
+      accountMenu.getByRole('link', {
+        name: 'Administrator panel',
+        exact: true,
+      }),
     ).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.locator('nav a[href="/account"]')).toHaveCount(0);
@@ -733,7 +736,7 @@ test('Admin operations: persisted health, explicit cooperative cancellation and 
     const password = page.getByLabel('Current password', { exact: true });
     await expect(
       password.or(
-        page.getByRole('heading', { name: 'Administration', exact: true }),
+        page.getByRole('heading', { name: 'Administrator panel', exact: true }),
       ),
     ).toBeVisible();
     if (await password.count()) {
@@ -834,7 +837,7 @@ test('application global settings compose responsive light and dark defaults wit
     const password = page.getByLabel('Current password', { exact: true });
     await expect(
       password.or(
-        page.getByRole('heading', { name: 'Administration', exact: true }),
+        page.getByRole('heading', { name: 'Administrator panel', exact: true }),
       ),
     ).toBeVisible();
     if (await password.count()) {

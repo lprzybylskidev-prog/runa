@@ -11,7 +11,7 @@ const { password, busy } = props.controller.entryProof;
     @submit.prevent="controller.confirmEntry"
   >
     <p class="text-sm text-muted">
-      Confirm your password to enter administration.
+      Confirm your password to enter the administrator panel.
     </p>
     <TextInput
       :model-value="password"

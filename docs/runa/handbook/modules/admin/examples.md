@@ -207,7 +207,7 @@ const props = defineProps<AdminApplicationProps>();
   <AdminApplication v-bind="props" v-slot="{ controller }">
     <main>
       <h1>Application administration</h1>
-      <nav aria-label="Administration">
+      <nav aria-label="Administrator panel">
         <ul>
           <li
             v-for="owner in controller.bootstrap.value?.owners"

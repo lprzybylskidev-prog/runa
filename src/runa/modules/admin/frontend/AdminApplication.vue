@@ -44,7 +44,7 @@ const navigation = computed<NavigationEntry[]>(() => [
     key: 'dashboard',
     routeKey: 'admin.dashboard',
     moduleKey: 'runa.admin',
-    label: 'Administration',
+    label: 'Administrator panel',
     href: '/admin',
     icon: 'adjustments-horizontal',
     availability: 'available',
@@ -106,7 +106,8 @@ const validPath = computed(
         tone="warning"
       >
         {{
-          controller.error.value?.message ?? 'Administration is unavailable.'
+          controller.error.value?.message ??
+          'The administrator panel is unavailable.'
         }}
         <Button @click="controller.refresh">Retry</Button>
       </Alert>
