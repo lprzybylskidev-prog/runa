@@ -630,6 +630,15 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Add native expiry/isolation/policy/rollback and frontend activity/lifecycle
     regressions, synchronize public contracts/examples and both instruction products.
     Prepare current runtime/assets for owner acceptance; broad gates stay point 12.
+- [x] 11a32. Keep table headers and a below-header horizontal scrollbar visible during page scrolling; use typed date/time filters throughout module views.
+  - Owner approval, 2026-10-31: preserve vertical page scrolling, pin headers and
+    their horizontal scrollbar within table bounds, and repair Audit from/until
+    with the existing timestamp picker. Review sibling module views and repair
+    the common mechanism. Preserve semantic headers, sorting/selection,
+    keyboard/touch access and canonical UTC instants.
+  - Synchronize public contracts/changelogs, add focused scrolling/filter
+    regressions and prepare current assets for repeated owner acceptance.
+    Broad verification remains point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3959,3 +3968,61 @@ final automated verification/release remains point 12. No Docker containers, ima
 networks or volumes were created/removed. Supported tests removed only disposable
 worker databases; development/base-test data, all services/model/Qdrant caches and
 verification evidence remain preserved.
+
+### Point 11a32 — Shared pinned table headers and typed timestamp filters
+
+Owner approval, 2026-10-31: keep page scrolling, pin table headers together with a
+horizontal scrollbar directly below them, and replace Audit from/until plain text
+filters with the existing calendar/time picker. Review all sibling module views.
+
+The shared Table retains one original semantic thead and its sorting/selection
+controls. A private viewport composable bounds its vertical translation to the
+table, accounts for the Application header or enclosing scrolling dialog, observes
+resizes and disposes listeners/animation frames. The below-header native scrollbar
+synchronizes both ways with the table region; trackpad/touch/keyboard access stays
+available. Narrow tables omit the rail. No copied headers or vertical table scroll
+container were introduced.
+
+The public optional TableColumn.filterType datetime descriptor composes the
+existing DateTimeInput using application timezone and PL/EN copy. Invalid drafts
+remain local; reset also clears uncommitted drafts. Every Admin collection maps
+declared datetime filters through that descriptor. Audit from/until now declare
+datetime. Focused source review covered Auth, Permissions, Audit and Admin module
+views/declarations: no other declared timestamp filter remains text, and module
+record tables already compose the shared Table. Auth/Permissions currently have
+no additional timestamp filters requiring declaration repair. Their generic
+collection mapping is covered alongside Audit rather than adding redundant
+module-specific controls. Admin 0.1.0 and Audit 1.1.0 remain the current unreleased
+candidates; no new module/public backend API version or upgrade edge is required.
+
+Eight focused native-browser frontend cases pass (exit/cleanup 0), covering zoned
+UTC conversion, invalid/reset drafts, shared datetime controls in three module
+owners, bounded header movement and both horizontal directions, existing semantic
+sorting/selection and filter reset/revalidation. A stale existing filter regression
+still expected inline error text after the earlier toast migration; its assertion
+now checks the rendered notification portal. Evidence:
+`.runtime/frontend/RM-2026-016-table-viewport-focused.log`. The supported asset
+preparation (vue-tsc, Vite and native/static error shells) passes in
+`.runtime/frontend/RM-2026-016-table-viewport-build.log`.
+
+Focused served-build inspection uses synthetic API responses for 25 rows in
+Auth/Permissions/Audit at 1440px PL/dark and 390px EN/light. All six views open the
+date/time picker and Details, refresh and export, retain headers immediately below
+the actual shell, synchronize horizontal movement and show no document overflow
+or page errors. Native scrollbars were enabled explicitly in headless Chromium
+for visual inspection. Evidence: `.runtime/frontend/RM-2026-016-table-viewport-browser.log`
+and `.runtime/artifacts/playwright/runa/RM-2026-016-table-viewport/` (JSON report and
+screenshots). These controlled previews are not authenticated owner acceptance.
+Real Nginx readiness returns 200 for /admin, /api/ready, /api/presentation and the
+component manifest; anonymous protected entry/activity return 401. Served and
+local asset manifests match; see `RM-2026-016-table-viewport-readiness.json` in the
+same frontend evidence directory.
+
+Public table/Admin/Audit guides and current changelogs are synchronized. Both
+instruction products already route table and sibling-module work to these public
+contracts; root AGENTS and owner/customer skills need no duplicate procedure.
+No dependency, database migration/reset, business write or Docker resource
+creation/removal occurred. Preserve development/base-test data, services,
+Qdrant/model caches and all reports. Ready for repeated owner acceptance at
+http://localhost:8080/admin with existing credentials. Manual acceptance 11b and
+final verification/release 12 remain open; no broad quality PASS is claimed.

@@ -70,7 +70,7 @@ final class HistoryPage implements ManagementPageProvider
         ];
         foreach (['occurred_at', 'module', 'action', 'actor_public_id', 'actor_kind', 'actor_label', 'outcome', 'correlation_id', 'entity_module', 'entity_type', 'entity_public_id', 'from', 'until'] as $key) {
             $text = ['pl' => self::FIELD_NAMES[$key], 'en' => ucwords(str_replace('_', ' ', $key))];
-            $summary[] = new ManagementFieldAccess(new ManagementField($key, $key === 'occurred_at' ? 'datetime' : (isset($choices[$key]) ? 'dictionary' : 'text'), $text, $text, filterable: ! in_array($key, ['occurred_at', 'actor_label'], true), choices: $choices[$key] ?? []), 'runa.audit.read');
+            $summary[] = new ManagementFieldAccess(new ManagementField($key, in_array($key, ['occurred_at', 'from', 'until'], true) ? 'datetime' : (isset($choices[$key]) ? 'dictionary' : 'text'), $text, $text, filterable: ! in_array($key, ['occurred_at', 'actor_label'], true), choices: $choices[$key] ?? []), 'runa.audit.read');
         }
         $detail = $summary;
         foreach (['entities', 'changes', 'context', 'execution', 'payload_part', 'payload_next'] as $key) {

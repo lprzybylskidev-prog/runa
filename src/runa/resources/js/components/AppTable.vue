@@ -10,6 +10,10 @@ import {
   onScopeDispose,
 } from 'vue';
 import AppFormNotifications from './AppFormNotifications.vue';
+import AppDateTimeInput from './AppDateTimeInput.vue';
+import { useApplicationDisplayDefaults } from '../runa/ui/displayDefaults';
+import { isInstant } from '../lib/temporal';
+import { useTableViewport } from '../composables/useTableViewport';
 import AppTablePreferences from './AppTablePreferences.vue';
 import AppTableActions from './AppTableActions.vue';
 import { useTableViews } from '../composables/useTableViews';
@@ -270,6 +274,24 @@ const loading = computed(
 );
 const state = computed(() => (loading.value ? 'loading' : sourceState.value));
 const tableElement = ref<globalThis.HTMLTableElement>();
+const {
+  setRegion,
+  setScrollbar,
+  overflow,
+  width: scrollWidth,
+  offset: headerOffset,
+  headerHeight,
+  railHeight,
+  synchronize,
+} = useTableViewport(tableElement);
+const displayDefaults = useApplicationDisplayDefaults();
+const filterReset = ref(0);
+const invalidFilters = ref<Record<string, boolean>>({});
+function resetFilters() {
+  filterReset.value++;
+  invalidFilters.value = {};
+  emit('update:query', { ...props.query, page: 1, search: '', filters: {} });
+}
 watch(state, async (value) => {
   if (value === 'loading' || !focusedColumn) return;
   const key = focusedColumn;
@@ -431,6 +453,36 @@ function changePage(value: number) {
                 :options="column.filterOptions"
                 @update:model-value="filter(column.key, $event)"
               />
+              <AppDateTimeInput
+                v-else-if="column.filterType === 'datetime'"
+                :key="`${column.key}-${filterReset}`"
+                :label="column.label"
+                :locale="english ? 'en' : 'pl'"
+                :time-zone="displayDefaults.timezone"
+                :zone-label="text('Strefa czasowa', 'Time zone')"
+                :invalid-message="
+                  text(
+                    'Wpisz poprawną datę i godzinę.',
+                    'Enter a valid date and time.',
+                  )
+                "
+                :model-value="
+                  isInstant(query.filters[column.key] ?? '')
+                    ? query.filters[column.key]!
+                    : null
+                "
+                :error="
+                  query.filters[column.key] &&
+                  !isInstant(query.filters[column.key]!)
+                    ? text(
+                        'Wpisz poprawną datę i godzinę.',
+                        'Enter a valid date and time.',
+                      )
+                    : ''
+                "
+                @validity="invalidFilters[column.key] = !$event"
+                @update:model-value="filter(column.key, $event)"
+              />
               <AppTextInput
                 v-else
                 size="sm"
@@ -463,16 +515,11 @@ function changePage(value: number) {
           variant="ghost"
           :aria-label="text('Resetuj filtry', 'Reset filters')"
           :disabled="
-            !query.search && !Object.values(query.filters).some(Boolean)
+            !query.search &&
+            !Object.values(query.filters).some(Boolean) &&
+            !Object.values(invalidFilters).some(Boolean)
           "
-          @click="
-            emit('update:query', {
-              ...query,
-              page: 1,
-              search: '',
-              filters: {},
-            })
-          "
+          @click="resetFilters"
         >
           <AppIcon name="filter-off" :size="20" />
         </AppButton>
@@ -608,155 +655,187 @@ function changePage(value: number) {
         </template>
       </AppAsyncContent>
     </div>
-    <div
-      v-else
-      role="region"
-      :aria-label="caption"
-      tabindex="0"
-      class="relative overflow-x-auto focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)]"
-    >
-      <table
-        ref="tableElement"
-        class="w-full border-collapse text-left"
-        :style="tableStyle"
+    <div v-else class="relative" data-table-viewport>
+      <div
+        :ref="setRegion"
+        role="region"
+        :aria-label="caption"
+        tabindex="0"
+        class="table-scroll-region relative overflow-x-auto focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)]"
+        @scroll="synchronize('table')"
       >
-        <colgroup>
-          <col v-if="selectable" :style="{ width: '48px' }" />
-          <col
-            v-for="column in visibleColumns"
-            :key="column.key"
-            :style="
-              hasWidths ? { width: `${column.width ?? 160}px` } : undefined
-            "
-          />
-          <col v-if="$slots.actions" :style="{ width: '112px' }" />
-        </colgroup>
-        <caption class="sr-only">
-          {{
-            caption
-          }}
-        </caption>
-        <thead
-          class="border-b border-line bg-[var(--runa-surface-raised)] text-[var(--runa-text-secondary)]"
+        <table
+          ref="tableElement"
+          class="w-full border-collapse text-left"
+          :style="tableStyle"
         >
-          <tr>
-            <th
-              v-if="selectable"
-              scope="col"
-              class="w-12 px-3 py-1 align-middle"
-            >
-              <AppCheckbox
-                hide-label
-                compact
-                :model-value="pageChecked"
-                :label="text('Zaznacz stronę', 'Select page')"
-                @update:model-value="
-                  updateSelection(
-                    toggleSelection(effectiveSelection, pageIds, $event),
-                  )
-                "
-              />
-            </th>
-            <th
+          <colgroup>
+            <col v-if="selectable" :style="{ width: '48px' }" />
+            <col
               v-for="column in visibleColumns"
               :key="column.key"
-              scope="col"
-              :data-column-key="column.key"
-              class="px-4 py-1 align-middle whitespace-nowrap"
-              :aria-sort="
-                query.sort?.key === column.key
-                  ? query.sort.direction === 'asc'
-                    ? 'ascending'
-                    : 'descending'
-                  : undefined
+              :style="
+                hasWidths ? { width: `${column.width ?? 160}px` } : undefined
               "
-            >
-              <AppButton
-                v-if="
-                  column.sortable !== false &&
-                  page?.capabilities.sort.includes(column.key)
-                "
-                variant="ghost"
-                size="sm"
-                class="-ml-[13px]"
-                @click="sort(column.key)"
-                >{{ column.label }}
-                <span aria-hidden="true">{{
+            />
+            <col v-if="$slots.actions" :style="{ width: '112px' }" />
+          </colgroup>
+          <caption class="sr-only">
+            {{
+              caption
+            }}
+          </caption>
+          <thead
+            class="relative z-10 border-b border-line bg-[var(--runa-surface-raised)] text-[var(--runa-text-secondary)]"
+            :style="{ transform: `translateY(${headerOffset}px)` }"
+          >
+            <tr>
+              <th
+                v-if="selectable"
+                scope="col"
+                class="w-12 px-3 py-1 align-middle"
+              >
+                <AppCheckbox
+                  hide-label
+                  compact
+                  :model-value="pageChecked"
+                  :label="text('Zaznacz stronę', 'Select page')"
+                  @update:model-value="
+                    updateSelection(
+                      toggleSelection(effectiveSelection, pageIds, $event),
+                    )
+                  "
+                />
+              </th>
+              <th
+                v-for="column in visibleColumns"
+                :key="column.key"
+                scope="col"
+                :data-column-key="column.key"
+                class="px-4 py-1 align-middle whitespace-nowrap"
+                :aria-sort="
                   query.sort?.key === column.key
                     ? query.sort.direction === 'asc'
-                      ? '↑'
-                      : '↓'
-                    : '↕'
-                }}</span></AppButton
-              >
-              <template v-else>{{ column.label }}</template>
-            </th>
-            <th
-              v-if="$slots.actions"
-              scope="col"
-              class="px-4 py-1 align-middle"
-            >
-              <span class="sr-only">{{ text('Działania', 'Actions') }}</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-if="state === 'empty' && retainEmptyFrame">
-            <td
-              :colspan="
-                Math.max(
-                  1,
-                  visibleColumns.length +
-                    (selectable ? 1 : 0) +
-                    ($slots.actions ? 1 : 0),
-                )
-              "
-              class="px-4 py-8 text-center text-muted"
-            >
-              <span role="status">{{
-                text('Brak wyników', 'No results')
-              }}</span>
-            </td>
-          </tr>
-          <tr
-            v-for="row in page?.rows"
-            :key="rowKey(row)"
-            class="border-b border-line transition-colors duration-160 motion-reduce:transition-none last:border-0 hover:bg-[var(--runa-surface-hover)]"
-            :class="
-              selectionContains(effectiveSelection, rowKey(row))
-                ? 'bg-[var(--runa-primary-subtle)]'
-                : ''
-            "
-          >
-            <td v-if="selectable" class="px-3 py-1 align-middle">
-              <AppCheckbox
-                hide-label
-                compact
-                :model-value="
-                  selectionContains(effectiveSelection, rowKey(row))
+                      ? 'ascending'
+                      : 'descending'
+                    : undefined
                 "
-                :label="`${text('Wybierz', 'Select')} ${rowKey(row)}`"
-                @update:model-value="select(rowKey(row), $event)"
-              />
-            </td>
-            <td
-              v-for="column in visibleColumns"
-              :key="column.key"
-              class="px-4 py-1 align-middle break-words"
-            >
-              <slot
-                :name="`cell-${column.key}`"
-                :row="row"
-                :value="column.value(row)"
-                >{{ column.value(row) ?? '—' }}</slot
               >
-            </td>
-            <td v-if="$slots.actions" class="px-4 py-1 align-middle">
-              <slot name="actions" :row="row" />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                <AppButton
+                  v-if="
+                    column.sortable !== false &&
+                    page?.capabilities.sort.includes(column.key)
+                  "
+                  variant="ghost"
+                  size="sm"
+                  class="-ml-[13px]"
+                  @click="sort(column.key)"
+                  >{{ column.label }}
+                  <span aria-hidden="true">{{
+                    query.sort?.key === column.key
+                      ? query.sort.direction === 'asc'
+                        ? '↑'
+                        : '↓'
+                      : '↕'
+                  }}</span></AppButton
+                >
+                <template v-else>{{ column.label }}</template>
+              </th>
+              <th
+                v-if="$slots.actions"
+                scope="col"
+                class="px-4 py-1 align-middle"
+              >
+                <span class="sr-only">{{ text('Działania', 'Actions') }}</span>
+              </th>
+            </tr>
+            <tr v-if="overflow" aria-hidden="true">
+              <td
+                :colspan="
+                  visibleColumns.length +
+                  Number(selectable) +
+                  Number(!!$slots.actions)
+                "
+                :style="{ height: `${railHeight}px`, padding: 0 }"
+              />
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="state === 'empty' && retainEmptyFrame">
+              <td
+                :colspan="
+                  Math.max(
+                    1,
+                    visibleColumns.length +
+                      (selectable ? 1 : 0) +
+                      ($slots.actions ? 1 : 0),
+                  )
+                "
+                class="px-4 py-8 text-center text-muted"
+              >
+                <span role="status">{{
+                  text('Brak wyników', 'No results')
+                }}</span>
+              </td>
+            </tr>
+            <tr
+              v-for="row in page?.rows"
+              :key="rowKey(row)"
+              class="border-b border-line transition-colors duration-160 motion-reduce:transition-none last:border-0 hover:bg-[var(--runa-surface-hover)]"
+              :class="
+                selectionContains(effectiveSelection, rowKey(row))
+                  ? 'bg-[var(--runa-primary-subtle)]'
+                  : ''
+              "
+            >
+              <td v-if="selectable" class="px-3 py-1 align-middle">
+                <AppCheckbox
+                  hide-label
+                  compact
+                  :model-value="
+                    selectionContains(effectiveSelection, rowKey(row))
+                  "
+                  :label="`${text('Wybierz', 'Select')} ${rowKey(row)}`"
+                  @update:model-value="select(rowKey(row), $event)"
+                />
+              </td>
+              <td
+                v-for="column in visibleColumns"
+                :key="column.key"
+                class="px-4 py-1 align-middle break-words"
+              >
+                <slot
+                  :name="`cell-${column.key}`"
+                  :row="row"
+                  :value="column.value(row)"
+                  >{{ column.value(row) ?? '—' }}</slot
+                >
+              </td>
+              <td v-if="$slots.actions" class="px-4 py-1 align-middle">
+                <slot name="actions" :row="row" />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div
+        v-show="overflow"
+        :ref="setScrollbar"
+        role="region"
+        :aria-label="
+          text('Przewijanie poziome', 'Horizontal scrolling') + ': ' + caption
+        "
+        tabindex="0"
+        class="absolute inset-x-0 z-10 overflow-x-scroll bg-[var(--runa-surface-raised)] focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)]"
+        :style="{
+          top: `${headerHeight - railHeight}px`,
+          height: `${railHeight}px`,
+          transform: `translateY(${headerOffset}px)`,
+        }"
+        @scroll="synchronize('rail')"
+      >
+        <div :style="{ width: `${scrollWidth}px`, height: '1px' }" />
+      </div>
     </div>
     <div
       class="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-[var(--runa-surface-raised)] px-4 py-3"
@@ -795,3 +874,12 @@ function changePage(value: number) {
     </div>
   </div>
 </template>
+
+<style scoped>
+.table-scroll-region {
+  scrollbar-width: none;
+}
+.table-scroll-region::-webkit-scrollbar {
+  display: none;
+}
+</style>

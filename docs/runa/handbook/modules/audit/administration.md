@@ -1,5 +1,10 @@
 # Audit administration viewer
 
+History from/until filters declare datetime and use the shared calendar/time picker
+in the application's timezone. Edited values reach the guarded reader as UTC
+instants; incomplete drafts remain local. The history table shares bounded pinned
+headers and a below-header horizontal scrollbar with other module views.
+
 Audit 1.1.0 supplies `runa.audit/history` Admin declarations, the private HistoryReader
 adapter and usable Polish/English defaults. Audit still has no backend dependency on Admin,
 Auth or Permissions. Admin requires current entry/password proof; every read also

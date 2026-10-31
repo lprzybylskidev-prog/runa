@@ -129,6 +129,7 @@ export function useAdminTable(
       label: tr(field.label),
       sortable: field.sortable && !field.sensitive,
       searchable: false,
+      ...(field.type === 'datetime' ? { filterType: 'datetime' as const } : {}),
       // The server owns matching; this function only declares a filter key to Table.
       ...(field.filterable && !field.sensitive ? { filter: () => true } : {}),
       ...(field.choices.length

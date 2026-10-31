@@ -1,5 +1,22 @@
 # Table and List Patterns
 
+The default Table keeps its original semantic header visible while the page (or
+enclosing dialog) scrolls, bounded by the table's end and below the Application
+shell header. Wide tables place a synchronized horizontal scrollbar immediately
+below that header; touch/trackpad and keyboard scrolling of the data region remain
+available. Tables that fit their container need no horizontal scrollbar. The private viewport
+composable stays in Runa; customer presentations compose public Table or replace
+its presentation through application-owned components.
+
+`TableColumn<Row>.filterType?: 'datetime'` is a public consumption descriptor owned
+by Runa UI, declared in `src/runa/resources/js/runa/ui/tables.ts` and consumed by
+runtime Table from `@/runa/ui`. It selects DateTimeInput using the application
+timezone and PL/EN picker copy. Query values remain explicit-offset ISO instants,
+normalized to UTC on edit. Incomplete/invalid drafts stay local without issuing a
+new filter query. Reset filters clears invalid drafts even without a committed
+filter. Dictionary filterOptions still select Select; other descriptors retain
+text filters. Custom filter slots own equivalent typed controls/draft handling.
+
 Canonical implementation: `src/runa/resources/js/components/AppTable.vue`, provider contracts in `src/runa/resources/js/runa/ui/tables.ts`, processing/transport helpers in `src/runa/resources/js/lib/table.ts`.
 
 Reuse filters, statistics, pagination, sorting, row/bulk actions and loading/empty/error states. The established page order is heading/description/actions, breadcrumbs, optional statistics, optional toolbar/filters, then mandatory content, with an optional supplementary panel. Statistics/Statistic now implement the global/filtered user switch, KPI slots and optional per-view mode persistence through useStatisticsMode; providers/calculations remain external. the isolated ApplicationScenario test fixture demonstrates integration above its toolbar. Pagination and the table foundation are available; personalization and named saved views are available; cross-page selection, provider-owned bulk operations and exports are available. Preserve mobile access to data and actions, including horizontal scrolling or an intentional responsive presentation when needed. Respect the canonical API pagination/filter contract and finite page sizes. Update this reference when a reusable pattern changes.

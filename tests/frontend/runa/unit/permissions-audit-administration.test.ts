@@ -8,7 +8,8 @@ import {
   PermissionsAdminEffective,
 } from '@/runa/permissions';
 import { AuditAdminDetail, AuditAdminHistory } from '@/runa/audit';
-import { useAdminForm } from '@/runa/admin';
+import { AdminRecordBrowser, useAdminForm } from '@/runa/admin';
+import { DateTimeInput } from '@/runa/ui';
 import type {
   AdminFieldData,
   AdminFormController,
@@ -78,6 +79,40 @@ const response = (data: unknown) =>
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
+it.each(['runa.auth', 'runa.permissions', 'runa.audit'])(
+  '%s maps datetime collection filters to the shared picker',
+  async (owner) => {
+    const controller = page(owner, 'history', [
+      section(
+        'catalogue',
+        [
+          { ...field('from'), type: 'datetime', filterable: true },
+          { ...field('until'), type: 'datetime', filterable: true },
+        ],
+        'table',
+      ),
+    ]);
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      response({ items: [], next: null, total: null }),
+    );
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          const form = useAdminForm(controller, { autoRead: false });
+          return () => h(AdminRecordBrowser, { controller, form });
+        },
+      }),
+    );
+    await vi.waitFor(() =>
+      expect(wrapper.findAllComponents(DateTimeInput)).toHaveLength(2),
+    );
+    expect(
+      wrapper
+        .findAllComponents(DateTimeInput)
+        .map((control) => control.props('timeZone')),
+    ).toEqual(['Europe/Warsaw', 'Europe/Warsaw']);
+  },
+);
 afterEach(() => {
   vi.restoreAllMocks();
   window.history.replaceState(null, '', '/');

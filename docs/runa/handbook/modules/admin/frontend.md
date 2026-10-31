@@ -27,6 +27,13 @@ interlude or content-tab placeholders are used. Replacements retain the existing
 shell controller and forward navigationLoading/contentLoading; independently
 loaded replacement regions compose public useViewReadiness/ViewBoundary.
 
+Default resource tables map every declared datetime filter to the shared Table
+datetime descriptor and DateTimeInput, including Audit from/until. This applies
+to all module collection views, independently of visible column preferences.
+Pickers use the application timezone; guarded reads retain canonical instants.
+Tables share bounded pinned headers and a below-header horizontal scrollbar
+as described in the public [tables guide](../../development/frontend/tables.md).
+
 ## Controllers and public types
 
 The following types and implemented functions use that public facade. Function

@@ -2,6 +2,7 @@
 import { expect, it, vi } from '@runa/testing/vitest';
 import { mount, flushPromises } from '@runa/testing/vue';
 import { defineComponent, h, ref } from 'vue';
+import AppDateTimeInput from '../../../../src/runa/resources/js/components/AppDateTimeInput.vue';
 import {
   Table,
   useTable,
@@ -38,6 +39,122 @@ const query = (): TableQuery => ({
   perPage: 1,
   sort: null,
   filters: {},
+});
+it('datetime table filters keep invalid drafts local, normalize zoned edits and reset uncommitted drafts', async () => {
+  const value = ref(query());
+  const wrapper = mount(
+    defineComponent({
+      setup: () => () =>
+        h(Table<Row>, {
+          mode: 'client',
+          rows,
+          columns: [{ ...columns[0]!, filterType: 'datetime' }],
+          rowKey: (row: Row) => row.public_id,
+          query: value.value,
+          caption: 'Dates',
+          'onUpdate:query': (next: TableQuery) => {
+            value.value = next;
+          },
+        }),
+    }),
+  );
+  try {
+    const input = wrapper.getComponent(AppDateTimeInput).get('input');
+    await input.setValue('31.02.2026 12:30');
+    expect(value.value.filters).toEqual({});
+    expect(input.attributes('aria-invalid')).toBe('true');
+    await wrapper.get('button[aria-label="Resetuj filtry"]').trigger('click');
+    expect(
+      (
+        wrapper.getComponent(AppDateTimeInput).get('input')
+          .element as HTMLInputElement
+      ).value,
+    ).toBe('');
+    await wrapper
+      .getComponent(AppDateTimeInput)
+      .get('input')
+      .setValue('31.10.2026 12:30');
+    expect(value.value.filters.name).toBe('2026-10-31T11:30:00.000Z');
+    expect(value.value.page).toBe(1);
+  } finally {
+    wrapper.unmount();
+  }
+});
+
+it('table viewport pins the original header inside a scrolling region and synchronizes both horizontal controls', async () => {
+  const host = document.createElement('div');
+  host.style.cssText =
+    'height:240px;width:320px;overflow:auto;position:relative';
+  const spacer = document.createElement('div');
+  spacer.style.height = '100px';
+  host.append(spacer);
+  document.body.append(host);
+  const wrapper = mount(Table<Row>, {
+    attachTo: host,
+    props: {
+      mode: 'client',
+      rows: Array.from({ length: 20 }, (_, i) => ({
+        ...rows[0]!,
+        public_id: String(i),
+      })),
+      columns,
+      columnState: columns.map((column) => ({
+        key: column.key,
+        visible: true,
+        width: 400,
+      })),
+      rowKey: (row: Row) => row.public_id,
+      query: { ...query(), perPage: 20 },
+      caption: 'Wide rows',
+      searchable: false,
+    },
+  });
+  try {
+    await vi.waitFor(() =>
+      expect(wrapper.findAll('tbody tr')).toHaveLength(20),
+    );
+    const viewport = wrapper.get('[data-table-viewport]')
+      .element as HTMLElement;
+    // This unit harness does not load Tailwind; supply only the layout primitives.
+    viewport.style.position = 'relative';
+    (wrapper.get('table').element as HTMLElement).style.borderCollapse =
+      'collapse';
+    (wrapper.get('caption').element as HTMLElement).style.display = 'none';
+    const region = viewport.firstElementChild as HTMLElement;
+    region.style.overflowX = 'auto';
+    const rail = viewport.lastElementChild as HTMLElement;
+    rail.style.overflowX = 'scroll';
+    rail.style.position = 'absolute';
+    rail.style.width = '320px';
+    wrapper.findAll('tbody td').forEach((cell) => {
+      (cell.element as HTMLElement).style.height = '35px';
+    });
+    await vi.waitFor(() => expect(rail.style.display).not.toBe('none'));
+    const originalHead = wrapper.get('thead').element;
+    host.scrollTop = viewport.offsetTop + 60;
+    await vi.waitFor(() =>
+      expect(
+        Math.abs(
+          originalHead.getBoundingClientRect().top -
+            host.getBoundingClientRect().top,
+        ),
+      ).toBeLessThan(2),
+    );
+    rail.scrollLeft = 120;
+    await vi.waitFor(() => expect(region.scrollLeft).toBe(120));
+    region.scrollLeft = 230;
+    await vi.waitFor(() => expect(rail.scrollLeft).toBe(230));
+    host.scrollTop = viewport.offsetTop + viewport.offsetHeight;
+    await vi.waitFor(() =>
+      expect(originalHead.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        region.getBoundingClientRect().bottom + 1,
+      ),
+    );
+    expect(wrapper.findAll('thead')).toHaveLength(1);
+  } finally {
+    wrapper.unmount();
+    host.remove();
+  }
 });
 it('sorts numeric values before slicing and filters with explicit adapters', () => {
   const page = clientTablePage(rows, columns, {

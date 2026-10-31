@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Declare from/until as datetime filters and use the shared timezone-aware calendar/time picker. Keep history headers and horizontal scrolling accessible while scrolling the page.
+
 - Keep reset beside filter fields in the shared filter region. Render declared
   event timestamps and known Auth entry dates through the application locale/
   timezone formatter, preserving canonical instants in transport and exports.

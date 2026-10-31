@@ -652,7 +652,7 @@ it('Admin cursor tables type filters refuse invalid input and retain filters whi
     expect(table.error.value?.reason).toBe('admin_input_invalid'),
   );
   expect(queries).toHaveLength(2);
-  expect(wrapper.text()).toContain('Enter a valid integer filter.');
+  expect(document.body.textContent).toContain('Enter a valid integer filter.');
   table.query.value = {
     ...table.query.value,
     filters: { name: 'Sensitive filter' },

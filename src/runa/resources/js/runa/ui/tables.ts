@@ -10,6 +10,8 @@ export interface TableColumn<Row> {
   label: string;
   value: (row: Row) => string | number | null;
   filterOptions?: readonly { value: string; label: string }[];
+  /** Date/time filters edit explicit-offset instants in the application time zone. */
+  filterType?: 'datetime';
   compare?: (a: Row, b: Row) => number;
   filter?: (row: Row, value: string) => boolean;
   /** Data columns sort by default; false opts out. Server capabilities still apply. */

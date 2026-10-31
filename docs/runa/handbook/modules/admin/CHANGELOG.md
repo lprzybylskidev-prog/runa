@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Map declared datetime filters to the shared timezone-aware picker across module tables; share pinned semantic headers and a below-header horizontal scrollbar.
+
 - Repair missing permission-check projection context in aggregate preparation.
 
 - Use Auth-owned protected-section idle access throughout Admin, including native
