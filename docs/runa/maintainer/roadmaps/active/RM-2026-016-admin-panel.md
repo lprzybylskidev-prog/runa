@@ -350,6 +350,10 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Explicitly apply only necessary forward local platform/module data, preserve
     users/settings/Audit, prepare current assets and confirm real HTTP readiness
     plus authorized access. Record exact outcomes and any operational blockers.
+- [x] 11a1. Apply owner-requested Polish Admin label correction.
+  - Replace the Polish account-menu entry and module catalogue name with
+    `Panel administratora`, refresh local registry metadata/current assets and
+    preserve English-only Admin presentation. No grant/route/security change.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -1911,3 +1915,20 @@ no duplicated manual-acceptance procedure. No Docker containers, networks, volum
 or image tags were created/removed; active services, development/test data, model/
 Qdrant caches and all reports remain. Point 11a is complete. Point 11b is pending
 the owner's manual frontend tests and explicit acceptance; point 12 stays last/open.
+
+## Point 11a1 — Polish Admin label — 2026-10-31
+
+Owner-requested manual-review correction: the Polish account-menu entry and Admin
+module catalogue name now read `Panel administratora`. English Admin presentation,
+routes, grants and session/entry guards are unchanged. Auth 2.0.0 and Admin 0.1.0
+remain their existing unreleased candidates; no new version-only edge is needed.
+Their changelogs are synchronized. No reusable instruction or public signature
+changes, so owner/customer AGENTS and skills need no additional rule.
+
+Explicit `runa:modules:sync runa` refreshed the changed manifest without changing
+installed data or account assignments (registry generation 181). The supported
+manual-runtime asset build passed, including its type/error-shell prerequisites;
+output remains in `.runtime/frontend/manual-acceptance-label-build.log`. Actual
+home/Admin document requests return HTTP 200. No extra tests were added for this
+label-only correction, no broad quality gate was run and no Docker/data cleanup
+was needed. Owner manual acceptance in 11b remains open.

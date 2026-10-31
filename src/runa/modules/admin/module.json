@@ -6,7 +6,7 @@
   "platform": ">=0.7.0 <0.8.0",
   "framework_api": "^1.0.0",
   "name": {
-    "pl": "Administracja",
+    "pl": "Panel administratora",
     "en": "Administration"
   },
   "description": {

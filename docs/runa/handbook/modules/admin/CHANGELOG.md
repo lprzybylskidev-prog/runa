@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Name the Polish module catalogue entry `Panel administratora`, matching the shared account menu.
+
 - Complete opt-in module generator integration and working independent App/public presentation examples; document all authoring topics, exact overwrite consent, settings-provider ownership and customer update preservation. Remain at development 0.1.0 until verified creation closure.
 
 - Deliver platform-owned application global settings with App-declared safe values/assets, positive revisions, exact grants and atomic redacted Audit; add no-restart public browser/mail/native-error presentation with source-only emergency fallback and replaceable shared-controller editor.
