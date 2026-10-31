@@ -9,6 +9,14 @@ Load for UI behavior, accessibility, responsive states and rendered acceptance.
 Use Vue/Tailwind skills only for their implementation concerns. Inspect an analogous
 view and the existing public component catalogue before inventing a pattern.
 
+For every new or changed view, use public `FormNotifications` from `@/runa/ui`
+for form-wide errors and operation success/failure; keep field errors beside controls.
+Do not introduce page-local outcome banners or duplicate the same result.
+Before implementation, read [the canonical feedback contract](../../../docs/runa/handbook/development/frontend/forms.md)
+and follow its repeat-attempt, recovery and modal-focus requirements. Contextual
+security/availability warnings, reconciliation and durable progress/results retain
+their owning state presentation. Check these distinctions during view review.
+
 | Task                                   | Load selectively                                                            |
 | -------------------------------------- | --------------------------------------------------------------------------- |
 | Accessibility/states/performance       | references/accessibility-responsive.md; references/ux-design-performance.md |

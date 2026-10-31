@@ -11,6 +11,15 @@ public controllers and retain platform session/proof handling without protected 
 
 Load for accessible responsive UI, public components, forms, tables and page patterns. Read the active application roadmap, query available local knowledge and inspect analogous App code. Project rules override generic advice. Load references/application.md only when needed. Preserve protected platform source.
 
+For every new or changed view, use public `FormNotifications` from `@/runa/ui`
+for form-wide errors and operation success/failure; keep field errors beside controls.
+Do not introduce page-local outcome banners or duplicate the same result.
+Before implementation, read the canonical feedback contract in
+`docs/runa/handbook/development/frontend/forms.md` and follow its repeat-attempt,
+recovery and modal-focus requirements. Contextual
+security/availability warnings, reconciliation and durable progress/results retain
+their owning state presentation. Check these distinctions during view review.
+
 Use `docs/runa/handbook/architecture/public-api.md` to distinguish supported
 extension/consumption APIs from platform internals. Consume documented backend
 adapters and frontend facades from application-owned code; neither a Contracts

@@ -573,6 +573,12 @@ reassessment before resuming point 3; completed point history remains evidence.
     reconciliation and durable operation status displays.
   - Keep explicit recovery actions, modal focus boundaries and repeat-attempt
     feedback; synchronize contracts and record focused verification before commit.
+- [x] 11a26. Make shared feedback mandatory in both frontend skill entrypoints.
+  - Owner request, 2026-10-31: require FormNotifications for every new/changed
+    view's form-wide and operation outcomes, prohibit local duplicate banners and
+    route to the canonical field/recovery/modal contract before implementation.
+  - Synchronize owner/customer skill products and provenance without copying the
+    handbook procedure or changing runtime behavior.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3457,3 +3463,27 @@ No dependencies, runtime configuration, migrations, database mutations or Docker
 resources were introduced; active services, databases, caches and reports remain.
 No broad verification was run. Owner acceptance 11b and final affected-area
 verification/release 12 remain open.
+
+### Point 11a26 — Mandatory feedback routing in frontend skills
+
+Owner request, 2026-10-31: the handbook-only reference from 11a25 was insufficient
+for consistent future implementation. Both owner and customer frontend SKILL.md
+entrypoints now explicitly require shared public FormNotifications for every new
+or changed view's form-wide and operation outcomes, with associated field errors
+and no duplicate page-local banners. Both route to the existing canonical forms
+contract before implementation, including repeat-attempt/recovery/modal requirements,
+and distinguish contextual warnings/reconciliation/durable results. Provenance in
+both SOURCE.md files identifies the local public contract; upstream pins remain.
+Root/customer AGENTS already require shared patterns and frontend skills, so no
+additional always-loaded rule or copied procedure is needed.
+
+Local knowledge status/search were current and their original forms/component
+sources were opened. Focused review confirms both skill entrypoints expose the
+same rule and the owner-relative link resolves; the customer path is the supported
+installed handbook path. Frontmatter and discovery metadata are unchanged.
+The upstream skill-creator quick_validate command could not start because its
+PyYAML dependency is absent; no dependency was installed. Markdown formatting,
+staged repository hooks and knowledge freshness validate the documentation change.
+No runtime code/assets or module versions change, so no application tests/build
+are required. No Docker resources or data were created/removed. Manual acceptance
+11b and final verification/release 12 remain open.
