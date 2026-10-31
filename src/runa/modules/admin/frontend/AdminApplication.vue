@@ -9,7 +9,7 @@ import {
   AuthPresentationProvider,
   useAuthPresentation,
 } from '@/runa/auth';
-import { Alert, Button, MinimalLayout } from '@/runa/ui';
+import { Alert, Button, MinimalLayout, getModulePresentation } from '@/runa/ui';
 import type { NavigationEntry } from '@/runa/ui';
 import type { AdminApplicationProps, AdminController } from './contracts';
 import { useAdmin } from './useAdmin';
@@ -63,6 +63,7 @@ const navigation = computed<NavigationEntry[]>(() => [
     routeKey: owner.id + '.' + owner.default_page,
     moduleKey: owner.id,
     label: tr(owner.title),
+    icon: getModulePresentation(owner.id).icon,
     href: '/admin/' + owner.id + '/' + owner.default_page,
     availability: 'available' as const,
   })) ?? []),

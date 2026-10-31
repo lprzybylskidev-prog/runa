@@ -191,8 +191,12 @@ it('operational diagnostic renders persisted health and isolates denied manageme
   );
   const wrapper = mount(AdminOperations, { props: { admin: admin() } });
   await flushPromises();
-  await vi.waitFor(() => expect(wrapper.text()).toContain('health_expired'));
-  expect(wrapper.text()).toContain('Source 1.0.0');
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain('Health observations have expired.'),
+  );
+  expect(wrapper.get('[data-module="app.safe"]').text()).toContain(
+    'Source version',
+  );
   expect(wrapper.text()).not.toContain('Preview transition');
   expect(wrapper.text()).not.toContain('Diagnose now');
   await wrapper
@@ -493,72 +497,213 @@ it('Admin subviews use top navigation and a cancelled dirty transition preserves
   expect(new URL(window.location.href).searchParams.has('section')).toBe(false);
 });
 
-it('Admin module subviews restore deep links and expose grant-filtered top dropdown navigation', async () => {
+it('Admin module subviews restore deep links inside a grant-filtered dialog', async () => {
   window.history.replaceState(
     {},
     '',
     '/admin?module=app.safe&section=settings',
   );
-  const { ApplicationLayout, createPreferenceStore } =
-    await import('@/runa/ui');
   const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
     String(input).endsWith('/capabilities')
       ? response({ capabilities: ['diagnostics.read', 'settings.read'] })
-      : response({
-          module: 'app.safe',
-          generation: 1,
-          revision: 1,
-          settings: {},
-        }),
+      : String(input).includes('/diagnostics')
+        ? response({ modules: [] })
+        : response({
+            module: 'app.safe',
+            generation: 1,
+            revision: 1,
+            settings: {},
+          }),
   );
-  const owner = admin();
+  const w = mount(AdminOperations, {
+    props: { admin: admin() },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(document.body.textContent).toContain('No settings are declared.'),
+  );
+  expect(w.getComponent(AdminOperationalEditor).props('module')).toBe(
+    'app.safe',
+  );
+  const dialog = document.body.querySelector('[role="dialog"]')!;
+  expect(dialog).not.toBeNull();
+  const tabs = Array.from(dialog.querySelectorAll('[role="tab"]')).map((tab) =>
+    tab.textContent?.trim(),
+  );
+  expect(tabs).toEqual(['Overview', 'Settings']);
+  expect(
+    fetch.mock.calls.filter(([url]) => String(url).includes('/diagnostics')),
+  ).toHaveLength(1);
+  expect(new URL(window.location.href).searchParams.get('section')).toBe(
+    'settings',
+  );
+});
+
+it('dashboard filtering refreshes immediately, shows progress and keeps the latest filter response', async () => {
+  const { Select, IdentityProvider } = await import('@/runa/ui');
+  const pending: {
+    filter: string;
+    signal?: AbortSignal | null | undefined;
+    finish: (response: Response) => void;
+  }[] = [];
+  const module = (id: string) => ({
+    id,
+    kind: 'optional',
+    registered: true,
+    enabled: true,
+    health: 'healthy',
+    available: true,
+    source_version: '1.0.0',
+    installed_version: '1.0.0',
+    reasons: [],
+    required: {},
+    optional: {},
+    observations: [],
+  });
+  const snapshot = (id: string) => ({
+    modules: [module(id)],
+    platform_version: '0.7.0',
+    application_version: '3.2.1',
+    runtime: { php: '8.4.27' },
+  });
+  vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.pathname.endsWith('/capabilities'))
+      return response({ capabilities: ['diagnostics.read'] });
+    const filter = url.searchParams.get('filter') ?? 'enabled';
+    if (filter === 'enabled') return response(snapshot('app.first'));
+    return new Promise((finish) =>
+      pending.push({ filter, signal: init?.signal, finish }),
+    );
+  });
   const w = mount(
     defineComponent({
       setup: () => () =>
         h(
-          ApplicationLayout,
-          {
-            title: 'Admin',
-            navigation: [],
-            preferenceStore: createPreferenceStore(),
-          },
-          { default: () => h(AdminOperations, { admin: owner }) },
+          IdentityProvider,
+          { identity: { applicationName: 'Customer CRM' } },
+          { default: () => h(AdminOperations, { admin: admin() }) },
         ),
     }),
     { attachTo: document.body },
   );
   await vi.waitFor(() =>
-    expect(w.text()).toContain('No settings are declared.'),
+    expect(w.find('[data-module="app.first"]').exists()).toBe(true),
   );
-  expect(w.getComponent(AdminOperationalEditor).props('module')).toBe(
-    'app.safe',
+  const runtime = w.get('[data-admin-runtime]').text();
+  expect(runtime).toContain('Runa 0.7.0');
+  expect(runtime).toContain('Customer CRM 3.2.1');
+  expect(runtime).toContain('PHP 8.4.27');
+  expect(runtime).not.toContain('{');
+  expect(w.text()).not.toContain('Refresh observations');
+  w.getComponent(Select).vm.$emit('update:modelValue', 'registered');
+  await vi.waitFor(() => expect(pending).toHaveLength(1));
+  expect(w.find('[data-diagnostics-refresh]').exists()).toBe(true);
+  const retained = w.get('[data-module="app.first"]').element;
+  w.getComponent(Select).vm.$emit('update:modelValue', 'all');
+  await vi.waitFor(() => expect(pending).toHaveLength(2));
+  expect(pending[0]!.signal?.aborted).toBe(true);
+  expect(w.get('[data-module="app.first"]').element).toBe(retained);
+  pending[1]!.finish(response(snapshot('app.latest')));
+  await vi.waitFor(() =>
+    expect(w.find('[data-module="app.latest"]').exists()).toBe(true),
   );
-  expect(
-    fetch.mock.calls.some(([url]) => String(url).includes('/diagnostics')),
-  ).toBe(false);
-  const trigger = w
-    .findAll('header button')
-    .find((button) => button.text() === 'Module operations')!;
+  pending[0]!.finish(response(snapshot('app.stale')));
+  await flushPromises();
+  expect(w.find('[data-module="app.stale"]').exists()).toBe(false);
+  expect(w.find('[data-diagnostics-refresh]').exists()).toBe(false);
+});
+
+it('module dialog guards close and tab transitions without losing a dirty draft', async () => {
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = String(input);
+    if (url.endsWith('/capabilities'))
+      return response({
+        capabilities: ['diagnostics.read', 'settings.read', 'settings.manage'],
+      });
+    if (url.includes('/diagnostics'))
+      return response({
+        modules: [
+          {
+            id: 'app.safe',
+            kind: 'optional',
+            enabled: true,
+            registered: true,
+            available: true,
+            health: 'healthy',
+          },
+        ],
+      });
+    return response({
+      module: 'app.safe',
+      generation: 1,
+      revision: 1,
+      settings: {
+        title: {
+          definition: {
+            type: 'string',
+            nullable: true,
+            names: { pl: 'Nazwa', en: 'Name' },
+          },
+          value: 'Original',
+        },
+      },
+    });
+  });
+  const w = mount(AdminOperations, {
+    props: { admin: admin() },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(w.find('[data-module="app.safe"] button').exists()).toBe(true),
+  );
+  const trigger = w.get<HTMLButtonElement>('[data-module="app.safe"] button');
+  trigger.element.focus();
   await trigger.trigger('click');
-  const popup =
-    document.body.querySelector('.shell-top-dropdown') ?? document.body;
-  const links = Array.from(popup.querySelectorAll('a')).filter((link) =>
-    link.href.includes('section='),
+  await vi.waitFor(() =>
+    expect(document.body.querySelector('[role="dialog"]')).not.toBeNull(),
   );
-  expect(links.some((link) => link.textContent?.trim() === 'Settings')).toBe(
-    true,
+  const tab = Array.from(
+    document.body.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+  ).find((tab) => tab.textContent?.trim() === 'Settings')!;
+  tab.click();
+  await vi.waitFor(() =>
+    expect(w.findComponent(AdminOperationalEditor).exists()).toBe(true),
   );
-  expect(
-    links.some((link) => link.textContent?.trim() === 'Health policy'),
-  ).toBe(false);
-  expect(
-    links.some((link) => link.textContent?.trim() === 'Integrations'),
-  ).toBe(false);
-  expect(
-    w
-      .findAll('main button')
-      .some((button) =>
-        ['Settings', 'Health policy', 'Integrations'].includes(button.text()),
-      ),
-  ).toBe(false);
+  const editor = w.getComponent(AdminOperationalEditor);
+  await vi.waitFor(() => expect(editor.find('input').exists()).toBe(true));
+  await editor.get('input').setValue('Unsaved name');
+  const controller = w.vm.controller;
+  const close = document.body.querySelector<HTMLButtonElement>(
+    '[aria-label="Close dialog"]',
+  )!;
+  close.click();
+  await vi.waitFor(() => expect(controller.confirmation.value).toBeDefined());
+  controller.confirm(false);
+  await flushPromises();
+  expect(new URL(window.location.href).searchParams.get('section')).toBe(
+    'settings',
+  );
+  expect(editor.get('input').element.value).toBe('Unsaved name');
+  close.click();
+  await vi.waitFor(() => expect(controller.confirmation.value).toBeDefined());
+  controller.confirm(true);
+  await vi.waitFor(() =>
+    expect(new URL(window.location.href).searchParams.has('module')).toBe(
+      false,
+    ),
+  );
+  expect(w.findComponent(AdminOperationalEditor).exists()).toBe(false);
+});
+
+it('an operations slot replacement owns its module dialog presentation', async () => {
+  window.history.replaceState({}, '', '/admin?module=app.safe');
+  vi.spyOn(window, 'fetch').mockResolvedValue(response({ capabilities: [] }));
+  const w = mount(AdminOperations, {
+    props: { admin: admin() },
+    slots: { default: () => h('p', 'Custom operations') },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() => expect(w.text()).toContain('Custom operations'));
+  expect(document.body.querySelector('[role="dialog"]')).toBeNull();
 });

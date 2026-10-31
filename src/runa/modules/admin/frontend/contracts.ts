@@ -151,6 +151,7 @@ export type AdminComponentRegistry = Readonly<
   Record<string, { readonly buildId: string; readonly component: Component }>
 >;
 export interface AdminPresentation {
+  moduleCard?: Component;
   operations?: Component;
   operationalEditor?: Component;
   applicationSettings?: Component;
@@ -430,4 +431,11 @@ export interface AdminRecordBrowserProps extends AdminPageProps {
 }
 export interface AdminRecordBrowserSlots {
   toolbar?(props: { table: AdminTableController }): VNode[];
+}
+
+export interface AdminModuleCardProps {
+  module: import('./useAdminOperations').AdminOperationData;
+  disabled?: boolean;
+  interactive?: boolean;
+  details?: boolean;
 }

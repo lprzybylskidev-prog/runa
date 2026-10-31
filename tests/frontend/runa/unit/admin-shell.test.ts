@@ -206,7 +206,10 @@ it('uses one supplied session, follows the English application preference and pl
     props: { session },
     attachTo: document.body,
   });
-  await vi.waitFor(() => expect(w.text()).toContain('No dashboard widgets'));
+  await vi.waitFor(() =>
+    expect(w.find('[data-admin-content]').exists()).toBe(true),
+  );
+  expect(w.text()).not.toContain('No dashboard widgets');
   const shell = w.getComponent(ApplicationSessionShell);
   expect(shell.props('session')).toBe(session);
   expect(shell.props('navigation')?.map((n) => n.label)).toEqual([
@@ -2320,4 +2323,62 @@ it('Admin initial readiness settles a stalled lazy renderer to the bounded failu
     wrapper.unmount();
     vi.useRealTimers();
   }
+});
+
+it('Admin dashboard uses welcome catalogue icons, area breadcrumbs and omits empty widget copy', async () => {
+  const { getModulePresentation } = await import('@/runa/ui');
+  const source = bootstrap();
+  source.owners = ['runa.auth', 'runa.audit', 'runa.permissions'].map((id) => ({
+    id,
+    title: id,
+    default_page: 'settings',
+    pages: [
+      {
+        key: 'settings',
+        title: 'Settings',
+        href: '/admin/' + id + '/settings',
+        group: null,
+        order: 0,
+      },
+    ],
+  }));
+  vi.mocked(window.fetch).mockImplementation(async (input) =>
+    String(input) === '/api/admin'
+      ? respond({ data: source })
+      : respond({ data: { capabilities: [] } }),
+  );
+  const session = sessionFixture();
+  session.welcomeEnabled.value = true;
+  const w = mount(AdminApplication, {
+    props: { session },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(
+      w
+        .find('.shell-sidebar-scroll nav a[href="/admin/runa.auth/settings"]')
+        .exists(),
+    ).toBe(true),
+  );
+  const navigation = w
+    .getComponent(ApplicationSessionShell)
+    .props('navigation')!;
+  for (const owner of source.owners) {
+    expect(navigation.find((entry) => entry.key === owner.id)?.icon).toBe(
+      getModulePresentation(owner.id).icon,
+    );
+    expect(
+      w
+        .find(
+          '.shell-sidebar-scroll nav a[href="/admin/' +
+            owner.id +
+            '/settings"] svg',
+        )
+        .exists(),
+    ).toBe(true);
+  }
+  expect(w.get('.shell-breadcrumbs').text()).toContain('Home');
+  expect(w.get('.shell-breadcrumbs').text()).toContain('Administrator panel');
+  expect(w.find('.shell-breadcrumbs a[href="/app"]').exists()).toBe(false);
+  expect(w.text()).not.toContain('No dashboard widgets');
 });

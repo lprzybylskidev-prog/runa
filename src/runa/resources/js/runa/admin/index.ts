@@ -47,3 +47,5 @@ export {
   useAdminLocale,
   adminText,
 } from '../../../../modules/admin/frontend/localization';
+
+export { default as AdminModuleCard } from '../../../../modules/admin/frontend/AdminModuleCard.vue';

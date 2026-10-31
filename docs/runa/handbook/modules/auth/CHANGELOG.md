@@ -2,6 +2,8 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Share Welcome module presentation through the public UI source catalogue and correct the shared session shell's Admin breadcrumbs for dashboard and owner pages.
+
 - Publish account navigation loading in the top bar, remove obsolete content tab placeholders and expose shell contentLoading/navigationLoading for initial page discovery.
 
 - Move account subview navigation into the shared top bar via UI PageNavigation, with query deep links, browser history and pending-write protection. Keep standalone presentation usable. Included in the existing unreleased candidate; no migration or version-only upgrade edge.

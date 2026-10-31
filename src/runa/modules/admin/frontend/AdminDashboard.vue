@@ -23,13 +23,10 @@ const presentation = useAdminPresentation();
       :is="presentation.operations ?? AdminOperations"
       :admin="admin"
     />
-    <p
-      v-if="!props.bootstrap.dashboard.widgets.length"
-      class="text-sm text-muted"
+    <div
+      v-if="props.bootstrap.dashboard.widgets.length"
+      class="grid min-w-0 gap-6 lg:grid-cols-2"
     >
-      {{ tr('No dashboard widgets are available.') }}
-    </p>
-    <div v-else class="grid min-w-0 gap-6 lg:grid-cols-2">
       <AdminComponentBoundary
         v-for="widget in bootstrap.dashboard.widgets"
         :key="widget.id"

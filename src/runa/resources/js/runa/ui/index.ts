@@ -189,3 +189,6 @@ export { default as ViewBoundary } from '../../components/AppViewBoundary.vue';
 
 export { default as PageNavigation } from '../../components/AppPageNavigation.vue';
 export { usePageNavigationHost } from '../../composables/usePageNavigationHost';
+
+export { moduleCatalogue, getModulePresentation } from './modulePresentation';
+export type { ModulePresentation } from './modulePresentation';

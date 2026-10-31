@@ -441,6 +441,15 @@ reassessment before resuming point 3; completed point history remains evidence.
     together after settlement, preserving background drafts and access fences.
   - Synchronize public composition guidance, add focused delayed-read regressions,
     prepare runnable assets and commit before repeating owner acceptance.
+- [x] 11a12. Refine the Admin dashboard and module operation dialogs.
+  - Apply the owner's ten dashboard corrections: shared welcome/sidebar icons,
+    automatic module-state filtering with visible refresh, verified identity/version
+    sources, semantic module cards, corrected breadcrumbs and no empty widget copy.
+  - Open selected module operations in a guarded, accessible dialog with readable
+    status/details and scoped tabs; preserve capability/proof/preview, dirty-close,
+    URL/history, request fencing and native lifecycle/work/recovery contracts.
+  - Synchronize public defaults/composition and instruction-product assessment,
+    run focused uncertainty checks and prepare current assets before acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -2475,3 +2484,73 @@ exercise presentation; this is not authenticated owner manual acceptance or a fi
 quality PASS. No Docker resources or database data were created/changed. Existing
 development services/data, knowledge/model caches and all reports remain. Owner
 manual point 11b and final verification/release point 12 remain open.
+
+### Point 11a12 — Dashboard status presentation and module dialogs
+
+Implemented the owner's ten Admin dashboard corrections. UI now owns one public
+source module-presentation catalogue: Welcome and Admin sidebar/cards use the same
+manifest names/descriptions and platform icon map, with a usable optional-module
+fallback. The module-state selector uses the requested Polish labels and refreshes
+on selection without an extra button. A local Spinner/aria-busy accompanies
+refresh while cards remain mounted; newer diagnostic filters cancel obsolete
+optional reads and cannot receive a stale replacement snapshot.
+
+Inspected the actual identity chain: src/runa/platform.json and VERSION identify
+platform Runa 0.7.0, while src/app/application.json independently identifies the
+application as Runa 0.0.0. branding config and ApplicationIdentity consume these
+validated manifests; AdminOperations diagnostics already expose their correct
+versions. The live public /api/identity confirms both names/versions. The defect
+was presentation: the application name was replaced by a generic label and the
+safe runtime.php value was rendered as a JSON object. The dashboard now separates
+platform/application/runtime, uses the public identity's application name (including
+its documented presentation precedence) and renders the scalar PHP version.
+No identity, version or runtime configuration was changed.
+
+Public AdminModuleCard supplies shared icons, meaningful localized status/reasons,
+semantic success/warning/danger/neutral accents, source/installed versions and
+readable dependency/observation details. It is available for composition and through
+AdminPresentation.moduleCard. Clicking a card opens the shared accessible Dialog;
+capability-filtered local Tabs contain overview/actions, health policy, settings
+and integrations. Dashboard/Application settings remain in the shell top bar.
+Deep links/history remain URL-derived. Closing or changing a dirty editor uses
+the existing guard; rejected close retains its draft and URL, actual context loss
+retains existing clearing/fences. Module changes clear old preview/work/result
+presentation. Core lifecycle controls are omitted, with backend refusals unchanged.
+Native lifecycle review still shows affected modules, planned changes, blockers
+and active-work counts before the existing explicit apply/confirmation protocol.
+Retained-operation recovery is grouped in a disclosure inside the dialog.
+
+Corrected Admin breadcrumbs to Home / Administrator panel, including owner pages.
+Removed empty dashboard-widget copy and the redundant persisted-observation note.
+Updated the canonical component/module-authoring/loading/motion and Admin contracts,
+Auth/Admin candidate changelogs and affected component/E2E expectations. Owner and
+customer AGENTS/skills already route reuse, public replacement, navigation and
+readiness to these canonical guides; both products need no duplicate rule. The
+new catalogue location is reflected in the module-authoring guide. No backend API,
+authorization, transaction, schema, dependency or upgrade edge changed. Auth remains
+unreleased 2.0.0 and Admin creation candidate 0.1.0 under prepared platform 0.7.0;
+other modules and release metadata are unchanged.
+
+Necessary focused browser checks passed 20 cases (358 excluded), exit 0 / cleanup 0:
+source-shared icons and breadcrumbs, omitted widgets, native proof/read fences,
+rapid filter cancellation/progress/stale-response refusal, actual application name
+with server versions/scalar PHP, guarded modal/deep-link/tab/dirty-close behavior,
+custom slot ownership of module-dialog presentation, and prior initial
+readiness/lazy/failure/background draft/navigation regressions.
+Log: .runtime/frontend/RM-2026-016-dashboard-tests.log. Native E2E expectations are
+synchronized; broad E2E and the final quality graph remain point 12.
+
+Manual-runtime build passed TypeScript, Vite and native/static error rendering;
+log: .runtime/frontend/RM-2026-016-dashboard-build.log. Nginx /admin and all 16
+entry-linked build assets returned 200. A controlled Playwright presentation
+diagnostic against this served build inspected dashboard, held diagnostic refresh,
+module overview and settings at PL/dark/1440px and EN/light/390px. Eight final
+screenshots and report.json remain under
+.runtime/artifacts/playwright/runa/RM-2026-016-dashboard/. Both contexts had correct
+breadcrumbs, four sidebar icons, no page errors and no document overflow. Initial
+fixture screenshots remain prefixed initial-; the fixture's preference/activity
+responses were corrected before the successful diagnostic. These synthetic checks
+do not replace authenticated owner acceptance. Browser contexts were closed and
+temporary diagnostic/edit helpers removed. No Docker resources or database data
+were created/changed; existing services/data, knowledge/model caches and all reports
+remain preserved. Manual owner point 11b and final verification/release 12 stay open.

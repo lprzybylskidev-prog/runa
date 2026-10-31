@@ -83,6 +83,11 @@ const current = computed(
     },
 );
 const account = computed(() => current.value.routeKey === 'account');
+const adminArea = computed(
+  () =>
+    current.value.href === '/admin' ||
+    current.value.href?.startsWith('/admin/'),
+);
 const entries = computed(() =>
   (props.accountMenu ?? []).filter((entry) => {
     try {
@@ -173,7 +178,9 @@ const contentReadiness = useViewReadiness({
           ...(welcomeEnabled
             ? [{ label: text('Strona główna', 'Home'), href: '/' }]
             : []),
-          { label: text('Aplikacja', 'Application'), href: '/app' },
+          ...(adminArea
+            ? [{ label: text('Panel administratora', 'Administrator panel') }]
+            : [{ label: text('Aplikacja', 'Application'), href: '/app' }]),
           ...(account
             ? [{ label: text('Panel użytkownika', 'User panel') }]
             : []),

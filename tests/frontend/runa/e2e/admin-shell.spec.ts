@@ -112,7 +112,7 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
     ).toBeVisible();
     await expect(
       page.getByText('No dashboard widgets are available.'),
-    ).toBeVisible();
+    ).toHaveCount(0);
     await page
       .getByRole('button', { name: 'User menu: Admin operator', exact: true })
       .click();
@@ -746,7 +746,7 @@ test('Admin operations: persisted health, explicit cooperative cancellation and 
         .click();
     }
     await expect(
-      page.getByText('health_expired', { exact: true }),
+      page.getByText('Health observations have expired.', { exact: true }),
     ).toBeVisible();
     await page.getByRole('button', { name: 'app.safe', exact: true }).click();
     await page
@@ -755,9 +755,16 @@ test('Admin operations: persisted health, explicit cooperative cancellation and 
     await page
       .getByRole('button', { name: 'Request cancellation', exact: true })
       .click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(
+      page.getByRole('dialog').filter({
+        has: page.getByRole('button', { name: 'Confirm', exact: true }),
+      }),
+    ).toBeVisible();
     await page
       .getByRole('dialog')
+      .filter({
+        has: page.getByRole('button', { name: 'Confirm', exact: true }),
+      })
       .getByRole('button', { name: 'Confirm', exact: true })
       .click();
     await expect(

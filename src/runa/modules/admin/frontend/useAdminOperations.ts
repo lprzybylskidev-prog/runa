@@ -198,6 +198,8 @@ export function useAdminOperations(admin: AdminController) {
     return call(command, submitted, true);
   }
   async function refresh(filter = 'enabled') {
+    if (busy.value) return;
+    cancelRead();
     const own = epoch;
     const next = await read('diagnostics', { filter });
     if (next && own === epoch && alive) snapshot.value = next;

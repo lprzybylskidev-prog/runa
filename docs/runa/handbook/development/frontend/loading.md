@@ -141,6 +141,11 @@ and uses its existing authority/error flow. Optional entry navigation policy doe
 not block the shell. Explicit preference changes retain the established overlay;
 incoming hydration never saves defaults back to the account.
 
+Admin diagnostic refresh retains the current cards and shows a local Spinner;
+changing the module-state filter cancels an older optional diagnostic read so the
+latest selection wins. Module dialog editors retain the same initial-readiness
+and dirty-draft boundaries.
+
 New views and App replacements must declare these boundaries and use the public
 primitives instead of adding page-wide loading flags/timers. Review cold cache,
 slow/failed images, tab return, a dirty editor, access loss/account switch during

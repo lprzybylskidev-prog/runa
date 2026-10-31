@@ -68,3 +68,9 @@ are pending. It inherits Skeleton's 1600ms pulse and reduced-motion/print fallba
 image/initials replacement is immediate without another fade or entrance.
 During loading the avatar has no steady backing fill, and the circular Skeleton
 uses the exact avatar bounds so its opacity pulse remains visible.
+
+Admin diagnostics keep the current cards mounted while a shared Spinner indicates
+refresh. Module cards use semantic status colors and 160ms border/background
+feedback; reduced motion keeps static cues. Module operations reuse Dialog's
+existing modal entrance/exit and Tabs' retained-panel motion, without a separate
+page animation or request delay.

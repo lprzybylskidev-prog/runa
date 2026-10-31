@@ -2,9 +2,17 @@
 import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import AdminOperationResult from './AdminOperationResult.vue';
+import AdminModuleCard from './AdminModuleCard.vue';
 import { computed, nextTick, ref, shallowRef, watch } from 'vue';
 import {
   PageNavigation,
+  Dialog,
+  Tabs,
+  Spinner,
+  Badge,
+  Accordion,
+  useIdentity,
+  getModulePresentation,
   usePageResolver,
   Alert,
   Button,
@@ -26,13 +34,14 @@ import { useAdminInitialReadiness } from './initialReadiness';
 const props = defineProps<{ admin: AdminController }>();
 const controller = useAdminOperations(props.admin);
 const presentation = useAdminPresentation();
+const identity = useIdentity();
+const recoveryOpen = ref(false);
 const capabilitiesReady = ref(false);
 const initialSettled = ref(false);
 const initialReadiness = useAdminInitialReadiness(() => initialSettled.value);
 const capabilities = ref<string[]>([]),
   filter = ref('enabled');
-const moduleInput = ref(''),
-  selected = ref('');
+const selected = ref('');
 const pageNavigation = usePageResolver(
   [
     {
@@ -57,7 +66,8 @@ function sectionHref(
   if (section)
     url.searchParams.set('section', section === true ? 'application' : section);
   else url.searchParams.delete('section');
-  if (selected.value) url.searchParams.set('module', selected.value);
+  if (selected.value && section !== true)
+    url.searchParams.set('module', selected.value);
   else url.searchParams.delete('module');
   return url.pathname + url.search + url.hash;
 }
@@ -78,64 +88,11 @@ const navigationEntries = computed(() => [
     href: sectionHref(true),
     availability: 'available' as const,
   },
-  ...(selected.value &&
-  (has('settings.read') ||
-    has('integrations.manage') ||
-    (has('health.configure') && has('diagnostics.read')))
-    ? [
-        {
-          key: 'module',
-          routeKey: 'admin.dashboard.module',
-          moduleKey: 'runa.admin',
-          label: tr('Module operations'),
-          href: sectionHref(false),
-          availability: 'available' as const,
-          children: [
-            ...(has('health.configure') && has('diagnostics.read')
-              ? [
-                  {
-                    key: 'health',
-                    routeKey: 'admin.dashboard.health',
-                    moduleKey: 'runa.admin',
-                    label: tr('Health policy'),
-                    href: sectionHref('health'),
-                    availability: 'available' as const,
-                  },
-                ]
-              : []),
-            ...(has('settings.read')
-              ? [
-                  {
-                    key: 'settings',
-                    routeKey: 'admin.dashboard.settings',
-                    moduleKey: 'runa.admin',
-                    label: tr('Settings'),
-                    href: sectionHref('settings'),
-                    availability: 'available' as const,
-                  },
-                ]
-              : []),
-            ...(has('integrations.manage')
-              ? [
-                  {
-                    key: 'integrations',
-                    routeKey: 'admin.dashboard.integrations',
-                    moduleKey: 'runa.admin',
-                    label: tr('Integrations'),
-                    href: sectionHref('integrations'),
-                    availability: 'available' as const,
-                  },
-                ]
-              : []),
-          ],
-        },
-      ]
-    : []),
 ]);
 const navigationCurrent = computed(() => ({
   routeKey: applicationSettings.value
     ? 'admin.dashboard.application'
-    : 'admin.dashboard.' + (editor.value ?? 'operations'),
+    : 'admin.dashboard.operations',
   moduleKey: 'runa.admin',
   href: sectionHref(editor.value ?? applicationSettings.value),
 }));
@@ -160,7 +117,11 @@ watch(
     const module = url.searchParams.get('module') ?? '';
     if (selected.value !== module) {
       selected.value = module;
-      moduleInput.value = module;
+      work.value = undefined;
+      preview.value = undefined;
+      result.value = undefined;
+      operationId.value = '';
+      recoveryOpen.value = false;
     }
     const section = url.searchParams.get('section');
     editor.value =
@@ -200,7 +161,7 @@ const activeWork = computed(() => {
 async function refresh() {
   if (has('diagnostics.read')) await controller.refresh(filter.value);
 }
-async function select(module = moduleInput.value) {
+async function select(module: string) {
   const url = new URL(sectionHref(false), window.location.origin);
   url.searchParams.set('module', module);
   if (!(await pageNavigation.navigate(url.pathname + url.search + url.hash)))
@@ -209,6 +170,103 @@ async function select(module = moduleInput.value) {
   preview.value = undefined;
   work.value = undefined;
   controller.dirty.value = false;
+}
+watch(filter, () => {
+  if (capabilitiesReady.value) void refresh();
+});
+const selectedModule = computed(() =>
+  modules.value.find((module) => module.id === selected.value),
+);
+const moduleTabs = computed(() => [
+  { id: 'overview', label: tr('Overview'), disabled: controller.busy.value },
+  ...(has('health.configure') && has('diagnostics.read')
+    ? [
+        {
+          id: 'health',
+          label: tr('Health policy'),
+          disabled: controller.busy.value,
+        },
+      ]
+    : []),
+  ...(has('settings.read')
+    ? [
+        {
+          id: 'settings',
+          label: tr('Settings'),
+          disabled: controller.busy.value,
+        },
+      ]
+    : []),
+  ...(has('integrations.manage')
+    ? [
+        {
+          id: 'integrations',
+          label: tr('Integrations'),
+          disabled: controller.busy.value,
+        },
+      ]
+    : []),
+]);
+async function changeModuleTab(tab: string) {
+  if (!moduleTabs.value.some((item) => item.id === tab && !item.disabled))
+    return;
+  await pageNavigation.navigate(
+    sectionHref(
+      tab === 'overview'
+        ? false
+        : (tab as 'health' | 'settings' | 'integrations'),
+    ),
+  );
+}
+async function closeModule() {
+  const url = new URL(pageNavigation.href.value);
+  url.searchParams.delete('module');
+  url.searchParams.delete('section');
+  if (await pageNavigation.navigate(url.pathname + url.search + url.hash)) {
+    work.value = undefined;
+    preview.value = undefined;
+    result.value = undefined;
+    operationId.value = '';
+    recoveryOpen.value = false;
+    controller.dirty.value = false;
+  }
+}
+const runtimePhp = computed(() => {
+  const runtime = controller.snapshot.value?.runtime;
+  return runtime &&
+    typeof runtime === 'object' &&
+    !Array.isArray(runtime) &&
+    typeof runtime.php === 'string'
+    ? runtime.php
+    : '—';
+});
+function entries(value: AdminJson | undefined): [string, AdminJson][] {
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? Object.entries(value)
+    : [];
+}
+function blocker(code: string) {
+  const messages: Record<string, string> = {
+    core_target: 'Core module lifecycle cannot be changed here.',
+    health_unavailable: 'Health has not been confirmed.',
+    installed_data_incompatible: 'Installed data requires an update.',
+    policy_unavailable: 'The lifecycle policy is unavailable.',
+    not_registered: 'The module is not registered.',
+    source_missing: 'Module source is missing.',
+    required_cycle: 'Required dependencies contain a cycle.',
+    dependency_version: 'A required dependency is incompatible.',
+  };
+  return (
+    tr(messages[code] ?? 'A native module policy blocks this transition.') +
+    ' (' +
+    code +
+    ')'
+  );
+}
+function list(value: AdminJson | undefined): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
 }
 async function command(
   name: AdminOperationCommand,
@@ -276,7 +334,6 @@ watch(
     capabilitiesReady.value = false;
     capabilities.value = [];
     selected.value = '';
-    moduleInput.value = '';
     editor.value = undefined;
     work.value = undefined;
     preview.value = undefined;
@@ -289,9 +346,11 @@ watch(
     capabilities.value = Array.isArray(value?.capabilities)
       ? value.capabilities.filter((v): v is string => typeof v === 'string')
       : [];
+    await nextTick();
+    if (!applicationSettings.value) await refresh();
+    if (context !== controller.contextRevision.value) return;
     capabilitiesReady.value = true;
     await nextTick();
-    if (!applicationSettings.value && !editor.value) await refresh();
     initialSettled.value = true;
   },
   { immediate: true },
@@ -313,25 +372,14 @@ watch(
   },
 );
 defineExpose({ controller });
-function format(value: AdminJson | undefined) {
-  return typeof value === 'object'
-    ? JSON.stringify(value)
-    : String(value ?? '—');
-}
 </script>
 <template>
   <slot :controller="controller">
     <div class="space-y-6">
-      <p
-        v-if="controller.refreshing.value && !controller.snapshot.value"
-        class="text-sm text-muted"
-        role="status"
+      <Alert v-if="controller.error.value && !selected" tone="warning"
+        >{{ tr(controller.error.value)
+        }}<Button @click="refresh">{{ tr('Retry') }}</Button></Alert
       >
-        {{ tr('Loading operational information…') }}
-      </p>
-      <Alert v-if="controller.error.value" tone="warning">{{
-        tr(controller.error.value)
-      }}</Alert>
       <PageNavigation
         :entries="navigationEntries"
         :loading="
@@ -348,133 +396,160 @@ function format(value: AdminJson | undefined) {
           :controller="controller"
         />
       </Card>
-      <Card v-if="!applicationSettings && has('diagnostics.read')">
-        <template #header
-          ><h2>{{ tr('Runtime and module health') }}</h2></template
+      <template v-if="!applicationSettings && has('diagnostics.read')">
+        <dl
+          v-if="controller.snapshot.value"
+          class="grid gap-3 sm:grid-cols-3"
+          data-admin-runtime
         >
-        <div class="space-y-4">
-          <div class="flex flex-wrap items-end gap-3">
-            <Select
-              :label="tr('Registry state')"
-              v-model="filter"
-              :options="[
-                { value: 'enabled', label: tr('Registered and enabled') },
-                { value: 'registered', label: tr('Registered') },
-                { value: 'all', label: tr('All retained modules') },
-              ]"
-              :locale="adminLocale"
-              :disabled="controller.busy.value"
-            />
-            <Button :disabled="controller.busy.value" @click="refresh">{{
-              tr('Refresh observations')
-            }}</Button>
+          <div
+            class="rounded border border-line bg-[var(--runa-container-body-background)] px-4 py-3"
+          >
+            <dt class="text-xs text-muted">{{ tr('Platform') }}</dt>
+            <dd class="mt-1 text-sm font-semibold">
+              Runa
+              <span class="font-normal text-muted">{{
+                controller.snapshot.value.platform_version ??
+                identity.platformVersion
+              }}</span>
+            </dd>
           </div>
-          <p v-if="controller.snapshot.value" class="text-sm text-muted">
-            {{ tr('Runa') }} {{ controller.snapshot.value.platform_version }} ·
-            {{ tr('Application') }}
-            {{ controller.snapshot.value.application_version }} · PHP
-            {{ format(controller.snapshot.value.runtime) }}
-          </p>
-          <p class="text-xs text-muted">
-            {{
-              tr(
-                'Reads use persisted observations. Diagnosis runs only when explicitly requested.',
-              )
-            }}
-          </p>
-          <ul class="grid min-w-0 gap-4 md:grid-cols-2">
+          <div
+            class="rounded border border-line bg-[var(--runa-container-body-background)] px-4 py-3"
+          >
+            <dt class="text-xs text-muted">{{ tr('Application') }}</dt>
+            <dd class="mt-1 text-sm font-semibold">
+              {{ identity.applicationName }}
+              <span class="font-normal text-muted">{{
+                controller.snapshot.value.application_version ??
+                identity.applicationVersion
+              }}</span>
+            </dd>
+          </div>
+          <div
+            class="rounded border border-line bg-[var(--runa-container-body-background)] px-4 py-3"
+          >
+            <dt class="text-xs text-muted">{{ tr('Runtime') }}</dt>
+            <dd class="mt-1 text-sm font-semibold">
+              PHP <span class="font-normal text-muted">{{ runtimePhp }}</span>
+            </dd>
+          </div>
+        </dl>
+        <section
+          class="space-y-5"
+          :aria-busy="controller.refreshing.value"
+          data-module-diagnostics
+        >
+          <div class="flex flex-wrap items-end justify-between gap-4">
+            <h2 class="py-3 text-base font-semibold">{{ tr('Modules') }}</h2>
+            <div class="flex flex-wrap items-center gap-4">
+              <span
+                v-if="controller.refreshing.value"
+                class="flex items-center gap-2 text-xs text-muted"
+                data-diagnostics-refresh
+                ><Spinner
+                  size="sm"
+                  :label="tr('Refreshing module state')"
+                /><span aria-hidden="true">{{ tr('Refreshing…') }}</span></span
+              >
+              <Select
+                :label="tr('Module state')"
+                v-model="filter"
+                :options="[
+                  {
+                    value: 'enabled',
+                    label: tr('Registered and enabled modules'),
+                  },
+                  { value: 'registered', label: tr('Registered modules') },
+                  { value: 'all', label: tr('All modules') },
+                ]"
+                :locale="adminLocale"
+                :disabled="controller.busy.value"
+              />
+            </div>
+          </div>
+          <ul
+            class="grid min-w-0 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3"
+          >
             <li
               v-for="module in modules"
               :key="String(module.id)"
-              class="min-w-0 space-y-2 border border-field p-4 text-sm"
+              class="flex min-w-0"
             >
-              <Button
+              <component
+                :is="presentation.moduleCard ?? AdminModuleCard"
+                :module="module"
                 :disabled="controller.busy.value"
-                @click="select(String(module.id))"
-                >{{ module.id }}</Button
-              >
-              <p>
-                {{ module.available ? tr('Available') : tr('Unavailable') }} ·
-                {{ tr(String(module.health)) }} ·
-                {{ module.enabled ? tr('Enabled') : tr('Disabled') }}
-              </p>
-              <p>
-                {{ tr('Source') }}
-                {{ module.source_version ?? tr('missing') }} ·
-                {{ tr('Installed') }}
-                {{ module.installed_version ?? tr('not installed') }}
-              </p>
-              <p class="break-words text-xs text-muted">
-                {{ tr('Required:') }} {{ format(module.required) }} ·
-                {{ tr('Optional:') }}
-                {{ format(module.optional) }}
-              </p>
-              <p
-                v-if="Array.isArray(module.reasons) && module.reasons.length"
-                class="break-words text-xs"
-              >
-                {{ module.reasons.join(', ') }}
-              </p>
-              <p
-                v-for="(observation, index) in Array.isArray(
-                  module.observations,
-                )
-                  ? module.observations
-                  : []"
-                :key="index"
-                class="break-words text-xs text-muted"
-              >
-                {{ format(observation) }}
-              </p>
+                @select="select"
+              />
             </li>
           </ul>
-        </div>
-      </Card>
-      <Card v-if="!applicationSettings && capabilities.length">
-        <template #header
-          ><h2>{{ tr('Module operations') }}</h2></template
+          <p
+            v-if="!modules.length && !controller.refreshing.value"
+            class="py-8 text-center text-sm text-muted"
+          >
+            {{ tr('No modules match this filter.') }}
+          </p>
+        </section>
+      </template>
+    </div>
+    <Dialog
+      :model-value="!!selected && !applicationSettings && capabilitiesReady"
+      :title="getModulePresentation(selected).name[adminLocale]"
+      :description="selected"
+      size="xl"
+      :locale="adminLocale"
+      :busy="controller.busy.value"
+      @update:model-value="!$event && closeModule()"
+    >
+      <Alert v-if="controller.error.value" tone="warning">{{
+        tr(controller.error.value)
+      }}</Alert>
+      <div
+        v-if="controller.refreshing.value"
+        class="flex items-center gap-2 text-xs text-muted"
+      >
+        <Spinner size="sm" :label="tr('Loading module information')" /><span
+          aria-hidden="true"
+          >{{ tr('Loading module information') }}</span
         >
-        <div class="space-y-4">
-          <div class="flex flex-wrap items-end gap-3">
-            <TextInput
-              :label="tr('Module ID')"
-              v-model="moduleInput"
-              :helper="tr('Select a module above or enter its declared ID.')"
-              :disabled="controller.busy.value"
+      </div>
+      <Tabs
+        :model-value="editor ?? 'overview'"
+        :items="moduleTabs"
+        :label="tr('Module operations')"
+        @update:model-value="changeModuleTab"
+      >
+        <template #overview>
+          <div v-if="!editor" class="space-y-6">
+            <component
+              :is="presentation.moduleCard ?? AdminModuleCard"
+              v-if="selectedModule"
+              :module="selectedModule"
+              :interactive="false"
+              details
             />
-            <Button
-              :disabled="controller.busy.value || !moduleInput"
-              @click="select()"
-              >{{ tr('Select module') }}</Button
-            >
-          </div>
-          <template v-if="selected">
-            <h3 class="break-words font-semibold">{{ selected }}</h3>
             <div class="flex flex-wrap gap-3">
               <Button
                 v-if="has('health.diagnose')"
-                :disabled="controller.busy.value"
+                variant="outline"
+                :busy="controller.busy.value"
                 @click="command('health.diagnose', { module: selected })"
                 >{{ tr('Diagnose now') }}</Button
               >
               <Button
                 v-if="has('work.read')"
+                variant="outline"
+                :busy="controller.refreshing.value"
                 :disabled="controller.busy.value"
                 @click="readWork"
                 >{{ tr('Active work') }}</Button
               >
             </div>
-            <component
-              v-if="editor"
-              :is="presentation.operationalEditor ?? AdminOperationalEditor"
-              :key="selected + ':' + editor"
-              :controller="controller"
-              :module="selected"
-              :kind="editor"
-              :writable="editor !== 'settings' || has('settings.manage')"
-              @saved="refresh"
-            />
-            <div v-if="has('modules.manage')" class="space-y-3">
+            <div
+              v-if="has('modules.manage') && selectedModule?.kind !== 'core'"
+              class="space-y-3"
+            >
               <h3 class="font-semibold">{{ tr('Optional lifecycle') }}</h3>
               <p class="text-xs text-muted">
                 {{
@@ -500,9 +575,77 @@ function format(value: AdminJson | undefined) {
                 tr('Preview transition')
               }}</Button>
               <template v-if="preview">
-                <pre class="whitespace-pre-wrap break-words text-xs">{{
-                  JSON.stringify({ ...preview, review: undefined }, null, 2)
-                }}</pre>
+                <div class="space-y-3 rounded border border-line p-4">
+                  <Badge :tone="preview.ready ? 'success' : 'warning'">{{
+                    preview.ready
+                      ? tr('Ready to apply')
+                      : tr('Transition blocked')
+                  }}</Badge>
+                  <div
+                    v-if="list(preview.affected).length"
+                    class="space-y-2 text-xs"
+                  >
+                    <h4 class="font-semibold">{{ tr('Affected modules') }}</h4>
+                    <ul class="space-y-1">
+                      <li v-for="id in list(preview.affected)" :key="id">
+                        {{ getModulePresentation(id).name[adminLocale] }}
+                      </li>
+                    </ul>
+                  </div>
+                  <dl
+                    v-if="entries(preview.changes).length"
+                    class="space-y-2 text-xs"
+                  >
+                    <dt class="font-semibold">{{ tr('Planned changes') }}</dt>
+                    <dd
+                      v-for="[id, enabled] in entries(preview.changes)"
+                      :key="id"
+                      class="flex flex-wrap justify-between gap-2"
+                    >
+                      <span>{{
+                        getModulePresentation(id).name[adminLocale]
+                      }}</span
+                      ><Badge>{{
+                        tr(
+                          intent === 'unregister'
+                            ? 'unregister'
+                            : enabled
+                              ? 'enable'
+                              : 'disable',
+                        )
+                      }}</Badge>
+                    </dd>
+                  </dl>
+                  <Alert v-if="list(preview.blockers).length" tone="warning"
+                    ><ul class="space-y-2">
+                      <li v-for="code in list(preview.blockers)" :key="code">
+                        {{ blocker(code) }}
+                      </li>
+                    </ul></Alert
+                  >
+                  <dl
+                    v-if="entries(preview.active_work).length"
+                    class="space-y-2 text-xs"
+                  >
+                    <dt class="font-semibold">{{ tr('Active work') }}</dt>
+                    <dd
+                      v-for="[id, counts] in entries(preview.active_work)"
+                      :key="id"
+                    >
+                      <span>{{
+                        getModulePresentation(id).name[adminLocale]
+                      }}</span>
+                      <ul>
+                        <li
+                          v-for="[state, count] in entries(counts)"
+                          :key="state"
+                        >
+                          {{ tr(state) }}: {{ count }}
+                        </li>
+                      </ul>
+                    </dd>
+                  </dl>
+                </div>
                 <Button
                   v-if="preview.ready && typeof preview.review === 'string'"
                   :disabled="controller.busy.value"
@@ -567,72 +710,91 @@ function format(value: AdminJson | undefined) {
                 >
               </div>
             </div>
-          </template>
-          <div
-            v-if="has('modules.manage') || has('settings.manage')"
-            class="space-y-3"
-          >
-            <h3 class="font-semibold">{{ tr('Retained operation') }}</h3>
-            <TextInput
-              :label="tr('Operation UUID')"
-              v-model="operationId"
-              :disabled="controller.busy.value"
-            />
-            <Select
-              :label="tr('Operation owner')"
-              v-model="operationKind"
-              :options="
-                [
-                  { value: 'modules', label: tr('Optional lifecycle') },
-                  { value: 'settings', label: tr('Module settings') },
-                ].filter((option) =>
-                  has(
-                    option.value === 'modules'
-                      ? 'modules.manage'
-                      : 'settings.manage',
-                  ),
-                )
-              "
-              :locale="adminLocale"
-              :disabled="controller.busy.value"
-            />
-            <div class="flex flex-wrap gap-3">
-              <Button
-                :disabled="controller.busy.value || !operationId"
-                @click="status"
-                >{{ tr('Read status') }}</Button
-              >
-              <Button
-                v-if="operationKind === 'modules' && has('modules.manage')"
-                :disabled="controller.busy.value || !operationId"
-                @click="command('modules.resume', { id: operationId })"
-                >{{ tr('Resume native workflow') }}</Button
-              >
-              <Button
-                v-if="operationKind === 'modules' && has('modules.manage')"
-                :disabled="controller.busy.value || !operationId"
-                @click="command('modules.cancel', { id: operationId }, true)"
-                >{{ tr('Cancel and compensate') }}</Button
-              >
-              <Button
-                v-if="operationKind === 'settings' && has('settings.manage')"
-                :disabled="controller.busy.value || !operationId"
-                @click="command('settings.recover', { id: operationId }, true)"
-                >{{ tr('Recover settings') }}</Button
-              >
-            </div>
+            <Accordion
+              v-if="has('modules.manage') || has('settings.manage')"
+              v-model="recoveryOpen"
+              :label="tr('Retained operation')"
+            >
+              <TextInput
+                :label="tr('Operation UUID')"
+                v-model="operationId"
+                :disabled="controller.busy.value"
+              />
+              <Select
+                :label="tr('Operation owner')"
+                v-model="operationKind"
+                :options="
+                  [
+                    { value: 'modules', label: tr('Optional lifecycle') },
+                    { value: 'settings', label: tr('Module settings') },
+                  ].filter((option) =>
+                    has(
+                      option.value === 'modules'
+                        ? 'modules.manage'
+                        : 'settings.manage',
+                    ),
+                  )
+                "
+                :locale="adminLocale"
+                :disabled="controller.busy.value"
+              />
+              <div class="flex flex-wrap gap-3">
+                <Button
+                  :disabled="controller.busy.value || !operationId"
+                  @click="status"
+                  >{{ tr('Read status') }}</Button
+                >
+                <Button
+                  v-if="operationKind === 'modules' && has('modules.manage')"
+                  :disabled="controller.busy.value || !operationId"
+                  @click="command('modules.resume', { id: operationId })"
+                  >{{ tr('Resume native workflow') }}</Button
+                >
+                <Button
+                  v-if="operationKind === 'modules' && has('modules.manage')"
+                  :disabled="controller.busy.value || !operationId"
+                  @click="command('modules.cancel', { id: operationId }, true)"
+                  >{{ tr('Cancel and compensate') }}</Button
+                >
+                <Button
+                  v-if="operationKind === 'settings' && has('settings.manage')"
+                  :disabled="controller.busy.value || !operationId"
+                  @click="
+                    command('settings.recover', { id: operationId }, true)
+                  "
+                  >{{ tr('Recover settings') }}</Button
+                >
+              </div>
+            </Accordion>
           </div>
-          <AdminOperationResult v-if="result" :result="result" />
-          <p class="text-xs text-muted">
-            {{
-              tr(
-                'Maintenance diagnostics and recovery use the supported CLI. Installation, updates and operator commands are unavailable here.',
-              )
-            }}
-          </p>
-        </div>
-      </Card>
-    </div>
+        </template>
+        <template
+          v-for="tab in moduleTabs.filter((tab) => tab.id !== 'overview')"
+          :key="tab.id"
+          #[tab.id]
+        >
+          <component
+            v-if="editor === tab.id"
+            :is="presentation.operationalEditor ?? AdminOperationalEditor"
+            :key="selected + ':' + editor"
+            :controller="controller"
+            :module="selected"
+            :kind="editor"
+            :writable="editor !== 'settings' || has('settings.manage')"
+            @saved="refresh"
+          />
+        </template>
+      </Tabs>
+      <AdminOperationResult v-if="result" :result="result" />
+      <template #footer
+        ><Button
+          variant="outline"
+          :disabled="controller.busy.value"
+          @click="closeModule"
+          >{{ tr('Close') }}</Button
+        ></template
+      >
+    </Dialog>
   </slot>
   <ConfirmDialog
     :model-value="!!controller.confirmation.value"

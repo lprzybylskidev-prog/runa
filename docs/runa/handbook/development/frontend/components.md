@@ -456,3 +456,16 @@ Public useViewReadiness, ViewBoundary and useImageReadiness separate initial
 reveal from background reads and local writes. Their complete signatures, identity
 invalidation, bounded image fallback and supplied view audit are in the canonical
 [view readiness guide](loading.md). They add no session owner or authorization.
+
+## Source module presentation
+
+UI owns `ModulePresentation`, `moduleCatalogue: readonly ModulePresentation[]`
+and `getModulePresentation(id: string): ModulePresentation` exported by `@/runa/ui`.
+The complete shape is `{readonly id: string; readonly name: {pl:string;en:string};
+readonly description: {pl:string;en:string}; readonly icon: IconName}`. Source home
+is `src/runa/resources/js/runa/ui/modulePresentation.ts`, delivered in the frontend
+runtime. Names/descriptions come from validated platform/App module manifests;
+platform icons use one source-owned map and unknown modules use layers-intersect
+with their ID as the name. Welcome filters this catalogue to platform modules;
+Admin applies it only to already authorized owners/diagnostic results. This source
+catalogue does not describe installation, health, enabled state or access.
