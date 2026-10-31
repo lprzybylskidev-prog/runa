@@ -6,6 +6,12 @@ description: 'Framework-agnostic Runa frontend guidance for accessibility, respo
 # Runa Frontend
 
 Load for UI behavior, accessibility, responsive states and rendered acceptance.
+
+For slow views or application-wide performance review, inspect request owners and
+measure overlapping mount/focus/visibility/publication reads, not only rendering.
+Follow [read-path performance](../../../docs/runa/handbook/architecture/application-architecture.md#read-path-performance)
+and the forms reconciliation contract; coalescing must retain later invalidations,
+current account/authority fences and dirty drafts.
 Use Vue/Tailwind skills only for their implementation concerns. Inspect an analogous
 view and the existing public component catalogue before inventing a pattern.
 

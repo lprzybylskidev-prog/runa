@@ -289,6 +289,12 @@ Parameters/returns use explicit named scalar/array types, module-owned readonly 
 
 ### Delivered HTTP registration and errors
 
+HTTP/page route registration and command/schedule registration each use a short
+registry-locked metadata scan. Autoloading descriptors reuses that scan's snapshot
+instead of polling/reloading it per class. Registration invokes no business
+controller, command or scheduled callback; actual execution still reacquires
+current source, availability and authority through its owning gateway.
+
 List owned schema-version-1 `HttpProvider` classes in `declarations.http`. They return bounded lists of `HttpEndpoint(method, path, operation, controller)`. Methods are GET (also HEAD), POST, PUT, PATCH or DELETE. Paths are bounded relative plural/kebab-case resource segments with optional required named parameters, such as `entries/{public_id}`; no expressions, arbitrary prefixes, traversal or optional/wildcard parameters. A module may declare at most 128 endpoints and one endpoint per operation key. Use distinct keys for read/write actions.
 
 Uncached routing registers all source-present declarations, including disabled Optional modules, under `/api/<owner>/<code>/...`, with names `<owner>.<code>.<operation>`. No discovery, synchronization, settings write or migration runs on request boot. Registration rejects duplicate names and exact method/path collisions before publishing healthy routes. Laravel route caching preserves the framework dispatcher, middleware and identity defaults. Middleware re-resolves the current source descriptor and compares its path/method/controller/permission to the cached identity; unavailable/stale/removed entries fail closed without invoking old controllers.
@@ -316,6 +322,12 @@ Availability is an ingress check, not a lock held throughout a business transact
 The existing updater migration/seeder phases now include an owner-scoped module phase using the same operation lock, maintenance and journal. It migrates every supplied Runa module, including disabled modules. Customer deployment explicitly selects the reusable app-module contract; the platform updater never loads app upgrade descriptors or invokes their installers.
 
 ### Delivered queue and active-work protocol
+
+Work lists fetch bounded safe status columns together, without encrypted payloads
+or private lease tokens. Source job capabilities are validated once per module
+for that list. Selected expired running leases are conditionally moved to
+`recovery_required` in one update and the selected statuses are reread; a renewed
+lease is never overwritten. Listing does not replay work or authorize execution.
 
 Declare source-owned `JobProvider` classes in `declarations.jobs`. Each returns unique schema-version-1 `JobDefinition` entries: operation key, owned `WorkHandler` and `WorkPolicy` classes, maximum attempts (1–100), minimum retry delay (1–86400 seconds), lease (10–3600 seconds), explicit cancellation capability, a safe limitation code and optional permission. Protected operations deny by default through the existing authorizer. Descriptor construction must remain free of I/O/effects. A null permission explicitly allows the job when module/platform admission succeeds; it does not carry or fabricate a user identity.
 
@@ -457,6 +469,15 @@ Declare one owned `SettingsProvider` under `declarations.settings` when a module
 Built-in types are strict `string`, `integer`, `decimal`, `boolean`, `enum` and `array`; no coercion occurs. Exact decimal values are canonical decimal strings, never binary floats. Enum `options.choices` is a nonempty list with strict value comparison. Laravel rules enforce additional constraints; integer/decimal min/max use numeric semantics. Defaults and every complete candidate/stored value pass the same type, rule and cross-field checks. JSON values are bounded to 32 KiB with no objects/resources or nonfinite numbers. Register additional trusted `SettingType` implementations through `Settings\SettingTypes::register(key, implementation)` at application bootstrap; built-ins cannot be replaced. This extends backend acceptance; future Admin supplies renderers separately. Infrastructure connections and the encryption key remain Laravel environment/config inputs.
 
 Sensitive definitions require a nullable null default. Supply real secrets through trusted writes, never manifests/defaults/options, source or command arguments. `Settings\ModuleSettings::read(module)` returns registry generation, settings revision and localized definitions with non-sensitive values or sensitive `set` booleans only. It never returns plaintext or ciphertext for sensitive values. `value(module, key)` is an explicit private backend read for trusted owning-module code, including initialization/compensation. The typed `integer(module, key)`, `boolean(module, key)` and nullable `text(module, key)` helpers retain that same owning-module guard and reject a mismatched declared value without coercion. Never expose or log its result; operational consumers still require the normal availability gateway. These helpers are not a PHP sandbox against hostile trusted code.
+
+Within a locked registry snapshot, settings reads reuse the already validated
+declarations, complete stored values and revision. A caller-owned read anchors
+that snapshot before its child savepoint, retaining database-error rollback
+isolation without reloading every key. The snapshot identity changes on writes,
+rollback/replacement transactions and reconnection; runtime values cannot be
+reused under a new identity. Every reuse still verifies current source. Sensitive
+values remain private runtime data; management reads always project set-state.
+No actor eligibility, permission decision or time-dependent exception is cached.
 
 `ModuleSettings::upgradeDefaults(UpgradeContext)` deliberately adds missing immediate
 source defaults to a stored complete value set during a reserved transactional

@@ -170,6 +170,11 @@ in the same transaction; failure rolls back changes and revision.
 
 ## Security notices and reminders
 
+Scheduled expiry reminders batch current password-lifetime overrides for their
+locked account cohort and aggregate history for the exact candidate account/
+category/deadline tuples. Mandatory per-notice dispatch authorization, deduplication,
+frequency, expiry and single-attempt delivery checks remain independent and fresh.
+
 Auth declares new_browser, failed_login, locked, password_changed, account_expiry
 and password_expiry. Lock/password-change notices default enabled and are mandatory,
 sensitive, primary-only. Other notices default disabled and may use ordinary

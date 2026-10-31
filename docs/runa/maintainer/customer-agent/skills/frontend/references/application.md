@@ -8,6 +8,7 @@ Load only the relevant canonical procedure:
 - Components and contracts: `docs/runa/handbook/development/frontend/components.md`.
 - Page structures: `docs/runa/handbook/development/frontend/page-layouts.md`.
 - Fields, feedback and automatic read reconciliation: `docs/runa/handbook/development/frontend/forms.md`.
+- Measured read/request growth and review coverage: `docs/runa/handbook/architecture/application-architecture.md#read-path-performance`.
 - Table providers/selection/loading/export: `docs/runa/handbook/development/frontend/tables.md`.
 - Motion: `docs/runa/handbook/development/frontend/motion.md`.
 - Presentation replacement and controller lifetime: `docs/runa/handbook/development/frontend/customization.md`.

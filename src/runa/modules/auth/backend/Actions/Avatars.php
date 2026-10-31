@@ -131,14 +131,18 @@ final readonly class Avatars
             $this->transactions->lockAuthority($connection);
             $rows = $connection->table('runa_auth.avatar_files')->where('available_at', '<=', now())->whereNotExists(fn (Builder $q) => $q->selectRaw('1')->from('runa_auth.users')->whereColumn('avatar_path', 'runa_auth.avatar_files.path'))
                 ->orderBy('id')->limit(100)->get();
-            /** @var \stdClass&object{path: string} $row */
+            $deleted = [];
+            /** @var \stdClass&object{id:int,path: string} $row */
             foreach ($rows as $row) {
                 try {
                     $this->storage->disk('runa.auth')->delete($row->path);
                 } catch (\Throwable) {
                     continue;
                 } // Keep the exact durable candidate for the existing cleanup schedule.
-                $connection->table('runa_auth.avatar_files')->where('id', $row->id)->delete();
+                $deleted[] = $row->id;
+            }
+            if ($deleted !== []) {
+                $connection->table('runa_auth.avatar_files')->whereIn('id', $deleted)->delete();
             }
         });
     }

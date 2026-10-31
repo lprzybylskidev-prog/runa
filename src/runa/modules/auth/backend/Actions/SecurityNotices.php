@@ -4,6 +4,7 @@ namespace Runa\Modules\Auth\Actions;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\TrustedPrincipal;
@@ -74,36 +75,52 @@ final readonly class SecurityNotices
             $this->transactions->lockAuthority($connection);
             $cursor = $connection->table('runa_auth.notice_scan')->where('id', 1)->lockForUpdate()->value('last_user_id');
             $users = User::where('id', '>', $cursor)->orderBy('id')->limit(100)->lockForUpdate()->get();
+            $days = app(PolicyExceptions::class)->values($users->all(), 'password_expiry_days');
+            $candidates = [];
             foreach ($users as $user) {
                 if (! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()) {
                     continue;
                 }
                 foreach (['account_expiry', 'password_expiry'] as $category) {
-                    $deadline = $this->deadline($user, $category);
+                    $deadline = $this->deadline($user, $category, $days[$user->id]);
                     if ($deadline === null || ! $deadline->isFuture() || $deadline->gt(CarbonImmutable::now('UTC')->addDays($this->settings->integer('runa.auth', 'expiry_start_days')))) {
                         continue;
                     }
-                    $rows = $connection->table('runa_auth.security_notices')->where('user_id', $user->id)->where('category', $category)->where('deadline', $deadline);
-                    $count = $rows->count();
-                    /** @var string|null $latest */
-                    $latest = $rows->max('created_at');
-                    if ($count >= $this->settings->integer('runa.auth', 'expiry_max_count')
-                        || ($latest !== null && CarbonImmutable::parse($latest)->addHours($this->settings->integer('runa.auth', 'expiry_interval_hours'))->isFuture())) {
-                        continue;
-                    }
-                    $this->issueLocked($connection, $user, $category, $deadline->toIso8601String().':'.$count, $deadline);
+                    $candidates[] = [$user, $category, $deadline];
                 }
+            }
+            $statistics = [];
+            if ($candidates !== []) {
+                $query = $connection->table('runa_auth.security_notices')->where(function (Builder $where) use ($candidates): void {
+                    foreach ($candidates as [$user, $category, $deadline]) {
+                        $where->orWhere(fn (Builder $row): Builder => $row->where('user_id', $user->id)->where('category', $category)->where('deadline', $deadline));
+                    }
+                })->groupBy('user_id', 'category', 'deadline')->select(['user_id', 'category', 'deadline'])->selectRaw('count(*) as total, max(created_at) as latest');
+                /** @var object{user_id:int,category:string,deadline:string,total:int,latest:?string} $row */
+                foreach ($query->get() as $row) {
+                    $statistics[$row->user_id.':'.$row->category.':'.CarbonImmutable::parse($row->deadline)->format('U.u')] = $row;
+                }
+            }
+            foreach ($candidates as [$user, $category, $deadline]) {
+                $row = $statistics[$user->id.':'.$category.':'.$deadline->format('U.u')] ?? null;
+                $count = $row->total ?? 0;
+                $latest = $row->latest ?? null;
+                if (! $deadline->isFuture() || $count >= $this->settings->integer('runa.auth', 'expiry_max_count')
+                    || ($latest !== null && CarbonImmutable::parse($latest)->addHours($this->settings->integer('runa.auth', 'expiry_interval_hours'))->isFuture())) {
+                    continue;
+                }
+                $this->issueLocked($connection, $user, $category, $deadline->toIso8601String().':'.$count, $deadline);
             }
             $connection->table('runa_auth.notice_scan')->where('id', 1)->update(['last_user_id' => $users->count() < 100 ? 0 : ($users->last()->id ?? 0)]);
         });
     }
 
-    private function deadline(User $user, string $category): ?CarbonImmutable
+    private function deadline(User $user, string $category, ?int $passwordDays = null): ?CarbonImmutable
     {
         if ($category === 'account_expiry') {
             return $user->expires_at;
         }
-        $days = app(PolicyExceptions::class)->value($user, 'password_expiry_days');
+        $days = $passwordDays ?? app(PolicyExceptions::class)->value($user, 'password_expiry_days');
 
         return $days > 0 && $user->password !== null && $user->password_changed_at !== null ? $user->password_changed_at->addDays($days) : null;
     }

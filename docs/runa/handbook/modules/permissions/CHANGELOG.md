@@ -2,6 +2,11 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Batch role-deletion recipient assignment/revision reads and identical reference
+  snapshots within one preview. Bulk-write assignment/definition/declaration
+  pivots while preserving current eligibility, per-recipient limits, fingerprints,
+  protected authority and mandatory aggregate Audit.
+
 - Keep the shared reset control beside filter fields; existing definition/effective
   permission tables contain no timestamp columns requiring date formatting.
 

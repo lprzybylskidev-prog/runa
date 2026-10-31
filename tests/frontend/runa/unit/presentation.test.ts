@@ -35,6 +35,54 @@ it('projects public presentation only and rejects unsafe logo transport', async 
   );
   expect(await loadApplicationPresentation()).toBeUndefined();
 });
+
+it('coalesces overlapping presentation reads and reloads a publication that overtakes an in-flight read', async () => {
+  const releases: Array<(value: Response) => void> = [];
+  const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    if (String(input).endsWith('/presentation'))
+      return new Promise<Response>((resolve) => releases.push(resolve));
+    return response({});
+  });
+  const root = document.createElement('div');
+  document.body.append(root);
+  const app = createApplication(
+    defineComponent({
+      setup() {
+        const identity = useIdentity();
+        return () => h('p', identity.value.applicationName);
+      },
+    }),
+  );
+  try {
+    app.mount(root);
+    await flushPromises();
+    window.dispatchEvent(new Event('focus'));
+    document.dispatchEvent(new Event('visibilitychange'));
+    window.dispatchEvent(new Event('focus'));
+    await flushPromises();
+    expect(
+      fetch.mock.calls.filter(([input]) =>
+        String(input).endsWith('/presentation'),
+      ),
+    ).toHaveLength(1);
+    await request('/admin/operations/application.update', { method: 'POST' });
+    releases.shift()!(response({ name: 'Obsolete', logo: null, revision: 1 }));
+    await flushPromises();
+    await vi.waitFor(() => expect(releases).toHaveLength(1));
+    expect(root.textContent).not.toBe('Obsolete');
+    releases.shift()!(response({ name: 'Current', logo: null, revision: 2 }));
+    await flushPromises();
+    await vi.waitFor(() => expect(root.textContent).toBe('Current'));
+    expect(
+      fetch.mock.calls.filter(([input]) =>
+        String(input).endsWith('/presentation'),
+      ),
+    ).toHaveLength(2);
+  } finally {
+    app.unmount();
+    root.remove();
+  }
+});
 it('hydrates the shared shell and updates presentation after a current publication without changing canonical versions', async () => {
   let name = 'Atlas';
   vi.spyOn(window, 'fetch').mockImplementation(async (input) => {

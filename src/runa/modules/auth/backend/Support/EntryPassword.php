@@ -3,6 +3,7 @@
 namespace Runa\Modules\Auth\Support;
 
 use Closure;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rules\Password;
 
 final class EntryPassword
@@ -11,6 +12,12 @@ final class EntryPassword
      * @return list<string|Password|Closure>
      */
     public static function rules(): array
+    {
+        return DB::connection()->transaction(self::currentRules(...));
+    }
+
+    /** @return list<string|Password|Closure> */
+    private static function currentRules(): array
     {
         $policy = app(CredentialPolicy::class);
         $rule = Password::min($policy->integer('password_min_length'));

@@ -2,6 +2,14 @@
 
 ## 2.0.0 — 2026-10-30
 
+- Reuse validated settings inside the current locked read for entry/security,
+  password rules, session and profile projections. Batch selected session/trust
+  inventories and reminder history/exception reads while retaining per-account
+  Audit, current dispatch authority, limits and deadline/fingerprint checks.
+
+- Delete successfully cleaned avatar candidates in one bounded metadata write;
+  retain failed storage candidates and the current linked avatar.
+
 - Batch own-account presentation preferences and delivery categories instead of
   querying/revalidating every entry independently. Preserve current declarations,
   account isolation, migrations/defaults and mandatory recipient restrictions.

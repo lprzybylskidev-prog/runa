@@ -82,9 +82,9 @@ final readonly class ChangeAssignments
             $ids = $c->table('runa_permissions.'.$kind)->whereIn('public_id', $current->removed[$kind])->where('system', false)->pluck('id')->all();
             $c->table('runa_permissions.user_'.$kind)->where('user_public_id', $current->userPublicId)->whereIn($singular.'_id', $ids)->delete();
             $ids = $c->table('runa_permissions.'.$kind)->whereIn('public_id', $current->added[$kind])->where('system', false)->pluck('id')->all();
-            foreach ($ids as $id) {
-                $c->table('runa_permissions.user_'.$kind)->insert(['user_public_id' => $current->userPublicId,
-                    $singular.'_id' => $id, 'created_at' => now('UTC'), 'updated_at' => now('UTC')]);
+            if ($ids !== []) {
+                $c->table('runa_permissions.user_'.$kind)->insert(array_map(static fn (int $id): array => ['user_public_id' => $current->userPublicId,
+                    $singular.'_id' => $id, 'created_at' => now('UTC'), 'updated_at' => now('UTC')], $ids));
             }
         }
         /** @var int|null $storedRevision */

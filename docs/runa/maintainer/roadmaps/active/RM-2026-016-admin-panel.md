@@ -606,6 +606,17 @@ reassessment before resuming point 3; completed point history remains evidence.
     Require performance evidence/review in both owner/customer backend skills;
     repair demonstrated defects in authorized scope, escalate changed premises.
     Broad verification remains point 12 after owner acceptance.
+- [x] 11a30. Complete the application-wide repeated-work performance review and repairs.
+  - Owner correction, 2026-10-31: point 11a29 covered framework/Core read paths,
+    but the requested review includes the whole supplied application: ordinary
+    App/reference code, HTTP startup/middleware/controllers, account/security,
+    module/operational views, background work and frontend request orchestration.
+  - Inventory runtime surfaces and analogous loops, measure suspected repeated
+    queries/declarations/requests, repair demonstrated cases and add focused
+    growth/freshness regressions. Record reviewed areas, findings and limits;
+    do not present a selected Core review as whole-application coverage.
+    Preserve owning authority, locks, expiry, bounded reads and dirty drafts.
+    Broad verification remains point 12 after owner frontend acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -3708,3 +3719,110 @@ needed. Supported runners cleaned only disposable `runa_test_test_1` workers;
 development/base test data, services, caches and reports remain preserved. No broad
 verification was run. Owner manual point 11b and final verification/release 12 stay
 open.
+
+### Point 11a30 — application-wide amplification review and repairs
+
+Expanded the review beyond point 11a29's selected Core/framework reads. A static
+inventory classified 574 runtime-eligible PHP files into 93 source areas and
+located frontend read/watch/request sites across the supplied App and Runa source.
+Those inventories guided source tracing of the entrypoint families below; file
+counts are navigation evidence, not a claim that every file was manually read or
+that every workload was benchmarked. Knowledge was current initially, then became
+stale after the roadmap edit; focused original-source review continued without
+bootstrapping/rebuilding optional knowledge services.
+
+| Runtime area                       | Reviewed paths and disposition                                                                                                                                                                                                                                                                                                                                                   | Evidence level                                                                                             |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Ordinary App/reference             | App root/provider/routes, sample module PHP/HTTP/frontend, settings consumer and explicit click loading; no extra repeated-read defect demonstrated                                                                                                                                                                                                                              | Source                                                                                                     |
+| HTTP startup/routes                | ModuleHttp and module-page descriptors repeatedly polled registry during class loading; use locked metadata scans with per-provider savepoint isolation                                                                                                                                                                                                                          | Source, cold bootstrap measurement, named/deep-route and failed-provider regressions                       |
+| CLI/scheduler registration         | Commands and schedules share the bounded metadata scan; actual callbacks still re-admit current declarations and authority                                                                                                                                                                                                                                                       | Source, command/schedule source-change regressions                                                         |
+| Middleware/maintenance/health      | Account policy, maintenance/readiness, request guards and health/expiry paths; keep current admission and on-use checks, benefit from shared settings fix                                                                                                                                                                                                                        | Source, native proof/source/expiry regression scenarios                                                    |
+| Identity/presentation/assets       | Identity is source-only; presentation formerly transferred all encoded images, including unrelated assets; fetch hashes/presence and only the selected image                                                                                                                                                                                                                     | Source, public stage measurements, real uploaded-asset/hash/revision/Audit regression                      |
+| Auth entry/security/session        | Repeated full settings loads and duplicate current-session lookup; reuse validated settings under the caller's locked snapshot, scope public projections/password rules and resolve current session once                                                                                                                                                                         | Source, isolated-stage measurements, entry/proof/session integration                                       |
+| Profile/preferences/history        | Profile capabilities repeatedly loaded policy; fixed shared reader. Preferences/delivery retain point 11a29 batching; account/Audit history, email and trust/session lists are bounded native collection reads                                                                                                                                                                   | Source, stage measurements, preferences and avatar/native account regressions                              |
+| Settings/application configuration | Repeated per-field grant checks in value/definition/prewrite intersections; deduplicate only the current phase. Keep current subsequent guards and reject stale writes                                                                                                                                                                                                           | Source, isolated-stage measurements, real branding grant/revision/Audit regression                         |
+| Auth bulk operations               | Session/trust inventories queried per account; batch bounded inventories and revocations, retain per-account Audit/current selection/proof/fingerprint and row caps                                                                                                                                                                                                              | Source, one/four-account query-growth and stale/Audit rollback regressions                                 |
+| Permissions                        | Reviewed dictionaries, assignments, effective grants, declarations and role deletion. Batch recipient assignment/revision reads, reuse identical reference sets within one preview and bulk-write pivots                                                                                                                                                                         | Source, one/two-recipient query-growth and native declaration/assignment/force-delete rollback regressions |
+| Audit                              | Event/entity and own-history queries remain bounded/batched, with current grant/redaction checks; no further distinct collection-read defect found beyond shared readers                                                                                                                                                                                                         | Source and earlier point 11a29 evidence; not an independent new full Audit suite                           |
+| Module operations/work             | Work lists called status per row, including no-op expiry writes and repeated job declaration reads; fetch safe columns together, validate capabilities once per module and batch selected expired leases                                                                                                                                                                         | Source, 12-item query/expiry regression and existing crash recovery scenario                               |
+| Background/cleanup                 | Reminder history/count/max and account exceptions repeated per candidate; batch the locked cohort/tuples. Avatar cleanup deletes successful candidate metadata together. Session cleanup is already bounded/set-based; scheduled lifecycle/Audit and event/worker per-subject admission remain deliberate                                                                        | Source, cohort/reminder, cleanup, delivery and native history regressions                                  |
+| Frontend request owners            | Traced public presentation, welcome/entry, shared session/Admin advertisement, account/profile/lists/preferences/delivery, Admin page/resource/table/form/operations and shared HTTP/table providers. Fixed overlapping public-presentation reads with a trailing invalidation; retain account trailing reconciliation, dirty drafts, bounded paging and required distinct reads | Source, browser component reproduction/regression, current asset build                                     |
+| Installation/development support   | Classified source/manifest/settings/declaration preparation, configuration/seeding/storage and technical health entrypoints. Per-module transitions, subject validation, Audit and external storage effects retain their owning boundaries                                                                                                                                       | Source; no new installation/deployment/quality-suite PASS claim                                            |
+
+The shared settings reader now keys validated declarations/values/revision by the
+registry's locked snapshot identity in a WeakMap. It anchors a caller-owned read
+before a child savepoint, avoiding repeated key loads while retaining database
+failure rollback isolation. Same-connection writes, source changes, transaction/
+savepoint rollback or replacement and reconnect prevent stale reuse; source is
+still verified on every hit. No account eligibility, permission decision or
+time-dependent override is retained. Runtime and public presentation signatures
+are unchanged, and secret settings remain redacted in management projections.
+
+Cold source registration uses one short registry-locked metadata transaction with
+provider savepoints. A failing declaration SQL query is isolated without poisoning
+healthy modules; controller/command/job execution remains outside registration.
+Work listing reads neither encrypted payload nor private lease token. Expiry only
+updates the selected still-expired running leases, then rereads them; renewed work
+is preserved and no automatic replay is introduced.
+
+Reminder aggregation preserves exact account/category/deadline counts and latest
+timestamps, current lifetime exceptions and duplicate/frequency/expiry checks.
+Per-notice guarded dispatch still rechecks its own identity/authority. Permission
+and session batching retains per-recipient bounds, ordered preview fingerprints,
+current Auth eligibility and per-entity mandatory Audit. Failed avatar storage
+deletions retain their exact durable candidates. No security checks or business
+effects were removed merely to make query counts constant.
+
+Fresh default-connection diagnostic transactions per stage used the same existing
+local principal and data; original ModuleSettings/SettingStore versions were
+loaded from HEAD in an isolated baseline process. Only counts/timing were emitted,
+with zero business write statements and rollback. Cold HTTP bootstrap was measured
+separately, also with zero write statements. These are internal/bootstrap stages,
+not full Nginx/browser request latency, realistic load tests or an SLA.
+
+| Stage                           | SQL before → after | Approximate wall time before → after |
+| ------------------------------- | ------------------ | ------------------------------------ |
+| Cold HTTP route bootstrap       | 77 → 10            | 117 → 92 ms                          |
+| Profile projection              | 39 → 6             | 149 → 25 ms                          |
+| Public entry options            | 48 → 5             | 51 → 11 ms                           |
+| Credential policy projection    | 48 → 5             | 74 → 7 ms                            |
+| Application setting values      | 59 → 18            | 84 → 25 ms                           |
+| Application setting definitions | 106 → 23           | 168 → 25 ms                          |
+
+Browser reproduction observed four overlapping presentation requests before repair.
+The corrected lane has one in-flight read and at most one coalesced trailing read
+for overlapping focus/publication invalidations; obsolete results cannot publish.
+The browser regression validates both request counts and the newest rendered name.
+Asset transfer reduction is established from selected SQL columns and real byte/
+hash functional assertions, without claiming a large-image performance benchmark.
+
+Evidence lives under `.runtime/performance/RM-2026-016/`: source/read inventories,
+`profile-{boot,surfaces,app}.php`, `boot-{before,after}.json`,
+`surfaces-{before,after}.jsonl`, browser overlap before/after logs and focused native
+reports. Final relevant targeted runs passed: settings/read/entry/bulk/reminder/work
+six cases/121 assertions; assignment/declaration/role-deletion/avatar seven/118;
+startup isolation/routes/commands/schedules five/36; browser presentation four.
+The final settings/source-freshness and secret-projection rerun passed two cases/
+76 assertions after strengthening cached source checks for provider/handler paths.
+Earlier supporting runs remain preserved rather than replacing their native
+failure/retry records. The current production/client and native error-shell asset
+build passed. These focused checks resolved concrete changed-path uncertainties;
+no broad verification graph or complete backend/frontend suite was run early.
+
+Current framework, Auth/Permissions/Admin, application performance and frontend
+loading guidance/changelogs are synchronized. Both owner/customer backend and
+frontend skill entrypoints/references now route application-wide scope, query/
+request growth, immediate authorized repairs and explicit coverage reporting to
+canonical guides. Root AGENTS already owns authority/workflow and needs no duplicate
+rule. Existing provenance remains local Runa research, without upstream refresh or
+new dependencies. No public signature, migration, independent released version or
+compatibility adapter was added; corrections remain within unreleased Auth 2.0.0,
+Permissions 2.1.0 and Admin 0.1.0 candidates and the 0.7.0 platform.
+
+Review limits remain explicit: no assertion of defect-free arbitrary customer
+extensions, future data volumes or contention-free execution. Existing registry/
+authority lock order and intentional per-account security/Audit work remain in
+force. Development/base test data, services, caches and reports were preserved;
+supported runners removed only their disposable `runa_test_test_1` databases and
+owned temporary browser resources. No real production deployment or business data
+reset occurred. Owner acceptance 11b and final verification/release 12 remain open.

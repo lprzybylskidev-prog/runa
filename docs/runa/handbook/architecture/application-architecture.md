@@ -106,6 +106,15 @@ Each request has a safe correlation ID for diagnostics, propagated to related wo
 
 ## Read-path performance
 
+When an application-wide review is requested, inventory all delivered runtime
+surfaces: ordinary App code and modules, HTTP boot/middleware, public and protected
+views, settings/assets, CLI/scheduler/queue work and frontend request owners.
+Trace collection callbacks and serializers as well as visible query loops. Record
+which areas were source-reviewed, measured or regression-checked; checking selected
+Core pages does not establish application-wide coverage or prove absence of all
+performance defects. Keep development tooling/release verification separate from
+runtime application review.
+
 Review query growth when adding or changing lists, resources, bootstrap metadata,
 permission intersections, settings/preference snapshots or module discovery. N+1
 includes repeated authorization, registry, declaration and accessor work, even
@@ -140,6 +149,13 @@ changed architectural/security premise through the applicable roadmap workflow.
    rollback/reused-worker cases for retained snapshots and denial/current-grant
    cases for authorization-related changes. Follow the normal verification phase
    rules; this review does not authorize early broad suites or new infrastructure.
+
+Include frontend request counts and server-to-application payload size in that
+review. Coalesce overlapping read triggers while retaining a trailing invalidation
+for later focus/publication changes. Keep independent prerequisites explicit;
+never remove current authorization, account fencing or dirty-draft reconciliation
+to reduce request counts. Select required metadata/asset columns rather than
+transferring every stored image or recovery payload for a small projection.
 
 ## Application and protected platform
 

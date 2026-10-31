@@ -38,24 +38,36 @@ final readonly class DeleteRoles
         }
         $users = [];
         $binding = [];
+        $recipients = $members->pluck('user_public_id')->all();
+        $roles = $c->table('runa_permissions.user_roles as ur')->join('runa_permissions.roles as r', 'r.id', '=', 'ur.role_id')
+            ->whereIn('ur.user_public_id', $recipients)->whereNull('r.deleted_at')->select(['ur.user_public_id', 'r.public_id', 'r.system'])
+            ->selectRaw('row_number() over (partition by ur.user_public_id order by r.public_id) as position');
+        /** @var Collection<string,Collection<int,\stdClass&object{public_id:string,system:bool}>> $rolesByUser */
+        $rolesByUser = $recipients === [] ? collect() : $c->query()->fromSub($roles, 'recipient_roles')->where('position', '<=', 102)->orderBy('public_id')->get()->groupBy('user_public_id');
+        $permissions = $c->table('runa_permissions.user_permissions as up')->join('runa_permissions.permissions as p', 'p.id', '=', 'up.permission_id')
+            ->whereIn('up.user_public_id', $recipients)->whereNull('p.deleted_at')->select(['up.user_public_id', 'p.public_id'])
+            ->selectRaw('row_number() over (partition by up.user_public_id order by p.public_id) as position');
+        /** @var Collection<string,Collection<int,\stdClass&object{public_id:string}>> $directByUser */
+        $directByUser = $recipients === [] ? collect() : $c->query()->fromSub($permissions, 'recipient_permissions')->where('position', '<=', 101)->orderBy('public_id')->get()->groupBy('user_public_id');
+        $revisions = $recipients === [] ? collect() : $c->table('runa_permissions.user_access')->whereIn('user_public_id', $recipients)->pluck('version', 'user_public_id');
+        $referencesBySet = [];
         foreach ($members as $member) {
             // Projection includes deleted identities: retained pivots must also be removed safely.
             $user = $member->user_public_id;
             $eligibility = $this->identities->eligibility($user);
-            $roleRows = $c->table('runa_permissions.user_roles as ur')->join('runa_permissions.roles as r', 'r.id', '=', 'ur.role_id')
-                ->where('user_public_id', $user)->whereNull('r.deleted_at')->orderBy('r.public_id')->limit(102)->get(['r.public_id', 'r.system']);
-            $direct = $c->table('runa_permissions.user_permissions as up')->join('runa_permissions.permissions as p', 'p.id', '=', 'up.permission_id')
-                ->where('user_public_id', $user)->whereNull('p.deleted_at')->orderBy('p.public_id')->limit(101)->pluck('p.public_id')->all();
+            $roleRows = $rolesByUser->get($user) ?? collect();
+            $direct = ($directByUser->get($user) ?? collect())->pluck('public_id')->all();
             $set = new AssignmentSet($roleRows->where('system', false)->pluck('public_id')->all(), $direct);
             $after = new AssignmentSet(array_values(array_diff($set->roles, [$publicId])), $direct);
             $super = $roleRows->contains('system', true);
             $old = $eligibility?->mayOperate() ? $this->state->effective($set, $super) : [];
             $new = $eligibility?->mayOperate() ? $this->state->effective($after, $super) : [];
             /** @var int|null $storedRevision */
-            $storedRevision = $c->table('runa_permissions.user_access')->where('user_public_id', $user)->value('version');
+            $storedRevision = $revisions->get($user);
             $revision = $storedRevision ?? 0;
             $users[] = ['user_public_id' => $user, 'revision' => $revision, 'before' => $set->toArray(), 'after' => $after->toArray(), 'permission_removed' => array_values(array_diff($old, $new))];
-            $binding[] = [$member->id, $eligibility, $this->state->references($set), $old, $new];
+            $referenceKey = $this->state->fingerprint($set);
+            $binding[] = [$member->id, $eligibility, $referencesBySet[$referenceKey] ??= $this->state->references($set), $old, $new];
         }
         $presets = array_values($references->map(fn ($row) => ['public_id' => $row->public_id, 'version' => $row->version])->all());
         $fingerprint = $this->state->fingerprint([$before, $users, $binding, $references->all()]);

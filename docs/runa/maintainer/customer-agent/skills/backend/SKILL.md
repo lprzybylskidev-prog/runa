@@ -20,6 +20,10 @@ Preserve current authority, expiry and rollback/reused-worker freshness; never
 retain permission decisions across operations. Report protected-platform defects
 to its owner rather than editing protected source.
 
+For an explicitly application-wide review, inventory ordinary App code/modules,
+startup/HTTP, workers/scheduler/CLI and frontend read owners. Separate source,
+measurement and regression coverage; selected module pages are not whole-app evidence.
+
 Use `docs/runa/handbook/architecture/public-api.md` to distinguish supported
 extension/consumption APIs from platform internals. Consume documented backend
 adapters and frontend facades from application-owned code; neither a Contracts

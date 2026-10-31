@@ -15,13 +15,23 @@ final readonly class PolicyExceptions
 
     public function value(User $user, string $key): int
     {
+        return $this->values([$user], $key)[$user->id];
+    }
+
+    /** Current overrides for an already locked bounded account batch.
+     * @param  list<User>  $users
+     * @return array<int,int>
+     */
+    public function values(array $users, string $key): array
+    {
         $global = $this->settings->integer('runa.auth', $key);
         $connection = app('db')->connection();
         $revision = $connection->table('shared.modules')->where('module_id', 'runa.auth')->value('settings_revision');
-        /** @var (\stdClass&object{value: int})|null $row */
-        $row = $connection->table('runa_auth.policy_exceptions')->where('user_id', $user->id)->where('key', $key)
-            ->where('policy_revision', $revision)->whereNull('revoked_at')->where('expires_at', '>', CarbonImmutable::now('UTC'))->first();
+        $ids = array_map(static fn (User $user): int => $user->id, $users);
+        /** @var array<int,int> $overrides */
+        $overrides = $connection->table('runa_auth.policy_exceptions')->whereIn('user_id', $ids)->where('key', $key)
+            ->where('policy_revision', $revision)->whereNull('revoked_at')->where('expires_at', '>', CarbonImmutable::now('UTC'))->pluck('value', 'user_id')->all();
 
-        return $row === null ? $global : $row->value;
+        return array_replace(array_fill_keys($ids, $global), $overrides);
     }
 }

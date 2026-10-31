@@ -35,6 +35,8 @@ export function createApplication(root: Component) {
       let alive = true,
         epoch = 0;
       let abort = new AbortController();
+      let pending: Promise<void> | undefined;
+      let reread = false;
       const sourceIcons = Array.from(
         document.querySelectorAll<HTMLLinkElement>('link[rel~="icon"]'),
       ).map((element) => ({
@@ -57,21 +59,40 @@ export function createApplication(root: Component) {
           for (const { element } of sourceIcons)
             if (!element.isConnected) document.head.append(element);
       }
-      async function refresh() {
+      function refresh(): Promise<void> {
+        if (!alive) return Promise.resolve();
+        if (pending) return pending;
         const own = ++epoch;
         abort.abort();
         abort = new AbortController();
-        const next = await loadApplicationPresentation(
+        pending = loadApplicationPresentation(
           AbortSignal.any([abort.signal, AbortSignal.timeout(5000)]),
-        );
-        if (alive && own === epoch) {
-          // A failed background read keeps the last confirmed public presentation.
-          if (next) {
-            presentation.value = next;
-            applyApplicationDisplayDefaults(next.defaults);
-            applyIcon(next.favicon);
-          }
-        }
+        )
+          .then((next) => {
+            // A failed background read keeps the last confirmed public presentation.
+            if (alive && own === epoch && next) {
+              presentation.value = next;
+              applyApplicationDisplayDefaults(next.defaults);
+              applyIcon(next.favicon);
+            }
+          })
+          .finally(() => {
+            pending = undefined;
+            if (alive && reread) {
+              reread = false;
+              void refresh();
+            }
+          });
+        return pending;
+      }
+      function published() {
+        if (pending) {
+          // The pending read may precede this publication. Discard it and fetch
+          // current data once after it settles. Repeated invalidations coalesce
+          // into that same trailing read without losing a later focus event.
+          epoch++;
+          reread = true;
+        } else void refresh();
       }
       void loadApplicationIdentity().then((resolved) => {
         if (alive) {
@@ -87,15 +108,15 @@ export function createApplication(root: Component) {
           (event.path === '/admin/operations/application.update' ||
             /^\/runa\/auth\/(?:session|login|logout|step-up)$/.test(event.path))
         )
-          void refresh();
+          published();
       });
       function visible() {
-        if (document.visibilityState === 'visible') void refresh();
+        if (document.visibilityState === 'visible') published();
       }
       onMounted(() => {
         void refresh();
-        window.addEventListener('focus', refresh);
-        window.addEventListener('popstate', refresh);
+        window.addEventListener('focus', published);
+        window.addEventListener('popstate', published);
         document.addEventListener('visibilitychange', visible);
       });
       onScopeDispose(() => {
@@ -105,8 +126,8 @@ export function createApplication(root: Component) {
         stop();
         applyIcon(null);
         applyApplicationDisplayDefaults();
-        window.removeEventListener('focus', refresh);
-        window.removeEventListener('popstate', refresh);
+        window.removeEventListener('focus', published);
+        window.removeEventListener('popstate', published);
         document.removeEventListener('visibilitychange', visible);
       });
       return () => {

@@ -7,6 +7,12 @@ declarations during reserved preparation. It grants no user access automatically
 
 ## Dedicated authority operations
 
+Role-deletion previews batch recipient roles, direct assignments and revisions
+with the existing per-recipient limits. Identical source-reference sets can be
+reused within that locked preview; guarded identity eligibility and effective
+permission comparisons remain current for each recipient. This is collection
+loading, never a retained grant decision or authority bypass.
+
 Resolve `PermissionsAuthority` through ModuleApis, using `runa.permissions` and
 API version `1.0.0`. `runa.permissions.authority.manage` protects both
 `previewAuthority(userPublicId, grant)` and `applyAuthority(reviewed)`.

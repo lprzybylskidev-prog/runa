@@ -6,6 +6,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Runa\Modules\Auth\Support\CredentialPolicy;
 
 final readonly class SecurityStatusController
@@ -13,6 +14,11 @@ final readonly class SecurityStatusController
     public function __construct(private CredentialPolicy $policy) {}
 
     public function __invoke(Request $request): JsonResponse
+    {
+        return DB::connection()->transaction(fn (): JsonResponse => $this->response());
+    }
+
+    private function response(): JsonResponse
     {
         $user = Auth::guard('web')->user() ?? throw new AuthenticationException;
 

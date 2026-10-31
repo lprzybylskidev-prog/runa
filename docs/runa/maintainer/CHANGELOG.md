@@ -4,6 +4,12 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Extend performance review across application startup, public/account reads,
+  settings/assets, module work, bulk sessions, reminders and frontend request
+  ownership. Bound repeated settings/declaration reads and collection queries,
+  reduce asset transfer and coalesce presentation refresh bursts with trailing
+  freshness; preserve authority, rollback isolation and current source checks.
+
 - Remove registry/permission read amplification across Admin module projections
   and batch Auth preference/delivery snapshots. Add query-growth, transaction/
   rollback and authorization freshness regressions, plus preventive review

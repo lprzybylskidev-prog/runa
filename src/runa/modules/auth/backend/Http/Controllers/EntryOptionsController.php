@@ -3,6 +3,7 @@
 namespace Runa\Modules\Auth\Http\Controllers;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Runa\Modules\Auth\Support\CredentialPolicy;
 
 /** Public form constraints only; never project the encrypted settings document. */
@@ -11,6 +12,11 @@ final readonly class EntryOptionsController
     public function __construct(private CredentialPolicy $policy) {}
 
     public function __invoke(): JsonResponse
+    {
+        return DB::connection()->transaction(fn (): JsonResponse => $this->response());
+    }
+
+    private function response(): JsonResponse
     {
         return response()->json(['data' => [
             'public_welcome_enabled' => $this->policy->value('public_welcome_enabled'),

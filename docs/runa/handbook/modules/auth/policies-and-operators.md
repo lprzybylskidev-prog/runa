@@ -70,6 +70,12 @@ same action, and the matching preview fingerprint. Re-read account/security/poli
 versions and target rows under registry/authority/user locks; changed targets
 require a new preview. Other modules do not query Auth tables.
 
+Session previews load the selected session and optional trust inventories in
+bounded collection queries after locking the complete account selection. The
+combined row cap and ordered per-account fingerprint remain unchanged. Execution
+batches the corresponding revocations while recording each account's Audit event
+inside the same transaction.
+
 Each operation is atomic and limited to 100 accounts and 10000 total session/trust
 rows. All-account mode exceeding these limits refuses before mutation; it never
 silently truncates or partially succeeds. The neutral BulkUserSelection bridge calls guarded PermissionsSelections.users

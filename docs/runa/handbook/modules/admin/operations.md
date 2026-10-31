@@ -148,6 +148,13 @@ request may choose the actor, audit module or permission. Validation uses safe 4
 unknown/denied keys fail closed, stale revision 409, mandatory Audit failure 503.
 Sensitive/encrypted infrastructure options are deliberately not supported here.
 
+Setting metadata/value intersections deduplicate identical grants within each
+read or prewrite phase, then discard those decisions before the next phase.
+Public presentation selects SHA-256 image fingerprints using PostgreSQL's built-in
+bytea hashing rather than transferring all image bytes. An asset request fetches
+only its validated image column; protected settings read asset-presence flags.
+Public response fields, immutable URLs and current grant enforcement are unchanged.
+
 `shared.application_settings` is a singleton technical aggregate: bigint identity
 id, singleton CHECK/UNIQUE key, positive monotonic bigint revision, JSONB object
 values, UTC created_at/updated_at. No external row identity, therefore no mechanical

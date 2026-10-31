@@ -63,6 +63,14 @@ never register every HTTP request as an application-wide prerequisite.
 
 ## Initial reveal and subsequent work
 
+Review request counts as well as reveal timing. Public application presentation
+has one in-flight read; overlapping focus/visibility/popstate/publication changes
+coalesce into one trailing current read. Results overtaken by an invalidation
+cannot replace presentation. The last confirmed display remains while loading,
+and disposal cancels the lane. Reuse the existing owner rather than adding another
+identity, session or preference fetch to each component. Account and business
+reconciliation retain their own trailing invalidation and dirty-draft contracts.
+
 Declare dependencies per element/region: branding uses source defaults while
 hydrating; preferences apply through their existing subscriber; profile/avatars
 show their own bounded skeleton/fallback. A slow avatar never delays the layout. The initial application shell coordinates

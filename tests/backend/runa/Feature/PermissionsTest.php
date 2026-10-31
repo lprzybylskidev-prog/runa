@@ -593,9 +593,10 @@ it('binds force role deletion to practical effects references confirmation and t
     $codes = permissionAccessManager($this);
     ($this->directPermission)('runa.permissions.roles.force_delete');
     $target = app(ChangeIdentity::class)->create(new NewIdentity('force-role@example.test', name: 'Role recipient', active: true, approved: true));
+    $second = app(ChangeIdentity::class)->create(new NewIdentity('force-role-second@example.test', name: 'Second recipient', active: true, approved: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
-    ($this->asPermissionUser)(function () use ($api, $codes, $target, $read): void {
+    ($this->asPermissionUser)(function () use ($api, $codes, $target, $second, $read): void {
         $ordinary = $this->permissionAccess;
         permissionAccessProof($this, $codes[0]);
         $role = $ordinary->saveDefinition($ordinary->previewDefinition(permissionDefinition('role', 'force_reader', [$read])));
@@ -603,9 +604,31 @@ it('binds force role deletion to practical effects references confirmation and t
         $preset = $ordinary->saveDefinition($ordinary->previewDefinition(permissionDefinition('preset', 'force_template', roles: [$role['public_id']])));
         permissionAccessProof($this, $codes[2]);
         $ordinary->applyAssignments($ordinary->previewAssignments($target->publicId, new AssignmentSet([$role['public_id']])));
-        $preview = $api->previewRoleDeletion($role['public_id'], 1);
+        $measure = function () use ($api, $role): array {
+            DB::flushQueryLog();
+            DB::enableQueryLog();
+            try {
+                $preview = $api->previewRoleDeletion($role['public_id'], 1);
+            } finally {
+                $queries = DB::getQueryLog();
+                DB::disableQueryLog();
+            }
+            $assignmentReads = array_filter($queries, static fn (array $query): bool => str_contains($query['query'], '"recipient_roles"')
+                || str_contains($query['query'], '"recipient_permissions"') || str_contains($query['query'], '"runa_permissions"."user_access"'));
+            expect($assignmentReads)->toHaveCount(3);
+
+            return [$preview, $queries];
+        };
+        [$preview] = $measure();
         expect($preview->users)->toHaveCount(1)->and($preview->presets)->toHaveCount(1)
             ->and($preview->users[0]['permission_removed'])->toBe(['runa.audit.read']);
+        // Extend the retained recipient fixture without changing the guarded
+        // actor. Collection reads remain three; native eligibility stays per user.
+        DB::table('runa_permissions.user_roles')->insert(['user_public_id' => $second->publicId,
+            'role_id' => DB::table('runa_permissions.roles')->where('public_id', $role['public_id'])->value('id'),
+            'created_at' => now(), 'updated_at' => now()]);
+        [$preview] = $measure();
+        expect($preview->users)->toHaveCount(2)->and($preview->users[1]['permission_removed'])->toBe(['runa.audit.read']);
         permissionAccessProof($this, $codes[3], 'runa.permissions.roles.force_delete');
         expect(fn () => $api->forceDeleteRole($preview, false))->toThrow(OperationRejected::class);
         // Audit fails only after assignment/preset histories and actual unlinking have occurred.
@@ -617,6 +640,7 @@ it('binds force role deletion to practical effects references confirmation and t
         DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT force_delete_refusal');
         $api->forceDeleteRole($preview, true);
         expect($ordinary->assignments($target->publicId)['assigned']['roles'])->toBe([])
+            ->and($ordinary->assignments($second->publicId)['assigned']['roles'])->toBe([])
             ->and($ordinary->definition('preset', $preset['public_id'])['assigned']['roles'])->toBe([])
             ->and($ordinary->definition('preset', $preset['public_id'])['version'])->toBe(2)
             ->and(DB::table('runa_audit.events')->where('action', 'role.force_deleted')->count())->toBe(1);

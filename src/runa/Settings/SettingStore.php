@@ -48,9 +48,11 @@ final readonly class SettingStore
                 throw $this->reject('application_settings_revision_changed', 409);
             }
             $definitions = $this->registry->settings();
+            $permissions = [];
             foreach ($patch as $key => $value) {
                 $definition = $definitions[$key] ?? null;
-                if ($definition === null || ! $this->allowed($definition->readPermission) || ! $this->allowed($definition->writePermission)) {
+                if ($definition === null || ! ($permissions[$definition->readPermission] ??= $this->allowed($definition->readPermission))
+                    || ! ($permissions[$definition->writePermission] ??= $this->allowed($definition->writePermission))) {
                     throw $this->reject('application_settings_forbidden', 403);
                 }
                 if (! $definition->accepts($value)) {
@@ -63,8 +65,7 @@ final readonly class SettingStore
                 if (isset($images?->png[$kind]) && $uploaded !== 'uploaded') {
                     throw $this->reject('application_settings_invalid', 422);
                 }
-                $column = 'branding_'.$kind;
-                if ($uploaded === 'uploaded' && ! isset($images?->png[$kind]) && $row->{$column} === null) {
+                if ($uploaded === 'uploaded' && ! isset($images?->png[$kind]) && ! $row->{'has_'.$kind}) {
                     throw $this->reject('application_settings_invalid', 422);
                 }
             }
@@ -118,12 +119,13 @@ final readonly class SettingStore
     {
         return $this->run(function (): array {
             $result = [];
+            $permissions = [];
             foreach ($this->registry->settings() as $key => $definition) {
-                if ($this->allowed($definition->readPermission)) {
+                if ($permissions[$definition->readPermission] ??= $this->allowed($definition->readPermission)) {
                     $result[$key] = ['title' => $definition->title, 'type' => $definition->type,
                         'max_length' => $definition->maxLength, 'default' => $definition->default,
                         'choices' => $definition->type === 'timezone' ? \DateTimeZone::listIdentifiers() : $definition->choices,
-                        'writable' => $this->allowed($definition->writePermission)];
+                        'writable' => $permissions[$definition->writePermission] ??= $this->allowed($definition->writePermission)];
                 }
             }
 
@@ -137,17 +139,20 @@ final readonly class SettingStore
     public function presentation(): array
     {
         try {
-            $row = $this->row($this->database->connection());
+            /** @var object{revision:int|string,values:string,logo:?string,logo_icon:?string,favicon:?string}|null $row */
+            $row = $this->database->connection()->table('shared.application_settings')->where('singleton', 1)->select(['revision', 'values'])
+                ->selectRaw("encode(sha256(branding_logo), 'hex') as logo, encode(sha256(branding_logo_icon), 'hex') as logo_icon, encode(sha256(branding_favicon), 'hex') as favicon")->first();
+            if ($row === null) {
+                throw $this->reject('application_settings_unavailable', 503);
+            }
             /** @var array<string,mixed> $values */
             $values = json_decode($row->values, true, 16, JSON_THROW_ON_ERROR);
 
             $public = array_intersect_key($values, array_fill_keys(['presentation.name', 'presentation.logo', 'presentation.favicon', 'presentation.locale', 'presentation.theme', 'presentation.timezone'], true));
             $assets = [];
             foreach (['logo', 'logo_icon', 'favicon'] as $kind) {
-                $encoded = $row->{'branding_'.$kind};
-                $bytes = is_string($encoded) ? base64_decode($encoded, true) : false;
-                if ($bytes !== false) {
-                    $assets[$kind] = hash('sha256', $bytes);
+                if (is_string($row->$kind)) {
+                    $assets[$kind] = $row->$kind;
                 }
             }
 
@@ -164,8 +169,10 @@ final readonly class SettingStore
             return null;
         }
         try {
-            $row = $this->row($this->database->connection());
-            $encoded = $row->{'branding_'.$kind};
+            // The validated kind selects one fixed column; unrelated images and
+            // the settings document are never transferred for an asset request.
+            $encoded = $this->database->connection()->table('shared.application_settings')->where('singleton', 1)
+                ->selectRaw("encode(branding_{$kind}, 'base64') as image")->value('image');
             $bytes = is_string($encoded) ? base64_decode($encoded, true) : false;
 
             return $bytes !== false && hash_equals(hash('sha256', $bytes), $hash) ? $bytes : null;
@@ -174,23 +181,25 @@ final readonly class SettingStore
         }
     }
 
-    /** @return object{revision:int|string,values:string,branding_logo:?string,branding_logo_icon:?string,branding_favicon:?string} */
+    /** @return object{revision:int|string,values:string,has_logo:bool,has_favicon:bool} */
     private function row(Connection $connection, bool $lock = false): object
     {
-        /** @var object{revision:int|string,values:string,branding_logo:?string,branding_logo_icon:?string,branding_favicon:?string}|null $row */
-        $row = $connection->table('shared.application_settings')->where('singleton', 1)->when($lock, fn ($query) => $query->lockForUpdate())->select(['revision', 'values'])->selectRaw("encode(branding_logo, 'base64') as branding_logo, encode(branding_logo_icon, 'base64') as branding_logo_icon, encode(branding_favicon, 'base64') as branding_favicon")->first();
+        /** @var object{revision:int|string,values:string,has_logo:bool,has_favicon:bool}|null $row */
+        $row = $connection->table('shared.application_settings')->where('singleton', 1)->when($lock, fn ($query) => $query->lockForUpdate())->select(['revision', 'values'])
+            ->selectRaw('branding_logo IS NOT NULL as has_logo, branding_favicon IS NOT NULL as has_favicon')->first();
 
         return $row ?? throw $this->reject('application_settings_unavailable', 503);
     }
 
-    /** @param object{revision:int|string,values:string,branding_logo:?string,branding_logo_icon:?string,branding_favicon:?string} $row @return array{revision:int,values:array<string,string|int|bool|null>} */
+    /** @param object{revision:int|string,values:string} $row @return array{revision:int,values:array<string,string|int|bool|null>} */
     private function project(object $row): array
     {
         /** @var array<string,mixed> $stored */
         $stored = json_decode($row->values, true, 16, JSON_THROW_ON_ERROR);
         $values = [];
+        $permissions = [];
         foreach ($this->registry->settings() as $key => $definition) {
-            if ($this->allowed($definition->readPermission)) {
+            if ($permissions[$definition->readPermission] ??= $this->allowed($definition->readPermission)) {
                 $value = $stored[$key] ?? $definition->default;
                 $values[$key] = ($value === null || is_string($value) || is_int($value) || is_bool($value)) && $definition->accepts($value) ? $value : $definition->default;
             }

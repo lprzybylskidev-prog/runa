@@ -27,6 +27,7 @@ use RuntimeException;
 use Throwable;
 
 /** Durable execution protocol, never a business cancellation/compensation policy.
+ * @phpstan-type StatusRow object{public_id:string,module_key:string,operation:string,status:string,generation:int,attempts:int,cancel_requested:bool,lease_until:?string,progress:string,correlation_id:string}
  * @phpstan-type WorkRow object{public_id: string, module_key: string, operation: string, manifest_hash: string, correlation_id: string, origin_module: ?string, generation: int, payload: string, status: string, attempts: int, cancel_requested: bool, lease_token: ?string, lease_until: ?string, available_at: string, progress: string, event_listener: ?string, delivery_key: ?string}
  */
 final readonly class ModuleWork
@@ -299,14 +300,8 @@ final readonly class ModuleWork
     {
         $this->expire($id);
         $row = $this->row($id);
-        $capabilities = null;
-        try {
-            [, $capabilities] = $this->definitions->resolve($row->module_key, $row->operation);
-        } catch (Throwable) {
-            // Missing source does not erase retained work evidence or invent cancellation capability.
-        }
 
-        return new WorkStatus($id, $row->module_key, $row->operation, $row->status, $row->generation, $this->registry->snapshot()->generation, $row->attempts, $row->cancel_requested, $row->lease_until, $row->progress, $row->correlation_id, $capabilities?->cancellable, $capabilities?->limitations);
+        return $this->projectStatuses([$row])[0];
     }
 
     /** Bounded management view; terminal evidence remains addressable by work ID.
@@ -314,19 +309,7 @@ final readonly class ModuleWork
      */
     public function active(string $module, int $limit = 100): array
     {
-        if ($limit < 1 || $limit > 1000) {
-            throw new RuntimeException('Invalid active-work limit.');
-        }
-        $ids = $this->connection->table('shared.module_work as w')->join('shared.modules as m', 'm.id', '=', 'w.module_id')->where('m.module_id', $module)->whereIn('w.status', self::ACTIVE)->orderBy('w.id')->limit($limit)->pluck('w.public_id');
-        $statuses = [];
-        foreach ($ids as $id) {
-            if (! is_string($id)) {
-                throw new RuntimeException('Invalid stored work identity.');
-            }
-            $statuses[] = $this->status($id);
-        }
-
-        return $statuses;
+        return $this->listing($module, $limit, true);
     }
 
     /** Bounded newest-first management history, including retained terminal work.
@@ -334,16 +317,60 @@ final readonly class ModuleWork
      */
     public function history(string $module, int $limit = 100): array
     {
+        return $this->listing($module, $limit, false);
+    }
+
+    /** @return list<WorkStatus> */
+    private function listing(string $module, int $limit, bool $active): array
+    {
         if ($limit < 1 || $limit > 1000) {
-            throw new RuntimeException('Invalid work-history limit.');
+            throw new RuntimeException('Invalid work listing limit.');
         }
-        $ids = $this->connection->table('shared.module_work as w')->join('shared.modules as m', 'm.id', '=', 'w.module_id')->where('m.module_id', $module)->orderByDesc('w.id')->limit($limit)->pluck('w.public_id');
+        $query = $this->connection->table('shared.module_work as w')->join('shared.modules as m', 'm.id', '=', 'w.module_id')
+            ->where('m.module_id', $module)->when($active, fn (Builder $query): Builder => $query->whereIn('w.status', self::ACTIVE))
+            ->orderBy('w.id', $active ? 'asc' : 'desc')->limit($limit)
+            ->select(['w.public_id', 'm.module_id as module_key', 'w.operation', 'w.status', 'w.generation', 'w.attempts', 'w.cancel_requested', 'w.lease_until', 'w.progress', 'w.correlation_id']);
+        /** @var list<StatusRow> $rows */
+        $rows = $query->get()->all();
+        $expired = array_filter($rows, static fn (object $row): bool => $row->status === 'running' && $row->lease_until !== null && Carbon::parse($row->lease_until)->lte(now()));
+        if ($expired !== []) {
+            // Only selected expired leases may change. A concurrent renewed lease
+            // remains authoritative; reload the original selection after recovery.
+            $this->connection->table('shared.module_work')->whereIn('public_id', array_column($expired, 'public_id'))
+                ->where('status', 'running')->where('lease_until', '<=', now())
+                ->update(['status' => 'recovery_required', 'progress' => 'lease_expired', 'lease_token' => null, 'lease_until' => null, 'updated_at' => now()]);
+            /** @var list<StatusRow> $rows */
+            $rows = $query->whereIn('w.public_id', array_column($rows, 'public_id'))->get()->all();
+        }
+
+        return $this->projectStatuses($rows);
+    }
+
+    /** @param list<StatusRow> $rows
+     * @return list<WorkStatus>
+     */
+    private function projectStatuses(array $rows): array
+    {
+        if ($rows === []) {
+            return [];
+        }
+        $generation = $this->registry->snapshot()->generation;
+        /** @var array<string,array<string,JobDefinition>> $capabilities */
+        $capabilities = [];
         $statuses = [];
-        foreach ($ids as $id) {
-            if (! is_string($id)) {
-                throw new RuntimeException('Invalid stored work identity.');
+        foreach ($rows as $row) {
+            $key = $row->module_key;
+            if (! array_key_exists($key, $capabilities)) {
+                $capabilities[$key] = [];
+                try {
+                    [, $capabilities[$key]] = $this->definitions->declared($row->module_key);
+                } catch (Throwable) {
+                    // Missing source retains evidence without inventing capabilities.
+                }
             }
-            $statuses[] = $this->status($id);
+            $definition = $capabilities[$key][$row->operation] ?? null;
+            $statuses[] = new WorkStatus($row->public_id, $row->module_key, $row->operation, $row->status, $row->generation, $generation,
+                $row->attempts, $row->cancel_requested, $row->lease_until, $row->progress, $row->correlation_id, $definition?->cancellable, $definition?->limitations);
         }
 
         return $statuses;

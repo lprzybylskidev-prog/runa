@@ -49,3 +49,8 @@ procedures; no upstream refresh, dependency or protected-edit authority was adde
 Mandatory per-view FormNotifications routing is local Runa guidance sourced from
 `docs/runa/handbook/development/frontend/forms.md` and its shared component contract.
 It adds no upstream dependency or protected-platform edit authority.
+
+Read/request amplification review routing comes from local RM-2026-016 runtime
+measurements and the public application architecture/loading guides. Customer
+repairs retain App ownership; no upstream refresh, dependency or quality-gate
+change is involved.

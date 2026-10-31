@@ -89,6 +89,43 @@ afterEach(function (): void {
     $this->sources->remove();
 });
 
+it('bounds work listing queries and batches expired leases without selecting private payloads', function (): void {
+    $ids = [];
+    for ($i = 0; $i < 12; $i++) {
+        $ids[] = $this->work->dispatch($this->id, 'process', []);
+    }
+    $db = DB::connection();
+    $db->beginTransaction();
+    try {
+        $this->registry->snapshot();
+        $db->flushQueryLog();
+        $db->enableQueryLog();
+        $active = $this->work->active($this->id);
+        $queries = $db->getQueryLog();
+        $db->disableQueryLog();
+        expect(array_map(static fn ($status): string => $status->workId, $active))->toBe($ids)
+            ->and($queries)->toHaveCount(1)->and($queries[0]['query'])->not->toContain('payload', 'lease_token');
+        $db->table('shared.module_work')->whereIn('public_id', array_slice($ids, 0, 3))->update(['status' => 'running', 'attempts' => 1, 'lease_token' => (string) Str::uuid7(), 'lease_until' => now()->subSecond()]);
+        $this->registry->snapshot();
+        $db->flushQueryLog();
+        $db->enableQueryLog();
+        $history = $this->work->history($this->id);
+        $queries = $db->getQueryLog();
+        $db->disableQueryLog();
+        $workQueries = array_values(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], '"shared"."module_work"')));
+        expect($workQueries)->toHaveCount(3)
+            ->and(array_map(static fn ($status): string => $status->workId, $history))->toBe(array_reverse($ids));
+        $states = array_column($history, 'status', 'workId');
+        foreach (array_slice($ids, 0, 3) as $id) {
+            expect($states[$id])->toBe('recovery_required');
+        }
+        expect($states[$ids[3]])->toBe('pending');
+    } finally {
+        $db->disableQueryLog();
+        $db->rollBack();
+    }
+});
+
 it('executes the database envelope through the real worker with safe metadata and unwound correlation scope', function (): void {
     $parent = $this->guard->enter($this->id, new ApiOperation('origin'));
     $id = $this->scope->run($parent, fn () => $this->work->dispatch($this->id, 'process', ['private' => 'sensitive-test-payload']));

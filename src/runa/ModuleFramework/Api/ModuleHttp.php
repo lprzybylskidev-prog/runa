@@ -31,6 +31,12 @@ final readonly class ModuleHttp
             // Effective maintenance rejects runtime database failure; cold setup stays bootable.
             return;
         }
+        $this->connection->transaction($this->registerRoutes(...));
+    }
+
+    /** One locked metadata scan; no controller or business handler executes here. */
+    private function registerRoutes(): void
+    {
         $planned = [];
         $unavailable = [];
         $seen = [];
@@ -39,7 +45,7 @@ final readonly class ModuleHttp
                 continue;
             }
             try {
-                $endpoints = $this->endpoints($record);
+                $endpoints = $this->connection->transaction(fn (): array => $this->endpoints($record));
             } catch (\Throwable) {
                 // A stale/missing module cannot block sync, health recovery or independent modules.
                 $unavailable[] = $record->id;

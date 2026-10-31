@@ -34,12 +34,13 @@ final readonly class BulkSessions implements AuthBulkSessions
             if (! hash_equals($preview['fingerprint'], $fingerprint)) {
                 throw new OperationRejected('session_preview_stale', 'runa.auth', 'sessions.bulk_revoke', 409);
             }
-            foreach ($preview['accounts'] as $account) {
-                $user = User::withTrashed()->where('public_id', $account['public_id'])->firstOrFail();
-                $connection->table('runa_auth.sessions')->where('user_id', $user->id)->whereNull('revoked_at')->update(['revoked_at' => now()]);
-                if ($trust) {
-                    $connection->table('runa_auth.trusted_devices')->where('user_id', $user->id)->whereNull('revoked_at')->update(['revoked_at' => now()]);
-                }
+            // The snapshot already holds every selected user lock in UUID order.
+            $users = User::withTrashed()->whereIn('public_id', array_column($preview['accounts'], 'public_id'))->orderBy('public_id')->get();
+            $connection->table('runa_auth.sessions')->whereIn('user_id', $users->modelKeys())->whereNull('revoked_at')->update(['revoked_at' => now()]);
+            if ($trust) {
+                $connection->table('runa_auth.trusted_devices')->whereIn('user_id', $users->modelKeys())->whereNull('revoked_at')->update(['revoked_at' => now()]);
+            }
+            foreach ($users as $user) {
                 $this->transactions->record('sessions.bulk_revoked', $user);
             }
 
@@ -59,14 +60,23 @@ final readonly class BulkSessions implements AuthBulkSessions
         }
         $accounts = [];
         $sessions = $devices = 0;
+        $sessionRows = $connection->table('runa_auth.sessions')->whereIn('user_id', $users->modelKeys())->whereNull('revoked_at')
+            ->orderBy('id')->limit(10001)->get(['user_id', 'public_id']);
+        if ($sessionRows->count() > 10000) {
+            throw new OperationRejected('session_selection_limit', 'runa.auth', 'sessions.bulk_preview', 422);
+        }
+        $deviceRows = $trust ? $connection->table('runa_auth.trusted_devices')->whereIn('user_id', $users->modelKeys())->whereNull('revoked_at')
+            ->orderBy('id')->limit(10001 - $sessionRows->count())->get(['user_id', 'public_id']) : collect();
+        if ($sessionRows->count() + $deviceRows->count() > 10000) {
+            throw new OperationRejected('session_selection_limit', 'runa.auth', 'sessions.bulk_preview', 422);
+        }
+        $byUser = $sessionRows->groupBy('user_id');
+        $devicesByUser = $deviceRows->groupBy('user_id');
         foreach ($users as $user) {
             /** @var list<string> $ids */
-            $ids = $connection->table('runa_auth.sessions')->where('user_id', $user->id)->whereNull('revoked_at')->orderBy('id')->limit(10001)->pluck('public_id')->all();
+            $ids = ($byUser->get($user->id) ?? collect())->pluck('public_id')->all();
             /** @var list<string> $trusted */
-            $trusted = $trust ? $connection->table('runa_auth.trusted_devices')->where('user_id', $user->id)->whereNull('revoked_at')->orderBy('id')->limit(10001)->pluck('public_id')->all() : [];
-            if ($sessions + $devices + count($ids) + count($trusted) > 10000) {
-                throw new OperationRejected('session_selection_limit', 'runa.auth', 'sessions.bulk_preview', 422);
-            }
+            $trusted = ($devicesByUser->get($user->id) ?? collect())->pluck('public_id')->all();
             $accounts[] = ['public_id' => $user->public_id, 'version' => $user->version, 'security_version' => $user->security_version, 'sessions' => $ids, 'trusted_devices' => $trusted];
             $sessions += count($ids);
             $devices += count($trusted);

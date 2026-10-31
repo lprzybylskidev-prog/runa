@@ -1,5 +1,10 @@
 # UX, Design, and Performance
 
+For measured query/request growth and application-wide coverage, follow
+[read-path performance](../../../../docs/runa/handbook/architecture/application-architecture.md#read-path-performance)
+and [readiness/reconciliation](../../../../docs/runa/handbook/development/frontend/loading.md).
+Coalesce bursts without dropping a later invalidation or current access checks.
+
 1. Complex components should have explicit state ownership.
 2. Rendering/computed paths must not hide non-obvious side effects.
 3. Relevant controls define complete states such as normal, hover, focus, active, selected, disabled, and busy.

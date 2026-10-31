@@ -20,6 +20,10 @@ and repair demonstrated amplification within authorized scope. Preserve current
 authority, expiry and rollback/reused-worker freshness; do not defer a known
 in-scope defect or introduce persistent permission caches.
 
+For an explicitly application-wide review, inventory App/module, startup/HTTP,
+worker/scheduler/CLI and frontend read owners. Report source, measurement and
+regression coverage separately; selected Core pages are not whole-app evidence.
+
 Before acting:
 
 1. Read the active roadmap.

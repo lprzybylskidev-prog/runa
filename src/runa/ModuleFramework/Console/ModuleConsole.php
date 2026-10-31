@@ -107,12 +107,17 @@ final readonly class ModuleConsole
         if (! $this->ready()) {
             return;
         }
+        $this->connection->transaction(fn () => $this->registerDeclaredCommands($artisan));
+    }
+
+    private function registerDeclaredCommands(Application $artisan): void
+    {
         foreach ($this->registry->snapshot()->modules as $record) {
             if (! $record->registered || ! $record->sourcePresent) {
                 continue;
             }
             try {
-                $definitions = $this->commands($record);
+                $definitions = $this->connection->transaction(fn (): array => $this->commands($record));
             } catch (Throwable) {
                 continue;
             }
@@ -152,12 +157,17 @@ final readonly class ModuleConsole
         if (! $this->ready()) {
             return;
         }
+        $this->connection->transaction(fn () => $this->registerDeclaredSchedules($schedule));
+    }
+
+    private function registerDeclaredSchedules(Schedule $schedule): void
+    {
         foreach ($this->registry->snapshot()->modules as $record) {
             if (! $record->registered || ! $record->sourcePresent) {
                 continue;
             }
             try {
-                $definitions = $this->schedules($record);
+                $definitions = $this->connection->transaction(fn (): array => $this->schedules($record));
             } catch (Throwable) {
                 continue;
             }

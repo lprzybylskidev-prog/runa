@@ -2,6 +2,10 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Bound application-setting permission intersections and work-list status reads.
+  Read branding fingerprints without transferring image bytes, and serve only
+  the selected asset. Preserve fresh grants, immutable URLs and lease recovery.
+
 - Remove repeated infrastructure reads from module page projections. Reuse the
   locked registry snapshot and check each distinct permission once per owner in
   a synchronous metadata projection; owning handlers and subsequent operations
