@@ -9,7 +9,7 @@ import { computed, nextTick, ref, shallowRef, watch } from 'vue';
 import {
   PageNavigation,
   Dialog,
-  Spinner,
+  ContentLoading,
   Skeleton,
   Badge,
   useIdentity,
@@ -648,67 +648,72 @@ defineExpose({ controller });
           :aria-busy="diagnosticsLoading"
           data-module-diagnostics
         >
-          <div class="flex flex-wrap items-end justify-end gap-4">
-            <div class="flex flex-wrap items-center gap-4">
-              <span
-                v-if="diagnosticsLoading && !filterLoading"
-                class="flex items-center gap-2 text-xs text-muted"
-                data-diagnostics-refresh
-                ><Spinner
-                  size="sm"
-                  :label="tr('Refreshing module state')"
-                /><span aria-hidden="true">{{ tr('Refreshing…') }}</span></span
-              >
-              <Select
-                :label="tr('Module state')"
-                v-model="filter"
-                :options="[
-                  {
-                    value: 'enabled',
-                    label: tr('Registered and enabled modules'),
-                  },
-                  { value: 'registered', label: tr('Registered modules') },
-                  { value: 'all', label: tr('All modules') },
-                ]"
-                :locale="adminLocale"
-                :disabled="controller.busy.value"
-              />
+          <ContentLoading
+            :loading="false"
+            :refreshing="diagnosticsLoading && !filterLoading"
+            :label="tr('Refreshing module state')"
+          >
+            <div class="flex flex-wrap items-end justify-end gap-4">
+              <div class="flex flex-wrap items-center gap-4">
+                <span
+                  v-if="diagnosticsLoading && !filterLoading"
+                  class="flex items-center gap-2 text-xs text-muted"
+                  data-diagnostics-refresh
+                  >{{ tr('Refreshing…') }}</span
+                >
+                <Select
+                  :label="tr('Module state')"
+                  v-model="filter"
+                  :options="[
+                    {
+                      value: 'enabled',
+                      label: tr('Registered and enabled modules'),
+                    },
+                    { value: 'registered', label: tr('Registered modules') },
+                    { value: 'all', label: tr('All modules') },
+                  ]"
+                  :locale="adminLocale"
+                  :disabled="controller.busy.value"
+                />
+              </div>
             </div>
-          </div>
-          <div
-            v-if="filterLoading"
-            class="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3"
-            role="status"
-            :aria-label="tr('Refreshing module state')"
-            data-module-filter-loading
-          >
-            <Skeleton v-for="index in 3" :key="index" shape="block" />
-          </div>
-          <ul
-            v-else
-            class="grid min-w-0 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3"
-          >
-            <li
-              v-for="module in modules"
-              :key="String(module.id)"
-              class="flex min-w-0"
+            <div
+              v-if="filterLoading"
+              class="grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-3"
+              role="status"
+              :aria-label="tr('Refreshing module state')"
+              data-module-filter-loading
             >
-              <component
-                :is="presentation.moduleCard ?? AdminModuleCard"
-                :module="module"
-                :disabled="controller.busy.value"
-                @select="select"
-              />
-            </li>
-          </ul>
-          <p
-            v-if="
-              !filterLoading && !modules.length && !controller.refreshing.value
-            "
-            class="py-8 text-center text-sm text-muted"
-          >
-            {{ tr('No modules match this filter.') }}
-          </p>
+              <Skeleton v-for="index in 3" :key="index" shape="block" />
+            </div>
+            <ul
+              v-else
+              class="grid min-w-0 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3"
+            >
+              <li
+                v-for="module in modules"
+                :key="String(module.id)"
+                class="flex min-w-0"
+              >
+                <component
+                  :is="presentation.moduleCard ?? AdminModuleCard"
+                  :module="module"
+                  :disabled="controller.busy.value"
+                  @select="select"
+                />
+              </li>
+            </ul>
+            <p
+              v-if="
+                !filterLoading &&
+                !modules.length &&
+                !controller.refreshing.value
+              "
+              class="py-8 text-center text-sm text-muted"
+            >
+              {{ tr('No modules match this filter.') }}
+            </p>
+          </ContentLoading>
         </section>
       </template>
     </div>
@@ -872,6 +877,8 @@ defineExpose({ controller });
   </slot>
   <Dialog
     :model-value="diagnosisOpen"
+    :loading="!diagnosis && !controller.error.value"
+    :loading-label="tr('Loading operational information…')"
     :title="tr('Diagnostic result')"
     :description="getModulePresentation(selected).name[adminLocale]"
     :locale="adminLocale"
@@ -881,7 +888,6 @@ defineExpose({ controller });
   >
     <div class="space-y-4" data-module-diagnosis>
       <AdminOperationResult v-if="diagnosis" :result="diagnosis" />
-      <Skeleton v-else-if="!controller.error.value" shape="block" />
       <FormNotifications
         :locale="adminLocale"
         :error="tr(controller.error.value)"
@@ -905,6 +911,8 @@ defineExpose({ controller });
   </Dialog>
   <Dialog
     :model-value="reviewOpen"
+    :loading="previewLoading"
+    :loading-label="tr('Loading operational information…')"
     :title="lifecycleLabel"
     :description="getModulePresentation(selected).name[adminLocale]"
     :locale="adminLocale"
@@ -917,7 +925,6 @@ defineExpose({ controller });
       <p class="text-sm">
         {{ tr('Confirm the module action after reviewing its effects.') }}
       </p>
-      <Skeleton v-if="previewLoading" shape="block" />
       <FormNotifications
         :locale="adminLocale"
         :error="tr(controller.error.value)"

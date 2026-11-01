@@ -396,7 +396,7 @@ not an authorization or server-routing decision.
 
 ## Account history detail
 
-AuthHistoryDetail composes public Dialog, Spinner, Alert and Button for an explicit
+AuthHistoryDetail composes public Dialog with loading placeholders, Alert and Button for an explicit
 read-only event modal, PL/EN before/after pairs and legacy/security explanations.
 The controller fences overlapping/closed reads and supports retry. Public presentation
 replacement and exported types are documented in the
@@ -509,3 +509,14 @@ parts retain their escaped text and receive best-effort token coloring. Plain-te
 mode remains uncolored. Formatting never infers dates or translates payload values. Authors retain
 server authorization, redaction, continuation and record-lifecycle ownership;
 collapse is presentation, not a security boundary.
+
+### Content loading defaults
+
+Use public `ContentLoading` for localized pulsing text/form/detail/image/navigation
+geometry and retained-content refresh. `AsyncContent` and `ViewBoundary` select
+this default automatically. `Dialog` accepts loading/loadingLabel/loadingShape
+and an optional loading slot; ConfirmDialog/AlertDialog cannot confirm/acknowledge
+unfinished content. Busy is separate mutation progress. Full signatures, ownership,
+source placement, lifecycle and allowed circular-indicator owners live in the
+[loading guide](loading.md#content-loading-presentation). Do not implement another
+view-local animation or attach a global HTTP counter to the presentation.

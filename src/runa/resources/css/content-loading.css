@@ -1,0 +1,14 @@
+/* One pulse shared by placeholder geometry and retained content refresh. */
+.runa-content-pulse {
+  animation: runa-content-pulse 1600ms ease-in-out infinite;
+}
+@keyframes runa-content-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+@media print, (prefers-reduced-motion: reduce) {
+  .runa-content-pulse {
+    animation: none;
+  }
+}

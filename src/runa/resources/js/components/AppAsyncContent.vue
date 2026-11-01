@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useContentMotion } from '../composables/useContentMotion';
 import { ref } from 'vue';
-import AppSpinner from './AppSpinner.vue';
+import AppContentLoading from './AppContentLoading.vue';
 import AppAlert from './AppAlert.vue';
 import AppButton from './AppButton.vue';
 import AppEmptyState from './AppEmptyState.vue';
@@ -41,13 +41,7 @@ useContentMotion(content, () =>
     class="min-w-0"
   >
     <div v-if="state === 'loading'">
-      <slot name="loading"
-        ><div class="flex items-center gap-3 py-6 text-sm text-muted">
-          <AppSpinner :label="loadingLabel" /><span aria-hidden="true">{{
-            loadingLabel
-          }}</span>
-        </div></slot
-      >
+      <slot name="loading"><AppContentLoading :label="loadingLabel" /></slot>
     </div>
     <div v-else-if="state === 'error'">
       <slot name="error" :retry="() => emit('retry')"
@@ -68,8 +62,13 @@ useContentMotion(content, () =>
           :description="emptyDescription ?? ''"
       /></slot>
     </div>
-    <div v-else>
+    <AppContentLoading
+      v-else
+      :loading="false"
+      :refreshing="state === 'refreshing'"
+      :label="loadingLabel"
+    >
       <slot name="success"><slot /></slot>
-    </div>
+    </AppContentLoading>
   </div>
 </template>

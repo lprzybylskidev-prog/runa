@@ -9,7 +9,7 @@ import {
   Button,
   TextLink,
   MinimalLayout,
-  Spinner,
+  ContentLoading,
   Icon,
   Tooltip,
 } from '@/runa/ui';
@@ -26,8 +26,9 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
   >
     <template #header-actions>
       <div class="max-w-full" aria-live="polite">
-        <Spinner
+        <ContentLoading
           v-if="loading"
+          shape="navigation"
           :label="text('Sprawdzanie sesji', 'Checking session')"
         />
         <FormNotifications

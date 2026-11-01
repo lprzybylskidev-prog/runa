@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import js from '@eslint/js';
 import boundary from './runa/frontend/api-boundary.mjs';
+import loading from './runa/frontend/loading-presentation.mjs';
 import ts from 'typescript-eslint';
 import vue from 'eslint-plugin-vue';
 
@@ -22,6 +23,12 @@ export default ts.config(
     ],
     plugins: { runa: boundary },
     rules: { 'runa/public-imports': 'error' },
+  },
+  {
+    basePath: fileURLToPath(new URL('../', import.meta.url)),
+    files: ['src/{app,runa}/**/*.{js,ts,vue,mjs}'],
+    plugins: { 'runa-loading': loading },
+    rules: { 'runa-loading/content-loading': 'error' },
   },
   js.configs.recommended,
   ...ts.configs.recommended,

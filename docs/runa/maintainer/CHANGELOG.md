@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Standardize content loading across all supplied views and 17 modal instances: shared ContentLoading geometry, Dialog/AsyncContent/ViewBoundary defaults, retained-content refresh pulses and lint-enforced circular-indicator ownership. Audit report and both frontend instruction products are synchronized.
+
 - Right-align preview expansion links and animate pending Audit detail-modal reads/continuations with the shared Spinner; use the same initial-read feedback in Auth/Permissions record sections.
 
 - Link correlation and actor UUIDs directly to filtered Audit history, move correlation into Event and remove the related-entity card. Add shared theme-aware JSON syntax colors and inline expansion links across module previews.

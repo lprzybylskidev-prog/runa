@@ -1,3 +1,4 @@
+import type { ContentLoadingShape } from './loading';
 import type { ControlTone } from './controls';
 export type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 export type DialogCloseReason = 'close' | 'escape' | 'outside';
@@ -7,6 +8,9 @@ export interface DialogProps {
   description?: string;
   size?: DialogSize;
   busy?: boolean;
+  loading?: boolean;
+  loadingLabel?: string;
+  loadingShape?: ContentLoadingShape;
   error?: string;
   closeOnEscape?: boolean;
   closeOnOutside?: boolean;

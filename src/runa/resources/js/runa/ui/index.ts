@@ -202,3 +202,6 @@ export type { ApplicationDisplayDefaults } from './displayDefaults';
 
 export { default as ValuePreview } from '../../components/AppValuePreview.vue';
 export type { ValuePreviewProps } from './valuePreview';
+
+export { default as ContentLoading } from '../../components/AppContentLoading.vue';
+export type { ContentLoadingProps, ContentLoadingShape } from './loading';

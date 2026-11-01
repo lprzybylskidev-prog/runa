@@ -5,7 +5,7 @@ import { computed, ref } from 'vue';
 import { useAdminInitialReadiness } from './initialReadiness';
 import {
   ValuePreview,
-  Spinner,
+  ContentLoading,
   Alert,
   Button,
   FormConflict,
@@ -82,13 +82,12 @@ async function retry() {
           )
         }}
       </Alert>
-      <div
+      <ContentLoading
         v-if="!section.diagnostic && !record && !initialSettled"
-        aria-busy="true"
-        class="flex min-h-24 items-center justify-center sm:col-span-2"
-      >
-        <Spinner :label="tr('Loading record details')" />
-      </div>
+        shape="form"
+        :label="tr('Loading record details')"
+        class="sm:col-span-2"
+      />
       <Alert
         v-else-if="section.diagnostic || !record"
         tone="warning"

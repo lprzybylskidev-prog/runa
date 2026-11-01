@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Replace standalone content circles in history details, image cropping, entry forms and welcome navigation with shared content placeholders. Preserve specialized account geometry and Table loading.
+
 - Hide premature empty collection messages while modal record details load; shared Admin sections supply animated loading feedback.
 
 - Collapse long bounded collection values with the shared escaped ValuePreview; preserve explicit pagination and timestamp formatting.

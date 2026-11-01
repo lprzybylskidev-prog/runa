@@ -9,7 +9,7 @@ import {
   Card,
   ValuePreview,
   TextLink,
-  Spinner,
+  ContentLoading,
 } from '@/runa/ui';
 import { useAdminResource } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
@@ -89,13 +89,11 @@ function display(key: string) {
 </script>
 <template>
   <div class="min-w-0 space-y-4">
-    <div
+    <ContentLoading
       v-if="!record && !initialSettled"
-      aria-busy="true"
-      class="flex min-h-32 items-center justify-center"
-    >
-      <Spinner :label="tr('Loading event details')" />
-    </div>
+      shape="detail"
+      :label="tr('Loading event details')"
+    />
     <div v-else-if="!record" class="space-y-3">
       <p class="text-sm text-muted">
         {{ tr('Unable to load the current record.') }}
@@ -155,53 +153,54 @@ function display(key: string) {
           </dl>
         </Card>
       </div>
-      <Card v-if="payloads.length" :aria-busy="resource.busy.value">
-        <template #actions
-          ><Spinner
-            v-if="resource.busy.value"
-            size="sm"
-            :label="tr('Loading event details')"
-        /></template>
-        <template #header
-          ><h3>{{ tr('Event data') }}</h3></template
-        >
-        <div class="grid min-w-0 gap-4 sm:grid-cols-2">
-          <div
-            v-for="field in payloads"
-            :key="field.key"
-            class="min-w-0"
-            :class="
-              field.key === 'execution' ||
-              !['[]', '{}', '', null].includes(
-                record.values[field.key] as string | null,
-              )
-                ? 'sm:col-span-2'
-                : ''
-            "
+      <ContentLoading
+        v-if="payloads.length"
+        :loading="false"
+        :refreshing="resource.busy.value"
+        :label="tr('Loading event details')"
+      >
+        <Card>
+          <template #header
+            ><h3>{{ tr('Event data') }}</h3></template
           >
-            <h4 class="mb-2 text-xs font-semibold text-muted">
-              {{ tr(field.label) }}
-            </h4>
-            <p
-              v-if="
-                ['[]', '{}', '', null].includes(
+          <div class="grid min-w-0 gap-4 sm:grid-cols-2">
+            <div
+              v-for="field in payloads"
+              :key="field.key"
+              class="min-w-0"
+              :class="
+                field.key === 'execution' ||
+                !['[]', '{}', '', null].includes(
                   record.values[field.key] as string | null,
                 )
+                  ? 'sm:col-span-2'
+                  : ''
               "
-              class="text-sm text-muted"
             >
-              {{ tr('No data.') }}
-            </p>
-            <ValuePreview
-              v-else
-              :key="record.public_id + ':' + record.values.payload_part"
-              :text="String(record.values[field.key])"
-              format="json"
-              :locale="adminLocale"
-            />
+              <h4 class="mb-2 text-xs font-semibold text-muted">
+                {{ tr(field.label) }}
+              </h4>
+              <p
+                v-if="
+                  ['[]', '{}', '', null].includes(
+                    record.values[field.key] as string | null,
+                  )
+                "
+                class="text-sm text-muted"
+              >
+                {{ tr('No data.') }}
+              </p>
+              <ValuePreview
+                v-else
+                :key="record.public_id + ':' + record.values.payload_part"
+                :text="String(record.values[field.key])"
+                format="json"
+                :locale="adminLocale"
+              />
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      </ContentLoading>
       <div
         v-if="multipleParts"
         class="space-y-3 rounded border border-line p-4"

@@ -59,9 +59,9 @@ Changes/context/execution share a compact data card. Empty trees say No data;
 complete JSON is indented, syntax-colored using theme tokens and escaped Vue text.
 Long values use the public ValuePreview Show all/Collapse text link inside the
 preview, aligned to its right edge. Initial detail reads show a localized shared
-Spinner inside the modal until they settle; failures stop loading and offer Retry
-loading. A continuation read shows a small Spinner in the data-card header while
-retaining current metadata/payload. Reduced motion disables spinner rotation.
+detail-shaped ContentLoading placeholder inside the modal until they settle; failures stop loading and offer Retry
+loading. A continuation read pulses the retained payload region through ContentLoading
+refreshing while keeping metadata/payload mounted. Reduced motion removes the pulse.
 Continuation parts remain independently bounded escaped text; expansion
 never fetches or concatenates later parts. No raw HTML is rendered.
 

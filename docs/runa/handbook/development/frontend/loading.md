@@ -7,6 +7,36 @@ A session response, HTTP completion or known image URL alone does not establish
 presentation readiness. Authentication and authorization remain the owning
 controller's responsibility; this contract never grants access.
 
+## Content-loading presentation
+
+Content reads use pulsing Skeleton geometry, not a standalone circular spinner.
+The UI-owned public `ContentLoading` component from `@/runa/ui` supplies accessible
+localized placeholder regions for modules and App replacements. Its complete
+props are `label?: string` (Loading), `loading?: boolean` (true),
+`refreshing?: boolean` (false), `shape?: 'text'|'form'|'detail'|'image'|'navigation'`
+(text), and `lines?: number` (3). Slots: default (retained content when loading is
+false), placeholder (optional custom geometry). Implementation lives in
+`src/runa/resources/js/components/AppContentLoading.vue`; it ships in frontend
+assets. It never fetches, infers request ownership or grants access.
+
+`Dialog` accepts `loading?: boolean` (false), `loadingLabel?: string` (localized
+from locale when omitted) and `loadingShape?: ContentLoadingShape` (form), plus an
+optional loading slot. A known parent-owned initial read uses these props; a child
+that owns its read uses ContentLoading inside the modal. Do not hide a child needed
+to start that same read. Busy remains mutation/closure behavior, distinct from
+loading. `AsyncContent` and `ViewBoundary` default to ContentLoading. Consumers
+supply state and shape, not another animation implementation.
+
+Initial loading replaces only dependent content. Background reads retain DOM,
+focus and drafts, using ContentLoading refreshing for local pulsing without
+remounting content. Failures settle into explicit retry/error; they never leave
+placeholders indefinitely. Reduced motion/print show static geometry/content.
+Tables retain their existing circular read/refresh indicators. Busy buttons retain
+embedded action progress; the previously accepted language/theme cover retains
+its dedicated transition/spinner. These are not content-loading defaults. Placeholder and retained-content pulse share `src/runa/resources/css/content-loading.css`
+(1600ms, reduced-motion/print static). Source
+lint restricts Spinner to those UI owners and rejects standalone view imports.
+
 ## Ownership and public API
 
 The UI package owns these public consumption/composition APIs for platform views,
@@ -150,8 +180,8 @@ and uses its existing authority/error flow. Optional entry navigation policy doe
 not block the shell. Explicit preference changes retain the established overlay;
 incoming hydration never saves defaults back to the account.
 
-Admin same-filter diagnostic refresh retains current cards and shows a local
-Spinner. Changing the module-state filter replaces the card list with shared
+Admin same-filter diagnostic refresh retains current cards and uses local
+ContentLoading refreshing pulse. Changing the module-state filter replaces the card list with shared
 animated block Skeletons until the latest selection settles, retaining the filter
 and section frame. Older optional diagnostic reads are cancelled and late results
 cannot replace the latest selection. Module dialog editors retain the same initial-readiness

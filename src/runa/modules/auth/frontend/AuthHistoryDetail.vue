@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatApplicationInstant } from '@/runa/ui';
-import { Dialog, Button, Spinner, FormNotifications } from '@/runa/ui';
+import { Dialog, Button, FormNotifications } from '@/runa/ui';
 import type { HistoryValue } from './historyDetails';
 import type {
   AuthHistoryDetailProps,
@@ -110,14 +110,13 @@ function value(v: HistoryValue, field?: string): string {
     :title="text('Szczegóły zdarzenia', 'Event details')"
     :locale="locale"
     size="lg"
+    :loading="loading"
+    :loading-label="text('Wczytywanie szczegółów', 'Loading details')"
+    loading-shape="detail"
     @update:model-value="!$event && $emit('close')"
   >
-    <Spinner
-      v-if="loading"
-      :label="text('Wczytywanie szczegółów', 'Loading details')"
-    />
     <FormNotifications
-      v-else-if="failed"
+      v-if="failed"
       :locale="locale"
       :error="
         text(

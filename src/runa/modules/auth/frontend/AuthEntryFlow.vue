@@ -16,7 +16,7 @@ import {
   FormNotifications,
   MinimalLayout,
   RadioGroup,
-  Spinner,
+  ContentLoading,
   TextInput,
   TextLink,
 } from '@/runa/ui';
@@ -172,7 +172,7 @@ const readiness = useViewReadiness({
         </p>
       </div>
       <div v-if="!ready" class="space-y-5">
-        <Spinner v-if="busy" :label="t('loading')" />
+        <ContentLoading v-if="busy" shape="form" :label="t('loading')" />
       </div>
       <template v-else>
         <Form

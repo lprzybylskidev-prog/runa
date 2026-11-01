@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="Multiple extends boolean = false">
 import { computed, nextTick, onScopeDispose, ref, watch } from 'vue';
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
+import AppContentLoading from './AppContentLoading.vue';
 import AppFormField from './AppFormField.vue';
 import AppButton from './AppButton.vue';
 import { useFloatingLayer } from '../composables/useFloatingLayer';
@@ -371,25 +372,33 @@ onScopeDispose(cancel);
               "
               class="max-h-60 overflow-auto"
             >
-              <div
-                v-for="(option, index) in shown"
-                :id="`${controlId}-option-${index}`"
-                :key="option.value"
-                role="option"
-                :aria-selected="values.includes(option.value)"
-                :aria-disabled="option.disabled || undefined"
-                :data-active="active === index"
-                class="selection-option"
-                @pointerdown.prevent
-                @click="choose(option)"
+              <AppContentLoading
+                :loading="loading && !shown.length"
+                :refreshing="loading && !!shown.length"
+                :label="text('Ładowanie opcji', 'Loading options')"
+                :lines="3"
+                :class="loading && !shown.length ? 'p-2' : ''"
               >
-                <span aria-hidden="true">{{
-                  values.includes(option.value) ? '✓' : '·'
-                }}</span>
-                {{ option.label }}
-              </div>
+                <div
+                  v-for="(option, index) in shown"
+                  :id="`${controlId}-option-${index}`"
+                  :key="option.value"
+                  role="option"
+                  :aria-selected="values.includes(option.value)"
+                  :aria-disabled="option.disabled || undefined"
+                  :data-active="active === index"
+                  class="selection-option"
+                  @pointerdown.prevent
+                  @click="choose(option)"
+                >
+                  <span aria-hidden="true">{{
+                    values.includes(option.value) ? '✓' : '·'
+                  }}</span>
+                  {{ option.label }}
+                </div>
+              </AppContentLoading>
             </div>
-            <p role="status" class="p-2 text-xs text-muted">
+            <p v-if="!loading" role="status" class="p-2 text-xs text-muted">
               {{
                 loading
                   ? text('Ładowanie…', 'Loading…')

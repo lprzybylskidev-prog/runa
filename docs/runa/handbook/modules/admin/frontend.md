@@ -1031,7 +1031,7 @@ preview/review and confirmations remain mandatory for lifecycle mutations.
 The module-state selector automatically refreshes persisted diagnostics. Filter changes
 replace cards with shared animated block Skeletons inside the list region while
 keeping the selector/frame available; newer reads cancel older optional diagnostics.
-Ordinary same-filter background refresh retains confirmed cards with a local spinner. Reads
+Ordinary same-filter background refresh retains confirmed cards with local ContentLoading pulse. Reads
 never run diagnosis or replay writes. Runtime identity uses the public application
 identity's name and the diagnostic snapshot's versions (validated application and
 platform manifests); PHP renders the safe runtime.php scalar. Platform name remains
@@ -1150,7 +1150,7 @@ Permissions and Audit together for the same defect and apply the shared correcti
 where relevant. Prefer fixing Table/AdminRecordBrowser before duplicating view
 logic. Preserve each owner's read/write/proof and record-specific constraints.
 
-Default record sections show the shared animated Spinner while their initial read
+Default record sections show shared form-shaped ContentLoading placeholders while their initial read
 is pending; an unsuccessful settled read offers Retry loading. Auth bounded
 collections do not report No entries before their record arrives. These local
 states never gate the complete page or clear an already revealed dirty editor.

@@ -2,6 +2,8 @@ import { afterEach, expect, it } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { effectScope, nextTick } from 'vue';
 import {
+  ContentLoading,
+  ConfirmDialog,
   Spinner,
   Skeleton,
   EmptyState,
@@ -202,4 +204,58 @@ it('preserves a session mode when browser storage is denied', async () => {
   } finally {
     effects.stop();
   }
+});
+
+it('content placeholders provide named pulsing geometry and retain focused dirty content during refresh', async () => {
+  const w = mount(ContentLoading, {
+    attachTo: document.body,
+    props: { label: 'Loading editor', shape: 'form' },
+    slots: { default: '<input>' },
+  });
+  expect(w.attributes('role')).toBe('status');
+  expect(w.findAll('[data-shape="block"]')).toHaveLength(4);
+  expect(
+    getComputedStyle(w.get('[data-shape="block"] span').element).height,
+  ).toBe('36px');
+  expect(w.find('input').exists()).toBe(false);
+  expect(w.find('.app-spinner').exists()).toBe(false);
+  await w.setProps({ loading: false });
+  const input = w.get('input');
+  await input.setValue('Unsaved draft');
+  (input.element as HTMLInputElement).focus();
+  const element = input.element;
+  await w.setProps({ refreshing: true });
+  expect(w.get('input').element).toBe(element);
+  expect((element as HTMLInputElement).value).toBe('Unsaved draft');
+  expect(document.activeElement).toBe(element);
+  expect(w.attributes('aria-busy')).toBe('true');
+  expect(w.find('[data-content-loading]').exists()).toBe(false);
+  expect(w.find('.content-refreshing').exists()).toBe(true);
+  await w.setProps({ refreshing: false });
+  expect(w.get('input').element).toBe(element);
+});
+
+it('Dialog loading defaults to placeholders, keeps dismissal usable and never confirms unfinished content', async () => {
+  const w = mount(ConfirmDialog, {
+    attachTo: document.body,
+    props: { modelValue: true, title: 'Preview', loading: true, locale: 'en' },
+    slots: { default: '<input data-loaded>' },
+  });
+  await nextTick();
+  expect(
+    document.querySelector('[data-content-loading="form"]'),
+  ).not.toBeNull();
+  expect(document.querySelector('[data-loaded]')).toBeNull();
+  const confirm = document.querySelector<HTMLButtonElement>(
+    'button[data-variant="solid"]',
+  )!;
+  expect(confirm.disabled).toBe(true);
+  document
+    .querySelector<HTMLButtonElement>('[aria-label="Close dialog"]')!
+    .click();
+  await nextTick();
+  expect(w.emitted('cancel')).toHaveLength(1);
+  await w.setProps({ loading: false });
+  expect(document.querySelector('[data-loaded]')).not.toBeNull();
+  expect(document.querySelector('[data-content-loading]')).toBeNull();
 });

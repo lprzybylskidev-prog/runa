@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import { computed, provide, ref, toRef, useId } from 'vue';
+import AppContentLoading from './AppContentLoading.vue';
 import AppFormNotifications from './AppFormNotifications.vue';
 import AppButton from './AppButton.vue';
 import { useModalLayer } from '../composables/useModalLayer';
@@ -13,6 +14,9 @@ const props = withDefaults(
     description: '',
     size: 'md',
     busy: false,
+    loading: false,
+    loadingLabel: '',
+    loadingShape: 'form',
     error: '',
     closeOnEscape: true,
     closeOnOutside: true,
@@ -86,7 +90,7 @@ defineExpose({ focus: layer.focus });
           aria-modal="true"
           :aria-labelledby="`${id}-title`"
           :aria-describedby="description ? `${id}-description` : undefined"
-          :aria-busy="busy"
+          :aria-busy="busy || loading"
           tabindex="-1"
           class="dialog-panel"
           :class="`dialog-${size}`"
@@ -122,7 +126,17 @@ defineExpose({ focus: layer.focus });
           </header>
           <div data-dialog-content class="dialog-content">
             <fieldset :disabled="busy" class="min-w-0 space-y-4">
-              <slot :close="close" />
+              <slot v-if="loading" name="loading"
+                ><AppContentLoading
+                  :shape="loadingShape"
+                  :label="
+                    loadingLabel ||
+                    (locale === 'pl'
+                      ? 'Wczytywanie zawartości'
+                      : 'Loading content')
+                  "
+              /></slot>
+              <slot v-else :close="close" />
             </fieldset>
             <AppFormNotifications :error="error" :locale="locale" />
           </div>

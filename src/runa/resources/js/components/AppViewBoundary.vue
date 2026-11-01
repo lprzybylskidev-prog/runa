@@ -2,7 +2,7 @@
 import type { VNode } from 'vue';
 import type { ViewReadiness } from '../composables/useViewReadiness';
 import AppAlert from './AppAlert.vue';
-import AppSkeleton from './AppSkeleton.vue';
+import AppContentLoading from './AppContentLoading.vue';
 withDefaults(
   defineProps<{
     readiness: ViewReadiness;
@@ -20,6 +20,7 @@ defineSlots<{
 <template>
   <div
     class="min-w-0"
+    :class="readiness.phase.value === 'refreshing' ? 'runa-content-pulse' : ''"
     :aria-busy="['loading', 'refreshing'].includes(readiness.phase.value)"
     :data-view-phase="readiness.phase.value"
   >
@@ -27,8 +28,6 @@ defineSlots<{
     <slot v-else-if="readiness.phase.value === 'error'" name="error">
       <AppAlert tone="danger">{{ errorMessage }}</AppAlert>
     </slot>
-    <div v-else role="status" :aria-label="label">
-      <slot name="loading"><AppSkeleton :lines="3" /></slot>
-    </div>
+    <slot v-else name="loading"><AppContentLoading :label="label" /></slot>
   </div>
 </template>

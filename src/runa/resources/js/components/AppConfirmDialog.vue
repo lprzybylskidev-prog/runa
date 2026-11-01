@@ -9,6 +9,9 @@ const props = withDefaults(defineProps<ConfirmDialogProps>(), {
   description: '',
   size: 'md',
   busy: false,
+  loading: false,
+  loadingLabel: '',
+  loadingShape: 'form',
   error: '',
   closeOnEscape: true,
   closeOnOutside: true,
@@ -29,6 +32,7 @@ const emit = defineEmits<{
     @update:model-value="emit('update:modelValue', $event)"
     @close="emit('cancel', $event)"
   >
+    <template v-if="$slots.loading" #loading><slot name="loading" /></template>
     <template #default="{ close }"><slot :close="close" /></template>
     <template #footer="{ close }"
       ><AppButton
@@ -38,9 +42,10 @@ const emit = defineEmits<{
         >{{ cancelLabel || (locale === 'pl' ? 'Anuluj' : 'Cancel') }}</AppButton
       ><AppButton
         :busy="busy"
+        :disabled="loading"
         variant="solid"
         :tone="confirmTone"
-        @click="!props.busy && emit('confirm')"
+        @click="!props.busy && !props.loading && emit('confirm')"
         >{{
           confirmLabel || (locale === 'pl' ? 'Potwierdź' : 'Confirm')
         }}</AppButton

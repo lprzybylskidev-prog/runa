@@ -12,7 +12,7 @@ const count = computed(() =>
 </script>
 <template>
   <div aria-hidden="true" class="app-skeleton" :data-shape="shape">
-    <span v-for="line in count" :key="line" />
+    <span v-for="line in count" :key="line" class="runa-content-pulse" />
   </div>
 </template>
 <style scoped>
@@ -25,7 +25,6 @@ const count = computed(() =>
   height: 12px;
   border-radius: 4px;
   background: var(--runa-surface-hover);
-  animation: skeleton-pulse 1600ms ease-in-out infinite;
 }
 .app-skeleton[data-shape='text'] span:last-child {
   width: 65%;
@@ -38,14 +37,5 @@ const count = computed(() =>
   height: 44px;
   border-radius: 50%;
 }
-@keyframes skeleton-pulse {
-  50% {
-    opacity: 0.45;
-  }
-}
-@media print, (prefers-reduced-motion: reduce) {
-  .app-skeleton span {
-    animation: none;
-  }
-}
 </style>
+<style src="../../css/content-loading.css"></style>

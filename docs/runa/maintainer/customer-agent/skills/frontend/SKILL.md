@@ -24,6 +24,14 @@ an instant's zone from the browser or display raw timestamps in typed date field
 Keep date-only values unchanged and omit timezone annotations from input copy.
 Review sibling module/App consumers when correcting a shared temporal defect.
 
+For every asynchronous content region, read the canonical loading contract in
+`docs/runa/handbook/development/frontend/loading.md`. Use public ContentLoading,
+Dialog loading or AsyncContent/ViewBoundary defaults; content uses pulsing
+placeholders, never a standalone Spinner. Preserve revealed DOM/drafts during
+refresh; explicit owner state drives loading, never a global HTTP counter.
+Source lint enforces shared circular-indicator ownership. Review all analogous
+consumers when repairing a loading mismatch.
+
 For every new or changed view, use public `FormNotifications` from `@/runa/ui`
 for form-wide errors and operation success/failure; keep field errors beside controls.
 Do not introduce page-local outcome banners or duplicate the same result.

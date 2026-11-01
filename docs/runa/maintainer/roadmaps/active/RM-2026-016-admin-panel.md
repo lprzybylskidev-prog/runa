@@ -692,6 +692,16 @@ reassessment before resuming point 3; completed point history remains evidence.
     detail reads and payload continuation; inspect Auth/Permissions equivalents.
   - Right-align Show all/Collapse in the shared preview, extend focused delayed-read
     regressions and prepare current assets. Manual acceptance and final gates stay open.
+- [x] 11a40. Standardize content-loading presentation across the supplied frontend.
+  - Owner correction, 2026-11-01: inspect every loading animation and modal;
+    loading content uses pulsing content placeholders, never standalone circles.
+    Table reads, action-button progress and the explicitly accepted preference
+    change cover retain their dedicated feedback. Keep frames and dirty drafts.
+  - Supply one public ContentLoading primitive and Dialog loading default, make
+    AsyncContent default to placeholders, migrate inconsistent consumers, review
+    every existing loading/modal owner and enforce allowed Spinner ownership in lint.
+  - Synchronize both instruction products and canonical guides, author focused
+    regressions and prepare actual assets. Full suites remain final verification.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4488,3 +4498,78 @@ resource was changed; active development services, dev/base-test data, caches an
 evidence are preserved. Owner manual acceptance 11b and full verification/release
 12 remain open; tentative completion of Audit view review is not whole-roadmap
 manual acceptance.
+
+### Point 11a40 — Complete content-loading review and shared defaults
+
+Owner correction/expanded scope, 2026-11-01: review every loading animation and
+all modals, replace circular content loading with pulsing geometry and prevent
+future local mismatches through shared defaults and automatic enforcement. This
+supersedes point 11a39's mistaken circle choice. Local knowledge was current;
+bounded retrieval and original loading/components/motion/frontend sources were
+reviewed before implementation.
+
+The complete source census and per-owner decisions, including all 17 actual modal
+instances, are recorded in
+[content-loading review](../../reviews/RM-2026-016-content-loading.md). Existing
+account/form/navigation/avatar geometry and correct readiness boundaries are
+retained. Standalone circles were removed from Audit details, shared record
+sections, Auth history, avatar decoding, entry forms, welcome navigation and
+Admin diagnostic refresh. Remote Select options also receive content placeholders.
+
+Public ContentLoading supplies accessible text/form/detail/image/navigation
+geometry and retained-content refresh. Skeleton and refresh now share one authored
+pulse in content-loading.css, including reduced-motion/print handling. A served
+geometry check caught a specificity collision with block Skeleton height; field
+placeholders now reliably match 36px controls and image geometry stays bounded.
+AsyncContent/ViewBoundary default to content placeholders; refresh keeps existing
+DOM/focus/drafts. ViewBoundary retains its original default-slot structure.
+Dialog exposes loading/label/shape and a loading slot; known parent-owned reads
+use it directly, while child-owned reads retain local ContentLoading. Confirm and
+Alert compositions refuse unfinished confirmation/acknowledgement. No global
+request counter, artificial delay, extra read or security/session owner is added.
+
+Circular indicators remain only in shared Table, embedded Button action progress
+and the previously accepted preference-change cover, not content defaults. The
+new delivered ESLint rule rejects standalone view Spinner imports, aliases,
+namespace members and template references outside those shared owners. It runs
+through existing lint/hooks rather than introducing a CI pipeline or new gate.
+A focused policy test checks owner/App refusal, alias/namespace handling, allowed
+ContentLoading and the shared Table exception. Both owner/customer frontend
+skills now require the canonical loading procedure; root AGENTS already routes
+to that contract and needs no duplicated rule.
+
+Focused evidence:
+
+- Twelve native Chromium cases pass across loading defaults, delayed Audit reads,
+  failed-read retry/continuation, shared forms, dirty/focused refresh, Dialog
+  dismissal/confirmation and provider cancellation/failure. Native exit/cleanup 0:
+  `.runtime/frontend/RM-2026-016-content-loading-focused.log`.
+- Two focused retention cases pass again after preserving ViewBoundary's original
+  slot DOM: `RM-2026-016-content-loading-retention.log` under `.runtime/frontend/`.
+- The supported focused Python contract test passes (native exit/cleanup 0):
+  `.runtime/frontend/RM-2026-016-content-loading-policy.log`. The test path is
+  relative to the owning tests/tools/runa root; overlapping suite execution was
+  refused by the supported lock and rerun sequentially, without bypass.
+- Supported manual-runtime asset preparation passes:
+  `.runtime/frontend/RM-2026-016-content-loading-build.log`.
+- A focused served-build diagnostic holds actual detail responses to inspect
+  placeholders before data, then verifies shared pulse, reduced-motion static
+  fallback, 36px form geometry, right-aligned expansion and existing history links.
+  All six Auth/Permissions/Audit views at 1440px PL/dark and 390px EN/light have no
+  content spinner, horizontal overflow or page errors. Evidence:
+  `.runtime/frontend/RM-2026-016-content-loading-browser.log` and
+  `.runtime/artifacts/playwright/runa/RM-2026-016-content-loading/`. Desktop/mobile
+  placeholders were visually inspected; this is controlled interaction evidence,
+  not live authenticated backend acceptance or owner manual approval.
+
+Actual page/readiness/presentation/entry-options/catalogue/assets return 200;
+anonymous Admin entry retains 401. Evidence:
+`.runtime/frontend/RM-2026-016-content-loading-http.json`. Current assets are ready
+at http://localhost:8080/admin with existing access. Public loading/components/
+architecture/Admin/Audit/Auth guidance and current changelogs are synchronized;
+obsolete current Spinner defaults are replaced. The reusable public props/defaults
+are additive; assessed unreleased Admin 0.1.0, Audit 1.1.0 and Auth/Permissions
+2.1.0 targets remain appropriate. No dependency, migration, credential/grant or
+Docker resource was changed. Active development services, dev/base-test data,
+model/Qdrant caches and evidence remain preserved. Manual acceptance 11b and full
+affected-area verification/release 12 remain open.
