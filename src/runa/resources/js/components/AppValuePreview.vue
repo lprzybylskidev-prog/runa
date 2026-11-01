@@ -25,7 +25,9 @@ const preview = computed(() => {
 });
 const truncated = computed(() => preview.value.length < formatted.value.length);
 const visible = computed(() =>
-  expanded.value || !truncated.value ? formatted.value : preview.value + '…',
+  expanded.value || !truncated.value
+    ? formatted.value
+    : preview.value + (props.format === 'json' ? '' : '…'),
 );
 const tokens = computed(() =>
   props.format === 'json'
@@ -53,6 +55,11 @@ const tokens = computed(() =>
         :data-json-token="format === 'json' ? token.kind : undefined"
         :class="format === 'json' ? 'json-' + token.kind : ''"
         >{{ token.text }}</span
+      ><span
+        v-if="format === 'json' && truncated && !expanded"
+        class="block font-semibold text-ink"
+        data-value-continuation
+        >…</span
       >
     </p>
     <div v-if="truncated" class="mt-1 flex justify-end">

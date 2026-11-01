@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Show the collapsed JSON continuation ellipsis on its own line in shared value previews.
+
 - Use shared pulsing content placeholders in record sections and diagnostics, with native Dialog loading for diagnosis/lifecycle previews. Retain Table and action-progress indicators.
 
 - Show animated local initial-read feedback in shared record sections, retain failure retry and right-align shared value-preview expansion links.

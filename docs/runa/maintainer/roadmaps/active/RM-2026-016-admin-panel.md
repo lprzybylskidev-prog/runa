@@ -702,6 +702,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     every existing loading/modal owner and enforce allowed Spinner ownership in lint.
   - Synchronize both instruction products and canonical guides, author focused
     regressions and prepare actual assets. Full suites remain final verification.
+- [x] 11a41. Put the collapsed JSON continuation marker on its own line.
+  - Owner request, 2026-11-01: separate the ellipsis from JSON tokens so truncated
+    content is obvious. Apply through shared ValuePreview and prepare current assets.
+  - Owner reports satisfaction with Audit and completion of its view review after
+    this adjustment. This records Audit-specific acceptance, not whole-roadmap 11b.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4573,3 +4578,34 @@ are additive; assessed unreleased Admin 0.1.0, Audit 1.1.0 and Auth/Permissions
 Docker resource was changed. Active development services, dev/base-test data,
 model/Qdrant caches and evidence remain preserved. Manual acceptance 11b and full
 affected-area verification/release 12 remain open.
+
+### Point 11a41 — Visible JSON continuation line and Audit acceptance
+
+Owner request, 2026-11-01: put the truncation ellipsis on its own line. Shared
+ValuePreview now renders a separate bold, normal-text-color marker below JSON
+tokens only when collapsed; expanded JSON stays complete and escaped, and ordinary
+text keeps its existing inline ellipsis. Audit changes/context/execution and other
+module JSON consumers inherit the correction without separate renderers.
+Knowledge status was current; the original public ValuePreview contract and active
+point were reviewed. The public components guide and current central/Admin/Audit
+changelogs are synchronized. Existing owner/customer component guidance already
+routes to this guide; neither instruction product needs a new rule or signature.
+Unreleased module targets remain unchanged for this compatible presentation fix.
+
+Supported asset preparation passes in
+`.runtime/frontend/RM-2026-016-json-marker-build.log`. A focused served-build
+geometry diagnostic confirms a separate marker line below the last JSON token,
+marker removal on expansion, retained history links and no overflow/page errors
+at 1440px PL/dark and 390px EN/light. Evidence:
+`.runtime/frontend/RM-2026-016-json-marker-browser.log` and
+`.runtime/artifacts/playwright/runa/RM-2026-016-json-marker/`; the desktop screenshot
+was inspected. No new test or broad suite is needed for this reversible layout
+adjustment; full automated verification remains point 12.
+
+The owner explicitly reports satisfaction and completion of Audit view review
+subject to this requested marker adjustment, now implemented. Record this as
+Audit-specific owner acceptance of the local view; the remaining Admin/Auth/
+Permissions review and whole-roadmap manual point 11b remain open. Current assets
+are served at http://localhost:8080/admin/runa.audit/history with existing access.
+No migration, dependency, data/grant or Docker resource was changed. Active
+services, dev/base-test data, caches and evidence are preserved.

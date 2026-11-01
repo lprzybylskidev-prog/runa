@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Separate the JSON continuation ellipsis from payload tokens in shared previews.
+
 - Standardize content loading across all supplied views and 17 modal instances: shared ContentLoading geometry, Dialog/AsyncContent/ViewBoundary defaults, retained-content refresh pulses and lint-enforced circular-indicator ownership. Audit report and both frontend instruction products are synchronized.
 
 - Right-align preview expansion links and animate pending Audit detail-modal reads/continuations with the shared Spinner; use the same initial-read feedback in Auth/Permissions record sections.

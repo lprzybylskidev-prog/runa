@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Make truncated JSON explicit with a separate continuation-marker line.
+
 - Use detail-shaped pulsing ContentLoading placeholders for initial detail-modal reads and retry, with retained payload pulsing during continuation. Circular content indicators are removed.
 
 - Move correlation into Event and make correlation/actor UUID values links to their exact history filters; remove technical-ID/related-entity cards and share colored JSON previews with inline expansion.
