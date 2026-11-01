@@ -643,12 +643,9 @@ defineExpose({ controller });
             </dd>
           </div>
         </dl>
-        <section
-          class="space-y-5"
-          :aria-busy="diagnosticsLoading"
-          data-module-diagnostics
-        >
+        <section :aria-busy="diagnosticsLoading" data-module-diagnostics>
           <ContentLoading
+            class="space-y-5"
             :loading="false"
             :refreshing="diagnosticsLoading && !filterLoading"
             :label="tr('Refreshing module state')"

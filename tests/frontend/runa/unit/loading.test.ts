@@ -210,7 +210,11 @@ it('content placeholders provide named pulsing geometry and retain focused dirty
   const w = mount(ContentLoading, {
     attachTo: document.body,
     props: { label: 'Loading editor', shape: 'form' },
-    slots: { default: '<input>' },
+    attrs: { class: 'space-y-5' },
+    slots: {
+      default:
+        '<div data-spacing-first><input></div><div data-spacing-last>Next</div>',
+    },
   });
   expect(w.attributes('role')).toBe('status');
   expect(w.findAll('[data-shape="block"]')).toHaveLength(4);
@@ -230,7 +234,11 @@ it('content placeholders provide named pulsing geometry and retain focused dirty
   expect(document.activeElement).toBe(element);
   expect(w.attributes('aria-busy')).toBe('true');
   expect(w.find('[data-content-loading]').exists()).toBe(false);
-  expect(w.find('.content-refreshing').exists()).toBe(true);
+  expect(w.classes()).toContain('content-refreshing');
+  const first = w.get('[data-spacing-first]').element;
+  const last = w.get('[data-spacing-last]').element;
+  expect(first.parentElement).toBe(w.element);
+  expect(last.parentElement).toBe(w.element);
   await w.setProps({ refreshing: false });
   expect(w.get('input').element).toBe(element);
 });

@@ -17,7 +17,10 @@ props are `label?: string` (Loading), `loading?: boolean` (true),
 (text), and `lines?: number` (3). Slots: default (retained content when loading is
 false), placeholder (optional custom geometry). Implementation lives in
 `src/runa/resources/js/components/AppContentLoading.vue`; it ships in frontend
-assets. It never fetches, infers request ownership or grants access.
+assets. It never fetches, infers request ownership or grants access. Ready/default-slot
+children are direct children of its root; put spacing/grid utilities on
+ContentLoading itself, not a parent separated from those children. Refresh uses the named busy root region and inserts no extra status child into
+spacing/grid layouts.
 
 `Dialog` accepts `loading?: boolean` (false), `loadingLabel?: string` (localized
 from locale when omitted) and `loadingShape?: ContentLoadingShape` (form), plus an

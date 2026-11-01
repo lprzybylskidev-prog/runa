@@ -12,9 +12,12 @@ withDefaults(defineProps<ContentLoadingProps>(), {
 <template>
   <div
     class="min-w-0"
+    :class="
+      !loading && refreshing ? 'runa-content-pulse content-refreshing' : ''
+    "
     :aria-busy="loading || refreshing"
-    :role="loading ? 'status' : undefined"
-    :aria-label="loading ? label : undefined"
+    :role="loading ? 'status' : refreshing ? 'region' : undefined"
+    :aria-label="loading || refreshing ? label : undefined"
     :data-content-loading="loading ? shape : undefined"
   >
     <slot v-if="loading" name="placeholder">
@@ -43,18 +46,9 @@ withDefaults(defineProps<ContentLoadingProps>(), {
         :class="shape === 'navigation' ? 'w-40 max-w-full py-3' : ''"
       />
     </slot>
-    <div
-      v-else
-      :class="refreshing ? 'runa-content-pulse content-refreshing' : ''"
-    >
-      <span
-        v-if="refreshing"
-        class="sr-only"
-        role="status"
-        :aria-label="label"
-        >{{ label }}</span
-      ><slot />
-    </div>
+    <template v-else>
+      <slot />
+    </template>
   </div>
 </template>
 <style scoped>

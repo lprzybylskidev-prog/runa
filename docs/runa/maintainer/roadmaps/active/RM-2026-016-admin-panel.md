@@ -707,6 +707,13 @@ reassessment before resuming point 3; completed point history remains evidence.
     content is obvious. Apply through shared ValuePreview and prepare current assets.
   - Owner reports satisfaction with Audit and completion of its view review after
     this adjustment. This records Audit-specific acceptance, not whole-roadmap 11b.
+- [x] 11a42. Restore content spacing after loading-wrapper migration.
+  - Owner regression, 2026-11-01: restore the gap below Module state on /admin.
+    Remove the unnecessary retained-content wrapper and put layout utilities on
+    their actual content owner. Inspect all ContentLoading consumers for the same
+    class/direct-child mismatch and preserve refresh DOM/focus.
+  - Verify normal/loading/refresh layouts with focused geometry checks and prepare
+    current assets; manual acceptance and final gates remain open.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4609,3 +4616,45 @@ Permissions review and whole-roadmap manual point 11b remain open. Current asset
 are served at http://localhost:8080/admin/runa.audit/history with existing access.
 No migration, dependency, data/grant or Docker resource was changed. Active
 services, dev/base-test data, caches and evidence are preserved.
+
+### Point 11a42 — Restore spacing across loading composition
+
+Owner regression, 2026-11-01: the Module state selector on /admin touches the
+module-card list after point 11a40. Current knowledge status was fresh; original
+ContentLoading and loading-guide sources confirm that the new success wrapper
+separated children from the existing space-y owner.
+
+ContentLoading now retains default-slot children directly under its root and
+applies refresh pulse/aria-busy to that same root. Refresh uses a named busy region
+without inserting a status child that would participate in structural spacing
+selectors. Module diagnostics place space-y-5 on their actual ContentLoading
+layout root. Existing pending geometry, values, focus and identity cleanup remain.
+
+Reviewed every ContentLoading consumer: Audit payload wraps one Card, shared Admin
+sections/Auth entry/welcome/cropper use initial placeholders only, AdminLoading
+owns its placeholder slot, Select owns option geometry, AsyncContent owns its
+content region and ViewBoundary already retains direct default-slot structure.
+No second spacing-class displacement was found. Generic owner/App composition now
+supports root spacing/grid classes without another success wrapper.
+
+Four focused native Chromium cases pass: direct-child composition with dirty/focused
+refresh, AsyncContent/ViewBoundary retention and Audit read/retry/continuation
+using the named busy region. Evidence:
+`.runtime/frontend/RM-2026-016-loading-spacing-focused.log` (native exit/cleanup 0).
+The unit harness does not load Tailwind utility geometry; its assertion checks
+actual child/DOM/focus ownership, while the served-build diagnostic measures real
+CSS. At 1440px PL/dark and 390px EN/light, the selector-to-list gap is exactly 20px
+before a filter change, during held placeholder reads and after data settles.
+No page errors occur. Evidence:
+`.runtime/frontend/RM-2026-016-loading-spacing-browser.log` and
+`.runtime/artifacts/playwright/runa/RM-2026-016-loading-spacing/`; the desktop
+screenshot was inspected. Supported manual-runtime asset preparation passes in
+`.runtime/frontend/RM-2026-016-loading-spacing-build.log`.
+
+Public loading guidance and current central/Admin changelogs are synchronized.
+Owner/customer frontend references already require this canonical contract;
+no extra root/skill rule or public signature is needed. Unreleased module versions
+remain appropriate for this compatible layout repair. Current assets are ready at
+http://localhost:8080/admin. No dependency, migration, credential/grant or Docker
+resource changed; active services, dev/base-test data, caches and evidence remain
+preserved. Whole-roadmap manual acceptance 11b and final verification 12 stay open.

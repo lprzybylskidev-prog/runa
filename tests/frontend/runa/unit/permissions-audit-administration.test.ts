@@ -775,7 +775,9 @@ it('Audit detail animates delayed initial reads, settles failure and animates re
     .find((button) => button.text() === 'Next payload part')!
     .trigger('click');
   await vi.waitFor(() =>
-    expect(wrapper.find('[role="status"]').exists()).toBe(true),
+    expect(wrapper.find('[role="region"][aria-busy="true"]').exists()).toBe(
+      true,
+    ),
   );
   expect(wrapper.text()).toContain('first fragment');
   expect(wrapper.text()).toContain('example.changed');
@@ -792,7 +794,9 @@ it('Audit detail animates delayed initial reads, settles failure and animates re
     }),
   );
   await vi.waitFor(() => expect(wrapper.text()).toContain('second fragment'));
-  expect(wrapper.find('[role="status"]').exists()).toBe(false);
+  expect(wrapper.find('[role="region"][aria-busy="true"]').exists()).toBe(
+    false,
+  );
 });
 
 it('shared Admin record section animates pending reads without showing an empty-state warning', async () => {
