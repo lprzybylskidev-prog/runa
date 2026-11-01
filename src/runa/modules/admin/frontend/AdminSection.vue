@@ -3,7 +3,13 @@ import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref } from 'vue';
 import { useAdminInitialReadiness } from './initialReadiness';
-import { Alert, Button, FormConflict, FormSection } from '@/runa/ui';
+import {
+  ValuePreview,
+  Alert,
+  Button,
+  FormConflict,
+  FormSection,
+} from '@/runa/ui';
 import type { AdminSectionProps, AdminSectionSlots } from './contracts';
 import { useAdminPresentation } from './presentation';
 import AdminField from './AdminField.vue';
@@ -143,7 +149,13 @@ const conflicts = computed(() =>
               :key="key"
             >
               <dt class="font-semibold">{{ tr(String(key)) }}</dt>
-              <dd class="break-words">{{ JSON.stringify(value) }}</dd>
+              <dd class="min-w-0">
+                <ValuePreview
+                  :text="JSON.stringify(value)"
+                  format="json"
+                  :locale="adminLocale"
+                />
+              </dd>
             </div>
           </dl>
         </template>

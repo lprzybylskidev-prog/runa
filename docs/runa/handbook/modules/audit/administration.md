@@ -33,13 +33,21 @@ explicit payload_part label and payload_next cursor; request the next record cur
 for the same event UUID to read the continuation. Empty fragments mean that tree
 has ended. This preserves the existing 64-KiB record limit without truncating native
 Audit history. Immutable event UUID binds every continuation; invalid part cursors
-refuse. The UI labels fragments and offers next/first part controls. Unknown events return a safe 404. General Audit read authority
+refuse. The UI labels fragments and offers next/first part controls only for multipart payloads. Unknown events return a safe 404. General Audit read authority
 permits those already approved persisted payloads; no raw request, Auth session or
 foreign model is fetched. Historical labels remain historical; optional current
 Auth identity enrichment is deliberately omitted. No edit/delete/undo command exists.
 Grant removal hides the page and refuses future reads without payload disclosure.
 
-Entity links open this same viewer with an exact entity reference filter. They do
+Details group event metadata, the historical actor and technical identifiers;
+filter-only from/until/entity inputs do not appear as empty event properties.
+Changes/context/execution share a compact data card. Empty trees say No data;
+complete JSON is indented and long values use the public ValuePreview Show all/
+Collapse control. Continuation parts remain independently bounded escaped text;
+expansion never fetches or concatenates later parts.
+
+Related-entity cards label the module/type/public UUID and explain the View entity
+history link. Entity links open this same viewer with an exact entity reference filter. They do
 not infer a foreign entity route or grant access to its current record. URL filters
 are ordinary read selectors, never trusted execution metadata. Values render as
 escaped text and links are constructed from encoded fixed query keys.

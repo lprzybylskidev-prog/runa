@@ -1150,6 +1150,13 @@ Permissions and Audit together for the same defect and apply the shared correcti
 where relevant. Prefer fixing Table/AdminRecordBrowser before duplicating view
 logic. Preserve each owner's read/write/proof and record-specific constraints.
 
+Record-browser dialogs use the sole section's title when there is one, otherwise
+the page title. Read-only fields and reviewed JSON differences use public
+ValuePreview from `@/runa/ui`: long values collapse with explicit expansion,
+and JSON formatting preserves exact payload tokens. This applies to Auth and
+Permissions consumers of the shared fields/review presentation; their proof,
+confirmation and dirty-draft protocols remain owned by the form controller.
+
 Default table filter reset belongs to the shared filter region, alongside the
 fields. Declared datetime cells and event details use formatApplicationInstant
 with the active language and application timezone; providers and exports retain

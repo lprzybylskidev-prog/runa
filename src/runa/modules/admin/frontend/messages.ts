@@ -2,6 +2,15 @@ import type { AdminMessages } from './contracts';
 
 /** Reviewed Polish presentation for source-owned Admin/Core labels; never business values. */
 export const adminMessages: AdminMessages = {
+  Event: 'Zdarzenie',
+  'Event data': 'Dane zdarzenia',
+  Actor: 'Wykonawca',
+  'Technical identifiers': 'Identyfikatory techniczne',
+  'No data.': 'Brak danych.',
+  'Open Audit history filtered to this entity.':
+    'Otwórz historię audytu ograniczoną do tego obiektu.',
+  'View entity history': 'Pokaż historię obiektu',
+
   'Choose image': 'Wybierz obraz',
   'No image selected': 'Nie wybrano obrazu',
   'Remove image': 'Usuń obraz',

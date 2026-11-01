@@ -199,3 +199,6 @@ export {
   formatApplicationInstant,
 } from './displayDefaults';
 export type { ApplicationDisplayDefaults } from './displayDefaults';
+
+export { default as ValuePreview } from '../../components/AppValuePreview.vue';
+export type { ValuePreviewProps } from './valuePreview';

@@ -3,6 +3,7 @@ import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, nextTick, ref } from 'vue';
 import {
+  ValuePreview,
   Alert,
   Button,
   ConfirmDialog,
@@ -67,9 +68,11 @@ async function save() {
             :key="participant.id"
           >
             <p>{{ participant.id }}</p>
-            <pre class="whitespace-pre-wrap break-words">{{
-              JSON.stringify(participant.review.changes, null, 2)
-            }}</pre>
+            <ValuePreview
+              :text="JSON.stringify(participant.review.changes)"
+              format="json"
+              :locale="adminLocale"
+            />
           </div>
         </div>
       </slot>

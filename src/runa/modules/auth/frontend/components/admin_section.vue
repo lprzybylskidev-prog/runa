@@ -7,6 +7,7 @@ import {
   FormNotifications,
   Button,
   Card,
+  ValuePreview,
 } from '@/runa/ui';
 import { AdminSection, useAdminResource } from '@/runa/admin';
 import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
@@ -131,9 +132,19 @@ function select(row: Record<string, AdminJson>) {
           class="rounded border border-line p-3"
         >
           <dl class="grid gap-2 text-sm sm:grid-cols-2">
-            <div v-for="(value, key) in row" :key="key">
+            <div v-for="(value, key) in row" :key="key" class="min-w-0">
               <dt class="font-semibold">{{ tr(String(key)) }}</dt>
-              <dd class="break-words">{{ display(value, String(key)) }}</dd>
+              <dd class="mt-1 min-w-0">
+                <ValuePreview
+                  :text="display(value, String(key))"
+                  :format="
+                    value !== null && typeof value === 'object'
+                      ? 'json'
+                      : 'text'
+                  "
+                  :locale="adminLocale"
+                />
+              </dd>
             </div>
           </dl>
           <Button

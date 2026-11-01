@@ -4,6 +4,7 @@ import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
 import {
+  ValuePreview,
   Checkbox,
   FormField,
   NumberInput,
@@ -121,14 +122,12 @@ function integer(value: string | null) {
       ></template
     >
     <template #default="{ id, describedBy }"
-      ><p
+      ><ValuePreview
         :aria-labelledby="`${id}-label`"
         :aria-describedby="describedBy"
-        class="break-words text-sm"
-      >
-        {{ display }}
-      </p></template
-    >
+        :text="display"
+        :locale="adminLocale"
+    /></template>
   </FormField>
   <TextInput
     v-else-if="field.sensitive"

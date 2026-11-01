@@ -70,7 +70,13 @@ watch(
     </Card>
     <Dialog
       :model-value="open"
-      :title="tr('Details')"
+      :title="
+        tr(
+          sections.length === 1
+            ? sections[0]!.title
+            : (controller.page.value?.title ?? 'Details'),
+        )
+      "
       :locale="locale"
       size="xl"
       :busy="form.busy.value"

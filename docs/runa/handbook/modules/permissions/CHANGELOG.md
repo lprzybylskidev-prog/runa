@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Reuse shared Admin long-value and JSON review previews without changing definition locks or confirmation/proof protocols.
+
 - Return exact non-deleted definition totals before cursor/limit and forward them to Admin without changing read authority.
 
 - Batch role-deletion recipient assignment/revision reads and identical reference

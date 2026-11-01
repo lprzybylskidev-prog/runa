@@ -10,7 +10,7 @@ import {
 } from '@/runa/permissions';
 import { AuditAdminDetail, AuditAdminHistory } from '@/runa/audit';
 import { AdminRecordBrowser, useAdminForm } from '@/runa/admin';
-import { DateTimeInput, Table, Select } from '@/runa/ui';
+import { ValuePreview, DateTimeInput, Table, Select } from '@/runa/ui';
 import type { TableColumn, SelectOption } from '@/runa/ui';
 import type {
   AdminFieldData,
@@ -505,4 +505,140 @@ it('Audit Admin payload continuation keeps the immutable event and exposes every
       .find((button) => button.text() === 'Next payload part')!
       .attributes('disabled'),
   ).toBeDefined();
+});
+
+it.each(['pl', 'en'])(
+  'bounded value preview %s formats escaped JSON, expands, collapses and resets on replacement',
+  async (locale) => {
+    const raw = JSON.stringify({
+      message: '<img src=x onerror=alert(1)>',
+      rows: Array.from({ length: 40 }, (_, i) => ({
+        index: i,
+        value: 'Long diagnostic value',
+      })),
+    });
+    const wrapper = mount(ValuePreview, {
+      props: { text: raw, format: 'json', locale: locale as 'pl' | 'en' },
+    });
+    expect(wrapper.get('p').text()).toContain('"message":');
+    expect(wrapper.get('p').text()).not.toContain('"index": 39');
+    expect(wrapper.find('img').exists()).toBe(false);
+    const button = wrapper.get('button');
+    expect(button.text()).toBe(locale === 'pl' ? 'Pokaż wszystko' : 'Show all');
+    expect(button.attributes('aria-expanded')).toBe('false');
+    expect(button.attributes('aria-controls')).toBe(
+      wrapper.get('p').attributes('id'),
+    );
+    await button.trigger('click');
+    expect(wrapper.get('p').text()).toContain('"index": 39');
+    expect(button.attributes('aria-expanded')).toBe('true');
+    await button.trigger('click');
+    expect(wrapper.get('p').text()).not.toContain('"index": 39');
+    await button.trigger('click');
+    await wrapper.setProps({ text: 'partial JSON: "' + 'x'.repeat(900) });
+    expect(button.attributes('aria-expanded')).toBe('false');
+    expect(wrapper.get('p').text()).toContain('partial JSON:');
+    await wrapper.setProps({ text: '{"ok":true}' });
+    expect(wrapper.find('button').exists()).toBe(false);
+    expect(wrapper.get('p').text()).toContain('"ok": true');
+  },
+);
+
+it('Audit detail omits filter-only placeholders and single-part controls, and pages bounded payloads explicitly', async () => {
+  const descriptor = section(
+    'detail',
+    [
+      'action',
+      'from',
+      'until',
+      'entity_type',
+      'changes',
+      'context',
+      'execution',
+      'payload_part',
+      'payload_next',
+    ].map((key) => field(key)),
+  );
+  const controller = page('runa.audit', 'history', [descriptor]);
+  const values = {
+    action: 'example.changed',
+    changes: '[]',
+    context: '{}',
+    execution: JSON.stringify({ long: 'x'.repeat(900) }),
+    payload_part: '1 / 1',
+    payload_next: null,
+  };
+  const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const cursor = new URL(
+      String(input),
+      window.location.origin,
+    ).searchParams.get('cursor');
+    return response({
+      public_id: id,
+      revision: id,
+      values: cursor
+        ? {
+            ...values,
+            execution: 'last payload fragment',
+            payload_part: '2 / 2',
+          }
+        : values,
+    });
+  });
+  let form!: AdminFormController;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller, { autoRead: false });
+        return () =>
+          h(AuditAdminDetail, {
+            page: controller,
+            section: descriptor,
+            controller: form,
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Show all'));
+  expect(wrapper.findAll('dt').map((dt) => dt.text())).toEqual(['action']);
+  expect(wrapper.text()).not.toContain('Payload part');
+  expect(wrapper.text()).not.toContain('Next payload part');
+  expect(wrapper.text()).toContain('No data.');
+  form.records.value = {
+    ...form.records.value,
+    detail: {
+      public_id: id,
+      revision: id,
+      values: { ...values, payload_part: '1 / 2', payload_next: '1' },
+    },
+  };
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Next payload part'));
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Next payload part')!
+    .trigger('click');
+  await vi.waitFor(() => expect(wrapper.text()).toContain('2 / 2'));
+  expect(
+    fetch.mock.calls.some(
+      ([input]) =>
+        new URL(String(input), window.location.origin).searchParams.get(
+          'cursor',
+        ) === '1',
+    ),
+  ).toBe(true);
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'First payload part')!
+    .trigger('click');
+  await vi.waitFor(() => expect(wrapper.text()).toContain('1 / 2'));
+});
+
+it('bounded value preview preserves exact JSON numeric and string tokens and duplicate keys', () => {
+  const text =
+    '{"id":9223372036854775807,"id":1e+30,"text":"\\u0105 \\" \\\\ [ ] : ,","empty": [ ]}';
+  const wrapper = mount(ValuePreview, { props: { text, format: 'json' } });
+  expect(wrapper.get('p').text()).toContain('9223372036854775807');
+  expect(wrapper.get('p').text()).toContain('1e+30');
+  expect(wrapper.get('p').text().match(/"id"/g)).toHaveLength(2);
+  expect(JSON.parse(wrapper.get('p').text())).toEqual(JSON.parse(text));
 });

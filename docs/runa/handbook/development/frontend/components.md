@@ -487,3 +487,21 @@ Keep it mounted with replacement presentation, including relevant portals, and
 clear protected content through `onExpired`. Complete signatures, server endpoint
 preconditions and examples belong to the
 [Auth idle-access contract](../../modules/auth/security.md#protected-section-idle-access).
+
+### Value preview
+
+`ValuePreview` is a UI-owned, shell-independent escaped read-only value renderer
+for application/module consumers. Import `ValuePreview` and `ValuePreviewProps`
+from `@/runa/ui`; implementation lives in
+`src/runa/resources/js/components/AppValuePreview.vue` and ships in development
+and production assets. Props: `text: string`, `format?: 'text'|'json'` (default
+`text`), `locale?: 'pl'|'en'` (default `pl`). It has no events or remote reads.
+
+The collapsed preview shows at most eight source lines and 480 Unicode code
+points; longer text has a localized Show all/Collapse button with aria-expanded
+and aria-controls. Expansion displays the complete supplied value; replacement
+text resets expansion. JSON mode formats complete JSON without reserializing its
+numeric/string tokens or duplicate keys. Incomplete/invalid JSON parts stay escaped
+text. Formatting never infers dates or translates payload values. Authors retain
+server authorization, redaction, continuation and record-lifecycle ownership;
+collapse is presentation, not a security boundary.

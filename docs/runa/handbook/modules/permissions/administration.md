@@ -66,3 +66,8 @@ contract in `backend/Contracts/PermissionsAccess.php`; its private owning Action
 counts in SQL and Admin forwards the value without foreign reads or estimation.
 The total includes zero, is independent of the page cursor and confers no write
 authority or snapshot guarantee. Customers resolve the public guarded API.
+
+Default definition fields and reviewed differences reuse Admin's public
+ValuePreview presentation: long values have explicit Show all/Collapse, and JSON
+reviews are indented without changing payload tokens. Expansion changes only the
+local display and never confirms, submits or refreshes a reviewed operation.

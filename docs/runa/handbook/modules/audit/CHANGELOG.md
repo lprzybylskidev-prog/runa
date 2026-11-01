@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Group event/actor/technical metadata, omit empty filter-only properties, format and collapse JSON with Show all, hide single-part controls and explain entity-history links.
+
 - Localize actor kinds and outcomes consistently in history filters, rows and immutable details, using lowercase labels in both languages without changing stored payloads or export codes.
 
 - Return exact SQL-filtered AuditPage.total before cursor/limit and forward it to Admin, including entity/date filters and zero matches.

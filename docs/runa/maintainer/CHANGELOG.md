@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Group Audit event details, format/collapse long JSON with explicit expansion, clarify verified entity-history navigation and share long-value/review previews across Auth, Permissions and Admin.
+
 - Unify lowercase localized dictionary labels across Admin filters, table cells and read-only details, including Audit actor/outcome and Auth account state; retain canonical identifiers, wire values and exports.
 
 - Vertically center table header labels with balanced scrollbar spacing; scroll wide tables horizontally on header/rail wheel input while preserving native Ctrl+wheel zoom and page scrolling over rows or fitting tables.

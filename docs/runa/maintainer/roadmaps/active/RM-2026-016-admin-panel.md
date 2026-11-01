@@ -672,6 +672,13 @@ reassessment before resuming point 3; completed point history remains evidence.
     identifiers, payloads, wire values or canonical exports.
   - Extend focused presentation regressions, synchronize current guides/changelogs
     and prepare current assets for repeated manual acceptance; broad gates stay in 12.
+- [x] 11a37. Improve module detail readability and bounded value previews.
+  - Owner request, 2026-11-01: group Audit event metadata, format escaped JSON,
+    collapse long values with explicit expansion, remove empty filter-only detail
+    fields and single-part pagination noise. Explain and verify entity history links.
+  - Inspect Auth/Permissions equivalents, share repeated value presentation,
+    extend focused regressions and prepare current assets for repeated acceptance.
+    Manual acceptance 11b and final verification 12 remain open.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4304,3 +4311,62 @@ owned-source/API change. No migration, dependency, credential/grant change or
 Docker/database resource creation/removal occurred. Active services, development/
 base-test data, model/Qdrant caches and evidence remain preserved. Manual acceptance
 11b and final verification/release 12 remain open.
+
+### Point 11a37 — Readable immutable details and bounded value previews
+
+Owner request, 2026-11-01: improve Audit detail readability, collapse long JSON
+with explicit expansion and investigate entity history navigation; inspect the
+same problems across Auth and Permissions. Current local knowledge status was
+fresh; bounded retrieval led to the original Admin/Audit/Auth presentation guides.
+
+Audit now groups event metadata, historical actor and technical identifiers, and
+uses one compact data card for changes/context/execution. It omits filter-only
+from/until/entity fields, labels empty trees and hides multipart navigation for
+single-part results. Multipart cursors retain their existing native 4096-byte
+fragments and explicit next/first controls. The public UI-owned ValuePreview
+renders escaped text, indents complete JSON without changing numeric/string
+tokens or duplicate keys, preserves incomplete fragments and collapses after eight
+source lines or 480 Unicode code points. Show all/Collapse is keyboard accessible
+and never fetches or submits. Replacement values reset expansion.
+
+Shared Admin read-only fields/review previews cover Permissions definition and
+Auth editors; Auth bounded collection entries also use ValuePreview for long
+text/object values while known dates keep their owning formatter. Record browsers
+use section/page dialog titles. Permissions effective tables have no equivalent
+raw JSON detail block; their table/query/export semantics remain unchanged.
+
+The entity link was not reproducibly broken: native clicks in the served browser
+closed the detail and issued the complete module/type/public UUID Audit filters.
+Related cards now explicitly explain this destination and say View entity history;
+they never imply navigation to the foreign current record. No route or grant
+workaround was added.
+
+Focused native Chromium tests pass: eight Audit/value-preview cases, including
+escaped markup, exact JSON token preservation, resetting expanded values and
+multipart reads, plus three shared dictionary/secret-set-state cases. Evidence:
+`.runtime/frontend/RM-2026-016-detail-focused.log` and
+`RM-2026-016-detail-readonly.log` (native exit/cleanup 0). Supported asset preparation
+`pnpm --dir src run build` passes in `RM-2026-016-detail-build.log`.
+A focused one-off served-build diagnostic exercises modal geometry, native Enter
+expansion and real link navigation unavailable in isolated component mocks.
+All three module browsers at 1440px PL/dark and 390px EN/light have no dialog
+horizontal overflow or page errors; both Audit views issue the exact entity query.
+Reports/screenshots: `.runtime/artifacts/playwright/runa/RM-2026-016-detail/`;
+`.runtime/frontend/RM-2026-016-detail-browser.log`. The Audit desktop/mobile rendered
+screenshots were inspected. Synthetic authenticated responses are interaction
+evidence, not live backend mutation acceptance or owner manual approval.
+
+Actual local page/readiness/presentation/frontend catalogue/assets return 200;
+anonymous Admin entry retains 401. Evidence:
+`.runtime/frontend/RM-2026-016-detail-http.json`. Current assets are served for
+owner review at http://localhost:8080/admin/runa.audit/history with existing access.
+
+Public components/Admin/Audit/Auth/Permissions guides and current central/module
+changelogs are synchronized. Owner/customer frontend component/forms references
+already route consumers to these canonical public guides; no root or skill policy
+change is needed in either instruction product. These are compatible presentation
+corrections within the current unreleased Admin 0.1.0, Audit 1.1.0 and
+Auth/Permissions 2.1.0 targets; guarded API signatures/manifests remain unchanged.
+No dependency, database migration or task Docker resource was introduced; active
+services, dev/base-test data, caches and verification evidence are preserved.
+Manual acceptance 11b and complete final verification/release 12 remain open.

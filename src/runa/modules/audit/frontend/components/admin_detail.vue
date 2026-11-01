@@ -7,6 +7,8 @@ import {
   FormNotifications,
   Button,
   Card,
+  ValuePreview,
+  TextLink,
 } from '@/runa/ui';
 import { useAdminResource } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
@@ -58,9 +60,43 @@ function history(entity: { module: string; type: string; public_id: string }) {
     }).toString()
   );
 }
+const groups = computed(() =>
+  [
+    { title: 'Event', keys: ['occurred_at', 'module', 'action', 'outcome'] },
+    { title: 'Actor', keys: ['actor_label', 'actor_kind', 'actor_public_id'] },
+    { title: 'Technical identifiers', keys: ['correlation_id'] },
+  ]
+    .map((group) => ({
+      ...group,
+      fields: group.keys.flatMap((key) => {
+        const field = props.section.fields.find((field) => field.key === key);
+        return field && record.value?.values[key] !== undefined ? [field] : [];
+      }),
+    }))
+    .filter((group) => group.fields.length),
+);
+const payloads = computed(() =>
+  props.section.fields.filter(
+    (field) =>
+      ['changes', 'context', 'execution'].includes(field.key) &&
+      record.value?.values[field.key] !== undefined,
+  ),
+);
+const multipleParts = computed(() => {
+  const part = record.value?.values.payload_part;
+  return typeof part === 'string' && part !== '1 / 1';
+});
+function display(key: string) {
+  const field = props.section.fields.find((field) => field.key === key);
+  const value = record.value?.values[key];
+  if (typeof value !== 'string') return '—';
+  if (field?.type === 'datetime')
+    return formatApplicationInstant(value, adminLocale.value);
+  return field?.choices.includes(value) ? tr(value) : value;
+}
 </script>
 <template>
-  <Card>
+  <div class="min-w-0 space-y-4">
     <p v-if="!record?.public_id" class="text-sm text-muted">
       {{ tr('Select an event to read its immutable details.') }}
     </p>
@@ -69,67 +105,130 @@ function history(entity: { module: string; type: string; public_id: string }) {
         :locale="adminLocale"
         :error="resource.error.value ? tr(resource.error.value.message) : ''"
       />
-      <dl class="grid gap-4 sm:grid-cols-2">
-        <div
-          v-for="field in section.fields.filter(
-            (field) =>
-              !['entities', 'payload_next', 'payload_part'].includes(field.key),
-          )"
-          :key="field.key"
+      <div class="grid min-w-0 gap-4 md:grid-cols-2">
+        <Card
+          v-for="group in groups"
+          :key="group.title"
           :class="
-            ['changes', 'context', 'execution'].includes(field.key)
-              ? 'sm:col-span-2'
-              : ''
+            group.title === 'Technical identifiers' ? 'md:col-span-2' : ''
           "
         >
-          <dt class="text-xs font-semibold text-muted">
-            {{ tr(field.label) }}
-          </dt>
-          <dd class="whitespace-pre-wrap break-words text-sm">
-            {{
-              field.type === 'datetime' &&
-              typeof record.values[field.key] === 'string'
-                ? formatApplicationInstant(
-                    String(record.values[field.key]),
-                    adminLocale,
-                  )
-                : typeof record.values[field.key] === 'string' &&
-                    field.choices.includes(String(record.values[field.key]))
-                  ? tr(String(record.values[field.key]))
-                  : (record.values[field.key] ?? '—')
-            }}
-          </dd>
-        </div>
-      </dl>
-      <p class="mt-4 text-sm text-muted">
-        {{ tr('Payload part') }} {{ record.values.payload_part ?? '1 / 1' }}.
-        {{ tr('Large JSON payloads continue across parts.') }}
-      </p>
-      <div class="mt-3 flex gap-2">
-        <Button
-          size="sm"
-          :disabled="resource.busy.value || !record.values.payload_next"
-          @click="next"
-          >{{ tr('Next payload part') }}</Button
-        >
-        <Button
-          size="sm"
-          :disabled="resource.busy.value"
-          @click="resource.clear()"
-          >{{ tr('First payload part') }}</Button
-        >
-      </div>
-      <ul class="mt-4 space-y-2" :aria-label="tr('Related entity history')">
-        <li
-          v-for="entity in entities"
-          :key="entity.module + ':' + entity.type + ':' + entity.public_id"
-        >
-          <a class="text-primary underline" :href="history(entity)"
-            >{{ tr('History:') }} {{ entity.module }} / {{ entity.type }} /
-            {{ entity.public_id }}</a
+          <template #header
+            ><h3>{{ tr(group.title) }}</h3></template
           >
-        </li>
-      </ul>
+          <dl class="grid min-w-0 gap-4 sm:grid-cols-2">
+            <div
+              v-for="field in group.fields"
+              :key="field.key"
+              class="min-w-0"
+              :class="field.key === 'actor_public_id' ? 'sm:col-span-2' : ''"
+            >
+              <dt class="text-xs font-semibold text-muted">
+                {{ tr(field.label) }}
+              </dt>
+              <dd class="mt-1 min-w-0">
+                <ValuePreview
+                  :text="display(field.key)"
+                  :locale="adminLocale"
+                />
+              </dd>
+            </div>
+          </dl>
+        </Card>
+      </div>
+      <Card v-if="payloads.length">
+        <template #header
+          ><h3>{{ tr('Event data') }}</h3></template
+        >
+        <div class="grid min-w-0 gap-4 sm:grid-cols-2">
+          <div
+            v-for="field in payloads"
+            :key="field.key"
+            class="min-w-0"
+            :class="
+              field.key === 'execution' ||
+              !['[]', '{}', '', null].includes(
+                record.values[field.key] as string | null,
+              )
+                ? 'sm:col-span-2'
+                : ''
+            "
+          >
+            <h4 class="mb-2 text-xs font-semibold text-muted">
+              {{ tr(field.label) }}
+            </h4>
+            <p
+              v-if="
+                ['[]', '{}', '', null].includes(
+                  record.values[field.key] as string | null,
+                )
+              "
+              class="text-sm text-muted"
+            >
+              {{ tr('No data.') }}
+            </p>
+            <ValuePreview
+              v-else
+              :key="record.public_id + ':' + record.values.payload_part"
+              :text="String(record.values[field.key])"
+              format="json"
+              :locale="adminLocale"
+            />
+          </div>
+        </div>
+      </Card>
+      <div
+        v-if="multipleParts"
+        class="space-y-3 rounded border border-line p-4"
+      >
+        <p class="text-xs text-muted">
+          {{ tr('Payload part') }} {{ record.values.payload_part }}.
+          {{ tr('Large JSON payloads continue across parts.') }}
+        </p>
+        <div class="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            :disabled="resource.busy.value || !record.values.payload_next"
+            @click="next"
+            >{{ tr('Next payload part') }}</Button
+          >
+          <Button
+            size="sm"
+            :disabled="
+              resource.busy.value ||
+              record.values.payload_part === '1 / 1' ||
+              String(record.values.payload_part).startsWith('1 / ')
+            "
+            @click="resource.clear()"
+            >{{ tr('First payload part') }}</Button
+          >
+        </div>
+      </div>
+      <Card v-if="entities.length">
+        <template #header
+          ><h3>{{ tr('Related entity history') }}</h3></template
+        >
+        <p class="mb-3 text-xs text-muted">
+          {{ tr('Open Audit history filtered to this entity.') }}
+        </p>
+        <ul class="space-y-3" :aria-label="tr('Related entity history')">
+          <li
+            v-for="entity in entities"
+            :key="entity.module + ':' + entity.type + ':' + entity.public_id"
+            class="min-w-0 rounded border border-line px-3 py-2"
+          >
+            <p class="text-xs text-muted [overflow-wrap:anywhere]">
+              {{ entity.module }} / {{ entity.type }}
+            </p>
+            <p class="text-xs [overflow-wrap:anywhere]">
+              {{ entity.public_id }}
+            </p>
+            <TextLink :href="history(entity)"
+              >{{ tr('View entity history') }} →</TextLink
+            >
+          </li>
+        </ul>
+      </Card>
     </template>
-  </Card>
+  </div>
 </template>

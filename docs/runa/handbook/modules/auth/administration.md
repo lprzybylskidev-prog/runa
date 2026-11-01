@@ -151,3 +151,8 @@ Admin-owned public presentation consumption, implemented in its frontend and
 exported through `@/runa/admin`; no server capability or new runtime dependency is
 introduced. App source remains under `src/app`; no sample page/provider is added
 to the minimal scaffold.
+
+Bounded collection entries use public ValuePreview for escaped long read-only
+values and structured JSON; known instant fields retain application-timezone
+formatting. Shared Admin read-only fields and reviewed differences use the same
+expansion control without changing collection pagination or security protocols.
