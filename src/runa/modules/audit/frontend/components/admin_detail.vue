@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useAdminLocale } from '@/runa/admin';
 const { locale: adminLocale, t: tr } = useAdminLocale();
-import { computed, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   formatApplicationInstant,
   FormNotifications,
@@ -9,11 +9,23 @@ import {
   Card,
   ValuePreview,
   TextLink,
+  Spinner,
 } from '@/runa/ui';
 import { useAdminResource } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
 const props = defineProps<AdminSectionPresentationProps>();
-void props.controller.activateSection(props.section.key);
+const initialSettled = ref(false);
+void props.controller.activateSection(props.section.key).finally(() => {
+  initialSettled.value = true;
+});
+async function retry() {
+  initialSettled.value = false;
+  try {
+    await props.controller.refresh();
+  } finally {
+    initialSettled.value = true;
+  }
+}
 const source = computed(
   () => props.controller.records.value[props.section.key],
 );
@@ -77,7 +89,20 @@ function display(key: string) {
 </script>
 <template>
   <div class="min-w-0 space-y-4">
-    <p v-if="!record?.public_id" class="text-sm text-muted">
+    <div
+      v-if="!record && !initialSettled"
+      aria-busy="true"
+      class="flex min-h-32 items-center justify-center"
+    >
+      <Spinner :label="tr('Loading event details')" />
+    </div>
+    <div v-else-if="!record" class="space-y-3">
+      <p class="text-sm text-muted">
+        {{ tr('Unable to load the current record.') }}
+      </p>
+      <Button size="sm" @click="retry">{{ tr('Retry loading') }}</Button>
+    </div>
+    <p v-else-if="!record.public_id" class="text-sm text-muted">
       {{ tr('Select an event to read its immutable details.') }}
     </p>
     <template v-else>
@@ -130,7 +155,13 @@ function display(key: string) {
           </dl>
         </Card>
       </div>
-      <Card v-if="payloads.length">
+      <Card v-if="payloads.length" :aria-busy="resource.busy.value">
+        <template #actions
+          ><Spinner
+            v-if="resource.busy.value"
+            size="sm"
+            :label="tr('Loading event details')"
+        /></template>
         <template #header
           ><h3>{{ tr('Event data') }}</h3></template
         >

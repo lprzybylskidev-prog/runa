@@ -4,6 +4,9 @@ import type { AdminMessages } from './contracts';
 export const adminMessages: AdminMessages = {
   Event: 'Zdarzenie',
   'Event data': 'Dane zdarzenia',
+  'Loading event details': 'Wczytywanie szczegółów zdarzenia',
+  'Loading record details': 'Wczytywanie szczegółów rekordu',
+  'Unable to load the current record.': 'Nie udało się wczytać rekordu.',
   'Show related events': 'Pokaż powiązane zdarzenia',
   'Show actor history': 'Pokaż historię wykonawcy',
   Actor: 'Wykonawca',
@@ -209,8 +212,6 @@ export const adminMessages: AdminMessages = {
   'Latest entries': 'Najnowsze wpisy',
   'Loading operational information…': 'Wczytywanie informacji operacyjnych…',
   'Loading the administrator panel': 'Wczytywanie panelu administratora',
-  'Loading the current record or waiting for a successful read.':
-    'Wczytywanie bieżącego rekordu lub oczekiwanie na poprawny odczyt.',
   'Lookup unavailable.': 'Wyszukiwanie wartości jest niedostępne.',
   'Maintenance diagnostics and recovery use the supported CLI. Installation, updates and operator commands are unavailable here.':
     'Diagnostyka i odzyskiwanie podczas konserwacji są dostępne w obsługiwanym CLI. Instalacja, aktualizacje i polecenia operatora nie są dostępne w panelu.',

@@ -55,23 +55,23 @@ const tokens = computed(() =>
         >{{ token.text }}</span
       >
     </p>
-    <AppTextLink
-      v-if="truncated"
-      :href="'#' + id"
-      class="mt-1"
-      :aria-controls="id"
-      :aria-expanded="expanded"
-      @click.prevent="expanded = !expanded"
-      >{{
-        locale === 'pl'
-          ? expanded
-            ? 'Zwiń'
-            : 'Pokaż wszystko'
-          : expanded
-            ? 'Collapse'
-            : 'Show all'
-      }}</AppTextLink
-    >
+    <div v-if="truncated" class="mt-1 flex justify-end">
+      <AppTextLink
+        :href="'#' + id"
+        :aria-controls="id"
+        :aria-expanded="expanded"
+        @click.prevent="expanded = !expanded"
+        >{{
+          locale === 'pl'
+            ? expanded
+              ? 'Zwiń'
+              : 'Pokaż wszystko'
+            : expanded
+              ? 'Collapse'
+              : 'Show all'
+        }}</AppTextLink
+      >
+    </div>
   </div>
 </template>
 <style scoped>

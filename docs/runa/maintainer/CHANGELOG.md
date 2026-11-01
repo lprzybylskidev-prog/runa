@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Right-align preview expansion links and animate pending Audit detail-modal reads/continuations with the shared Spinner; use the same initial-read feedback in Auth/Permissions record sections.
+
 - Link correlation and actor UUIDs directly to filtered Audit history, move correlation into Event and remove the related-entity card. Add shared theme-aware JSON syntax colors and inline expansion links across module previews.
 
 - Group Audit event details, format/collapse long JSON with explicit expansion, clarify verified entity-history navigation and share long-value/review previews across Auth, Permissions and Admin.

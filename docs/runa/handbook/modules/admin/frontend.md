@@ -1150,6 +1150,11 @@ Permissions and Audit together for the same defect and apply the shared correcti
 where relevant. Prefer fixing Table/AdminRecordBrowser before duplicating view
 logic. Preserve each owner's read/write/proof and record-specific constraints.
 
+Default record sections show the shared animated Spinner while their initial read
+is pending; an unsuccessful settled read offers Retry loading. Auth bounded
+collections do not report No entries before their record arrives. These local
+states never gate the complete page or clear an already revealed dirty editor.
+
 Record-browser dialogs use the sole section's title when there is one, otherwise
 the page title. Read-only fields and reviewed JSON differences use public
 ValuePreview from `@/runa/ui`: long values collapse with explicit expansion,

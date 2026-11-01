@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Show animated local initial-read feedback in shared record sections, retain failure retry and right-align shared value-preview expansion links.
+
 - Use inline expansion links and escaped theme-aware JSON syntax highlighting in shared Auth/Permissions/Admin field and review previews.
 
 - Use shared escaped ValuePreview for long read-only fields and JSON reviews across module editors; title record dialogs from their section/page.

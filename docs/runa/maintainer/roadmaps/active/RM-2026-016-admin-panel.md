@@ -686,6 +686,12 @@ reassessment before resuming point 3; completed point history remains evidence.
     link inside the preview; apply the shared presentation across all three modules.
   - Extend focused interaction coverage, synchronize public guidance and prepare
     current assets. Owner manual acceptance 11b and final verification 12 stay open.
+- [x] 11a39. Animate detail-modal reads and right-align preview expansion links.
+  - Owner clarification, 2026-11-01: loading feedback belongs inside the detail
+    modal, not the history table. Use shared animated primitives for initial
+    detail reads and payload continuation; inspect Auth/Permissions equivalents.
+  - Right-align Show all/Collapse in the shared preview, extend focused delayed-read
+    regressions and prepare current assets. Manual acceptance and final gates stay open.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4430,3 +4436,55 @@ Audit 1.1.0 and Auth/Permissions 2.1.0 targets. No dependency, migration, creden
 grant or Docker resource was changed; active services, dev/base-test data, caches
 and evidence are preserved. Manual acceptance 11b and final verification/release
 12 remain open.
+
+### Point 11a39 — Animated modal detail reads and right-aligned expansion
+
+Owner request/clarification, 2026-11-01: align Show all/Collapse to the right and
+animate loading inside the detail modal, not the history table. Current knowledge
+was fresh; bounded retrieval/original loading and component guides confirm local
+loading primitives and retaining already rendered content during later reads.
+
+Shared ValuePreview aligns its existing inline expansion link to the preview's
+right edge in text and JSON modes. Audit uses the shared localized Spinner while
+its initial detail activation is pending, stops on settled failure and offers
+explicit Retry loading. Payload continuation shows a small Spinner in the data
+card's action region while preserving current metadata/payload. No artificial
+minimum delay or new HTTP read is introduced. Reduced motion disables rotation.
+
+Sibling review found the same missing animation in shared Admin record sections,
+used by Auth and Permissions definitions. Pending activation now shows Spinner;
+settled failure retains the warning/retry path and retry animates while pending.
+Auth bounded collections no longer announce No entries before the record arrives.
+Permissions effective-table loading already belongs to Table and needs no second
+spinner. Existing dirty-draft, session, availability and form feedback ownership
+remain unchanged; this does not alter modal selection/subject API timing.
+
+Seven focused Chromium cases pass, covering pending Audit reads, failure/retry,
+continuation with retained content, shared record activation and existing bounded
+value/pagination behavior. Evidence:
+`.runtime/frontend/RM-2026-016-detail-loading-focused.log` (native exit/cleanup 0).
+Supported manual-runtime asset preparation passes in
+`.runtime/frontend/RM-2026-016-detail-loading-build.log`. A focused served-build
+diagnostic holds the actual detail response to inspect the modal before data,
+checks computed spinner animation and its reduced-motion override, then releases
+it and verifies right-edge alignment and existing identifier links. All six
+Auth/Permissions/Audit views at 1440px PL/dark and 390px EN/light show the loading
+state, exact right-edge alignment, no horizontal overflow and no page errors.
+Evidence: `.runtime/frontend/RM-2026-016-detail-loading-browser.log` and
+`.runtime/artifacts/playwright/runa/RM-2026-016-detail-loading/`; Audit loading and
+loaded screenshots were inspected. Controlled authenticated responses are focused
+interaction evidence, not owner acceptance or full automated verification.
+
+Actual local page/readiness/presentation/catalogue/assets return 200; anonymous
+Admin entry retains 401. Evidence:
+`.runtime/frontend/RM-2026-016-detail-loading-http.json`. Current assets are ready
+for review at http://localhost:8080/admin/runa.audit/history with existing access.
+Public UI/Admin/Audit guides and current central/Admin/Audit/Auth changelogs are
+synchronized. Both owner/customer frontend references already route to these
+canonical guides; no additional instruction rule or public signature is needed.
+Compatible corrections retain unreleased Admin 0.1.0, Audit 1.1.0 and
+Auth/Permissions 2.1.0 targets. No dependency, migration, credential/grant or Docker
+resource was changed; active development services, dev/base-test data, caches and
+evidence are preserved. Owner manual acceptance 11b and full verification/release
+12 remain open; tentative completion of Audit view review is not whole-roadmap
+manual acceptance.

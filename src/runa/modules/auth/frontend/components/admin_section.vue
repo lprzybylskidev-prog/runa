@@ -122,10 +122,14 @@ function select(row: Record<string, AdminJson>) {
         :locale="adminLocale"
         :error="resource.error.value ? tr(resource.error.value.message) : ''"
       />
-      <p v-if="!rows.length" class="mb-4 text-sm text-muted">
+      <p v-if="record && !rows.length" class="mb-4 text-sm text-muted">
         {{ tr('No entries in this bounded result.') }}
       </p>
-      <ul v-else class="mb-4 space-y-3" :aria-label="tr(collection.label)">
+      <ul
+        v-else-if="rows.length"
+        class="mb-4 space-y-3"
+        :aria-label="tr(collection.label)"
+      >
         <li
           v-for="(row, index) in rows"
           :key="String(row.public_id ?? index)"

@@ -58,7 +58,11 @@ that historical actor, which may differ from the entity affected by the action.
 Changes/context/execution share a compact data card. Empty trees say No data;
 complete JSON is indented, syntax-colored using theme tokens and escaped Vue text.
 Long values use the public ValuePreview Show all/Collapse text link inside the
-preview. Continuation parts remain independently bounded escaped text; expansion
+preview, aligned to its right edge. Initial detail reads show a localized shared
+Spinner inside the modal until they settle; failures stop loading and offer Retry
+loading. A continuation read shows a small Spinner in the data-card header while
+retaining current metadata/payload. Reduced motion disables spinner rotation.
+Continuation parts remain independently bounded escaped text; expansion
 never fetches or concatenates later parts. No raw HTML is rendered.
 
 ## Presentation and replacement

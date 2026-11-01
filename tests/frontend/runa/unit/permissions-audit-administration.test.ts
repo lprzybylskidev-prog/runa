@@ -9,7 +9,7 @@ import {
   PermissionsAdminEffective,
 } from '@/runa/permissions';
 import { AuditAdminDetail, AuditAdminHistory } from '@/runa/audit';
-import { AdminRecordBrowser, useAdminForm } from '@/runa/admin';
+import { AdminSection, AdminRecordBrowser, useAdminForm } from '@/runa/admin';
 import { ValuePreview, DateTimeInput, Table, Select } from '@/runa/ui';
 import type { TableColumn, SelectOption } from '@/runa/ui';
 import type {
@@ -704,4 +704,126 @@ it('Audit detail leaves missing correlation and actor IDs unlinked', async () =>
   await vi.waitFor(() => expect(wrapper.findAll('dd')).toHaveLength(2));
   expect(wrapper.find('a').exists()).toBe(false);
   expect(wrapper.findAll('dd').map((dd) => dd.text())).toEqual(['—', '—']);
+});
+
+it('Audit detail animates delayed initial reads, settles failure and animates retry and continuation in place', async () => {
+  const descriptor = section(
+    'detail',
+    ['action', 'execution', 'payload_part', 'payload_next'].map((key) =>
+      field(key),
+    ),
+  );
+  const controller = page('runa.audit', 'history', [descriptor]);
+  let finish!: (value: Response) => void;
+  vi.spyOn(window, 'fetch').mockImplementation(
+    () =>
+      new Promise<Response>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller, { autoRead: false });
+        return () =>
+          h(AuditAdminDetail, {
+            page: controller,
+            section: descriptor,
+            controller: form,
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.find('[role="status"]').attributes('aria-label')).toBe(
+      'Loading event details',
+    ),
+  );
+  expect(wrapper.text()).not.toContain('Select an event');
+  finish(
+    new Response(JSON.stringify({ message: 'Unavailable' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.find('[role="status"]').exists()).toBe(false),
+  );
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Retry loading')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(wrapper.find('[role="status"]').exists()).toBe(true),
+  );
+  finish(
+    response({
+      public_id: id,
+      revision: id,
+      values: {
+        action: 'example.changed',
+        execution: 'first fragment',
+        payload_part: '1 / 2',
+        payload_next: '1',
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('first fragment'));
+  expect(wrapper.find('[role="status"]').exists()).toBe(false);
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Next payload part')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(wrapper.find('[role="status"]').exists()).toBe(true),
+  );
+  expect(wrapper.text()).toContain('first fragment');
+  expect(wrapper.text()).toContain('example.changed');
+  finish(
+    response({
+      public_id: id,
+      revision: id,
+      values: {
+        action: 'example.changed',
+        execution: 'second fragment',
+        payload_part: '2 / 2',
+        payload_next: null,
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('second fragment'));
+  expect(wrapper.find('[role="status"]').exists()).toBe(false);
+});
+
+it('shared Admin record section animates pending reads without showing an empty-state warning', async () => {
+  const descriptor = section('editor', [field('name_en')]);
+  const controller = page('runa.permissions', 'roles', [descriptor]);
+  let finish!: (value: Response) => void;
+  vi.spyOn(window, 'fetch').mockImplementation(
+    () =>
+      new Promise<Response>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller, { autoRead: false });
+        return () => h(AdminSection, { section: descriptor, controller: form });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.find('[role="status"]').exists()).toBe(true),
+  );
+  expect(wrapper.text()).not.toContain('Unable to load');
+  finish(
+    response({
+      public_id: id,
+      revision: id,
+      values: { name_en: 'Loaded definition' },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Loaded definition'));
+  expect(wrapper.find('[role="status"]').exists()).toBe(false);
 });

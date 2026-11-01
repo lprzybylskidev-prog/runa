@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Hide premature empty collection messages while modal record details load; shared Admin sections supply animated loading feedback.
+
 - Collapse long bounded collection values with the shared escaped ValuePreview; preserve explicit pagination and timestamp formatting.
 
 - Use the shared lowercase localized choice presentation for directory account states and read-only administrative dictionaries; keep wire/export codes unchanged. Align own login/account-history outcome labels with lowercase PL/EN presentation in rows and safe details.

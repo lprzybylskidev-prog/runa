@@ -5,6 +5,7 @@ import { computed, ref } from 'vue';
 import { useAdminInitialReadiness } from './initialReadiness';
 import {
   ValuePreview,
+  Spinner,
   Alert,
   Button,
   FormConflict,
@@ -53,6 +54,14 @@ const conflicts = computed(() =>
     ),
   ),
 );
+async function retry() {
+  initialSettled.value = false;
+  try {
+    await props.controller.refresh();
+  } finally {
+    initialSettled.value = true;
+  }
+}
 </script>
 <template>
   <FormSection :title="tr(section.title)" :columns="2">
@@ -73,22 +82,26 @@ const conflicts = computed(() =>
           )
         }}
       </Alert>
+      <div
+        v-if="!section.diagnostic && !record && !initialSettled"
+        aria-busy="true"
+        class="flex min-h-24 items-center justify-center sm:col-span-2"
+      >
+        <Spinner :label="tr('Loading record details')" />
+      </div>
       <Alert
-        v-if="section.diagnostic || !record"
+        v-else-if="section.diagnostic || !record"
         tone="warning"
         class="sm:col-span-2"
       >
         {{
           section.diagnostic
             ? tr('This section is currently unavailable.')
-            : tr('Loading the current record or waiting for a successful read.')
+            : tr('Unable to load the current record.')
         }}
-        <Button
-          size="sm"
-          :disabled="controller.busy.value"
-          @click="controller.refresh"
-          >{{ tr('Retry loading') }}</Button
-        >
+        <Button size="sm" :disabled="controller.busy.value" @click="retry">{{
+          tr('Retry loading')
+        }}</Button>
       </Alert>
       <AdminField
         v-for="field in fields"

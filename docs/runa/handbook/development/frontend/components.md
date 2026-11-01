@@ -498,7 +498,7 @@ and production assets. Props: `text: string`, `format?: 'text'|'json'` (default
 `text`), `locale?: 'pl'|'en'` (default `pl`). It has no events or remote reads.
 
 The collapsed preview shows at most eight source lines and 480 Unicode code
-points; longer text has a localized Show all/Collapse text link inside the preview
+points; longer text has a right-aligned localized Show all/Collapse text link inside the preview
 with aria-expanded and aria-controls. Activating it preserves the URL and keyboard
 focus. Expansion displays the complete supplied value; replacement
 text resets expansion. JSON mode formats complete JSON without reserializing its

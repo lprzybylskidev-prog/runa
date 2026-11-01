@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Show a localized Spinner during initial detail-modal reads and retry, and while loading payload continuations without clearing current data.
+
 - Move correlation into Event and make correlation/actor UUID values links to their exact history filters; remove technical-ID/related-entity cards and share colored JSON previews with inline expansion.
 
 - Group event/actor/technical metadata, omit empty filter-only properties, format and collapse JSON with Show all, hide single-part controls and explain entity-history links.
