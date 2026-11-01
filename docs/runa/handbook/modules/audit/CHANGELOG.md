@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Move correlation into Event and make correlation/actor UUID values links to their exact history filters; remove technical-ID/related-entity cards and share colored JSON previews with inline expansion.
+
 - Group event/actor/technical metadata, omit empty filter-only properties, format and collapse JSON with Show all, hide single-part controls and explain entity-history links.
 
 - Localize actor kinds and outcomes consistently in history filters, rows and immutable details, using lowercase labels in both languages without changing stored payloads or export codes.

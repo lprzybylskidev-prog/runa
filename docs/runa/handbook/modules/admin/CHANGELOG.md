@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Use inline expansion links and escaped theme-aware JSON syntax highlighting in shared Auth/Permissions/Admin field and review previews.
+
 - Use shared escaped ValuePreview for long read-only fields and JSON reviews across module editors; title record dialogs from their section/page.
 
 - Render declared dictionary choices consistently in filters, table cells and read-only values. Use lowercase supplied PL/EN labels while preserving canonical export/query values and custom cell replacement.

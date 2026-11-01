@@ -39,18 +39,27 @@ foreign model is fetched. Historical labels remain historical; optional current
 Auth identity enrichment is deliberately omitted. No edit/delete/undo command exists.
 Grant removal hides the page and refuses future reads without payload disclosure.
 
-Details group event metadata, the historical actor and technical identifiers;
-filter-only from/until/entity inputs do not appear as empty event properties.
-Changes/context/execution share a compact data card. Empty trees say No data;
-complete JSON is indented and long values use the public ValuePreview Show all/
-Collapse control. Continuation parts remain independently bounded escaped text;
-expansion never fetches or concatenates later parts.
+Details group event metadata and the historical actor. Correlation belongs to
+the Event group; filter-only from/until/entity inputs do not appear as empty
+event properties. The correlation value links to this table with only its
+`correlation_id` filter; the actor UUID links with only `actor_public_id`.
+Missing identifiers remain unlinked. The default has no separate technical-ID or
+related-entity card. Complete entity references remain available in the guarded
+detail projection for custom presentation, and entity-filter URLs remain supported.
+Links filter Audit reads; they do not navigate to current foreign records or grant
+access. URL filters are ordinary selectors, never trusted execution metadata.
 
-Related-entity cards label the module/type/public UUID and explain the View entity
-history link. Entity links open this same viewer with an exact entity reference filter. They do
-not infer a foreign entity route or grant access to its current record. URL filters
-are ordinary read selectors, never trusted execution metadata. Values render as
-escaped text and links are constructed from encoded fixed query keys.
+Correlation identifies one related execution chain, distinct from each Audit event's
+own UUID. HTTP initializes it from the request ID; downstream operations and queued
+work can retain it to connect Audit records with diagnostic logs. It does not identify
+a person or an audited business entity. Actor filtering instead selects actions by
+that historical actor, which may differ from the entity affected by the action.
+
+Changes/context/execution share a compact data card. Empty trees say No data;
+complete JSON is indented, syntax-colored using theme tokens and escaped Vue text.
+Long values use the public ValuePreview Show all/Collapse text link inside the
+preview. Continuation parts remain independently bounded escaped text; expansion
+never fetches or concatenates later parts. No raw HTML is rendered.
 
 ## Presentation and replacement
 

@@ -679,6 +679,13 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Inspect Auth/Permissions equivalents, share repeated value presentation,
     extend focused regressions and prepare current assets for repeated acceptance.
     Manual acceptance 11b and final verification 12 remain open.
+- [x] 11a38. Link Audit identifiers and refine shared JSON previews.
+  - Owner request, 2026-11-01: move correlation into Event, make correlation and
+    actor UUID values direct history-filter links and remove related-entity cards.
+    Highlight JSON syntax and replace the framed expansion button with an inline
+    link inside the preview; apply the shared presentation across all three modules.
+  - Extend focused interaction coverage, synchronize public guidance and prepare
+    current assets. Owner manual acceptance 11b and final verification 12 stay open.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4370,3 +4377,56 @@ Auth/Permissions 2.1.0 targets; guarded API signatures/manifests remain unchange
 No dependency, database migration or task Docker resource was introduced; active
 services, dev/base-test data, caches and verification evidence are preserved.
 Manual acceptance 11b and complete final verification/release 12 remain open.
+
+### Point 11a38 — Direct Audit history links and colored inline JSON previews
+
+Owner clarification, 2026-11-01: correlation belongs to Event, its own value links
+to matching history, and the actor UUID likewise links to that actor's history.
+The earlier request also removes related-entity cards and replaces the framed
+JSON expansion control with an inline text link and syntax colors. Current local
+knowledge was fresh; bounded retrieval and original Audit/Admin/UI sources confirm
+both scalar history selectors already exist. No backend/API extension is needed.
+
+Audit defaults now contain Event and Actor groups, with correlation in Event.
+Nonempty correlation/actor UUID values use the existing TextLink and URL-encoded
+single-selector history URLs. Null/missing values remain unlinked. Actor history
+selects the historical actor, independently of affected entities. The separate
+technical-ID and related-entity cards and their unused labels are removed; guarded
+entity projection and complete entity-filter URLs remain available for custom UI.
+
+Shared ValuePreview now places its Show all/Collapse TextLink inside the preview.
+Native Enter toggles it without changing URL/focus or fetching/submitting anything.
+JSON keys, strings, numbers, literals and punctuation use existing light/dark theme
+colors; forced-colors restores system text. Private tokenization preserves every
+source character and renders Vue text spans, never raw HTML; lossless formatting,
+fragment handling and the original bounds remain unchanged. Auth collection values
+and shared Auth/Permissions fields/reviews consume this same UI primitive. No
+parallel module renderer or new dependency was introduced.
+
+Ten focused Chromium cases pass, covering correlation/actor grouping and exact
+URLs in PL/EN, missing IDs, escaped syntax tokens, exact numbers/strings, expansion
+and reset, and existing bounded payload pagination. Evidence:
+`.runtime/frontend/RM-2026-016-detail-links-focused.log` (native exit/cleanup 0).
+Supported manual-runtime asset preparation passes:
+`.runtime/frontend/RM-2026-016-detail-links-build.log`. A focused one-off served-build
+diagnostic verifies real link navigation, keyboard expansion and modal geometry
+that isolated mocks cannot establish. Six Auth/Permissions/Audit views at 1440px
+PL/dark and 390px EN/light have no dialog horizontal overflow or page errors.
+Both Audit variants close details and send exactly the selected correlation or
+actor filter. Evidence: `.runtime/frontend/RM-2026-016-detail-links-browser.log`
+and `.runtime/artifacts/playwright/runa/RM-2026-016-detail-links/`; desktop/mobile
+Audit screenshots were inspected. Synthetic authenticated responses establish
+interaction behavior, not backend mutation acceptance or owner approval.
+
+Current local page/readiness/presentation/catalogue/assets return 200; anonymous
+Admin entry retains 401. Evidence:
+`.runtime/frontend/RM-2026-016-detail-links-http.json`. Current assets are ready at
+http://localhost:8080/admin/runa.audit/history with existing access.
+Public Audit/UI guidance and central/Admin/Audit changelogs are synchronized.
+Owner/customer frontend component references already route to these canonical
+guides; neither instruction product requires another rule or signature change.
+Compatible presentation refinements retain the current unreleased Admin 0.1.0,
+Audit 1.1.0 and Auth/Permissions 2.1.0 targets. No dependency, migration, credential,
+grant or Docker resource was changed; active services, dev/base-test data, caches
+and evidence are preserved. Manual acceptance 11b and final verification/release
+12 remain open.

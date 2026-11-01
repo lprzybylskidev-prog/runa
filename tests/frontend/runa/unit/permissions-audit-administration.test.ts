@@ -276,7 +276,7 @@ it('Permissions Admin definition browser preserves dirty drafts during record se
   expect(form.records.value.editor!.public_id).toBe(id);
 });
 it.each(['pl', 'en'])(
-  'Audit Admin detail %s exposes escaped immutable values and bounded entity history links',
+  'Audit Admin detail %s exposes escaped values and direct correlation/actor history links',
   async (locale) => {
     savePreference('runa.locale', locale);
     const descriptor = section('detail', [
@@ -284,6 +284,8 @@ it.each(['pl', 'en'])(
       field('changes'),
       { ...field('outcome'), type: 'dictionary', choices: ['success'] },
       field('entities'),
+      field('actor_public_id'),
+      field('correlation_id'),
     ]);
     const controller = page('runa.audit', 'history', [descriptor]);
     vi.spyOn(window, 'fetch').mockResolvedValue(
@@ -292,6 +294,8 @@ it.each(['pl', 'en'])(
         revision: id,
         values: {
           action: 'example.changed',
+          actor_public_id: other,
+          correlation_id: id,
           changes: '<script>privateMarkup()</script>',
           outcome: 'success',
           entities: JSON.stringify([
@@ -321,12 +325,22 @@ it.each(['pl', 'en'])(
           (entry) => entry.text() === (locale === 'pl' ? 'sukces' : 'success'),
         ),
     ).toBe(true);
-    const link = new URL(
-      wrapper.get('a').attributes('href')!,
-      window.location.origin,
-    );
-    expect(link.pathname).toBe('/admin/runa.audit/history');
-    expect(link.searchParams.get('entity_public_id')).toBe(other);
+    const links = wrapper.findAll('a');
+    expect(links).toHaveLength(2);
+    for (const [filter, value, group] of [
+      ['correlation_id', id, locale === 'pl' ? 'Zdarzenie' : 'Event'],
+      ['actor_public_id', other, locale === 'pl' ? 'Wykonawca' : 'Actor'],
+    ]) {
+      const link = links.find((link) => link.text() === value)!;
+      const url = new URL(link.attributes('href')!, window.location.origin);
+      expect(url.pathname).toBe('/admin/runa.audit/history');
+      expect([...url.searchParams.entries()]).toEqual([[filter, value]]);
+      expect(
+        link.element.closest('section')?.querySelector('h3')?.textContent,
+      ).toBe(group);
+    }
+    expect(wrapper.text()).not.toContain('Technical identifiers');
+    expect(wrapper.text()).not.toContain('Related entity history');
     expect(wrapper.find('script').exists()).toBe(false);
     expect(
       wrapper
@@ -523,7 +537,7 @@ it.each(['pl', 'en'])(
     expect(wrapper.get('p').text()).toContain('"message":');
     expect(wrapper.get('p').text()).not.toContain('"index": 39');
     expect(wrapper.find('img').exists()).toBe(false);
-    const button = wrapper.get('button');
+    const button = wrapper.get('a');
     expect(button.text()).toBe(locale === 'pl' ? 'Pokaż wszystko' : 'Show all');
     expect(button.attributes('aria-expanded')).toBe('false');
     expect(button.attributes('aria-controls')).toBe(
@@ -539,7 +553,7 @@ it.each(['pl', 'en'])(
     expect(button.attributes('aria-expanded')).toBe('false');
     expect(wrapper.get('p').text()).toContain('partial JSON:');
     await wrapper.setProps({ text: '{"ok":true}' });
-    expect(wrapper.find('button').exists()).toBe(false);
+    expect(wrapper.find('a').exists()).toBe(false);
     expect(wrapper.get('p').text()).toContain('"ok": true');
   },
 );
@@ -641,4 +655,53 @@ it('bounded value preview preserves exact JSON numeric and string tokens and dup
   expect(wrapper.get('p').text()).toContain('1e+30');
   expect(wrapper.get('p').text().match(/"id"/g)).toHaveLength(2);
   expect(JSON.parse(wrapper.get('p').text())).toEqual(JSON.parse(text));
+});
+
+it('bounded value preview colors JSON tokens while preserving escaped source text and plain mode', async () => {
+  const text =
+    '{"text":"<script>\\"content\\"</script>","number":-42.25e+3,"truth":true,"empty":null}';
+  const wrapper = mount(ValuePreview, { props: { text, format: 'json' } });
+  expect(JSON.parse(wrapper.get('p').text())).toEqual(JSON.parse(text));
+  expect(wrapper.find('script').exists()).toBe(false);
+  expect(
+    wrapper.findAll('[data-json-token="key"]').map((token) => token.text()),
+  ).toEqual(['"text"', '"number"', '"truth"', '"empty"']);
+  expect(wrapper.get('[data-json-token="number"]').text()).toBe('-42.25e+3');
+  expect(
+    wrapper.findAll('[data-json-token="literal"]').map((token) => token.text()),
+  ).toEqual(['true', 'null']);
+  await wrapper.setProps({ format: 'text' });
+  expect(wrapper.get('p').text()).toBe(text);
+  expect(wrapper.find('[data-json-token]').exists()).toBe(false);
+});
+
+it('Audit detail leaves missing correlation and actor IDs unlinked', async () => {
+  const descriptor = section('detail', [
+    field('correlation_id'),
+    field('actor_public_id'),
+  ]);
+  const controller = page('runa.audit', 'history', [descriptor]);
+  vi.spyOn(window, 'fetch').mockResolvedValue(
+    response({
+      public_id: id,
+      revision: id,
+      values: { correlation_id: null, actor_public_id: null },
+    }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller, { autoRead: false });
+        return () =>
+          h(AuditAdminDetail, {
+            page: controller,
+            section: descriptor,
+            controller: form,
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.findAll('dd')).toHaveLength(2));
+  expect(wrapper.find('a').exists()).toBe(false);
+  expect(wrapper.findAll('dd').map((dd) => dd.text())).toEqual(['—', '—']);
 });

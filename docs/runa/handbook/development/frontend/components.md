@@ -498,10 +498,14 @@ and production assets. Props: `text: string`, `format?: 'text'|'json'` (default
 `text`), `locale?: 'pl'|'en'` (default `pl`). It has no events or remote reads.
 
 The collapsed preview shows at most eight source lines and 480 Unicode code
-points; longer text has a localized Show all/Collapse button with aria-expanded
-and aria-controls. Expansion displays the complete supplied value; replacement
+points; longer text has a localized Show all/Collapse text link inside the preview
+with aria-expanded and aria-controls. Activating it preserves the URL and keyboard
+focus. Expansion displays the complete supplied value; replacement
 text resets expansion. JSON mode formats complete JSON without reserializing its
-numeric/string tokens or duplicate keys. Incomplete/invalid JSON parts stay escaped
-text. Formatting never infers dates or translates payload values. Authors retain
+numeric/string tokens or duplicate keys. Syntax highlighting renders key, string,
+number, literal and punctuation spans through Vue text interpolation using existing
+light/dark theme colors; forced-colors uses system text. Incomplete/invalid JSON
+parts retain their escaped text and receive best-effort token coloring. Plain-text
+mode remains uncolored. Formatting never infers dates or translates payload values. Authors retain
 server authorization, redaction, continuation and record-lifecycle ownership;
 collapse is presentation, not a security boundary.

@@ -29,42 +29,22 @@ async function next() {
   if (id && typeof cursor === 'string')
     await resource.read({ kind: 'record', public_id: id, cursor });
 }
-const entities = computed<
-  { module: string; type: string; public_id: string }[]
->(() => {
-  const raw = record.value?.values.entities;
-  if (typeof raw !== 'string') return [];
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed)
-      ? parsed.filter(
-          (item): item is { module: string; type: string; public_id: string } =>
-            item !== null &&
-            typeof item === 'object' &&
-            typeof item.module === 'string' &&
-            typeof item.type === 'string' &&
-            typeof item.public_id === 'string',
-        )
-      : [];
-  } catch {
-    return [];
-  }
-});
-function history(entity: { module: string; type: string; public_id: string }) {
+function history(key: string) {
+  if (!['correlation_id', 'actor_public_id'].includes(key)) return undefined;
+  const value = record.value?.values[key];
+  if (typeof value !== 'string' || !value) return undefined;
   return (
     '/admin/runa.audit/history?' +
-    new URLSearchParams({
-      entity_module: entity.module,
-      entity_type: entity.type,
-      entity_public_id: entity.public_id,
-    }).toString()
+    new URLSearchParams({ [key]: value }).toString()
   );
 }
 const groups = computed(() =>
   [
-    { title: 'Event', keys: ['occurred_at', 'module', 'action', 'outcome'] },
+    {
+      title: 'Event',
+      keys: ['occurred_at', 'module', 'action', 'outcome', 'correlation_id'],
+    },
     { title: 'Actor', keys: ['actor_label', 'actor_kind', 'actor_public_id'] },
-    { title: 'Technical identifiers', keys: ['correlation_id'] },
   ]
     .map((group) => ({
       ...group,
@@ -106,13 +86,7 @@ function display(key: string) {
         :error="resource.error.value ? tr(resource.error.value.message) : ''"
       />
       <div class="grid min-w-0 gap-4 md:grid-cols-2">
-        <Card
-          v-for="group in groups"
-          :key="group.title"
-          :class="
-            group.title === 'Technical identifiers' ? 'md:col-span-2' : ''
-          "
-        >
+        <Card v-for="group in groups" :key="group.title">
           <template #header
             ><h3>{{ tr(group.title) }}</h3></template
           >
@@ -121,13 +95,33 @@ function display(key: string) {
               v-for="field in group.fields"
               :key="field.key"
               class="min-w-0"
-              :class="field.key === 'actor_public_id' ? 'sm:col-span-2' : ''"
+              :class="
+                ['actor_public_id', 'correlation_id'].includes(field.key)
+                  ? 'sm:col-span-2'
+                  : ''
+              "
             >
               <dt class="text-xs font-semibold text-muted">
                 {{ tr(field.label) }}
               </dt>
               <dd class="mt-1 min-w-0">
+                <TextLink
+                  v-if="history(field.key)"
+                  :href="history(field.key)!"
+                  class="max-w-full [overflow-wrap:anywhere]"
+                  :aria-label="
+                    tr(
+                      field.key === 'correlation_id'
+                        ? 'Show related events'
+                        : 'Show actor history',
+                    ) +
+                    ': ' +
+                    display(field.key)
+                  "
+                  >{{ display(field.key) }}</TextLink
+                >
                 <ValuePreview
+                  v-else
                   :text="display(field.key)"
                   :locale="adminLocale"
                 />
@@ -204,31 +198,6 @@ function display(key: string) {
           >
         </div>
       </div>
-      <Card v-if="entities.length">
-        <template #header
-          ><h3>{{ tr('Related entity history') }}</h3></template
-        >
-        <p class="mb-3 text-xs text-muted">
-          {{ tr('Open Audit history filtered to this entity.') }}
-        </p>
-        <ul class="space-y-3" :aria-label="tr('Related entity history')">
-          <li
-            v-for="entity in entities"
-            :key="entity.module + ':' + entity.type + ':' + entity.public_id"
-            class="min-w-0 rounded border border-line px-3 py-2"
-          >
-            <p class="text-xs text-muted [overflow-wrap:anywhere]">
-              {{ entity.module }} / {{ entity.type }}
-            </p>
-            <p class="text-xs [overflow-wrap:anywhere]">
-              {{ entity.public_id }}
-            </p>
-            <TextLink :href="history(entity)"
-              >{{ tr('View entity history') }} →</TextLink
-            >
-          </li>
-        </ul>
-      </Card>
     </template>
   </div>
 </template>

@@ -4,12 +4,10 @@ import type { AdminMessages } from './contracts';
 export const adminMessages: AdminMessages = {
   Event: 'Zdarzenie',
   'Event data': 'Dane zdarzenia',
+  'Show related events': 'Pokaż powiązane zdarzenia',
+  'Show actor history': 'Pokaż historię wykonawcy',
   Actor: 'Wykonawca',
-  'Technical identifiers': 'Identyfikatory techniczne',
   'No data.': 'Brak danych.',
-  'Open Audit history filtered to this entity.':
-    'Otwórz historię audytu ograniczoną do tego obiektu.',
-  'View entity history': 'Pokaż historię obiektu',
 
   'Choose image': 'Wybierz obraz',
   'No image selected': 'Nie wybrano obrazu',
@@ -278,7 +276,6 @@ export const adminMessages: AdminMessages = {
   Registered: 'Zarejestrowany',
   'Registered and enabled': 'Zarejestrowany i włączony',
   'Registry generation': 'Generacja rejestru',
-  'Related entity history': 'Historia powiązanego obiektu',
   'Replacement value.': 'Wartość zastępcza.',
   'Request cancellation': 'Zażądaj anulowania',
   'Required editor content is unavailable. Saving is blocked.':
@@ -357,7 +354,6 @@ export const adminMessages: AdminMessages = {
   'Check its status through the owning module before submitting another operation.':
     'Przed wysłaniem kolejnej operacji sprawdź jej stan w module, do którego należy.',
   Clear: 'Wyczyść',
-  'History:': 'Historia:',
   'Lifecycle, email, invitation, security and policy actions run independently. Profile and access use the shared Save.':
     'Akcje dotyczące cyklu życia, adresów, zaproszeń, zabezpieczeń i zasad są niezależne. Profil i dostęp korzystają ze wspólnego zapisu.',
   'Payload part': 'Część danych',
