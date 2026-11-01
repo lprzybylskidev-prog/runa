@@ -57,9 +57,14 @@ it('datetime table filters keep invalid drafts local, normalize zoned edits and 
           },
         }),
     }),
+    { attachTo: document.body },
   );
   try {
     const input = wrapper.getComponent(AppDateTimeInput).get('input');
+    expect(input.attributes('data-size')).toBe('sm');
+    expect(
+      getComputedStyle(wrapper.get('.temporal-trigger').element).height,
+    ).toBe('36px');
     await input.setValue('31.02.2026 12:30');
     expect(value.value.filters).toEqual({});
     expect(input.attributes('aria-invalid')).toBe('true');
@@ -131,6 +136,18 @@ it('table viewport pins the original header inside a scrolling region and synchr
     });
     await vi.waitFor(() => expect(rail.style.display).not.toBe('none'));
     const originalHead = wrapper.get('thead').element;
+    // A scroll event must update both layers before a Vue tick / next frame.
+    for (const distance of [40, 95, 180, 70]) {
+      host.scrollTop = viewport.offsetTop + distance;
+      host.dispatchEvent(new Event('scroll'));
+      expect(
+        Math.abs(
+          originalHead.getBoundingClientRect().top -
+            host.getBoundingClientRect().top,
+        ),
+      ).toBeLessThan(2);
+      expect(originalHead.style.transform).toBe(rail.style.transform);
+    }
     host.scrollTop = viewport.offsetTop + 60;
     await vi.waitFor(() =>
       expect(

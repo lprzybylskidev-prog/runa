@@ -593,10 +593,14 @@ it('Admin cursor tables preserve owner pagination sorting and secret state witho
   const signal = new AbortController().signal;
   const initial = await table.provider.value(table.query.value, signal);
   expect(initial).toMatchObject({
-    counts: 'unknown',
+    counts: 'exact',
+    pagination: 'cursor',
     total: 900,
     hasNext: true,
   });
+  expect(wrapper.text()).toContain('Results: 900');
+  expect(wrapper.text()).not.toContain('Count unconfirmed');
+  expect(wrapper.find('nav[aria-label="Page"]').exists()).toBe(false);
   const next = wrapper
     .findAll('button')
     .find((button) => button.text() === 'Next')!;

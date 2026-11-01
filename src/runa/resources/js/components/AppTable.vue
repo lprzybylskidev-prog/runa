@@ -278,7 +278,6 @@ const {
   setScrollbar,
   overflow,
   width: scrollWidth,
-  offset: headerOffset,
   headerHeight,
   railHeight,
   synchronize,
@@ -335,7 +334,9 @@ const pageOptions = computed(() =>
     .map((n) => ({ value: String(n), label: String(n) })),
 );
 const pages = computed(() =>
-  page.value?.counts === 'exact' && page.value.matching !== null
+  page.value?.pagination !== 'cursor' &&
+  page.value?.counts === 'exact' &&
+  page.value.matching !== null
     ? Math.max(1, Math.ceil(page.value.matching / props.query.perPage))
     : null,
 );
@@ -454,6 +455,7 @@ function changePage(value: number) {
               <AppDateTimeInput
                 v-else-if="column.filterType === 'datetime'"
                 :key="`${column.key}-${filterReset}`"
+                size="sm"
                 :label="column.label"
                 :locale="english ? 'en' : 'pl'"
                 :invalid-message="
@@ -682,8 +684,7 @@ function changePage(value: number) {
             }}
           </caption>
           <thead
-            class="relative z-10 border-b border-line bg-[var(--runa-surface-raised)] text-[var(--runa-text-secondary)]"
-            :style="{ transform: `translateY(${headerOffset}px)` }"
+            class="table-pinned-header relative z-10 border-b border-line bg-[var(--runa-surface-raised)] text-[var(--runa-text-secondary)]"
           >
             <tr>
               <th
@@ -822,11 +823,10 @@ function changePage(value: number) {
           text('Przewijanie poziome', 'Horizontal scrolling') + ': ' + caption
         "
         tabindex="0"
-        class="absolute inset-x-0 z-10 overflow-x-scroll bg-[var(--runa-surface-raised)] focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)]"
+        class="table-pinned-rail absolute inset-x-0 z-10 overflow-x-scroll bg-[var(--runa-surface-raised)] focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)]"
         :style="{
           top: `${headerHeight - railHeight}px`,
           height: `${railHeight}px`,
-          transform: `translateY(${headerOffset}px)`,
         }"
         @scroll="synchronize('rail')"
       >
@@ -872,6 +872,10 @@ function changePage(value: number) {
 </template>
 
 <style scoped>
+.table-pinned-header,
+.table-pinned-rail {
+  will-change: transform;
+}
 .table-scroll-region {
   scrollbar-width: none;
 }

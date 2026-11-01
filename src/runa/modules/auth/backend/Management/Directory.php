@@ -33,6 +33,6 @@ final readonly class Directory implements ManagementResourceReader
         $result = $this->apis->resolve('runa.auth', AuthAdministration::class, '1.0.0')->users($query);
 
         return new ManagementPageResult(array_map(fn ($user) => new ManagementRecord($user->publicId, (string) $user->version,
-            ['display_name' => $user->displayName, 'state' => $user->state]), $result->items), $result->next);
+            ['display_name' => $user->displayName, 'state' => $user->state]), $result->items), $result->next, $result->total);
     }
 }

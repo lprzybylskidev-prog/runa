@@ -190,16 +190,20 @@ it('denies every Audit read by default and admits bounded immutable filtered cur
         $query = new AuditQuery('app.audit_fixture', 2, action: 'record.large', actorPublicId: $actor, entity: $entity, outcome: 'success', from: '2020-01-01T00:00:00Z', until: '2100-01-01T00:00:00Z');
         $page = $reads->page($query);
         expect(array_map(fn ($e) => $e->reference->publicId, $page->entries))->toBe([$ids[2], $ids[1]])
+            ->and($page->total)->toBe(3)
             ->and($page->nextBefore)->toBe($ids[1])->and($page->entries[0]->changes)->toBeNull()
             ->and(strlen(json_encode($page)))->toBeLessThan(10000);
-        $last = $reads->page(new AuditQuery(limit: 2, before: $page->nextBefore));
-        expect(count($last->entries))->toBe(1)->and($last->nextBefore)->toBeNull();
+        $last = $reads->page(new AuditQuery('app.audit_fixture', 2, action: 'record.large', actorPublicId: $actor, entity: $entity, outcome: 'success', from: '2020-01-01T00:00:00Z', until: '2100-01-01T00:00:00Z', before: $page->nextBefore));
+        expect(count($last->entries))->toBe(1)->and($last->nextBefore)->toBeNull()->and($last->total)->toBe(3);
         $detail = $reads->detail($ids[2]);
         expect(strlen(json_encode($detail->changes)))->toBeGreaterThan(55000)->and($detail->entities)->toEqual([$entity]);
         expect($reads->metadata()['max_page_size'])->toBe(100)->and($reads->detail((string) Str::uuid7()))->toBeNull();
         expect(fn () => $detail->module = 'app.forged')->toThrow(Error::class);
         expect(fn () => $reads->detail('invalid'))->toThrow(InvalidArgumentException::class);
-        expect($reads->page(new AuditQuery(action: 'absent.action'))->entries)->toBe([]);
+        $empty = $reads->page(new AuditQuery(action: 'absent.action'));
+        expect($empty->entries)->toBe([])->and($empty->total)->toBe(0);
+        expect($reads->page(new AuditQuery(entity: new AuditEntity('app.audit_fixture', 'record', (string) Str::uuid7())))->total)->toBe(0);
+        expect($reads->page(new AuditQuery(until: '2020-01-01T00:00:00Z'))->total)->toBe(0);
     });
     expect(fn () => $reads->metadata())->toThrow(OperationRejected::class);
     foreach ([fn () => new AuditQuery(limit: 101), fn () => new AuditQuery(action: 'unsafe raw'),

@@ -12,6 +12,7 @@ const props = withDefaults(
   >(),
   {
     locale: 'pl',
+    size: 'md',
     helper: '',
     error: '',
     invalidMessage: 'Check the date or time.',

@@ -530,8 +530,8 @@ export function useAdminTable(
         rows,
         total: collection?.total ?? null,
         matching: collection?.total ?? null,
-        // Exact totals do not imply that arbitrary numbered cursor jumps are possible.
-        counts: 'unknown',
+        counts: collection?.total == null ? 'unknown' : 'exact',
+        pagination: 'cursor',
         hasNext: collection?.next != null,
         capabilities: {
           sort: fields.filter((c) => c.sortable).map((c) => c.key),

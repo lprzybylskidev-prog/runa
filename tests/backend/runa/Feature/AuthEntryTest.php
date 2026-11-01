@@ -25,10 +25,13 @@ use Laravel\Fortify\Fortify;
 use Laravel\Fortify\FortifyServiceProvider;
 use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\AuthorityGuard;
+use Runa\Contracts\Modules\OperationAuthorizer;
+use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Contracts\Modules\WorkHandler;
 use Runa\Contracts\Modules\WorkPolicy;
 use Runa\ModuleFramework\Api\ModuleHttp;
+use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
@@ -56,6 +59,7 @@ use Runa\Modules\Auth\Actions\ScheduledLifecycle;
 use Runa\Modules\Auth\Actions\SecurityNotices;
 use Runa\Modules\Auth\Actions\SessionStore;
 use Runa\Modules\Auth\Actions\StepUp;
+use Runa\Modules\Auth\Contracts\AuthAdministration;
 use Runa\Modules\Auth\Contracts\AuthInvitations;
 use Runa\Modules\Auth\Contracts\AuthPolicies;
 use Runa\Modules\Auth\Contracts\AuthPreferences;
@@ -70,6 +74,7 @@ use Runa\Modules\Auth\Contracts\OperatorAuthority;
 use Runa\Modules\Auth\Contracts\PreferenceScope;
 use Runa\Modules\Auth\Contracts\PreferenceValue;
 use Runa\Modules\Auth\Contracts\SessionSelection;
+use Runa\Modules\Auth\Contracts\UserDirectoryQuery;
 use Runa\Modules\Auth\Definitions\EntryWork;
 use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
@@ -1917,4 +1922,30 @@ it('bounds protected section renewal by current policy and refuses identity gene
     entryPolicy(['step_up_seconds' => 300]);
     CarbonImmutable::setTestNow('2026-10-31 12:05:01 UTC');
     expect(fn () => $call($user->public_id))->toThrow(OperationRejected::class);
+});
+
+it('counts filtered directory results before cursors and preserves deleted-read authority', function (): void {
+    $first = entryUser('directory-count-first@example.test', false);
+    entryUser('directory-count-second@example.test', false);
+    $deleted = entryUser('directory-count-deleted@example.test', false);
+    app(ChangeIdentity::class)->change($deleted->public_id, $deleted->version, new LifecycleChange('delete'));
+    app()->bind(OperationAuthorizer::class, fn () => new class implements OperationAuthorizer
+    {
+        public function allows(OperationContext $context, string $permission): bool
+        {
+            return $permission === 'runa.auth.users.read';
+        }
+    });
+    app()->forgetInstance(OperationGuard::class);
+    app()->forgetInstance(ModuleApis::class);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthAdministration::class, '1.0.0');
+    app(PrincipalScope::class)->run(new TrustedPrincipal($first->public_id), function () use ($api): void {
+        $page = $api->users(new UserDirectoryQuery(limit: 1, search: 'Test User'));
+        expect($page->items)->toHaveCount(1)->and($page->total)->toBe(2)->and($page->next)->not->toBeNull();
+        $last = $api->users(new UserDirectoryQuery($page->next, 1, 'Test User'));
+        expect($last->items)->toHaveCount(1)->and($last->total)->toBe(2)->and($last->next)->toBeNull();
+        expect($api->users(new UserDirectoryQuery(search: 'absent-name'))->total)->toBe(0);
+        expect(fn () => $api->users(new UserDirectoryQuery(state: 'deleted')))->toThrow(OperationRejected::class);
+        expect(fn () => $api->users(new UserDirectoryQuery(state: 'all')))->toThrow(OperationRejected::class);
+    });
 });

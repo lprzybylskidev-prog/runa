@@ -33,18 +33,20 @@ final readonly class ReadEvents implements AuditReads
         if ($query->until !== null) {
             $builder->where('occurred_at', '<=', $query->until);
         }
+        if ($query->entity !== null) {
+            $entity = $query->entity;
+            $builder->whereExists(fn (Builder $related) => $related->selectRaw('1')->from('runa_audit.entities')
+                ->whereColumn('event_id', 'runa_audit.events.id')->where('module', $entity->module)
+                ->where('entity_type', $entity->type)->where('entity_public_id', $entity->publicId));
+        }
+        // Count the authorized filtered dataset before applying a page cursor.
+        $total = (clone $builder)->count();
         if ($query->before !== null) {
             $cursor = $this->events()->where('public_id', $query->before)->value('id');
             if ($cursor === null) {
                 throw new \InvalidArgumentException('Unknown Audit page cursor.');
             }
             $builder->where('id', '<', $cursor);
-        }
-        if ($query->entity !== null) {
-            $entity = $query->entity;
-            $builder->whereExists(fn (Builder $related) => $related->selectRaw('1')->from('runa_audit.entities')
-                ->whereColumn('event_id', 'runa_audit.events.id')->where('module', $entity->module)
-                ->where('entity_type', $entity->type)->where('entity_public_id', $entity->publicId));
         }
         // Summary selection never fetches potentially large change/context/execution trees.
         /** @var list<EventRow> $rows */
@@ -67,7 +69,7 @@ final readonly class ReadEvents implements AuditReads
             $bytes += $size;
         }
 
-        return new AuditPage($entries, $more && $entries !== [] ? $entries[array_key_last($entries)]->reference->publicId : null);
+        return new AuditPage($entries, $more && $entries !== [] ? $entries[array_key_last($entries)]->reference->publicId : null, $total);
     }
 
     public function detail(string $publicId): ?AuditEntry

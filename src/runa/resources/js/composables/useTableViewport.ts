@@ -7,7 +7,6 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
   const scrollbar = ref<HTMLDivElement>();
   const overflow = ref(false);
   const width = ref(0);
-  const offset = ref(0);
   const headerHeight = ref(0);
   const railHeight = 16;
 
@@ -25,23 +24,55 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
     (element, _previous, cleanup) => {
       if (!element) return;
       let frame = 0;
+      let scrollParent: HTMLElement | undefined;
+      let shell: Element | null | undefined;
+      let previousOffset = Number.NaN;
+      function pin(event?: Event) {
+        const content = region.value;
+        const head = element?.tHead;
+        const rail = scrollbar.value;
+        // Horizontal scrolling already moves the original header with its table.
+        if (
+          !content ||
+          !head ||
+          !rail ||
+          event?.target === content ||
+          event?.target === rail
+        )
+          return;
+        const bounds = content.getBoundingClientRect();
+        const top = Math.max(
+          0,
+          shell?.getBoundingClientRect().bottom ?? 0,
+          scrollParent
+            ? scrollParent.getBoundingClientRect().top + scrollParent.clientTop
+            : 0,
+        );
+        const offset = Math.max(
+          0,
+          Math.min(top - bounds.top, bounds.height - headerHeight.value),
+        );
+        if (offset === previousOffset) return;
+        previousOffset = offset;
+        // Apply in the scroll event itself: an extra animation frame followed by
+        // a Vue render leaves the header visibly behind compositor scrolling.
+        const transform = `translate3d(0, ${offset}px, 0)`;
+        head.style.transform = transform;
+        rail.style.transform = transform;
+      }
       function measure() {
         frame = 0;
         const content = region.value;
         if (!content || !element?.tHead) return;
-        const bounds = content.getBoundingClientRect();
         const head = element.tHead.getBoundingClientRect();
         width.value = element.getBoundingClientRect().width;
         overflow.value = content.scrollWidth > content.clientWidth + 1;
         headerHeight.value = head.height;
         // The shell owns its sticky header; scrollable dialogs own their viewport.
-        let top = 0;
-        if (!content.closest('[role="dialog"]')) {
-          const shell = content
-            .closest('.application-page')
-            ?.querySelector('.shell-header');
-          if (shell) top = Math.max(0, shell.getBoundingClientRect().bottom);
-        }
+        shell = !content.closest('[role="dialog"]')
+          ? content.closest('.application-page')?.querySelector('.shell-header')
+          : undefined;
+        scrollParent = undefined;
         for (
           let parent = content.parentElement;
           parent;
@@ -51,17 +82,11 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
             /(auto|scroll)/.test(getComputedStyle(parent).overflowY) &&
             parent.scrollHeight > parent.clientHeight
           ) {
-            top = Math.max(
-              top,
-              parent.getBoundingClientRect().top + parent.clientTop,
-            );
+            scrollParent = parent;
             break;
           }
         }
-        offset.value = Math.max(
-          0,
-          Math.min(top - bounds.top, bounds.height - head.height),
-        );
+        pin();
         synchronize('table');
       }
       function schedule() {
@@ -71,13 +96,15 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
       observer.observe(element);
       if (element.tHead) observer.observe(element.tHead);
       if (region.value) observer.observe(region.value);
-      window.addEventListener('scroll', schedule, true);
+      window.addEventListener('scroll', pin, { capture: true, passive: true });
       window.addEventListener('resize', schedule);
       schedule();
       cleanup(() => {
         observer.disconnect();
         cancelAnimationFrame(frame);
-        window.removeEventListener('scroll', schedule, true);
+        window.removeEventListener('scroll', pin, true);
+        element.tHead?.style.removeProperty('transform');
+        scrollbar.value?.style.removeProperty('transform');
         window.removeEventListener('resize', schedule);
       });
     },
@@ -95,7 +122,6 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
     },
     overflow,
     width,
-    offset,
     headerHeight,
     railHeight,
     synchronize,

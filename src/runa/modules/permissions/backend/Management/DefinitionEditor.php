@@ -62,7 +62,7 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
         $items = array_slice($result['items'], 0, $input->limit);
         $next = count($items) < count($result['items']) ? $items[array_key_last($items)]['public_id'] : $result['next'];
 
-        return new ManagementPageResult(array_map(fn ($row) => new ManagementRecord($row['public_id'], (string) $row['version'], ['code' => $row['code'], 'name_en' => $row['name_en']]), $items), $next);
+        return new ManagementPageResult(array_map(fn ($row) => new ManagementRecord($row['public_id'], (string) $row['version'], ['code' => $row['code'], 'name_en' => $row['name_en']]), $items), $next, $result['total']);
     }
 
     public function options(ManagementOptionsRead $input): ManagementOptions

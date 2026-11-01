@@ -68,7 +68,7 @@ final readonly class HistoryReader implements ManagementResourceReader
         }
         $page = $this->api()->page($query);
 
-        return new ManagementPageResult(array_map($this->record(...), $page->entries), $page->nextBefore);
+        return new ManagementPageResult(array_map($this->record(...), $page->entries), $page->nextBefore, $page->total);
     }
 
     private function record(AuditEntry $entry): ManagementRecord

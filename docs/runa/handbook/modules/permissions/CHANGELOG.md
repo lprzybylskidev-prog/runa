@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Return exact non-deleted definition totals before cursor/limit and forward them to Admin without changing read authority.
+
 - Batch role-deletion recipient assignment/revision reads and identical reference
   snapshots within one preview. Bulk-write assignment/definition/declaration
   pivots while preserving current eligibility, per-recipient limits, fingerprints,

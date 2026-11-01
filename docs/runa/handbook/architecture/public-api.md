@@ -349,8 +349,11 @@ presentation may compose or replace those defaults through `@/runa/admin` public
 controllers/providers, including AdminRecordBrowser; owning backend APIs remain
 PermissionsAccess 2.0.0, PermissionsAuthority/Permissions and AuditReads 1.0.0.
 See [Permissions administration](../modules/permissions/administration.md) and
-[Audit administration](../modules/audit/administration.md). No new backend public
-signature, foreign private import or Admin reverse dependency is introduced.
+[Audit administration](../modules/audit/administration.md). Guarded method signatures
+remain unchanged; AuditPage/UserDirectoryPage add an optional nullable total and
+PermissionsAccess.definitions includes an exact total in its result. Supplied owning
+readers count authorized filtered records before cursor/limit; no foreign private
+import or Admin reverse dependency is introduced.
 
 AdminOperations 1.0.0 is a guarded Admin consumption API for its finite operational
 views/commands. Complete signatures, source homes, grants, safe projections and

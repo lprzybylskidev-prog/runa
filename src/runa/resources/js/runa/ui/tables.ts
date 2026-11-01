@@ -23,6 +23,8 @@ export interface TablePage<Row> {
   total: number | null;
   matching: number | null;
   counts: 'exact' | 'stale' | 'unknown';
+  /** Cursor pages use previous/next even when their matching count is exact. */
+  pagination?: 'numbered' | 'cursor';
   hasNext: boolean;
   capabilities: {
     sort: readonly string[];

@@ -8,15 +8,15 @@ There is no reverse backend dependency on Admin or foreign persistence access.
 
 ## Pages and operations
 
-| Page / section                                            | Owning API                                                          | Grants and execution                                                                                                                                     |
-| --------------------------------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `roles`, `presets`, `permissions` / `catalogue`, `editor` | PermissionsAccess.definitions / definition                          | `introspection.read`; UUID cursor, max 100, no totals. Dictionary owner/system status and members stay explicit.                                         |
-| `roles`, `presets` / `editor.store`                       | previewDefinition / saveDefinition                                  | `access.manage`; exact native definition review, immutable code, expected version; new presets optionally snapshot a source account.                     |
-| `roles`, `presets` / `editor.delete`                      | definition / deleteDefinition                                       | `access.manage`; reviewed current definition/version and explicit confirmation. Referenced roles refuse.                                                 |
-| `roles` / `force.force_delete`                            | PermissionsAuthority.previewRoleDeletion / forceDeleteRole          | Separate `roles.force_delete`, not ordinary write authority; complete impacted accounts/presets/effective-loss review and confirmation.                  |
-| `access` / `access.assign`, `copy`, `preset`              | previewAssignments / previewCopy / previewPreset / applyAssignments | `access.manage`; add (default) or replace; direct and role grants stay distinct and protected membership is preserved.                                   |
-| `access` / `effective`                                    | Permissions.explain                                                 | `introspection.read`; owning code cursor, bounded rows, eligibility/availability-aware effects; no invented UUID for permission codes.                   |
-| `access` / `authority.change`                             | PermissionsAuthority.previewAuthority / applyAuthority              | Dedicated `authority.manage`; membership/revision/eligibility review, explicit confirmation, self-escalation and last-eligible-administrator protection. |
+| Page / section                                            | Owning API                                                          | Grants and execution                                                                                                                                          |
+| --------------------------------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `roles`, `presets`, `permissions` / `catalogue`, `editor` | PermissionsAccess.definitions / definition                          | `introspection.read`; UUID cursor, max 100, exact authorized non-deleted total before cursor/limit. Dictionary owner/system status and members stay explicit. |
+| `roles`, `presets` / `editor.store`                       | previewDefinition / saveDefinition                                  | `access.manage`; exact native definition review, immutable code, expected version; new presets optionally snapshot a source account.                          |
+| `roles`, `presets` / `editor.delete`                      | definition / deleteDefinition                                       | `access.manage`; reviewed current definition/version and explicit confirmation. Referenced roles refuse.                                                      |
+| `roles` / `force.force_delete`                            | PermissionsAuthority.previewRoleDeletion / forceDeleteRole          | Separate `roles.force_delete`, not ordinary write authority; complete impacted accounts/presets/effective-loss review and confirmation.                       |
+| `access` / `access.assign`, `copy`, `preset`              | previewAssignments / previewCopy / previewPreset / applyAssignments | `access.manage`; add (default) or replace; direct and role grants stay distinct and protected membership is preserved.                                        |
+| `access` / `effective`                                    | Permissions.explain                                                 | `introspection.read`; owning code cursor, bounded rows, eligibility/availability-aware effects; no invented UUID for permission codes.                        |
+| `access` / `authority.change`                             | PermissionsAuthority.previewAuthority / applyAuthority              | Dedicated `authority.manage`; membership/revision/eligibility review, explicit confirmation, self-escalation and last-eligible-administrator protection.      |
 
 Grant names in the table are qualified with `runa.permissions.`. Account assignment
 reads/previews also require native `runa.auth.eligibility.read`. Each write consumes
@@ -58,3 +58,11 @@ public signature is documented in [Admin frontend](../admin/frontend.md#record-b
 No foreign private adapters or copied security logic are supported extension seams.
 Focused source/interaction diagnostics are recorded in the active roadmap; complete
 backend/browser/concurrency/release acceptance remains its final point.
+
+`PermissionsAccess.definitions(string $kind, ?string $after = null)` returns
+`{items: list<{public_id: string, code: string, name_pl: string, name_en: string,
+version: int}>, next: ?string, total: int}`. Permissions owns this guarded runtime
+contract in `backend/Contracts/PermissionsAccess.php`; its private owning Action
+counts in SQL and Admin forwards the value without foreign reads or estimation.
+The total includes zero, is independent of the page cursor and confers no write
+authority or snapshot guarantee. Customers resolve the public guarded API.

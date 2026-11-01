@@ -339,10 +339,12 @@ owner's current bounded cursor page is rendered; it is never sorted, filtered or
 sliced locally. Page numbers refer only to already visited opaque cursors. Query
 changes restart at page 1; unvisited numbered jumps normalize to page 1 without
 fetching intervening pages. A refreshed next cursor invalidates later cursors.
-Nullable owner totals are preserved. Provider `counts` remains `unknown`, even
-when the owner supplies a total, so exact totals never enable arbitrary numbered
-jumps. The displayed total remains the owner's value, including null, rather
-than a count of downloaded rows. Page size is bounded to 100 by the existing read
+Nullable owner totals are preserved. Provider `counts` is `exact` when the owner
+supplies a total (including zero), otherwise `unknown`; `pagination: 'cursor'`
+independently retains previous/next navigation without arbitrary numbered jumps.
+The displayed total remains the owner's filtered value, including null, rather
+than a count of downloaded rows. Supplied Auth, Permissions and Audit collection
+owners count authorized matching results before cursor and page-size restrictions. Page size is bounded to 100 by the existing read
 contract; owners retain their lower limits and may refuse oversized requests.
 
 Columns contain only projected readable fields. Sorting/filter keys follow their

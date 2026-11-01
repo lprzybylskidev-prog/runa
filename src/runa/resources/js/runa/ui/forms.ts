@@ -30,6 +30,7 @@ export type ZonedDateTimeResult =
 export interface TemporalInputProps {
   modelValue: string | null;
   label: string;
+  size?: 'sm' | 'md';
   locale?: 'pl' | 'en';
   helper?: string;
   error?: string | readonly string[];

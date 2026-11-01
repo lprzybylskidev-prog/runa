@@ -232,7 +232,13 @@ pagination even when occurrence times tie; `nextBefore` is an opaque UUIDv7 even
 reference, never an internal bigint. Pass it as `before` with the same filters on
 the next call; concurrent appends do not move existing page boundaries. This is
 append order, not a transaction-wide historical snapshot across concurrent commits.
-Unknown cursors are rejected. No total count or unbounded offset/search is supplied.
+Unknown cursors are rejected. The owning reader supplies `AuditPage.total`, the
+exact filtered count before the cursor/limit, including entity and date filters.
+`AuditPage::__construct(array $entries, ?string $nextBefore, ?int $total = null)`
+is an Audit-owned public result DTO under `backend/Contracts`, returned at runtime
+through guarded `AuditReads`; nullable totals represent unavailable source-authored
+counts. The supplied SQL reader always counts under the same read authority.
+No unbounded offset/search or cross-request snapshot is supplied.
 
 Page summaries contain immutable event/reference/actor/entity metadata and omit
 changes/context/execution trees. At most 100 summaries and 512 KiB encoded page

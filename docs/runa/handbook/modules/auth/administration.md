@@ -26,7 +26,7 @@ interface AuthAdministration
 }
 UserDirectoryQuery::__construct(?string $after = null, int $limit = 25,
     ?string $search = null, string $state = 'current')
-UserDirectoryPage::__construct(array $items, ?string $next)
+UserDirectoryPage::__construct(array $items, ?string $next, ?int $total = null)
 AdministrativeUser::__construct(string $publicId, string $displayName,
     string $state, int $version)
 AdministrativeProfile::__construct(string $publicId, int $version,
@@ -36,7 +36,12 @@ AdministrativeProfile::__construct(string $publicId, int $version,
 
 Directory requires `runa.auth.users.read`; `deleted`/`all` additionally require
 `runa.auth.users.deleted.read`. Results contain up to 100 users in UUID ascending
-order, state `current|deleted`, no total, internal keys, email or credential state.
+order and state `current|deleted`, without internal keys, email or credential state.
+The owning reader supplies `total`, the exact authorized filtered count before
+cursor/limit, including zero. The nullable DTO default represents unavailable
+counts for source-authored results; the supplied directory always counts in SQL.
+Counts retain deleted-state and name/login field authority and do not imply a
+snapshot across concurrent writes or arbitrary numbered cursor jumps.
 Search is literal trimmed text, 1–160 characters, against names; login participates
 only with `runa.auth.profiles.read`. `%`, `_` and backslash remain literal.
 Cursors are opaque, at most 2048 bytes, and bound to state/search. They confer no

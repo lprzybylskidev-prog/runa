@@ -53,7 +53,7 @@ final class AccessProxy extends GuardedApi implements PermissionsAccess
 
     public function definitions(string $kind, ?string $after = null): array
     {
-        /** @var array{items: list<array{public_id: string, code: string, name_pl: string, name_en: string, version: int}>, next: string|null} $result */
+        /** @var array{items: list<array{public_id: string, code: string, name_pl: string, name_en: string, version: int}>, next: string|null, total: int} $result */
         $result = $this->invoke(__FUNCTION__, [$kind, $after]);
 
         return $result;

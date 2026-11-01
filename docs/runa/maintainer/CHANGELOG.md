@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Align datetime table filters with compact controls, remove deferred header/rail scroll updates and show exact authorized filtered totals independently of cursor pagination across Auth, Permissions and Audit.
+
 - Unify application timezone formatting, shared datetime defaults and calendar today; remove input timezone annotations and browser-dependent backend timestamp parsing. Maintain the temporal contract in both frontend instruction products.
 
 - Keep shared table headers and a below-header horizontal scrollbar visible during page/dialog scrolling. Use timezone-aware date/time pickers for declared module filters, including Audit from/until.

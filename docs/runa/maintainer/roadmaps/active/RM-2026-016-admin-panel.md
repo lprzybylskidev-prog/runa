@@ -648,6 +648,16 @@ reassessment before resuming point 3; completed point history remains evidence.
     hydration, calendar defaults and frontend owner/customer skills. Repair
     demonstrated inconsistencies, add focused timezone/DST regressions and prepare
     runnable assets. Manual acceptance 11b and broad final gates 12 remain open.
+- [x] 11a34. Repair compact timestamp filters, pinned-header scroll latency and exact filtered totals.
+  - Owner request, 2026-11-01: align datetime fields/calendar triggers with other
+    compact filters, reduce header jumping during page/dialog scrolling and show
+    the actual number of matching results independently of cursor navigation.
+  - Owning Audit/Auth/Permissions reads count authorized filtered results before
+    cursor/limit; Admin forwards exact totals while retaining previous/next paging.
+    Preserve nullable custom-owner totals, current security/selection contracts,
+    one semantic header and synchronized horizontal scrolling.
+  - Add focused regressions, synchronize public contracts/changelogs and prepare
+    current assets for repeated manual acceptance. Broad verification stays in 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4116,3 +4126,79 @@ created by this point. Preserve development/base-test data, active services,
 Qdrant/model caches and evidence, including the interrupted build log. Current
 assets are ready at http://localhost:8080/admin with existing credentials. Owner
 manual frontend acceptance 11b and full verification/release 12 remain open.
+
+### Point 11a34 — Compact temporal filters, synchronous pinning and exact totals
+
+Owner request, 2026-11-01: repair oversized date filters, header jumping during
+page scrolling and missing/unconfirmed result counts. Local knowledge was current;
+bounded current-intent retrieval pointed to the public table/Admin cursor contract,
+which was opened alongside the owning implementation. Relevant frontend/Vue/
+Tailwind/backend/Laravel/PostgreSQL skills and Laravel 13 aggregate documentation
+were consulted. No new dependency, schema or authorization decision was needed.
+
+TemporalInputProps adds optional size sm/md (default md). DateInput, TimeInput and
+DateTimeInput forward the selected size to their shared text control and picker
+trigger; built-in datetime table filters use sm like text/select filters. The
+viewport composable now applies the same translate3d directly to the original
+semantic header and rail in the passive scroll event. It eliminates the extra
+animation frame and Vue render from vertical movement, caches scroll ownership
+on geometry changes and measures column/overflow geometry only on resize. Bounds,
+Application/dialog offsets, horizontal synchronization and listener cleanup stay
+in the shared owner. Native sticky alone cannot cross the existing horizontal
+scroll container while retaining the same table/header layout.
+
+TablePage adds optional pagination numbered/cursor, independently of count
+accuracy. Admin uses cursor and marks owner totals exact when non-null, including
+zero; nullable custom-owner counts remain unknown. Exact counts retain the public
+selection contract, current provider authorization and query-bound snapshots.
+Audit counts with all scalar/entity/time filters before append cursor/limit;
+Auth counts the authorized search/state dataset before its UUID cursor/limit;
+Permissions counts non-deleted definitions before cursor/limit. Each reader adds
+one SQL aggregate per page, without downloading records or cross-module queries.
+Adapters forward the owning values through ManagementPageResult. Totals describe
+the current query, not a cross-request historical snapshot. AuditPage and
+UserDirectoryPage add an optional nullable total; PermissionsAccess.definitions
+adds total to its result. Guarded method signatures/API resolution versions stay
+unchanged. Assessed unreleased module candidates already cover these compatible
+capabilities: Admin 0.1.0, Audit 1.1.0, Auth/Permissions 2.1.0; no additional forward
+edge or installed-data transformation is required.
+
+Focused native Chromium cases pass (3 cases, cleanup 0): compact temporal controls
+and UTC draft/reset handling, immediate pinning before a Vue tick/next frame with
+both scroll directions/table-end bounds, and exact 900-result cursor navigation
+without arbitrary numbered jumps or the unconfirmed label. Evidence:
+`.runtime/frontend/RM-2026-016-table-repairs-focused.log`. The initial detached
+control fixture could not measure styles; attaching it to document.body corrected
+the test environment. Backend Audit and Permissions focused cases pass; the Auth
+count/authority case passes after correcting its fixture deletion to the owning
+lifecycle Action. Tests cover filtered/empty/entity/time totals, invariant totals
+across cursors and denied deleted-state access. Evidence:
+`RM-2026-016-table-counts-backend.log` (two passing cases and the original fixture
+failure), `RM-2026-016-table-counts-auth.log` (Auth pass), under `.runtime/frontend/`.
+The initial serial attempt was refused by absent-schema guards on the preserved
+base test database; the supported one-worker parallel mode provides disposable
+isolation. Runner cleanup removed only runa_test_test_1 and preserved runa_test.
+
+Supported asset preparation passes (vue-tsc, Vite and native/static error shells):
+`.runtime/frontend/RM-2026-016-table-repairs-build.log`. The initial typecheck found
+missing size defaults in public temporal wrappers; all three now declare md.
+A focused one-off served-build browser diagnostic was used because the normal
+suite does not provide synthetic Admin response/geometry probes. Six controlled
+Auth/Permissions/Audit views at 1440px PL/dark and 390px EN/light show all filter
+inputs/triggers at 36px, Results/Wyniki 25 without an unconfirmed label, exact
+same-event header alignment below the shell across four scroll positions, working
+picker and horizontal synchronization, no document overflow or page errors.
+Evidence: `.runtime/frontend/RM-2026-016-table-repairs-browser.log` and
+`.runtime/artifacts/playwright/runa/RM-2026-016-table-repairs/` report/screenshots.
+Rendered desktop Audit evidence was inspected. Controlled responses do not replace
+authenticated owner acceptance or prove real production counts/performance.
+
+Public UI/table/forms/component, Admin/Auth/Permissions/Audit/API guides and current
+central/module changelogs are synchronized. Both owner and customer skills already
+route table/control/module work to these canonical guides; no new reusable workflow,
+root rule or duplicated skill procedure is needed. Customer code consumes the
+public optional descriptors and guarded owning results without protected edits.
+No Docker resources, migration/reset, credential/grant changes or dependencies
+were created. Preserve active services, development/base-test data, model/Qdrant
+caches and all verification evidence. Manual acceptance 11b and final verification
+12 remain open; no broad gate PASS or release closure is claimed.

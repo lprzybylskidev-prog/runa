@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Use compact datetime filters and synchronous compositor header/rail positioning. Display exact owner-filtered totals independently of cursor navigation.
+
 - Use the application timezone for dashboard observations and shared datetime fields/filters without timezone helper copy. Reuse the common epoch parser for operation history.
 
 - Map declared datetime filters to the shared timezone-aware picker across module tables; share pinned semantic headers and a below-header horizontal scrollbar.

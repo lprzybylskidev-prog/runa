@@ -348,6 +348,11 @@ it('applies reviewed ordinary access snapshots with real step up and preserves d
             ->and(array_keys($management->entities))->toBe(['assignment', 'authority', 'preset', 'role']);
         expect($api->definition('permission', $read)['dictionary']['code'])->toBe('runa.audit.read')
             ->and(collect($api->definitions('permission')['items'])->pluck('public_id')->all())->toContain($read);
+        $catalogue = $api->definitions('permission');
+        expect($catalogue['total'])->toBe(DB::table('runa_permissions.permissions')->whereNull('deleted_at')->count());
+        $lastPermission = DB::table('runa_permissions.permissions')->whereNull('deleted_at')->orderByDesc('public_id')->value('public_id');
+        $after = $api->definitions('permission', $lastPermission);
+        expect($after['items'])->toBe([])->and($after['total'])->toBe($catalogue['total']);
         expect($this->permissionApi->allows('runa.audit.read'))->toBeFalse();
         $draft = $api->previewDefinition(permissionDefinition('role', 'reader', [$read]));
         // Managing ordinary rights does not require the actor to hold those rights.

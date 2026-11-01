@@ -28,6 +28,7 @@ const props = withDefaults(
   >(),
   {
     locale: 'pl',
+    size: 'md',
     helper: '',
     error: '',
     invalidMessage: 'Check the date or time.',
@@ -242,7 +243,7 @@ defineExpose({ reset, focus: () => control.value?.focus() });
     :required="required"
   >
     <template #default="{ id, describedBy, invalid: fieldInvalid }">
-      <div class="temporal-field-row">
+      <div class="temporal-field-row" :data-size="size">
         <input
           v-bind="attrs"
           :id="id"
@@ -263,6 +264,7 @@ defineExpose({ reset, focus: () => control.value?.focus() });
           "
           :data-time-error="reason || undefined"
           class="runa-field-control"
+          :data-size="size"
           @keydown="keyboard"
           @input="change"
           @compositionend="change"
@@ -275,6 +277,7 @@ defineExpose({ reset, focus: () => control.value?.focus() });
         >
           <template #trigger="{ toggle, panelId }"
             ><AppButton
+              :size="size"
               :disabled="disabled || readonly"
               :aria-label="pickerLabel"
               aria-haspopup="dialog"
@@ -374,5 +377,10 @@ defineExpose({ reset, focus: () => control.value?.focus() });
   border-left: 0;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+}
+.temporal-field-row[data-size='sm'] .temporal-trigger.app-button {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
 }
 </style>

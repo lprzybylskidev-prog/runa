@@ -56,6 +56,7 @@ final readonly class Administration implements AuthAdministration
                 }
             });
         }
+        $total = (clone $users)->count();
         $rows = $users->when($after !== null, fn ($q) => $q->where('public_id', '>', $after))->orderBy('public_id')->limit($query->limit + 1)->get();
         $more = $rows->count() > $query->limit;
         $items = [];
@@ -64,7 +65,7 @@ final readonly class Administration implements AuthAdministration
         }
         $next = $more ? base64_encode(json_encode(['id' => $items[array_key_last($items)]->publicId, 'query' => hash('sha256', serialize([$query->state, $query->search]))], JSON_THROW_ON_ERROR)) : null;
 
-        return new UserDirectoryPage($items, $next);
+        return new UserDirectoryPage($items, $next, $total);
     }
 
     public function profile(string $publicId): AdministrativeProfile

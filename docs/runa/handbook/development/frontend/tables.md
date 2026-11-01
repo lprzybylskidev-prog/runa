@@ -5,12 +5,15 @@ enclosing dialog) scrolls, bounded by the table's end and below the Application
 shell header. Wide tables place a synchronized horizontal scrollbar immediately
 below that header; touch/trackpad and keyboard scrolling of the data region remain
 available. Tables that fit their container need no horizontal scrollbar. The private viewport
-composable stays in Runa; customer presentations compose public Table or replace
+composable applies compositor-layer transforms to the header and rail in the same
+passive scroll event, without waiting for another animation frame or Vue render;
+column/overflow measurements run on resize rather than each scroll. The composable
+stays in Runa; customer presentations compose public Table or replace
 its presentation through application-owned components.
 
 `TableColumn<Row>.filterType?: 'datetime'` is a public consumption descriptor owned
 by Runa UI, declared in `src/runa/resources/js/runa/ui/tables.ts` and consumed by
-runtime Table from `@/runa/ui`. It selects DateTimeInput using the application
+runtime Table from `@/runa/ui`. It selects compact (`size="sm"`) DateTimeInput using the application
 timezone and PL/EN picker copy. Query values remain explicit-offset ISO instants,
 normalized to UTC on edit. Incomplete/invalid drafts stay local without issuing a
 new filter query. Reset filters clears invalid drafts even without a committed
@@ -25,7 +28,7 @@ Reuse filters, statistics, pagination, sorting, row/bulk actions and loading/emp
 
 `Table`, `useTable`, `TableColumn<Row>`, `TableQuery`, `TablePage<Row>` and the provider helpers are public through `@/runa/ui`. Table is controlled through `query` / `update:query` and `selection` / `update:selection` (legacy explicit `selected` / `update:selected` remains supported). Use a stable `rowKey`, normally the backend `public_id`. Selection supports explicit IDs or an all-matching query snapshot with exclusions.
 
-Pass `mode="client"` with a bounded, already-loaded `rows` array, or `mode="server"` with `provider(query, signal)`. Client mode filters and sorts before slicing; numeric values compare numerically, strings use locale comparison and nulls follow populated values in ascending order. Use `compare` for dates/exact domain ordering and `filter` for column-specific semantics. Server mode never applies local filtering/slicing to returned rows. Providers return `rows`, `total`, `matching`, `counts` (`exact`, `stale`, `unknown`), `hasNext`, and capabilities (`sort`, `filter`, `maxPerPage`). Only exact matching counts drive numbered pagination. Unknown/stale counts use previous/next. Consumers must keep query page sizes within provider capabilities; normalization bounds helper requests to 100 by default. Filters reset the page through the filter slot's `update`; custom query controls must do the same.
+Pass `mode="client"` with a bounded, already-loaded `rows` array, or `mode="server"` with `provider(query, signal)`. Client mode filters and sorts before slicing; numeric values compare numerically, strings use locale comparison and nulls follow populated values in ascending order. Use `compare` for dates/exact domain ordering and `filter` for column-specific semantics. Server mode never applies local filtering/slicing to returned rows. Providers return `rows`, `total`, `matching`, `counts` (`exact`, `stale`, `unknown`), `hasNext`, and capabilities (`sort`, `filter`, `maxPerPage`). `TablePage<Row>.pagination?: 'numbered' | 'cursor'` is owned by Runa UI in `src/runa/resources/js/runa/ui/tables.ts` and consumed by runtime Table from `@/runa/ui`. Its default preserves numbered pagination when matching counts are exact; `cursor` always uses previous/next, independently of count accuracy. Unknown/stale counts also use previous/next. Exact counts remain available for the result label and authorized all-matching selection. Consumers must keep query page sizes within provider capabilities; normalization bounds helper requests to 100 by default. Filters reset the page through the filter slot's `update`; custom query controls must do the same.
 
 Data columns are sortable by default; set `sortable: false` to opt out. Server
 headers additionally require the key in the returned `capabilities.sort`; providers

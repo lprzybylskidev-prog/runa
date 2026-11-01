@@ -4,6 +4,7 @@ import AppTemporalInput from './AppTemporalInput.vue';
 import type { TemporalInputProps } from '../runa/ui/forms';
 withDefaults(defineProps<TemporalInputProps>(), {
   locale: 'pl',
+  size: 'md',
   helper: '',
   error: '',
   invalidMessage: 'Check the date or time.',
