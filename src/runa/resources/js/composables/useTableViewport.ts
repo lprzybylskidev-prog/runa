@@ -19,6 +19,30 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
     if (Math.abs(target.scrollLeft - left) > 0.5) target.scrollLeft = left;
   }
 
+  function scrollHeader(event: WheelEvent) {
+    const content = region.value;
+    if (
+      event.ctrlKey ||
+      !content ||
+      content.scrollWidth <= content.clientWidth + 1
+    )
+      return;
+    const delta =
+      Math.abs(event.deltaX) > Math.abs(event.deltaY)
+        ? event.deltaX
+        : event.deltaY;
+    if (!delta) return;
+    event.preventDefault();
+    const unit =
+      event.deltaMode === 1
+        ? 16
+        : event.deltaMode === 2
+          ? content.clientWidth
+          : 1;
+    content.scrollLeft += delta * unit;
+    synchronize('table');
+  }
+
   watch(
     table,
     (element, _previous, cleanup) => {
@@ -125,5 +149,6 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
     headerHeight,
     railHeight,
     synchronize,
+    scrollHeader,
   };
 }

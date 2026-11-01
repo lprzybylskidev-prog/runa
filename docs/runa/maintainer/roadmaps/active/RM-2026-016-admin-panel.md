@@ -658,6 +658,13 @@ reassessment before resuming point 3; completed point history remains evidence.
     one semantic header and synchronized horizontal scrolling.
   - Add focused regressions, synchronize public contracts/changelogs and prepare
     current assets for repeated manual acceptance. Broad verification stays in 12.
+- [x] 11a35. Vertically center header labels and scroll wide tables horizontally on header wheel input.
+  - Owner request, 2026-11-01; clarified vertical alignment only. Preserve left
+    alignment, balance the header's rail gutter and share wheel behavior between
+    the header and rail. Consume horizontal intent at both ends, preserve native
+    Ctrl+wheel zoom and normal page scrolling when the table fits.
+  - Extend focused scrolling coverage, synchronize public guidance and prepare
+    current assets; manual acceptance 11b and final verification 12 remain open.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4202,3 +4209,38 @@ No Docker resources, migration/reset, credential/grant changes or dependencies
 were created. Preserve active services, development/base-test data, model/Qdrant
 caches and all verification evidence. Manual acceptance 11b and final verification
 12 remain open; no broad gate PASS or release closure is claimed.
+
+### Point 11a35 — Vertically centered labels and horizontal header wheel input
+
+Owner request and clarification, 2026-11-01: center labels vertically only and
+scroll the table sideways when wheeling over its header. Current knowledge
+retrieval/source review confirmed the shared table owner and existing Application
+top-navigation wheel pattern. An aria-hidden top gutter balances the existing
+below-label scrollbar gutter only when overflow exists; label cells retain left
+alignment and sorting/selection remain in the single original semantic header.
+The private viewport handler maps the dominant wheel axis to native scrollLeft,
+normalizes pixel/line/page units and synchronizes the rail. Header and rail both
+consume the gesture at either end of a wide table; Ctrl+wheel, fitting tables and
+body-row page scrolling retain native behavior. No smoothing animation or copied
+header was introduced.
+
+The focused native Chromium viewport case passes, including vertical cell/header
+centers, pixel/line/page/dominant-axis wheel input, both edges, Ctrl+wheel, body-row
+and fitting-table pass-through, existing pinning and two-way horizontal sync:
+`.runtime/frontend/RM-2026-016-header-wheel-focused.log` (exit/cleanup 0).
+Supported asset preparation passes in `RM-2026-016-header-wheel-build.log` under
+`.runtime/frontend/`. A one-off served-build diagnostic is needed for synthetic
+Admin geometry and real mouse wheel input; desktop PL/dark (1440px) and mobile
+EN/light (390px) both show zero vertical center mismatch, real wheel movement
+without document scroll/chaining, pinned-header alignment and no page errors or
+document overflow. Evidence: `.runtime/frontend/RM-2026-016-header-wheel-browser.log`
+and `.runtime/artifacts/playwright/runa/RM-2026-016-header-wheel/`; the pinned
+desktop screenshot was inspected. Synthetic API data is not owner acceptance.
+
+The public table guide and current central/Admin changelogs are synchronized.
+Owner/customer frontend table references already route to that canonical guide;
+no root rule or duplicate skill instruction is needed. This changes shared UI
+presentation only, not guarded APIs or module manifests; Admin remains the current
+unreleased 0.1.0 candidate. No Docker resources or database changes were created;
+active services, development/base-test data, model/Qdrant caches and evidence are
+preserved. Manual acceptance 11b and full verification/release 12 remain open.

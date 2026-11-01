@@ -281,6 +281,7 @@ const {
   headerHeight,
   railHeight,
   synchronize,
+  scrollHeader,
 } = useTableViewport(tableElement);
 const filterReset = ref(0);
 const invalidFilters = ref<Record<string, boolean>>({});
@@ -685,7 +686,18 @@ function changePage(value: number) {
           </caption>
           <thead
             class="table-pinned-header relative z-10 border-b border-line bg-[var(--runa-surface-raised)] text-[var(--runa-text-secondary)]"
+            @wheel="scrollHeader"
           >
+            <tr v-if="overflow" aria-hidden="true">
+              <td
+                :colspan="
+                  visibleColumns.length +
+                  Number(selectable) +
+                  Number(!!$slots.actions)
+                "
+                :style="{ height: `${railHeight}px`, padding: 0 }"
+              />
+            </tr>
             <tr>
               <th
                 v-if="selectable"
@@ -829,6 +841,7 @@ function changePage(value: number) {
           height: `${railHeight}px`,
         }"
         @scroll="synchronize('rail')"
+        @wheel="scrollHeader"
       >
         <div :style="{ width: `${scrollWidth}px`, height: '1px' }" />
       </div>

@@ -136,6 +136,47 @@ it('table viewport pins the original header inside a scrolling region and synchr
     });
     await vi.waitFor(() => expect(rail.style.display).not.toBe('none'));
     const originalHead = wrapper.get('thead').element;
+    const labelCell = wrapper.get('th[data-column-key="name"]').element;
+    const headBounds = originalHead.getBoundingClientRect();
+    const labelBounds = labelCell.getBoundingClientRect();
+    expect(
+      Math.abs(
+        labelBounds.top +
+          labelBounds.height / 2 -
+          headBounds.top -
+          headBounds.height / 2,
+      ),
+    ).toBeLessThan(1);
+    const wheel = (target: Element, init: WheelEventInit) => {
+      const event = new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
+      target.dispatchEvent(event);
+      return event;
+    };
+    expect(wheel(originalHead, { deltaY: 80 }).defaultPrevented).toBe(true);
+    expect(region.scrollLeft).toBe(80);
+    expect(rail.scrollLeft).toBe(80);
+    wheel(originalHead, { deltaY: 2, deltaMode: 1 });
+    expect(region.scrollLeft).toBe(112);
+    wheel(rail, { deltaX: 90, deltaY: 10 });
+    expect(region.scrollLeft).toBe(202);
+    expect(
+      wheel(originalHead, { deltaY: 100, ctrlKey: true }).defaultPrevented,
+    ).toBe(false);
+    expect(region.scrollLeft).toBe(202);
+    region.scrollLeft = 0;
+    expect(wheel(originalHead, { deltaY: -20 }).defaultPrevented).toBe(true);
+    expect(region.scrollLeft).toBe(0);
+    wheel(originalHead, { deltaY: 1, deltaMode: 2 });
+    expect(region.scrollLeft).toBe(region.clientWidth);
+    region.scrollLeft = region.scrollWidth;
+    expect(wheel(originalHead, { deltaY: 20 }).defaultPrevented).toBe(true);
+    expect(
+      wheel(wrapper.get('tbody').element, { deltaY: 20 }).defaultPrevented,
+    ).toBe(false);
     // A scroll event must update both layers before a Vue tick / next frame.
     for (const distance of [40, 95, 180, 70]) {
       host.scrollTop = viewport.offsetTop + distance;
@@ -168,6 +209,8 @@ it('table viewport pins the original header inside a scrolling region and synchr
       ),
     );
     expect(wrapper.findAll('thead')).toHaveLength(1);
+    region.style.width = '1000px';
+    expect(wheel(originalHead, { deltaY: 20 }).defaultPrevented).toBe(false);
   } finally {
     wrapper.unmount();
     host.remove();

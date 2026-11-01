@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Share vertically centered header labels and horizontal wheel navigation over wide table headers/rails across supplied module browsers.
+
 - Use compact datetime filters and synchronous compositor header/rail positioning. Display exact owner-filtered totals independently of cursor navigation.
 
 - Use the application timezone for dashboard observations and shared datetime fields/filters without timezone helper copy. Reuse the common epoch parser for operation history.
