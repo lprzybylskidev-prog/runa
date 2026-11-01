@@ -212,6 +212,9 @@ Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/FileInput/
   remains primary-only. Delivery writes use the account preference revision.
 - Independently enabled own login/account summaries through the private history
   API. These show only safe event/time/outcome summaries, never general Audit details.
+  Outcome labels use lowercase in both languages, consistently in table rows and
+  safe event details (`sukces`/`success`, `odmowa`/`refused`); raw event codes remain
+  canonical.
 
 Disabled features disappear. Read-only fields and avatar policy remain enforced by
 the backend if policy changes after load. Self-deactivate/delete require an explicit

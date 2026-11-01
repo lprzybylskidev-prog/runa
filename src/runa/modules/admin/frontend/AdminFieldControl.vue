@@ -79,7 +79,19 @@ const display = computed(() => {
     return formatApplicationInstant(props.modelValue, adminLocale.value);
   if (typeof props.modelValue === 'boolean')
     return props.modelValue ? tr('Yes') : tr('No');
-  if (Array.isArray(props.modelValue)) return items.value.join(', ') || '—';
+  if (
+    typeof props.modelValue === 'string' &&
+    props.field.choices.includes(props.modelValue)
+  )
+    return tr(props.modelValue);
+  if (Array.isArray(props.modelValue))
+    return (
+      items.value
+        .map((value) =>
+          props.field.choices.includes(value) ? tr(value) : value,
+        )
+        .join(', ') || '—'
+    );
   return typeof props.modelValue === 'object'
     ? tr('Unavailable')
     : String(props.modelValue);

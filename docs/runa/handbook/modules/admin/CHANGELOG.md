@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Render declared dictionary choices consistently in filters, table cells and read-only values. Use lowercase supplied PL/EN labels while preserving canonical export/query values and custom cell replacement.
+
 - Share vertically centered header labels and horizontal wheel navigation over wide table headers/rails across supplied module browsers.
 
 - Use compact datetime filters and synchronous compositor header/rail positioning. Display exact owner-filtered totals independently of cursor navigation.

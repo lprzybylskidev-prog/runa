@@ -665,6 +665,13 @@ reassessment before resuming point 3; completed point history remains evidence.
     Ctrl+wheel zoom and normal page scrolling when the table fits.
   - Extend focused scrolling coverage, synchronize public guidance and prepare
     current assets; manual acceptance 11b and final verification 12 remain open.
+- [x] 11a36. Unify localized dictionary values in module filters, tables and read-only details.
+  - Owner request, 2026-11-01: translate displayed Audit dictionary values like
+    filter choices and use lowercase labels in PL/EN. Repair the same mismatch
+    across Auth/Permissions/shared Admin presentation without translating raw
+    identifiers, payloads, wire values or canonical exports.
+  - Extend focused presentation regressions, synchronize current guides/changelogs
+    and prepare current assets for repeated manual acceptance; broad gates stay in 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4244,3 +4251,56 @@ presentation only, not guarded APIs or module manifests; Admin remains the curre
 unreleased 0.1.0 candidate. No Docker resources or database changes were created;
 active services, development/base-test data, model/Qdrant caches and evidence are
 preserved. Manual acceptance 11b and full verification/release 12 remain open.
+
+### Point 11a36 — Consistent localized dictionary presentation
+
+Owner request, 2026-11-01: use the same localized dictionary labels in filters and
+Audit rows, lowercase in both languages, and repair analogous module defects.
+Current local knowledge and focused source review covered shared Admin table/field
+renderers, Audit history/details, Auth directory/account history and Permissions
+owned definitions/effective/access presentation. Filters already translated their
+choices; table cells and read-only fields exposed raw values. The shared renderer
+now localizes only declared choices (including read-only arrays) with the existing
+translator. Audit's custom immutable detail renderer applies the same choice rule.
+Auth's account/login-history summaries/details already translated outcomes but
+used title case; these now show lowercase outcomes consistently with Audit.
+Permissions definition identifiers/effective codes are free text and remain raw;
+its declared dictionaries receive the shared fix. Lowercase source dictionary
+keys use lowercase supplied PL labels; EN retains its lowercase source spelling.
+Unknown/custom text, module/action/UUID references, JSON payloads and custom cell
+slots keep their original content/ownership. No blanket lowercasing of customer
+values was introduced. TableColumn.value remains canonical for exports/adapters;
+only default cell rendering is localized. Query/filter/wire/storage values stay
+canonical, and sensitive set-state still bypasses raw value presentation.
+
+Ten focused Chromium cases pass across Audit/Auth/Permissions PL/EN cells/filter
+options, canonical column values, read-only choices and immutable Audit detail
+privacy/links. A separate focused Auth account-history case passes for lowercase
+row/detail outcomes, retry, safe changes and stale-response fencing. Evidence:
+`.runtime/frontend/RM-2026-016-dictionary-labels-focused.log` and
+`RM-2026-016-dictionary-labels-account.log` (exit/cleanup 0). Locale tests use the
+existing preference writer to avoid stale guest-store state; generic component
+props use explicit known types. The pre-existing retry assertion was updated to
+find the rendered FormNotifications action in its portal, instead of inside the
+dialog. Supported asset preparation passes in
+`.runtime/frontend/RM-2026-016-dictionary-labels-build.log`.
+
+A one-off served-build diagnostic with controlled API responses confirms matching
+lowercase actor/outcome labels in filter choices and Audit rows at 1440px PL/dark
+and 390px EN/light, unchanged technical identifiers, no page errors or document
+overflow. The actual Select trigger is a labelled button; its combobox belongs to
+the opened search panel. Evidence:
+`.runtime/frontend/RM-2026-016-dictionary-labels-browser.log` and
+`.runtime/artifacts/playwright/runa/RM-2026-016-dictionary-labels/`; the desktop
+screenshot was inspected. This is controlled presentation evidence, not owner
+manual acceptance or full-suite verification.
+
+Public Admin/Audit/Auth presentation guidance and central/module changelogs are
+synchronized. Existing owner/customer frontend references already route to those
+canonical contracts; no new root rule or duplicate skill procedure is needed.
+Assessed compatible corrections stay in unreleased Admin 0.1.0, Audit 1.1.0 and
+Auth 2.1.0 candidates. Permissions consumes the shared presentation without an
+owned-source/API change. No migration, dependency, credential/grant change or
+Docker/database resource creation/removal occurred. Active services, development/
+base-test data, model/Qdrant caches and evidence remain preserved. Manual acceptance
+11b and final verification/release 12 remain open.

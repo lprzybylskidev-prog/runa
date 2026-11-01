@@ -624,6 +624,13 @@ const passwordHint = computed(() =>
           :english="locale === 'en'"
           :searchable="false"
         >
+          <template v-if="history" #cell-outcome="{ row }">{{
+            row.outcome === 'success'
+              ? text('sukces', 'success')
+              : row.outcome === 'refused'
+                ? text('odmowa', 'refused')
+                : text('zarejestrowano', 'recorded')
+          }}</template>
           <template #actions="{ row }">
             <Button
               v-if="

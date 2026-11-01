@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Localize actor kinds and outcomes consistently in history filters, rows and immutable details, using lowercase labels in both languages without changing stored payloads or export codes.
+
 - Return exact SQL-filtered AuditPage.total before cursor/limit and forward it to Admin, including entity/date filters and zero matches.
 
 - Declare from/until as datetime filters and use the shared timezone-aware calendar/time picker. Keep history headers and horizontal scrolling accessible while scrolling the page.

@@ -1,5 +1,6 @@
 /* eslint-disable vue/one-component-per-file -- Independent administrative presentation fixtures. */
 import { beforeEach, afterEach, expect, it, vi } from '@runa/testing/vitest';
+import { savePreference } from '../../../../src/runa/resources/js/lib/preferences';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import {
@@ -9,15 +10,18 @@ import {
 } from '@/runa/permissions';
 import { AuditAdminDetail, AuditAdminHistory } from '@/runa/audit';
 import { AdminRecordBrowser, useAdminForm } from '@/runa/admin';
-import { DateTimeInput } from '@/runa/ui';
+import { DateTimeInput, Table, Select } from '@/runa/ui';
+import type { TableColumn, SelectOption } from '@/runa/ui';
 import type {
   AdminFieldData,
+  AdminRecord,
   AdminFormController,
   AdminPageController,
   AdminPageData,
   AdminSectionData,
 } from '@/runa/admin';
 enableAutoUnmount(afterEach);
+afterEach(() => savePreference('runa.locale', 'en'));
 beforeEach(() => localStorage.setItem('runa.locale', 'en'));
 afterEach(() => localStorage.removeItem('runa.locale'));
 const id = '01900000-0000-7000-8000-000000000001';
@@ -79,6 +83,66 @@ const response = (data: unknown) =>
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });
+it.each([
+  ['runa.audit', 'pl', 'success', 'sukces'],
+  ['runa.audit', 'en', 'success', 'success'],
+  ['runa.auth', 'pl', 'current', 'bieżące'],
+  ['runa.auth', 'en', 'current', 'current'],
+  ['runa.permissions', 'pl', 'replace', 'zastąp'],
+  ['runa.permissions', 'en', 'replace', 'replace'],
+])(
+  '%s %s renders dictionary cells like filter choices while preserving canonical values',
+  async (owner, locale, raw, label) => {
+    savePreference('runa.locale', locale!);
+    const controller = page(owner!, 'history', [
+      section(
+        'catalogue',
+        [
+          {
+            ...field('status'),
+            type: 'dictionary',
+            filterable: true,
+            choices: [raw!],
+          },
+          field('module'),
+        ],
+        'table',
+      ),
+    ]);
+    const record: AdminRecord = {
+      public_id: id,
+      revision: '1',
+      values: { status: raw!, module: 'success' },
+    };
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      response({ items: [record], next: null, total: 1 }),
+    );
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          const form = useAdminForm(controller, { autoRead: false });
+          return () => h(AdminRecordBrowser, { controller, form });
+        },
+      }),
+    );
+    await vi.waitFor(() => expect(wrapper.findAll('tbody tr')).toHaveLength(1));
+    const cells = wrapper.get('tbody tr').findAll('td');
+    expect(cells[0]!.text()).toBe(label);
+    expect(cells[1]!.text()).toBe('success');
+    const filter = wrapper
+      .findAllComponents(Select)
+      .map(
+        (select) =>
+          select.props() as { label: string; options: readonly SelectOption[] },
+      )
+      .find((select) => select.label === 'status')!;
+    expect(filter.options).toContainEqual({ value: raw, label });
+    const { columns } = wrapper.getComponent(Table).props() as {
+      columns: readonly TableColumn<AdminRecord>[];
+    };
+    expect(columns[0]!.value(record)).toBe(raw);
+  },
+);
 it.each(['runa.auth', 'runa.permissions', 'runa.audit'])(
   '%s maps datetime collection filters to the shared picker',
   async (owner) => {
@@ -211,53 +275,66 @@ it('Permissions Admin definition browser preserves dirty drafts during record se
   );
   expect(form.records.value.editor!.public_id).toBe(id);
 });
-it('Audit Admin detail exposes escaped immutable values and bounded entity history links', async () => {
-  const descriptor = section('detail', [
-    field('action'),
-    field('changes'),
-    field('entities'),
-  ]);
-  const controller = page('runa.audit', 'history', [descriptor]);
-  vi.spyOn(window, 'fetch').mockResolvedValue(
-    response({
-      public_id: id,
-      revision: id,
-      values: {
-        action: 'example.changed',
-        changes: '<script>privateMarkup()</script>',
-        entities: JSON.stringify([
-          { module: 'runa.auth', type: 'user', public_id: other },
-        ]),
-      },
-    }),
-  );
-  const wrapper = mount(
-    defineComponent({
-      setup() {
-        const form = useAdminForm(controller, { autoRead: false });
-        return () =>
-          h(AuditAdminDetail, {
-            page: controller,
-            section: descriptor,
-            controller: form,
-          });
-      },
-    }),
-  );
-  await vi.waitFor(() => expect(wrapper.find('a').exists()).toBe(true));
-  const link = new URL(
-    wrapper.get('a').attributes('href')!,
-    window.location.origin,
-  );
-  expect(link.pathname).toBe('/admin/runa.audit/history');
-  expect(link.searchParams.get('entity_public_id')).toBe(other);
-  expect(wrapper.find('script').exists()).toBe(false);
-  expect(
-    wrapper
-      .findAll('button')
-      .filter((button) => /Save|Delete|Undo/.test(button.text())),
-  ).toHaveLength(0);
-});
+it.each(['pl', 'en'])(
+  'Audit Admin detail %s exposes escaped immutable values and bounded entity history links',
+  async (locale) => {
+    savePreference('runa.locale', locale);
+    const descriptor = section('detail', [
+      field('action'),
+      field('changes'),
+      { ...field('outcome'), type: 'dictionary', choices: ['success'] },
+      field('entities'),
+    ]);
+    const controller = page('runa.audit', 'history', [descriptor]);
+    vi.spyOn(window, 'fetch').mockResolvedValue(
+      response({
+        public_id: id,
+        revision: id,
+        values: {
+          action: 'example.changed',
+          changes: '<script>privateMarkup()</script>',
+          outcome: 'success',
+          entities: JSON.stringify([
+            { module: 'runa.auth', type: 'user', public_id: other },
+          ]),
+        },
+      }),
+    );
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          const form = useAdminForm(controller, { autoRead: false });
+          return () =>
+            h(AuditAdminDetail, {
+              page: controller,
+              section: descriptor,
+              controller: form,
+            });
+        },
+      }),
+    );
+    await vi.waitFor(() => expect(wrapper.find('a').exists()).toBe(true));
+    expect(
+      wrapper
+        .findAll('dd')
+        .some(
+          (entry) => entry.text() === (locale === 'pl' ? 'sukces' : 'success'),
+        ),
+    ).toBe(true);
+    const link = new URL(
+      wrapper.get('a').attributes('href')!,
+      window.location.origin,
+    );
+    expect(link.pathname).toBe('/admin/runa.audit/history');
+    expect(link.searchParams.get('entity_public_id')).toBe(other);
+    expect(wrapper.find('script').exists()).toBe(false);
+    expect(
+      wrapper
+        .findAll('button')
+        .filter((button) => /Save|Delete|Undo/.test(button.text())),
+    ).toHaveLength(0);
+  },
+);
 it('Audit Admin entity history links initialize the exact bounded filter query', async () => {
   window.history.replaceState(
     null,

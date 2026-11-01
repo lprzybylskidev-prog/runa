@@ -2497,6 +2497,12 @@ it('account history opens safe detail changes, handles retry and never restores 
     w.findAll('button').filter((button) => button.text() === 'Szczegóły'),
   ).toHaveLength(1);
   const modal = document.body.querySelector('[role=dialog]')!;
+  expect(w.get('tbody').text()).toContain('sukces');
+  expect(
+    [...modal.querySelectorAll('dd')].some(
+      (entry) => entry.textContent?.trim() === 'sukces',
+    ),
+  ).toBe(true);
   expect(modal.textContent).toContain('Przed');
   expect(modal.textContent).toContain('Po');
   expect(modal.textContent).toContain('Tak');
@@ -2519,8 +2525,8 @@ it('account history opens safe detail changes, handles retry and never restores 
     ),
   );
   fail = false;
-  [...document.body.querySelectorAll('[role=dialog] button')]
-    .find((button) => button.textContent === 'Ponów')!
+  [...document.body.querySelectorAll('button')]
+    .find((button) => button.textContent?.trim() === 'Ponów')!
     .dispatchEvent(new MouseEvent('click', { bubbles: true }));
   await vi.waitFor(() =>
     expect(

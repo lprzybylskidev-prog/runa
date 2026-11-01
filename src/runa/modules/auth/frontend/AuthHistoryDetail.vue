@@ -150,10 +150,10 @@ function value(v: HistoryValue, field?: string): string {
         <dd>
           {{
             detail.outcome === 'success'
-              ? text('Powodzenie', 'Success')
+              ? text('sukces', 'success')
               : detail.outcome === 'refused'
-                ? text('Odmowa', 'Refused')
-                : text('Zarejestrowano', 'Recorded')
+                ? text('odmowa', 'refused')
+                : text('zarejestrowano', 'recorded')
           }}
         </dd>
       </dl>

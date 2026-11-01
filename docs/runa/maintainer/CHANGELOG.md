@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Unify lowercase localized dictionary labels across Admin filters, table cells and read-only details, including Audit actor/outcome and Auth account state; retain canonical identifiers, wire values and exports.
+
 - Vertically center table header labels with balanced scrollbar spacing; scroll wide tables horizontally on header/rail wheel input while preserving native Ctrl+wheel zoom and page scrolling over rows or fitting tables.
 
 - Align datetime table filters with compact controls, remove deferred header/rail scroll updates and show exact authorized filtered totals independently of cursor pagination across Auth, Permissions and Audit.

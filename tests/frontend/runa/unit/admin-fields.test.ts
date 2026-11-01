@@ -1,5 +1,6 @@
 /* eslint-disable vue/one-component-per-file -- Independent controlled-field and failure-isolation fixtures. */
 import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
+import { savePreference } from '../../../../src/runa/resources/js/lib/preferences';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { defineComponent, h, nextTick, shallowRef, shallowReactive } from 'vue';
 import type { PropType } from 'vue';
@@ -16,6 +17,7 @@ import type {
 import type { SelectionProvider } from '@/runa/ui';
 import CustomerAdminField from './fixtures/customization/CustomerAdminField.vue';
 enableAutoUnmount(afterEach);
+afterEach(() => savePreference('runa.locale', 'en'));
 beforeEach(() => {
   localStorage.setItem('runa.locale', 'en');
 });
@@ -37,6 +39,29 @@ function field(change: Partial<AdminFieldData> = {}): AdminFieldData {
     ...change,
   };
 }
+it.each(['pl', 'en'])(
+  'read-only dictionary values %s localize declared choices without changing identifiers',
+  (locale) => {
+    savePreference('runa.locale', locale);
+    const wrapper = mount(AdminField, {
+      props: {
+        field: field({
+          type: 'dictionary',
+          choices: ['human', 'success'],
+          multiple: true,
+          readonly: true,
+        }),
+        modelValue: ['human', 'success', 'MiXeD'],
+        errors: [],
+        readonly: true,
+        busy: false,
+      },
+    });
+    expect(wrapper.get('p').text()).toBe(
+      locale === 'pl' ? 'człowiek, sukces, MiXeD' : 'human, success, MiXeD',
+    );
+  },
+);
 function controlled(
   descriptor: AdminFieldData,
   initial: AdminFieldValue = null,

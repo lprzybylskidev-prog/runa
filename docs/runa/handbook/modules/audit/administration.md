@@ -2,7 +2,10 @@
 
 History from/until filters declare datetime and use the shared calendar/time picker
 in the application's timezone. Edited values reach the guarded reader as UTC
-instants; incomplete drafts remain local. The history table shares bounded pinned
+instants; incomplete drafts remain local. Actor-kind/outcome choices use the same lowercase PL/EN labels in filter selects,
+history cells and immutable event details. Module/action/UUID identifiers and JSON
+payload fragments remain canonical; exports keep the original codes. The history
+table shares bounded pinned
 headers and a below-header horizontal scrollbar with other module views.
 
 Audit 1.1.0 supplies `runa.audit/history` Admin declarations, the private HistoryReader

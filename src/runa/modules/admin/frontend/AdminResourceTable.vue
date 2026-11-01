@@ -2,6 +2,7 @@
 import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed } from 'vue';
+import type { TableColumn } from '@/runa/ui';
 import {
   Table,
   formatApplicationInstant,
@@ -29,6 +30,28 @@ const exportColumns = computed(() =>
       )?.sensitive,
   ),
 );
+function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
+  const field = props.controller.section.value?.fields.find(
+    (field) => field.key === column.key,
+  );
+  const value = column.value(row);
+  if (field?.sensitive) return value ?? '—';
+  const raw = row.values[column.key];
+  if (field?.type === 'datetime')
+    return typeof raw === 'string'
+      ? formatApplicationInstant(raw, adminLocale.value)
+      : '—';
+  if (typeof raw === 'string' && field?.choices.includes(raw)) return tr(raw);
+  if (Array.isArray(raw) && field?.choices.length)
+    return raw
+      .map((item) =>
+        typeof item === 'string' && field.choices.includes(item)
+          ? tr(item)
+          : String(item),
+      )
+      .join(', ');
+  return value ?? '—';
+}
 </script>
 <template>
   <FormNotifications
@@ -131,19 +154,15 @@ const exportColumns = computed(() =>
           $slots[`cell-${field.key}`] ||
           controller.section.value?.fields.some(
             (declared) =>
-              declared.key === field.key && declared.type === 'datetime',
+              declared.key === field.key &&
+              (declared.type === 'datetime' || declared.choices.length > 0),
           ),
       )"
       :key="column.key"
       #[`cell-${column.key}`]="scope"
     >
       <slot :name="`cell-${column.key}`" v-bind="scope">{{
-        typeof scope.row.values[column.key] === 'string'
-          ? formatApplicationInstant(
-              String(scope.row.values[column.key]),
-              adminLocale,
-            )
-          : '—'
+        displayCell(column, scope.row)
       }}</slot>
     </template>
   </Table>

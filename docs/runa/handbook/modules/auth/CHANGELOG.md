@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Use the shared lowercase localized choice presentation for directory account states and read-only administrative dictionaries; keep wire/export codes unchanged. Align own login/account-history outcome labels with lowercase PL/EN presentation in rows and safe details.
+
 - Return the authorized filtered directory total before cursor/limit and forward it to Admin; retain deleted-state and profile-search authority.
 
 - Use shared timezone-independent epoch parsing for account/session/device dates and session deadlines; format known history date changes through the application timezone. Remove misleading UTC wording from datetime field labels.

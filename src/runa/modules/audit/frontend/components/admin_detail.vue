@@ -93,7 +93,10 @@ function history(entity: { module: string; type: string; public_id: string }) {
                     String(record.values[field.key]),
                     adminLocale,
                   )
-                : (record.values[field.key] ?? '—')
+                : typeof record.values[field.key] === 'string' &&
+                    field.choices.includes(String(record.values[field.key]))
+                  ? tr(String(record.values[field.key]))
+                  : (record.values[field.key] ?? '—')
             }}
           </dd>
         </div>

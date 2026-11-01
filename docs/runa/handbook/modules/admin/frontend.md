@@ -1127,7 +1127,14 @@ busy/dirty confirmation and discards only after approval. No detail editor rende
 under the table. `AdminTableSection` uses the same dialog with section-local close
 protection. Custom presentations retain public controller selection/leave methods.
 AdminResourceTable uses shared refresh/reset and six-column desktop filters;
-field `choices` and boolean descriptors provide Select options.
+field `choices` and boolean descriptors provide Select options. Declared choice
+values use the same localized labels in filters, table cells and read-only fields
+(including multiple values). Supplied lowercase dictionary codes have lowercase
+PL/EN presentation labels. Only declared choices are translated: module/action
+identifiers, free text, unknown/custom values and JSON payloads retain their
+original spelling. TableColumn.value remains canonical for export/adapters; the
+default cell renderer localizes presentation without changing query/wire values.
+Custom cell slots retain presentation ownership.
 
 ### Table export authorization
 
