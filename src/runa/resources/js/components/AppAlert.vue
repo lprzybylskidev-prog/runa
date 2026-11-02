@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useLocale } from '../composables/useLocale';
 import { useFeedbackTone } from '../composables/useFeedbackTone';
 import AppButton from './AppButton.vue';
 import type { FeedbackTone } from '../runa/ui/feedback';
@@ -16,7 +18,7 @@ const props = withDefaults(
     title: '',
     alignment: 'start',
     dismissible: false,
-    closeLabel: 'Close',
+    closeLabel: '',
     announce: true,
   },
 );
@@ -29,6 +31,8 @@ const symbols = {
   danger: '!',
 };
 const tone = useFeedbackTone(() => props.tone, 'info');
+const { t } = useLocale();
+const closeLabel = computed(() => props.closeLabel || t('close'));
 </script>
 <template>
   <div

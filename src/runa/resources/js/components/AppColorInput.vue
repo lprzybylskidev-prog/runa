@@ -27,8 +27,15 @@ const props = withDefaults(
     required: false,
     pickLabel: '',
     locale: 'pl',
-    invalidMessage: 'Enter a color in #RRGGBB format.',
+    invalidMessage: '',
   },
+);
+const invalidMessage = computed(
+  () =>
+    props.invalidMessage ||
+    (props.locale === 'pl'
+      ? 'Podaj kolor w formacie #RRGGBB.'
+      : 'Enter a color in #RRGGBB format.'),
 );
 const emit = defineEmits<{
   'update:modelValue': [value: string | null];
@@ -116,7 +123,7 @@ const messages = computed(() => [
       ? [props.error]
       : []
     : props.error),
-  ...(!valid.value ? [props.invalidMessage] : []),
+  ...(!valid.value ? [invalidMessage.value] : []),
 ]);
 function update(value: string | null) {
   if (props.disabled || props.readonly) return;

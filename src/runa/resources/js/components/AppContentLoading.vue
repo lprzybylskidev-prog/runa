@@ -1,13 +1,17 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import { useLocale } from '../composables/useLocale';
 import AppSkeleton from './AppSkeleton.vue';
 import type { ContentLoadingProps } from '../runa/ui/loading';
-withDefaults(defineProps<ContentLoadingProps>(), {
-  label: 'Loading',
+const props = withDefaults(defineProps<ContentLoadingProps>(), {
+  label: '',
   loading: true,
   refreshing: false,
   shape: 'text',
   lines: 3,
 });
+const { t } = useLocale();
+const label = computed(() => props.label || t('loading'));
 </script>
 <template>
   <div

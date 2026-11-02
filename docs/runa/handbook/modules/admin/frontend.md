@@ -981,8 +981,10 @@ Admin owns public `AdminText = string | {pl: string; en: string}` and
 `{locale: Ref<'pl'|'en'>, t(text: AdminText): string}` for composition; `adminText(text,
 locale, messages?)` is its pure counterpart. Source English strings are translation
 keys; supplied Core presentation has a reviewed Polish catalogue, including
-All → Wszystkie and Yes/No → Tak/Nie for filter choices. Unknown strings
-remain source text. Localized metadata maps select their explicit language.
+All → Wszystkie and Yes/No → Tak/Nie for filter choices. Source-owned
+setting/exception choice codes have reviewed PL/EN labels, such as
+`revoke_others` → Unieważnij pozostałe sesje / Revoke other sessions. These labels
+never change submitted values. Unknown strings remain source text. Localized metadata maps select their explicit language.
 `AdminApplication.messages?: AdminMessages` extends/overrides the Polish catalogue
 for source-owned App/module presentation. Implementation stays in Admin frontend,
 public entrypoint `@/runa/admin`, bundled runtime presentation. Translations never

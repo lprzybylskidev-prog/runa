@@ -31,7 +31,7 @@ const props = withDefaults(
     size: 'md',
     helper: '',
     error: '',
-    invalidMessage: 'Check the date or time.',
+    invalidMessage: '',
     disabled: false,
     readonly: false,
     required: false,
@@ -51,6 +51,11 @@ const reason = ref('');
 const rawDraft = ref('');
 const open = ref(false);
 const text = (pl: string, en: string) => (props.locale === 'pl' ? pl : en);
+const invalidMessage = computed(
+  () =>
+    props.invalidMessage ||
+    text('Sprawdź datę lub godzinę.', 'Check the date or time.'),
+);
 const pickerLabel = computed(
   () => `${text('Wybierz', 'Choose')}: ${props.label}`,
 );
@@ -167,13 +172,12 @@ onMounted(reset);
 watch(
   () => [props.modelValue, props.kind, props.timeZone, props.locale] as const,
   ([value, kind, zone, locale], [oldValue, oldKind, oldZone, oldLocale]) => {
-    // A display-zone refresh cannot discard an incomplete local draft.
+    // Presentation changes cannot discard an incomplete local draft.
     if (
       invalid.value &&
       value === oldValue &&
       kind === oldKind &&
-      locale === oldLocale &&
-      zone !== oldZone
+      (locale !== oldLocale || zone !== oldZone)
     )
       return;
     if (
@@ -225,7 +229,7 @@ const messages = computed(() => [
       ? [props.error]
       : []
     : props.error),
-  ...(invalid.value ? [props.invalidMessage] : []),
+  ...(invalid.value ? [invalidMessage.value] : []),
 ]);
 watch(
   () => [props.disabled, props.readonly],

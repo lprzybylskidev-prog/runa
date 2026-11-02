@@ -1,15 +1,16 @@
 <script setup lang="ts">
+import { useLocale } from '../composables/useLocale';
 import { safeBrandUrl, useIdentity } from '../runa/ui/identity';
 import type { FooterOptions } from '../runa/ui/identity';
 import { computed } from 'vue';
 import { useApplicationDisplayDefaults } from '../runa/ui/displayDefaults';
 import { toLocalDateTime } from '../lib/temporal';
-withDefaults(
+const props = withDefaults(
   defineProps<{
     options?: FooterOptions | undefined;
     poweredByLabel?: string;
   }>(),
-  { options: undefined, poweredByLabel: 'Powered by' },
+  { options: undefined, poweredByLabel: '' },
 );
 const identity = useIdentity();
 const defaults = useApplicationDisplayDefaults();
@@ -19,6 +20,8 @@ const year = computed(() =>
     4,
   ),
 );
+const { t } = useLocale();
+const poweredByLabel = computed(() => props.poweredByLabel || t('poweredBy'));
 </script>
 
 <template>

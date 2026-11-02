@@ -325,3 +325,41 @@ it('Admin fields isolate a broken customer field while preserving readable sibli
   await vi.waitFor(() => expect(wrapper.text()).toContain('Healthy sibling'));
   expect(wrapper.text()).toContain('unavailable');
 });
+
+it.each(['pl', 'en'] as const)(
+  'setting choice labels %s preserve submitted API values',
+  async (locale) => {
+    savePreference('runa.locale', locale);
+    const wrapper = mount(AdminField, {
+      props: {
+        field: field({
+          type: 'dictionary',
+          key: 'password_session_policy',
+          choices: ['keep_all', 'revoke_others'],
+        }),
+        modelValue: 'keep_all',
+        errors: [],
+        readonly: false,
+        busy: false,
+      },
+      attachTo: document.body,
+    });
+    const trigger = wrapper.get('button');
+    await trigger.trigger('click');
+    const option = Array.from(
+      document.querySelectorAll<globalThis.HTMLElement>('[role="option"]'),
+    ).find((item) =>
+      item.textContent?.includes(
+        locale === 'pl'
+          ? 'Unieważnij pozostałe sesje'
+          : 'Revoke other sessions',
+      ),
+    );
+    expect(option).toBeDefined();
+    option!.click();
+    await nextTick();
+    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([
+      'revoke_others',
+    ]);
+  },
+);

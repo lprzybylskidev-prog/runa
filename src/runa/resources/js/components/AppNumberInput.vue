@@ -26,11 +26,18 @@ const props = withDefaults(
     locale: 'pl',
     scale: undefined,
     error: '',
-    invalidMessage: 'Enter a valid number.',
+    invalidMessage: '',
     unit: '',
     disabled: false,
     readonly: false,
   },
+);
+const invalidMessage = computed(
+  () =>
+    props.invalidMessage ||
+    (props.locale === 'pl'
+      ? 'Podaj poprawną liczbę.'
+      : 'Enter a valid number.'),
 );
 const emit = defineEmits<{
   'update:modelValue': [value: string | null];
@@ -59,7 +66,17 @@ const draft = ref(display(props.modelValue));
 let emitted: string | null | undefined;
 watch(
   () => [props.modelValue, props.locale] as const,
-  ([value, locale], [, previousLocale]) => {
+  ([value, locale], [previousValue, previousLocale]) => {
+    if (
+      value === previousValue &&
+      locale !== previousLocale &&
+      !parseDecimal(draft.value, {
+        kind: props.kind,
+        locale: previousLocale,
+        ...(props.scale === undefined ? {} : { scale: props.scale }),
+      }).valid
+    )
+      return;
     if (value !== emitted || locale !== previousLocale)
       draft.value = display(value);
   },
@@ -77,7 +94,7 @@ const messages = computed(() => [
       ? [props.error]
       : []
     : props.error),
-  ...(!result.value.valid ? [props.invalidMessage] : []),
+  ...(!result.value.valid ? [invalidMessage.value] : []),
 ]);
 function update(value: string | null) {
   draft.value = value ?? '';

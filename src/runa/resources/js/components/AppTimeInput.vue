@@ -7,7 +7,7 @@ withDefaults(defineProps<TemporalInputProps>(), {
   size: 'md',
   helper: '',
   error: '',
-  invalidMessage: 'Check the date or time.',
+  invalidMessage: '',
   disabled: false,
   readonly: false,
   required: false,

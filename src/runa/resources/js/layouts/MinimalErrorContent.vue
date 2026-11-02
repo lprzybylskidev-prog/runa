@@ -32,7 +32,8 @@ defineProps<{
     data-error-request-id="__RUNA_REQUEST_ID__"
     class="mt-8 break-words text-xs text-muted"
   >
-    Request ID: __RUNA_REQUEST_ID__
+    {{ locale === 'pl' ? 'Identyfikator żądania' : 'Request ID' }}:
+    __RUNA_REQUEST_ID__
   </p>
 </template>
 

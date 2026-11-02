@@ -2004,6 +2004,10 @@ it('Admin bilingual public translation supports explicit source maps and App ove
   expect(adminText('Retry', 'pl', { Retry: 'Spróbuj jeszcze raz' })).toBe(
     'Spróbuj jeszcze raz',
   );
+  expect(
+    adminText('revoke_others', 'pl', { revoke_others: 'Własna etykieta' }),
+  ).toBe('Własna etykieta');
+  expect(adminText('revoke_others', 'en')).toBe('Revoke other sessions');
   expect(adminText('App-specific title', 'pl')).toBe('App-specific title');
   expect(adminText('Save', 'en')).toBe('Save');
   expect(adminText({ pl: 'Save', en: 'Save' }, 'pl')).toBe('Save');

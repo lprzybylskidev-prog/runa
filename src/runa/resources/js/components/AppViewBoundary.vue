@@ -1,21 +1,28 @@
 <script setup lang="ts">
+import { useLocale } from '../composables/useLocale';
+import { computed } from 'vue';
 import type { VNode } from 'vue';
 import type { ViewReadiness } from '../composables/useViewReadiness';
 import AppAlert from './AppAlert.vue';
 import AppContentLoading from './AppContentLoading.vue';
-withDefaults(
+const props = withDefaults(
   defineProps<{
     readiness: ViewReadiness;
     label?: string;
     errorMessage?: string;
   }>(),
-  { label: 'Loading', errorMessage: 'Unable to load content.' },
+  { label: '', errorMessage: '' },
 );
 defineSlots<{
   default(): VNode[];
   loading?(): VNode[];
   error?(): VNode[];
 }>();
+const { t } = useLocale();
+const label = computed(() => props.label || t('loading'));
+const errorMessage = computed(
+  () => props.errorMessage || t('unableToLoadContent'),
+);
 </script>
 <template>
   <div

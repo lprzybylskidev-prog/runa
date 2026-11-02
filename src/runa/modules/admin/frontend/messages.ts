@@ -600,3 +600,43 @@ export const adminMessages: AdminMessages = {
   'Large JSON payloads continue across parts.':
     'Duże dane JSON są podzielone na kolejne części.',
 };
+
+/** Labels for source-owned setting choices; values sent to owning APIs remain unchanged. */
+export const adminChoiceMessages: Readonly<
+  Record<string, { pl: string; en: string }>
+> = {
+  password_expiry_days: {
+    pl: 'Ważność hasła w dniach',
+    en: 'Password lifetime in days',
+  },
+  session_idle_minutes: {
+    pl: 'Limit bezczynności sesji w minutach',
+    en: 'Session idle limit in minutes',
+  },
+  future_only: { pl: 'Tylko przyszłe hasła', en: 'Future passwords only' },
+  force_change: { pl: 'Wymuś zmianę hasła', en: 'Require a password change' },
+  keep_all: { pl: 'Zachowaj wszystkie sesje', en: 'Keep all sessions' },
+  revoke_others: {
+    pl: 'Unieważnij pozostałe sesje',
+    en: 'Revoke other sessions',
+  },
+  revoke_all: { pl: 'Unieważnij wszystkie sesje', en: 'Revoke all sessions' },
+  user: { pl: 'Użytkownik', en: 'User' },
+  admin: { pl: 'Administrator', en: 'Administrator' },
+  both: { pl: 'Użytkownik i administrator', en: 'User and administrator' },
+  neither: { pl: 'Nikt', en: 'Neither' },
+  new: { pl: 'Nowe konta', en: 'New accounts' },
+  disabled: { pl: 'Wyłączone', en: 'Disabled' },
+  optional: { pl: 'Opcjonalny', en: 'Optional' },
+  any: { pl: 'Dowolny drugi składnik', en: 'Any second factor' },
+  totp: {
+    pl: 'Aplikacja uwierzytelniająca (TOTP)',
+    en: 'Authenticator app (TOTP)',
+  },
+  automatic: { pl: 'Automatyczne', en: 'Automatic' },
+  administrator: { pl: 'Przez administratora', en: 'By an administrator' },
+  login: { pl: 'Login', en: 'Login' },
+  either: { pl: 'E-mail lub login', en: 'Email or login' },
+  light: { pl: 'Jasny', en: 'Light' },
+  dark: { pl: 'Ciemny', en: 'Dark' },
+};

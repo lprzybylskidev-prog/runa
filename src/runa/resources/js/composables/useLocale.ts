@@ -50,11 +50,13 @@ export function useLocale(override?: Readonly<Ref<Locale | undefined>>) {
     { flush: 'sync' },
   );
   // Apply initial presentation without treating hydration/mount as a user edit.
-  document.documentElement.lang = locale.value;
+  if (typeof document !== 'undefined')
+    document.documentElement.lang = locale.value;
   watch(
     locale,
     (value) => {
-      document.documentElement.lang = value;
+      if (typeof document !== 'undefined')
+        document.documentElement.lang = value;
       if (!syncing) savePreference('runa.locale', value);
     },
     { flush: 'sync' },

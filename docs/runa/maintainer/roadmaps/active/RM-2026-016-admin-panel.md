@@ -761,6 +761,11 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Owner correction: Polish Auth filters must show Wszystkie / Tak / Nie,
     preserving English All / Yes / No and the empty/boolean query values.
   - Prepare current assets and check the rendered menu before owner acceptance.
+- [x] 11a48. Audit application-wide PL/EN presentation and repair missing defaults.
+  - Review supplied module views, shared controls, application shell, static errors,
+    translation catalogues and source-owned Admin metadata; retain technical and
+    business identifiers. Repair missing copy in both languages with focused
+    interaction checks, synchronized contracts and current built assets.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5053,3 +5058,63 @@ and reviewed bulk behavior without page errors or modal overflow. Evidence:
 added for this literal-copy fix; no broad suite was run. No disposable resource,
 data, grant or dependency change occurred. Current assets are ready; manual owner
 acceptance 11b and final verification/release 12 remain open.
+
+### Point 11a48 — Application-wide translation audit
+
+Reviewed all 146 supplied App/Runa Vue files for literal visible text and static
+accessible labels; examined shared control defaults, shell/Auth catalogues,
+Admin/Core translation calls and dynamic dictionaries, source-owned management
+metadata, reference App presentation, native/static errors, mail copy and the
+reviewed Laravel validation snapshot. Local knowledge was current and queried
+with current intent; localization and frontend originals governed the changes.
+
+Catalogue inventory: shell 35 PL/EN keys and Auth entry 92 PL/EN keys have no
+missing/empty entries; six HTTP error statuses have both languages. The shared
+Admin source-string catalogue has 525 entries. Literal Admin translation call
+keys were covered, but source-defined policy/exception choices exposed 22 missing
+labels. Added a reviewed bilingual choice catalogue, including session revocation,
+password policy effects, permitted avatar editors, second-factor requirements,
+registration approval, login identification, themes and policy exceptions. Native
+wire values and source/business identifiers remain unchanged; Polish App copy
+overrides still take precedence and unknown source strings retain their fallback.
+Laravel's 138 English validation leaf keys are covered by the Polish snapshot
+except the upstream custom.attribute-name.rule-name example placeholder (not an
+actual rule); the reviewed/vendor snapshot was left intact.
+
+Corrected default errors/actions in NumberInput, ColorInput, FileInput and
+DateInput/TimeInput/DateTimeInput, plus shared loading/empty/error feedback,
+Alert/Toast accessibility, TagsInput, PageNavigation, Footer, ModulePage's English
+unavailable fallback and the native/static request identifier label. Controls with
+locale props continue to use them; other defaults reuse the existing application
+locale scope/preferences. Explicit caller copy remains available. Pending tag
+errors translate reactively; invalid numeric/temporal drafts survive language
+changes. MinimalLayout publishes its locale to descendants, including static
+rendering, and useLocale guards browser-only document access. No new dependency,
+public signature, security decision, backend/API write or schema change was added.
+
+Focused verification:
+
+- Catalogue/source inventory: `.runtime/frontend/RM-2026-016-localization-inventory.json`
+  and bounded generated literal/metadata inventories; no exhaustive authenticated
+  runtime-state acceptance is claimed.
+- `python3 tools/maintainer/test-frontend --filter='localizes|commits tags with Enter|exposes selected files|renders deep links after refresh|setting choice labels|Admin bilingual public translation'`:
+  **9 passed**, native exit/cleanup 0. Chromium checks retained drafts/errors,
+  application language switching, caller overrides, PL/EN choice selection and
+  unchanged submitted codes, all file constraints and unavailable module loading.
+  The remaining 452 tests were excluded, not PASS.
+- `pnpm --dir src run build`: PASS, including strict Vue/TypeScript, Vite and all
+  native/static error shells. The static rendering log has no browser-global
+  errors. Existing chunk-size/dynamic-import warnings remain informational.
+- Rendered compiled Nginx 404: PL/dark 1440px and EN/light 390px PASS; expected
+  translated heading/request label, no leaked placeholders, horizontal overflow
+  or page errors. Evidence: `.runtime/artifacts/playwright/runa/RM-2026-016-localization/`.
+- `git diff --check`: PASS. Mandatory commit hooks remain required.
+
+Synchronized the localization/forms/component guides, Admin translation contract
+and current central/Admin changelogs. Platform target 0.7.0 and unreleased Admin
+0.1.0 remain appropriate; no other module implementation/manifest changed. Root
+AGENTS and both owner/customer frontend skills already direct consumers to these
+canonical guides and shared localization; they need no duplicate rule or changed
+instruction. No disposable Docker/database resources were created; active data,
+services, caches and evidence remain preserved. Owner acceptance 11b and final
+verification/release 12 remain open.

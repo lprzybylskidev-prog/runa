@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Localize 22 source-owned setting/exception choices in PL/EN without changing API values; inherit corrected shared control/feedback defaults.
+
 - Translate the shared Admin unfiltered All choice to Polish Wszystkie, including Auth boolean filters; preserve English copy and wire values.
 
 - Match Auth Users filters to Audit compact controls, shorten account/security labels and expose each authorized bulk command as its own button below filters. Retain selected targets and native reviews/proofs.

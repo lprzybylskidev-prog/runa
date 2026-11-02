@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { inject } from 'vue';
+import { provideLocale } from '../composables/useLocale';
 import AppViewBoundary from '../components/AppViewBoundary.vue';
 import { useViewReadiness } from '../composables/useViewReadiness';
 import { applicationSessionOwner } from '../lib/applicationSession';
@@ -65,6 +66,7 @@ const {
   applyPreference,
   finishPreferenceChange,
 } = useDisplayPreferences(props.staticPreferences);
+provideLocale(locale);
 </script>
 
 <template>

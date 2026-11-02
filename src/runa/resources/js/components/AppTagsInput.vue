@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useLocale } from '../composables/useLocale';
 import { computed, nextTick, ref, watch } from 'vue';
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import AppFormField from './AppFormField.vue';
@@ -24,9 +25,9 @@ const props = withDefaults(
     readonly: false,
     required: false,
     maxTags: undefined,
-    removeLabel: 'Remove',
-    limitMessage: 'Tag limit reached.',
-    duplicateMessage: 'This tag already exists.',
+    removeLabel: '',
+    limitMessage: '',
+    duplicateMessage: '',
   },
 );
 const emit = defineEmits<{
@@ -35,6 +36,13 @@ const emit = defineEmits<{
 }>();
 const draft = ref('');
 const message = ref('');
+const translatedMessage = computed(() =>
+  message.value === 'duplicate'
+    ? duplicateMessage.value
+    : message.value === 'limit'
+      ? limitMessage.value
+      : '',
+);
 const control = ref<globalThis.HTMLInputElement>();
 const ready = computed(
   () =>
@@ -51,11 +59,11 @@ function add(event: globalThis.KeyboardEvent) {
   const tag = draft.value.trim();
   if (!tag) return;
   if (props.modelValue.includes(tag)) {
-    message.value = props.duplicateMessage;
+    message.value = 'duplicate';
     return;
   }
   if (props.maxTags !== undefined && props.modelValue.length >= props.maxTags) {
-    message.value = props.limitMessage;
+    message.value = 'limit';
     return;
   }
   emit('update:modelValue', [...props.modelValue, tag]);
@@ -81,6 +89,12 @@ const tagKeys = computed(() => {
     return `${tag}-${count}`;
   });
 });
+const { t } = useLocale();
+const removeLabel = computed(() => props.removeLabel || t('remove'));
+const limitMessage = computed(() => props.limitMessage || t('tagLimitReached'));
+const duplicateMessage = computed(
+  () => props.duplicateMessage || t('duplicateTag'),
+);
 </script>
 <template>
   <AppFormField
@@ -89,7 +103,7 @@ const tagKeys = computed(() => {
     :required="required"
     :error="[
       ...(typeof error === 'string' ? (error ? [error] : []) : error),
-      ...(message ? [message] : []),
+      ...(translatedMessage ? [translatedMessage] : []),
     ]"
     ><template #default="{ id, describedBy, invalid }"
       ><TransitionGroup

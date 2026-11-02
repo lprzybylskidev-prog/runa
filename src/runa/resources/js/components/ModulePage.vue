@@ -9,8 +9,15 @@ import type {
 defineSlots<ModulePageSlots>();
 const props = withDefaults(defineProps<ModulePageProps>(), {
   locale: 'pl',
-  unavailableText: 'Moduł jest niedostępny.',
+  unavailableText: '',
 });
+const unavailableText = computed(
+  () =>
+    props.unavailableText ||
+    (props.locale === 'pl'
+      ? 'Moduł jest niedostępny.'
+      : 'The module is unavailable.'),
+);
 const page = computed(() => {
   if (!props.view) return undefined;
   const match = createPageResolver(

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useLocale } from '../composables/useLocale';
 import { computed, shallowRef, watch } from 'vue';
 import type { NavigationEntry, RouteContext } from '../runa/ui/navigation';
 import { registerPageNavigation } from '../composables/usePageNavigationHost';
@@ -12,7 +13,7 @@ const props = withDefaults(
     disabled?: boolean;
     loading?: boolean;
   }>(),
-  { current: undefined, label: 'Page navigation', disabled: false },
+  { current: undefined, label: '', disabled: false },
 );
 const emit = defineEmits<{
   navigate: [href: string, event: globalThis.MouseEvent];
@@ -56,6 +57,8 @@ const hosted = registerPageNavigation({
   current: () => publishedCurrent.value,
   navigate: (href, event) => emit('navigate', href, event),
 });
+const { t } = useLocale();
+const label = computed(() => props.label || t('pageNavigation'));
 </script>
 <template>
   <nav v-if="!hosted" class="flex flex-wrap gap-2" :aria-label="label">

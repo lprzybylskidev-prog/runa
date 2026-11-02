@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useLocale } from '../composables/useLocale';
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import AppToast from './AppToast.vue';
 import { computed, inject } from 'vue';
@@ -7,18 +8,21 @@ const portal = inject(modalPortal, undefined);
 const target = computed(() => portal?.value ?? 'body');
 const available = computed(() => !portal || Boolean(portal.value));
 import type { ToastMessage } from '../runa/ui/feedback';
-withDefaults(
+const props = withDefaults(
   defineProps<{
     messages: readonly ToastMessage[];
     label?: string;
     closeLabel?: string;
   }>(),
-  { label: 'Notifications', closeLabel: 'Close' },
+  { label: '', closeLabel: '' },
 );
 defineEmits<{ dismiss: [id: string] }>();
 function leaving(element: globalThis.Element) {
   deactivateMotionElement(element);
 }
+const { t } = useLocale();
+const label = computed(() => props.label || t('notifications'));
+const closeLabel = computed(() => props.closeLabel || t('close'));
 </script>
 <template>
   <Teleport v-if="available" :to="target"

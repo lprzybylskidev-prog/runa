@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Translate 22 built-in setting/exception choice codes into readable PL/EN labels while retaining API values. Complete shared PL/EN defaults for validation, file actions, tag errors, feedback/loading accessibility, navigation, footer, module availability and static error request labels. Preserve invalid numeric/temporal drafts when changing language and keep static locale propagation browser-independent.
+
 - Translate the shared Admin unfiltered All choice to Polish Wszystkie, including Auth boolean filters; preserve English copy and wire values.
 
 - Match Auth Users filters to Audit compact controls, shorten account/security labels and expose each authorized bulk command as its own button below filters. Retain selected targets and native reviews/proofs.

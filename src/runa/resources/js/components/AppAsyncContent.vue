@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import { useLocale } from '../composables/useLocale';
 import { useContentMotion } from '../composables/useContentMotion';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import AppContentLoading from './AppContentLoading.vue';
 import AppAlert from './AppAlert.vue';
 import AppButton from './AppButton.vue';
@@ -23,9 +24,9 @@ const props = withDefaults(
     errorMessage: '',
     emptyDescription: '',
     retryLabel: '',
-    loadingLabel: 'Loading',
-    errorTitle: 'Unable to load content',
-    emptyTitle: 'No results',
+    loadingLabel: '',
+    errorTitle: '',
+    emptyTitle: '',
   },
 );
 const emit = defineEmits<{ retry: [] }>();
@@ -33,6 +34,10 @@ const content = ref<globalThis.HTMLElement>();
 useContentMotion(content, () =>
   props.state === 'refreshing' ? 'success' : props.state,
 );
+const { t } = useLocale();
+const loadingLabel = computed(() => props.loadingLabel || t('loading'));
+const errorTitle = computed(() => props.errorTitle || t('unableToLoadContent'));
+const emptyTitle = computed(() => props.emptyTitle || t('noResults'));
 </script>
 <template>
   <div
