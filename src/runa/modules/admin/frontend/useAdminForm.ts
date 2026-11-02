@@ -716,6 +716,57 @@ export function useAdminForm(
     proofs.get(`${key}:${name}`)?.controller.reset();
     return result;
   }
+  async function runIndependent(
+    key: string,
+    action: (record: AdminRecord, signal: AbortSignal) => Promise<void>,
+  ): Promise<boolean> {
+    const section = sections.value.find((section) => section.key === key);
+    const record = records.value[key];
+    if (
+      !section ||
+      section.readonly ||
+      section.diagnostic ||
+      !record ||
+      busy.value ||
+      page.state.value !== 'ready' ||
+      lanes.get(key)?.resource.state.value !== 'ready' ||
+      [...failures.value].some(
+        (path) => path === key || path.startsWith(key + '.'),
+      ) ||
+      Object.keys(overlaps.value).some((path) => path.startsWith(key + '.'))
+    )
+      return false;
+    const own = epoch,
+      context = stamp();
+    runtime.busy.value = true;
+    error.value = undefined;
+    notice.value = '';
+    try {
+      await action(copy(record), abort.signal);
+      if (!alive || own !== epoch || context !== stamp()) return false;
+      clearReviews();
+      runtime.changed.value++;
+      notice.value = 'Changes saved.';
+      await refresh();
+      return true;
+    } catch (cause) {
+      if (alive && own === epoch && context === stamp()) {
+        applyErrors(
+          section,
+          writeFailure(
+            cause,
+            section.fields.map((field) => field.key),
+          ),
+        );
+        if (cause instanceof ApiError && cause.status === 409) await refresh();
+        if (cause instanceof ApiError && cause.status === 401 && admin)
+          refuseAdmin(admin, cause);
+      }
+      return false;
+    } finally {
+      if (own === epoch) runtime.busy.value = false;
+    }
+  }
   function aggregate(): AdminAggregateInput | undefined {
     if (blocked.value || busy.value || Object.keys(overlaps.value).length)
       return;
@@ -1052,6 +1103,7 @@ export function useAdminForm(
     lookup,
     execute,
     reviewCommand,
+    runIndependent,
     editSection,
     closeSection,
     setAvailable,

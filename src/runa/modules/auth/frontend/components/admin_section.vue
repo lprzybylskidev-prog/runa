@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAdminLocale } from '@/runa/admin';
 const { locale: adminLocale, t: tr } = useAdminLocale();
+import AdminAvatar from '../AuthAdminAvatar.vue';
 import { computed, watch } from 'vue';
 import {
   formatApplicationInstant,
@@ -10,7 +11,11 @@ import {
   ValuePreview,
 } from '@/runa/ui';
 import { AdminSection, useAdminResource } from '@/runa/admin';
-import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
+import type {
+  AdminCommandReview,
+  AdminJson,
+  AdminSectionPresentationProps,
+} from '@/runa/admin';
 const props = defineProps<AdminSectionPresentationProps>();
 const collectionKeys = [
   'addresses',
@@ -29,9 +34,36 @@ const collection = computed(() =>
 );
 const fields = computed(() => ({
   ...props.section,
-  fields: props.section.fields.filter(
-    (field) => !collectionKeys.includes(field.key),
-  ),
+  fields: props.section.fields.filter((field) => {
+    if (props.section.key === 'bulk_sessions' && field.key === 'summary')
+      return false;
+    if (
+      collectionKeys.includes(field.key) ||
+      field.key === 'avatar_upload_pending'
+    )
+      return false;
+    if (props.section.key !== 'lifecycle') return true;
+    const operation =
+      props.controller.values.value[
+        props.controller.fieldPath('lifecycle', 'operation')
+      ];
+    if (field.key === 'at')
+      return (
+        typeof operation === 'string' &&
+        [
+          'schedule_activation',
+          'schedule_deactivation',
+          'set_expiry',
+          'set_attempt_lock',
+        ].includes(operation)
+      );
+    if (field.key === 'enabled')
+      return (
+        typeof operation === 'string' &&
+        ['set_security_lock', 'require_password_change'].includes(operation)
+      );
+    return true;
+  }),
 }));
 const rows = computed<Record<string, AdminJson>[]>(() => {
   const result = resource.result.value;
@@ -111,6 +143,12 @@ function select(row: Record<string, AdminJson>) {
       );
   }
 }
+function reviewCount(review: AdminCommandReview, key: string): string {
+  const summary = review.changes.summary;
+  if (!summary || typeof summary !== 'object' || Array.isArray(summary))
+    return '—';
+  return typeof summary[key] === 'number' ? String(summary[key]) : '—';
+}
 </script>
 <template>
   <Card>
@@ -176,6 +214,41 @@ function select(row: Record<string, AdminJson>) {
         >
       </div>
     </template>
-    <AdminSection :section="fields" :controller="controller" />
+    <AdminSection
+      :section="fields"
+      :controller="controller"
+      :embedded="page.page.value?.key === 'users'"
+    >
+      <template
+        v-if="section.key === 'bulk_sessions'"
+        #commandReview="{ review }"
+      >
+        <p class="text-sm font-semibold">{{ tr('Review summary') }}</p>
+        <dl class="grid gap-4 sm:grid-cols-3">
+          <div
+            v-for="item in [
+              { key: 'accounts', label: { pl: 'Konta', en: 'Accounts' } },
+              { key: 'sessions', label: { pl: 'Sesje', en: 'Sessions' } },
+              {
+                key: 'trusted_devices',
+                label: { pl: 'Zaufane urządzenia', en: 'Trusted devices' },
+              },
+            ]"
+            :key="item.key"
+          >
+            <dt class="text-xs text-muted">{{ tr(item.label) }}</dt>
+            <dd class="mt-1 text-lg font-semibold">
+              {{ reviewCount(review, item.key) }}
+            </dd>
+          </div>
+        </dl>
+      </template>
+    </AdminSection>
+    <AdminAvatar
+      v-if="section.key === 'avatar'"
+      :page="page"
+      :section="section"
+      :controller="controller"
+    />
   </Card>
 </template>

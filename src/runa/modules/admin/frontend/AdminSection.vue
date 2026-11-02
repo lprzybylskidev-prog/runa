@@ -64,7 +64,11 @@ async function retry() {
 }
 </script>
 <template>
-  <FormSection :title="tr(section.title)" :columns="2">
+  <component
+    :is="embedded ? 'div' : FormSection"
+    v-bind="embedded ? {} : { title: tr(section.title), columns: 2 }"
+    :class="embedded ? 'grid min-w-0 gap-5 md:grid-cols-2' : undefined"
+  >
     <slot :section="section" :controller="controller">
       <Alert
         v-if="controller.operations.value[section.key]"
@@ -152,24 +156,34 @@ async function retry() {
             controller.commandReviews.value[`${section.key}:${command.key}`]
           "
         >
-          <p class="text-sm font-semibold">{{ tr('Reviewed differences') }}</p>
-          <dl class="space-y-2 text-sm">
-            <div
-              v-for="(value, key) in controller.commandReviews.value[
-                `${section.key}:${command.key}`
-              ]!.changes"
-              :key="key"
-            >
-              <dt class="font-semibold">{{ tr(String(key)) }}</dt>
-              <dd class="min-w-0">
-                <ValuePreview
-                  :text="JSON.stringify(value)"
-                  format="json"
-                  :locale="adminLocale"
-                />
-              </dd>
-            </div>
-          </dl>
+          <slot
+            name="commandReview"
+            :command="command"
+            :review="
+              controller.commandReviews.value[`${section.key}:${command.key}`]!
+            "
+          >
+            <p class="text-sm font-semibold">
+              {{ tr('Reviewed differences') }}
+            </p>
+            <dl class="space-y-2 text-sm">
+              <div
+                v-for="(value, key) in controller.commandReviews.value[
+                  `${section.key}:${command.key}`
+                ]!.changes"
+                :key="key"
+              >
+                <dt class="font-semibold">{{ tr(String(key)) }}</dt>
+                <dd class="min-w-0">
+                  <ValuePreview
+                    :text="JSON.stringify(value)"
+                    format="json"
+                    :locale="adminLocale"
+                  />
+                </dd>
+              </div>
+            </dl>
+          </slot>
         </template>
         <AdminCommandProof
           v-if="
@@ -226,5 +240,5 @@ async function retry() {
         :section="section.key"
       />
     </slot>
-  </FormSection>
+  </component>
 </template>

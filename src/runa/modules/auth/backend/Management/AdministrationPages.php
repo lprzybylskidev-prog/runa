@@ -23,12 +23,29 @@ use Runa\Modules\Auth\Contracts\AuthProfiles;
 use Runa\Modules\Auth\Contracts\AuthSecurity;
 use Runa\Modules\Auth\Contracts\AuthSessions;
 use Runa\Modules\Auth\Definitions\IdentitySettings;
+use Runa\Modules\Auth\Support\AdministrationFeatures;
 
 /** Explicit source catalogue, never a request-provided method registry. */
 final class AdministrationPages implements ManagementPageProvider
 {
     /** @var array<string, string> */
     private const FIELD_NAMES = [
+        'Account state' => 'Stan konta',
+        'Logged in' => 'Zalogowany',
+        'Live session count' => 'Liczba aktywnych sesji',
+        'Latest live login' => 'Ostatnie logowanie w aktywnych sesjach',
+        'Latest session activity' => 'Ostatnia aktywność sesji',
+        'Created at' => 'Utworzono',
+        'Updated at' => 'Zaktualizowano',
+        'Deleted at' => 'Usunięto',
+        'Email verified at' => 'Data weryfikacji e-maila',
+        'Password set' => 'Hasło ustawione',
+        'Password changed at' => 'Data zmiany hasła',
+        'Password expires at' => 'Hasło wygasa',
+        'TOTP configured' => 'TOTP skonfigurowane',
+        'Email factor configured' => 'Drugi składnik e-mail skonfigurowany',
+        'Recovery codes remaining' => 'Pozostałe kody odzyskiwania',
+
         'Accounts' => 'Konta',
         'Action' => 'Akcja',
         'Activate At' => 'Termin aktywacji',
@@ -193,7 +210,7 @@ final class AdministrationPages implements ManagementPageProvider
     {
         $command = static fn (string $title, string $operation, string $permission, array $inputs = [], ?string $proof = null, bool $destructive = false, bool $preview = false): array => compact('title', 'operation', 'permission', 'inputs', 'proof', 'destructive', 'preview');
 
-        return [
+        $commands = [
             'creation' => ['create' => $command('Create account', 'identity.create', 'users.create', ['email', 'name', 'first_name', 'surname', 'login', 'active', 'approved'])],
             'lifecycle' => ['change' => $command('Apply lifecycle change', 'identity.change', 'users.manage', ['operation', 'at', 'enabled'], destructive: true)],
             'invitations' => ['invite' => $command('Send or resend invitation', 'invitation.issue', 'invitations.manage'),
@@ -211,8 +228,10 @@ final class AdministrationPages implements ManagementPageProvider
             'trust' => ['revoke_device' => $command('Revoke trusted device', 'trust.revoke', 'trust.manage', ['device_id'], destructive: true)],
             'preferences' => ['reset' => $command('Reset account preferences', 'preferences.admin_reset', 'preferences.reset', ['preference_revision'], destructive: true)],
             'exceptions' => ['set' => $command('Set or revoke exception', 'policy.exception', 'policy.exceptions', ['key', 'value', 'reason', 'expires_at', 'exception_version', 'policy_revision'], 'runa.auth.policy.exception', true)],
-            'bulk_sessions' => ['revoke' => $command('Revoke selected sessions and trust', 'sessions.bulk_revoke', 'sessions.bulk_revoke', ['public_ids', 'all', 'trust'], 'runa.auth.sessions.bulk_revoke', true, true)],
+            'bulk_sessions' => ['revoke' => $command('Revoke selected sessions and trust', 'sessions.bulk_revoke', 'sessions.bulk_revoke', ['public_ids', ...(app(AdministrationFeatures::class)->enabled('trust') ? ['trust'] : [])], 'runa.auth.sessions.bulk_revoke', true, true)],
         ];
+
+        return $commands;
     }
 
     /** @return list<ManagementSection> */
@@ -221,6 +240,7 @@ final class AdministrationPages implements ManagementPageProvider
         $sections = [new ManagementSection('directory', 'User directory', 'runa.auth.users.read', null, 'directory', [
             self::field('display_name', 'Display name', read: 'users.read', filter: true),
             self::field('state', 'Account state', 'dictionary', read: 'users.read', filter: true, choices: ['current', 'deleted', 'all']),
+            ...self::directoryFields(),
         ], view: 'table')];
         $fields = [
             'eligibility' => [self::field('blockers', 'Authentication blockers', read: 'eligibility.read'), self::field('restrictions', 'Operation restrictions', read: 'eligibility.read')],
@@ -237,13 +257,76 @@ final class AdministrationPages implements ManagementPageProvider
             'preferences' => [self::field('preference_revision', 'Current preference revision', 'integer', 'preferences.reset', 'preferences.reset')],
             'exceptions' => [self::field('exceptions', 'Exceptions (latest 50)', read: 'policy.exceptions'), self::field('key', 'Policy key', 'dictionary', 'policy.exceptions', 'policy.exceptions', choices: ['password_expiry_days', 'session_idle_minutes']), self::field('value', 'Value (empty revokes)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('reason', 'Reason', write: 'policy.exceptions', read: 'policy.exceptions'), self::field('expires_at', 'Expiry (within 30 days)', 'datetime', 'policy.exceptions', 'policy.exceptions'), self::field('exception_version', 'Current exception version (0 if absent)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('policy_revision', 'Current policy revision', 'integer', 'policy.exceptions', 'policy.exceptions')],
         ];
+        $features = app(AdministrationFeatures::class);
+        foreach (['email' => ['Email', 'text', 'emails.read'], 'verified' => ['Verified', 'boolean', 'emails.read'], 'email_verified_at' => ['Email verified at', 'datetime', 'emails.read'], 'login' => ['Login', 'text', 'profiles.read'],
+            'logged_in' => ['Logged in', 'boolean', 'sessions.manage'], 'session_count' => ['Live session count', 'integer', 'sessions.manage'],
+            'authenticated_at' => ['Latest live login', 'datetime', 'sessions.manage'], 'activity_at' => ['Latest session activity', 'datetime', 'sessions.manage'],
+            'created_at' => ['Created at', 'datetime', 'users.read'], 'updated_at' => ['Updated at', 'datetime', 'users.read'],
+            'deleted_at' => ['Deleted at', 'datetime', 'users.read'], 'password_set' => ['Password set', 'boolean', 'passwords.reset'],
+            'password_changed_at' => ['Password changed at', 'datetime', 'passwords.reset'], 'password_expires_at' => ['Password expires at', 'datetime', 'passwords.reset'],
+            'totp_enrolled' => ['TOTP configured', 'boolean', 'two_factor.reset'], 'email_factor_enrolled' => ['Email factor configured', 'boolean', 'two_factor.reset'],
+            'recovery_codes_remaining' => ['Recovery codes remaining', 'integer', 'two_factor.reset']] as $key => [$label, $type, $read]) {
+            $fields['lifecycle'][] = self::field($key, $label, $type, read: $read);
+        }
+        $fields['lifecycle'][0] = self::field('operation', 'Lifecycle operation', 'dictionary', 'users.manage', 'users.read',
+            choices: array_values(array_filter($fields['lifecycle'][0]->field->choices, $features->lifecycle(...))));
+        foreach ($fields as $key => $items) {
+            $fields[$key] = array_values(array_filter($items, fn ($access) => $features->field($access->field->key)));
+        }
+        if (! $features->enabled('secondary')) {
+            unset($fields['secondary']);
+        }
+        if (! $features->enabled('trust')) {
+            unset($fields['trust']);
+        }
+        $fields['exceptions'][1] = self::field('key', 'Policy key', 'dictionary', 'policy.exceptions', 'policy.exceptions',
+            choices: $features->enabled('password_expiry') ? ['password_expiry_days', 'session_idle_minutes'] : ['session_idle_minutes']);
         $reads = ['eligibility' => 'eligibility.read', 'creation' => 'users.create', 'lifecycle' => 'users.read', 'invitations' => 'identities.read', 'primary_email' => 'profiles.read', 'secondary' => 'secondary.read', 'sessions' => 'sessions.manage', 'security' => 'identities.read', 'trust' => 'trust.manage', 'preferences' => 'profiles.read', 'exceptions' => 'policy.exceptions'];
         foreach ($fields as $key => $items) {
             $sections[] = new ManagementSection($key, ucwords(str_replace('_', ' ', $key)), 'runa.auth.'.$reads[$key], 'runa.auth.'.$reads[$key], $key, $items,
                 $key === 'eligibility' ? [] : self::commandDefinitions($key), required: false, component: 'runa.auth.admin_section');
         }
 
+        if ($features->enabled('avatar')) {
+            $sections[] = new ManagementSection('avatar', ['pl' => 'Avatar', 'en' => 'Avatar'], 'runa.auth.avatars.manage', 'runa.auth.avatars.manage', 'avatar', [
+                self::field('has_avatar', ['pl' => 'Avatar ustawiony', 'en' => 'Avatar set'], 'boolean', read: 'avatars.manage'),
+                self::field('avatar_upload_pending', ['pl' => 'Wybrano plik', 'en' => 'File selected'], 'boolean', 'avatars.manage', 'avatars.manage'),
+                self::field('avatar_max_kib', ['pl' => 'Limit rozmiaru (KiB)', 'en' => 'Size limit (KiB)'], 'integer', read: 'avatars.manage'),
+            ], required: false, component: 'runa.auth.admin_section');
+        }
+        $sections[] = self::bulkSection();
+
         return $sections;
+    }
+
+    /** @return list<ManagementFieldAccess> */
+    private static function directoryFields(): array
+    {
+        $fields = [];
+        foreach (['email' => ['Email', 'text', 'emails.read'], 'login' => ['Login', 'text', 'profiles.read'],
+            'active' => ['Active', 'boolean', 'users.read'], 'approved' => ['Approved', 'boolean', 'users.read'],
+            'logged_in' => ['Logged in', 'boolean', 'sessions.manage'], 'session_count' => ['Live session count', 'integer', 'sessions.manage'],
+            'verified' => ['Verified', 'boolean', 'emails.read'], 'security_locked' => ['Security Locked', 'boolean', 'users.read'],
+            'created_at' => ['Created at', 'datetime', 'users.read'], 'updated_at' => ['Updated at', 'datetime', 'users.read'],
+            'authenticated_at' => ['Latest live login', 'datetime', 'sessions.manage'], 'activity_at' => ['Latest session activity', 'datetime', 'sessions.manage'],
+            'email_verified_at' => ['Email verified at', 'datetime', 'emails.read'],
+            'activate_at' => ['Activate At', 'datetime', 'users.read'], 'deactivate_at' => ['Deactivate At', 'datetime', 'users.read'],
+            'expires_at' => ['Expires At', 'datetime', 'users.read'], 'attempt_locked_until' => ['Attempt Locked Until', 'datetime', 'users.read']] as $key => [$label, $type, $grant]) {
+            if (app(AdministrationFeatures::class)->field($key)) {
+                $fields[] = self::field($key, $label, $type, read: $grant);
+            }
+        }
+
+        return $fields;
+    }
+
+    private static function bulkSection(): ManagementSection
+    {
+        return new ManagementSection('bulk_sessions', 'Revoke selected sessions and trust', 'runa.auth.sessions.bulk_revoke', 'runa.auth.sessions.bulk_revoke', 'bulk_sessions', [
+            new ManagementFieldAccess(new ManagementField('public_ids', 'uuid', ['pl' => 'Wybrane konta', 'en' => 'Selected accounts'], ['pl' => 'Wybrane konta', 'en' => 'Selected accounts'], writable: true, multiple: true), 'runa.auth.sessions.bulk_revoke', 'runa.auth.sessions.bulk_revoke'),
+            ...(app(AdministrationFeatures::class)->enabled('trust') ? [self::field('trust', 'Also revoke trusted devices', 'boolean', 'sessions.bulk_revoke', 'sessions.bulk_revoke')] : []),
+            self::field('summary', 'Review summary', read: 'sessions.bulk_revoke'),
+        ], self::commandDefinitions('bulk_sessions'), required: false, component: 'runa.auth.admin_section');
     }
 
     public function pages(): array
@@ -274,11 +357,7 @@ final class AdministrationPages implements ManagementPageProvider
             self::field('source_revision', 'Restore source revision', 'integer', 'policy.write', 'policy.read'), self::field('history', 'Policy history (latest 50)', read: 'policy.read'), self::field('summary', 'Restore consequences', read: 'policy.read'),
         ], [new ManagementCommandDefinition('restore', 'Review and restore policy', new ManagementOperation(new ApiOperation('policy.restore', 'runa.auth.policy.write'), ['source_revision'], 'both', previewRequired: true), 'policy_history', destructive: true, proofAction: 'runa.auth.policy.publish')], component: 'runa.auth.admin_section');
 
-        return [new ManagementPage('policy', 'Authentication policy', 'runa.auth.policy.read', $sections, order: 20),
-            new ManagementPage('bulk_sessions', 'Bulk session revocation', 'runa.auth.sessions.bulk_revoke', [new ManagementSection('bulk_sessions', 'Selected or all accounts', 'runa.auth.sessions.bulk_revoke', 'runa.auth.sessions.bulk_revoke', 'bulk_sessions', [
-                new ManagementFieldAccess(new ManagementField('public_ids', 'uuid', ['pl' => 'Konta', 'en' => 'Accounts'], ['pl' => 'Wybrane UUID; pozostaw puste w trybie wszystkich kont.', 'en' => 'Selected UUIDs; leave empty in all mode.'], writable: true, multiple: true), 'runa.auth.sessions.bulk_revoke', 'runa.auth.sessions.bulk_revoke'),
-                self::field('all', 'All accounts (maximum 100)', 'boolean', 'sessions.bulk_revoke', 'sessions.bulk_revoke'), self::field('trust', 'Also revoke trusted devices', 'boolean', 'sessions.bulk_revoke', 'sessions.bulk_revoke'), self::field('summary', 'Review summary', read: 'sessions.bulk_revoke'),
-            ], self::commandDefinitions('bulk_sessions'))], order: 30)];
+        return [new ManagementPage('policy', 'Authentication policy', 'runa.auth.policy.read', $sections, order: 20)];
     }
 
     private static function names(string $grant): array
@@ -300,6 +379,9 @@ final class AdministrationPages implements ManagementPageProvider
     {
         $result = [];
         foreach (self::commands()[$key] as $name => $spec) {
+            if (! app(AdministrationFeatures::class)->command($key, $name)) {
+                continue;
+            }
             $result[] = new ManagementCommandDefinition($name, $spec['title'], new ManagementOperation(new ApiOperation($spec['operation'], 'runa.auth.'.$spec['permission']), $spec['inputs'], $spec['proof'] === null ? 'none' : 'both', revisionRequired: $key !== 'creation', previewRequired: $spec['preview']), $key, destructive: $spec['destructive'], intent: $key === 'creation' ? 'create' : 'action', proofAction: $spec['proof']);
         }
 
@@ -312,6 +394,7 @@ final class AdministrationPages implements ManagementPageProvider
         $identity = $target(AuthIdentities::class, ['identity']);
 
         return [
+            new ManagementBinding('avatar', AvatarSection::class, [$target(AuthAdministration::class, ['lifecycle'])]),
             new ManagementBinding('directory', Directory::class, [$target(AuthAdministration::class, ['users'])]),
             new ManagementBinding('eligibility', EligibilitySection::class, [$target(AuthIdentities::class, ['identity', 'eligibility'])]),
             new ManagementBinding('creation', CreationSection::class, [$target(AuthLifecycle::class, ['create'])]),

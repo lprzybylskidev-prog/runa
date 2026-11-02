@@ -872,3 +872,54 @@ it('Admin forms isolate optional independent workflow failures while required Sa
   await flushPromises();
   expect(form.blocked.value).toBe(true);
 });
+
+it('Admin native HTTP operations share the mutation lane and preserve unrelated dirty fields', async () => {
+  const { form } = harness();
+  await vi.waitFor(() => expect(form.records.value.profile).toBeDefined());
+  form.set('profile.name', 'Local draft');
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const operation = form.runIndependent('profile', async (snapshot, signal) => {
+    expect(snapshot.public_id).toBe(id);
+    expect(snapshot.revision).toBe('r1');
+    expect(signal.aborted).toBe(false);
+    await gate;
+    server = record({
+      revision: 'r2',
+      values: { name: 'Before', enabled: false, token: { set: true } },
+    });
+  });
+  expect(form.busy.value).toBe(true);
+  const competing = vi.fn(async () => {});
+  expect(await form.runIndependent('profile', competing)).toBe(false);
+  expect(competing).not.toHaveBeenCalled();
+  release();
+  expect(await operation).toBe(true);
+  expect(form.busy.value).toBe(false);
+  expect(form.values.value['profile.name']).toBe('Local draft');
+  expect(form.values.value['profile.enabled']).toBe(false);
+  expect(form.dirty.value).toBe(true);
+});
+
+it('Admin native HTTP operations abort and ignore completion after authority loss', async () => {
+  const { form, state } = harness();
+  await vi.waitFor(() => expect(form.records.value.profile).toBeDefined());
+  let release!: () => void;
+  let signal!: AbortSignal;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const operation = form.runIndependent('profile', async (_record, current) => {
+    signal = current;
+    await gate;
+  });
+  state.value = 'forbidden';
+  await flushPromises();
+  expect(signal.aborted).toBe(true);
+  release();
+  expect(await operation).toBe(false);
+  expect(form.records.value).toEqual({});
+  expect(form.notice.value).toBe('');
+});

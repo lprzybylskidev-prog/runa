@@ -44,16 +44,31 @@ final readonly class SessionStore
 
     public function liveRows(Connection $connection, User $user): Builder
     {
-        $now = CarbonImmutable::now('UTC');
+        return $this->liveRowsForUsers($connection, [$user]);
+    }
 
-        return $connection->table('runa_auth.sessions')->where('user_id', $user->id)->whereNull('revoked_at')
-            ->where('security_version', $user->security_version)->where('expires_at', '>', $now)
+    /** @param list<User> $users */
+    public function liveRowsForUsers(Connection $connection, array $users): Builder
+    {
+        $now = CarbonImmutable::now('UTC');
+        $idle = app(PolicyExceptions::class)->values($users, 'session_idle_minutes');
+
+        return $connection->table('runa_auth.sessions')->whereNull('revoked_at')
+            ->where('expires_at', '>', $now)
             ->where('authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_absolute_minutes')))
-            ->where('activity_at', '>', $now->subMinutes(app(PolicyExceptions::class)->value($user, 'session_idle_minutes')))
-            ->where(function (Builder $query) use ($now): void {
-                $query->where(fn (Builder $q) => $q->where('remembered', false)->where('authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_absolute_minutes'))))
-                    ->orWhere(fn (Builder $q) => $q->where('remembered', true)->where('authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_remember_minutes'))));
-            });
+            ->where(function (Builder $query) use ($users, $idle, $now): void {
+                if ($users === []) {
+                    $query->whereRaw('1 = 0');
+                }
+                foreach ($users as $user) {
+                    $query->orWhere(fn (Builder $q) => $q->where('user_id', $user->id)
+                        ->where('security_version', $user->security_version)
+                        ->where('activity_at', '>', $now->subMinutes($idle[$user->id])));
+                }
+            })
+            ->where(fn (Builder $query) => $query->where('remembered', false)
+                ->orWhere(fn (Builder $q) => $q->where('remembered', true)
+                    ->where('authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_remember_minutes')))));
     }
 
     /** @return SessionRow|null */

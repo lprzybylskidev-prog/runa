@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Complete configuration-aware Users administration: authorized account/session/security dates and state, accessible detail tabs, native avatar editing, and exact table-selected session/trust revocation. Remove the separate bulk-session page and retain native grants, proofs, Audit and shared Save.
+
 - Restore module-state-to-card spacing after loading composition; keep ready ContentLoading slot children directly under their layout owner.
 
 - Separate the JSON continuation ellipsis from payload tokens in shared previews.

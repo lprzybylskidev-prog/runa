@@ -319,6 +319,7 @@ interface AdminTableController {
 }
 interface AdminResourceTableProps {
   controller: AdminTableController;
+  selectable?: boolean;
 }
 ```
 
@@ -605,11 +606,16 @@ interface AdminPageSlots {
   actions?(scope: AdminPageProps): VNode[];
 }
 interface AdminSectionProps {
+  embedded?: boolean;
   section: AdminSectionData;
   controller: AdminFormController;
   components?: AdminComponentRegistry;
 }
 interface AdminSectionSlots {
+  commandReview?(scope: {
+    command: AdminCommandData;
+    review: AdminCommandReview;
+  }): VNode[];
   default?(scope: AdminSectionProps): VNode[];
 }
 interface AdminFieldProps {
@@ -1179,3 +1185,33 @@ teleported dialogs. Current bootstrap status avoids an extra initial status GET;
 GET activity/focus checks never extend access. Expiry clears protected projection,
 requests native entry proof and never replays an interrupted write. Custom Admin
 presentation must keep its controller scoped to the protected route.
+
+### Independent native HTTP operations
+
+`AdminFormController.runIndependent(section: string, action: (record: AdminRecord,
+signal: AbortSignal) => Promise<void>): Promise<boolean>` coordinates a trusted
+source-owned multipart/native HTTP operation outside aggregate Save. The Admin
+frontend owner implements it in `frontend/useAdminForm.ts`; the public consumer
+entrypoint is `@/runa/admin` and delivery is the frontend runtime. It requires a
+current writable section record without conflicts, captures that record, shares
+the page mutation lane and fences session/page changes. The callback calls its
+owning guarded HTTP transport, validates its response and enforces its native
+protocol; this coordinator grants no authority and never replays a write. Success
+refreshes shared record/table reads in place. Failure uses ordinary controlled
+feedback and 409 reconciliation; interrupted completion remains unknown.
+
+`AdminResourceTable.selectable` (default false) enables explicit row-selection
+composition for owning native workflows such as Auth's reviewed session revocation.
+It supplies no bulk implementation or authority; the owner consumes the controller's
+selection, preserves exact identities/limits and performs native review/proof.
+
+`AdminSection.embedded?: boolean` defaults false. Set true when a composing Card
+already owns the section heading/frame; the default content retains its field grid,
+readiness, proof, conflicts and commands without another fieldset/title. The
+Admin frontend owner implements this additive presentation option in AdminSection.vue;
+public consumers import AdminSection and AdminSectionProps from `@/runa/admin`.
+
+`AdminSection` also exposes `commandReview({ command: AdminCommandData,
+review: AdminCommandReview })` for owner-specific human-readable review summaries.
+The default remains escaped field differences. A replacement changes presentation
+only: native fingerprint, required review, proof and confirmation stay in the controller.

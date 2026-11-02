@@ -292,6 +292,10 @@ export interface AdminFormController {
     command: string,
   ): Promise<AdminCommandReview | undefined>;
   commandReviews: Ref<Record<string, AdminCommandReview>>;
+  runIndependent(
+    section: string,
+    action: (record: AdminRecord, signal: AbortSignal) => Promise<void>,
+  ): Promise<boolean>;
   editSection(section: string, publicId: string | null): Promise<boolean>;
   closeSection(section: string): Promise<boolean>;
   setAvailable(identity: string, available: boolean): void;
@@ -377,11 +381,16 @@ export interface AdminFormSlots {
 }
 export type AdminFormEmits = { saved: [result: AdminSaveResult] };
 export interface AdminSectionProps {
+  embedded?: boolean;
   section: AdminSectionData;
   controller: AdminFormController;
   components?: AdminComponentRegistry | undefined;
 }
 export interface AdminSectionSlots {
+  commandReview?(scope: {
+    command: AdminCommandData;
+    review: AdminCommandReview;
+  }): VNode[];
   default?(scope: {
     section: AdminSectionData;
     controller: AdminFormController;
@@ -395,6 +404,7 @@ export interface AdminActionProps {
 export type AdminActionEmits = { invoke: [] };
 export interface AdminResourceTableProps {
   controller: AdminTableController;
+  selectable?: boolean;
 }
 /** The owning consumer supplies an authorized, field-bound lookup lane. */
 export interface AdminFieldLookup {

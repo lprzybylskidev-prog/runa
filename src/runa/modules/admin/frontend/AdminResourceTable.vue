@@ -87,6 +87,7 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
     :caption="tr(controller.section.value?.title ?? tr('Records'))"
     :page-sizes="[10, 25, 50, 100]"
     :selectable="
+      selectable === true ||
       !!controller.adapters.value.bulk ||
       !!controller.adapters.value.exports?.capabilities.scopes.includes(
         'selected',

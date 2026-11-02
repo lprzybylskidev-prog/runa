@@ -24,6 +24,7 @@ use Runa\Modules\Auth\Contracts\AuthSessions;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
+use Runa\Modules\Auth\Support\AdministrationFeatures;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Settings\ModuleSettings;
@@ -52,11 +53,14 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             }
         }
         $values = [];
-        if (static::KEY === 'lifecycle') {
+        if (in_array(static::KEY, ['lifecycle', 'avatar'], true)) {
             $values = $this->api(AuthAdministration::class)->lifecycle($id);
+            if (static::KEY === 'avatar') {
+                $values['avatar_upload_pending'] = false;
+            }
             $version = $values['version'];
             unset($values['version'], $values['public_id']);
-            $values += ['operation' => 'activate', 'at' => null, 'enabled' => false];
+            $values += ['operation' => ($values['deleted'] ? 'restore' : ($values['active'] ? 'deactivate' : 'activate')), 'at' => null, 'enabled' => false];
         } elseif (in_array(static::KEY, ['primary_email', 'secondary', 'preferences'], true)) {
             $profile = $this->api(AuthAdministration::class)->profile($id);
             $version = $profile->version;
@@ -155,6 +159,12 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
 
     private function validateInput(ManagementWrite $input): void
     {
+        $features = app(AdministrationFeatures::class);
+        if (! $features->command(static::KEY, $input->command)
+            || (static::KEY === 'lifecycle' && ! $features->lifecycle($input->values['operation'] ?? ''))
+            || (in_array(static::KEY, ['secondary', 'trust'], true) && ! $features->enabled(static::KEY))) {
+            throw new \InvalidArgumentException('Auth feature disabled.');
+        }
         $spec = AdministrationPages::commands()[static::KEY][$input->command] ?? throw new \InvalidArgumentException('Unknown command.');
         $keys = array_keys($input->values);
         sort($keys);

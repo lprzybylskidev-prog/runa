@@ -2,15 +2,19 @@
 
 namespace Runa\Modules\Auth\Queries;
 
+use Carbon\CarbonImmutable;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\ModuleFramework\Api\OperationScope;
+use Runa\Modules\Auth\Actions\SessionStore;
 use Runa\Modules\Auth\Contracts\AdministrativeProfile;
 use Runa\Modules\Auth\Contracts\AdministrativeUser;
 use Runa\Modules\Auth\Contracts\AuthAdministration;
 use Runa\Modules\Auth\Contracts\UserDirectoryPage;
 use Runa\Modules\Auth\Contracts\UserDirectoryQuery;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Support\AdministrationFeatures;
+use Runa\Modules\Auth\Support\PolicyExceptions;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
@@ -59,9 +63,17 @@ final readonly class Administration implements AuthAdministration
         $total = (clone $users)->count();
         $rows = $users->when($after !== null, fn ($q) => $q->where('public_id', '>', $after))->orderBy('public_id')->limit($query->limit + 1)->get();
         $more = $rows->count() > $query->limit;
+        $batch = $rows->take($query->limit)->values()->all();
+        $sessions = $this->allows('sessions.manage') ? app(SessionStore::class)->liveRowsForUsers(app('db')->connection(), $batch)
+            ->selectRaw('user_id, count(*) AS count, max(authenticated_at) AS authenticated_at, max(activity_at) AS activity_at')
+            ->groupBy('user_id')->get()->keyBy('user_id') : collect();
+        $permissions = array_fill_keys(['profiles.read', 'emails.read', 'sessions.manage'], false);
+        foreach ($permissions as $permission => $_) {
+            $permissions[$permission] = $this->allows($permission);
+        }
         $items = [];
-        foreach ($rows->take($query->limit) as $user) {
-            $items[] = new AdministrativeUser($user->public_id, $user->identity()->displayName, $user->trashed() ? 'deleted' : 'current', $user->version);
+        foreach ($batch as $user) {
+            $items[] = new AdministrativeUser($user->public_id, $user->identity()->displayName, $user->trashed() ? 'deleted' : 'current', $user->version, $this->directoryDetails($user, $sessions->get($user->id), $permissions));
         }
         $next = $more ? base64_encode(json_encode(['id' => $items[array_key_last($items)]->publicId, 'query' => hash('sha256', serialize([$query->state, $query->search]))], JSON_THROW_ON_ERROR)) : null;
 
@@ -94,7 +106,57 @@ final readonly class Administration implements AuthAdministration
             $result[$key] = $value instanceof \DateTimeInterface ? $value->format('Y-m-d\TH:i:s\Z') : $value;
         }
 
-        return $result;
+        $result += $this->directoryDetails($user, $this->allows('sessions.manage')
+            ? app(SessionStore::class)->liveRows(app('db')->connection(), $user)
+                ->selectRaw('count(*) AS count, max(authenticated_at) AS authenticated_at, max(activity_at) AS activity_at')->first()
+            : null);
+        if ($this->allows('avatars.manage') && app(AdministrationFeatures::class)->enabled('avatar')) {
+            $result['has_avatar'] = $user->avatar_path !== null;
+            $result['avatar_max_kib'] = $this->settings->integer('runa.auth', 'avatar_max_kib');
+        }
+        $result['deleted_at'] = $user->deleted_at?->toIso8601String();
+        if ($this->allows('passwords.reset')) {
+            $result['password_set'] = $user->password !== null;
+            $result['password_changed_at'] = $user->password_changed_at?->toIso8601String();
+            if (app(AdministrationFeatures::class)->enabled('password_expiry')) {
+                $days = app(PolicyExceptions::class)->value($user, 'password_expiry_days');
+                $result['password_expires_at'] = $user->password !== null && $days > 0 ? $user->password_changed_at?->addDays($days)->toIso8601String() : null;
+            }
+        }
+        if ($this->allows('two_factor.reset')) {
+            $result['totp_enrolled'] = $user->totp_secret !== null;
+            $result['email_factor_enrolled'] = $user->email_factor;
+            $result['recovery_codes_remaining'] = count($user->recovery_hashes ?? []);
+        }
+
+        return array_filter($result, fn ($key) => app(AdministrationFeatures::class)->field($key), ARRAY_FILTER_USE_KEY);
+    }
+
+    /** @param array<string,bool>|null $permissions
+     * @return array<string,bool|int|string|null> */
+    private function directoryDetails(User $user, ?object $sessions, ?array $permissions = null): array
+    {
+        $result = ['active' => $user->active, 'approved' => $user->approved,
+            'security_locked' => $user->security_locked,
+            'activate_at' => $user->activate_at?->toIso8601String(), 'deactivate_at' => $user->deactivate_at?->toIso8601String(),
+            'expires_at' => $user->expires_at?->toIso8601String(), 'attempt_locked_until' => $user->attempt_locked_until?->toIso8601String(),
+            'created_at' => $user->created_at->toIso8601String(), 'updated_at' => $user->updated_at->toIso8601String()];
+        if (($permissions['profiles.read'] ?? $this->allows('profiles.read'))) {
+            $result['login'] = $user->login;
+        }
+        if (($permissions['emails.read'] ?? $this->allows('emails.read'))) {
+            $result['email'] = $user->email;
+            $result['verified'] = $user->hasVerifiedEmail();
+            $result['email_verified_at'] = $user->email_verified_at?->toIso8601String();
+        }
+        if (($permissions['sessions.manage'] ?? $this->allows('sessions.manage'))) {
+            $result['logged_in'] = ! $user->trashed() && (int) ($sessions->count ?? 0) > 0;
+            $result['session_count'] = $user->trashed() ? 0 : (int) ($sessions->count ?? 0);
+            $result['authenticated_at'] = isset($sessions->authenticated_at) ? CarbonImmutable::parse($sessions->authenticated_at)->utc()->toIso8601String() : null;
+            $result['activity_at'] = isset($sessions->activity_at) ? CarbonImmutable::parse($sessions->activity_at)->utc()->toIso8601String() : null;
+        }
+
+        return array_filter($result, fn ($key) => app(AdministrationFeatures::class)->field($key), ARRAY_FILTER_USE_KEY);
     }
 
     private function user(string $publicId): User

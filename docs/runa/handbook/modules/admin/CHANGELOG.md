@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Complete configuration-aware Users administration: authorized account/session/security dates and state, accessible detail tabs, native avatar editing, and exact table-selected session/trust revocation. Remove the separate bulk-session page and retain native grants, proofs, Audit and shared Save.
+
 - Restore module-state-to-card spacing after loading composition; keep ready ContentLoading slot children directly under their layout owner.
 
 - Show the collapsed JSON continuation ellipsis on its own line in shared value previews.

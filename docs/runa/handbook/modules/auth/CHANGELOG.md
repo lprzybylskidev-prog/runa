@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Complete configuration-aware Users administration: authorized account/session/security dates and state, accessible detail tabs, native avatar editing, and exact table-selected session/trust revocation. Remove the separate bulk-session page and retain native grants, proofs, Audit and shared Save.
+
 - Replace standalone content circles in history details, image cropping, entry forms and welcome navigation with shared content placeholders. Preserve specialized account geometry and Table loading.
 
 - Hide premature empty collection messages while modal record details load; shared Admin sections supply animated loading feedback.

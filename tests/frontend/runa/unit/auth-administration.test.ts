@@ -3,7 +3,7 @@ import { beforeEach, afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import { AuthAdminUsers, AuthAdminSection } from '@/runa/auth';
-import { useAdminForm } from '@/runa/admin';
+import { AdminForm, useAdminForm } from '@/runa/admin';
 import type {
   AdminFieldData,
   AdminFormController,
@@ -191,4 +191,162 @@ it('Auth administration collection sections use only authorized fields and expos
   await vi.waitFor(() =>
     expect(form.values.value['secondary.addresses']).toBeUndefined(),
   );
+});
+
+it('Auth administration user page moves the exact table selection into the native bulk review', async () => {
+  const bulk = section('bulk_sessions', [
+    { ...field('public_ids', false), type: 'uuid', multiple: true },
+    { ...field('trust', false), type: 'boolean' },
+    field('summary'),
+  ]);
+  bulk.commands = [
+    {
+      key: 'revoke',
+      title: 'Revoke selected sessions and trust',
+      mode: 'independent',
+      destructive: true,
+      requirement: 'none',
+      preview_required: true,
+      inputs: ['public_ids', 'trust'],
+      bulk: false,
+      action: null,
+      available: true,
+      intent: 'action',
+    },
+  ];
+  const controller = page([
+    section('directory', [field('display_name'), field('state')], 'table'),
+    bulk,
+  ]);
+  const calls: string[] = [];
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    calls.push(url.pathname);
+    if (url.pathname.endsWith('/directory'))
+      return response({
+        items: [
+          {
+            public_id: target,
+            revision: '1',
+            values: { display_name: 'Bulk target', state: 'current' },
+          },
+        ],
+        next: null,
+        total: 1,
+      });
+    return response({
+      public_id: null,
+      revision: '0',
+      values: { public_ids: [], trust: false, summary: null },
+    });
+  });
+  let form!: AdminFormController;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller, {
+          autoRead: false,
+          confirmLeave: async () => true,
+        });
+        return () => h(AuthAdminUsers, { controller, form });
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Bulk target'));
+  const trigger = () =>
+    wrapper
+      .findAll('button')
+      .find((button) => button.text().startsWith('Revoke sessions'))!;
+  expect(trigger().attributes('disabled')).toBeDefined();
+  await wrapper.get('tbody input[type=checkbox]').setValue(true);
+  await trigger().trigger('click');
+  await vi.waitFor(() =>
+    expect(form.values.value['bulk_sessions.public_ids']).toEqual([target]),
+  );
+  expect(form.records.value.bulk_sessions?.public_id).toBeNull();
+  expect(calls).toContain('/api/admin/runa.auth/users/sections/bulk_sessions');
+  expect(calls.some((path) => path.includes('/runa.auth/bulk_sessions/'))).toBe(
+    false,
+  );
+  await vi.waitFor(() =>
+    expect(document.querySelector('[role=dialog]')?.textContent).toContain(
+      'Selected accounts: 1',
+    ),
+  );
+  expect(document.querySelector('[role=dialog]')?.textContent).not.toContain(
+    target,
+  );
+});
+
+it('Auth administrative avatar uses native multipart target and version with dirty protection', async () => {
+  const avatar = section('avatar', [
+    { ...field('has_avatar'), type: 'boolean' },
+    { ...field('avatar_max_kib'), type: 'integer' },
+    { ...field('avatar_upload_pending', false), type: 'boolean' },
+  ]);
+  const controller = page([avatar]);
+  let version = 1;
+  let uploaded: FormData | undefined;
+  vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+    if (init?.method === 'POST') {
+      expect(new URL(String(input), window.location.origin).pathname).toBe(
+        '/api/runa/auth/users/avatar',
+      );
+      expect(init.body).toBeInstanceOf(FormData);
+      uploaded = init.body as FormData;
+      version = 2;
+      return response({ updated: true, version });
+    }
+    return response({
+      public_id: target,
+      revision: String(version),
+      values: {
+        has_avatar: version === 2,
+        avatar_max_kib: 2048,
+        avatar_upload_pending: false,
+      },
+    });
+  });
+  let form!: AdminFormController;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller);
+        return () =>
+          h(
+            AdminForm,
+            { controller: form },
+            {
+              default: () =>
+                h(AuthAdminSection, {
+                  page: controller,
+                  section: avatar,
+                  controller: form,
+                }),
+            },
+          );
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.find('input[type=file]').exists()).toBe(true),
+  );
+  const transfer = new DataTransfer();
+  transfer.items.add(
+    new File(['fixture'], 'avatar.png', { type: 'image/png' }),
+  );
+  (wrapper.get('input[type=file]').element as HTMLInputElement).files =
+    transfer.files;
+  await wrapper.get('input[type=file]').trigger('change');
+  await vi.waitFor(() => expect(form.dirty.value).toBe(true));
+  const save = wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Save avatar')!;
+  await save.trigger('click');
+  await vi.waitFor(() => expect(uploaded).toBeDefined());
+  expect(uploaded!.get('public_id')).toBe(target);
+  expect(uploaded!.get('version')).toBe('1');
+  expect(uploaded!.get('avatar')).toBeInstanceOf(File);
+  await vi.waitFor(() => expect(form.dirty.value).toBe(false));
+  expect(form.records.value.avatar?.revision).toBe('2');
 });

@@ -714,6 +714,17 @@ reassessment before resuming point 3; completed point history remains evidence.
     class/direct-child mismatch and preserve refresh DOM/focus.
   - Verify normal/loading/refresh layouts with focused geometry checks and prepare
     current assets; manual acceptance and final gates remain open.
+- [x] 11a43. Complete configuration-aware Auth user administration.
+  - Owner request, 2026-11-02: enrich /admin/runa.auth/users with authorized
+    account/session/security state and dates, expose every supported administrative
+    user operation, and hide fields/actions for disabled Auth features.
+  - Move native reviewed bulk session/trust revocation from its separate page to
+    explicit table selection. Preserve current grants, proof, revisions, native
+    limits, Audit and last-administrator protections; never reinterpret filtered
+    selection as every account.
+  - Organize user details into usable sections, synchronize public signatures and
+    owning documentation, author focused state/configuration/selection regressions
+    and prepare current local assets before owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4658,3 +4669,111 @@ remain appropriate for this compatible layout repair. Current assets are ready a
 http://localhost:8080/admin. No dependency, migration, credential/grant or Docker
 resource changed; active services, dev/base-test data, caches and evidence remain
 preserved. Whole-roadmap manual acceptance 11b and final verification 12 stay open.
+
+### Point 11a43 — Configuration-aware Auth Users administration
+
+Owner scope, 2026-11-02: complete the Users view only, inspect actual Auth
+administrative capabilities/settings, expose useful account/session/security dates
+and state, and replace the separate bulk-session page with table selection.
+Initial knowledge status was current; bounded retrieval and original Auth/Admin
+administration, profile, sessions, security, loading/forms and declaration sources
+were reviewed. This continues the active Admin roadmap and its existing release
+metadata; manual acceptance 11b and final verification/release 12 remain open.
+
+Directory records now carry separately authorized login/email, account approval/
+activity/security-lock flags, verification/date, created/updated moments, lifecycle
+deadlines and live-session presence/count/latest login/activity. Default visible
+columns remain compact; the shared picker exposes additional authorized columns.
+AuthAdministration AdministrativeUser gains optional details with an empty default;
+lifecycle adds safe grant/configuration-dependent metadata for password set/change/
+expiry, factor enrollment/recovery count and avatar presence/limit. No secrets,
+private storage paths, internal IDs or security generations are projected. Live
+sessions reuse one SessionStore predicate for bounded batch and ordinary reads,
+including policy exceptions and remembered/captured/idle/security-version expiry.
+Session moments are normalized before Admin's strict datetime projection. Latest
+login refers to live sessions, not an invented all-time historical timestamp.
+
+Current settings remove disabled verification status/actions, periodic-password
+expiry/force-change controls, disabled secondary/trust/factor/recovery presentation
+and unapproved administrator avatar editing. Native command input intersection
+also refuses manually submitted hidden actions. Registration approval is a policy
+for new public registrations, not a global account-approval switch: preserve
+administrative approval facts/choices and NewIdentity's explicit approval input.
+Likewise self-service edit flags do not remove separately authorized admin writes.
+Existing exceptions remain readable; disabled password-expiry keys cannot be newly
+selected in the editor. Native stronger proofs, last-administrator protections,
+revisions, Audit, token delivery and guarded owner APIs remain authoritative.
+
+User details use shared accessible tabs and retain visited presentations/drafts,
+including selected avatar files. Eagerly activate the complete authorized atomic
+Save participant set even behind other tabs; presentation laziness cannot omit a
+required owner. Account status includes contextual lifecycle deadline/flag controls;
+creation is isolated from existing-user sections. Standard independent actions
+cover invitations, primary/secondary email, sessions, factors/password reset,
+trusted devices, preference reset and policy exceptions. Source discovery also
+found existing administrative avatar HTTP endpoints omitted by the earlier view.
+The Avatar tab reuses those guarded multipart upload/removal protocols, current
+limits/version, native validation/Audit and explicit deletion confirmation.
+
+AdminFormController.runIndependent coordinates that native HTTP operation through
+the existing page mutation lane, abort/context fences, safe controlled feedback and
+read reconciliation. A declared transient upload-pending flag supplies dirty-close
+protection without persisting file contents. Revision changes after file selection
+require local reconciliation; removal retains its captured revision. New public
+presentation options are additive: AdminResourceTable.selectable, AdminSection.
+embedded and commandReview. Auth uses these to avoid duplicate frames/headings and
+render reviewed bulk counts as localized account/session/device values rather
+than implementation JSON. A served mobile check found the tabs' intrinsic width
+escaping its grid; min-w-0 now confines the owning tab container.
+
+The bulk_sessions page/navigation is removed. Its owning section now belongs to
+Users and receives captured explicit table UUIDs, at most 100. Native selection
+grants, preview fingerprint, proof and destructive confirmation remain required.
+There is no all-account checkbox/manual UUID entry in this UI, and all-matching
+selection is never reinterpreted as every account. The existing public native
+all-account API remains available to its original consumers. Optional trust removal
+is omitted when disabled; table refresh cannot change the captured review target.
+
+Focused uncertainty checks and preparation:
+
+- Five focused native backend cases pass for lifecycle intents, create/invite/
+  secondary/preferences and reviewed bulk proof/Audit (146 assertions), recorded
+  in `.runtime/frontend/RM-2026-016-auth-users-actions-focused.log`. Earlier fixture
+  failures were corrected to use eligible invitation recipients, a current actor
+  password-change date and the actual structured error envelope. One repeated
+  transport ended with signal 143 after native PASS/cleanup; it is not an additional
+  completed invocation. The completed earlier invocation returned native exit 0.
+- Final focused configuration/session/avatar metadata cases pass: 2 cases,
+  56 assertions, native exit/cleanup 0, in `RM-2026-016-auth-users-backend.log`
+  under `.runtime/frontend/`. The first serial attempt correctly refused populated
+  base schemas without mutation; supported disposable-worker execution was used.
+- Five focused Chromium component cases pass: selected-user navigation, exact bulk
+  target transfer, native HTTP mutation-lane/dirty reconciliation, authority-loss
+  fencing and native avatar multipart target/version/dirty protection. Native
+  exit/cleanup 0: `.runtime/frontend/RM-2026-016-auth-users-focused.log`.
+- Supported manual-runtime asset preparation `pnpm --dir src run build` passes in
+  `.runtime/frontend/RM-2026-016-auth-users-build.log`. No broad verification PASS
+  is claimed. Existing build chunk-size/Vitest dynamic-import advisories remain.
+- A focused one-off served-build diagnostic checks actual compiled components,
+  tab/draft retention, avatar controls and exact bulk preview values at 1440px
+  PL/dark and 390px EN/light. Both have no page errors/modal overflow; inspected
+  final mobile status and desktop bulk screenshots show the width/frame repairs
+  and localized scalar review. Controlled responses are interaction evidence,
+  not live backend mutation or owner approval. Reports/screenshots are under
+  `.runtime/artifacts/playwright/runa/RM-2026-016-auth-users/`; diagnostic output is
+  `.runtime/frontend/RM-2026-016-auth-users-browser.log`.
+- Actual local Users HTML, readiness, presentation, entry options and current asset
+  return 200; anonymous Admin read retains 401. Evidence:
+  `.runtime/frontend/RM-2026-016-auth-users-http.json`. The application is ready at
+  http://localhost:8080/admin/runa.auth/users using existing access.
+
+Public Auth administration/profile/sessions, Admin frontend contracts and current
+central/Auth/Admin changelogs are synchronized. Existing owner/customer frontend,
+backend and security skills already route consumers to these canonical public
+contracts; neither instruction product needs another duplicated policy. The
+additive DTO/controller/presentation seams and refinement of unpublished admin
+pages retain the assessed unreleased Auth 2.1.0 and Admin 0.1.0 targets under the
+existing pre-1.0 authorization. No new dependency, migration, credential/grant
+change or Docker resource was introduced. Supported runner cleanup removed its
+inactive runa_test_test_1 worker; base test/development data, active services,
+Qdrant/model caches and all evidence remain preserved.

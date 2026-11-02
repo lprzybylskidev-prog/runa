@@ -2,7 +2,7 @@
 
 # Auth administration
 
-Auth 2.0.0 supplies source-owned administration declarations and adapters, consumed
+Auth 2.1.0 supplies source-owned administration declarations and adapters, consumed
 by Admin without a reverse backend dependency. Business behavior remains available
 through the owning guarded APIs without Admin. This is unreleased source for
 platform 0.7.0; complete browser/security/release verification belongs to
@@ -28,7 +28,7 @@ UserDirectoryQuery::__construct(?string $after = null, int $limit = 25,
     ?string $search = null, string $state = 'current')
 UserDirectoryPage::__construct(array $items, ?string $next, ?int $total = null)
 AdministrativeUser::__construct(string $publicId, string $displayName,
-    string $state, int $version)
+    string $state, int $version, array $details = [])
 AdministrativeProfile::__construct(string $publicId, int $version,
     ?string $name, ?string $firstName, ?string $surname, ?string $login,
     ?array $primaryEmail, array $secondaryEmails, int $preferenceRevision)
@@ -36,7 +36,16 @@ AdministrativeProfile::__construct(string $publicId, int $version,
 
 Directory requires `runa.auth.users.read`; `deleted`/`all` additionally require
 `runa.auth.users.deleted.read`. Results contain up to 100 users in UUID ascending
-order and state `current|deleted`, without internal keys, email or credential state.
+order and state `current|deleted`. `details` contains safe account metadata:
+active/approval/security-lock flags, activation/deactivation/expiry/attempt-lock
+moments and created/updated dates. Login additionally requires `profiles.read`;
+email and verification/date require `emails.read`; live-session presence/count,
+latest live login and activity require `sessions.manage`. Hidden values never
+cross the guarded read. Session counts aggregate a bounded account batch using
+Auth's native SessionStore criteria, including current policy, per-account idle
+exceptions, security generation and captured expiry; presence means a live session,
+not proof that a person is currently at their keyboard. Latest login covers live
+sessions only, not an immutable all-time login record.
 The owning reader supplies `total`, the exact authorized filtered count before
 cursor/limit, including zero. The nullable DTO default represents unavailable
 counts for source-authored results; the supplied directory always counts in SQL.
@@ -56,13 +65,29 @@ set-state. Authorized shape is up to 100 `{public_id:string,email:string,verifie
 entries. Preference revision requires `runa.auth.preferences.reset`, otherwise zero;
 Admin omits its descriptor/value without that grant.
 
-`lifecycle` requires `runa.auth.users.read` and returns
-`{public_id:string,version:int,active:bool,approved:bool,deleted:bool,
-security_locked:bool,password_change_required:bool,activate_at:?string,
-deactivate_at:?string,expires_at:?string,attempt_locked_until:?string}`.
-Moments use UTC seconds. These are stored lifecycle facts; the independently
-permissioned `AuthIdentities::eligibility` read supplies current effective blockers
-and restrictions. No security version, factor enrollment or credential is returned.
+`lifecycle` requires `runa.auth.users.read` and returns public_id, version,
+deleted and the safe directory metadata above, plus deleted_at. Credential set-state,
+password changed/expiry dates require `passwords.reset`; factor enrollment booleans
+and remaining recovery-code count require `two_factor.reset`. No password, secret,
+code/hash, internal ID or security generation leaves this projection. Avatar set-state
+and upload limit require `avatars.manage` and enabled administrator avatar editing.
+UTC moments use explicit offsets. These are account/session facts; the independently
+permissioned `AuthIdentities::eligibility` read supplies effective blockers and
+restrictions.
+
+Current configuration filters both declarations and account-state projection.
+Disabled email verification removes status/date/require-verification; verified
+replacement also requires admin bypass opt-in. Zero password_expiry_days removes
+expiry/password-change-required display and its lifecycle command, while ordinary
+password reset remains available. Registration approval policy applies to public
+registration; it never hides administrative approval facts/actions or changes
+explicit NewIdentity approval choices. Disabled secondary emails, trust,
+TOTP/email factors/recovery codes and administrator avatar editing omit their
+sections/fields/actions. Self-service edit flags never remove separately authorized
+administrator operations. Existing policy exceptions remain readable/revocable;
+new password-expiry exceptions are omitted from selectable keys when expiry is off.
+Backend declaration input intersection refuses manually submitted hidden commands.
+
 Profile/lifecycle reject missing or unauthorized deleted subjects with safe 404;
 deleted reads need the extra grant. Invalid queries/cursors fail with safe 422;
 ordinary availability/grant failures retain guarded API semantics. Constructors
@@ -72,7 +97,9 @@ reject invalid DTO bounds with InvalidArgumentException.
 
 Named Admin transport remains `/api/admin/{owner}/{page}/sections/{section}` for
 reads, with `/preview` and `/commands` for writes. User page is
-`/admin/runa.auth/users`; policy and bulk pages use `policy` and `bulk_sessions`.
+`/admin/runa.auth/users`; policy uses `policy`. The separate bulk_sessions page
+is removed. User details use accessible tabs, keeping controller drafts and the
+complete authorized atomic Save participant set across presentation switches.
 Every operation requires Admin entry/current session/password proof, current owning
 availability, page/section/field grants and native operation checks. The Users page
 requires `runa.auth.identities.read`. Selecting an account uses its UUID and the
@@ -97,7 +124,25 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | preferences reset               | AuthPreferences.resetAccount; `profiles.read`, `preferences.reset`               | Account preference revision, confirmation; no foreign preference editor                                                                  |
 | exceptions                      | AuthPolicies; `policy.exceptions`                                                | Policy and per-key exception revisions, bounded reason/expiry, both-factor `runa.auth.policy.exception`; null value revokes              |
 | policy / history / restore      | AuthPolicies + owning ModuleSettings; `policy.read`, `policy.write`              | Exact settings revision/generation, reviewed differences and consequences, both-factor `runa.auth.policy.publish`; restore also confirms |
-| bulk selected/all sessions      | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation, both-factor `runa.auth.sessions.bulk_revoke`  |
+| bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation, both-factor `runa.auth.sessions.bulk_revoke`  |
+
+The directory enables explicit table selection for native bulk session revocation.
+The selected UUIDs are captured for review; no manual ID entry or all-account toggle
+exists in this UI. At most 100 accounts are admitted, with native Permissions
+selection authority, exact preview fingerprint, both-factor proof and confirmation.
+An all-matching/filtered selection is never converted to all accounts. Optional
+trust revocation appears only while trusted devices are enabled. The public native
+AuthBulkSessions all-account API remains available to its original consumers.
+
+Avatar upload/removal reuse guarded POST/DELETE `/api/runa/auth/users/avatar` with
+target public_id and expected version, independent from aggregate Save. The Auth
+section default consumes AdminFormController.runIndependent for the shared mutation
+lane, cancellation, feedback and reconciliation. FileInput enforces current type/size
+UX limits; the native server remains content/dimension/size/authority/Audit owner.
+A transient declared upload-pending flag participates in dirty navigation without
+storing files or drafts server-side. Changes after file selection require explicit
+local reconciliation; removal confirms. No foreign avatar bytes or storage path
+are exposed by the metadata read.
 
 All named stronger proofs are single use. Lifecycle accepts every supported intent:
 activate/deactivate/approve/delete/restore, schedule activation/deactivation,

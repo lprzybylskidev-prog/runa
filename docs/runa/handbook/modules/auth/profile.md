@@ -141,7 +141,8 @@ preserving the stored image; initials remain available for both name alternative
 Own reads always use the current authenticated identity. Administrative multipart
 POST and DELETE `users/avatar` use `avatar.admin_upload`/`avatar.admin_remove`,
 require `runa.auth.avatars.manage`, target public_id, version and AuthorityGuard.
-They are backend domain operations, with no administration UI.
+The configuration-aware Users administration Avatar tab consumes these native
+operations; see [Auth administration](administration.md).
 
 Uploads use native content/MIME/image/dimension validation for JPEG, PNG and WebP,
 1–4096 pixels per dimension, and `avatar_max_kib` (default 2048, range 1–5120).
