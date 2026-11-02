@@ -259,7 +259,10 @@ it('Auth administration user page moves the exact table selection into the nativ
   const trigger = () =>
     wrapper
       .findAll('button')
-      .find((button) => button.text().startsWith('Apply to selected'))!;
+      .find(
+        (button) =>
+          button.attributes('data-bulk-command') === 'bulk_sessions:revoke',
+      )!;
   expect(trigger().attributes('disabled')).toBeDefined();
   await wrapper.get('tbody input[type=checkbox]').setValue(true);
   await trigger().trigger('click');
@@ -446,9 +449,12 @@ it('Auth administration keeps filters above bulk actions and creation in the dir
   expect(
     filters.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy();
-  expect(wrapper.get('[data-auth-bulk-actions]').text()).toContain(
-    'deactivate',
-  );
+  expect(
+    wrapper.get('[data-auth-bulk-actions]').findAll('button'),
+  ).toHaveLength(3);
+  expect(
+    wrapper.get('[data-auth-bulk-actions]').findAllComponents(Select),
+  ).toHaveLength(0);
   const header = wrapper
     .findAll('header')
     .find((node) => node.text().includes('User directory'));
@@ -456,7 +462,7 @@ it('Auth administration keeps filters above bulk actions and creation in the dir
   await wrapper.get('tbody input[type=checkbox]').setValue(true);
   await wrapper
     .findAll('button')
-    .find((b) => b.text().startsWith('Apply to selected'))!
+    .find((b) => b.attributes('data-bulk-command') === 'bulk_users:deactivate')!
     .trigger('click');
   await vi.waitFor(() =>
     expect(form.values.value['bulk_users.public_ids']).toEqual([target]),
@@ -502,6 +508,11 @@ it('Auth administration range filters map compact ranges and reset them with sha
   await vi.waitFor(() => expect(query.value.filters.active).toBe('false'));
   wrapper.findComponent(NumberInput).vm.$emit('update:modelValue', '0');
   await vi.waitFor(() => expect(query.value.filters.session_count).toBe('0'));
+  expect(wrapper.findComponent(DateTimeRangeInput).props('size')).toBe('sm');
+  expect((wrapper.findComponent(Select).props() as { size: string }).size).toBe(
+    'sm',
+  );
+  expect(wrapper.findComponent(NumberInput).props('size')).toBe('sm');
   const range = wrapper.findComponent(DateTimeRangeInput);
   range.vm.$emit('update:modelValue', {
     start: '2026-11-02T12:00:00Z',

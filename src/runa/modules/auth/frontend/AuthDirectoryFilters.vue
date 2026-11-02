@@ -60,6 +60,7 @@ function options(field: AdminFieldData) {
       :key="field.key"
     >
       <DateTimeRangeInput
+        size="sm"
         v-if="field.type === 'datetime'"
         :key="field.key + ':' + resetKey"
         :label="tr(field.label)"
@@ -72,6 +73,7 @@ function options(field: AdminFieldData) {
         @update:model-value="date(field.key, $event)"
       />
       <Select
+        size="sm"
         v-else-if="field.type === 'boolean' || field.type === 'dictionary'"
         :label="tr(field.label)"
         :model-value="String(query.filters?.[field.key] ?? '')"
@@ -80,6 +82,7 @@ function options(field: AdminFieldData) {
         @update:model-value="set(field.key, $event)"
       />
       <NumberInput
+        size="sm"
         v-else-if="field.type === 'integer'"
         :label="tr(field.label)"
         :model-value="
@@ -92,6 +95,7 @@ function options(field: AdminFieldData) {
         @update:model-value="set(field.key, $event)"
       />
       <TextInput
+        size="sm"
         v-else
         :label="tr(field.label)"
         :model-value="String(query.filters?.[field.key] ?? '')"

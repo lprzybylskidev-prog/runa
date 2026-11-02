@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Match Auth Users filters to Audit compact controls, shorten account/security labels and expose each authorized bulk command as its own button below filters. Retain selected targets and native reviews/proofs.
+
 - Consolidate date/datetime ranges into one labelled compact field with a shared endpoint popup, valid atomic Apply and Clear/Cancel. Replace expanded Auth range filters and Audit from/until controls; preserve wire keys, timezone/DST and open endpoints.
 
 - Complete Users filters across authorized facts and date ranges; show effective 2FA/enrollment/recovery, retained activity, invitation and credential state. Move creation into the directory header and all native reviewed bulk user operations below filters. Share locked owning phases, enforce current grants/features, atomic Audit/proof rollback and safe restore subject locks.

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
-import { Badge, Button, Card, Dialog, Tabs, Select } from '@/runa/ui';
+import { Badge, Button, Card, Dialog, Tabs } from '@/runa/ui';
 import {
   AdminComponentBoundary,
   AdminForm,
@@ -89,25 +89,13 @@ const bulkChoices = computed(() =>
     ),
 );
 const canBulk = computed(() => bulkChoices.value.length > 0);
-const bulkChoice = ref('');
-const activeBulk = ref('bulk_sessions:revoke');
-const chosenBulk = computed(() =>
-  bulkChoices.value.find((c) => c.value === bulkChoice.value),
-);
+const activeBulk = ref('');
 const openedBulk = computed(() =>
   bulkChoices.value.find((c) => c.value === activeBulk.value),
 );
-const bulkLimit = computed(() =>
-  chosenBulk.value?.section.key === 'bulk_users' ? 99 : 100,
-);
-watch(
-  bulkChoices,
-  (choices) => {
-    if (!choices.some((c) => c.value === bulkChoice.value))
-      bulkChoice.value = choices[0]?.value ?? '';
-  },
-  { immediate: true },
-);
+function bulkLimit(section: AdminSectionData): number {
+  return section.key === 'bulk_users' ? 99 : 100;
+}
 const bulkIds = ref<string[]>([]);
 const selection = computed(() => {
   const selected = table.selection.value;
@@ -166,12 +154,11 @@ function presentation(section: AdminSectionData): AdminSectionData {
     commands: command ? [command] : [],
   };
 }
-async function openBulk() {
-  const chosen = chosenBulk.value;
+async function openBulk(chosen: (typeof bulkChoices.value)[number]) {
   if (
     !chosen ||
     !selection.value.length ||
-    selection.value.length > bulkLimit.value
+    selection.value.length > bulkLimit(chosen.section)
   )
     return;
   const ids = [...selection.value];
@@ -234,51 +221,46 @@ watch(
         <template #afterFilters>
           <div
             v-if="canBulk"
-            class="flex min-w-0 flex-wrap items-end gap-3 border-b border-line px-4 py-3"
+            class="space-y-3 border-b border-line px-4 py-3"
             data-auth-bulk-actions
           >
-            <div v-if="canBulk" class="w-full sm:w-96">
-              <Select
-                v-model="bulkChoice"
-                :label="tr({ pl: 'Akcja zbiorcza', en: 'Bulk action' })"
-                :options="
-                  bulkChoices.map((c) => ({ value: c.value, label: c.label }))
-                "
-                :locale="adminLocale"
-                :disabled="form.busy.value"
-              />
-            </div>
-            <Button
-              v-if="canBulk"
-              size="sm"
-              variant="outline"
-              :disabled="
-                form.busy.value ||
-                !selection.length ||
-                selection.length > bulkLimit
-              "
-              @click="openBulk"
+            <p class="text-xs text-muted">
+              {{ tr({ pl: 'Zaznaczone konta', en: 'Selected accounts' }) }}:
+              {{ selection.length }}
+            </p>
+            <div
+              class="flex min-w-0 flex-wrap gap-2"
+              role="group"
+              :aria-label="tr({ pl: 'Akcje zbiorcze', en: 'Bulk actions' })"
             >
-              {{
-                tr({ pl: 'Wykonaj dla zaznaczonych', en: 'Apply to selected' })
-              }}
-              ({{ selection.length }})
-            </Button>
+              <Button
+                v-for="choice in bulkChoices"
+                :key="choice.value"
+                :data-bulk-command="choice.value"
+                size="sm"
+                variant="outline"
+                :disabled="
+                  form.busy.value ||
+                  !selection.length ||
+                  selection.length > bulkLimit(choice.section)
+                "
+                @click="openBulk(choice)"
+                >{{ choice.label }}</Button
+              >
+            </div>
             <p
               v-if="
-                canBulk &&
-                (table.selection.value.mode !== 'explicit' ||
-                  selection.length > bulkLimit)
+                table.selection.value.mode !== 'explicit' ||
+                selection.length > 99
               "
               class="text-sm text-muted"
             >
               {{
                 tr({
-                  pl: 'Zaznacz konkretne konta. Limit na operację:',
-                  en: 'Select specific accounts. Per-operation limit:',
+                  pl: 'Zaznacz konkretne konta. Limit: 99 kont dla zmian, 100 dla sesji.',
+                  en: 'Select specific accounts. Limit: 99 for user changes, 100 for sessions.',
                 })
               }}
-              {{ bulkLimit }}.
             </p>
           </div>
         </template>

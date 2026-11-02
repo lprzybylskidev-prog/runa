@@ -750,6 +750,13 @@ reassessment before resuming point 3; completed point history remains evidence.
     reset, exact wire keys, localization and accessible popup/focus behavior.
   - Synchronize contracts/guidance and prepare current assets with focused checks
     and rendered desktop/mobile evidence before owner acceptance.
+- [x] 11a46. Align Auth filter density, concise labels and direct bulk buttons.
+  - Owner correction: use Audit's sm controls, shorten long account labels in
+    PL/EN, including Two-factor authentication, and replace the bulk selector
+    with individual buttons below filters.
+  - Retain exact command selection, target limits, feature/grant projection and
+    native review/proof/confirmation. Synchronize current guidance and prepare
+    focused interaction/build/rendered evidence before owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4968,3 +4975,54 @@ Current local assets are prepared. No task Docker resource or disposable databas
 was created; active services, development/base test data, Qdrant/model caches and
 all reports are preserved. Manual acceptance 11b and final verification/release 12
 remain open; this repair is ready for the owner's review.
+
+### Point 11a46 — Auth filter density and direct bulk command buttons
+
+The owner's correction is implemented on Users. DateTimeRangeInput, Select,
+NumberInput and TextInput explicitly use size sm, matching the shared Audit
+filters' 36px controls. Both languages use shorter source-owned account labels
+across filters, table headings and detail metadata. Polish Two-factor
+authentication is now exactly Logowanie dwuskładnikowe. Other refinements include
+Wymagane 2FA, 2FA e-mail, Kody odzyskiwania, Zmiana hasła, Ostatnie logowanie,
+Ostatnia aktywność and Aktywne sesje. Existing keys, field types, policy/permission
+availability and factual meaning are retained.
+
+Each authorized bulk command is now a separate small wrapping Button directly
+below filters. The action Select and extra generic execute button are removed.
+A shared count identifies selected accounts; each button captures its own command
+and exact target UUIDs, then opens the existing review/parameter/proof/confirmation
+modal. The 99-account change and 100-account session limits are enforced per
+button. No selection, excess selection or an active mutation disables relevant
+buttons. Disabled features/missing grants still remove owning commands; native
+backend authorization, transaction and security protocols are unchanged. Concise
+schedule/lock/invitation titles fit the button layout while their modal retains
+native clear/deadline/flag choices.
+
+Focused implementation evidence under `.runtime/frontend/`:
+
+- `RM-2026-016-users-density-focused.log`: 5 Chromium cases pass, native
+  exit/cleanup 0, covering exact session and user command transfer, absence of
+  the bulk selector, header/filter ordering, modal command isolation and sm
+  filter props. Excluded cases are not PASS.
+- `RM-2026-016-users-density-build.log`: supported vue-tsc/Vite/static shell
+  build passes. Existing build-size/dynamic-import advisories remain.
+- Label-only PHP declarations pass focused syntax checks; no behavioral backend
+  change or broad suite was required by this presentation repair.
+- Served compiled-view diagnostics use the source directory labels and all 21
+  declared native command presentations with controlled responses at 1440px
+  PL/dark and 390px EN/light. The filters/range trigger measure 36px, all action
+  buttons are separate and disabled without selection, and exact session/user
+  previews remain valid after selection. Final screenshots show compact controls,
+  concise headings and wrapped buttons, with no page errors/modal overflow.
+  Evidence: `RM-2026-016-users-density-browser.log` and screenshots/report under
+  `.runtime/artifacts/playwright/runa/RM-2026-016-users-density/`. This is
+  presentation evidence, not live mutation or owner manual acceptance.
+
+Auth administration and central/Auth/Admin changelogs are synchronized. Existing
+owner/customer frontend guidance already mandates shared compact variants and
+source-owned action contracts; neither instruction product needs duplicated
+rules. This view refinement retains unreleased Auth 2.1.0, Admin 0.1.0 and platform
+0.7.0 targets. Current assets are ready. No dependency, migration, security grant,
+account or data change occurred; no disposable Docker/database resource was
+created. Active development, base test data, Qdrant/model caches and reports remain
+preserved. Owner manual acceptance 11b and final verification/release 12 stay open.

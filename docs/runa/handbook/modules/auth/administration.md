@@ -142,8 +142,9 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation, both-factor `runa.auth.sessions.bulk_revoke`  |
 
 Account creation is in the directory Card header's right actions area. All
-available directory fields are filterable, with one compact DateTimeRangeInput for each inclusive date range. The bulk operation chooser sits immediately below filters, above the
-standard table toolbar. It lists only granted and currently enabled native actions.
+available directory fields are filterable, with one compact DateTimeRangeInput for each inclusive date range. Separate small bulk action buttons sit immediately below filters, above the
+standard table toolbar. Each button opens its own reviewed command for the captured
+selection; only granted and currently enabled actions appear.
 Selected UUIDs are captured for review; no manual ID entry or all-account toggle
 exists in this UI. Session revocation admits at most 100 accounts; other reviewed
 user operations admit at most 99, reserving one native transaction subject for the
@@ -286,3 +287,10 @@ accounts remain the captured selection count.
 Auth directory moment filters consume the shared DateTimeRangeInput with one
 standard field label per range. The popup commits from/until together; the
 existing JSON range payload and exact authorized filtering remain unchanged.
+
+Auth directory controls use size sm (36px), matching Audit's shared filter controls.
+Concise PL/EN labels apply consistently to filters, column headings and account
+facts: Two-factor authentication omits the redundant enabled suffix. Bulk actions
+are individual wrapping buttons, with a shared selection count and per-operation
+99/100 limits; no action selector or extra execute button is used. Native review,
+proof and destructive confirmation still happen in the chosen command's modal.

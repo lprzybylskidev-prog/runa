@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Match Auth Users filters to Audit compact controls, shorten account/security labels and expose each authorized bulk command as its own button below filters. Retain selected targets and native reviews/proofs.
+
 - Consolidate date/datetime ranges into one labelled compact field with a shared endpoint popup, valid atomic Apply and Clear/Cancel. Replace expanded Auth range filters and Audit from/until controls; preserve wire keys, timezone/DST and open endpoints.
 
 - Publish guarded AuthAdministration 1.1.0 field-authorized account facts and AuthBulkUsers 1.0.0 with immutable BulkUserChange. Update all exact-version consumers and the source public API boundary catalogue.
