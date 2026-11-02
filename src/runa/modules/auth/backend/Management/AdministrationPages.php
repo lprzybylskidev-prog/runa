@@ -14,6 +14,7 @@ use Runa\Contracts\Modules\ManagementPageProvider;
 use Runa\Contracts\Modules\ManagementSection;
 use Runa\Modules\Auth\Contracts\AuthAdministration;
 use Runa\Modules\Auth\Contracts\AuthBulkSessions;
+use Runa\Modules\Auth\Contracts\AuthBulkUsers;
 use Runa\Modules\Auth\Contracts\AuthIdentities;
 use Runa\Modules\Auth\Contracts\AuthInvitations;
 use Runa\Modules\Auth\Contracts\AuthLifecycle;
@@ -22,14 +23,31 @@ use Runa\Modules\Auth\Contracts\AuthPreferences;
 use Runa\Modules\Auth\Contracts\AuthProfiles;
 use Runa\Modules\Auth\Contracts\AuthSecurity;
 use Runa\Modules\Auth\Contracts\AuthSessions;
+use Runa\Modules\Auth\Contracts\BulkUserChange;
 use Runa\Modules\Auth\Definitions\IdentitySettings;
 use Runa\Modules\Auth\Support\AdministrationFeatures;
+use Runa\Modules\Auth\Support\BulkUserOperations;
+use Runa\Modules\Auth\Support\DirectoryFields;
 
 /** Explicit source catalogue, never a request-provided method registry. */
 final class AdministrationPages implements ManagementPageProvider
 {
     /** @var array<string, string> */
     private const FIELD_NAMES = [
+        'TOTP setup pending' => 'Oczekujące konfigurowanie TOTP',
+        'TOTP setup expires at' => 'Termin zakończenia konfiguracji TOTP',
+        'Latest retained login' => 'Ostatnie zachowane logowanie',
+        'Latest retained activity' => 'Ostatnia zachowana aktywność',
+        'Operator recovery pending' => 'Oczekujące odzyskanie przez operatora',
+        'Avatar set' => 'Avatar ustawiony',
+        'Trusted device count' => 'Liczba zaufanych urządzeń',
+        'Two-factor authentication enabled' => 'Logowanie dwuskładnikowe włączone',
+        'Two-factor authentication required' => 'Logowanie dwuskładnikowe wymagane',
+        'Password expired' => 'Hasło wygasło',
+        'Pending invitation' => 'Oczekujące zaproszenie',
+        'Invitation expires at' => 'Zaproszenie wygasa',
+        'Invitation sent at' => 'Zaproszenie wysłano',
+
         'Account state' => 'Stan konta',
         'Logged in' => 'Zalogowany',
         'Live session count' => 'Liczba aktywnych sesji',
@@ -231,17 +249,50 @@ final class AdministrationPages implements ManagementPageProvider
             'bulk_sessions' => ['revoke' => $command('Revoke selected sessions and trust', 'sessions.bulk_revoke', 'sessions.bulk_revoke', ['public_ids', ...(app(AdministrationFeatures::class)->enabled('trust') ? ['trust'] : [])], 'runa.auth.sessions.bulk_revoke', true, true)],
         ];
 
+        $labels = [
+            'activate' => ['Aktywuj konta', 'Activate accounts'], 'deactivate' => ['Dezaktywuj konta', 'Deactivate accounts'],
+            'approve' => ['Zatwierdź konta', 'Approve accounts'], 'delete' => ['Usuń konta', 'Delete accounts'], 'restore' => ['Przywróć konta', 'Restore accounts'],
+            'schedule_activation' => ['Ustaw lub usuń termin aktywacji', 'Set or clear activation schedule'],
+            'schedule_deactivation' => ['Ustaw lub usuń termin dezaktywacji', 'Set or clear deactivation schedule'],
+            'set_expiry' => ['Ustaw lub usuń wygaśnięcie kont', 'Set or clear account expiry'],
+            'set_attempt_lock' => ['Ustaw lub usuń blokadę prób', 'Set or clear attempt lock'],
+            'set_security_lock' => ['Włącz lub wyłącz blokadę bezpieczeństwa', 'Enable or disable security lock'],
+            'require_password_change' => ['Włącz lub wyłącz wymaganą zmianę hasła', 'Enable or disable required password change'],
+            'invite' => ['Wyślij lub ponów zaproszenia', 'Send or resend invitations'],
+            'invalidate_invitation' => ['Unieważnij zaproszenia', 'Invalidate invitations'],
+            'require_verification' => ['Wymagaj ponownej weryfikacji e-maili', 'Require email reverification'],
+            'password_reset' => ['Zleć reset haseł', 'Request password resets'],
+            'factor_reset' => ['Zresetuj drugie składniki', 'Reset second factors'],
+            'revoke_trust' => ['Unieważnij zaufane urządzenia', 'Revoke trusted devices'],
+            'reset_preferences' => ['Zresetuj preferencje kont', 'Reset account preferences'],
+            'remove_avatar' => ['Usuń avatary', 'Remove avatars'],
+            'revoke_exceptions' => ['Odwołaj wyjątki zasad', 'Revoke policy exceptions'],
+        ];
+        $commands['bulk_users'] = [];
+        foreach (BulkUserChange::OPERATIONS as $operation) {
+            if (! BulkUserOperations::available($operation)) {
+                continue;
+            }
+            $access = BulkUserOperations::access($operation);
+            $inputs = ['public_ids'];
+            if (in_array($operation, ['schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock'], true)) {
+                $inputs[] = 'at';
+            }
+            if (in_array($operation, ['set_security_lock', 'require_password_change'], true)) {
+                $inputs[] = 'enabled';
+            }
+            $spec = $command($labels[$operation][1], $access['operation'], $access['permission'], $inputs, 'runa.auth.users.bulk.'.$operation, true, true);
+            $spec['title'] = ['pl' => $labels[$operation][0], 'en' => $labels[$operation][1]];
+            $commands['bulk_users'][$operation] = $spec;
+        }
+
         return $commands;
     }
 
     /** @return list<ManagementSection> */
     public function userSections(): array
     {
-        $sections = [new ManagementSection('directory', 'User directory', 'runa.auth.users.read', null, 'directory', [
-            self::field('display_name', 'Display name', read: 'users.read', filter: true),
-            self::field('state', 'Account state', 'dictionary', read: 'users.read', filter: true, choices: ['current', 'deleted', 'all']),
-            ...self::directoryFields(),
-        ], view: 'table')];
+        $sections = [new ManagementSection('directory', 'User directory', 'runa.auth.users.read', null, 'directory', self::directoryFields(), view: 'table')];
         $fields = [
             'eligibility' => [self::field('blockers', 'Authentication blockers', read: 'eligibility.read'), self::field('restrictions', 'Operation restrictions', read: 'eligibility.read')],
             'creation' => [self::field('email', 'Email', write: 'users.create', read: 'users.create'), ...self::names('users.create'), self::field('active', 'Active', 'boolean', 'users.create', 'users.create'), self::field('approved', 'Approved', 'boolean', 'users.create', 'users.create')],
@@ -267,6 +318,22 @@ final class AdministrationPages implements ManagementPageProvider
             'totp_enrolled' => ['TOTP configured', 'boolean', 'two_factor.reset'], 'email_factor_enrolled' => ['Email factor configured', 'boolean', 'two_factor.reset'],
             'recovery_codes_remaining' => ['Recovery codes remaining', 'integer', 'two_factor.reset']] as $key => [$label, $type, $read]) {
             $fields['lifecycle'][] = self::field($key, $label, $type, read: $read);
+        }
+        $known = array_map(fn ($access) => $access->field->key, $fields['lifecycle']);
+        foreach (DirectoryFields::definitions() as $key => [$label, $type, $grant, $feature]) {
+            if ($feature !== null && ! $features->enabled($feature)) {
+                continue;
+            }
+            $access = self::field($key, $label, $type, read: $grant);
+            if (! in_array($key, [...$known, 'display_name', 'state'], true)) {
+                $fields['lifecycle'][] = $access;
+            }
+            if (str_starts_with($key, 'invitation_')) {
+                $fields['invitations'][] = $access;
+            }
+            if (in_array($key, ['two_factor_enabled', 'two_factor_required', 'totp_setup_pending', 'totp_pending_until', 'totp_enrolled', 'email_factor_enrolled', 'recovery_codes_remaining', 'password_set', 'password_changed_at', 'password_expires_at', 'password_expired', 'password_change_required'], true)) {
+                $fields['security'][] = $access;
+            }
         }
         $fields['lifecycle'][0] = self::field('operation', 'Lifecycle operation', 'dictionary', 'users.manage', 'users.read',
             choices: array_values(array_filter($fields['lifecycle'][0]->field->choices, $features->lifecycle(...))));
@@ -295,6 +362,12 @@ final class AdministrationPages implements ManagementPageProvider
             ], required: false, component: 'runa.auth.admin_section');
         }
         $sections[] = self::bulkSection();
+        $sections[] = new ManagementSection('bulk_users', ['pl' => 'Akcje zbiorcze', 'en' => 'Bulk actions'], 'runa.auth.users.read', 'runa.auth.users.read', 'bulk_users', [
+            new ManagementFieldAccess(new ManagementField('public_ids', 'uuid', ['pl' => 'Wybrane konta', 'en' => 'Selected accounts'], ['pl' => 'Wybrane konta', 'en' => 'Selected accounts'], writable: true, multiple: true), 'runa.auth.users.read', 'runa.auth.users.read'),
+            self::field('at', 'Deadline (empty clears)', 'datetime', 'users.read', 'users.read'),
+            self::field('enabled', 'Enable selected flag', 'boolean', 'users.read', 'users.read'),
+            self::field('summary', 'Review summary', read: 'users.read'),
+        ], self::commandDefinitions('bulk_users'), required: false, component: 'runa.auth.admin_section');
 
         return $sections;
     }
@@ -303,17 +376,9 @@ final class AdministrationPages implements ManagementPageProvider
     private static function directoryFields(): array
     {
         $fields = [];
-        foreach (['email' => ['Email', 'text', 'emails.read'], 'login' => ['Login', 'text', 'profiles.read'],
-            'active' => ['Active', 'boolean', 'users.read'], 'approved' => ['Approved', 'boolean', 'users.read'],
-            'logged_in' => ['Logged in', 'boolean', 'sessions.manage'], 'session_count' => ['Live session count', 'integer', 'sessions.manage'],
-            'verified' => ['Verified', 'boolean', 'emails.read'], 'security_locked' => ['Security Locked', 'boolean', 'users.read'],
-            'created_at' => ['Created at', 'datetime', 'users.read'], 'updated_at' => ['Updated at', 'datetime', 'users.read'],
-            'authenticated_at' => ['Latest live login', 'datetime', 'sessions.manage'], 'activity_at' => ['Latest session activity', 'datetime', 'sessions.manage'],
-            'email_verified_at' => ['Email verified at', 'datetime', 'emails.read'],
-            'activate_at' => ['Activate At', 'datetime', 'users.read'], 'deactivate_at' => ['Deactivate At', 'datetime', 'users.read'],
-            'expires_at' => ['Expires At', 'datetime', 'users.read'], 'attempt_locked_until' => ['Attempt Locked Until', 'datetime', 'users.read']] as $key => [$label, $type, $grant]) {
-            if (app(AdministrationFeatures::class)->field($key)) {
-                $fields[] = self::field($key, $label, $type, read: $grant);
+        foreach (DirectoryFields::definitions() as $key => [$label, $type, $grant, $feature]) {
+            if ($feature === null || app(AdministrationFeatures::class)->enabled($feature)) {
+                $fields[] = self::field($key, $label, $type, read: $grant, filter: true, choices: $key === 'state' ? ['current', 'deleted', 'all'] : []);
             }
         }
 
@@ -394,23 +459,24 @@ final class AdministrationPages implements ManagementPageProvider
         $identity = $target(AuthIdentities::class, ['identity']);
 
         return [
-            new ManagementBinding('avatar', AvatarSection::class, [$target(AuthAdministration::class, ['lifecycle'])]),
-            new ManagementBinding('directory', Directory::class, [$target(AuthAdministration::class, ['users'])]),
+            new ManagementBinding('avatar', AvatarSection::class, [$target(AuthAdministration::class, ['facts'], '1.1.0')]),
+            new ManagementBinding('directory', Directory::class, [$target(AuthAdministration::class, ['users'], '1.1.0')]),
             new ManagementBinding('eligibility', EligibilitySection::class, [$target(AuthIdentities::class, ['identity', 'eligibility'])]),
             new ManagementBinding('creation', CreationSection::class, [$target(AuthLifecycle::class, ['create'])]),
-            new ManagementBinding('lifecycle', LifecycleSection::class, [$target(AuthAdministration::class, ['lifecycle']), $target(AuthLifecycle::class, ['change'])]),
-            new ManagementBinding('invitations', InvitationSection::class, [$identity, $target(AuthInvitations::class, ['invite', 'invalidate'])]),
-            new ManagementBinding('primary_email', EmailSection::class, [$target(AuthAdministration::class, ['profile']), $target(AuthProfiles::class, ['changeEmail', 'replaceVerifiedEmail', 'requireVerification'], '2.0.0')]),
-            new ManagementBinding('secondary', SecondarySection::class, [$target(AuthAdministration::class, ['profile']), $target(AuthProfiles::class, ['addSecondary', 'changeSecondary', 'removeSecondary'], '2.0.0')]),
+            new ManagementBinding('lifecycle', LifecycleSection::class, [$target(AuthAdministration::class, ['lifecycle'], '1.1.0'), $target(AuthLifecycle::class, ['change'])]),
+            new ManagementBinding('invitations', InvitationSection::class, [$target(AuthAdministration::class, ['facts'], '1.1.0'), $identity, $target(AuthInvitations::class, ['invite', 'invalidate'])]),
+            new ManagementBinding('primary_email', EmailSection::class, [$target(AuthAdministration::class, ['profile'], '1.1.0'), $target(AuthProfiles::class, ['changeEmail', 'replaceVerifiedEmail', 'requireVerification'], '2.0.0')]),
+            new ManagementBinding('secondary', SecondarySection::class, [$target(AuthAdministration::class, ['profile'], '1.1.0'), $target(AuthProfiles::class, ['addSecondary', 'changeSecondary', 'removeSecondary'], '2.0.0')]),
             new ManagementBinding('sessions', SessionSection::class, [$identity, $target(AuthSessions::class, ['listFor', 'revoke', 'revokeAll'])]),
-            new ManagementBinding('security', SecuritySection::class, [$identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'])]),
+            new ManagementBinding('security', SecuritySection::class, [$target(AuthAdministration::class, ['facts'], '1.1.0'), $identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'])]),
             new ManagementBinding('trust', DeviceSection::class, [$identity, $target(AuthSecurity::class, ['trustedDevices', 'revokeDevice'])]),
-            new ManagementBinding('preferences', PreferenceSection::class, [$target(AuthAdministration::class, ['profile']), $target(AuthPreferences::class, ['resetAccount'])]),
+            new ManagementBinding('preferences', PreferenceSection::class, [$target(AuthAdministration::class, ['profile'], '1.1.0'), $target(AuthPreferences::class, ['resetAccount'])]),
             new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'exception'])]),
             new ManagementBinding('policy0', EntryPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
             new ManagementBinding('policy1', SecurityPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
             new ManagementBinding('policy2', LifecyclePolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
             new ManagementBinding('policy_history', PolicyHistorySection::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
+            new ManagementBinding('bulk_users', BulkUserSection::class, [$target(AuthBulkUsers::class, ['preview', 'execute'])]),
             new ManagementBinding('bulk_sessions', BulkSessionSection::class, [$target(AuthBulkSessions::class, ['preview', 'revoke'])]),
         ];
     }

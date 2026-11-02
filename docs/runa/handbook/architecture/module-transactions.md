@@ -31,6 +31,9 @@ MutationProof::__construct(string $action, string $requirement,
 `access` is a nonempty list of at most 32 MutationAccess values naming the owner's
 actual guarded entry and nested API calls. `subjects` is a unique sorted list of
 at most 100 Auth UUIDv7 values including copy sources; the root adds the actor.
+Subject locks cover retained identities, including soft-deleted targets for an
+explicit restore. Locks grant no eligibility: every owner validates its supported
+current/deleted target state, independently of actor authentication and grants.
 `resources` is a nonempty unique list of at most 32 owner-namespaced resource keys
 (up to 256 bytes), naming actual independently written revisions. `proofs` contains
 at most 8 MutationProof values; requirement is password|second_factor|both, TTL

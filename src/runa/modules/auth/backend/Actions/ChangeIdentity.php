@@ -19,6 +19,7 @@ use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Support\LifecyclePlan;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
@@ -68,106 +69,123 @@ final readonly class ChangeIdentity implements AuthLifecycle
 
         return $this->transaction('identity.'.$change->operation, $publicId, function (Connection $connection) use ($publicId, $expectedVersion, $change): Identity {
             $this->registryLock($connection);
-            $reuse = $this->settings->value('runa.auth', 'reuse_deleted_identifiers');
             $this->lock->acquire($connection);
             $user = User::withTrashed()->where('public_id', $publicId)->lockForUpdate()->first()
                 ?? throw new IdentityConflict('identity_missing');
             if ($user->version !== $expectedVersion) {
                 throw new IdentityConflict('identity_stale');
             }
-            // Only explicit lifecycle removal excludes this identity from the invariant.
-            // Activation, restore and profile-independent security locks must remain recoverable.
-            $this->guard($connection, in_array($change->operation, ['deactivate', 'delete'], true) ? [$publicId] : []);
-            if ($user->trashed() && $change->operation !== 'restore') {
-                throw new IdentityConflict('identity_deleted');
-            }
-            $before = $this->state($user);
-            $now = CarbonImmutable::now('UTC');
-            $deactivationReached = $user->deactivate_at !== null && $now->gte($user->deactivate_at);
-            switch ($change->operation) {
-                case 'approve':
-                    $user->approved = true;
-                    break;
-                case 'activate':
-                    $user->active = true;
-                    $user->activate_at = null;
-                    $user->deactivate_at = null;
-                    break;
-                case 'deactivate':
-                    $user->active = false;
-                    $user->activate_at = null;
-                    $user->deactivate_at = null;
-                    break;
-                case 'delete':
-                    $user->deleted_at = $now;
-                    $user->active = false;
-                    $user->activate_at = null;
-                    $user->deactivate_at = null;
-                    if ($reuse === true) {
-                        $user->email_claim = null;
-                        $user->login_claim = null;
-                    }
-                    break;
-                case 'restore':
-                    if (! $user->trashed()) {
-                        return $user->identity();
-                    }
-                    app(EmailAddresses::class)->available($connection, $user, $user->email, true);
-                    $user->email_claim = $user->email;
-                    $user->login_claim = $user->login;
-                    $user->deleted_at = null;
-                    $user->active = false;
-                    $user->activate_at = null;
-                    $user->deactivate_at = null;
-                    break;
-                case 'schedule_activation':
-                case 'schedule_deactivation':
-                    if ($change->at !== null && CarbonImmutable::parse($change->at)->lte($now)) {
-                        throw new IdentityConflict('schedule_must_be_future');
-                    }
-                    $user->{$change->operation === 'schedule_activation' ? 'activate_at' : 'deactivate_at'} = $change->at;
-                    break;
-                case 'set_expiry':
-                    $user->expires_at = $change->at;
-                    break;
-                case 'set_attempt_lock':
-                    $user->attempt_locked_until = $change->at;
-                    break;
-                case 'set_security_lock':
-                    $user->security_locked = $change->enabled ?? throw new \LogicException('Missing lifecycle flag.');
-                    break;
-                case 'require_password_change':
-                    $user->password_change_required = $change->enabled ?? throw new \LogicException('Missing lifecycle flag.');
-                    break;
-            }
-            if ($user->activate_at !== null && $user->deactivate_at !== null && $user->activate_at->gte($user->deactivate_at)) {
-                throw new IdentityConflict('invalid_schedule_order');
-            }
-            if (! $user->isDirty()) {
-                return $user->identity();
-            }
-            if (in_array($change->operation, ['activate', 'deactivate', 'delete', 'restore'], true)
-                || ($change->operation === 'set_security_lock' && $change->enabled)
-                || ($change->operation === 'schedule_deactivation' && $deactivationReached)
-                || ($change->operation === 'schedule_activation' && ! $user->active)) {
-                // Irreversible revocation; later activation/restore never revalidates old sessions/trust.
-                $user->security_version++;
-                $user->remember_token = null;
-                app(SessionStore::class)->revokeUser($connection, $user);
-            }
-            $user->version++;
-            $user->save();
-            $after = $this->state($user);
-            $changes = [];
-            foreach ($after as $key => $value) {
-                if ($before[$key] !== $value) {
-                    $changes[$key] = ['old' => $before[$key], 'new' => $value];
-                }
-            }
-            $this->record('identity.'.$change->operation, $user, $changes);
 
-            return $user->identity();
+            return $this->applyChangeLocked($connection, $this->prepareChangeLocked($connection, $user, $change));
         });
+    }
+
+    /** Private owning phase shared by single-record and native bulk execution. */
+    public function prepareChangeLocked(Connection $connection, User $user, LifecycleChange $change): LifecyclePlan
+    {
+        if ($connection !== app('db')->connection() || $connection->transactionLevel() < 1) {
+            throw new \LogicException('Lifecycle preparation requires owning locks.');
+        }
+        $reuse = $this->settings->value('runa.auth', 'reuse_deleted_identifiers');
+        // Only explicit lifecycle removal excludes this identity from the invariant.
+        // Activation, restore and profile-independent security locks must remain recoverable.
+        $this->guard($connection, in_array($change->operation, ['deactivate', 'delete'], true) ? [$user->public_id] : []);
+        if ($user->trashed() && $change->operation !== 'restore') {
+            throw new IdentityConflict('identity_deleted');
+        }
+        $before = $this->state($user);
+        $now = CarbonImmutable::now('UTC');
+        $deactivationReached = $user->deactivate_at !== null && $now->gte($user->deactivate_at);
+        switch ($change->operation) {
+            case 'approve':
+                $user->approved = true;
+                break;
+            case 'activate':
+                $user->active = true;
+                $user->activate_at = null;
+                $user->deactivate_at = null;
+                break;
+            case 'deactivate':
+                $user->active = false;
+                $user->activate_at = null;
+                $user->deactivate_at = null;
+                break;
+            case 'delete':
+                $user->deleted_at = $now;
+                $user->active = false;
+                $user->activate_at = null;
+                $user->deactivate_at = null;
+                if ($reuse === true) {
+                    $user->email_claim = null;
+                    $user->login_claim = null;
+                }
+                break;
+            case 'restore':
+                if (! $user->trashed()) {
+                    break;
+                }
+                app(EmailAddresses::class)->available($connection, $user, $user->email, true);
+                $user->email_claim = $user->email;
+                $user->login_claim = $user->login;
+                $user->deleted_at = null;
+                $user->active = false;
+                $user->activate_at = null;
+                $user->deactivate_at = null;
+                break;
+            case 'schedule_activation':
+            case 'schedule_deactivation':
+                if ($change->at !== null && CarbonImmutable::parse($change->at)->lte($now)) {
+                    throw new IdentityConflict('schedule_must_be_future');
+                }
+                $user->{$change->operation === 'schedule_activation' ? 'activate_at' : 'deactivate_at'} = $change->at;
+                break;
+            case 'set_expiry':
+                $user->expires_at = $change->at;
+                break;
+            case 'set_attempt_lock':
+                $user->attempt_locked_until = $change->at;
+                break;
+            case 'set_security_lock':
+                $user->security_locked = $change->enabled ?? throw new \LogicException('Missing lifecycle flag.');
+                break;
+            case 'require_password_change':
+                $user->password_change_required = $change->enabled ?? throw new \LogicException('Missing lifecycle flag.');
+                break;
+        }
+        if ($user->activate_at !== null && $user->deactivate_at !== null && $user->activate_at->gte($user->deactivate_at)) {
+            throw new IdentityConflict('invalid_schedule_order');
+        }
+        $revoke = in_array($change->operation, ['activate', 'deactivate', 'delete', 'restore'], true)
+            || ($change->operation === 'set_security_lock' && $change->enabled)
+            || ($change->operation === 'schedule_deactivation' && $deactivationReached)
+            || ($change->operation === 'schedule_activation' && ! $user->active);
+
+        return new LifecyclePlan($user, $before, $change, $revoke);
+    }
+
+    public function applyChangeLocked(Connection $connection, LifecyclePlan $plan): Identity
+    {
+        $user = $plan->user;
+        if (! $user->isDirty()) {
+            return $user->identity();
+        }
+        if ($plan->revoke) {
+            $user->security_version++;
+            $user->remember_token = null;
+            app(SessionStore::class)->revokeUser($connection, $user);
+        }
+        $user->version++;
+        $user->save();
+        $after = $this->state($user);
+        $changes = [];
+        foreach ($after as $key => $value) {
+            if ($plan->before[$key] !== $value) {
+                $changes[$key] = ['old' => $plan->before[$key], 'new' => $value];
+            }
+        }
+        $this->record('identity.'.$plan->change->operation, $user, $changes);
+
+        return $user->identity();
     }
 
     private function registryLock(Connection $connection): void

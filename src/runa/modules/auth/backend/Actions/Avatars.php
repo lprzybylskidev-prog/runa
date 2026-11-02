@@ -106,16 +106,7 @@ final readonly class Avatars
             throw new \LogicException('Avatar removal requires a root operation.');
         }
         $result = $this->target($request, $admin, function (Connection $connection, User $user): array {
-            if ($user->avatar_path !== null) {
-                $connection->table('runa_auth.avatar_files')->where('path', $user->avatar_path)->update(['available_at' => now()]);
-                $user->avatar_path = null;
-                $user->avatar_type = null;
-                $user->version++;
-                $user->save();
-                $this->transactions->record('avatar.removed', $user, ['has_avatar' => ['old' => true, 'new' => false]]);
-            }
-
-            return ['updated' => true, 'version' => $user->version];
+            return $this->removeLocked($connection, $user);
         });
         try {
             $this->cleanup();
@@ -123,6 +114,21 @@ final readonly class Avatars
         }
 
         return $result;
+    }
+
+    /** Private metadata/Audit phase; durable cleanup owns storage after commit. */
+    public function removeLocked(Connection $connection, User $user): array
+    {
+        if ($user->avatar_path !== null) {
+            $connection->table('runa_auth.avatar_files')->where('path', $user->avatar_path)->update(['available_at' => now()]);
+            $user->avatar_path = null;
+            $user->avatar_type = null;
+            $user->version++;
+            $user->save();
+            $this->transactions->record('avatar.removed', $user, ['has_avatar' => ['old' => true, 'new' => false]]);
+        }
+
+        return ['updated' => true, 'version' => $user->version];
     }
 
     public function cleanup(): void

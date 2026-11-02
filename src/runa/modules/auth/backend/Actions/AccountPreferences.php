@@ -63,7 +63,13 @@ final readonly class AccountPreferences implements AuthPreferences
     {
         new TrustedPrincipal($publicId);
 
-        return $this->target($publicId, fn (Connection $connection, User $user): array => $this->resetLocked($connection, $user, null, null, $revision, true));
+        return $this->target($publicId, fn (Connection $connection, User $user): array => $this->resetAccountLocked($connection, $user, $revision));
+    }
+
+    /** Private owning reset; callers hold the selected account/revision lock. */
+    public function resetAccountLocked(Connection $connection, User $user, int $revision): array
+    {
+        return $this->resetLocked($connection, $user, null, null, $revision, true);
     }
 
     /**

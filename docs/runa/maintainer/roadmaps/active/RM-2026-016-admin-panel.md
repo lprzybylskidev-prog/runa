@@ -725,6 +725,21 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Organize user details into usable sections, synchronize public signatures and
     owning documentation, author focused state/configuration/selection regressions
     and prepare current local assets before owner acceptance.
+- [x] 11a44. Complete Auth directory filtering, security facts and bulk operations.
+  - Owner corrections, 2026-11-02: place Create account at the directory header's
+    right edge, place bulk controls directly below filters and filter every
+    authorized directory fact using the shared table pattern and date ranges.
+  - Re-audit missing account facts, including enabled/required/enrolled 2FA methods,
+    password state and invitation dates, preserving feature and field authority.
+  - Implement all meaningful shared user operations as native reviewed atomic
+    bulk actions: lifecycle/locks/schedules, invitations, verification, credential
+    resets, trust revocation, preference reset, avatar removal and exception removal.
+    Identity-specific edits/uploads/creation remain individual operations.
+  - Reuse owning validation/apply phases and the existing transaction/proof/Audit
+    coordinator. Preserve exact bounded selection, stale previews, rollback and
+    last-administrator guards; no client loop or proof reuse workaround.
+  - Synchronize public contracts/instruction assessment, focused regression evidence
+    and runnable local assets. Manual acceptance and final verification stay last.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4777,3 +4792,108 @@ existing pre-1.0 authorization. No new dependency, migration, credential/grant
 change or Docker resource was introduced. Supported runner cleanup removed its
 inactive runa_test_test_1 worker; base test/development data, active services,
 Qdrant/model caches and all evidence remain preserved.
+
+### Point 11a44 — Complete Auth Users facts, filters and native bulk operations
+
+Owner corrections are implemented on Users only. Create account occupies the
+right side of the directory Card header. The native bulk chooser and selected
+account count sit directly below filters, before the standard toolbar. Explicit
+selection is captured when opening the reviewed command; only that command and
+its relevant deadline/flag inputs appear. Closing a dirty batch asks once before
+discarding. The separate bulk_sessions page remains removed.
+
+The directory and detail cards expose authorized enabled/required 2FA state,
+TOTP/email enrollment, pending TOTP setup/deadline and recovery-code count;
+password set/change/required/expiry/expired state; pending invitation/sent/expiry;
+effective verification requirement; operator recovery; avatar and current trust
+count. Live login/activity/session counts retain native SessionStore deadlines,
+policy exceptions and security generations. Additional last_login_at and
+last_activity_at cover retained sessions including revoked/expired records;
+cleanup can remove them, so they are not invented immutable all-time history.
+No credential, secret, recovery hash/code, internal ID or storage path is returned.
+Configuration and each owning field grant gate both descriptors and values.
+
+Every authorized directory field can be filtered. Text uses bound literal
+substring matching, boolean/integer facts retain false/zero, and datetime fields
+use inclusive from/until ranges before exact totals and cursor pagination. A
+private Auth query owns the SQL aggregates and full filter-bound cursor identity;
+it does not load the whole directory or filter a returned page in JavaScript.
+The shared ManagementRead transport bound is now 64 scalar filters, matching the
+section field bound; declared field/type/permission and JSON byte limits remain.
+Custom date ranges retain invalid drafts locally and report shared reset validity.
+UI Table and AdminResourceTable publicly forward afterFilters plus filter scope
+resetKey/setValidity. Zero-fraction UTC control values normalize to native Auth
+whole-second commands; ranges preserve up to six fractional digits.
+
+AuthBulkUsers 1.0.0 and immutable BulkUserChange provide 20 native operations:
+activate/deactivate/approve/delete/restore, activation/deactivation scheduling,
+account expiry, attempt/security locks, required password change, invitation
+issue/invalidation, email reverification, password/factor reset, trust revocation,
+preference reset, avatar removal and exception revocation. Existing reviewed
+session/optional-trust revocation remains another chooser entry. Disabled features
+and missing mutation grants remove their commands. Distinct profile/address edits,
+uploads, creation and assignment reviews retain their individual target input.
+
+Each new bulk operation uses one source-owned ModuleTransactions participant,
+current exact operation/selection grants, native locked owner phases, all-target
+validation, aggregate last-administrator exclusions and one fresh both-factor
+runa.auth.users.bulk.<operation> proof. Fingerprints cover current policy revision,
+UUIDs/account/security/preference revisions and bounded related session/trust/token/
+exception state. Stale input or any write/Audit failure rolls back all accounts and
+proof consumption. Selections admit at most 99 accounts, reserving one of the
+existing 100 transaction subjects for the actor; each related inventory caps at
+10,000 rows. Existing sessions retain their native 100-account cap. No client loop,
+proof reuse, partial success or generic authority bypass was introduced. Native
+subject locking now includes retained deleted identities for an explicit restore;
+owning policies still reject unsupported deleted targets. Avatar byte cleanup
+retains its existing durable owner after metadata commit. Unavailable native
+password reset returns false before revoking credentials.
+
+AuthAdministration 1.1.0 adds independently granted facts reads for security,
+invitation and avatar cards, avoiding unrelated directory authority. Existing
+lifecycle ingress retains users.read; all values still require their own grants.
+All exact-version bindings, source and test consumers are updated, with no old
+version adapter. The public boundary catalogue includes the new bulk API/DTO.
+Current Auth/Admin guides, public transaction/table/API contracts, obsolete Auth
+UI delivery copy and central/module changelogs are synchronized. The existing
+owner and customer skills already delegate to these canonical guides; neither
+instruction product requires duplicated rules. Compatible additions/refinements
+retain the unreleased Auth 2.1.0, Admin 0.1.0 and platform 0.7.0 targets.
+
+Focused implementation evidence under `.runtime/frontend/`:
+
+- `RM-2026-016-auth-directory-backend-final-focused.log`: 25 native cases pass,
+  650 assertions, including each operation with real mutations, stale selection,
+  oversized selection, one-use proof, read-grant refusal and atomic Audit rollback.
+- `RM-2026-016-auth-directory-access-dates-focused.log`: 7 native cases pass,
+  192 assertions for independently granted cards, current version consumers,
+  typed/range filtering, native sessions and actual zero-fraction UI deadlines.
+- `RM-2026-016-auth-directory-native-focused.log`: 2 cases pass, 62 assertions
+  for the standalone directory consumer and all single-record lifecycle intents.
+- `RM-2026-016-auth-directory-ui-focused.log`: 5 focused Chromium cases pass
+  for selected subjects, exact bulk target transfer, layout/command isolation,
+  typed false/zero filters, local invalid range drafts and shared reset behavior.
+  Excluded tests are not PASS. Native execution/cleanup exits are zero.
+- `RM-2026-016-auth-directory-build.log`: supported manual-runtime build passes.
+  Existing build-size/Vitest dynamic-import advisories remain; no broad gate ran.
+- The served compiled-view diagnostic uses controlled responses at 1440px PL/dark
+  and 390px EN/light. Header alignment, filter/bulk ordering, 2FA detail rendering,
+  draft retention, exact session/user bulk preview payloads and one dirty-close
+  confirmation pass without page errors or modal overflow. Screenshots/report:
+  `.runtime/artifacts/playwright/runa/RM-2026-016-auth-directory/`; output:
+  `RM-2026-016-auth-directory-browser.log`. This is presentation evidence, not live
+  mutation acceptance or owner approval.
+
+Supported module synchronization and current assets prepare the local Users view.
+No dependency, migration, account/grant change or Docker test resource was added.
+The supported runners removed their disposable runa_test_test_1 worker; base test
+and development data, active services, Qdrant/model caches and all reports remain.
+Owner manual acceptance 11b and final verification/release 12 remain open.
+
+Final 11a44 review refined operation impact counts: lifecycle plans count only
+sessions/trust actually revoked; preference and other independent changes do not
+suggest unrelated security side effects. Disabled trust is omitted from the review.
+Four focused backend impact/session cases pass (93 assertions, exit/cleanup 0),
+recorded in `RM-2026-016-auth-directory-impact-focused.log`. Actual Users HTML,
+readiness, presentation, entry options and current application asset return 200;
+anonymous protected Users API retains 401 (`RM-2026-016-auth-directory-http.json`).

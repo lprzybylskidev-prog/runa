@@ -121,6 +121,22 @@ final readonly class Policies implements AuthPolicies
         return $settings;
     }
 
+    /** Private owning batch phase; the coordinator owns authority, proof and user locks. */
+    public function revokeExceptionsLocked(Connection $connection, User $user): void
+    {
+        $rows = $connection->table('runa_auth.policy_exceptions')->where('user_id', $user->id)->whereNull('revoked_at')->orderBy('id')->lockForUpdate()->get(['id', 'key', 'value', 'expires_at', 'reason']);
+        foreach ($rows as $row) {
+            $connection->table('runa_auth.policy_exceptions')->where('id', $row->id)->update(['revoked_at' => now(), 'version' => $connection->raw('version + 1'), 'updated_at' => now()]);
+            $active = CarbonImmutable::parse($row->expires_at)->isFuture();
+            $this->transactions->record('policy.exception_revoked', $user, [
+                'policy_setting' => ['old' => $row->key, 'new' => $row->key],
+                'policy_value' => ['old' => $active ? $row->value : null, 'new' => null],
+                'valid_until' => ['old' => $active ? $row->expires_at : null, 'new' => null],
+                'reason' => ['old' => $active ? $row->reason : null, 'new' => null],
+            ]);
+        }
+    }
+
     public function exception(string $publicId, string $key, ?int $value, string $reason, string $expiresAt, int $version, int $policyRevision): array
     {
         new TrustedPrincipal($publicId);

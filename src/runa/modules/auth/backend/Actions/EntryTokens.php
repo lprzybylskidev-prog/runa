@@ -49,14 +49,21 @@ final readonly class EntryTokens implements AuthInvitations
                 return false;
             }
             $this->authority->assertMayRemove($connection, []);
-            $changed = $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('purpose', 'invitation')
-                ->whereNull('consumed_at')->whereNull('invalidated_at')->update(['invalidated_at' => now(), 'delivery_secret' => null]);
-            if ($changed) {
-                $this->transactions->record('invitation.invalidated', $user);
-            }
 
-            return $changed > 0;
+            return $this->invalidateLocked($connection, $user);
         });
+    }
+
+    /** Private owning phase shared by single and bulk invalidation. */
+    public function invalidateLocked(Connection $connection, User $user): bool
+    {
+        $changed = $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('purpose', 'invitation')
+            ->whereNull('consumed_at')->whereNull('invalidated_at')->update(['invalidated_at' => now(), 'delivery_secret' => null]);
+        if ($changed) {
+            $this->transactions->record('invitation.invalidated', $user);
+        }
+
+        return $changed > 0;
     }
 
     /** Internal only: owning registry/authority/user locks are already held. */

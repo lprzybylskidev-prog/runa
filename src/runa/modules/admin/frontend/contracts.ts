@@ -426,11 +426,14 @@ export type AdminFieldEmits = {
   availability: [available: boolean];
 };
 export interface AdminResourceTableSlots {
+  afterFilters?(): VNode[];
   toolbar?(scope: { feedbackTarget: string }): VNode[];
   actions?(scope: { row: AdminRecord }): VNode[];
   filters?(scope: {
     query: TableQuery;
     update: (value: TableQuery) => void;
+    resetKey: number;
+    setValidity: (key: string, valid: boolean) => void;
   }): VNode[];
   [key: `cell-${string}`]: (scope: {
     row: AdminRecord;

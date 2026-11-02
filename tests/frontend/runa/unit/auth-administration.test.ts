@@ -2,6 +2,9 @@
 import { beforeEach, afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
+import DirectoryFilters from '../../../../src/runa/modules/auth/frontend/AuthDirectoryFilters.vue';
+import { DateTimeInput, Select, NumberInput } from '@/runa/ui';
+import type { TableQuery } from '@/runa/ui';
 import { AuthAdminUsers, AuthAdminSection } from '@/runa/auth';
 import { AdminForm, useAdminForm } from '@/runa/admin';
 import type {
@@ -256,7 +259,7 @@ it('Auth administration user page moves the exact table selection into the nativ
   const trigger = () =>
     wrapper
       .findAll('button')
-      .find((button) => button.text().startsWith('Revoke sessions'))!;
+      .find((button) => button.text().startsWith('Apply to selected'))!;
   expect(trigger().attributes('disabled')).toBeDefined();
   await wrapper.get('tbody input[type=checkbox]').setValue(true);
   await trigger().trigger('click');
@@ -349,4 +352,181 @@ it('Auth administrative avatar uses native multipart target and version with dir
   expect(uploaded!.get('avatar')).toBeInstanceOf(File);
   await vi.waitFor(() => expect(form.dirty.value).toBe(false));
   expect(form.records.value.avatar?.revision).toBe('2');
+});
+
+it('Auth administration keeps filters above bulk actions and creation in the directory header', async () => {
+  const directory = section(
+    'directory',
+    [
+      { ...field('display_name'), filterable: true },
+      { ...field('two_factor_enabled'), type: 'boolean', filterable: true },
+      { ...field('created_at'), type: 'datetime', filterable: true },
+    ],
+    'table',
+  );
+  const creation = section('creation', [field('email', false)]);
+  creation.commands = [
+    {
+      key: 'create',
+      title: 'Create account',
+      inputs: ['email'],
+      mode: 'independent',
+      requirement: 'none',
+      destructive: false,
+      preview_required: false,
+      bulk: false,
+      action: null,
+      available: true,
+      intent: 'create',
+    },
+  ];
+  const bulk = section('bulk_users', [
+    { ...field('public_ids', false), type: 'uuid', multiple: true },
+    { ...field('at', false), type: 'datetime' },
+    { ...field('enabled', false), type: 'boolean' },
+    field('summary'),
+  ]);
+  bulk.commands = ['deactivate', 'password_reset', 'factor_reset'].map(
+    (key) => ({
+      key,
+      title: key,
+      inputs: ['public_ids'],
+      mode: 'independent',
+      requirement: 'both',
+      destructive: true,
+      preview_required: true,
+      bulk: false,
+      action: 'runa.auth.users.bulk.' + key,
+      available: true,
+      intent: 'action',
+    }),
+  );
+  const controller = page([directory, creation, bulk]);
+  const calls: string[] = [];
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    calls.push(url.pathname);
+    return url.pathname.endsWith('/directory')
+      ? response({
+          items: [
+            {
+              public_id: target,
+              revision: '1',
+              values: {
+                display_name: 'Bulk fact target',
+                two_factor_enabled: true,
+                created_at: '2026-11-02T12:00:00Z',
+              },
+            },
+          ],
+          next: null,
+          total: 1,
+        })
+      : response({
+          public_id: null,
+          revision: '0',
+          values: { public_ids: [], at: null, enabled: true, summary: null },
+        });
+  });
+  let form!: AdminFormController;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller, {
+          autoRead: false,
+          confirmLeave: async () => true,
+        });
+        return () => h(AuthAdminUsers, { controller, form });
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Bulk fact target'));
+  const filters = wrapper.get('[data-table-filters]').element;
+  const actions = wrapper.get('[data-auth-bulk-actions]').element;
+  expect(
+    filters.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(wrapper.get('[data-auth-bulk-actions]').text()).toContain(
+    'deactivate',
+  );
+  const header = wrapper
+    .findAll('header')
+    .find((node) => node.text().includes('User directory'));
+  expect(header?.text()).toContain('Create account');
+  await wrapper.get('tbody input[type=checkbox]').setValue(true);
+  await wrapper
+    .findAll('button')
+    .find((b) => b.text().startsWith('Apply to selected'))!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(form.values.value['bulk_users.public_ids']).toEqual([target]),
+  );
+  const dialog = document.querySelector('[role=dialog]')!;
+  expect(dialog.textContent).toContain('deactivate');
+  expect(dialog.textContent).not.toContain('password_reset');
+  expect(calls).toContain('/api/admin/runa.auth/users/sections/bulk_users');
+});
+
+it('Auth administration range filters keep invalid drafts local and reset them with shared filter validity', async () => {
+  const query = ref<TableQuery>({
+    page: 3,
+    perPage: 25,
+    sort: null,
+    filters: {},
+  });
+  const resetKey = ref(0);
+  const validity = vi.fn();
+  const update = vi.fn((value: TableQuery) => {
+    query.value = value;
+  });
+  const fields = [
+    { ...field('created_at'), type: 'datetime', filterable: true },
+    { ...field('active'), type: 'boolean', filterable: true },
+    { ...field('session_count'), type: 'integer', filterable: true },
+  ];
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        return () =>
+          h(DirectoryFilters, {
+            fields,
+            query: query.value,
+            update,
+            resetKey: resetKey.value,
+            setValidity: validity,
+          });
+      },
+    }),
+  );
+  wrapper.findComponent(Select).vm.$emit('update:modelValue', 'false');
+  await vi.waitFor(() => expect(query.value.filters.active).toBe('false'));
+  wrapper.findComponent(NumberInput).vm.$emit('update:modelValue', '0');
+  await vi.waitFor(() => expect(query.value.filters.session_count).toBe('0'));
+  wrapper
+    .findAllComponents(DateTimeInput)[0]!
+    .vm.$emit('update:modelValue', '2026-11-02T12:00:00Z');
+  await vi.waitFor(() =>
+    expect(JSON.parse(query.value.filters.created_at!)).toEqual({
+      from: '2026-11-02T12:00:00Z',
+    }),
+  );
+  const before = update.mock.calls.length;
+  wrapper
+    .findAllComponents(DateTimeInput)[1]!
+    .vm.$emit('update:modelValue', '2026-11-01T12:00:00Z');
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain('The range end must follow its start.'),
+  );
+  expect(update.mock.calls.length).toBe(before);
+  expect(validity).toHaveBeenCalledWith('created_at:range', false);
+  query.value = { ...query.value, filters: {} };
+  resetKey.value++;
+  await vi.waitFor(() =>
+    expect(wrapper.text()).not.toContain(
+      'The range end must follow its start.',
+    ),
+  );
+  expect(
+    wrapper.findAllComponents(DateTimeInput).map((c) => c.props('modelValue')),
+  ).toEqual([null, null]);
 });

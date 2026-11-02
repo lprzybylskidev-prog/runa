@@ -90,6 +90,16 @@ final readonly class TrustedDevices
         return $rows;
     }
 
+    /** Private owning all-device revocation used by reviewed user batches. */
+    public function revokeAllLocked(Connection $connection, User $user): void
+    {
+        $ids = $connection->table('runa_auth.trusted_devices')->where('user_id', $user->id)->whereNull('revoked_at')->orderBy('id')->pluck('public_id');
+        $connection->table('runa_auth.trusted_devices')->where('user_id', $user->id)->whereNull('revoked_at')->update(['revoked_at' => now()]);
+        foreach ($ids as $id) {
+            $this->transactions->record('trusted_device.revoked', $user);
+        }
+    }
+
     public function revoke(string $publicId, string $deviceId): bool
     {
         new TrustedPrincipal($publicId);

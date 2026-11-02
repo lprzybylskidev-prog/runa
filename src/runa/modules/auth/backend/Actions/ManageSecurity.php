@@ -2,11 +2,14 @@
 
 namespace Runa\Modules\Auth\Actions;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Auth\Contracts\AuthSecurity;
+use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\AccountHistoryState;
 use Runa\Modules\Auth\Support\EntryTransaction;
 
@@ -36,30 +39,50 @@ final readonly class ManageSecurity implements AuthSecurity
             if ($user === null || $user->version !== $expectedVersion) {
                 return false;
             }
-            $this->authority->assertMayRemove($connection, $factors ? [$publicId] : []);
-            $this->sessions->revokeUser($connection, $user);
-            $user->security_version++;
-            $user->version++;
-            $user->remember_token = null;
-            $before = AccountHistoryState::factors($user);
-            if ($factors) {
-                $user->totp_secret = null;
-                $user->totp_pending = null;
-                $user->totp_pending_until = null;
-                $user->totp_counter = null;
-                $user->recovery_hashes = [];
-                $user->email_factor = false;
+            try {
+                $this->validateChangeLocked($connection, $user, $factors);
+            } catch (IdentityConflict) {
+                return false;
             }
-            $user->save();
-            $connection->table('runa_auth.step_up_proofs')->where('user_id', $user->id)->delete();
-            $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->whereNull('consumed_at')->whereNull('invalidated_at')
-                ->update(['invalidated_at' => now(), 'delivery_secret' => null]);
-            $issued = $factors ? true : $this->tokens->issueLocked($connection, $user, 'reset');
-            $this->transactions->record($factors ? 'two_factor.admin_reset' : 'password.admin_reset', $user,
-                $factors ? AccountHistoryState::pairs($before, AccountHistoryState::factors($user)) : []);
 
-            return $issued;
+            return $this->applyChangeLocked($connection, $user, $factors);
         });
+    }
+
+    /** Private owning pre-write validation; bulk validates every account before apply. */
+    public function validateChangeLocked(Connection $connection, User $user, bool $factors): void
+    {
+        $this->authority->assertMayRemove($connection, $factors ? [$user->public_id] : []);
+        if (! $factors && ($user->password === null || ! app(LookupIdentity::class)->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate())) {
+            throw new IdentityConflict('password_reset_unavailable');
+        }
+    }
+
+    /** Private owning phase; native ingress or the root batch owns proof and locks. */
+    public function applyChangeLocked(Connection $connection, User $user, bool $factors): bool
+    {
+        $this->sessions->revokeUser($connection, $user);
+        $user->security_version++;
+        $user->version++;
+        $user->remember_token = null;
+        $before = AccountHistoryState::factors($user);
+        if ($factors) {
+            $user->totp_secret = null;
+            $user->totp_pending = null;
+            $user->totp_pending_until = null;
+            $user->totp_counter = null;
+            $user->recovery_hashes = [];
+            $user->email_factor = false;
+        }
+        $user->save();
+        $connection->table('runa_auth.step_up_proofs')->where('user_id', $user->id)->delete();
+        $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->whereNull('consumed_at')->whereNull('invalidated_at')
+            ->update(['invalidated_at' => now(), 'delivery_secret' => null]);
+        $issued = $factors ? true : $this->tokens->issueLocked($connection, $user, 'reset');
+        $this->transactions->record($factors ? 'two_factor.admin_reset' : 'password.admin_reset', $user,
+            $factors ? AccountHistoryState::pairs($before, AccountHistoryState::factors($user)) : []);
+
+        return $issued;
     }
 
     public function trustedDevices(string $publicId, ?string $before = null): array

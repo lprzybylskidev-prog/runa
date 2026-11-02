@@ -13,9 +13,10 @@ final class AdministrationApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(AuthAdministration::class, AdministrationProxy::class, Administration::class, '1.0.0', [
+        return new ApiDefinition(AuthAdministration::class, AdministrationProxy::class, Administration::class, '1.1.0', [
             'users' => new ApiOperation('administration.users', 'runa.auth.users.read'),
             'profile' => new ApiOperation('administration.profile', 'runa.auth.profiles.read'),
+            'facts' => new ApiOperation('administration.facts', 'runa.auth.identities.read'),
             'lifecycle' => new ApiOperation('administration.lifecycle', 'runa.auth.users.read'),
         ]);
     }

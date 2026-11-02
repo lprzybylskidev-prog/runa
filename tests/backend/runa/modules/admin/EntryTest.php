@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use PragmaRX\Google2FA\Google2FA;
+use Runa\Contracts\Modules\ManagementRead;
 use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\Preparation;
 use Runa\Contracts\Modules\PreparationParticipant;
@@ -40,6 +41,7 @@ use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
+use Runa\Modules\Auth\Actions\EntryTokens;
 use Runa\Modules\Auth\Actions\ProfileMutation;
 use Runa\Modules\Auth\Actions\Profiles;
 use Runa\Modules\Auth\Actions\SessionStore;
@@ -53,6 +55,7 @@ use Runa\Modules\Auth\Contracts\UserDirectoryQuery;
 use Runa\Modules\Auth\Management\AdministrationPages;
 use Runa\Modules\Auth\Management\ProfileEditor;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Support\BulkUserOperations;
 use Runa\Modules\Permissions\Actions\ChangeAssignments;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
@@ -842,7 +845,7 @@ it('Auth administration dispatches every lifecycle intent with native revisions 
     foreach (['approve', 'activate', 'schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock', 'set_security_lock', 'require_password_change', 'deactivate', 'delete', 'restore'] as $operation) {
         $record = authAdministrationRead($this, 'lifecycle', $target->publicId);
         $input = ['command' => 'change', 'public_id' => $target->publicId, 'revision' => $record['revision'],
-            'confirmed' => true, 'values' => ['operation' => $operation, 'at' => now()->utc()->addDays($operation === 'schedule_activation' ? 1 : 2)->format('Y-m-d\TH:i:s\Z'), 'enabled' => true]];
+            'confirmed' => true, 'values' => ['operation' => $operation, 'at' => now()->utc()->addDays($operation === 'schedule_activation' ? 1 : 2)->format('Y-m-d\TH:i:s.000\Z'), 'enabled' => true]];
         $this->postJson('/api/admin/runa.auth/users/sections/lifecycle/commands', $input)->assertOk()->assertJsonPath('data.status', 'committed');
         if ($operation === 'approve') {
             $this->postJson('/api/admin/runa.auth/users/sections/lifecycle/commands', $input)->assertConflict();
@@ -1814,7 +1817,7 @@ it('Auth user administration reports native live sessions and authorized account
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.profiles.read', 'runa.auth.emails.read', 'runa.auth.sessions.manage', 'runa.auth.avatars.manage']);
     $avatar = authAdministrationRead($this, 'avatar', $target->public_id);
     expect($avatar['values']['has_avatar'])->toBeFalse()->and($avatar['values']['avatar_max_kib'])->toBe(2048)->and($avatar['values']['avatar_upload_pending'])->toBeFalse();
-    $native = app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), fn () => app(ModuleApis::class)->resolve('runa.auth', AuthAdministration::class, '1.0.0')->users(new UserDirectoryQuery(search: 'Status target')));
+    $native = app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), fn () => app(ModuleApis::class)->resolve('runa.auth', AuthAdministration::class, '1.1.0')->users(new UserDirectoryQuery(search: 'Status target')));
     expect($native->items[0]->details['session_count'])->toBe(1);
     $read = fn () => authAdministrationRead($this, 'directory', query: ['kind' => 'page', 'filters' => json_encode(['display_name' => 'Status target'])])['items'][0]['values'];
     $values = $read();
@@ -1824,4 +1827,165 @@ it('Auth user administration reports native live sessions and authorized account
         ->and($values)->not->toHaveKey('verified')->not->toHaveKey('email_verified_at');
     DB::table('runa_auth.sessions')->where('user_id', $target->id)->update(['revoked_at' => now()]);
     expect($read()['logged_in'])->toBeFalse()->and($read()['session_count'])->toBe(0);
+});
+
+it('Auth user administration filters all authorized facts before pagination and binds cursors', function (): void {
+    expect(fn () => new ManagementRead(filters: array_fill_keys(array_map(fn ($i) => 'field'.$i, range(1, 65)), true)))->toThrow(InvalidArgumentException::class);
+    $settings = app(ModuleSettings::class)->read('runa.auth');
+    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'new', 'email_otp_enabled' => true, 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['password_changed_at' => now()]);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('filter-facts@example.test', firstName: 'Anna', surname: 'Test', active: true, approved: true));
+    DB::table('runa_auth.users')->where('public_id', $target->publicId)->update(['email_verified_at' => now(), 'password' => Hash::make('test-password'), 'password_changed_at' => now()->subDays(40), 'totp_secret' => app(Encrypter::class)->encrypt('test-secret'), 'recovery_hashes' => json_encode(['one', 'two'])]);
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.profiles.read', 'runa.auth.emails.read', 'runa.auth.sessions.manage', 'runa.auth.passwords.reset', 'runa.auth.two_factor.reset', 'runa.auth.invitations.manage', 'runa.auth.trust.manage', 'runa.auth.avatars.manage']);
+    $filters = ['display_name' => 'Anna Test', 'email' => 'filter-facts@', 'first_name' => 'Anna', 'surname' => 'Test', 'active' => true, 'approved' => true, 'logged_in' => false, 'session_count' => 0, 'verified' => true, 'verification_required' => true, 'two_factor_enabled' => true, 'two_factor_required' => true, 'totp_enrolled' => true, 'email_factor_enrolled' => false, 'recovery_codes_remaining' => 2, 'password_set' => true, 'password_expired' => true, 'invitation_pending' => false, 'trusted_device_count' => 0, 'has_avatar' => false, 'operator_recovery_pending' => false, 'created_at' => json_encode(['from' => now()->subDay()->utc()->format('Y-m-d\TH:i:s.000\Z'), 'until' => now()->addDay()->utc()->format('Y-m-d\TH:i:s\Z')])];
+    foreach ($filters as $key => $value) {
+        $response = $this->getJson('/api/admin/runa.auth/users/sections/directory?'.http_build_query(['kind' => 'page', 'filters' => json_encode([$key => $value])]));
+        $this->assertSame(200, $response->status(), $key.': '.($response->json('error.code') ?? 'validation failure'));
+    }
+    $result = authAdministrationRead($this, 'directory', query: ['kind' => 'page', 'filters' => json_encode($filters), 'limit' => 1]);
+    expect($result['total'])->toBe(1)->and($result['items'][0]['public_id'])->toBe($target->publicId);
+    $facts = $result['items'][0]['values'];
+    expect($facts['two_factor_enabled'])->toBeTrue()->and($facts['password_expired'])->toBeTrue()->and($facts['recovery_codes_remaining'])->toBe(2)->and($facts['password_expires_at'])->toBeString();
+    expect(json_encode($facts))->not->toContain('test-secret', 'test-password', 'recovery_hashes', 'totp_secret');
+    $filters['two_factor_enabled'] = false;
+    expect(authAdministrationRead($this, 'directory', query: ['kind' => 'page', 'filters' => json_encode($filters)])['total'])->toBe(0);
+    $first = authAdministrationRead($this, 'directory', query: ['kind' => 'page', 'limit' => 1]);
+    $this->getJson('/api/admin/runa.auth/users/sections/directory?'.http_build_query(['kind' => 'page', 'cursor' => $first['next'], 'filters' => json_encode(['active' => true])]))->assertUnprocessable();
+    foreach ([['created_at' => json_encode(['from' => '2026-02-30T00:00:00Z'])], ['password' => true], ['session_count' => -1]] as $invalid) {
+        $this->getJson('/api/admin/runa.auth/users/sections/directory?'.http_build_query(['kind' => 'page', 'filters' => json_encode($invalid)]))->assertUnprocessable();
+    }
+});
+
+it('Auth user administration executes each native bulk operation with one reviewed proof', function (string $operation): void {
+    $settings = app(ModuleSettings::class)->read('runa.auth');
+    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'new', 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['password_changed_at' => now()]);
+    $ids = [];
+    foreach (['one', 'two'] as $suffix) {
+        $target = app(ChangeIdentity::class)->create(new NewIdentity('bulk-'.$suffix.'@example.test', name: 'Bulk '.$suffix, active: true, approved: true));
+        $ids[] = $target->publicId;
+        $values = ['email_verified_at' => now()];
+        if ($operation === 'password_reset') {
+            $values += ['password' => Hash::make('target-password'), 'password_changed_at' => now()];
+        }
+        if ($operation === 'activate') {
+            $values['active'] = false;
+        }
+        if ($operation === 'approve') {
+            $values['approved'] = false;
+        }
+        if ($operation === 'restore') {
+            $values += ['deleted_at' => now(), 'active' => false];
+        }
+        if ($operation === 'factor_reset') {
+            $values += ['totp_secret' => app(Encrypter::class)->encrypt('bulk-totp-secret'), 'email_factor' => true, 'recovery_hashes' => json_encode(['one', 'two'])];
+        }
+        if ($operation === 'remove_avatar') {
+            $values += ['avatar_path' => 'avatars/'.$suffix.'.png', 'avatar_type' => 'image/png'];
+        }
+        DB::table('runa_auth.users')->where('public_id', $target->publicId)->update($values);
+        $user = User::withTrashed()->where('public_id', $target->publicId)->firstOrFail();
+        if (in_array($operation, ['deactivate', 'reset_preferences'], true)) {
+            DB::transaction(fn () => app(SessionStore::class)->admit(DB::connection(), $user, 'bulk-impact-'.$suffix, false));
+        }
+        if ($operation === 'invalidate_invitation') {
+            expect(app(EntryTokens::class)->invite($target->publicId, 1))->toBeTrue();
+        }
+        if ($operation === 'revoke_trust') {
+            DB::table('runa_auth.trusted_devices')->insert(['public_id' => (string) Str::uuid7(), 'user_id' => $user->id, 'token_hash' => hash('sha256', 'bulk-trust-'.$suffix), 'security_version' => 1, 'factor_method' => 'totp', 'created_at' => now(), 'expires_at' => now()->addDay()]);
+        }
+        if ($operation === 'remove_avatar') {
+            DB::table('runa_auth.avatar_files')->insert(['user_id' => $user->id, 'path' => 'avatars/'.$suffix.'.png', 'available_at' => now()->addDay(), 'created_at' => now()]);
+        }
+        if ($operation === 'reset_preferences') {
+            DB::table('runa_auth.preferences')->insert(['user_id' => $user->id, 'scope' => 'runa:runa.auth:global:locale', 'module' => 'runa.auth', 'value' => '"en"', 'definition_version' => 1, 'created_at' => now(), 'updated_at' => now()]);
+        }
+        if ($operation === 'revoke_exceptions') {
+            DB::table('runa_auth.policy_exceptions')->insert(['public_id' => (string) Str::uuid7(), 'user_id' => $user->id, 'key' => 'session_idle_minutes', 'value' => 30, 'reason' => 'Bulk fixture', 'actor' => $this->adminUser->public_id, 'policy_revision' => app(ModuleSettings::class)->read('runa.auth')['revision'], 'version' => 1, 'expires_at' => now()->addDay(), 'created_at' => now(), 'updated_at' => now()]);
+        }
+    }
+    $access = BulkUserOperations::access($operation);
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.deleted.read', 'runa.permissions.users.select', 'runa.auth.'.$access['permission']]);
+    $record = authAdministrationRead($this, 'bulk_users');
+    expect($record['public_id'])->toBeNull();
+    $values = ['public_ids' => $ids];
+    if (in_array($operation, ['schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock'], true)) {
+        $values['at'] = now()->addDay()->utc()->format('Y-m-d\TH:i:s.000\Z');
+    }
+    if (in_array($operation, ['set_security_lock', 'require_password_change'], true)) {
+        $values['enabled'] = true;
+    }
+    $input = ['command' => $operation, 'public_id' => null, 'revision' => '0', 'values' => $values, 'confirmed' => true];
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    expect($input['review']['changes']['summary']['accounts'])->toBe(2);
+    if ($operation === 'deactivate') {
+        expect($input['review']['changes']['summary']['sessions'])->toBe(2);
+    }
+    if ($operation === 'reset_preferences') {
+        expect($input['review']['changes']['summary'])->not->toHaveKey('sessions')->not->toHaveKey('trusted_devices');
+    }
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
+    authAdministrationStrongProof($this, 'runa.auth.users.bulk.'.$operation);
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertOk()->assertJsonPath('data.status', 'committed');
+    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.users.bulk.'.$operation)->whereNotNull('consumed_at')->count())->toBe(1);
+    $users = User::withTrashed()->whereIn('public_id', $ids)->get();
+    foreach ($users as $user) {
+        match ($operation) {
+            'activate' => expect($user->active)->toBeTrue(),
+            'deactivate' => expect($user->active)->toBeFalse(),
+            'approve' => expect($user->approved)->toBeTrue(),
+            'delete' => expect($user->trashed())->toBeTrue(),
+            'restore' => expect($user->trashed())->toBeFalse()->and($user->active)->toBeFalse(),
+            'set_security_lock' => expect($user->security_locked)->toBeTrue(),
+            'require_password_change' => expect($user->password_change_required)->toBeTrue(),
+            'schedule_activation' => expect($user->activate_at)->not->toBeNull(),
+            'schedule_deactivation' => expect($user->deactivate_at)->not->toBeNull(),
+            'set_expiry' => expect($user->expires_at)->not->toBeNull(),
+            'set_attempt_lock' => expect($user->attempt_locked_until)->not->toBeNull(),
+            'require_verification' => expect($user->email_verified_at)->toBeNull()->and($user->verification_forced)->toBeTrue(),
+            'invite','password_reset' => expect(DB::table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('purpose', $operation === 'invite' ? 'invitation' : 'reset')->whereNull('invalidated_at')->count())->toBe(1),
+            'reset_preferences' => expect($user->preference_revision)->toBe(1)->and(DB::table('runa_auth.preferences')->where('user_id', $user->id)->count())->toBe(0),
+            'factor_reset' => expect($user->security_version)->toBe(2)->and($user->email_factor)->toBeFalse(),
+            'invalidate_invitation' => expect(DB::table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('purpose', 'invitation')->whereNull('invalidated_at')->count())->toBe(0),
+            'revoke_trust' => expect(DB::table('runa_auth.trusted_devices')->where('user_id', $user->id)->whereNull('revoked_at')->count())->toBe(0),
+            'remove_avatar' => expect($user->avatar_path)->toBeNull()->and(CarbonImmutable::parse(DB::table('runa_auth.avatar_files')->where('user_id', $user->id)->value('available_at'))->lte(now()))->toBeTrue(),
+            'revoke_exceptions' => expect(DB::table('runa_auth.policy_exceptions')->where('user_id', $user->id)->whereNull('revoked_at')->count())->toBe(0),
+            default => throw new LogicException('Missing bulk expectation.'),
+        };
+    }
+})->with([['activate'], ['deactivate'], ['approve'], ['delete'], ['restore'], ['schedule_activation'], ['schedule_deactivation'], ['set_expiry'], ['set_attempt_lock'], ['set_security_lock'], ['require_password_change'], ['invite'], ['invalidate_invitation'], ['require_verification'], ['password_reset'], ['factor_reset'], ['revoke_trust'], ['reset_preferences'], ['remove_avatar'], ['revoke_exceptions']]);
+
+it('Auth user administration refuses changed selection and rolls back a whole failed bulk batch', function (): void {
+    $first = app(ChangeIdentity::class)->create(new NewIdentity('atomic-first@example.test', name: 'Atomic first', active: true, approved: true));
+    $second = app(ChangeIdentity::class)->create(new NewIdentity('atomic-second@example.test', name: 'Atomic second', active: true, approved: true));
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.permissions.users.select']);
+    $input = ['command' => 'deactivate', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$first->publicId, $second->publicId]], 'confirmed' => true];
+    $oversized = $input;
+    $oversized['values']['public_ids'] = array_map(fn () => (string) Str::uuid7(), range(1, 100));
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $oversized)->assertUnprocessable();
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    DB::table('runa_auth.users')->where('public_id', $second->publicId)->increment('version');
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertConflict();
+    expect(User::where('public_id', $first->publicId)->value('active'))->toBeTrue();
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    authAdministrationStrongProof($this, 'runa.auth.users.bulk.deactivate');
+    DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT bulk_failure CHECK (action <> 'identity.deactivate')");
+    try {
+        $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertStatus(503);
+        expect(User::whereIn('public_id', [$first->publicId, $second->publicId])->where('active', true)->count())->toBe(2)
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.users.bulk.deactivate')->value('consumed_at'))->toBeNull();
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT bulk_failure');
+    }
+});
+
+it('Auth user administration reads independently granted security invitation and avatar facts without directory authority', function (): void {
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('least-privilege@example.test', name: 'Least privilege', active: true, approved: true));
+    authAdministrationLogin($this, ['runa.auth.two_factor.reset', 'runa.auth.passwords.reset', 'runa.auth.invitations.manage', 'runa.auth.avatars.manage']);
+    $security = authAdministrationRead($this, 'security', $target->publicId)['values'];
+    expect($security['two_factor_enabled'])->toBeFalse()->and($security['two_factor_required'])->toBeFalse()->and($security['password_set'])->toBeFalse();
+    expect($security)->not->toHaveKey('email')->not->toHaveKey('active')->not->toHaveKey('created_at');
+    expect(authAdministrationRead($this, 'invitations', $target->publicId)['values']['invitation_pending'])->toBeFalse();
+    expect(authAdministrationRead($this, 'avatar', $target->publicId)['values']['has_avatar'])->toBeFalse();
+    $this->getJson('/api/admin/runa.auth/users/sections/directory?kind=page')->assertNotFound();
 });

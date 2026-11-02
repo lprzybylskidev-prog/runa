@@ -27,7 +27,9 @@ final readonly class TransactionSecurity implements SecurityContract
         }
         foreach ($publicIds as $id) {
             new TrustedPrincipal($id);
-            User::where('public_id', $id)->lockForUpdate()->first() ?? throw new IdentityConflict('identity_missing');
+            // Locks serialize identity state, including an explicitly authorized restore.
+            // Every owning mutation still validates its own current/deleted policy.
+            User::withTrashed()->where('public_id', $id)->lockForUpdate()->first() ?? throw new IdentityConflict('identity_missing');
         }
     }
 

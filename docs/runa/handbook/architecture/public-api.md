@@ -335,12 +335,15 @@ not HTTP/ModuleApis values or direct access to foreign private mutation factorie
 See [Admin composition](../modules/admin/composition.md) for full phase, signature,
 source-placement, bounds and compatibility requirements.
 
-Auth-owned public `AuthAdministration` API 1.0.0 and its readonly DTOs are
+Auth-owned public `AuthAdministration` API 1.1.0 and its readonly DTOs are
 administrative consumption, implemented by private owning Queries/proxy/definition
 at runtime. [Auth administration](../modules/auth/administration.md) owns exact
 signatures, field grants, safe errors and frontend composition. Ordinary customers
 resolve the guarded API or compose `@/runa/auth` / `@/runa/admin`; they never import
 Auth's private management adapters or acquire a reverse backend dependency on Admin.
+The same owning guide declares guarded `AuthBulkUsers` 1.0.0 and immutable
+`BulkUserChange` for reviewed atomic user operations; the source public-boundary
+catalogue includes these consumption values, never their private batch engine.
 
 Permissions and Audit source-owned Admin adapters remain private implementation.
 Their page/section presentations are public through `@/runa/permissions` and

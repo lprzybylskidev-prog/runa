@@ -33,7 +33,8 @@
       "Runa\\Modules\\Auth\\Definitions\\PreferencesApi",
       "Runa\\Modules\\Auth\\Definitions\\DeliveryApi",
       "Runa\\Modules\\Auth\\Definitions\\PoliciesApi",
-      "Runa\\Modules\\Auth\\Definitions\\BulkSessionsApi"
+      "Runa\\Modules\\Auth\\Definitions\\BulkSessionsApi",
+      "Runa\\Modules\\Auth\\Definitions\\BulkUsersApi"
     ],
     "health": [],
     "lifecycle": ["Runa\\Modules\\Auth\\Definitions\\IdentityLifecycle"],

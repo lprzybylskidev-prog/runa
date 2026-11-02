@@ -47,6 +47,15 @@ not sortable. Displayed dates need a `compare` adapter over their original insta
 never sort localized date text. History loaded in bounded cursor batches sorts only
 the loaded rows; this does not claim global ordering of unloaded history.
 
+The public UI Table `filters` slot provides `{query: TableQuery, update(value:
+TableQuery): void, resetKey: number, setValidity(key: string, valid: boolean): void}`.
+Custom filter controls report local invalid drafts through setValidity and key
+resettable controls by resetKey so the standard Reset filters action clears them.
+The optional `afterFilters` default-scope slot inserts content between filters and
+the standard toolbar. UI owns these runtime presentation seams in AppTable.vue;
+no backend operation is implied. AdminResourceTable forwards the same filter scope
+and afterFilters slot through its public AdminResourceTableSlots contract.
+
 Use `cell-<key>` slots for presentation, `actions` for row actions, `filters` for application-owned controls, and `bulk` for external selected-record controls. All controls work without a layout. Wide content remains accessible in a labelled keyboard-scrollable table region. Client tables whose rows are fetched by the caller accept `:loading="readPending"`.
 Keep it true for the request lifetime, including an initially empty rows array;
 the shared Spinner takes precedence over empty results. It is centered within the

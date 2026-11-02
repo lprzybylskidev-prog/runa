@@ -53,9 +53,7 @@ final readonly class SessionStore
         $now = CarbonImmutable::now('UTC');
         $idle = app(PolicyExceptions::class)->values($users, 'session_idle_minutes');
 
-        return $connection->table('runa_auth.sessions')->whereNull('revoked_at')
-            ->where('expires_at', '>', $now)
-            ->where('authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_absolute_minutes')))
+        return $this->liveQuery($connection)
             ->where(function (Builder $query) use ($users, $idle, $now): void {
                 if ($users === []) {
                     $query->whereRaw('1 = 0');
@@ -65,10 +63,29 @@ final readonly class SessionStore
                         ->where('security_version', $user->security_version)
                         ->where('activity_at', '>', $now->subMinutes($idle[$user->id])));
                 }
-            })
-            ->where(fn (Builder $query) => $query->where('remembered', false)
-                ->orWhere(fn (Builder $q) => $q->where('remembered', true)
-                    ->where('authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_remember_minutes')))));
+            });
+    }
+
+    /** Private directory aggregate uses the same deadlines as native session reads. */
+    public function liveDirectoryRows(Connection $connection): Builder
+    {
+        $idle = app(PolicyExceptions::class)->queryFor('session_idle_minutes', 'session_user.id');
+
+        return $this->liveQuery($connection)->join('runa_auth.users as session_user', 'session_user.id', '=', 'runa_auth.sessions.user_id')
+            ->whereColumn('runa_auth.sessions.security_version', 'session_user.security_version')
+            ->whereRaw('runa_auth.sessions.activity_at > ?::timestamptz - COALESCE(('.$idle->toSql()."), ?) * INTERVAL '1 minute'", [CarbonImmutable::now('UTC'), ...$idle->getBindings(), $this->settings->integer('runa.auth', 'session_idle_minutes')]);
+    }
+
+    private function liveQuery(Connection $connection): Builder
+    {
+        $now = CarbonImmutable::now('UTC');
+
+        return $connection->table('runa_auth.sessions')->whereNull('runa_auth.sessions.revoked_at')
+            ->where('runa_auth.sessions.expires_at', '>', $now)
+            ->where('runa_auth.sessions.authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_absolute_minutes')))
+            ->where(fn (Builder $query) => $query->where('runa_auth.sessions.remembered', false)
+                ->orWhere(fn (Builder $q) => $q->where('runa_auth.sessions.remembered', true)
+                    ->where('runa_auth.sessions.authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_remember_minutes')))));
     }
 
     /** @return SessionRow|null */

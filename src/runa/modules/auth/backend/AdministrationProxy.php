@@ -28,7 +28,15 @@ final class AdministrationProxy extends GuardedApi implements AuthAdministration
 
     public function lifecycle(string $publicId): array
     {
-        /** @var array{public_id:string,version:int,active:bool,approved:bool,deleted:bool,security_locked:bool,password_change_required:bool,activate_at:?string,deactivate_at:?string,expires_at:?string,attempt_locked_until:?string} $result */
+        /** @var array<string,bool|int|string|null> $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId]);
+
+        return $result;
+    }
+
+    public function facts(string $publicId): array
+    {
+        /** @var array<string,bool|int|string|null> $result */
         $result = $this->invoke(__FUNCTION__, [$publicId]);
 
         return $result;

@@ -35,7 +35,10 @@ const collection = computed(() =>
 const fields = computed(() => ({
   ...props.section,
   fields: props.section.fields.filter((field) => {
-    if (props.section.key === 'bulk_sessions' && field.key === 'summary')
+    if (
+      ['bulk_sessions', 'bulk_users'].includes(props.section.key) &&
+      field.key === 'summary'
+    )
       return false;
     if (
       collectionKeys.includes(field.key) ||
@@ -143,11 +146,11 @@ function select(row: Record<string, AdminJson>) {
       );
   }
 }
-function reviewCount(review: AdminCommandReview, key: string): string {
+function reviewCount(review: AdminCommandReview, key: string): string | null {
   const summary = review.changes.summary;
   if (!summary || typeof summary !== 'object' || Array.isArray(summary))
-    return '—';
-  return typeof summary[key] === 'number' ? String(summary[key]) : '—';
+    return null;
+  return typeof summary[key] === 'number' ? String(summary[key]) : null;
 }
 </script>
 <template>
@@ -220,7 +223,7 @@ function reviewCount(review: AdminCommandReview, key: string): string {
       :embedded="page.page.value?.key === 'users'"
     >
       <template
-        v-if="section.key === 'bulk_sessions'"
+        v-if="['bulk_sessions', 'bulk_users'].includes(section.key)"
         #commandReview="{ review }"
       >
         <p class="text-sm font-semibold">{{ tr('Review summary') }}</p>
@@ -233,7 +236,7 @@ function reviewCount(review: AdminCommandReview, key: string): string {
                 key: 'trusted_devices',
                 label: { pl: 'Zaufane urządzenia', en: 'Trusted devices' },
               },
-            ]"
+            ].filter((item) => reviewCount(review, item.key) !== null)"
             :key="item.key"
           >
             <dt class="text-xs text-muted">{{ tr(item.label) }}</dt>

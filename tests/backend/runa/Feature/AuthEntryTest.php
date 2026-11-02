@@ -1938,7 +1938,7 @@ it('counts filtered directory results before cursors and preserves deleted-read 
     });
     app()->forgetInstance(OperationGuard::class);
     app()->forgetInstance(ModuleApis::class);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthAdministration::class, '1.0.0');
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthAdministration::class, '1.1.0');
     app(PrincipalScope::class)->run(new TrustedPrincipal($first->public_id), function () use ($api): void {
         $page = $api->users(new UserDirectoryQuery(limit: 1, search: 'Test User'));
         expect($page->items)->toHaveCount(1)->and($page->total)->toBe(2)->and($page->next)->not->toBeNull();

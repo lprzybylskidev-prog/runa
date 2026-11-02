@@ -158,7 +158,9 @@ ManagementOutcome::__construct(string $status, ?ManagementRecord $record = null,
 ```
 
 `filters` is `array<string, scalar|null>`, `sort` is
-`list<array{key:string,direction:'asc'|'desc'}>`; at most 16 filters, 4 sort keys.
+`list<array{key:string,direction:'asc'|'desc'}>`; at most 64 scalar filters, 4 sort keys. The filter bound matches the maximum
+declared section fields; source-owned field/type/permission allowlists and the
+existing JSON byte bound remain mandatory.
 Only source-declared readable/filterable/sortable fields are accepted. Limit is
 1–100 or the lower owner limit; cursor is opaque, at most 2048 bytes. `values` is
 an allowlisted field map of recursively bounded JSON values, max depth 8 and

@@ -435,6 +435,12 @@ function changePage(value: number) {
         <slot
           name="filters"
           :query="query"
+          :reset-key="filterReset"
+          :set-validity="
+            (key: string, valid: boolean) => {
+              invalidFilters[key] = !valid;
+            }
+          "
           :update="
             (value: TableQuery) => emit('update:query', { ...value, page: 1 })
           "
@@ -524,6 +530,7 @@ function changePage(value: number) {
         </AppButton>
       </AppTooltip>
     </div>
+    <slot name="afterFilters" />
     <div
       data-table-toolbar
       class="flex flex-wrap items-end justify-between gap-3 border-b border-line bg-[var(--runa-surface-raised)] px-4 py-3"

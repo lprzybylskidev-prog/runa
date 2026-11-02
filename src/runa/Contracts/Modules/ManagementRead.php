@@ -13,7 +13,7 @@ final readonly class ManagementRead
         public int $limit = 25, public array $filters = [], public array $sort = [],
     ) {
         Rules::publicId($publicId);
-        if ($limit < 1 || $limit > 100 || ($cursor !== null && strlen($cursor) > 2048) || count($filters) > 16 || ! array_is_list($sort) || count($sort) > 4) {
+        if ($limit < 1 || $limit > 100 || ($cursor !== null && strlen($cursor) > 2048) || count($filters) > 64 || ! array_is_list($sort) || count($sort) > 4) {
             throw new \InvalidArgumentException('Management query limit.');
         }
         Rules::json($filters);

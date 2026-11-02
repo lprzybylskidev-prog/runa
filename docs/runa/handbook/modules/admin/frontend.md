@@ -1201,7 +1201,7 @@ refreshes shared record/table reads in place. Failure uses ordinary controlled
 feedback and 409 reconciliation; interrupted completion remains unknown.
 
 `AdminResourceTable.selectable` (default false) enables explicit row-selection
-composition for owning native workflows such as Auth's reviewed session revocation.
+composition for owning native workflows such as Auth's reviewed user operations.
 It supplies no bulk implementation or authority; the owner consumes the controller's
 selection, preserves exact identities/limits and performs native review/proof.
 
@@ -1215,3 +1215,10 @@ public consumers import AdminSection and AdminSectionProps from `@/runa/admin`.
 review: AdminCommandReview })` for owner-specific human-readable review summaries.
 The default remains escaped field differences. A replacement changes presentation
 only: native fingerprint, required review, proof and confirmation stay in the controller.
+
+The optional `AdminResourceTable` `afterFilters(): VNode[]` slot forwards the
+public UI Table insertion point below filters and above its standard toolbar.
+Its `filters` scope includes `{query, update, resetKey, setValidity}` as documented
+in the [tables guide](../../development/frontend/tables.md). Auth uses these
+presentation seams for native bulk commands and resettable range filters; they
+supply no mutation or read authority.

@@ -53,16 +53,18 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             }
         }
         $values = [];
-        if (in_array(static::KEY, ['lifecycle', 'avatar'], true)) {
-            $values = $this->api(AuthAdministration::class)->lifecycle($id);
+        if (in_array(static::KEY, ['lifecycle', 'avatar', 'security', 'invitations'], true)) {
+            $values = static::KEY === 'lifecycle' ? $this->api(AuthAdministration::class, '1.1.0')->lifecycle($id) : $this->api(AuthAdministration::class, '1.1.0')->facts($id);
             if (static::KEY === 'avatar') {
                 $values['avatar_upload_pending'] = false;
             }
             $version = $values['version'];
             unset($values['version'], $values['public_id']);
-            $values += ['operation' => ($values['deleted'] ? 'restore' : ($values['active'] ? 'deactivate' : 'activate')), 'at' => null, 'enabled' => false];
+            if (static::KEY === 'lifecycle') {
+                $values += ['operation' => ($values['deleted'] ? 'restore' : ($values['active'] ? 'deactivate' : 'activate')), 'at' => null, 'enabled' => false];
+            }
         } elseif (in_array(static::KEY, ['primary_email', 'secondary', 'preferences'], true)) {
-            $profile = $this->api(AuthAdministration::class)->profile($id);
+            $profile = $this->api(AuthAdministration::class, '1.1.0')->profile($id);
             $version = $profile->version;
             $values = match (static::KEY) {
                 'primary_email' => ['current_email' => $profile->primaryEmail['email'] ?? null, 'verified' => $profile->primaryEmail['verified'] ?? null,
@@ -112,7 +114,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             $version = (int) $input->revision;
             $result = match (static::KEY.'.'.$input->command) {
                 'creation.create' => $this->api(AuthLifecycle::class)->create(new NewIdentity($v['email'], $v['name'], $v['first_name'], $v['surname'], $v['login'], $v['active'], $v['approved'])),
-                'lifecycle.change' => $this->api(AuthLifecycle::class)->change($id, $version, new LifecycleChange($v['operation'], in_array($v['operation'], ['schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock'], true) ? $v['at'] : null, in_array($v['operation'], ['set_security_lock', 'require_password_change'], true) ? $v['enabled'] : null)),
+                'lifecycle.change' => $this->api(AuthLifecycle::class)->change($id, $version, new LifecycleChange($v['operation'], in_array($v['operation'], ['schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock'], true) ? Moment::seconds($v['at']) : null, in_array($v['operation'], ['set_security_lock', 'require_password_change'], true) ? $v['enabled'] : null)),
                 'invitations.invite' => $this->api(AuthInvitations::class)->invite($id, $version),
                 'invitations.invalidate' => $this->api(AuthInvitations::class)->invalidate($id, $version),
                 'primary_email.change' => $this->api(AuthProfiles::class, '2.0.0')->changeEmail($id, $version, $v['email']),
@@ -127,7 +129,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
                 'security.factor_reset' => $this->api(AuthSecurity::class)->resetFactors($id, $version),
                 'trust.revoke_device' => $this->api(AuthSecurity::class)->revokeDevice($id, $v['device_id']),
                 'preferences.reset' => $this->api(AuthPreferences::class)->resetAccount($id, $v['preference_revision']),
-                'exceptions.set' => $this->api(AuthPolicies::class)->exception($id, $v['key'], $v['value'], $v['reason'], $v['expires_at'], $v['exception_version'], $v['policy_revision']),
+                'exceptions.set' => $this->api(AuthPolicies::class)->exception($id, $v['key'], $v['value'], $v['reason'], Moment::seconds($v['expires_at']) ?? throw new \InvalidArgumentException('Missing exception deadline.'), $v['exception_version'], $v['policy_revision']),
                 default => throw new \InvalidArgumentException('Unknown administration command.'),
             };
             if ($result === false) {

@@ -1,6 +1,7 @@
 <script setup lang="ts">
+import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
-import { Badge, Button, Card, Dialog, Tabs, TablePreferences } from '@/runa/ui';
+import { Badge, Button, Card, Dialog, Tabs, Select } from '@/runa/ui';
 import {
   AdminComponentBoundary,
   AdminForm,
@@ -59,6 +60,7 @@ watch(
       'active',
       'logged_in',
       'verified',
+      'two_factor_enabled',
       'state',
       'created_at',
     ]);
@@ -72,10 +74,40 @@ watch(
   { immediate: true },
 );
 const directory = computed(() => table.section.value);
-const bulk = computed(() =>
-  props.controller.page.value?.sections.find((s) => s.key === 'bulk_sessions'),
+const bulkChoices = computed(() =>
+  (props.controller.page.value?.sections ?? [])
+    .filter((s) => ['bulk_sessions', 'bulk_users'].includes(s.key))
+    .flatMap((section) =>
+      section.commands
+        .filter((c) => c.available)
+        .map((command) => ({
+          section,
+          command,
+          value: section.key + ':' + command.key,
+          label: tr(command.title),
+        })),
+    ),
 );
-const canBulk = computed(() => bulk.value?.commands.some((c) => c.available));
+const canBulk = computed(() => bulkChoices.value.length > 0);
+const bulkChoice = ref('');
+const activeBulk = ref('bulk_sessions:revoke');
+const chosenBulk = computed(() =>
+  bulkChoices.value.find((c) => c.value === bulkChoice.value),
+);
+const openedBulk = computed(() =>
+  bulkChoices.value.find((c) => c.value === activeBulk.value),
+);
+const bulkLimit = computed(() =>
+  chosenBulk.value?.section.key === 'bulk_users' ? 99 : 100,
+);
+watch(
+  bulkChoices,
+  (choices) => {
+    if (!choices.some((c) => c.value === bulkChoice.value))
+      bulkChoice.value = choices[0]?.value ?? '';
+  },
+  { immediate: true },
+);
 const bulkIds = ref<string[]>([]);
 const selection = computed(() => {
   const selected = table.selection.value;
@@ -83,9 +115,12 @@ const selection = computed(() => {
 });
 const sections = computed(() =>
   (props.controller.page.value?.sections ?? []).filter((section) => {
-    if (mode.value === 'bulk') return section.key === 'bulk_sessions';
+    if (mode.value === 'bulk')
+      return section.key === openedBulk.value?.section.key;
     if (mode.value === 'create') return section.key === 'creation';
-    return !['directory', 'creation', 'bulk_sessions'].includes(section.key);
+    return !['directory', 'creation', 'bulk_sessions', 'bulk_users'].includes(
+      section.key,
+    );
   }),
 );
 const tabs = computed(() =>
@@ -106,10 +141,9 @@ const canCreate = computed(() =>
 const title = computed(() => {
   if (mode.value === 'create') return tr('Create account');
   if (mode.value === 'bulk')
-    return tr({
-      pl: 'Unieważnij sesje wybranych kont',
-      en: 'Revoke selected account sessions',
-    });
+    return openedBulk.value
+      ? tr(openedBulk.value.command.title)
+      : tr('Details');
   const result = table.resource.result.value;
   const row =
     result && 'items' in result && !('field' in result)
@@ -120,32 +154,45 @@ const title = computed(() => {
     : tr('Details');
 });
 function presentation(section: AdminSectionData): AdminSectionData {
-  if (section.key !== 'bulk_sessions') return section;
-  // Selection comes from the table; the operator cannot accidentally change its scope.
+  if (!['bulk_sessions', 'bulk_users'].includes(section.key)) return section;
+  const command = openedBulk.value?.command;
   return {
     ...section,
-    fields: section.fields.filter((f) => f.key !== 'public_ids'),
+    fields: section.fields.filter(
+      (f) =>
+        f.key === 'summary' ||
+        (f.key !== 'public_ids' && command?.inputs.includes(f.key)),
+    ),
+    commands: command ? [command] : [],
   };
 }
 async function openBulk() {
-  if (!canBulk.value || !selection.value.length || selection.value.length > 100)
+  const chosen = chosenBulk.value;
+  if (
+    !chosen ||
+    !selection.value.length ||
+    selection.value.length > bulkLimit.value
+  )
     return;
   const ids = [...selection.value];
   if (!(await props.form.beforeLeave())) return;
-  if (!(await props.form.editSection('bulk_sessions', null))) return;
-  props.form.set(props.form.fieldPath('bulk_sessions', 'public_ids'), ids);
+  if (!(await props.form.editSection(chosen.section.key, null))) return;
+  props.form.set(props.form.fieldPath(chosen.section.key, 'public_ids'), ids);
+  activeBulk.value = chosen.value;
   bulkIds.value = ids;
   mode.value = 'bulk';
   open.value = true;
 }
 async function close() {
   if (!(await props.form.beforeLeave())) return;
+  props.form.reset();
   if (
     mode.value === 'bulk' &&
-    !(await props.form.closeSection('bulk_sessions'))
+    !(await props.form.closeSection(
+      openedBulk.value?.section.key ?? 'bulk_sessions',
+    ))
   )
     return;
-  props.form.reset();
   open.value = false;
   table.selected.value = undefined;
 }
@@ -165,48 +212,75 @@ watch(
       <template #header
         ><h2>{{ tr('User directory') }}</h2></template
       >
+      <template #actions>
+        <Button
+          v-if="canCreate"
+          size="sm"
+          :disabled="form.busy.value"
+          @click="table.select(null)"
+          >{{ tr('Create account') }}</Button
+        >
+      </template>
       <AdminResourceTable :controller="table" :selectable="!!canBulk">
-        <template #toolbar>
-          <TablePreferences
-            :controller="table.views"
-            :columns="table.columns.value"
-            :english="adminLocale === 'en'"
+        <template #filters="{ query, update, resetKey, setValidity }">
+          <AuthDirectoryFilters
+            :fields="table.section.value?.fields ?? []"
+            :query="query"
+            :update="update"
+            :reset-key="resetKey"
+            :set-validity="setValidity"
           />
-          <Button
-            v-if="canCreate"
-            size="sm"
-            :disabled="form.busy.value"
-            @click="table.select(null)"
-            >{{ tr('Create account') }}</Button
-          >
-          <Button
+        </template>
+        <template #afterFilters>
+          <div
             v-if="canBulk"
-            size="sm"
-            variant="outline"
-            :disabled="
-              form.busy.value || !selection.length || selection.length > 100
-            "
-            @click="openBulk"
+            class="flex min-w-0 flex-wrap items-end gap-3 border-b border-line px-4 py-3"
+            data-auth-bulk-actions
           >
-            {{ tr({ pl: 'Unieważnij sesje', en: 'Revoke sessions' }) }} ({{
-              selection.length
-            }})
-          </Button>
-          <p
-            v-if="
-              canBulk &&
-              (table.selection.value.mode !== 'explicit' ||
-                selection.length > 100)
-            "
-            class="text-sm text-muted"
-          >
-            {{
-              tr({
-                pl: 'Zaznacz konkretne konta — maksymalnie 100 na operację.',
-                en: 'Select specific accounts — at most 100 per operation.',
-              })
-            }}
-          </p>
+            <div v-if="canBulk" class="w-full sm:w-96">
+              <Select
+                v-model="bulkChoice"
+                :label="tr({ pl: 'Akcja zbiorcza', en: 'Bulk action' })"
+                :options="
+                  bulkChoices.map((c) => ({ value: c.value, label: c.label }))
+                "
+                :locale="adminLocale"
+                :disabled="form.busy.value"
+              />
+            </div>
+            <Button
+              v-if="canBulk"
+              size="sm"
+              variant="outline"
+              :disabled="
+                form.busy.value ||
+                !selection.length ||
+                selection.length > bulkLimit
+              "
+              @click="openBulk"
+            >
+              {{
+                tr({ pl: 'Wykonaj dla zaznaczonych', en: 'Apply to selected' })
+              }}
+              ({{ selection.length }})
+            </Button>
+            <p
+              v-if="
+                canBulk &&
+                (table.selection.value.mode !== 'explicit' ||
+                  selection.length > bulkLimit)
+              "
+              class="text-sm text-muted"
+            >
+              {{
+                tr({
+                  pl: 'Zaznacz konkretne konta. Limit na operację:',
+                  en: 'Select specific accounts. Per-operation limit:',
+                })
+              }}
+              {{ bulkLimit }}.
+            </p>
+          </div>
         </template>
         <template
           v-for="key in [
@@ -215,6 +289,13 @@ watch(
             'logged_in',
             'verified',
             'security_locked',
+            'two_factor_enabled',
+            'two_factor_required',
+            'totp_enrolled',
+            'email_factor_enrolled',
+            'password_set',
+            'password_expired',
+            'invitation_pending',
           ]"
           :key="key"
           #[`cell-${key}`]="{ row }"

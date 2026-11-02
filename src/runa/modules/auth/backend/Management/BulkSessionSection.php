@@ -12,6 +12,7 @@ use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Modules\Auth\Contracts\AuthBulkSessions;
 use Runa\Modules\Auth\Contracts\SessionSelection;
+use Runa\Modules\Auth\Support\AdministrationFeatures;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 
@@ -41,7 +42,7 @@ final readonly class BulkSessionSection implements ManagementResourceReader, Man
             }
             $preview = $this->apis->resolve('runa.auth', AuthBulkSessions::class, '1.0.0')->preview(new SessionSelection($input->values['public_ids']), $input->values['trust'] ?? false);
 
-            return new ManagementReview($preview['fingerprint'], ['summary' => ['accounts' => count($preview['accounts']), 'sessions' => $preview['sessions'], 'trusted_devices' => $preview['trusted_devices']]], 'both', true);
+            return new ManagementReview($preview['fingerprint'], ['summary' => ['accounts' => count($preview['accounts']), 'sessions' => $preview['sessions'], ...(app(AdministrationFeatures::class)->enabled('trust') ? ['trusted_devices' => $preview['trusted_devices']] : [])]], 'both', true);
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.auth', 'sessions.bulk_preview', 422);
         }

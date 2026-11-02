@@ -10,9 +10,9 @@ RM-2026-016 point 12.
 
 ## Guarded administrative reads
 
-Auth owns public consumption contract `AuthAdministration` API 1.0.0 and its final
+Auth owns public consumption contract `AuthAdministration` API 1.1.0 and its final
 readonly DTOs under `Runa\Modules\Auth\Contracts`. Resolve through
-`ModuleApis::resolve('runa.auth', AuthAdministration::class, '1.0.0')`.
+`ModuleApis::resolve('runa.auth', AuthAdministration::class, '1.1.0')`.
 Private implementation is `backend/Queries/Administration`, with a guarded proxy
 and `Definitions/AdministrationApi`; all are runtime source. Customer code never
 imports the private query, models or management adapters.
@@ -23,9 +23,10 @@ interface AuthAdministration
     public function users(UserDirectoryQuery $query): UserDirectoryPage;
     public function profile(string $publicId): AdministrativeProfile;
     public function lifecycle(string $publicId): array;
+    public function facts(string $publicId): array;
 }
 UserDirectoryQuery::__construct(?string $after = null, int $limit = 25,
-    ?string $search = null, string $state = 'current')
+    ?string $search = null, string $state = 'current', array $filters = [])
 UserDirectoryPage::__construct(array $items, ?string $next, ?int $total = null)
 AdministrativeUser::__construct(string $publicId, string $displayName,
     string $state, int $version, array $details = [])
@@ -44,8 +45,15 @@ latest live login and activity require `sessions.manage`. Hidden values never
 cross the guarded read. Session counts aggregate a bounded account batch using
 Auth's native SessionStore criteria, including current policy, per-account idle
 exceptions, security generation and captured expiry; presence means a live session,
-not proof that a person is currently at their keyboard. Latest login covers live
-sessions only, not an immutable all-time login record.
+not proof that a person is currently at their keyboard. `authenticated_at` and
+`activity_at` cover live sessions. `last_login_at` and `last_activity_at` cover all
+retained sessions, including revoked/expired rows; cleanup can remove this history,
+so neither is an immutable all-time login record. Two-factor facts include enabled
+and required state using native CredentialPolicy semantics, TOTP/email enrollment,
+pending TOTP setup/deadline and remaining recovery-code count. Invitations expose
+current pending/sent/expiry facts, credentials expose set/change/expiry state, and
+authorized metadata includes effective verification requirement, operator recovery,
+avatar set-state and current security-generation trust count.
 The owning reader supplies `total`, the exact authorized filtered count before
 cursor/limit, including zero. The nullable DTO default represents unavailable
 counts for source-authored results; the supplied directory always counts in SQL.
@@ -53,7 +61,7 @@ Counts retain deleted-state and name/login field authority and do not imply a
 snapshot across concurrent writes or arbitrary numbered cursor jumps.
 Search is literal trimmed text, 1–160 characters, against names; login participates
 only with `runa.auth.profiles.read`. `%`, `_` and backslash remain literal.
-Cursors are opaque, at most 2048 bytes, and bound to state/search. They confer no
+Cursors are opaque, at most 2048 bytes, and bound to state/search/all typed filters. They confer no
 authority; each page checks current grants. A changed filter needs a fresh cursor.
 
 Profile requires `runa.auth.profiles.read`. Names/login use nullable owning naming
@@ -65,7 +73,14 @@ set-state. Authorized shape is up to 100 `{public_id:string,email:string,verifie
 entries. Preference revision requires `runa.auth.preferences.reset`, otherwise zero;
 Admin omits its descriptor/value without that grant.
 
-`lifecycle` requires `runa.auth.users.read` and returns public_id, version,
+The additive 1.1.0 `facts(string $publicId): array<string,bool|int|string|null>`
+entry requires `runa.auth.identities.read`. It serves existing-identity security,
+invitation and avatar detail cards using their exact field grants, without
+requiring unrelated directory authority. It returns identity public_id/version/
+deleted state and only authorized, enabled metadata; users.read facts remain
+absent without that grant. Its guarded operation is `administration.facts`, with
+implementation/proxy/definition in the same owning runtime sources above.
+`lifecycle` retains its original `runa.auth.users.read` entry guard and returns public_id, version,
 deleted and the safe directory metadata above, plus deleted_at. Credential set-state,
 password changed/expiry dates require `passwords.reset`; factor enrollment booleans
 and remaining recovery-code count require `two_factor.reset`. No password, secret,
@@ -126,13 +141,18 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | policy / history / restore      | AuthPolicies + owning ModuleSettings; `policy.read`, `policy.write`              | Exact settings revision/generation, reviewed differences and consequences, both-factor `runa.auth.policy.publish`; restore also confirms |
 | bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation, both-factor `runa.auth.sessions.bulk_revoke`  |
 
-The directory enables explicit table selection for native bulk session revocation.
-The selected UUIDs are captured for review; no manual ID entry or all-account toggle
-exists in this UI. At most 100 accounts are admitted, with native Permissions
-selection authority, exact preview fingerprint, both-factor proof and confirmation.
-An all-matching/filtered selection is never converted to all accounts. Optional
-trust revocation appears only while trusted devices are enabled. The public native
-AuthBulkSessions all-account API remains available to its original consumers.
+Account creation is in the directory Card header's right actions area. All
+available directory fields are filterable, with inclusive from/until controls for
+dates. The bulk operation chooser sits immediately below filters, above the
+standard table toolbar. It lists only granted and currently enabled native actions.
+Selected UUIDs are captured for review; no manual ID entry or all-account toggle
+exists in this UI. Session revocation admits at most 100 accounts; other reviewed
+user operations admit at most 99, reserving one native transaction subject for the
+actor. Native Permissions selection authority, exact fingerprints, both-factor
+proof and destructive confirmation remain mandatory. All-matching selection is
+never converted to all accounts. Optional trust revocation appears only while
+trusted devices are enabled. The public native AuthBulkSessions all-account API
+remains available to its original consumers.
 
 Avatar upload/removal reuse guarded POST/DELETE `/api/runa/auth/users/avatar` with
 target public_id and expected version, independent from aggregate Save. The Auth
@@ -201,3 +221,65 @@ Bounded collection entries use public ValuePreview for escaped long read-only
 values and structured JSON; known instant fields retain application-timezone
 formatting. Shared Admin read-only fields and reviewed differences use the same
 expansion control without changing collection pagination or security protocols.
+
+## Native bulk user operations
+
+Auth owns guarded public consumption API `AuthBulkUsers` 1.0.0 (runtime source under
+backend/Contracts, Definitions/BulkUsersApi and BulkUsersProxy; private engine in
+backend/Actions). Resolve it through ModuleApis; customer code never imports the
+engine, models or locked phases.
+
+```php
+interface AuthBulkUsers {
+    public function preview(SessionSelection $selection, BulkUserChange $change): array;
+    public function execute(SessionSelection $selection, BulkUserChange $change, string $fingerprint): array;
+}
+BulkUserChange::__construct(string $operation, ?string $at = null, ?bool $enabled = null)
+// preview: {fingerprint:string, accounts:int, sessions:int, trusted_devices:int}
+// execute: {accounts:int}
+```
+
+Only explicit nonempty selections of at most 99 accounts are accepted. Each
+related inventory is bounded to 10,000 safe state rows; excess refuses. Every operation requires users.read,
+current Permissions user-selection authority and its ordinary owning mutation
+permission. The private source catalogue filters disabled features and defines
+activate/deactivate/approve/delete/restore/schedule_activation/
+schedule_deactivation/set_expiry/set_attempt_lock/set_security_lock/
+require_password_change plus invite/invalidate_invitation/require_verification/
+password_reset/factor_reset/revoke_trust/reset_preferences/remove_avatar/
+revoke_exceptions. Reviewed execution rechecks current settings, exact account and
+related-state fingerprint and record policies. One fresh both-factor proof for
+`runa.auth.users.bulk.<operation>` covers that one reviewed batch; it is consumed
+once through ModuleTransactions after validation. The batch is atomic: refusal,
+stale input, last-administrator loss or Audit failure rolls back every selected
+account and proof. No per-user HTTP loop or single-record proof reuse is involved.
+Standalone and bulk use the same owning locked validation/apply phases. Native
+password reset validates that a password exists and the account may authenticate
+before revoking credentials; an unavailable reset cannot partially revoke state.
+The root locks retained subjects (including deleted restore targets); each owner
+still validates target state. Only restore accepts deleted targets, and it
+additionally requires users.deleted.read. File
+uploads, account creation, unique profile/address edits and per-record assignment
+reviews remain individual workflows because they require distinct target input.
+Avatar removal commits only existing owning metadata/Audit; its durable native
+cleanup handles bytes after commit, never external storage work inside the batch.
+
+UserDirectoryQuery additionally accepts `array $filters = []` as its fifth argument.
+Each available directory field supports an authorized typed filter: literal substring
+for text, equality for booleans/integers/dictionaries, and a JSON-encoded object
+`{from?: UTC instant, until?: UTC instant}` for inclusive moment ranges. Null/empty
+filters are omitted. Unknown, disabled or unauthorized keys are refused before
+querying. The full normalized filter set participates in the opaque cursor identity;
+SQL filtering precedes exact count and cursor pagination. Moment controls use the
+application timezone while transport remains canonical UTC.
+
+Admin adapters normalize zero-fraction UTC DateTimeInput values to Auth's native
+whole-second command values (including nullable cleared deadlines). Nonzero
+fractional command deadlines remain refused. Directory date ranges accept UTC
+instants with up to six fractional digits; inclusive comparisons preserve that
+precision. Native Auth DTO signatures and timezone authority remain unchanged.
+
+Bulk review counts project only session/trust rows actually revoked by the selected
+operation. Unrelated preference/avatar/invitation changes do not imply session
+revocation. Admin omits zero unrelated impacts and disabled trust presentation;
+accounts remain the captured selection count.

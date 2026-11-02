@@ -83,7 +83,7 @@ on both preview and execution, requiring current `runa.permissions.users.select`
 Selection intent is never a reusable grant; Auth still resolves current targets
 and requires its own bulk permission and both-factor proof. Each target
 receives a manual Audit event in the same transaction; Audit failure rolls back
-revocations and proof consumption. No management UI is supplied.
+revocations and proof consumption. The supplied Users page places this operation below its directory filters.
 
 ## Scheduled lifecycle
 

@@ -100,6 +100,9 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
     <template v-if="$slots.filters" #filters="scope"
       ><slot name="filters" v-bind="scope"
     /></template>
+    <template v-if="$slots.afterFilters" #afterFilters
+      ><slot name="afterFilters"
+    /></template>
     <template #toolbar="scope">
       <slot name="toolbar" v-bind="scope">
         <TablePreferences

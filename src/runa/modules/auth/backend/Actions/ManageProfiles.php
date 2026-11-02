@@ -55,19 +55,25 @@ final readonly class ManageProfiles implements AuthProfiles
     public function requireVerification(string $publicId, int $expectedVersion): bool
     {
         return $this->target($publicId, $expectedVersion, function (Connection $connection, User $user): bool {
-            $wasVerified = $user->email_verified_at !== null;
-            $wasRequired = $user->verification_required;
-            $user->email_verified_at = null;
-            $user->verification_required = true;
-            $user->verification_forced = true;
-            $user->version++;
-            $user->save();
-            $this->tokens->issueLocked($connection, $user, 'verification');
-            $this->transactions->record('email.reverification_required', $user, ['email' => ['old' => $user->email, 'new' => $user->email],
-                'verified' => ['old' => $wasVerified, 'new' => false], 'verification_required' => ['old' => $wasRequired, 'new' => true]]);
-
-            return true;
+            return $this->requireVerificationLocked($connection, $user);
         }, 'runa.auth.email.require_verification');
+    }
+
+    /** Private owning apply; native ingress and reviewed batches retain their own proof. */
+    public function requireVerificationLocked(Connection $connection, User $user): bool
+    {
+        $wasVerified = $user->email_verified_at !== null;
+        $wasRequired = $user->verification_required;
+        $user->email_verified_at = null;
+        $user->verification_required = true;
+        $user->verification_forced = true;
+        $user->version++;
+        $user->save();
+        $this->tokens->issueLocked($connection, $user, 'verification');
+        $this->transactions->record('email.reverification_required', $user, ['email' => ['old' => $user->email, 'new' => $user->email],
+            'verified' => ['old' => $wasVerified, 'new' => false], 'verification_required' => ['old' => $wasRequired, 'new' => true]]);
+
+        return true;
     }
 
     public function addSecondary(string $publicId, int $expectedVersion, string $email): string
