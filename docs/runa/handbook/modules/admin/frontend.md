@@ -980,7 +980,8 @@ Admin owns public `AdminText = string | {pl: string; en: string}` and
 `AdminMessages = Readonly<Record<string, string>>`. `useAdminLocale()` returns
 `{locale: Ref<'pl'|'en'>, t(text: AdminText): string}` for composition; `adminText(text,
 locale, messages?)` is its pure counterpart. Source English strings are translation
-keys; supplied Core presentation has a reviewed Polish catalogue. Unknown strings
+keys; supplied Core presentation has a reviewed Polish catalogue, including
+All → Wszystkie and Yes/No → Tak/Nie for filter choices. Unknown strings
 remain source text. Localized metadata maps select their explicit language.
 `AdminApplication.messages?: AdminMessages` extends/overrides the Polish catalogue
 for source-owned App/module presentation. Implementation stays in Admin frontend,

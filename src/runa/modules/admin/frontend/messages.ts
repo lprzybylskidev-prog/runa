@@ -2,6 +2,7 @@ import type { AdminMessages } from './contracts';
 
 /** Reviewed Polish presentation for source-owned Admin/Core labels; never business values. */
 export const adminMessages: AdminMessages = {
+  All: 'Wszystkie',
   Event: 'Zdarzenie',
   'Event data': 'Dane zdarzenia',
   'Loading event details': 'Wczytywanie szczegółów zdarzenia',

@@ -757,6 +757,10 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Retain exact command selection, target limits, feature/grant projection and
     native review/proof/confirmation. Synchronize current guidance and prepare
     focused interaction/build/rendered evidence before owner acceptance.
+- [x] 11a47. Localize the unfiltered All choice in the shared Admin catalogue.
+  - Owner correction: Polish Auth filters must show Wszystkie / Tak / Nie,
+    preserving English All / Yes / No and the empty/boolean query values.
+  - Prepare current assets and check the rendered menu before owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5026,3 +5030,26 @@ rules. This view refinement retains unreleased Auth 2.1.0, Admin 0.1.0 and platf
 account or data change occurred; no disposable Docker/database resource was
 created. Active development, base test data, Qdrant/model caches and reports remain
 preserved. Owner manual acceptance 11b and final verification/release 12 stay open.
+
+### Point 11a47 — Polish unfiltered choice
+
+The shared Admin message catalogue now translates All to Wszystkie, so Auth's
+boolean menus consistently display Wszystkie / Tak / Nie. Source search found
+AuthDirectoryFilters as the only runtime consumer of tr('All'); the owning shared
+catalogue fixes that fallback without local duplicate translation maps. English
+retains All / Yes / No. Empty/boolean query values and authorization are unchanged.
+The existing localization guide and central/Admin changelogs are synchronized;
+owner/customer skills already point to that guide and need no duplicate rule.
+The unreleased Admin 0.1.0/platform 0.7.0 versions remain appropriate for this copy
+correction, with no API or module behavior change.
+
+The supported current-asset build passes in
+`.runtime/frontend/RM-2026-016-filter-all-build.log`. A served compiled-view check
+opens the actual boolean dropdown and asserts all three labels in PL/dark at
+1440px and EN/light at 390px; both pass, preserving range/reset, selected-account
+and reviewed bulk behavior without page errors or modal overflow. Evidence:
+`.runtime/frontend/RM-2026-016-filter-all-browser.log` and screenshots/report under
+`.runtime/artifacts/playwright/runa/RM-2026-016-filter-all/`. No redundant test was
+added for this literal-copy fix; no broad suite was run. No disposable resource,
+data, grant or dependency change occurred. Current assets are ready; manual owner
+acceptance 11b and final verification/release 12 remain open.
