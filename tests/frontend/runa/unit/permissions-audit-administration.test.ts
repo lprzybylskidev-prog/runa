@@ -10,8 +10,8 @@ import {
 } from '@/runa/permissions';
 import { AuditAdminDetail, AuditAdminHistory } from '@/runa/audit';
 import { AdminSection, AdminRecordBrowser, useAdminForm } from '@/runa/admin';
-import { ValuePreview, DateTimeInput, Table, Select } from '@/runa/ui';
-import type { TableColumn, SelectOption } from '@/runa/ui';
+import { ValuePreview, DateTimeRangeInput, Table, Select } from '@/runa/ui';
+import type { TableColumn, TableQuery, SelectOption } from '@/runa/ui';
 import type {
   AdminFieldData,
   AdminRecord,
@@ -168,13 +168,24 @@ it.each(['runa.auth', 'runa.permissions', 'runa.audit'])(
       }),
     );
     await vi.waitFor(() =>
-      expect(wrapper.findAllComponents(DateTimeInput)).toHaveLength(2),
+      expect(wrapper.findAllComponents(DateTimeRangeInput)).toHaveLength(1),
     );
-    expect(
-      wrapper
-        .findAllComponents(DateTimeInput)
-        .every((control) => control.props('timeZone') === undefined),
-    ).toBe(true);
+    const range = wrapper.findComponent(DateTimeRangeInput);
+    expect(range.props('timeZone')).toBeUndefined();
+    expect(range.props('label')).toBe('Date range');
+    range.vm.$emit('update:modelValue', {
+      start: '2026-11-02T12:00:00Z',
+      end: '2026-11-03T12:00:00Z',
+    });
+    await vi.waitFor(() =>
+      expect(
+        (wrapper.getComponent(Table).props() as { query: TableQuery }).query
+          .filters,
+      ).toMatchObject({
+        from: '2026-11-02T12:00:00Z',
+        until: '2026-11-03T12:00:00Z',
+      }),
+    );
   },
 );
 afterEach(() => {

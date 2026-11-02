@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Combine history From/Until filters into one compact shared DateTimeRangeInput. Preserve exact URL/query keys, authorized filtering, UTC transport and application-timezone display.
+
 - Make truncated JSON explicit with a separate continuation-marker line.
 
 - Use detail-shaped pulsing ContentLoading placeholders for initial detail-modal reads and retry, with retained payload pulsing during continuation. Circular content indicators are removed.

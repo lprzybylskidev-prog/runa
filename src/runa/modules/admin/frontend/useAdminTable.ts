@@ -130,6 +130,23 @@ export function useAdminTable(
       sortable: field.sortable && !field.sensitive,
       searchable: false,
       ...(field.type === 'datetime' ? { filterType: 'datetime' as const } : {}),
+      ...(field.key === 'from' &&
+      field.type === 'datetime' &&
+      field.filterable &&
+      section.value?.fields.some(
+        (f) =>
+          f.key === 'until' &&
+          f.type === 'datetime' &&
+          f.filterable &&
+          !f.sensitive,
+      )
+        ? {
+            filterRange: {
+              endKey: 'until',
+              label: tr({ pl: 'Zakres dat', en: 'Date range' }),
+            },
+          }
+        : {}),
       // The server owns matching; this function only declares a filter key to Table.
       ...(field.filterable && !field.sensitive ? { filter: () => true } : {}),
       ...(field.choices.length

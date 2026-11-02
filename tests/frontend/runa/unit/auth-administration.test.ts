@@ -3,7 +3,7 @@ import { beforeEach, afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import DirectoryFilters from '../../../../src/runa/modules/auth/frontend/AuthDirectoryFilters.vue';
-import { DateTimeInput, Select, NumberInput } from '@/runa/ui';
+import { DateTimeRangeInput, Select, NumberInput } from '@/runa/ui';
 import type { TableQuery } from '@/runa/ui';
 import { AuthAdminUsers, AuthAdminSection } from '@/runa/auth';
 import { AdminForm, useAdminForm } from '@/runa/admin';
@@ -467,7 +467,7 @@ it('Auth administration keeps filters above bulk actions and creation in the dir
   expect(calls).toContain('/api/admin/runa.auth/users/sections/bulk_users');
 });
 
-it('Auth administration range filters keep invalid drafts local and reset them with shared filter validity', async () => {
+it('Auth administration range filters map compact ranges and reset them with shared filter validity', async () => {
   const query = ref<TableQuery>({
     page: 3,
     perPage: 25,
@@ -502,31 +502,22 @@ it('Auth administration range filters keep invalid drafts local and reset them w
   await vi.waitFor(() => expect(query.value.filters.active).toBe('false'));
   wrapper.findComponent(NumberInput).vm.$emit('update:modelValue', '0');
   await vi.waitFor(() => expect(query.value.filters.session_count).toBe('0'));
-  wrapper
-    .findAllComponents(DateTimeInput)[0]!
-    .vm.$emit('update:modelValue', '2026-11-02T12:00:00Z');
+  const range = wrapper.findComponent(DateTimeRangeInput);
+  range.vm.$emit('update:modelValue', {
+    start: '2026-11-02T12:00:00Z',
+    end: null,
+  });
   await vi.waitFor(() =>
     expect(JSON.parse(query.value.filters.created_at!)).toEqual({
       from: '2026-11-02T12:00:00Z',
     }),
   );
-  const before = update.mock.calls.length;
-  wrapper
-    .findAllComponents(DateTimeInput)[1]!
-    .vm.$emit('update:modelValue', '2026-11-01T12:00:00Z');
-  await vi.waitFor(() =>
-    expect(wrapper.text()).toContain('The range end must follow its start.'),
-  );
-  expect(update.mock.calls.length).toBe(before);
-  expect(validity).toHaveBeenCalledWith('created_at:range', false);
   query.value = { ...query.value, filters: {} };
   resetKey.value++;
   await vi.waitFor(() =>
-    expect(wrapper.text()).not.toContain(
-      'The range end must follow its start.',
-    ),
+    expect(
+      wrapper.findComponent(DateTimeRangeInput).props('modelValue'),
+    ).toEqual({ start: null, end: null }),
   );
-  expect(
-    wrapper.findAllComponents(DateTimeInput).map((c) => c.props('modelValue')),
-  ).toEqual([null, null]);
+  expect(wrapper.findAll('fieldset')).toHaveLength(0);
 });

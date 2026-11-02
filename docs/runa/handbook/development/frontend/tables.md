@@ -227,3 +227,14 @@ page is passed with page 1 and its bounded size. Export uses visible columns onl
 Tables without a custom toolbar receive in-memory column/named-view controls.
 Explicit TablePreferences/controller integrations retain their owning persistence.
 No account filters are implicitly persisted under a guessed global key.
+
+`TableColumn<Row>.filterRange?: {endKey: string, label: string}` pairs a start
+filter with its declared end key in one DateTimeRangeInput. Table renders the
+start descriptor, hides the duplicate end filter control and atomically updates
+both original string filter keys (or removes cleared keys), restarting page 1.
+Both endpoint descriptors remain in the column/query contract. UI owns this
+optional consumption descriptor in ui/tables.ts and AppTable.vue. The caller
+must supply authorized datetime endpoints; this presentation grants no server
+filter authority. Admin's source adapter pairs the declared filterable datetime
+keys from/until, including Audit; isolated datetime filters retain their existing
+single-moment input. Default range labels and picker controls follow PL/EN.

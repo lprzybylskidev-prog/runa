@@ -740,6 +740,16 @@ reassessment before resuming point 3; completed point history remains evidence.
     last-administrator guards; no client loop or proof reuse workaround.
   - Synchronize public contracts/instruction assessment, focused regression evidence
     and runnable local assets. Manual acceptance and final verification stay last.
+- [x] 11a45. Consolidate temporal range controls across supplied views.
+  - Owner correction: replace duplicated from/until filter headings and fields
+    with one labelled compact range control; edit endpoints in the shared picker.
+  - Supply a public reusable datetime range input, align the existing date-only
+    range control, migrate Auth filters and Audit's shared table date pair, and
+    inspect remaining runtime/demo consumers for equivalent ranges.
+  - Preserve native timezone/DST conversion, open endpoints, validation, filter
+    reset, exact wire keys, localization and accessible popup/focus behavior.
+  - Synchronize contracts/guidance and prepare current assets with focused checks
+    and rendered desktop/mobile evidence before owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -4897,3 +4907,64 @@ Four focused backend impact/session cases pass (93 assertions, exit/cleanup 0),
 recorded in `RM-2026-016-auth-directory-impact-focused.log`. Actual Users HTML,
 readiness, presentation, entry options and current application asset return 200;
 anonymous protected Users API retains 401 (`RM-2026-016-auth-directory-http.json`).
+
+### Point 11a45 — Compact shared temporal range controls
+
+The owner's expanded-filter correction is implemented. Auth datetime filters no
+longer render extra fieldset headings and two endpoint fields in the grid. Each
+range occupies one ordinary field cell, with its standard associated label and
+one same-height trigger showing an empty From–Until prompt or formatted summary.
+The shared popup contains the endpoint text/calendar/time editors and localized
+Clear, Cancel and Apply controls. Apply publishes both endpoints together only
+when their drafts/calendar/DST/order are valid. Open endpoints remain supported;
+dismissal cancels the picker draft, and reset closes/discards it deliberately.
+Disabled/readonly state blocks editing. Focus returns through the existing owning
+Popover protocol. Public DateTimeRangeInput and the existing DateRangeInput share
+a private TemporalRangeInput, public TemporalRangeInputProps and DateRangeValue.
+Date-only values retain YYYY-MM-DD; instants retain existing UTC conversion and
+configured application timezone, including explicit domain-zone overrides.
+
+Runtime/source inventory searched platform modules, shared UI and src/app for
+range controls, paired from/until/start/end/date_from/date_to keys and temporal
+labels. Auth's JSON moment ranges and Audit's declared datetime from/until filters
+are the production paired consumers. The older DateRangeInput had only the
+shared additional-input scenario/test consumer; changing its owning implementation
+migrates that example too. No additional application/runtime endpoint pairs were
+found. Ordinary independent deadlines and date/time single inputs remain their
+own fields. UI TableColumn.filterRange is the documented source composition seam
+for pairing exact start/end filter keys. Admin's adapter groups declared authorized
+datetime from/until, so Audit and other consumers using that pair get one picker;
+server allowlists, initial URL filters, reset/saved-query and wire keys are retained.
+
+Current UI forms/components/tables, Auth/Admin/Audit administration and changelogs
+are synchronized. Both instruction products already point to canonical forms and
+components references, so neither needs another duplicated rule. Existing private
+owner frontend references require reuse on second use and cover this extraction.
+This additive component/table seam and correction of unreleased views retain the
+platform 0.7.0, Auth 2.1.0, Admin 0.1.0 and Audit 1.1.0 targets. No dependency,
+backend policy, migration, grant or data change is introduced.
+
+Focused checks and current application preparation:
+
+- `RM-2026-016-ranges-focused.log` under `.runtime/frontend/`: 12 selected Chromium
+  tests pass (5 files), native exit/cleanup 0. Coverage includes valid whole-range
+  UTC publication, open bounds, clear/cancel/reset/focus, invalid ordering/DST,
+  date-only control, Auth payloads and shared datetime-pair mapping for Auth,
+  Permissions and Audit source presentations. Excluded tests are not PASS.
+- `RM-2026-016-ranges-build.log`: supported vue-tsc/Vite/static error-shell build
+  passes; existing chunk-size/dynamic-import advisories remain. No broad gate ran.
+- Served compiled-view diagnostics inspect 1440px PL/dark and 390px EN/light Users
+  and Audit, with controlled safe responses. Both render the compact range picker,
+  standard 44px Auth and 36px Audit filter heights, full-width endpoint editors,
+  localized summaries, valid Apply, clear/reset and existing selected-account
+  workflows without page errors or popup overflow. Visual inspection caught and
+  corrected initial field/Popover sizing conflicts before completion. Final logs:
+  `RM-2026-016-ranges-browser.log` and `RM-2026-016-ranges-audit-browser.log`.
+  Screenshots/reports reside under `.runtime/artifacts/playwright/runa/` in
+  `RM-2026-016-ranges` and `RM-2026-016-ranges-audit`. They establish presentation
+  behavior, not live security mutations or owner manual acceptance.
+
+Current local assets are prepared. No task Docker resource or disposable database
+was created; active services, development/base test data, Qdrant/model caches and
+all reports are preserved. Manual acceptance 11b and final verification/release 12
+remain open; this repair is ready for the owner's review.

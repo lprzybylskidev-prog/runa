@@ -1222,3 +1222,9 @@ Its `filters` scope includes `{query, update, resetKey, setValidity}` as documen
 in the [tables guide](../../development/frontend/tables.md). Auth uses these
 presentation seams for native bulk commands and resettable range filters; they
 supply no mutation or read authority.
+
+Admin table adapters compose authorized datetime from/until descriptors through
+UI TableColumn.filterRange into one DateTimeRangeInput. This includes the supplied
+Audit history catalogue and preserves source wire fields, initial URL filters,
+reset and saved-query behavior. Other independent datetime descriptors stay
+single-moment filters; Auth owns its existing JSON range serialization.

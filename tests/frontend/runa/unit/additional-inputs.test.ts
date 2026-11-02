@@ -120,22 +120,34 @@ it('blocks nonexistent/ambiguous local datetime commits and resolves them explic
   w.vm.reset();
   expect(w.get('input').element.value).toBe('25.10.2026 02:30:00');
 });
-it('keeps date range endpoints controlled and reports reversed order', async () => {
+it('keeps date range endpoints controlled and rejects a reversed picker draft', async () => {
   const w = mount(DateRangeInput, {
+    attachTo: document.body,
     props: {
       modelValue: { start: '2026-10-19', end: '2026-10-20' },
       label: 'Range',
       startLabel: 'From',
       endLabel: 'To',
+      locale: 'en',
     },
   });
-  await w.findAll('input')[0]!.setValue('2026-10-21');
-  expect(w.emitted('update:modelValue')?.at(-1)).toEqual([
-    { start: '2026-10-21', end: '2026-10-20' },
-  ]);
-  await w.setProps({ modelValue: { start: '2026-10-21', end: '2026-10-20' } });
-  expect(w.get('[role="status"]').text()).toBe('Check the date range.');
-  expect(w.emitted('validity')?.at(-1)).toEqual([false]);
+  expect(w.findAll('input')).toHaveLength(0);
+  await w.get('button').trigger('click');
+  await nextTick();
+  const input = document.querySelector<HTMLInputElement>(
+    '[role=dialog] input',
+  )!;
+  input.value = '2026-10-21';
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  await nextTick();
+  const apply = Array.from(
+    document.querySelectorAll<HTMLButtonElement>('[role=dialog] button'),
+  ).find((b) => b.textContent === 'Apply')!;
+  expect(apply.disabled).toBe(true);
+  expect(w.emitted('update:modelValue')).toBeUndefined();
+  w.vm.reset();
+  await nextTick();
+  expect(document.querySelector('[role=dialog]')).toBeNull();
 });
 it('uses native boolean semantics for indeterminate, switch, disabled and readonly states', async () => {
   const w = mount(Checkbox, {

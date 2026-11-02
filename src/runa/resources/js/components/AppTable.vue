@@ -11,6 +11,7 @@ import {
 } from 'vue';
 import AppFormNotifications from './AppFormNotifications.vue';
 import AppDateTimeInput from './AppDateTimeInput.vue';
+import AppDateTimeRangeInput from './AppDateTimeRangeInput.vue';
 import { isInstant } from '../lib/temporal';
 import { useTableViewport } from '../composables/useTableViewport';
 import AppTablePreferences from './AppTablePreferences.vue';
@@ -219,7 +220,14 @@ function filter(key: string, value: string | null) {
   emit('update:query', { ...props.query, page: 1, filters });
 }
 const filterColumns = computed(() =>
-  props.columns.filter((column) => column.filter),
+  props.columns
+    .filter(
+      (column) =>
+        !props.columns.some(
+          (start) => start.filterRange?.endKey === column.key,
+        ),
+    )
+    .filter((column) => column.filter),
 );
 const text = (pl: string, en: string) => (props.english ? en : pl);
 const source = () =>
@@ -449,8 +457,31 @@ function changePage(value: number) {
             class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
           >
             <template v-for="column in filterColumns" :key="column.key">
+              <AppDateTimeRangeInput
+                v-if="column.filterRange"
+                :key="column.key + ':' + filterReset"
+                size="sm"
+                :label="column.filterRange.label"
+                :locale="english ? 'en' : 'pl'"
+                :model-value="{
+                  start: query.filters[column.key] || null,
+                  end: query.filters[column.filterRange.endKey] || null,
+                }"
+                @update:model-value="
+                  (value) => {
+                    const filters = { ...query.filters };
+                    if (value.start) filters[column.key] = value.start;
+                    else delete filters[column.key];
+                    if (value.end)
+                      filters[column.filterRange!.endKey] = value.end;
+                    else delete filters[column.filterRange!.endKey];
+                    emit('update:query', { ...query, page: 1, filters });
+                  }
+                "
+                @validity="invalidFilters[column.key] = !$event"
+              />
               <AppSelect
-                v-if="column.filterOptions?.length"
+                v-else-if="column.filterOptions?.length"
                 size="sm"
                 clearable
                 :locale="english ? 'en' : 'pl'"

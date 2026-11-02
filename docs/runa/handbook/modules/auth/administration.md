@@ -142,8 +142,7 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation, both-factor `runa.auth.sessions.bulk_revoke`  |
 
 Account creation is in the directory Card header's right actions area. All
-available directory fields are filterable, with inclusive from/until controls for
-dates. The bulk operation chooser sits immediately below filters, above the
+available directory fields are filterable, with one compact DateTimeRangeInput for each inclusive date range. The bulk operation chooser sits immediately below filters, above the
 standard table toolbar. It lists only granted and currently enabled native actions.
 Selected UUIDs are captured for review; no manual ID entry or all-account toggle
 exists in this UI. Session revocation admits at most 100 accounts; other reviewed
@@ -283,3 +282,7 @@ Bulk review counts project only session/trust rows actually revoked by the selec
 operation. Unrelated preference/avatar/invitation changes do not imply session
 revocation. Admin omits zero unrelated impacts and disabled trust presentation;
 accounts remain the captured selection count.
+
+Auth directory moment filters consume the shared DateTimeRangeInput with one
+standard field label per range. The popup commits from/until together; the
+existing JSON range payload and exact authorized filtering remain unchanged.

@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Consolidate date/datetime ranges into one labelled compact field with a shared endpoint popup, valid atomic Apply and Clear/Cancel. Replace expanded Auth range filters and Audit from/until controls; preserve wire keys, timezone/DST and open endpoints.
+
 - Publish guarded AuthAdministration 1.1.0 field-authorized account facts and AuthBulkUsers 1.0.0 with immutable BulkUserChange. Update all exact-version consumers and the source public API boundary catalogue.
 
 - Complete Users filters across authorized facts and date ranges; show effective 2FA/enrollment/recovery, retained activity, invitation and credential state. Move creation into the directory header and all native reviewed bulk user operations below filters. Share locked owning phases, enforce current grants/features, atomic Audit/proof rollback and safe restore subject locks.

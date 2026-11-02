@@ -78,3 +78,5 @@ or copied authorization is supported. See [Admin frontend](../admin/frontend.md)
 
 Focused privacy/interaction evidence is recorded in the active roadmap; complete
 rendered light/dark responsive acceptance and full suites remain final verification.
+
+History datetime from/until filters use one shared DateTimeRangeInput via the Admin table adapter. The endpoint picker commits both original keys together and preserves initial URL filters and open bounds.

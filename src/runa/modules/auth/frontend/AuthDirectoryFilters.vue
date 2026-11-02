@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { reactive, watch } from 'vue';
-import { instantTimestamp } from '@/runa/ui';
-import { DateTimeInput, NumberInput, Select, TextInput } from '@/runa/ui';
-import type { TableQuery } from '@/runa/ui';
+import { DateTimeRangeInput, NumberInput, Select, TextInput } from '@/runa/ui';
+import type { DateRangeValue, TableQuery } from '@/runa/ui';
 import type { AdminFieldData } from '@/runa/admin';
 import { useAdminLocale } from '@/runa/admin';
 const props = defineProps<{
@@ -19,22 +17,7 @@ function set(key: string, value: string | null) {
   else filters[key] = value;
   props.update({ ...props.query, page: 1, filters });
 }
-const drafts = reactive<Record<string, { from?: string; until?: string }>>({});
-watch(
-  () => props.resetKey,
-  () => {
-    for (const key of Object.keys(drafts)) delete drafts[key];
-  },
-);
-function ordered(value: { from?: string; until?: string }): boolean {
-  return (
-    !value.from ||
-    !value.until ||
-    instantTimestamp(value.from) <= instantTimestamp(value.until)
-  );
-}
 function range(key: string): { from?: string; until?: string } {
-  if (drafts[key]) return drafts[key];
   const raw = props.query.filters?.[key];
   if (typeof raw !== 'string') return {};
   try {
@@ -50,17 +33,11 @@ function range(key: string): { from?: string; until?: string } {
     return {};
   }
 }
-function date(key: string, side: 'from' | 'until', value: string | null) {
-  const next = { ...range(key) };
-  if (value) next[side] = value;
-  else delete next[side];
-  props.setValidity(key + ':range', ordered(next));
-  if (!ordered(next)) {
-    drafts[key] = next;
-    return;
-  }
-  delete drafts[key];
-  set(key, Object.keys(next).length ? JSON.stringify(next) : null);
+function date(key: string, value: DateRangeValue) {
+  const range: { from?: string; until?: string } = {};
+  if (value.start) range.from = value.start;
+  if (value.end) range.until = value.end;
+  set(key, Object.keys(range).length ? JSON.stringify(range) : null);
 }
 function options(field: AdminFieldData) {
   return [
@@ -82,38 +59,18 @@ function options(field: AdminFieldData) {
       v-for="field in fields.filter((f) => f.filterable)"
       :key="field.key"
     >
-      <fieldset
+      <DateTimeRangeInput
         v-if="field.type === 'datetime'"
-        class="min-w-0 sm:col-span-2 lg:col-span-3"
-      >
-        <legend class="mb-1 text-sm font-medium">{{ tr(field.label) }}</legend>
-        <div class="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2">
-          <DateTimeInput
-            :key="field.key + ':from:' + resetKey"
-            :label="tr({ pl: 'Od', en: 'From' })"
-            :model-value="range(field.key).from ?? null"
-            :locale="locale"
-            @validity="setValidity(field.key + ':from', $event)"
-            @update:model-value="date(field.key, 'from', $event)"
-          />
-          <DateTimeInput
-            :key="field.key + ':until:' + resetKey"
-            :error="
-              ordered(range(field.key))
-                ? ''
-                : tr({
-                    pl: 'Koniec zakresu musi przypadać po jego początku.',
-                    en: 'The range end must follow its start.',
-                  })
-            "
-            :label="tr({ pl: 'Do', en: 'Until' })"
-            :model-value="range(field.key).until ?? null"
-            :locale="locale"
-            @validity="setValidity(field.key + ':until', $event)"
-            @update:model-value="date(field.key, 'until', $event)"
-          />
-        </div>
-      </fieldset>
+        :key="field.key + ':' + resetKey"
+        :label="tr(field.label)"
+        :model-value="{
+          start: range(field.key).from ?? null,
+          end: range(field.key).until ?? null,
+        }"
+        :locale="locale"
+        @validity="setValidity(field.key, $event)"
+        @update:model-value="date(field.key, $event)"
+      />
       <Select
         v-else-if="field.type === 'boolean' || field.type === 'dictionary'"
         :label="tr(field.label)"

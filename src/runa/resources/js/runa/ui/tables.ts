@@ -12,6 +12,8 @@ export interface TableColumn<Row> {
   filterOptions?: readonly { value: string; label: string }[];
   /** Date/time filters edit explicit-offset instants in the application time zone. */
   filterType?: 'datetime';
+  /** Pair this start key with an explicit endpoint key in one compact filter. */
+  filterRange?: { endKey: string; label: string };
   compare?: (a: Row, b: Row) => number;
   filter?: (row: Row, value: string) => boolean;
   /** Data columns sort by default; false opts out. Server capabilities still apply. */

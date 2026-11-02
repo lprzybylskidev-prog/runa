@@ -90,6 +90,7 @@ export { validateFiles } from '../../lib/files';
 export { default as DateInput } from '../../components/AppDateInput.vue';
 export { default as TimeInput } from '../../components/AppTimeInput.vue';
 export { default as DateTimeInput } from '../../components/AppDateTimeInput.vue';
+export { default as DateTimeRangeInput } from '../../components/AppDateTimeRangeInput.vue';
 export { default as DateRangeInput } from '../../components/AppDateRangeInput.vue';
 export { default as Checkbox } from '../../components/AppCheckbox.vue';
 export { default as Switch } from '../../components/AppSwitch.vue';

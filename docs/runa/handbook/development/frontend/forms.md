@@ -147,7 +147,7 @@ canonical; arbitrary JSON diagnostics are not heuristically rewritten as dates.
 
 DateInput stores YYYY-MM-DD/null; TimeInput stores local HH:mm with optional seconds/fractions/null. DateRangeInput stores { start, end }, permits open/null endpoints and rejects reversed/invalid dates. formatDateOnly formats PL/EN without timezone conversion. DateTimeInput defaults to the configured application timezone; an explicit IANA timeZone is reserved for a domain-specific zone; toLocalDateTime displays an explicit-offset instant in that zone and resolveLocalDateTime commits UTC ISO values. Nonexistent DST wall times reject; repeated times reject by default, requiring an explicit earlier/later disambiguation policy. Never silently select an occurrence or shift a date-only value through UTC.
 
-Temporal inputs preserve incomplete text drafts independently of committed values. Fields are type=text; no native date/time picker opens. PL accepts DD.MM.YYYY, EN uses YYYY-MM-DD; canonical dates are accepted in both. Moments append a space or T and 24-hour HH:mm with optional seconds/fractions. Invalid/impossible text remains visible and no partial or normalized date is silently committed. Calendar and time choices share this same validation path, including DST rejection. Consume validity to block submission of a stale last-valid model, and use reset() when deliberately discarding an incomplete draft (including when the model itself did not change). Their focus() method supports recovery. DateRangeInput combines endpoint and order validity. Supply localized invalidMessage and linked helper text; inputs and picker panels omit timezone annotations. TagsInput likewise reports validity=false while a nonempty draft awaits Enter; prevent submission or deliberately commit/discard it. ColorInput retains invalid drafts in its string/null model and emits validity. Compose these flags into Form.valid; feature rules still validate required/domain constraints.
+Temporal inputs preserve incomplete text drafts independently of committed values. Fields are type=text; no native date/time picker opens. PL accepts DD.MM.YYYY, EN uses YYYY-MM-DD; canonical dates are accepted in both. Moments append a space or T and 24-hour HH:mm with optional seconds/fractions. Invalid/impossible text remains visible and no partial or normalized date is silently committed. Calendar and time choices share this same validation path, including DST rejection. Consume validity to block submission of a stale last-valid model, and use reset() when deliberately discarding an incomplete draft (including when the model itself did not change). Their focus() method supports recovery. Range inputs validate both endpoint drafts and ordering inside their picker; Apply publishes only a complete valid range. Their outer validity describes the committed model. Supply localized invalidMessage and linked helper text; inputs and picker panels omit timezone annotations. TagsInput likewise reports validity=false while a nonempty draft awaits Enter; prevent submission or deliberately commit/discard it. ColorInput retains invalid drafts in its string/null model and emits validity. Compose these flags into Form.valid; feature rules still validate required/domain constraints.
 
 FileInput stores File objects in separate shallowRef state, outside useForm's finite-JSON snapshots. Its issues event exposes count/size/type failures without truncating selection. Its dropzone accepts local file drops as well as keyboard/touch activation of the native operating-system chooser. Multiple batches append (without silent deduplication/truncation), single selection replaces; an empty/cancelled chooser preserves the current model. The UI shows limits, selection totals and file rows, never fake upload progress/success. Disabled, readonly and disabled ancestor fieldsets block mutation. Reset/removal is controlled through the model; clearing the native picker after selection allows choosing the same file again. Names/MIME/accept are untrusted UX hints: backend upload authorization, type/content/size validation and storage remain feature-owned. No file reads, previews, object URLs or uploads occur in the primitive.
 
@@ -204,3 +204,25 @@ validate first, respect each proof/version, stop on failure and report partial
 success without replay. The [account editor](../../modules/auth/account-ui.md)
 supplies this pattern through its public controller; customer code does not copy
 orchestration.
+
+### Compact temporal ranges
+
+UI owns `DateTimeRangeInput` exported from `@/runa/ui`, implemented by
+AppDateTimeRangeInput.vue over the private AppTemporalRangeInput.vue. Its public
+props are `{modelValue: DateRangeValue, label: string, startLabel?: string,
+endLabel?: string, locale?: 'pl'|'en', size?: 'sm'|'md', helper?: string,
+error?: string, invalidMessage?: string, disabled?: boolean, readonly?: boolean,
+timeZone?: string, disambiguation?: TimeDisambiguation}`. It emits
+`update:modelValue(DateRangeValue)` and `validity(boolean)` and exposes `reset()`
+and `focus()`. Defaults use Polish, md sizing, application timezone and rejection
+of ambiguous times. Values are nullable explicit-offset instants; date-only
+DateRangeInput uses the same presentation with YYYY-MM-DD values and its existing
+labels/props plus optional size/helper. No server contract is changed.
+
+One labelled field displays the formatted range. Its accessible popup edits two
+endpoints through existing temporal controls. Apply commits the whole valid range
+once; incomplete, reversed and DST-invalid drafts never publish a filter. Clear
+commits both endpoints null. Cancel, Escape or outside dismissal discard the local
+picker draft and retain the committed range. Reset discards draft state and closes
+the panel. Open-ended ranges are supported. No duplicate endpoint heading appears
+in the surrounding form/filter grid; endpoint labels belong inside the panel.
