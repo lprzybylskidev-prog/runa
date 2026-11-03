@@ -815,6 +815,11 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Correct unpublished CREATE definitions, prepare the identified disposable local
     runtime, author regression coverage and synchronize current docs/instruction
     products. Only focused uncertainty checks here; broad verification stays in 12.
+- [x] 11a53. Enable the default 30-day password lifetime.
+  - Owner decision, 2026-11-03: fresh Auth installation/rebuild defaults to
+    password_expiry_days=30. Keep existing actions and their semantics unchanged.
+  - Synchronize policy documentation and fixture credential timestamps; author
+    exact-boundary regression coverage. Broad verification remains point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5445,3 +5450,37 @@ volumes were created/removed. Task-created worker runa_test_test_1 was cleaned b
 the supported runner; base runa_test, development services, caches, backups and
 reports remain preserved. Manual acceptance 11b and final verification 12 remain
 open.
+
+### Point 11a53 — Default 30-day password lifetime
+
+Owner decision, 2026-11-03: enable periodic password expiry by default, every
+30 days after fresh Auth initialization/database rebuild. Change the source
+password_expiry_days default from 0 to 30; retain 0 as explicit disabling.
+The require_password_change flag remains a one-time forced change, independent
+of periodic age calculation; no per-account periodic-policy toggle is introduced.
+Existing stored policy choices remain authoritative. No reset is needed for this
+source-default change and no reset is requested by this point.
+
+Implemented the Auth-owned source default in IdentitySettings. No schema/API or
+new frontend contract changes are needed; Auth remains the unreleased 3.0.0
+candidate and existing dependent constraints remain valid. Synced the security
+guide and module/central changelogs. Owner/customer instructions already delegate
+credential policy to the owning guide and contain no numeric expiry default;
+no AGENTS/skill duplication is needed. Credential fixture helpers now record the
+password assignment timestamp; the disabled-feature Admin case explicitly opts
+out with zero rather than assuming the former default.
+
+Focused supported test-backend --parallel --processes=1 run passed 3 cases / 41
+assertions: source default 30 days, exact UTC deadline, explicit disabling,
+independent one-time forced change, existing ingress/complexity enforcement and
+registration. The runner cleaned runa_test_test_1 successfully and preserved the
+base runa_test. Native runtime read confirms password_expiry_days=30 in the
+existing local database without writing policy overrides or resetting data.
+Native administrator HTTP/API plus a rendered Users readiness diagnostic confirms
+the required-password-change command/button is present; evidence is under
+.runtime/auth-password-default/ and .runtime/artifacts/playwright/auth-password-default/.
+Existing current assets suffice because the change is source-projected policy,
+not new frontend code. No containers, networks, volumes or databases were reset;
+only the runner-owned disposable worker database was removed. Development data,
+base test database, caches, backups and reports remain. Manual owner acceptance
+11b and complete final verification 12 stay open.

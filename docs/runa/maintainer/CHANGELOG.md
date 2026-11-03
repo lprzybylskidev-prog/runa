@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Default Auth password expiry to 30 days on fresh initialization; retain zero as explicit disabling and preserve the independent one-time forced-change action.
+
 - Remove independent account approval: current activity and scheduled activation/deactivation govern lifecycle admission. Remove approved/approve from storage, eligibility, creation, directory and administration; registration_activation selects automatic activation or inactive accounts awaiting ordinary administrator activation. Preserve historical Audit reads. Update the unreleased Auth 3.0.0 and Lifecycle/Administration/BulkUsers 2.0.0 contracts and all current consumers.
 
 - Add optional locally configured automatic superadministrator fixture seeding after database rebuilds. Keep credentials outside Git, preserve existing passwords, enforce production guards and retain normal runtime password validation; only the initial development fixture permits an owner-approved shorter password.

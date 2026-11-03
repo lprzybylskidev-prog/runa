@@ -102,6 +102,7 @@ beforeEach(function (): void {
     $this->adminUser = User::where('public_id', $identity->publicId)->firstOrFail();
     DB::transaction(function (): void {
         $this->adminUser->password = Hash::make('admin-entry-password');
+        $this->adminUser->password_changed_at = now();
         $this->adminUser->save();
     });
     $routes = new Router(app('events'), app());
@@ -1790,7 +1791,7 @@ it('uses Auth protected section idle access for Admin and never trusts activity 
 
 it('Auth user administration hides disabled feature metadata and refuses hidden commands', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['totp_enabled' => false, 'email_otp_enabled' => false, 'avatar_editor' => 'user'], $settings['revision'], $settings['generation']);
+    app(ModuleSettings::class)->update('runa.auth', ['totp_enabled' => false, 'email_otp_enabled' => false, 'avatar_editor' => 'user', 'password_expiry_days' => 0], $settings['revision'], $settings['generation']);
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.auth.profiles.read', 'runa.auth.emails.read', 'runa.auth.emails.reverify', 'runa.auth.emails.verify_bypass', 'runa.auth.secondary.read', 'runa.auth.trust.manage', 'runa.auth.two_factor.reset', 'runa.auth.passwords.reset', 'runa.auth.policy.exceptions']);
     $page = $this->getJson('/api/admin/runa.auth/users')->assertOk()->json('data');
     $sections = collect($page['sections'])->keyBy('key');

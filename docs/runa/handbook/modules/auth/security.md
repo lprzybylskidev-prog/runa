@@ -22,8 +22,10 @@ Password history retains up to `password_history` previous hashes (default 5,
 0–24), plus comparison against the current hash. History is private credential
 storage, never Audit metadata or a public value. Zero retains no previous hashes;
 reusing the current password is still refused. `password_expiry_days` defaults to
-0 (disabled), with range 0–3650. Current policy/time is checked at ingress, so an
-expired or forced password restricts ordinary operations immediately. Complete
+30 days, with range 0–3650; 0 explicitly disables periodic expiry. Current policy/time is checked at ingress, so an
+expired or forced password restricts ordinary operations immediately.
+The per-account `password_change_required` flag forces a one-time change; it does
+not enable or disable periodic expiry for that account. Complete
 required 2FA before changing it. Verification, factor enrollment/challenge, session
 inspection/revocation, activity and password change are explicit supporting routes;
 no other module can opt out by marking its endpoint Restricted.

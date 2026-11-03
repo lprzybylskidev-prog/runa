@@ -300,6 +300,7 @@ function permissionAccessManager($test): array
     $user = User::where('public_id', $test->permissionUser->publicId)->firstOrFail();
     DB::transaction(function () use ($user): void {
         $user->password = Hash::make('permission-access-password');
+        $user->password_changed_at = now();
         $user->email_verified_at = now();
         $user->save();
     });
@@ -1064,6 +1065,7 @@ it('integrates real Core HTTP session CSRF profile and logout without authority 
     DB::transaction(function () use ($password): void {
         $user = User::where('public_id', $this->permissionUser->publicId)->firstOrFail();
         $user->password = Hash::make($password);
+        $user->password_changed_at = now();
         $user->save();
     });
     $this->getJson('/api/runa/auth/profile')->assertUnauthorized();

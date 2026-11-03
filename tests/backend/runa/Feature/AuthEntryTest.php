@@ -80,6 +80,7 @@ use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\AccountHistory;
+use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\PolicyExceptions;
 use Runa\Support\Modules\Api\ModuleApis;
@@ -111,6 +112,7 @@ function entryUser(string $email, bool $password = true): User
     if ($password) {
         DB::transaction(function () use ($user): void {
             $user->password = Hash::make('a-long-test-password');
+            $user->password_changed_at = now();
             $user->save();
         });
     }
@@ -741,6 +743,24 @@ it('bounds email OTP attempts and enforces session binding expiry and one time u
     $this->postJson('/api/runa/auth/security/challenge', ['method' => 'email', 'code' => $code])->assertUnprocessable();
     entryPolicy(['security_attempt_limit' => 1]);
     $this->postJson('/api/runa/auth/security/email-send')->assertUnprocessable();
+});
+
+it('defaults password lifetime to thirty days and expires exactly at its deadline', function (): void {
+    CarbonImmutable::setTestNow('2026-11-03T12:00:00Z');
+    expect(app(ModuleSettings::class)->value('runa.auth', 'password_expiry_days'))->toBe(30);
+    $user = entryUser('default-password-age@example.test');
+    $policy = app(CredentialPolicy::class);
+    DB::transaction(function () use ($user): void {
+        $user->password_changed_at = CarbonImmutable::now('UTC')->subDays(30)->addSecond();
+        $user->save();
+    });
+    expect($policy->passwordExpired($user))->toBeFalse();
+    CarbonImmutable::setTestNow('2026-11-03T12:00:01Z');
+    expect($policy->passwordExpired($user))->toBeTrue();
+    entryPolicy(['password_expiry_days' => 0]);
+    expect($policy->passwordExpired($user))->toBeFalse();
+    app(ChangeIdentity::class)->change($user->public_id, $user->version, new LifecycleChange('require_password_change', enabled: true));
+    expect(app(LookupIdentity::class)->eligibility($user->public_id)->restrictions)->toContain('password_change_required');
 });
 
 it('enforces password age on ingress and current complexity on newly chosen passwords', function (): void {
