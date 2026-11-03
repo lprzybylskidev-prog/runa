@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Skip ineligible accounts in Auth bulk invitations/password resets, report their counts separately from protected superadministrators and fingerprint eligibility through execution. Preserve specific business refusal messages instead of presenting every refusal as a stale write; review all bulk operation previews and owning execution regressions.
+
 - Exclude all protected superadministrators from every Auth bulk user/session/trust action, including inactive or locked members. Show skipped counts, mutate only ordinary targets and fingerprint current protected membership through a bounded trusted Permissions read. Retire blocked-whole-batch preview flags. Advance AuthBulkSessions to 2.0.0 and update current consumers; individual native last-administrator guards remain unchanged.
 
 - Refine bulk modals with compact width, paired selection/impact counts, localized loading and right-aligned confirmation.

@@ -80,6 +80,7 @@ const grouped = computed(
   () => !!authBulkGroup(props.section.commands[0]?.key ?? ''),
 );
 function selectOperation(value: string) {
+  if (value === selected.value) return;
   proof.value?.reset();
   proofStep.value = false;
   selected.value = value;
@@ -121,7 +122,12 @@ const selectedCount = computed(() => {
     ];
   return Array.isArray(ids) ? ids.length : 0;
 });
-const skipped = computed(() => Number(summary.value.skipped_accounts ?? 0));
+const ineligible = computed(() =>
+  Number(summary.value.ineligible_accounts ?? 0),
+);
+const skipped = computed(
+  () => Number(summary.value.skipped_accounts ?? 0) - ineligible.value,
+);
 const proofStep = ref(false);
 const proofRegion = ref<HTMLElement>();
 const fields = computed(() =>
@@ -325,6 +331,25 @@ function cancelProof() {
           >{{ tr({ pl: 'Pominięte konta', en: 'Skipped accounts' }) }}:
           {{ skipped }}</span
         >
+      </Alert>
+      <Alert v-if="ineligible > 0" tone="warning" data-bulk-ineligible>
+        {{
+          tr(
+            command?.key === 'invite'
+              ? {
+                  pl: 'Pominięte zostaną konta, które mają już hasło lub nie mogą się logować.',
+                  en: 'Accounts that already have a password or cannot sign in will be skipped.',
+                }
+              : {
+                  pl: 'Pominięte zostaną konta bez hasła lub bez możliwości logowania.',
+                  en: 'Accounts without a password or unable to sign in will be skipped.',
+                },
+          )
+        }}
+        <span class="mt-1 block font-semibold">
+          {{ tr({ pl: 'Pominięte konta', en: 'Skipped accounts' }) }}:
+          {{ ineligible }}
+        </span>
       </Alert>
       <p v-if="summary.affected_accounts === 0" class="text-sm text-muted">
         {{

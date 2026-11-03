@@ -8,6 +8,23 @@ export function writeFailure(
 ): AdminError {
   if (!(cause instanceof ApiError)) return adminFailure(cause).error;
   const failure = adminFailure(cause).error;
+  const refusals: Record<string, string> = {
+    schedule_must_be_future: 'Choose a future activation or deactivation date.',
+    invalid_schedule_order:
+      'Activation must be scheduled before deactivation. Check the selected accounts and dates.',
+    identifier_conflict:
+      'An email address or login is already used by another account. Change the selection or resolve the conflict before restoring accounts.',
+    identity_deleted:
+      'This operation cannot be applied to deleted accounts. Change the selection or restore them first.',
+    invitation_unavailable:
+      'An invitation cannot be sent to an account that already has a password or cannot sign in.',
+    password_reset_unavailable:
+      'A password reset requires an account with a password that can sign in.',
+    user_change_refused:
+      'This operation cannot be applied to the current account selection. Check the account states and try again.',
+  };
+  if (refusals[failure.reason])
+    return { ...failure, message: refusals[failure.reason]! };
   if (cause.status === 409)
     return {
       ...failure,

@@ -236,7 +236,7 @@ interface AuthBulkUsers {
     public function execute(SessionSelection $selection, BulkUserChange $change, string $fingerprint): array;
 }
 BulkUserChange::__construct(string $operation, ?string $at = null, ?bool $enabled = null)
-// preview: {fingerprint:string, accounts:int, affected_accounts:int, sessions:int, trusted_devices:int, skipped_accounts:int}
+// preview: {fingerprint:string, accounts:int, affected_accounts:int, sessions:int, trusted_devices:int, skipped_accounts:int, ineligible_accounts:int}
 // execute: {accounts:int, skipped_accounts:int}
 ```
 
@@ -266,6 +266,18 @@ account and proof. No per-user HTTP loop or single-record proof reuse is involve
 Standalone and bulk use the same owning locked validation/apply phases. Native
 password reset validates that a password exists and the account may authenticate
 before revoking credentials; an unavailable reset cannot partially revoke state.
+Invitation and password-reset batches skip ineligible ordinary accounts before
+planning: invitation requires no existing password; reset requires a password;
+both require current sign-in eligibility, including schedule/lock/deletion checks.
+`skipped_accounts` is the total of protected and ineligible accounts;
+`ineligible_accounts` reports only the latter, without double counting. Preview
+fingerprints include that classification and execution refuses changed eligibility,
+including clock-driven schedule transitions, rather than silently changing targets.
+The modal shows separate protected/eligibility omission notices and counts; an
+all-skipped selection has zero impact and cannot be confirmed. No skipped account
+receives tokens, credential/session changes or mutation Audit events.
+Business refusals retain safe source-owned codes (future date, schedule order,
+deleted account), with localized messages; they do not claim a stale write.
 The root locks retained subjects (including deleted restore targets); each owner
 still validates target state. Only restore and deletion inversion accept deleted targets, and both
 additionally require users.deleted.read. File
@@ -312,7 +324,8 @@ account's stored flag; dates and invitation delivery are explicit operations, no
 binary inversion. Attempt lock also has a primary outlined button with explicit set-deadline/clear choices. Force password
 change is a separate one-way bulk action (no boolean switch); standalone lifecycle
 and native BulkUserChange APIs still support clearing the forced-change flag.
-Operation changes clear the old preview/proof, retain the captured selection and
+Selecting the current operation preserves its valid review/proof. Actual
+operation changes clear the old preview/proof, retain the captured selection and
 require a new impact review before confirmation. No writes are automatically replayed. Selected accounts and
 `affected_accounts` are separate: lifecycle plans count only dirty account state;
 revocation/removal counts only accounts with matching rows or avatars. Credential
@@ -326,28 +339,26 @@ Cancel returns to the unchanged review; failed writes require a new explicit
 review/attempt. There is no separate identity button or duplicate confirmation.
 
 Actions follow account lifecycle, invitation/email, credentials/locks, revocations
-and presentation reset order. Semantic success/danger/warning button tones use
-the shared theme in both modes. The directory omits the account-state column
+and presentation reset order. Grouped buttons use the shared primary outlined
+style; individual actions retain their semantic tones in both themes. The directory omits the account-state column
 and picker entry. Its Deleted filter has Not deleted (default), Deleted and All
 choices using unchanged current/deleted/all wire values; deleted records use
 danger row colors. Native deleted-read authority remains required.
 
 Account lifecycle uses active, activate_at and deactivate_at. There is no account
-expires_at fact, filter or set_expiry command. Auth 3.0.0 upgrades existing expiry
-deadlines into the earlier deactivation deadline before dropping the column;
-activation conflicts refuse the forward migration without discarding either date.
-Removed action/date labels remain readable only for historical Audit records.
-Reminder mail uses account_deactivation and the current deactivate_at, preserving
-stored enablement, administrator-copy recipient and delivery preferences across
-the explicit owning upgrade. Old pending notices are revalidated against the
+expires_at fact, filter or set_expiry command. The unpublished Auth 3.0.0 schema defines this directly; no intermediate expiry
+conversion migration or settings-rename machinery is delivered. Removed action/date
+labels remain readable only for historical Audit records. Reminder mail uses
+account_deactivation and the current deactivate_at, including enablement,
+administrator-copy routing and delivery preferences. Old pending notices are revalidated against the
 current deadline before delivery; password/session/token deadlines are unchanged.
 
 Every Auth bulk action excludes protected superadministrator role members, including
 inactive, locked and deleted retained members. The original captured selection and
 99/100 limits remain; `accounts` in user preview is selected count,
-`skipped_accounts` is the protected count and `affected_accounts` counts changes
-only among remaining accounts. Execution `accounts` counts admitted nonprotected
-accounts. The compact modal warns that protected accounts will be skipped, displays
+`skipped_accounts` is the total omission count (protected plus, for invitation/reset,
+ineligible ordinary accounts), and `affected_accounts` counts changes only among
+admitted targets. Execution `accounts` counts admitted accounts. The compact modal warns that protected accounts will be skipped, displays
 the skipped count and permits confirmation when ordinary accounts are affected.
 A selection containing only protected accounts has zero impact and cannot be
 confirmed. No skipped account receives bulk mutations, Audit events or session/trust

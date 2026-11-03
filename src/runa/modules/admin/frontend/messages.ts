@@ -2,6 +2,20 @@ import type { AdminMessages } from './contracts';
 
 /** Reviewed Polish presentation for source-owned Admin/Core labels; never business values. */
 export const adminMessages: AdminMessages = {
+  'Choose a future activation or deactivation date.':
+    'Wybierz przyszły termin aktywacji lub dezaktywacji.',
+  'Activation must be scheduled before deactivation. Check the selected accounts and dates.':
+    'Termin aktywacji musi poprzedzać termin dezaktywacji. Sprawdź zaznaczone konta i terminy.',
+  'This operation cannot be applied to deleted accounts. Change the selection or restore them first.':
+    'Tej operacji nie można wykonać na usuniętych kontach. Zmień zaznaczenie lub najpierw przywróć konta.',
+  'An invitation cannot be sent to an account that already has a password or cannot sign in.':
+    'Nie można wysłać zaproszenia do konta, które ma już hasło lub nie może się logować.',
+  'A password reset requires an account with a password that can sign in.':
+    'Reset hasła wymaga konta z hasłem, które może się logować.',
+  'This operation cannot be applied to the current account selection. Check the account states and try again.':
+    'Nie można wykonać tej operacji dla bieżącego zaznaczenia. Sprawdź stan kont i spróbuj ponownie.',
+  'An email address or login is already used by another account. Change the selection or resolve the conflict before restoring accounts.':
+    'Adres e-mail lub login jest już używany przez inne konto. Zmień zaznaczenie lub rozwiąż konflikt przed przywróceniem kont.',
   All: 'Wszystkie',
   Event: 'Zdarzenie',
   'Event data': 'Dane zdarzenia',

@@ -53,7 +53,7 @@ final readonly class BulkUserSection implements ManagementResourceReader, Manage
             $change = $this->change($input);
             $preview = $this->apis->resolve('runa.auth', AuthBulkUsers::class, '2.0.0')->preview(new SessionSelection($input->values['public_ids']), $change);
 
-            $summary = ['accounts' => $preview['accounts'], 'affected_accounts' => $preview['affected_accounts'], 'skipped_accounts' => $preview['skipped_accounts']];
+            $summary = ['accounts' => $preview['accounts'], 'affected_accounts' => $preview['affected_accounts'], 'skipped_accounts' => $preview['skipped_accounts'], 'ineligible_accounts' => $preview['ineligible_accounts']];
             if ($preview['sessions'] > 0) {
                 $summary['sessions'] = $preview['sessions'];
             }

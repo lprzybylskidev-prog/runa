@@ -26,7 +26,10 @@ export function adminFailure(error: unknown): {
   let reason = 'admin_unavailable';
   if (error instanceof ApiError) {
     try {
-      const value = object(error.payload).reason;
+      const payload = object(error.payload);
+      const value =
+        payload.reason ??
+        (payload.error ? object(payload.error).code : undefined);
       if (typeof value === 'string' && /^[a-z][a-z0-9_]{0,127}$/.test(value))
         reason = value;
     } catch {

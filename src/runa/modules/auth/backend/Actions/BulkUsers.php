@@ -40,8 +40,8 @@ final readonly class BulkUsers implements AuthBulkUsers
 
                 return $this->snapshot($connection, $users, $change, $plans);
             });
-        } catch (IdentityConflict) {
-            throw new OperationRejected('user_change_refused', 'runa.auth', 'users.bulk_preview', 409);
+        } catch (IdentityConflict $error) {
+            throw $this->refusal($error, 'users.bulk_preview');
         }
     }
 
@@ -51,8 +51,8 @@ final readonly class BulkUsers implements AuthBulkUsers
         $mutation = new BulkUserMutation($this, $selection, $change, $fingerprint);
         try {
             $this->mutations->run([$mutation]);
-        } catch (IdentityConflict) {
-            throw new OperationRejected('user_change_refused', 'runa.auth', 'users.bulk_execute', 409);
+        } catch (IdentityConflict $error) {
+            throw $this->refusal($error, 'users.bulk_execute');
         } catch (QueryException $error) {
             if ($error->getCode() !== '23505') {
                 throw $error;
@@ -93,7 +93,7 @@ final readonly class BulkUsers implements AuthBulkUsers
 
     /** @param Collection<int,User> $users
      * @param  list<User|LifecyclePlan>  $plans  Validated in-memory plans for impact projection; validation needs only the fingerprint.
-     * @return array{fingerprint:string,accounts:int,affected_accounts:int,sessions:int,trusted_devices:int,skipped_accounts:int}
+     * @return array{fingerprint:string,accounts:int,affected_accounts:int,sessions:int,trusted_devices:int,skipped_accounts:int,ineligible_accounts:int}
      */
     public function snapshot(Connection $connection, Collection $users, BulkUserChange $change, array $plans = []): array
     {
@@ -103,6 +103,8 @@ final readonly class BulkUsers implements AuthBulkUsers
         }
         $protected = $this->protectedAccounts($connection, $users);
         $targets = $users->reject(fn (User $user): bool => in_array($user->public_id, $protected, true));
+        $ineligible = $this->ineligibleAccounts($targets, $change);
+        $targets = $targets->reject(fn (User $user): bool => in_array($user->public_id, $ineligible, true));
         $related = [];
         foreach (['sessions', 'trusted_devices', 'entry_tokens', 'policy_exceptions'] as $table) {
             $rows = $connection->table('runa_auth.'.$table)->whereIn('user_id', $targets->modelKeys());
@@ -150,7 +152,7 @@ final readonly class BulkUsers implements AuthBulkUsers
             $affected += (int) ($rows !== null ? count(array_filter($rows, fn ($row) => $row->user_id === $plan->id)) > 0 : ($change->operation !== 'remove_avatar' || $plan->avatar_path !== null));
         }
 
-        return ['fingerprint' => hash('sha256', json_encode([$revision, $change, $state, $related, $protected], JSON_THROW_ON_ERROR)), 'accounts' => $users->count(), 'affected_accounts' => $affected, 'sessions' => $sessions, 'trusted_devices' => $devices, 'skipped_accounts' => count($protected)];
+        return ['fingerprint' => hash('sha256', json_encode([$revision, $change, $state, $related, $protected, $ineligible], JSON_THROW_ON_ERROR)), 'accounts' => $users->count(), 'affected_accounts' => $affected, 'sessions' => $sessions, 'trusted_devices' => $devices, 'skipped_accounts' => count($protected) + count($ineligible), 'ineligible_accounts' => count($ineligible)];
     }
 
     /** @param Collection<int,User> $users
@@ -160,6 +162,8 @@ final readonly class BulkUsers implements AuthBulkUsers
     {
         $protected = $this->protectedAccounts($connection, $users);
         $users = $users->reject(fn (User $user): bool => in_array($user->public_id, $protected, true));
+        $ineligible = $this->ineligibleAccounts($users, $change);
+        $users = $users->reject(fn (User $user): bool => in_array($user->public_id, $ineligible, true));
         // Resolve all binary changes from the same locked snapshot before any plan mutates a model.
         $changes = [];
         $exclude = [];
@@ -191,13 +195,34 @@ final readonly class BulkUsers implements AuthBulkUsers
             if ($change->operation === 'password_reset' || $change->operation === 'factor_reset') {
                 app(ManageSecurity::class)->validateChangeLocked($connection, $user, $change->operation === 'factor_reset');
             }
-            if ($change->operation === 'invite' && ($user->password !== null || ! app(LookupIdentity::class)->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate())) {
-                throw new IdentityConflict('invitation_unavailable');
-            }
             $plans[] = $user;
         }
 
         return $plans;
+    }
+
+    /** @param Collection<int,User> $users
+     * @return list<string>
+     */
+    private function ineligibleAccounts(Collection $users, BulkUserChange $change): array
+    {
+        if (! in_array($change->operation, ['invite', 'password_reset'], true)) {
+            return [];
+        }
+        $now = CarbonImmutable::now('UTC');
+
+        return $users->filter(fn (User $user): bool => ($change->operation === 'invite' ? $user->password !== null : $user->password === null)
+            || ! app(LookupIdentity::class)->evaluate($user, $now)->mayAuthenticate())->pluck('public_id')->all();
+    }
+
+    private function refusal(IdentityConflict $error, string $operation): OperationRejected
+    {
+        $reason = match ($error->getMessage()) {
+            'schedule_must_be_future', 'invalid_schedule_order', 'identity_deleted', 'identifier_conflict', 'invitation_unavailable', 'password_reset_unavailable' => $error->getMessage(),
+            default => 'user_change_refused',
+        };
+
+        return new OperationRejected($reason, 'runa.auth', $operation, 409);
     }
 
     /** @param Collection<int,User> $users

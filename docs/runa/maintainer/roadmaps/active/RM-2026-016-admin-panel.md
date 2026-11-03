@@ -862,6 +862,12 @@ reassessment before resuming point 3; completed point history remains evidence.
 - [x] 11a59. Restore spacing after additional Auth bulk modal fields.
   - Give parameter fields real layout wrappers so the existing spacing separates
     them from the impact summary; check rendered desktop/mobile date fields.
+- [x] 11a60. Review all Auth bulk actions and correct eligibility/refusal handling.
+  - Owner decision: invitation/password-reset batches skip ineligible accounts and
+    show their count separately from protected superadministrators. Recheck the
+    eligible selection and its fingerprint at execution; retain atomicity/Audit.
+  - Check all projected operations and grouped choices, distinguish business
+    refusals from stale reviews, and cover mixed/empty/stale selections.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5845,3 +5851,83 @@ No reusable component/pattern, public capability or instruction rule changed;
 current handbook, root skills and customer instruction products need no changes.
 No Docker resources or database resets were involved. Owner acceptance 11b and
 final verification/release 12 remain open.
+
+### Point 11a60 — Bulk eligibility and truthful refusal feedback
+
+The owner requested a review of all Auth bulk actions after mixed invitation
+selections produced the generic stale-write notice. Source inspection and native
+previews confirmed the same refusal for password reset: one ordinary account
+without the required credential/admission state rejected the batch. The owner
+explicitly chose omission with counts for invitation/password-reset eligibility.
+
+BulkUsers now classifies protected accounts first, then invitation/reset eligibility
+through the existing owning LookupIdentity rules. It excludes ineligible targets
+from plans/related inventories, includes classification in the review fingerprint,
+and rechecks under existing authority/user locks before execution. No credential,
+session, token or Audit mutation is applied to skipped targets. The preview adds
+ineligible_accounts; skipped_accounts consistently counts all omissions, while the
+modal derives the protected count separately and displays both notices. Empty
+impact disables confirmation. All other actions retain their owning validation,
+grants, proofs, Audit and atomic failure behavior.
+
+Safe schedule/deleted-account/identifier/credential refusal categories survive the
+native adapter. Admin accepts both its direct reason envelope and the standard
+module error.code envelope, and renders reviewed PL/EN messages before the generic
+409 reconciliation notice. Actual stale-review conflicts still reconcile reads
+without replaying writes. No arbitrary backend message or submitted value is
+rendered. The native grouped-modal review also exposed a same-option defect:
+selecting the already current choice cleared its review without changing the
+watch signature. That choice now does nothing, preserving its valid review/proof;
+the real-controller grouped regression checks review identity and no extra preview. The current administration guide documents the complete preview shape,
+eligibility and omission semantics; it also retires stale intermediate expiry
+migration and grouped-button tone claims discovered in that affected guide.
+
+The source-owned Auth 3.0.0 and BulkUsers 2.0.0 are still unpublished candidates
+from this roadmap; this corrects that same candidate's contract, without adding a
+compatibility API or an extra release increment. Admin remains its creation-roadmap
+0.1.0 candidate. No new public component, presentation seam or reusable instruction
+rule is needed: existing root/customer guidance already requires owning validation,
+explicit feedback and synchronized contracts. Both instruction products were
+assessed and remain unchanged.
+
+Focused evidence is retained under .runtime/auth-bulk-audit. Initial native
+requests used nonzero fractional diagnostic timestamps, which the whole-second
+Auth contract correctly rejected; using the documented zero-fraction input made
+all 21 currently projected operation previews return 200, including invitation and
+password reset. The all-account invitation preview reports 15 selected, 9 affected,
+6 skipped (5 ineligible plus 1 protected); reset reports 0 affected and 15 skipped.
+No development bulk writes were issued by these diagnostics. A native browser
+walk then opened all 14 projected bulk buttons and exercised all 23 modal choices,
+including repeated current choices, both lock variants and invitation invalidation.
+Every choice retained/completed its impact review without the stale-write notice;
+no bulk-preview HTTP failure occurred. The mixed invitation omission notices were
+checked against exact counts and captured under
+.runtime/artifacts/playwright/auth-bulk-audit/invitations.png. Browser scripts use
+fresh pages per action to discard local drafts without issuing mutations.
+
+Frontend: 19 focused administration/refusal/group-switching cases passed. A stale
+selection fixture asserted obsolete modal text despite using the generic section
+fallback; it now asserts its actual command label while retaining exact selection
+and hidden-ID checks. Seven error-code cases cover both native/Admin envelopes and
+retain real stale-review feedback. The supported frontend build passed.
+
+Backend: both mixed-delivery regressions passed (55 assertions), checking real
+invitation/reset execution, untouched skipped identity revisions, tokens only for
+the eligible identity, owning Audit counts and all-skipped previews. The initial
+six-case regression run passed the time-driven stale-review and three specific
+refusal cases; its two mixed fixture failures were corrected (deleted accounts
+must be inactive, and reset emits three owning history events). Three native
+binary inversion cases also completed in a later run. Broader focused catalogue
+runs were interrupted by confirmed PHP worker SIGSEGV/139, with successful guarded
+worker cleanup and no additional test failure in those runs: PASS under the
+standing owner SIGSEGV exception, with interrupted catalogue/session coverage
+explicitly retained rather than reported as executed. A sequential attempt refused
+legacy base test migration history without changes; it was replaced by guarded
+parallel worker mode. Pest also refused an unsupported process-isolation option;
+no runner bypass or infrastructure change was introduced. All raw failed reports
+remain. No full quality graph was run during this implementation point.
+
+Only test-runner-owned runa_test_test_1 databases were cleaned by supported runners.
+The base test database, development data, active services, caches, backups and
+reports remain preserved. No Docker resource was created or removed. Owner manual
+acceptance 11b and final verification/release 12 remain open.

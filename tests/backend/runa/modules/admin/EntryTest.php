@@ -2080,3 +2080,74 @@ it('Auth bulk sessions preserve protected sessions while revoking ordinary selec
         ->and(DB::table('runa_auth.sessions')->where('user_id', $this->adminUser->id)->whereNull('revoked_at')->count())->toBeGreaterThan(0);
     $this->getJson('/api/runa/auth/session')->assertOk();
 });
+
+it('Auth bulk delivery skips ineligible accounts without mutating their credentials or history', function (string $operation): void {
+    $role = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('id');
+    DB::table('runa_permissions.user_roles')->insert(['user_public_id' => $this->adminUser->public_id, 'role_id' => $role, 'created_at' => now(), 'updated_at' => now()]);
+    $ids = [$this->adminUser->public_id];
+    foreach (['eligible', 'credential', 'inactive', 'locked', 'deleted'] as $state) {
+        $identity = app(ChangeIdentity::class)->create(new NewIdentity('delivery-'.$state.'@example.test', name: $state, active: true));
+        $ids[] = $identity->publicId;
+        $hasPassword = $operation === 'password_reset';
+        if ($state === 'credential') {
+            $hasPassword = ! $hasPassword;
+        }
+        DB::table('runa_auth.users')->where('public_id', $identity->publicId)->update([
+            'password' => $hasPassword ? Hash::make('delivery-fixture-password') : null,
+            'active' => ! in_array($state, ['inactive', 'deleted'], true), 'security_locked' => $state === 'locked',
+            'deleted_at' => $state === 'deleted' ? now() : null,
+            'password_changed_at' => now(), 'email_verified_at' => now(),
+        ]);
+    }
+    $access = BulkUserOperations::access($operation);
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.permissions.users.select', 'runa.auth.'.$access['permission']]);
+    $input = ['command' => $operation, 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => $ids], 'confirmed' => true];
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    expect($input['review']['changes']['summary'])->toMatchArray(['accounts' => 6, 'affected_accounts' => 1, 'skipped_accounts' => 5, 'ineligible_accounts' => 4]);
+    $before = User::withTrashed()->whereIn('public_id', array_diff($ids, [$ids[1]]))->get()->map(fn (User $user) => [$user->public_id, $user->version, $user->security_version])->all();
+    if ($operation === 'password_reset') {
+        $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.users.bulk.password_reset', 'requirement' => 'password', 'current_password' => 'admin-entry-password'])->assertOk();
+    }
+    $history = DB::table('runa_audit.events')->count();
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertOk();
+    expect(User::withTrashed()->whereIn('public_id', array_diff($ids, [$ids[1]]))->get()->map(fn (User $user) => [$user->public_id, $user->version, $user->security_version])->all())->toBe($before);
+    $eligibleId = User::where('public_id', $ids[1])->value('id');
+    expect(DB::table('runa_auth.entry_tokens')->where('purpose', $operation === 'invite' ? 'invitation' : 'reset')->pluck('user_id')->all())->toBe([$eligibleId])
+        ->and(DB::table('runa_audit.events')->count())->toBe($history + ($operation === 'invite' ? 1 : 3));
+    $input['values']['public_ids'] = array_values(array_diff($ids, [$ids[1]]));
+    $empty = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data.changes.summary');
+    expect($empty)->toMatchArray(['affected_accounts' => 0, 'skipped_accounts' => 5, 'ineligible_accounts' => 4]);
+})->with(['invite', 'password_reset']);
+
+it('Auth bulk delivery rejects eligibility changes caused by a scheduled deactivation after review', function (): void {
+    $identity = app(ChangeIdentity::class)->create(new NewIdentity('delivery-expiring@example.test', name: 'Scheduled', active: true));
+    DB::table('runa_auth.users')->where('public_id', $identity->publicId)->update(['deactivate_at' => now()->addSeconds(30)]);
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.permissions.users.select', 'runa.auth.invitations.manage']);
+    $input = ['command' => 'invite', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$identity->publicId]], 'confirmed' => true];
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    expect($input['review']['changes']['summary']['affected_accounts'])->toBe(1);
+    CarbonImmutable::setTestNow(CarbonImmutable::now()->addMinute());
+    try {
+        $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertConflict()->assertJsonPath('error.code', 'user_preview_stale');
+        expect(DB::table('runa_auth.entry_tokens')->count())->toBe(0);
+    } finally {
+        CarbonImmutable::setTestNow();
+    }
+});
+
+it('Auth bulk previews preserve specific schedule and deleted-account refusal reasons', function (string $reason): void {
+    $identity = app(ChangeIdentity::class)->create(new NewIdentity('delivery-refusal@example.test', name: 'Refusal', active: true));
+    $command = 'schedule_activation';
+    $values = ['public_ids' => [$identity->publicId], 'at' => now()->addDay()->utc()->format('Y-m-d\TH:i:s\Z')];
+    if ($reason === 'schedule_must_be_future') {
+        $values['at'] = now()->subDay()->utc()->format('Y-m-d\TH:i:s\Z');
+    } elseif ($reason === 'invalid_schedule_order') {
+        DB::table('runa_auth.users')->where('public_id', $identity->publicId)->update(['deactivate_at' => now()->addHour()]);
+    } else {
+        $command = 'activate';
+        unset($values['at']);
+        DB::table('runa_auth.users')->where('public_id', $identity->publicId)->update(['deleted_at' => now(), 'active' => false]);
+    }
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.permissions.users.select', 'runa.auth.users.manage']);
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', ['command' => $command, 'public_id' => null, 'revision' => '0', 'values' => $values, 'confirmed' => false])->assertConflict()->assertJsonPath('error.code', $reason);
+})->with(['schedule_must_be_future', 'invalid_schedule_order', 'identity_deleted']);

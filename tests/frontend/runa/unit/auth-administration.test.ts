@@ -8,6 +8,8 @@ import { DateTimeRangeInput, Select, NumberInput } from '@/runa/ui';
 import type { TableQuery } from '@/runa/ui';
 import { AuthAdminUsers, AuthAdminSection } from '@/runa/auth';
 import { AdminForm, useAdminForm } from '@/runa/admin';
+import { ApiError } from '@/runa/http';
+import { writeFailure } from '../../../../src/runa/modules/admin/frontend/writeFailure';
 import type {
   AdminFieldData,
   AdminFormController,
@@ -437,7 +439,7 @@ it('Auth administration user page moves the exact table selection into the nativ
   );
   await vi.waitFor(() =>
     expect(document.querySelector('[role=dialog]')?.textContent).toContain(
-      'Selected accounts: 1',
+      'Revoke selected sessions and trust',
     ),
   );
   expect(document.querySelector('[role=dialog]')?.textContent).not.toContain(
@@ -694,9 +696,14 @@ it('Auth administration range filters map compact ranges and reset them with sha
   expect(wrapper.findAll('fieldset')).toHaveLength(0);
 });
 
-it.each([false, true])(
-  'grouped bulk operations refresh impact and allow writes while skipping protected accounts (%s)',
-  async (protectedAccounts) => {
+it.each([
+  [false, 0],
+  [true, 0],
+  [false, 2],
+  [true, 2],
+])(
+  'grouped bulk operations refresh impact and allow writes while skipping protected accounts (%s, %s)',
+  async (protectedAccounts, ineligibleAccounts) => {
     const bulk = section('bulk_users', [
       { ...field('public_ids', false), type: 'uuid', multiple: true },
       field('summary'),
@@ -732,7 +739,9 @@ it.each([false, true])(
             summary: {
               accounts: 2,
               affected_accounts: 2,
-              skipped_accounts: protectedAccounts ? 1 : 0,
+              skipped_accounts:
+                (protectedAccounts ? 1 : 0) + Number(ineligibleAccounts),
+              ineligible_accounts: Number(ineligibleAccounts),
             },
           },
           requirement: 'none',
@@ -776,6 +785,15 @@ it.each([false, true])(
     );
     await vi.waitFor(() => expect(previews).toEqual(['activate']));
     await vi.waitFor(() => expect(form.busy.value).toBe(false));
+    const initialReview = form.commandReviews.value['bulk_users:activate'];
+    wrapper.getComponent(Select).vm.$emit('update:modelValue', 'activate');
+    await vi.waitFor(() =>
+      expect(form.commandReviews.value['bulk_users:activate']).toBe(
+        initialReview,
+      ),
+    );
+    expect(previews).toEqual(['activate']);
+
     wrapper
       .getComponent(Select)
       .vm.$emit('update:modelValue', 'toggle_activation');
@@ -790,10 +808,46 @@ it.each([false, true])(
       );
       expect(wrapper.get('[data-bulk-impact]').text()).toContain('2');
     }
+    expect(wrapper.find('[data-bulk-ineligible]').exists()).toBe(
+      !!ineligibleAccounts,
+    );
+    if (ineligibleAccounts)
+      expect(wrapper.get('[data-bulk-ineligible]').text()).toContain(
+        'Skipped accounts: 2',
+      );
+    expect(wrapper.find('[data-bulk-skipped]').exists()).toBe(
+      !!protectedAccounts,
+    );
     await wrapper
       .findAll('button')
       .find((button) => button.text() === 'Confirm')!
       .trigger('click');
     await vi.waitFor(() => expect(writes).toEqual(['toggle_activation']));
+  },
+);
+
+it.each([
+  'identifier_conflict',
+  'schedule_must_be_future',
+  'invalid_schedule_order',
+  'identity_deleted',
+  'invitation_unavailable',
+  'password_reset_unavailable',
+  'user_change_refused',
+])(
+  'bulk business refusal %s keeps its safe reason instead of claiming a stale write',
+  (reason) => {
+    for (const payload of [{ error: { code: reason } }, { reason }]) {
+      const failure = writeFailure(new ApiError(409, payload), []);
+      expect(failure.reason).toBe(reason);
+      expect(failure.message).not.toContain('Current values are being checked');
+      expect(failure.message).not.toContain('currently unavailable');
+    }
+    expect(
+      writeFailure(
+        new ApiError(409, { error: { code: 'user_preview_stale' } }),
+        [],
+      ).message,
+    ).toContain('Current values are being checked');
   },
 );
