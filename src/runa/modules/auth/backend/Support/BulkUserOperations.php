@@ -11,7 +11,7 @@ final class BulkUserOperations
     {
         return match ($operation) {
             'delete', 'restore', 'password_reset', 'factor_reset', 'revoke_exceptions' => 'password',
-            'activate', 'deactivate', 'approve', 'schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock', 'set_security_lock', 'require_password_change', 'invite', 'invalidate_invitation', 'require_verification', 'revoke_trust', 'reset_preferences', 'remove_avatar' => 'none',
+            'activate', 'deactivate', 'approve', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change', 'invite', 'invalidate_invitation', 'require_verification', 'revoke_trust', 'reset_preferences', 'remove_avatar' => 'none',
             default => throw new \InvalidArgumentException('Unknown bulk operation.'),
         };
     }

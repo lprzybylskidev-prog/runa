@@ -191,7 +191,6 @@ final class AdministrationPages implements ManagementPageProvider
         'schedule_deactivation' => 'zaplanuj dezaktywację',
         'session_id' => 'UUID sesji',
         'set_attempt_lock' => 'ustaw blokadę prób',
-        'set_expiry' => 'ustaw wygaśnięcie',
         'set_security_lock' => 'ustaw blokadę bezpieczeństwa',
         'value' => 'wartość',
         'verified' => 'zweryfikowano',
@@ -254,7 +253,6 @@ final class AdministrationPages implements ManagementPageProvider
             'approve' => ['Zatwierdź konta', 'Approve accounts'], 'delete' => ['Usuń konta', 'Delete accounts'], 'restore' => ['Przywróć konta', 'Restore accounts'],
             'schedule_activation' => ['Termin aktywacji', 'Activation schedule'],
             'schedule_deactivation' => ['Termin dezaktywacji', 'Deactivation schedule'],
-            'set_expiry' => ['Wygaśnięcie kont', 'Account expiry'],
             'set_attempt_lock' => ['Blokada prób', 'Attempt lock'],
             'set_security_lock' => ['Blokada bezpieczeństwa', 'Security lock'],
             'require_password_change' => ['Wymagana zmiana hasła', 'Required password change'],
@@ -275,7 +273,7 @@ final class AdministrationPages implements ManagementPageProvider
             }
             $access = BulkUserOperations::access($operation);
             $inputs = ['public_ids'];
-            if (in_array($operation, ['schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock'], true)) {
+            if (in_array($operation, ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'], true)) {
                 $inputs[] = 'at';
             }
             if (in_array($operation, ['set_security_lock', 'require_password_change'], true)) {
@@ -296,9 +294,9 @@ final class AdministrationPages implements ManagementPageProvider
         $fields = [
             'eligibility' => [self::field('blockers', 'Authentication blockers', read: 'eligibility.read'), self::field('restrictions', 'Operation restrictions', read: 'eligibility.read')],
             'creation' => [self::field('email', 'Email', write: 'users.create', read: 'users.create'), ...self::names('users.create'), self::field('active', 'Active', 'boolean', 'users.create', 'users.create'), self::field('approved', 'Approved', 'boolean', 'users.create', 'users.create')],
-            'lifecycle' => [self::field('operation', 'Lifecycle operation', 'dictionary', 'users.manage', 'users.read', choices: ['activate', 'deactivate', 'approve', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock', 'set_security_lock', 'require_password_change']),
+            'lifecycle' => [self::field('operation', 'Lifecycle operation', 'dictionary', 'users.manage', 'users.read', choices: ['activate', 'deactivate', 'approve', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change']),
                 self::field('at', 'Deadline (empty clears)', 'datetime', 'users.manage', 'users.read'), self::field('enabled', 'Enable selected flag', 'boolean', 'users.manage', 'users.read'),
-                ...array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), in_array($key, ['active', 'approved', 'deleted', 'security_locked', 'password_change_required'], true) ? 'boolean' : 'datetime', read: 'users.read'), ['active', 'approved', 'deleted', 'security_locked', 'password_change_required', 'activate_at', 'deactivate_at', 'expires_at', 'attempt_locked_until'])],
+                ...array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), in_array($key, ['active', 'approved', 'deleted', 'security_locked', 'password_change_required'], true) ? 'boolean' : 'datetime', read: 'users.read'), ['active', 'approved', 'deleted', 'security_locked', 'password_change_required', 'activate_at', 'deactivate_at', 'attempt_locked_until'])],
             'invitations' => [],
             'primary_email' => [self::field('current_email', 'Current primary email', read: 'emails.read'), self::field('verified', 'Verified', 'boolean', read: 'emails.read'), self::field('verification_required', 'Verification required', 'boolean', read: 'emails.read'), self::field('email', 'New email', write: 'emails.manage', read: 'profiles.read'), self::field('replacement_email', 'Verified replacement email', write: 'emails.verify_bypass', read: 'profiles.read')],
             'secondary' => [self::field('addresses', 'Secondary addresses', read: 'secondary.read'), self::field('address_id', 'Secondary address UUID', 'uuid', 'secondary.manage', 'secondary.read'), self::field('email', 'New email', write: 'secondary.manage', read: 'secondary.read')],
@@ -461,24 +459,24 @@ final class AdministrationPages implements ManagementPageProvider
         $identity = $target(AuthIdentities::class, ['identity']);
 
         return [
-            new ManagementBinding('avatar', AvatarSection::class, [$target(AuthAdministration::class, ['facts'], '1.1.0')]),
-            new ManagementBinding('directory', Directory::class, [$target(AuthAdministration::class, ['users'], '1.1.0')]),
+            new ManagementBinding('avatar', AvatarSection::class, [$target(AuthAdministration::class, ['facts'], '2.0.0')]),
+            new ManagementBinding('directory', Directory::class, [$target(AuthAdministration::class, ['users'], '2.0.0')]),
             new ManagementBinding('eligibility', EligibilitySection::class, [$target(AuthIdentities::class, ['identity', 'eligibility'])]),
-            new ManagementBinding('creation', CreationSection::class, [$target(AuthLifecycle::class, ['create'])]),
-            new ManagementBinding('lifecycle', LifecycleSection::class, [$target(AuthAdministration::class, ['lifecycle'], '1.1.0'), $target(AuthLifecycle::class, ['change'])]),
-            new ManagementBinding('invitations', InvitationSection::class, [$target(AuthAdministration::class, ['facts'], '1.1.0'), $identity, $target(AuthInvitations::class, ['invite', 'invalidate'])]),
-            new ManagementBinding('primary_email', EmailSection::class, [$target(AuthAdministration::class, ['profile'], '1.1.0'), $target(AuthProfiles::class, ['changeEmail', 'replaceVerifiedEmail', 'requireVerification'], '2.0.0')]),
-            new ManagementBinding('secondary', SecondarySection::class, [$target(AuthAdministration::class, ['profile'], '1.1.0'), $target(AuthProfiles::class, ['addSecondary', 'changeSecondary', 'removeSecondary'], '2.0.0')]),
+            new ManagementBinding('creation', CreationSection::class, [$target(AuthLifecycle::class, ['create'], '2.0.0')]),
+            new ManagementBinding('lifecycle', LifecycleSection::class, [$target(AuthAdministration::class, ['lifecycle'], '2.0.0'), $target(AuthLifecycle::class, ['change'], '2.0.0')]),
+            new ManagementBinding('invitations', InvitationSection::class, [$target(AuthAdministration::class, ['facts'], '2.0.0'), $identity, $target(AuthInvitations::class, ['invite', 'invalidate'])]),
+            new ManagementBinding('primary_email', EmailSection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthProfiles::class, ['changeEmail', 'replaceVerifiedEmail', 'requireVerification'], '2.0.0')]),
+            new ManagementBinding('secondary', SecondarySection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthProfiles::class, ['addSecondary', 'changeSecondary', 'removeSecondary'], '2.0.0')]),
             new ManagementBinding('sessions', SessionSection::class, [$identity, $target(AuthSessions::class, ['listFor', 'revoke', 'revokeAll'])]),
-            new ManagementBinding('security', SecuritySection::class, [$target(AuthAdministration::class, ['facts'], '1.1.0'), $identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'])]),
+            new ManagementBinding('security', SecuritySection::class, [$target(AuthAdministration::class, ['facts'], '2.0.0'), $identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'])]),
             new ManagementBinding('trust', DeviceSection::class, [$identity, $target(AuthSecurity::class, ['trustedDevices', 'revokeDevice'])]),
-            new ManagementBinding('preferences', PreferenceSection::class, [$target(AuthAdministration::class, ['profile'], '1.1.0'), $target(AuthPreferences::class, ['resetAccount'])]),
+            new ManagementBinding('preferences', PreferenceSection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthPreferences::class, ['resetAccount'])]),
             new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'exception'])]),
             new ManagementBinding('policy0', EntryPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
             new ManagementBinding('policy1', SecurityPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
             new ManagementBinding('policy2', LifecyclePolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
             new ManagementBinding('policy_history', PolicyHistorySection::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
-            new ManagementBinding('bulk_users', BulkUserSection::class, [$target(AuthBulkUsers::class, ['preview', 'execute'], '1.1.0')]),
+            new ManagementBinding('bulk_users', BulkUserSection::class, [$target(AuthBulkUsers::class, ['preview', 'execute'], '2.0.0')]),
             new ManagementBinding('bulk_sessions', BulkSessionSection::class, [$target(AuthBulkSessions::class, ['preview', 'revoke'])]),
         ];
     }

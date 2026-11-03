@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Remove independent account expiry in favor of scheduled deactivation. Forward retained deadlines to the earlier cutoff, drop users.expires_at, remove the command/fact/filter and preserve historical Audit reads. Rename reminder mail/settings/categories to scheduled deactivation while preserving stored values and administrator-copy routing. Auth moves to 3.0.0 and Lifecycle/Administration/BulkUsers APIs to 2.0.0; current dependent constraints/consumers are synchronized.
+
 - Refine Auth bulk actions with parameter inputs, actual affected-account previews, ordered semantic button tones and localized session revocation. Require fresh password proof only for delete/restore, password/2FA reset and exception revocation; Confirm opens that step directly. Remove the directory state column, color deleted rows and default the Deleted filter to current records. Extend AuthBulkUsers to 1.1.0 and public Admin table/review presentation seams.
 
 - Translate 22 built-in setting/exception choice codes into readable PL/EN labels while retaining API values. Complete shared PL/EN defaults for validation, file actions, tag errors, feedback/loading accessibility, navigation, footer, module availability and static error request labels. Preserve invalid numeric/temporal drafts when changing language and keep static locale propagation browser-independent.

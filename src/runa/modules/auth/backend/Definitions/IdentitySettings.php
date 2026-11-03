@@ -22,13 +22,13 @@ final class IdentitySettings implements DeliveryProvider, PreferenceProvider, Se
             new SettingDefinition('notice_failed_login', 'boolean', false, ['pl' => 'Nieudane logowanie', 'en' => 'Failed login'], ['pl' => 'Nieudane logowanie.', 'en' => 'Failed login notice.']),
             new SettingDefinition('notice_locked', 'boolean', true, ['pl' => 'Blokada logowania', 'en' => 'Login lock'], ['pl' => 'Blokada logowania.', 'en' => 'Login lock notice.']),
             new SettingDefinition('notice_password_changed', 'boolean', true, ['pl' => 'Zmiana hasła', 'en' => 'Password changed'], ['pl' => 'Zmiana hasła.', 'en' => 'Password changed notice.']),
-            new SettingDefinition('notice_account_expiry', 'boolean', false, ['pl' => 'Wygaśnięcie konta', 'en' => 'Account expiry'], ['pl' => 'Wygaśnięcie konta.', 'en' => 'Account expiry notice.']),
+            new SettingDefinition('notice_account_deactivation', 'boolean', false, ['pl' => 'Planowana dezaktywacja konta', 'en' => 'Scheduled account deactivation'], ['pl' => 'Planowana dezaktywacja konta.', 'en' => 'Scheduled account deactivation notice.']),
+            new SettingDefinition('deactivation_admin_copy', 'string', null, ['pl' => 'Kopia dla administratora', 'en' => 'Scheduled account deactivation admin copy'], ['pl' => 'UUIDv7 konta odbiorcy lub brak kopii.', 'en' => 'Recipient account UUIDv7 or no copy.'], nullable: true, rules: ['uuid:7']),
             new SettingDefinition('notice_password_expiry', 'boolean', false, ['pl' => 'Wygaśnięcie hasła', 'en' => 'Password expiry'], ['pl' => 'Wygaśnięcie hasła.', 'en' => 'Password expiry notice.']),
             new SettingDefinition('notice_interval_minutes', 'integer', 60, ['pl' => 'Odstęp wiadomości', 'en' => 'Notice interval'], ['pl' => 'Minimalny odstęp wiadomości kategorii.', 'en' => 'Minimum interval per notice category.'], rules: ['min:1', 'max:10080']),
-            new SettingDefinition('expiry_start_days', 'integer', 7, ['pl' => 'Wyprzedzenie przypomnień', 'en' => 'Expiry reminder lead'], ['pl' => 'Liczba dni przed terminem.', 'en' => 'Days before expiry.'], rules: ['min:1', 'max:90']),
-            new SettingDefinition('expiry_interval_hours', 'integer', 24, ['pl' => 'Odstęp przypomnień', 'en' => 'Expiry reminder interval'], ['pl' => 'Odstęp w godzinach.', 'en' => 'Interval in hours.'], rules: ['min:1', 'max:720']),
-            new SettingDefinition('expiry_max_count', 'integer', 3, ['pl' => 'Limit przypomnień', 'en' => 'Expiry reminder limit'], ['pl' => 'Limit dla jednego terminu.', 'en' => 'Limit for one expiry deadline.'], rules: ['min:1', 'max:20']),
-            new SettingDefinition('expiry_admin_copy', 'string', null, ['pl' => 'Kopia dla administratora', 'en' => 'Account expiry admin copy'], ['pl' => 'UUIDv7 konta odbiorcy lub brak kopii.', 'en' => 'Recipient account UUIDv7 or no copy.'], nullable: true, rules: ['uuid:7']),
+            new SettingDefinition('expiry_start_days', 'integer', 7, ['pl' => 'Wyprzedzenie przypomnień', 'en' => 'Reminder lead'], ['pl' => 'Liczba dni przed terminem.', 'en' => 'Days before deadline.'], rules: ['min:1', 'max:90']),
+            new SettingDefinition('expiry_interval_hours', 'integer', 24, ['pl' => 'Odstęp przypomnień', 'en' => 'Reminder interval'], ['pl' => 'Odstęp w godzinach.', 'en' => 'Interval in hours.'], rules: ['min:1', 'max:720']),
+            new SettingDefinition('expiry_max_count', 'integer', 3, ['pl' => 'Limit przypomnień', 'en' => 'Reminder limit'], ['pl' => 'Limit dla jednego terminu.', 'en' => 'Limit for one deadline.'], rules: ['min:1', 'max:20']),
             new SettingDefinition('own_name_editable', 'boolean', true, ['pl' => 'Samodzielna edycja imienia i nazwiska', 'en' => 'Own name editable'], ['pl' => 'Samodzielna edycja imienia i nazwiska.', 'en' => 'Own name editable.']),
             new SettingDefinition('own_login_editable', 'boolean', true, ['pl' => 'Samodzielna edycja loginu', 'en' => 'Own login editable'], ['pl' => 'Samodzielna edycja loginu.', 'en' => 'Own login editable.']),
             new SettingDefinition('own_email_editable', 'boolean', true, ['pl' => 'Samodzielna zmiana adresu e-mail', 'en' => 'Own email editable'], ['pl' => 'Samodzielna zmiana adresu e-mail.', 'en' => 'Own email editable.']),
@@ -98,7 +98,7 @@ final class IdentitySettings implements DeliveryProvider, PreferenceProvider, Se
         $result = [];
         foreach (['new_browser' => ['Nowa przeglądarka', 'New browser'], 'failed_login' => ['Nieudane logowanie', 'Failed login'],
             'locked' => ['Blokada logowania', 'Login lock'], 'password_changed' => ['Zmiana hasła', 'Password changed'],
-            'account_expiry' => ['Wygaśnięcie konta', 'Account expiry'], 'password_expiry' => ['Wygaśnięcie hasła', 'Password expiry']] as $key => $names) {
+            'account_deactivation' => ['Planowana dezaktywacja konta', 'Scheduled account deactivation'], 'password_expiry' => ['Wygaśnięcie hasła', 'Password expiry']] as $key => $names) {
             $result[] = new DeliveryCategory($key, ['pl' => $names[0], 'en' => $names[1]],
                 mandatory: in_array($key, ['password_changed', 'locked'], true), sensitive: in_array($key, ['password_changed', 'locked'], true));
         }

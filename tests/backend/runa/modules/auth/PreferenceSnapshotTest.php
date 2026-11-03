@@ -58,12 +58,12 @@ afterEach(function (): void {
 it('batches reminder history and current policy exceptions across the locked account cohort', function (): void {
     $settings = app(ModuleSettings::class);
     $state = $settings->read('runa.auth');
-    $settings->update('runa.auth', ['notice_account_expiry' => true, 'email_verification' => 'disabled'], $state['revision'], $state['generation']);
+    $settings->update('runa.auth', ['notice_account_deactivation' => true, 'email_verification' => 'disabled'], $state['revision'], $state['generation']);
     for ($i = 0; $i < 4; $i++) {
         $identity = app(ChangeIdentity::class)->create(new NewIdentity('reminder-growth-'.$i.'@example.test', name: 'Reminder User', active: true, approved: true));
         DB::transaction(function () use ($identity): void {
             $user = User::where('public_id', $identity->publicId)->firstOrFail();
-            $user->expires_at = now()->addDays(2);
+            $user->deactivate_at = now()->addDays(2);
             $user->save();
         });
     }
@@ -81,9 +81,9 @@ it('batches reminder history and current policy exceptions across the locked acc
     // the four-account deadline read separately from those security boundaries.
     $exceptions = array_filter($queries, static fn (array $query): bool => str_contains($query['query'], '"runa_auth"."policy_exceptions"') && str_contains($query['query'], 'in (?, ?, ?, ?)'));
     expect($aggregates)->toHaveCount(1)->and($exceptions)->toHaveCount(1)
-        ->and($db->table('runa_auth.security_notices')->where('category', 'account_expiry')->count())->toBe(4);
+        ->and($db->table('runa_auth.security_notices')->where('category', 'account_deactivation')->count())->toBe(4);
     app(SecurityNotices::class)->reminders();
-    expect($db->table('runa_auth.security_notices')->where('category', 'account_expiry')->count())->toBe(4);
+    expect($db->table('runa_auth.security_notices')->where('category', 'account_deactivation')->count())->toBe(4);
 });
 
 it('keeps session preview reads constant as the selected account collection grows', function (): void {

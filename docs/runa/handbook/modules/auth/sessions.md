@@ -25,8 +25,8 @@ also coordinates simultaneous admissions with lifecycle/update operations. Logou
 revokes its bound row, records Audit and invalidates native cookie authentication.
 Lifecycle generation changes revoke operational sessions/trust atomically; later
 activation never restores them. Scheduled eligibility predicates still run at each
-ingress. Removing account expiry may restore eligibility, independently of revoked
-sessions, inactivity and absolute deadlines.
+ingress. Account access ends at scheduled deactivation. Session absolute deadlines,
+inactivity and revocation remain independent.
 
 Every relevant authenticated module/application ingress verifies current eligibility,
 security generation, stored public reference, session-ID hash, non-revocation and

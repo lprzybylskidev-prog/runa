@@ -38,7 +38,7 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
             if ($count > 100) {
                 throw new \InvalidArgumentException('Auth development extra_users limit is 100.');
             }
-            $scenarios = ['administrator', 'reader', 'direct', 'pending', 'unverified', 'password_change', 'second_factor', 'sessions', 'inactive', 'locked', 'expired', 'scheduled'];
+            $scenarios = ['administrator', 'reader', 'direct', 'pending', 'unverified', 'password_change', 'second_factor', 'sessions', 'inactive', 'locked', 'deactivated', 'scheduled'];
             for ($index = 1; $index <= $count; $index++) {
                 $scenarios[] = 'extra_'.$index;
             }
@@ -72,7 +72,7 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
                 $change = match ($scenario) {
                     'password_change' => new LifecycleChange('require_password_change', enabled: true),
                     'locked' => new LifecycleChange('set_security_lock', enabled: true),
-                    'expired' => new LifecycleChange('set_expiry', at: now('UTC')->subDay()->format('Y-m-d\TH:i:s\Z')),
+                    'deactivated' => new LifecycleChange('deactivate'),
                     'scheduled' => new LifecycleChange('schedule_activation', at: now('UTC')->addDay()->format('Y-m-d\TH:i:s\Z')),
                     default => null,
                 };

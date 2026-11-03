@@ -55,7 +55,7 @@ final class AuthPermissions implements ManagementEntityProvider
                     new ManagementField('name', 'text', ['pl' => 'Nazwa', 'en' => 'Name'], ['pl' => 'Nazwa wyświetlana.', 'en' => 'Display name.'], writable: true, required: true, maxLength: 160),
                     new ManagementField('email', 'text', ['pl' => 'Adres główny', 'en' => 'Primary email'], ['pl' => 'Nowe konto; zmiana przez osobną operację.', 'en' => 'New identity only; changes require the dedicated email operation.'], writable: true, sensitive: true, required: true, maxLength: 254),
                     $field('active', 'boolean', true, true), $field('approved', 'boolean', true, true),
-                    new ManagementField('operation', 'dictionary', ['pl' => 'Operacja', 'en' => 'Operation'], ['pl' => 'Jawna zmiana cyklu życia.', 'en' => 'Explicit lifecycle transition.'], writable: true, choices: ['activate', 'deactivate', 'approve', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock', 'set_security_lock', 'require_password_change']),
+                    new ManagementField('operation', 'dictionary', ['pl' => 'Operacja', 'en' => 'Operation'], ['pl' => 'Jawna zmiana cyklu życia.', 'en' => 'Explicit lifecycle transition.'], writable: true, choices: ['activate', 'deactivate', 'approve', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change']),
                     $field('at', 'datetime', true), $field('enabled', 'boolean', true),
                 ], [
                     new ManagementOperation(new ApiOperation('identity.create', 'users.create'), ['name', 'email', 'active', 'approved'], revisionRequired: false),

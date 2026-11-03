@@ -113,7 +113,6 @@ final readonly class OperatorAccounts
             $user->approved = true;
             $user->activate_at = null;
             $user->deactivate_at = null;
-            $user->expires_at = null;
             $user->security_locked = false;
             $user->attempt_locked_until = null;
             $user->totp_secret = null;

@@ -49,8 +49,6 @@ use Runa\Support\Modules\Data\ModuleModel;
  * @property-write \DateTimeInterface|string|null $activate_at
  * @property-read CarbonImmutable|null $deactivate_at
  * @property-write \DateTimeInterface|string|null $deactivate_at
- * @property-read CarbonImmutable|null $expires_at
- * @property-write \DateTimeInterface|string|null $expires_at
  * @property-read CarbonImmutable|null $attempt_locked_until
  * @property-write \DateTimeInterface|string|null $attempt_locked_until
  * @property-read CarbonImmutable|null $email_verified_at
@@ -80,7 +78,7 @@ final class User extends ModuleModel implements AuthenticatableContract, MustVer
             'operator_recovery_pending' => 'boolean', 'preference_revision' => 'integer', 'preference_legacy_claimed' => 'boolean', 'verification_forced' => 'boolean', 'verification_required' => 'boolean', 'active' => 'boolean', 'approved' => 'boolean', 'security_locked' => 'boolean',
             'password_change_required' => 'boolean', 'version' => 'integer', 'security_version' => 'integer',
             'activate_at' => 'immutable_datetime', 'deactivate_at' => 'immutable_datetime',
-            'expires_at' => 'immutable_datetime', 'attempt_locked_until' => 'immutable_datetime',
+            'attempt_locked_until' => 'immutable_datetime',
             'email_verified_at' => 'immutable_datetime', 'password_changed_at' => 'immutable_datetime',
             'totp_pending_until' => 'immutable_datetime', 'totp_counter' => 'integer',
             'email_factor' => 'boolean', 'recovery_hashes' => 'array',

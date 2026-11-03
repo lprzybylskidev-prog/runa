@@ -80,7 +80,6 @@ const bulkOrder = [
   'schedule_activation',
   'deactivate',
   'schedule_deactivation',
-  'set_expiry',
   'restore',
   'delete',
   'invite',
@@ -118,7 +117,6 @@ function bulkTone(key: string): 'success' | 'danger' | 'warning' | 'primary' {
       'require_password_change',
       'password_reset',
       'set_attempt_lock',
-      'set_expiry',
       'invalidate_invitation',
       'revoke_exceptions',
     ].includes(key)

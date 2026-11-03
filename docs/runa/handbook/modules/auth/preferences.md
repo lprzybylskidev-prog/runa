@@ -175,7 +175,7 @@ locked account cohort and aggregate history for the exact candidate account/
 category/deadline tuples. Mandatory per-notice dispatch authorization, deduplication,
 frequency, expiry and single-attempt delivery checks remain independent and fresh.
 
-Auth declares new_browser, failed_login, locked, password_changed, account_expiry
+Auth declares new_browser, failed_login, locked, password_changed, account_deactivation
 and password_expiry. Lock/password-change notices default enabled and are mandatory,
 sensitive, primary-only. Other notices default disabled and may use ordinary
 notification routing. Global `notice_<category>` settings control availability;
@@ -186,13 +186,13 @@ new-browser notices; it conveys no authentication or trust, and only an HMAC is
 stored with a bounded 100-browser inventory per account.
 
 `expiry_start_days`, `expiry_interval_hours`, `expiry_max_count` bound reminders
-for each exact current account/password deadline. Optional `expiry_admin_copy` is
+for each exact current deactivation/password deadline. Optional `deactivation_admin_copy` is
 a UUIDv7 Auth account reference, re-resolved for current verified eligible delivery;
 no raw email or cross-module SQL is accepted. The copy contains only notice kind
 and deadline. `runa:auth:security.remind` and its minute schedule scan 100 users
 with a durable rotating cursor. Repeated work deduplicates the exact deadline/count;
 changed deadlines, password renewal, deletion, ineligibility and obsolete recipients
-are rechecked before SMTP. Account expiry reminders do not alter expiry or access.
+are rechecked before SMTP. Deactivation reminders read deactivate_at and never change access or its schedule.
 
 `security.deliver` carries only a notice UUIDv7. The private outbox commits with the
 originating Auth mutation; work admission rolls back with that mutation. A persisted

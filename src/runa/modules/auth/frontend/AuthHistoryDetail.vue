@@ -71,6 +71,10 @@ const categories: Record<string, readonly [string, string]> = {
   'runa.auth.failed_login': ['Nieudane logowanie', 'Failed login'],
   'runa.auth.locked': ['Blokada logowania', 'Login lock'],
   'runa.auth.password_changed': ['Zmiana hasła', 'Password changed'],
+  'runa.auth.account_deactivation': [
+    'Planowana dezaktywacja konta',
+    'Scheduled account deactivation',
+  ],
   'runa.auth.account_expiry': ['Wygaśnięcie konta', 'Account expiry'],
   'runa.auth.password_expiry': ['Wygaśnięcie hasła', 'Password expiry'],
 };

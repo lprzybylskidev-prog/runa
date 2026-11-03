@@ -30,7 +30,7 @@ final readonly class Directory implements ManagementResourceReader
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('directory_query_invalid', 'runa.auth', 'administration.users', 422);
         }
-        $result = $this->apis->resolve('runa.auth', AuthAdministration::class, '1.1.0')->users($query);
+        $result = $this->apis->resolve('runa.auth', AuthAdministration::class, '2.0.0')->users($query);
 
         return new ManagementPageResult(array_map(fn ($user) => new ManagementRecord($user->publicId, (string) $user->version,
             ['display_name' => $user->displayName, 'state' => $user->state, ...$user->details]), $result->items), $result->next, $result->total);

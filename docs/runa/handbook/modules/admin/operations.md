@@ -47,7 +47,7 @@ public table above records their disposition rather than exposing private classe
 
 ## Administrative Auth reads
 
-The delivered `AuthAdministration` API 1.1.0, DTO signatures, bounded queries,
+The delivered `AuthAdministration` API 2.0.0, DTO signatures, bounded queries,
 field projection and lifecycle read are owned by the
 [Auth administration guide](../auth/administration.md#guarded-administrative-reads).
 The implementation stays in Auth; Admin never queries foreign users, addresses or

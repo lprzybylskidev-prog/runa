@@ -10,9 +10,9 @@ RM-2026-016 point 12.
 
 ## Guarded administrative reads
 
-Auth owns public consumption contract `AuthAdministration` API 1.1.0 and its final
+Auth owns public consumption contract `AuthAdministration` API `2.0.0` and its final
 readonly DTOs under `Runa\Modules\Auth\Contracts`. Resolve through
-`ModuleApis::resolve('runa.auth', AuthAdministration::class, '1.1.0')`.
+`ModuleApis::resolve('runa.auth', AuthAdministration::class, '2.0.0')`.
 Private implementation is `backend/Queries/Administration`, with a guarded proxy
 and `Definitions/AdministrationApi`; all are runtime source. Customer code never
 imports the private query, models or management adapters.
@@ -73,7 +73,7 @@ set-state. Authorized shape is up to 100 `{public_id:string,email:string,verifie
 entries. Preference revision requires `runa.auth.preferences.reset`, otherwise zero;
 Admin omits its descriptor/value without that grant.
 
-The additive 1.1.0 `facts(string $publicId): array<string,bool|int|string|null>`
+The current `facts(string $publicId): array<string,bool|int|string|null>`
 entry requires `runa.auth.identities.read`. It serves existing-identity security,
 invitation and avatar detail cards using their exact field grants, without
 requiring unrelated directory authority. It returns identity public_id/version/
@@ -224,7 +224,7 @@ expansion control without changing collection pagination or security protocols.
 
 ## Native bulk user operations
 
-Auth owns guarded public consumption API `AuthBulkUsers` 1.1.0 (runtime source under
+Auth owns guarded public consumption API `AuthBulkUsers` 2.0.0 (runtime source under
 backend/Contracts, Definitions/BulkUsersApi and BulkUsersProxy; private engine in
 backend/Actions). Resolve it through ModuleApis; customer code never imports the
 engine, models or locked phases.
@@ -244,7 +244,7 @@ related inventory is bounded to 10,000 safe state rows; excess refuses. Every op
 current Permissions user-selection authority and its ordinary owning mutation
 permission. The private source catalogue filters disabled features and defines
 activate/deactivate/approve/delete/restore/schedule_activation/
-schedule_deactivation/set_expiry/set_attempt_lock/set_security_lock/
+schedule_deactivation/set_attempt_lock/set_security_lock/
 require_password_change plus invite/invalidate_invitation/require_verification/
 password_reset/factor_reset/revoke_trust/reset_preferences/remove_avatar/
 revoke_exceptions. Reviewed execution rechecks current settings, exact account and
@@ -313,3 +313,13 @@ the shared theme in both modes. The directory omits the account-state column
 and picker entry. Its Deleted filter has Not deleted (default), Deleted and All
 choices using unchanged current/deleted/all wire values; deleted records use
 danger row colors. Native deleted-read authority remains required.
+
+Account lifecycle uses active, activate_at and deactivate_at. There is no account
+expires_at fact, filter or set_expiry command. Auth 3.0.0 upgrades existing expiry
+deadlines into the earlier deactivation deadline before dropping the column;
+activation conflicts refuse the forward migration without discarding either date.
+Removed action/date labels remain readable only for historical Audit records.
+Reminder mail uses account_deactivation and the current deactivate_at, preserving
+stored enablement, administrator-copy recipient and delivery preferences across
+the explicit owning upgrade. Old pending notices are revalidated against the
+current deadline before delivery; password/session/token deadlines are unchanged.

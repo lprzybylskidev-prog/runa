@@ -48,7 +48,6 @@ const fields = computed(() => ({
         [
           'schedule_activation',
           'schedule_deactivation',
-          'set_expiry',
           'set_attempt_lock',
         ].includes(operation)
       );

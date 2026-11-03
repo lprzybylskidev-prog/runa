@@ -50,7 +50,6 @@ final class DirectoryFields
             'activity_at' => ['Live session activity', 'datetime', 'sessions.manage', null],
             'activate_at' => ['Activate At', 'datetime', 'users.read', null],
             'deactivate_at' => ['Deactivate At', 'datetime', 'users.read', null],
-            'expires_at' => ['Expires At', 'datetime', 'users.read', null],
             'attempt_locked_until' => ['Attempt Locked Until', 'datetime', 'users.read', null],
         ];
     }

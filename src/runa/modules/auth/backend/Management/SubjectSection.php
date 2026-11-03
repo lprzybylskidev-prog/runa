@@ -54,7 +54,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
         }
         $values = [];
         if (in_array(static::KEY, ['lifecycle', 'avatar', 'security', 'invitations'], true)) {
-            $values = static::KEY === 'lifecycle' ? $this->api(AuthAdministration::class, '1.1.0')->lifecycle($id) : $this->api(AuthAdministration::class, '1.1.0')->facts($id);
+            $values = static::KEY === 'lifecycle' ? $this->api(AuthAdministration::class, '2.0.0')->lifecycle($id) : $this->api(AuthAdministration::class, '2.0.0')->facts($id);
             if (static::KEY === 'avatar') {
                 $values['avatar_upload_pending'] = false;
             }
@@ -64,7 +64,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
                 $values += ['operation' => ($values['deleted'] ? 'restore' : ($values['active'] ? 'deactivate' : 'activate')), 'at' => null, 'enabled' => false];
             }
         } elseif (in_array(static::KEY, ['primary_email', 'secondary', 'preferences'], true)) {
-            $profile = $this->api(AuthAdministration::class, '1.1.0')->profile($id);
+            $profile = $this->api(AuthAdministration::class, '2.0.0')->profile($id);
             $version = $profile->version;
             $values = match (static::KEY) {
                 'primary_email' => ['current_email' => $profile->primaryEmail['email'] ?? null, 'verified' => $profile->primaryEmail['verified'] ?? null,
@@ -113,8 +113,8 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             }
             $version = (int) $input->revision;
             $result = match (static::KEY.'.'.$input->command) {
-                'creation.create' => $this->api(AuthLifecycle::class)->create(new NewIdentity($v['email'], $v['name'], $v['first_name'], $v['surname'], $v['login'], $v['active'], $v['approved'])),
-                'lifecycle.change' => $this->api(AuthLifecycle::class)->change($id, $version, new LifecycleChange($v['operation'], in_array($v['operation'], ['schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock'], true) ? Moment::seconds($v['at']) : null, in_array($v['operation'], ['set_security_lock', 'require_password_change'], true) ? $v['enabled'] : null)),
+                'creation.create' => $this->api(AuthLifecycle::class, '2.0.0')->create(new NewIdentity($v['email'], $v['name'], $v['first_name'], $v['surname'], $v['login'], $v['active'], $v['approved'])),
+                'lifecycle.change' => $this->api(AuthLifecycle::class, '2.0.0')->change($id, $version, new LifecycleChange($v['operation'], in_array($v['operation'], ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'], true) ? Moment::seconds($v['at']) : null, in_array($v['operation'], ['set_security_lock', 'require_password_change'], true) ? $v['enabled'] : null)),
                 'invitations.invite' => $this->api(AuthInvitations::class)->invite($id, $version),
                 'invitations.invalidate' => $this->api(AuthInvitations::class)->invalidate($id, $version),
                 'primary_email.change' => $this->api(AuthProfiles::class, '2.0.0')->changeEmail($id, $version, $v['email']),

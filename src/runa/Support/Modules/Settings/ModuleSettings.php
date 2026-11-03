@@ -50,10 +50,10 @@ final class ModuleSettings
         $this->reads = new WeakMap;
     }
 
-    /** Add source defaults during a transactional reserved module upgrade, preserving existing values.
-     * Existing immediate definitions only: changed/removed keys need a separately designed migration.
+    /** Add source defaults and explicitly rename source-owned keys during a reserved upgrade.
+     * @param  array<string,string>  $renamedKeys  Removed source key to current immediate key; values stay private.
      */
-    public function upgradeDefaults(UpgradeContext $context): void
+    public function upgradeDefaults(UpgradeContext $context, array $renamedKeys = []): void
     {
         if ($context->connection !== $this->connection || $this->connection->transactionLevel() < 1) {
             throw new RuntimeException('Settings upgrade requires the reserved default transaction.');
@@ -74,8 +74,23 @@ final class ModuleSettings
         $old = $this->decode($stored->settings_values);
         $candidate = $old;
         $changes = [];
+        foreach ($renamedKeys as $oldKey => $newKey) {
+            if (! is_string($oldKey) || ! is_string($newKey) || isset($definitions[$oldKey])
+                || ! isset($definitions[$newKey]) || $definitions[$newKey]->application !== 'immediate') {
+                throw new RuntimeException('Settings rename must map a removed key to an immediate source definition.');
+            }
+            if (array_key_exists($oldKey, $candidate)) {
+                if (array_key_exists($newKey, $candidate) && $candidate[$oldKey] !== $candidate[$newKey]) {
+                    throw new RuntimeException('Settings rename conflicts with an existing value.');
+                }
+                $candidate[$newKey] = $candidate[$oldKey];
+                unset($candidate[$oldKey]);
+                $changes[$oldKey] = ['removed' => true];
+                $changes[$newKey] = ['replaced' => true];
+            }
+        }
         foreach ($definitions as $key => $definition) {
-            if (! array_key_exists($key, $old)) {
+            if (! array_key_exists($key, $candidate)) {
                 if ($definition->application !== 'immediate') {
                     throw new RuntimeException('Reinitializing defaults need an explicit upgrade workflow.');
                 }

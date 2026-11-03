@@ -479,10 +479,15 @@ reused under a new identity. Every reuse still verifies current source. Sensitiv
 values remain private runtime data; management reads always project set-state.
 No actor eligibility, permission decision or time-dependent exception is cached.
 
-`ModuleSettings::upgradeDefaults(UpgradeContext)` deliberately adds missing immediate
+`ModuleSettings::upgradeDefaults(UpgradeContext $context, array $renamedKeys = []): void`
+deliberately adds missing immediate
 source defaults to a stored complete value set during a reserved transactional
 module upgrade. It validates the exact default connection/owner/operation, retains
-existing values, rejects removed/invalid keys and reinitializing additions, advances
+existing values. Optional `array<string,string> $renamedKeys` explicitly maps removed
+source keys to current immediate definitions, preserving stored values; conflicting
+destination values and invalid/live source keys refuse. Rename Audit changes record
+only removed/replaced markers, never values. Other removed/invalid keys and
+reinitializing additions refuse. The method advances
 revision once and invokes mandatory participation with phase `upgrade`. Null storage
 continues using source defaults; repeated no-op calls publish nothing. It does not
 silently fill missing keys during ordinary reads or authorize changed-value policy

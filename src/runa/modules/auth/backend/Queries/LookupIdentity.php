@@ -71,9 +71,6 @@ final readonly class LookupIdentity implements AuthIdentities
         if ($user->deactivate_at !== null && $now->gte($user->deactivate_at)) {
             $blockers[] = 'deactivated';
         }
-        if ($user->expires_at !== null && $now->gte($user->expires_at)) {
-            $blockers[] = 'expired';
-        }
         if ($user->security_locked) {
             $blockers[] = 'security_locked';
         }

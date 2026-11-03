@@ -139,9 +139,6 @@ final readonly class ChangeIdentity implements AuthLifecycle
                 }
                 $user->{$change->operation === 'schedule_activation' ? 'activate_at' : 'deactivate_at'} = $change->at;
                 break;
-            case 'set_expiry':
-                $user->expires_at = $change->at;
-                break;
             case 'set_attempt_lock':
                 $user->attempt_locked_until = $change->at;
                 break;
@@ -251,7 +248,7 @@ final readonly class ChangeIdentity implements AuthLifecycle
     private function state(User $user): array
     {
         $state = [];
-        foreach (['active', 'approved', 'deleted_at', 'activate_at', 'deactivate_at', 'expires_at',
+        foreach (['active', 'approved', 'deleted_at', 'activate_at', 'deactivate_at',
             'security_locked', 'attempt_locked_until', 'password_change_required', 'security_version', 'version'] as $key) {
             $value = $user->$key;
             $state[$key === 'password_change_required' ? 'renewal_required' : $key] = $value instanceof \DateTimeInterface ? $value->format('Y-m-d\TH:i:s.u\Z') : $value;

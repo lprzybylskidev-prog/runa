@@ -6,7 +6,7 @@ final readonly class LifecycleChange
 {
     public function __construct(public string $operation, public ?string $at = null, public ?bool $enabled = null)
     {
-        $dates = ['schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock'];
+        $dates = ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'];
         $flags = ['set_security_lock', 'require_password_change'];
         if (! in_array($operation, [...$dates, ...$flags, 'activate', 'deactivate', 'approve', 'delete', 'restore'], true)
             || (! in_array($operation, $dates, true) && $at !== null)

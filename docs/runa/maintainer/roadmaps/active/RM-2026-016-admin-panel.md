@@ -779,6 +779,18 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Confirm opens the operation's password step when required; no separate identity
     button or duplicate destructive dialog. Synchronize contracts/regressions and
     prepare current local assets. Manual acceptance and final gates remain open.
+- [ ] 11a50. Remove redundant account expiry in favor of scheduled deactivation.
+  - Owner explicitly approves removal of users.expires_at on 2026-11-03.
+    Remove the account expiry action/fact/blocker; the owner additionally approves
+    preserving reminder mail against scheduled deactivation, including settings and
+    the administrator copy. Rename owning categories/settings and preserve values;
+    password, token, session and exception deadlines retain their independent meaning.
+  - Forward existing account deadlines to the earlier deactivation deadline before
+    dropping the column; refuse conflicting activation schedules without data loss.
+    Preserve historical Audit records. Retire owning obsolete settings/routing and
+    synchronize breaking module/API versions and current consumers.
+  - Deliver focused migration/lifecycle regressions, current documentation and
+    runnable assets/data. Manual acceptance and broad final gates remain last.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5204,3 +5216,50 @@ acceptance 11b and complete automated verification/release 12 remain open. No
 Docker resources or persistent data were created/removed. Supported test runners
 removed only their owned inactive runa_test_test_1 worker database and preserved
 runa_test, development data, active services, Qdrant/model caches and reports.
+
+### Point 11a50 — Consolidate account deadlines and preserve reminder mail
+
+Owner decisions, 2026-11-03: remove independent account expires_at; preserve mail
+reminders against scheduled deactivation, including administrator copies. Native
+lifecycle, bulk, directory fields/filters, eligibility, recovery and development
+fixtures now use active/activate_at/deactivate_at only. Historical Audit events
+and their read-only labels remain intact; password/session/token/exception
+lifetimes remain separate.
+
+The forward migration preserves min(expires_at, deactivate_at) before dropping
+users.expires_at and advances affected optimistic revisions. An activation at or
+after that resulting cutoff refuses transactionally. The observed development
+runa database has 15 accounts, one expiry and no such conflict. No reset is needed.
+Source Auth 3.0.0 records the intentional contract/settings/data break under the
+standing pre-1.0 authorization; Lifecycle/Administration/BulkUsers APIs become
+2.0.0 and exact current consumers/bindings are updated. Admin 0.1.0 and Permissions
+2.1.0 retain their existing unreleased scopes; their compatible dependency ranges
+accept Auth 3.0.0. Platform 0.7.0 and published tags/history are unchanged.
+
+Reminder mail uses account_deactivation and deactivate_at. Explicit upgrade renames
+notice_account_expiry to notice_account_deactivation and expiry_admin_copy to
+deactivation_admin_copy, preserving encrypted values, delivery choices, notice
+frequency and pending outbox references. Current deadline, recipient eligibility
+and policy are revalidated before SMTP; obsolete reminders are not sent.
+ModuleSettings::upgradeDefaults gains an optional explicit removed-to-current
+immediate key map, validated under the existing reserved upgrade transaction.
+Conflicting values refuse; Audit records only removed/replaced markers. The owning
+public module framework guide documents its complete signature and boundaries.
+
+Focused checks address migration, cutoff and reminder uncertainties only:
+`.runtime/frontend/RM-2026-016-retirement-backend.log` records six PASS / 67
+assertions; `.runtime/frontend/RM-2026-016-retirement-final-focused.log` records
+six PASS / 81 assertions after routing preservation and lifecycle metadata updates.
+They cover earliest cutoff, transactional conflict refusal, obsolete operation
+rejection, encrypted settings/routing preservation, exact lifecycle predicates,
+all current lifecycle commands, reminder invalidation/single SMTP attempt and
+bounded reminder query growth. Disposable worker cleanup succeeded and preserved
+the base test database. The manual-runtime build passes at
+`.runtime/frontend/RM-2026-016-retirement-build.log`.
+
+Current Auth/Admin/framework guides and module/central changelogs are synchronized.
+Owner and customer AGENTS/skills already reference those canonical contracts; no
+new agent workflow or customer authority is introduced, so neither instruction
+product needs duplicated operation/settings rules. Dated evidence and closed
+roadmaps remain unchanged. Runtime forwarding and final handover evidence follow;
+manual acceptance 11b and final automated verification/release 12 remain open.

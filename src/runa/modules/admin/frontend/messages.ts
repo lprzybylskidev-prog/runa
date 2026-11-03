@@ -593,7 +593,6 @@ export const adminMessages: AdminMessages = {
   restore: 'przywróć',
   schedule_activation: 'zaplanuj aktywację',
   schedule_deactivation: 'zaplanuj dezaktywację',
-  set_expiry: 'ustaw wygaśnięcie',
   set_attempt_lock: 'ustaw blokadę prób',
   set_security_lock: 'ustaw blokadę bezpieczeństwa',
   require_password_change: 'wymagaj zmiany hasła',

@@ -81,7 +81,7 @@ final readonly class SecurityNotices
                 if (! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()) {
                     continue;
                 }
-                foreach (['account_expiry', 'password_expiry'] as $category) {
+                foreach (['account_deactivation', 'password_expiry'] as $category) {
                     $deadline = $this->deadline($user, $category, $days[$user->id]);
                     if ($deadline === null || ! $deadline->isFuture() || $deadline->gt(CarbonImmutable::now('UTC')->addDays($this->settings->integer('runa.auth', 'expiry_start_days')))) {
                         continue;
@@ -117,8 +117,8 @@ final readonly class SecurityNotices
 
     private function deadline(User $user, string $category, ?int $passwordDays = null): ?CarbonImmutable
     {
-        if ($category === 'account_expiry') {
-            return $user->expires_at;
+        if ($category === 'account_deactivation') {
+            return $user->deactivate_at;
         }
         $days = $passwordDays ?? app(PolicyExceptions::class)->value($user, 'password_expiry_days');
 
@@ -128,7 +128,8 @@ final readonly class SecurityNotices
     /** @param NoticeRow $notice */
     private function valid(User $user, object $notice): bool
     {
-        if ($user->trashed() || $notice->primary_email !== $user->email || ! CarbonImmutable::parse($notice->expires_at)->isFuture()
+        if (! in_array($notice->category, ['new_browser', 'failed_login', 'locked', 'password_changed', 'account_deactivation', 'password_expiry'], true)
+            || $user->trashed() || $notice->primary_email !== $user->email || ! CarbonImmutable::parse($notice->expires_at)->isFuture()
             || ! $this->settings->value('runa.auth', 'notice_'.$notice->category)) {
             return false;
         }
@@ -167,7 +168,7 @@ final readonly class SecurityNotices
             $category = $this->routing->category('runa.auth', $notice->category);
             $recipients = $this->routing->locked($connection, $user, 'runa.auth', $category);
             // Re-resolve a configured admin copy through Auth's current identity predicates.
-            $adminId = $notice->category === 'account_expiry' ? $this->settings->value('runa.auth', 'expiry_admin_copy') : null;
+            $adminId = $notice->category === 'account_deactivation' ? $this->settings->value('runa.auth', 'deactivation_admin_copy') : null;
             if ($adminId !== null && $recipients !== []) {
                 $admin = User::where('public_id', $adminId)->first();
                 if ($admin !== null && $admin->email_verified_at !== null && $this->identities->evaluate($admin, CarbonImmutable::now('UTC'))->mayOperate()) {
@@ -179,7 +180,7 @@ final readonly class SecurityNotices
                 'failed_login' => ['Nieudana próba logowania', 'Failed sign-in attempt'],
                 'locked' => ['Logowanie zostało czasowo zablokowane', 'Sign-in temporarily locked'],
                 'password_changed' => ['Hasło zostało zmienione', 'Password changed'],
-                'account_expiry' => ['Zbliża się termin wygaśnięcia konta', 'Account expiry approaching'],
+                'account_deactivation' => ['Zbliża się termin dezaktywacji konta', 'Account deactivation approaching'],
                 'password_expiry' => ['Zbliża się termin wygaśnięcia hasła', 'Password expiry approaching'],
             ];
             $locale = $connection->table('runa_auth.preferences')->where('user_id', $user->id)->where('scope', 'runa:runa.auth:global:locale')->value('value');

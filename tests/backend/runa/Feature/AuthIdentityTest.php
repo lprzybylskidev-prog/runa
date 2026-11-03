@@ -52,6 +52,7 @@ beforeEach(function (): void {
     (require base_path('runa/modules/auth/database/migrations/2026_10_23_000006_runa_auth_preferences.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_24_000007_runa_auth_policy.php'))->up();
     (require base_path('runa/modules/auth/database/migrations/2026_10_24_000017_runa_auth_development_fixtures.php'))->up();
+    (require base_path('runa/modules/auth/database/migrations/2026_11_03_000019_runa_auth_retire_account_expiry.php'))->up();
     // This fixture intentionally exercises Audit/Auth without installed Permissions.
     CoreModuleStorage::removePermissions();
     DB::transaction(fn () => app(PolicyHistory::class)->baseline(DB::connection()));
@@ -133,15 +134,13 @@ it('evaluates independent Auth predicates at exact UTC boundaries without schedu
     $change(new LifecycleChange('approve'));
     $change(new LifecycleChange('schedule_activation', '2026-10-23T11:00:00Z'));
     $change(new LifecycleChange('schedule_deactivation', '2026-10-23T13:00:00Z'));
-    $change(new LifecycleChange('set_expiry', '2026-10-23T12:00:00Z'));
     $change(new LifecycleChange('set_security_lock', enabled: true));
     $change(new LifecycleChange('set_attempt_lock', '2026-10-23T11:30:00Z'));
     $change(new LifecycleChange('require_password_change', enabled: true));
     expect($lookup->eligibility($identity->publicId)->blockers)->toBe(['before_activation', 'security_locked', 'attempt_locked']);
     CarbonImmutable::setTestNow('2026-10-23T12:00:00Z');
-    expect($lookup->eligibility($identity->publicId)->blockers)->toBe(['expired', 'security_locked']);
+    expect($lookup->eligibility($identity->publicId)->blockers)->toBe(['security_locked']);
     $change(new LifecycleChange('set_security_lock', enabled: false));
-    $change(new LifecycleChange('set_expiry'));
     expect($lookup->eligibility($identity->publicId)->mayAuthenticate())->toBeTrue()
         ->and($lookup->eligibility($identity->publicId)->restrictions)->toBe(['email_verification_required', 'password_change_required'])
         ->and($lookup->eligibility($identity->publicId)->mayOperate())->toBeFalse();
@@ -200,7 +199,7 @@ it('keeps Auth lifecycle and revocation atomic when Audit fails even inside a ca
 it('denies Auth public reads and writes before Permissions and denies lifecycle without a trusted invariant participant', function (): void {
     $apis = app(ModuleApis::class);
     $identities = $apis->resolve('runa.auth', AuthIdentities::class, '1.0.0');
-    $lifecycle = $apis->resolve('runa.auth', AuthLifecycle::class, '1.0.0');
+    $lifecycle = $apis->resolve('runa.auth', AuthLifecycle::class, '2.0.0');
     $identity = app(ChangeIdentity::class)->create(new NewIdentity('private@example.test', name: 'Private'));
     expect(fn () => $identities->identity($identity->publicId))->toThrow(OperationRejected::class)
         ->and(fn () => $identities->eligibility($identity->publicId))->toThrow(OperationRejected::class)

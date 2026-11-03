@@ -1265,11 +1265,11 @@ it('persists declared own preferences with revision conflicts adoption reset and
 });
 
 it('protects mandatory routing and revalidates obsolete reminders with single SMTP attempts', function (): void {
-    entryPolicy(['email_verification' => 'disabled', 'notice_account_expiry' => true, 'notice_interval_minutes' => 1]);
+    entryPolicy(['email_verification' => 'disabled', 'notice_account_deactivation' => true, 'notice_interval_minutes' => 1]);
     $user = entryUser('notices@example.test');
     DB::transaction(function () use ($user): void {
         $user->email_verified_at = now();
-        $user->expires_at = now()->addDays(2);
+        $user->deactivate_at = now()->addDays(2);
         $user->save();
     });
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
@@ -1280,15 +1280,15 @@ it('protects mandatory routing and revalidates obsolete reminders with single SM
     $notices = app(SecurityNotices::class);
     $notices->reminders();
     $notices->reminders();
-    expect(DB::table('runa_auth.security_notices')->where('category', 'account_expiry')->count())->toBe(1);
-    $notice = DB::table('runa_auth.security_notices')->where('category', 'account_expiry')->first();
+    expect(DB::table('runa_auth.security_notices')->where('category', 'account_deactivation')->count())->toBe(1);
+    $notice = DB::table('runa_auth.security_notices')->where('category', 'account_deactivation')->first();
     $sent = 0;
     app('events')->listen(MessageSending::class, function () use (&$sent): void {
         $sent++;
     });
     // State changes between enqueue and execution make the reminder obsolete.
     DB::transaction(function () use ($user): void {
-        $user->expires_at = now()->addDays(30);
+        $user->deactivate_at = now()->addDays(30);
         $user->save();
     });
     $notices->deliver($notice->public_id);
@@ -1827,13 +1827,13 @@ it('shows concrete account lifecycle values through own history without exposing
     $user = profileVerified('lifecycle-detail@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
     $deadline = CarbonImmutable::now('UTC')->addDays(10)->format('Y-m-d\TH:i:s\Z');
-    app(ChangeIdentity::class)->change($user->public_id, $user->version, new LifecycleChange('set_expiry', $deadline));
-    $event = DB::table('runa_audit.events')->where('action', 'identity.set_expiry')->latest('id')->value('public_id');
+    app(ChangeIdentity::class)->change($user->public_id, $user->version, new LifecycleChange('schedule_deactivation', $deadline));
+    $event = DB::table('runa_audit.events')->where('action', 'identity.schedule_deactivation')->latest('id')->value('public_id');
     $detail = $this->getJson('/api/runa/auth/profile/history/detail?event='.$event)->assertOk()->json('data.changes');
-    expect(array_column($detail, 'field'))->toBe(['expires_at'])->and($detail[0]['before'])->toBeNull()
+    expect(array_column($detail, 'field'))->toBe(['deactivate_at'])->and($detail[0]['before'])->toBeNull()
         ->and(CarbonImmutable::parse($detail[0]['after'])->format('Y-m-d\TH:i:s\Z'))->toBe($deadline);
     $actions = array_column($this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries'), 'action');
-    expect($actions)->toContain('identity.set_expiry');
+    expect($actions)->toContain('identity.schedule_deactivation');
 });
 
 it('renews protected section idle access without renewing credential freshness or another section', function (): void {
@@ -1936,7 +1936,7 @@ it('counts filtered directory results before cursors and preserves deleted-read 
     });
     app()->forgetInstance(OperationGuard::class);
     app()->forgetInstance(ModuleApis::class);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthAdministration::class, '1.1.0');
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthAdministration::class, '2.0.0');
     app(PrincipalScope::class)->run(new TrustedPrincipal($first->public_id), function () use ($api): void {
         $page = $api->users(new UserDirectoryQuery(limit: 1, search: 'Test User'));
         expect($page->items)->toHaveCount(1)->and($page->total)->toBe(2)->and($page->next)->not->toBeNull();
