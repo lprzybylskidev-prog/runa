@@ -161,7 +161,7 @@ values, UTC created_at/updated_at. No external row identity, therefore no mechan
 public_id or soft deletion; clients address the aggregate, never its internal ID.
 CHECK object type and positive revision, no business triggers/functions/views.
 The platform owns the forward migration
-`src/runa/database/migrations/2026_10_30_000001_create_application_settings.php`
+`src/runa/database/migrations/2026_11_03_000009_create_application_settings.php`
 and the protected implementation under `src/runa/Settings`; both are delivered source for platform 0.7.0. There are no foreign keys or Admin-owned rows.
 The public Contracts/Settings values and Support/Settings adapters above are thin
 entrypoints to that platform implementation. App owns registered definitions,

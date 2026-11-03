@@ -9,6 +9,7 @@ use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\Contracts\Modules\UpgradeContext;
 use Runa\Integration\Core\DenyAuthorityChanges;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
@@ -22,11 +23,14 @@ use Runa\Modules\Auth\Contracts\AuthLifecycle;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
+use Runa\Modules\Auth\InitializeAuth;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
+use Runa\Support\Modules\Data\ModuleSchema;
 use Runa\Support\Modules\Development\ModuleContractSuite;
+use Runa\Support\Modules\ModuleIdentity;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Tests\Fixtures\CoreModuleStorage;
 
@@ -39,20 +43,17 @@ beforeEach(function (): void {
     }
     $this->permissionsStorageAbsent = true;
     app(ModuleRegistry::class)->synchronize('runa');
-    foreach (['audit' => 'events', 'auth' => 'identities'] as $code => $table) {
-        $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
-        $migration->up();
+    foreach (['audit', 'auth'] as $code) {
+        foreach (glob(base_path('runa/modules/'.$code.'/database/migrations/*.php')) as $path) {
+            (require $path)->up();
+        }
         $this->authSchemas[] = 'runa_'.$code;
         DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => app(ModuleRegistry::class)->snapshot()->modules['runa.'.$code]->sourceVersion]);
     }
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000004_runa_auth_credentials.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000005_runa_auth_profiles.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000006_runa_auth_preferences.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_24_000007_runa_auth_policy.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_24_000017_runa_auth_development_fixtures.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_11_03_000019_runa_auth_retire_account_expiry.php'))->up();
+    (new InitializeAuth)->run(new UpgradeContext(
+        (string) Str::uuid7(), 'runa.auth', null, '3.0.0', 'initialize', DB::connection(),
+        new ModuleSchema(DB::connection(), new ModuleIdentity('runa.auth')),
+    ));
     // This fixture intentionally exercises Audit/Auth without installed Permissions.
     CoreModuleStorage::removePermissions();
     DB::transaction(fn () => app(PolicyHistory::class)->baseline(DB::connection()));

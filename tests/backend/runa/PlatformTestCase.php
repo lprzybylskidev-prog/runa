@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Runa\Contracts\Modules\PreparationParticipant;
+use Runa\Database\RequiredSeeds;
 use Runa\ModuleFramework\LifecyclePolicies;
 use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleHealth;
@@ -30,6 +31,7 @@ abstract class PlatformTestCase extends TestCase
         $platform = new Process([PHP_BINARY, realpath(__DIR__.'/../../..').'/distribution/platform-database.php', 'migrate', '--force', '--no-interaction'], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => $name, 'LARAVEL_STORAGE_PATH' => $storage]);
         $platform->setTimeout(null);
         $platform->mustRun();
+        RequiredSeeds::run(app(), str_repeat('0', 40));
         parent::migrateTestDatabase($name, $storage);
     }
 }

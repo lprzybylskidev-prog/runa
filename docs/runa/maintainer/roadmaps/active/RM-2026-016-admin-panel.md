@@ -779,7 +779,7 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Confirm opens the operation's password step when required; no separate identity
     button or duplicate destructive dialog. Synchronize contracts/regressions and
     prepare current local assets. Manual acceptance and final gates remain open.
-- [ ] 11a50. Remove redundant account expiry in favor of scheduled deactivation.
+- [x] 11a50. Remove redundant account expiry in favor of scheduled deactivation.
   - Owner explicitly approves removal of users.expires_at on 2026-11-03.
     Remove the account expiry action/fact/blocker; the owner additionally approves
     preserving reminder mail against scheduled deactivation, including settings and
@@ -5269,3 +5269,48 @@ new agent workflow or customer authority is introduced, so neither instruction
 product needs duplicated operation/settings rules. Dated evidence and closed
 roadmaps remain unchanged. Runtime forwarding and final handover evidence follow;
 manual acceptance 11b and final automated verification/release 12 remain open.
+
+Owner correction and final implementation, 2026-11-03: the forward conversion
+and settings-rename approach described above was superseded before release.
+The owner explicitly requested direct pre-1.0 schema editing, per-table CREATE
+migrations and a fresh seeded development database. AGENTS and the canonical
+database guide now state that authorization explicitly (edb59292); customer
+instructions remain unchanged because this concerns owner-only unpublished
+platform maintenance and does not grant access to customer/production data.
+
+Current inventory: 9 platform, 22 Auth, 2 Audit and 10 Permissions migrations,
+each creating one table with its final constraints/indexes. The reference app
+module already creates one table and needed no rewrite. Schema changes and data
+conversions were folded into final definitions; the obsolete account expiry
+conversion/upgrade and generic settings-rename API were removed. Platform
+singletons now come from required seeds; Auth technical singletons come from
+its initializer. The isolated owner fixture initializes required seeds explicitly.
+Historical tags, closed records and historical migration fixture evidence remain
+unchanged. Current source API documentation and changelogs are synchronized.
+
+Exact destructive scope was inspected and announced before execution: 45 owned
+tables in local database runa, across shared/runa_auth/runa_audit/runa_permissions;
+all 15 users matched disposable development fixtures. A transaction dropped only
+that explicit table list with RESTRICT, preserving schemas and their ownership.
+Native platform preparation, application migration and development module seeders
+then recreated the runtime and 15 accounts. A duplicate preset pivot creation
+found during the first fresh execution was removed; the empty partial runtime
+was recreated within the same scope and preparation completed successfully.
+The first seeding attempt correctly refused maintenance mode; seeding succeeded
+after the application was brought up. Queue workers received the restart signal.
+
+Catalog comparison confirms identical final tables, column types/defaults/identity,
+constraints and index expressions against the prior already-retired runtime:
+.runtime/migrations/schema-comparison.json. No account expires_at or corrective
+migration remains. The supported focused backend selection passes 4 cases / 51
+assertions for fresh metadata/schema, lifecycle/Audit rollback, reminder policy
+query bounds and obsolete-mail suppression. The initial subprocess seed setup
+failure was corrected by invoking required seeds in the already selected guarded
+worker application. Worker cleanup passed; runa_test was preserved. Runtime schema
+and preparation evidence live in .runtime/migrations/. No containers/networks or
+volumes were removed; Qdrant/model caches, reports and other databases remain.
+
+The owner can initialize the freshly seeded administrator's password privately
+with ./bin/artisan runa:seed:accounts administrator --setup. No preset password
+was introduced. Manual frontend acceptance 11b and final verification 12 remain
+open; these focused implementation checks are not the final quality gate.

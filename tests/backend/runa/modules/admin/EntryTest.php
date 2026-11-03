@@ -2008,51 +2008,15 @@ it('Auth user administration reads independently granted security invitation and
     $this->getJson('/api/admin/runa.auth/users/sections/directory?kind=page')->assertNotFound();
 });
 
-it('Auth retirement forwards the earliest account cutoff and removes expiry from current contracts', function (): void {
+it('Auth fresh schema and administration expose only scheduled deactivation', function (): void {
     expect(DB::connection()->getSchemaBuilder()->hasColumn('runa_auth.users', 'expires_at'))->toBeFalse();
     expect(fn () => new LifecycleChange('set_expiry'))->toThrow(InvalidArgumentException::class);
     expect(AdministrationPages::commands()['bulk_users'])->not->toHaveKey('set_expiry');
-    DB::statement('ALTER TABLE runa_auth.users ADD COLUMN expires_at timestamptz');
-    $expected = [];
-    foreach ([null, 1, 3] as $index => $days) {
-        $identity = app(ChangeIdentity::class)->create(new NewIdentity('retirement-'.$index.'@example.test', name: 'Retirement', active: true, approved: true));
-        DB::table('runa_auth.users')->where('public_id', $identity->publicId)->update(['expires_at' => now()->addDays(2), 'deactivate_at' => $days === null ? null : now()->addDays($days)]);
-        $expected[$identity->publicId] = now()->addDays($days === 1 ? 1 : 2)->timestamp;
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage']);
+    $page = $this->getJson('/api/admin/runa.auth/users')->assertOk()->json('data');
+    foreach ($page['sections'] as $section) {
+        if (in_array($section['key'], ['directory', 'lifecycle'], true)) {
+            expect(array_column($section['fields'], 'key'))->not->toContain('expires_at');
+        }
     }
-    $migration = require base_path('runa/modules/auth/database/migrations/2026_11_03_000019_runa_auth_retire_account_expiry.php');
-    DB::transaction(fn () => $migration->up());
-    expect(DB::connection()->getSchemaBuilder()->hasColumn('runa_auth.users', 'expires_at'))->toBeFalse();
-    foreach ($expected as $id => $deadline) {
-        $user = User::where('public_id', $id)->firstOrFail();
-        expect($user->deactivate_at->timestamp)->toBe($deadline)->and($user->version)->toBe(2);
-    }
-});
-
-it('Auth retirement refuses a conflicting activation without losing the original cutoff', function (): void {
-    DB::statement('ALTER TABLE runa_auth.users ADD COLUMN expires_at timestamptz');
-    $identity = app(ChangeIdentity::class)->create(new NewIdentity('retirement-conflict@example.test', name: 'Retirement', active: true, approved: true));
-    DB::table('runa_auth.users')->where('public_id', $identity->publicId)->update(['expires_at' => now()->addDay(), 'activate_at' => now()->addDays(2)]);
-    $migration = require base_path('runa/modules/auth/database/migrations/2026_11_03_000019_runa_auth_retire_account_expiry.php');
-    expect(fn () => DB::transaction(fn () => $migration->up()))->toThrow(RuntimeException::class);
-    expect(DB::table('runa_auth.users')->where('public_id', $identity->publicId)->value('expires_at'))->not->toBeNull();
-});
-
-it('Auth retirement preserves reminder settings and delivery routing in the reserved upgrade', function (): void {
-    $settings = app(ModuleSettings::class)->read('runa.auth');
-    $values = array_map(fn ($entry) => $entry['value'], $settings['settings']);
-    $values['notice_account_expiry'] = true;
-    $values['expiry_admin_copy'] = $this->adminUser->public_id;
-    unset($values['notice_account_deactivation'], $values['deactivation_admin_copy']);
-    $encrypted = app(Encrypter::class)->encrypt(json_encode($values, JSON_THROW_ON_ERROR), false);
-    $moduleId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
-    DB::table('shared.modules')->where('id', $moduleId)->update(['installed_version' => '2.1.0', 'settings_values' => $encrypted]);
-    DB::table('shared.module_update_steps')->where('module_id', $moduleId)->where('step', 'upgrade:retire_account_expiry:2.1.0:3.0.0')->delete();
-    DB::table('runa_auth.delivery_preferences')->insert(['user_id' => $this->adminUser->id, 'module' => 'runa.auth', 'category' => 'account_expiry', 'enabled' => false, 'recipients' => '["primary"]', 'created_at' => now(), 'updated_at' => now()]);
-    app(ModuleUpdates::class)->apply('runa', str_repeat('b', 40), static function (): void {});
-    $current = app(ModuleSettings::class)->read('runa.auth')['settings'];
-    expect($current)->not->toHaveKey('notice_account_expiry')->not->toHaveKey('expiry_admin_copy')
-        ->and($current['notice_account_deactivation']['value'])->toBeTrue()
-        ->and($current['deactivation_admin_copy']['value'])->toBe($this->adminUser->public_id)
-        ->and(DB::table('runa_auth.delivery_preferences')->where('user_id', $this->adminUser->id)->where('category', 'account_deactivation')->value('enabled'))->toBeFalse()
-        ->and(DB::table('runa_auth.delivery_preferences')->where('category', 'account_expiry')->exists())->toBeFalse();
 });
