@@ -53,7 +53,7 @@ final readonly class BulkUserSection implements ManagementResourceReader, Manage
             $change = $this->change($input);
             $preview = $this->apis->resolve('runa.auth', AuthBulkUsers::class, '2.0.0')->preview(new SessionSelection($input->values['public_ids']), $change);
 
-            $summary = ['accounts' => $preview['accounts'], 'affected_accounts' => $preview['affected_accounts']];
+            $summary = ['accounts' => $preview['accounts'], 'affected_accounts' => $preview['affected_accounts'], 'executable' => $preview['executable'], 'refusal_reason' => $preview['refusal_reason']];
             if ($preview['sessions'] > 0) {
                 $summary['sessions'] = $preview['sessions'];
             }
@@ -72,6 +72,9 @@ final readonly class BulkUserSection implements ManagementResourceReader, Manage
         $review = $this->preview($input);
         if (! $input->confirmed || ! is_string($input->review['fingerprint'] ?? null) || ! hash_equals($review->fingerprint, $input->review['fingerprint'])) {
             throw new OperationRejected('user_preview_stale', 'runa.auth', 'users.bulk_execute', 409);
+        }
+        if (($review->changes['summary']['executable'] ?? true) === false) {
+            throw new OperationRejected('last_superadmin_required', 'runa.auth', 'users.bulk_execute', 409);
         }
         $this->apis->resolve('runa.auth', AuthBulkUsers::class, '2.0.0')->execute(new SessionSelection($input->values['public_ids']), $this->change($input), $review->fingerprint);
 

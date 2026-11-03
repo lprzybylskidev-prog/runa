@@ -35,7 +35,25 @@ final readonly class BulkUsers implements AuthBulkUsers
             return $this->transactions->run(function (Connection $connection) use ($selection, $change): array {
                 $this->transactions->lockAuthority($connection);
                 $users = $this->lock($selection);
-                $plans = $this->prepare($connection, $users, $change);
+                $original = $users->map(static fn (User $user): User => clone $user);
+                try {
+                    $plans = $this->prepare($connection, $users, $change);
+                } catch (OperationRejected $error) {
+                    if ($error->reason !== 'last_superadmin_required'
+                        || ! in_array($change->operation, ['deactivate', 'delete', 'toggle_activation', 'toggle_deletion', 'factor_reset', 'require_verification'], true)) {
+                        throw $error;
+                    }
+                    // A refused preview describes candidate changes only; no plan is applied.
+                    $affected = $original->filter(static fn (User $user): bool => match ($change->operation) {
+                        'deactivate' => ! $user->trashed() && ($user->active || $user->activate_at !== null || $user->deactivate_at !== null),
+                        'delete', 'toggle_activation' => ! $user->trashed(),
+                        default => true,
+                    })->count();
+
+                    return array_replace($this->snapshot($connection, $original, $change), [
+                        'affected_accounts' => $affected, 'sessions' => 0, 'trusted_devices' => 0, 'executable' => false, 'refusal_reason' => 'last_superadmin_required',
+                    ]);
+                }
 
                 return $this->snapshot($connection, $users, $change, $plans);
             });
@@ -92,7 +110,7 @@ final readonly class BulkUsers implements AuthBulkUsers
 
     /** @param Collection<int,User> $users
      * @param  list<User|LifecyclePlan>  $plans  Validated in-memory plans for impact projection; validation needs only the fingerprint.
-     * @return array{fingerprint:string,accounts:int,affected_accounts:int,sessions:int,trusted_devices:int}
+     * @return array{fingerprint:string,accounts:int,affected_accounts:int,sessions:int,trusted_devices:int,executable:bool,refusal_reason:?string}
      */
     public function snapshot(Connection $connection, Collection $users, BulkUserChange $change, array $plans = []): array
     {
@@ -147,7 +165,7 @@ final readonly class BulkUsers implements AuthBulkUsers
             $affected += (int) ($rows !== null ? count(array_filter($rows, fn ($row) => $row->user_id === $plan->id)) > 0 : ($change->operation !== 'remove_avatar' || $plan->avatar_path !== null));
         }
 
-        return ['fingerprint' => hash('sha256', json_encode([$revision, $change, $state, $related], JSON_THROW_ON_ERROR)), 'accounts' => $users->count(), 'affected_accounts' => $affected, 'sessions' => $sessions, 'trusted_devices' => $devices];
+        return ['fingerprint' => hash('sha256', json_encode([$revision, $change, $state, $related], JSON_THROW_ON_ERROR)), 'accounts' => $users->count(), 'affected_accounts' => $affected, 'sessions' => $sessions, 'trusted_devices' => $devices, 'executable' => true, 'refusal_reason' => null];
     }
 
     /** @param Collection<int,User> $users

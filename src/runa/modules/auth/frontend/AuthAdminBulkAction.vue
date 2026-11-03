@@ -7,7 +7,13 @@ import type {
   AdminSectionPresentationProps,
 } from '@/runa/admin';
 import { authBulkGroup } from './bulkGroups';
-import { Button, ContentLoading, FormNotifications, Select } from '@/runa/ui';
+import {
+  Alert,
+  Button,
+  ContentLoading,
+  FormNotifications,
+  Select,
+} from '@/runa/ui';
 import AuthOperationProofFields from './AuthOperationProofFields.vue';
 
 const props = defineProps<
@@ -108,6 +114,14 @@ const summary = computed(() => {
     ? value
     : {};
 });
+const selectedCount = computed(() => {
+  const ids =
+    props.controller.values.value[
+      props.controller.fieldPath(props.section.key, 'public_ids')
+    ];
+  return Array.isArray(ids) ? ids.length : 0;
+});
+const blocked = computed(() => summary.value.executable === false);
 const proofStep = ref(false);
 const proofRegion = ref<HTMLElement>();
 const fields = computed(() =>
@@ -168,7 +182,7 @@ async function execute() {
   proofStep.value = false;
 }
 async function submit() {
-  if (!review.value || !command.value) return;
+  if (!review.value || !command.value || blocked.value) return;
   if (proof.value && proof.value.requirement.value !== 'none') {
     proofStep.value = true;
     await proof.value.begin();
@@ -190,7 +204,7 @@ function cancelProof() {
     <div
       v-if="proofStep && proof"
       ref="proofRegion"
-      class="space-y-4 sm:col-span-2"
+      class="space-y-4 md:col-span-2"
       data-bulk-proof
       @keydown.enter.prevent="confirm"
     >
@@ -205,7 +219,7 @@ function cancelProof() {
       />
       <FormNotifications :locale="locale" :error="proof.error.value" />
     </div>
-    <div v-else class="space-y-5 sm:col-span-2" data-bulk-review>
+    <div v-else class="space-y-5 md:col-span-2" data-bulk-review>
       <Select
         v-if="grouped"
         :label="tr({ pl: 'Operacja', en: 'Operation' })"
@@ -240,33 +254,74 @@ function cancelProof() {
           )
         "
       />
-      <ContentLoading
-        v-if="controller.busy.value && !review"
-        shape="form"
-        :label="tr({ pl: 'Sprawdzanie skutków', en: 'Checking impact' })"
-      />
-      <dl v-if="review" class="grid gap-4 sm:grid-cols-2" aria-live="polite">
-        <div
-          v-for="item in [
-            {
-              key: 'affected_accounts',
-              label: { pl: 'Konta objęte zmianą', en: 'Affected accounts' },
-            },
-            {
-              key: 'sessions',
-              label: { pl: 'Unieważniane sesje', en: 'Sessions to revoke' },
-            },
-            {
-              key: 'trusted_devices',
-              label: { pl: 'Unieważniane urządzenia', en: 'Devices to revoke' },
-            },
-          ].filter((item) => typeof summary[item.key] === 'number')"
-          :key="item.key"
-        >
-          <dt class="text-sm text-muted">{{ tr(item.label) }}</dt>
-          <dd class="text-lg font-semibold">{{ summary[item.key] }}</dd>
-        </div>
-      </dl>
+      <div
+        class="rounded-lg border border-line p-4"
+        aria-live="polite"
+        data-bulk-impact
+      >
+        <dl class="grid grid-cols-2 gap-4">
+          <div>
+            <dt class="text-xs text-muted">
+              {{ tr({ pl: 'Wybrane konta', en: 'Selected accounts' }) }}
+            </dt>
+            <dd class="mt-1 text-2xl font-semibold tabular-nums">
+              {{ selectedCount }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs text-muted">
+              {{ tr({ pl: 'Konta objęte zmianą', en: 'Affected accounts' }) }}
+            </dt>
+            <dd v-if="review" class="mt-1 text-2xl font-semibold tabular-nums">
+              {{ summary.affected_accounts }}
+            </dd>
+            <dd v-else-if="controller.busy.value" class="mt-2">
+              <ContentLoading
+                shape="text"
+                :lines="1"
+                :label="
+                  tr({ pl: 'Sprawdzanie skutków', en: 'Checking impact' })
+                "
+              />
+            </dd>
+            <dd v-else class="mt-1 text-2xl text-muted">—</dd>
+          </div>
+        </dl>
+        <dl v-if="review && !blocked" class="mt-3 space-y-2 text-sm">
+          <div
+            v-for="item in [
+              {
+                key: 'sessions',
+                label: { pl: 'Unieważniane sesje', en: 'Sessions to revoke' },
+              },
+              {
+                key: 'trusted_devices',
+                label: {
+                  pl: 'Unieważniane urządzenia',
+                  en: 'Devices to revoke',
+                },
+              },
+            ].filter(
+              (item) =>
+                typeof summary[item.key] === 'number' &&
+                Number(summary[item.key]) > 0,
+            )"
+            :key="item.key"
+            class="flex items-center justify-between gap-3"
+          >
+            <dt class="text-muted">{{ tr(item.label) }}</dt>
+            <dd class="font-semibold tabular-nums">{{ summary[item.key] }}</dd>
+          </div>
+        </dl>
+      </div>
+      <Alert v-if="blocked" tone="warning" data-bulk-blocked>
+        {{
+          tr({
+            pl: 'Nie można wykonać tej operacji: co najmniej jeden aktywny superadministrator musi zachować dostęp. Zmień zaznaczenie kont.',
+            en: 'This operation is blocked: at least one active superadministrator must retain access. Change the account selection.',
+          })
+        }}
+      </Alert>
       <p v-if="summary.affected_accounts === 0" class="text-sm text-muted">
         {{
           tr({
@@ -275,7 +330,7 @@ function cancelProof() {
           })
         }}
       </p>
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
         <Button
           v-if="!review && command"
           :disabled="controller.busy.value"
@@ -286,10 +341,13 @@ function cancelProof() {
           :disabled="
             controller.busy.value ||
             !review ||
+            blocked ||
             summary.affected_accounts === 0 ||
             section.readonly ||
             !command?.available
           "
+          variant="solid"
+          tone="primary"
           @click="submit"
           >{{ tr({ pl: 'Zatwierdź', en: 'Confirm' }) }}</Button
         >

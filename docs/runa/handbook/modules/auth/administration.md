@@ -236,7 +236,7 @@ interface AuthBulkUsers {
     public function execute(SessionSelection $selection, BulkUserChange $change, string $fingerprint): array;
 }
 BulkUserChange::__construct(string $operation, ?string $at = null, ?bool $enabled = null)
-// preview: {fingerprint:string, accounts:int, affected_accounts:int, sessions:int, trusted_devices:int}
+// preview: {fingerprint:string, accounts:int, affected_accounts:int, sessions:int, trusted_devices:int, executable:bool, refusal_reason:?string}
 // execute: {accounts:int}
 ```
 
@@ -304,7 +304,8 @@ facts: Two-factor authentication omits the redundant enabled suffix. Bulk action
 are wrapping buttons, with a shared selection count and per-operation 99/100 limits.
 Activity (activate/deactivate/invert), deletion (delete/restore/invert), lifecycle
 schedules (activation/deactivation), invitations (send/invalidate) and security lock
-(on/off/invert) each share a primary outlined button. The modal uses the public Select to
+(on/off/invert) each share a primary outlined button. The compact modal presents selected/candidate counts together and right-aligns
+confirmation. It uses the public Select to
 choose only currently projected, authorized commands, then renders that command's
 parameters and starts an authoritative impact preview. Binary inversion uses each
 account's stored flag; dates and invitation delivery are explicit operations, not
@@ -340,3 +341,10 @@ Reminder mail uses account_deactivation and the current deactivate_at, preservin
 stored enablement, administrator-copy recipient and delivery preferences across
 the explicit owning upgrade. Old pending notices are revalidated against the
 current deadline before delivery; password/session/token deadlines are unchanged.
+
+A native bulk preview blocked by last-superadministrator protection is read-only:
+it returns executable=false and refusal_reason=last_superadmin_required with the
+number of selected accounts whose state the request would change. It claims no
+session/device revocations and cannot be confirmed. The Admin default displays
+these candidate counts and the owning invariant reason in a compact modal;
+execution continues to enforce the same guard independently of presentation.

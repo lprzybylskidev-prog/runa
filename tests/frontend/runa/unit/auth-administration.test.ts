@@ -188,6 +188,12 @@ it.each(['schedule_activation', 'delete', 'set_attempt_lock'])(
     await vi.waitFor(() =>
       expect(wrapper.text()).toContain('Affected accounts'),
     );
+    await vi.waitFor(() =>
+      expect(
+        form.commandReviews.value[`bulk_users:${operation}`],
+      ).toBeDefined(),
+    );
+    await vi.waitFor(() => expect(form.busy.value).toBe(false));
     expect(wrapper.text()).not.toContain('Confirm required operation proof');
     expect(wrapper.find('input[type=password]').exists()).toBe(false);
     expect(wrapper.findAllComponents(DateTimeRangeInput)).toHaveLength(0);
@@ -688,91 +694,115 @@ it('Auth administration range filters map compact ranges and reset them with sha
   expect(wrapper.findAll('fieldset')).toHaveLength(0);
 });
 
-it('grouped bulk operations choose one native command and invalidate the previous review', async () => {
-  const bulk = section('bulk_users', [
-    { ...field('public_ids', false), type: 'uuid', multiple: true },
-    field('summary'),
-  ]);
-  bulk.commands = ['activate', 'deactivate', 'toggle_activation'].map(
-    (key) => ({
-      key,
-      title: key,
-      inputs: ['public_ids'],
-      mode: 'independent',
-      requirement: 'none',
-      destructive: true,
-      preview_required: true,
-      bulk: false,
-      action: null,
-      available: true,
-      intent: 'action',
-    }),
-  );
-  const controller = page([bulk]);
-  const previews: string[] = [];
-  const writes: string[] = [];
-  vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
-    const path = new URL(String(input), window.location.origin).pathname;
-    const body = init?.body
-      ? (JSON.parse(String(init.body)) as { command: string })
-      : null;
-    if (path.endsWith('/preview')) {
-      previews.push(body!.command);
-      return response({
-        fingerprint: 'a'.repeat(64),
-        changes: { summary: { accounts: 2, affected_accounts: 2 } },
+it.each([false, true])(
+  'grouped bulk operations refresh impact and handle a blocked review (%s)',
+  async (blocked) => {
+    const bulk = section('bulk_users', [
+      { ...field('public_ids', false), type: 'uuid', multiple: true },
+      field('summary'),
+    ]);
+    bulk.commands = ['activate', 'deactivate', 'toggle_activation'].map(
+      (key) => ({
+        key,
+        title: key,
+        inputs: ['public_ids'],
+        mode: 'independent',
         requirement: 'none',
-        every_action: true,
-      });
-    }
-    if (path.endsWith('/commands')) {
-      writes.push(body!.command);
-      return response({
-        status: 'committed',
-        record: null,
-        operation_id: null,
-      });
-    }
-    return response({
-      public_id: null,
-      revision: '0',
-      values: { public_ids: [target], summary: null },
-    });
-  });
-  let form!: AdminFormController;
-  const wrapper = mount(
-    defineComponent({
-      setup() {
-        form = useAdminForm(controller);
-        return () =>
-          h(
-            AdminForm,
-            { controller: form },
-            {
-              default: () =>
-                h(AuthAdminBulkAction, {
-                  page: controller,
-                  section: bulk,
-                  controller: form,
-                }),
+        destructive: true,
+        preview_required: true,
+        bulk: false,
+        action: null,
+        available: true,
+        intent: 'action',
+      }),
+    );
+    const controller = page([bulk]);
+    const previews: string[] = [];
+    const writes: string[] = [];
+    vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+      const path = new URL(String(input), window.location.origin).pathname;
+      const body = init?.body
+        ? (JSON.parse(String(init.body)) as { command: string })
+        : null;
+      if (path.endsWith('/preview')) {
+        previews.push(body!.command);
+        return response({
+          fingerprint: 'a'.repeat(64),
+          changes: {
+            summary: {
+              accounts: 2,
+              affected_accounts: 2,
+              executable: !blocked || body!.command === 'activate',
+              refusal_reason: blocked ? 'last_superadmin_required' : null,
             },
-          );
-      },
-    }),
-  );
-  await vi.waitFor(() => expect(previews).toEqual(['activate']));
-  await vi.waitFor(() => expect(form.busy.value).toBe(false));
-  wrapper
-    .getComponent(Select)
-    .vm.$emit('update:modelValue', 'toggle_activation');
-  await vi.waitFor(() =>
-    expect(previews).toEqual(['activate', 'toggle_activation']),
-  );
-  await vi.waitFor(() => expect(form.busy.value).toBe(false));
-  expect(writes).toEqual([]);
-  await wrapper
-    .findAll('button')
-    .find((button) => button.text() === 'Confirm')!
-    .trigger('click');
-  await vi.waitFor(() => expect(writes).toEqual(['toggle_activation']));
-});
+          },
+          requirement: 'none',
+          every_action: true,
+        });
+      }
+      if (path.endsWith('/commands')) {
+        writes.push(body!.command);
+        return response({
+          status: 'committed',
+          record: null,
+          operation_id: null,
+        });
+      }
+      return response({
+        public_id: null,
+        revision: '0',
+        values: { public_ids: [target], summary: null },
+      });
+    });
+    let form!: AdminFormController;
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          form = useAdminForm(controller);
+          return () =>
+            h(
+              AdminForm,
+              { controller: form },
+              {
+                default: () =>
+                  h(AuthAdminBulkAction, {
+                    page: controller,
+                    section: bulk,
+                    controller: form,
+                  }),
+              },
+            );
+        },
+      }),
+    );
+    await vi.waitFor(() => expect(previews).toEqual(['activate']));
+    await vi.waitFor(() => expect(form.busy.value).toBe(false));
+    wrapper
+      .getComponent(Select)
+      .vm.$emit('update:modelValue', 'toggle_activation');
+    await vi.waitFor(() =>
+      expect(previews).toEqual(['activate', 'toggle_activation']),
+    );
+    await vi.waitFor(() => expect(form.busy.value).toBe(false));
+    expect(writes).toEqual([]);
+    if (blocked) {
+      expect(wrapper.get('[data-bulk-blocked]').text()).toContain(
+        'superadministrator',
+      );
+      expect(wrapper.get('[data-bulk-impact]').text()).toContain('2');
+      expect(
+        wrapper
+          .findAll('button')
+          .find((button) => button.text() === 'Confirm')!
+          .attributes('disabled'),
+      ).toBeDefined();
+      expect(writes).toEqual([]);
+      return;
+    }
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Confirm')!
+      .trigger('click');
+    await vi.waitFor(() => expect(writes).toEqual(['toggle_activation']));
+  },
+);

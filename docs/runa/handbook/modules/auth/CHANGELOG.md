@@ -2,6 +2,8 @@
 
 ## 3.0.0 — 2026-11-03
 
+- Show read-only candidate counts and an explicit last-superadministrator explanation for blocked Auth bulk previews; keep execution refused. Refine bulk modals with compact width, paired selection/impact counts, localized loading and right-aligned confirmation.
+
 - Group related Auth bulk controls into neutral buttons with explicit modal operation selection. Add atomic per-account activity/deletion/security-lock inversion with native grants, review fingerprints, Audit and deletion password proof; rename the one-way bulk action to Force password change. No periodic-policy column or account opt-out is added.
 
 - Default Auth password expiry to 30 days on fresh initialization; retain zero as explicit disabling and preserve the independent one-time forced-change action.

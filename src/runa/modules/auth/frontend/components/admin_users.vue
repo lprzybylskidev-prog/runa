@@ -392,15 +392,11 @@ watch(
       :model-value="open"
       :title="title"
       :locale="adminLocale"
-      size="xl"
+      :size="mode === 'bulk' ? 'md' : 'xl'"
       :busy="form.busy.value"
       @update:model-value="!$event && close()"
     >
       <AdminForm :controller="form">
-        <p v-if="mode === 'bulk'" class="mb-4 text-sm text-muted">
-          {{ tr({ pl: 'Liczba wybranych kont', en: 'Selected accounts' }) }}:
-          {{ bulkIds.length }}
-        </p>
         <Tabs
           class="min-w-0"
           v-if="mode === 'record'"

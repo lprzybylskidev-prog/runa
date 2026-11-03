@@ -2031,3 +2031,16 @@ it('Auth bulk inversion refuses stale previews without applying a second inversi
     expect(User::where('public_id', $one->publicId)->value('active'))->toBeFalse()
         ->and(User::where('public_id', $two->publicId)->value('active'))->toBeTrue();
 });
+
+it('Auth blocked bulk preview counts candidate accounts and refuses to remove the last administrator', function (string $operation, int $affected): void {
+    $role = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('id');
+    DB::table('runa_permissions.user_roles')->insert(['user_public_id' => $this->adminUser->public_id, 'role_id' => $role, 'created_at' => now(), 'updated_at' => now()]);
+    $inactive = app(ChangeIdentity::class)->create(new NewIdentity('blocked-bulk@example.test', name: 'Inactive'));
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.permissions.users.select']);
+    $input = ['command' => $operation, 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$this->adminUser->public_id, $inactive->publicId]], 'confirmed' => true];
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    expect($input['review']['changes']['summary'])->toMatchArray(['accounts' => 2, 'affected_accounts' => $affected, 'executable' => false, 'refusal_reason' => 'last_superadmin_required']);
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertConflict()->assertJsonPath('error.code', 'last_superadmin_required');
+    expect(User::where('public_id', $this->adminUser->public_id)->value('active'))->toBeTrue()
+        ->and(User::where('public_id', $inactive->publicId)->value('active'))->toBeFalse();
+})->with([['deactivate', 1], ['toggle_activation', 2]]);

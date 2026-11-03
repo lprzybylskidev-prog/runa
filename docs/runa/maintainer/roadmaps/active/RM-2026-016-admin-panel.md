@@ -841,6 +841,14 @@ reassessment before resuming point 3; completed point history remains evidence.
     variant, not the neutral variant. Keep existing standalone semantic tones.
   - Format before asset build; verify native rendered button styles and build
     alignment. Manual acceptance remains 11b and final quality remains 12.
+- [x] 11a57. Explain blocked bulk previews and refine the bulk modal.
+  - Reproduce all-account deactivation/inversion: preserve last-superadministrator
+    refusal, return safe candidate counts with a nonexecutable preview and show
+    the real reason. Execution remains guarded and atomic; no accounts are skipped.
+  - Compact modal width, grouped selected/affected counts, localized parameters,
+    contextual blocked state, right-aligned confirmation and localized loading.
+  - Author focused refusal/switching regressions; format before current asset build
+    and native browser readiness. Manual acceptance 11b and final quality 12 remain.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5643,3 +5651,73 @@ No new test code or broad suite was needed for this shared variant correction;
 final automated verification remains point 12 and owner manual acceptance 11b.
 No containers/networks/volumes/databases were created or removed; development/test
 data, caches, backups and reports remain preserved.
+
+### Point 11a57 — Blocked bulk preview and modal clarity
+
+Owner reports misleading reconciliation feedback and absent impact on all-account
+activation changes; native reproduction confirms last_superadmin_required 409 from
+Permissions for deactivate and toggle_activation over all 15 development accounts.
+This is an invariant refusal, not stale input or an attempted write. Preserve the
+invariant and exact selection. Extend Auth-owned AuthBulkUsers 2.0.0 preview only
+with executable:bool and refusal_reason:?string; a blocked last-superadministrator
+preview returns safe candidate counts and no revocation claims. Execution still
+validates normally and rejects the protected change; Admin refuses confirmation
+for nonexecutable previews. No automatic skipping, grant bypass or stale write replay.
+Candidate counts describe requested state changes, not completed writes.
+
+The existing Auth-owned runtime API/DTO/engine placement and audience remain;
+the administration guide owns the extended result signature. Module Auth remains
+unreleased 3.0.0 and no independent release/API bump is needed within this candidate.
+Refine the existing public default bulk presentation without changing its props
+or replacement seam; keep confirmation explicit and protected operations proven.
+
+Implemented the guarded read-only blocked preview in BulkUsers: only the known
+last_superadmin_required refusal becomes executable=false with safe candidate
+counts, a fixed refusal reason and zero session/device revocation claims. No
+account plans are applied, proof consumed or grants bypassed. Native execution
+retains its authority guard; Admin additionally rejects nonexecutable review
+confirmation. Other failures retain their original semantics. Canonical Auth
+administration/API result docs and module/central changelogs are synchronized.
+Existing owner/customer skills/AGENTS already require owning guards, explicit
+proof, canonical docs and shared UI; no new operational rule or duplicated
+procedure is needed. No dependencies, schema or independent module/API version
+changes in this unreleased Auth 3.0.0 / API 2.0.0 candidate.
+
+The default bulk dialog now uses shared md width instead of xl. Selected and
+candidate affected counts share one bordered two-column panel; impact loading is
+localized to the candidate metric, secondary revocations are compact rows and
+confirmation is right-aligned. A contextual invariant Alert explains a blocked
+selection without claiming a write failed or starting read reconciliation. Existing
+FormNotifications remains responsible for actual request/proof failures. Shared
+Select, Alert, Dialog, loading and Button controls preserve accessibility/themes;
+public replacement props and source-owned security orchestration are unchanged.
+
+Focused evidence:
+
+- Native before-repair all-15 selection returned last_superadmin_required HTTP 409
+  for deactivate/toggle_activation, incorrectly rendered by generic write feedback.
+- Supported backend --parallel --processes=1: 2 PASS / 40 assertions for blocked
+  counts, explicit reason, execution refusal and unchanged account activity. Guarded
+  cleanup removed runa_test_test_1 and preserved runa_test.
+- Supported frontend: 5 PASS for operation changes, candidate counts, blocked
+  explanation/disabled confirmation, permitted execution and proof/date-clear flows.
+  The first frontend invocation was refused by the shared suite lock while backend
+  ran; it was executed after backend completed. Existing UI tests initially treated
+  the always-mounted metric label as completed loading; waiting for the actual
+  review fixed those synchronization assertions. No outstanding test failure.
+- Formatted source before supported asset build; current typecheck/assets/native
+  error shells built successfully. Native HTTP/browser now returns blocked previews
+  with 15 selected / 12 candidate deactivation changes (including schedule clearing),
+  and 15 inversion changes. Real UI shows counts/reason, disables confirmation and
+  has no misleading stale-write toast. Returning to Activate removes blocked state
+  and enables the current review. Desktop light/dark and dark 390px mobile readiness
+  passed with a compact modal and no width overflow. Logs/diagnostics live under
+  .runtime/auth-bulk-modal/ and screenshots under
+  .runtime/artifacts/playwright/auth-bulk-modal/. These are targeted repair/readiness
+  checks, not final full verification or owner manual acceptance.
+
+No runtime database reset or business mutation was needed by browser diagnostics.
+No containers/networks/images/volumes were created/removed. Supported test cleanup
+removed its disposable worker database; development/base-test data, caches, backups
+and reports remain preserved. Owner manual point 11b and final verification 12
+remain open.
