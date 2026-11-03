@@ -836,6 +836,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     fingerprints, rebuild current assets after formatting/commit hooks and verify
     native protected Users page plus grouped modal. Preserve identity guards.
   - Manual acceptance remains 11b and broad final verification remains 12.
+- [x] 11a56. Match grouped bulk buttons to the primary outlined avatar-removal button.
+  - Owner clarification: grouped actions use the standard purple primary/outline
+    variant, not the neutral variant. Keep existing standalone semantic tones.
+  - Format before asset build; verify native rendered button styles and build
+    alignment. Manual acceptance remains 11b and final quality remains 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5611,3 +5616,30 @@ evidence is committed, so its formatting cannot invalidate Auth source hashes.
 No containers/networks/volumes/databases were created or removed; all development
 and test data, caches, backups and reports remain preserved. Manual point 11b and
 final point 12 remain open.
+
+### Point 11a56 — Primary outlined grouped bulk buttons
+
+Owner clarification, 2026-11-03: grouped bulk actions must use the same purple
+primary/outline Button presentation as Remove avatars. This supersedes point
+11a54's neutral styling choice. Preserve grouping, modal choices and standalone
+semantic tones. No new component, public contract, policy or version change.
+
+Implemented the shared outline variant for all six grouped buttons; their existing
+bulkTone primary result now renders the same purple border/text as Remove avatars.
+Standalone semantic tones and all operation behavior remain unchanged. Synchronized
+the canonical Auth administration guide. No new reusable component/pattern or
+owner/customer operating rule is introduced; existing instructions already route
+to that guide and need no duplicated styling rule. Auth/module/API versions remain
+the same unreleased candidate.
+
+Formatted the source before the supported runtime asset build. Native authenticated
+Users browser readiness passed: all six grouped buttons report primary/outline and
+their computed text/border/background colors match Remove avatars after enabled
+state transitions settle. Initial diagnostics sampled the reference style during
+that transition; comparing both current computed styles resolved the diagnostic.
+Current build identity and table remain available. Evidence is under
+.runtime/auth-bulk-colors/ and .runtime/artifacts/playwright/auth-bulk-colors/.
+No new test code or broad suite was needed for this shared variant correction;
+final automated verification remains point 12 and owner manual acceptance 11b.
+No containers/networks/volumes/databases were created or removed; development/test
+data, caches, backups and reports remain preserved.

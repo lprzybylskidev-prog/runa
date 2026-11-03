@@ -145,7 +145,7 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 Account creation is in the directory Card header's right actions area. All
 available directory fields are filterable, with one compact DateTimeRangeInput for each inclusive date range. Separate small bulk action buttons sit immediately below filters, above the
 standard table toolbar. Each button opens a reviewed operation for the captured
-selection; related operations share a neutral button and modal operation selector; only granted and currently enabled actions appear.
+selection; related operations share a primary outlined button and modal operation selector; only granted and currently enabled actions appear.
 Selected UUIDs are captured for review; no manual ID entry or all-account toggle
 exists in this UI. Session revocation admits at most 100 accounts; other reviewed
 user operations admit at most 99, reserving one native transaction subject for the
@@ -304,11 +304,11 @@ facts: Two-factor authentication omits the redundant enabled suffix. Bulk action
 are wrapping buttons, with a shared selection count and per-operation 99/100 limits.
 Activity (activate/deactivate/invert), deletion (delete/restore/invert), lifecycle
 schedules (activation/deactivation), invitations (send/invalidate) and security lock
-(on/off/invert) each share a neutral button. The modal uses the public Select to
+(on/off/invert) each share a primary outlined button. The modal uses the public Select to
 choose only currently projected, authorized commands, then renders that command's
 parameters and starts an authoritative impact preview. Binary inversion uses each
 account's stored flag; dates and invitation delivery are explicit operations, not
-binary inversion. Attempt lock also has a neutral button with explicit set-deadline/clear choices. Force password
+binary inversion. Attempt lock also has a primary outlined button with explicit set-deadline/clear choices. Force password
 change is a separate one-way bulk action (no boolean switch); standalone lifecycle
 and native BulkUserChange APIs still support clearing the forced-change flag.
 Operation changes clear the old preview/proof, retain the captured selection and

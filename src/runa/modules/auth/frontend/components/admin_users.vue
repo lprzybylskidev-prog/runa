@@ -319,9 +319,7 @@ watch(
                 :key="choice.value"
                 :data-bulk-command="choice.value"
                 size="sm"
-                :variant="
-                  authBulkGroup(choice.command.key) ? 'neutral' : 'outline'
-                "
+                variant="outline"
                 :tone="bulkTone(choice.command.key)"
                 :disabled="
                   form.busy.value ||
