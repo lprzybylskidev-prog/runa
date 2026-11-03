@@ -868,6 +868,10 @@ reassessment before resuming point 3; completed point history remains evidence.
     eligible selection and its fingerprint at execution; retain atomicity/Audit.
   - Check all projected operations and grouped choices, distinguish business
     refusals from stale reviews, and cover mixed/empty/stale selections.
+- [x] 11a61. Order user-directory filters by task and keep dates last.
+  - Present identity/profile search first, then account state, credential/security
+    status, sessions/trust and related date ranges. Preserve grants, filter values,
+    table-column order and the existing responsive controls.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5931,3 +5935,27 @@ Only test-runner-owned runa_test_test_1 databases were cleaned by supported runn
 The base test database, development data, active services, caches, backups and
 reports remain preserved. No Docker resource was created or removed. Owner manual
 acceptance 11b and final verification/release 12 remain open.
+
+### Point 11a61 — Logical directory filter order
+
+AuthDirectoryFilters now derives a stable presentation order from the projected
+filterable fields: identity/profile search, account state, password/security,
+second factors and sessions/trust, followed by all date ranges. Dates follow
+lifecycle, verification/invitation, credential/lock and activity order. Unknown
+future fields remain visible, with datetime fields still last. Sorting a filtered
+copy preserves the incoming declaration and table-column order; permissions,
+feature availability, stored query values and filter semantics are unchanged.
+The existing responsive grid and shared controls are reused without adding a new
+component, API or presentation contract. The administration guide documents the
+order. Owner/customer instruction products and component references need no new
+rule or pattern; Auth remains the same unpublished 3.0.0 candidate.
+
+The supported frontend build passed. Native browser review checked all 39 currently
+projected controls, the leading identity labels, a real display-name filter request,
+retained draft text and responsive widths at 1440px/390px in light/dark themes.
+The page has no horizontal overflow after responsive layout settles. Screenshots
+remain under .runtime/artifacts/playwright/auth-filter-order, with diagnostics in
+.runtime/auth-filter-order. No new tests or broad suites were needed for this
+presentation-only reorder. No development bulk write, database reset or Docker
+resource change occurred. Owner acceptance 11b and final verification/release 12
+remain open; user details/individual actions remain later work in this roadmap.

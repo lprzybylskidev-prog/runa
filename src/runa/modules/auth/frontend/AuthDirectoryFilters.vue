@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { DateTimeRangeInput, NumberInput, Select, TextInput } from '@/runa/ui';
 import type { DateRangeValue, TableQuery } from '@/runa/ui';
 import type { AdminFieldData } from '@/runa/admin';
@@ -11,6 +12,63 @@ const props = defineProps<{
   setValidity: (key: string, valid: boolean) => void;
 }>();
 const { locale, t: tr } = useAdminLocale();
+// Keep filter order independent of the table's fact/column declaration order.
+const filterOrder = [
+  'display_name',
+  'first_name',
+  'surname',
+  'login',
+  'email',
+  'has_avatar',
+  'active',
+  'state',
+  'verified',
+  'verification_required',
+  'invitation_pending',
+  'password_set',
+  'password_change_required',
+  'password_expired',
+  'security_locked',
+  'operator_recovery_pending',
+  'two_factor_enabled',
+  'two_factor_required',
+  'totp_enrolled',
+  'email_factor_enrolled',
+  'totp_setup_pending',
+  'recovery_codes_remaining',
+  'logged_in',
+  'session_count',
+  'trusted_device_count',
+  'created_at',
+  'updated_at',
+  'activate_at',
+  'deactivate_at',
+  'deleted_at',
+  'email_verified_at',
+  'invitation_sent_at',
+  'invitation_expires_at',
+  'password_changed_at',
+  'password_expires_at',
+  'attempt_locked_until',
+  'totp_pending_until',
+  'last_login_at',
+  'last_activity_at',
+  'authenticated_at',
+  'activity_at',
+];
+const orderedFields = computed(() => {
+  const rank = (field: AdminFieldData) => {
+    const index = filterOrder.indexOf(field.key);
+    return index < 0 ? filterOrder.length : index;
+  };
+  return props.fields
+    .filter((field) => field.filterable)
+    .sort(
+      (a, b) =>
+        Number(a.type === 'datetime') - Number(b.type === 'datetime') ||
+        rank(a) - rank(b),
+    );
+});
 function set(key: string, value: string | null) {
   const filters = { ...props.query.filters };
   if (value === null || value === '') delete filters[key];
@@ -61,10 +119,7 @@ function options(field: AdminFieldData) {
   <div
     class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
   >
-    <template
-      v-for="field in fields.filter((f) => f.filterable)"
-      :key="field.key"
-    >
+    <template v-for="field in orderedFields" :key="field.key">
       <DateTimeRangeInput
         size="sm"
         v-if="field.type === 'datetime'"

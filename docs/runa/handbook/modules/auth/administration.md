@@ -143,7 +143,11 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation; no additional operation proof                 |
 
 Account creation is in the directory Card header's right actions area. All
-available directory fields are filterable, with one compact DateTimeRangeInput for each inclusive date range. Separate small bulk action buttons sit immediately below filters, above the
+available directory fields are filterable. The filter presentation orders identity/profile
+search first, then account state, credentials/security and sessions/trust, with all
+date ranges last in lifecycle, verification/invitation, credential and activity
+order. This presentation order is independent of table-column order and retains
+only projected authorized fields. Date filters use one compact DateTimeRangeInput for each inclusive date range. Separate small bulk action buttons sit immediately below filters, above the
 standard table toolbar. Each button opens a reviewed operation for the captured
 selection; related operations share a primary outlined button and modal operation selector; only granted and currently enabled actions appear.
 Selected UUIDs are captured for review; no manual ID entry or all-account toggle
