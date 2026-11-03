@@ -2032,15 +2032,51 @@ it('Auth bulk inversion refuses stale previews without applying a second inversi
         ->and(User::where('public_id', $two->publicId)->value('active'))->toBeTrue();
 });
 
-it('Auth blocked bulk preview counts candidate accounts and refuses to remove the last administrator', function (string $operation, int $affected): void {
+it('Auth bulk operations skip all protected administrators and apply to ordinary targets', function (string $operation): void {
+    $role = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('id');
+    $inactiveAdmin = app(ChangeIdentity::class)->create(new NewIdentity('inactive-protected@example.test', name: 'Inactive administrator'));
+    foreach ([$this->adminUser->public_id, $inactiveAdmin->publicId] as $id) {
+        DB::table('runa_permissions.user_roles')->insert(['user_public_id' => $id, 'role_id' => $role, 'created_at' => now(), 'updated_at' => now()]);
+    }
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('ordinary-bulk@example.test', name: 'Ordinary', active: true));
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.permissions.users.select']);
+    $before = DB::table('runa_auth.users')->whereIn('public_id', [$this->adminUser->public_id, $inactiveAdmin->publicId])->orderBy('public_id')->get(['public_id', 'version', 'security_version', 'preference_revision', 'active', 'password_change_required'])->toJson();
+    $input = ['command' => $operation, 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$this->adminUser->public_id, $inactiveAdmin->publicId, $target->publicId]], 'confirmed' => true];
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    expect($input['review']['changes']['summary'])->toMatchArray(['accounts' => 3, 'affected_accounts' => 1, 'skipped_accounts' => 2]);
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertOk();
+    expect(DB::table('runa_auth.users')->whereIn('public_id', [$this->adminUser->public_id, $inactiveAdmin->publicId])->orderBy('public_id')->get(['public_id', 'version', 'security_version', 'preference_revision', 'active', 'password_change_required'])->toJson())->toBe($before);
+    $user = User::where('public_id', $target->publicId)->firstOrFail();
+    match ($operation) {
+        'deactivate', 'toggle_activation' => expect($user->active)->toBeFalse(),
+        'require_password_change' => expect($user->password_change_required)->toBeTrue(),
+        'reset_preferences' => expect($user->preference_revision)->toBe(1),
+    };
+})->with(['deactivate', 'toggle_activation', 'require_password_change', 'reset_preferences']);
+
+it('Auth bulk preview becomes stale when a target gains protected authority', function (): void {
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('promoted-bulk@example.test', name: 'Promoted', active: true));
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.permissions.users.select']);
+    $input = ['command' => 'deactivate', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$target->publicId]], 'confirmed' => true];
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    $role = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('id');
+    DB::table('runa_permissions.user_roles')->insert(['user_public_id' => $target->publicId, 'role_id' => $role, 'created_at' => now(), 'updated_at' => now()]);
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertConflict();
+    expect(User::where('public_id', $target->publicId)->value('active'))->toBeTrue();
+});
+
+it('Auth bulk sessions preserve protected sessions while revoking ordinary selected sessions', function (): void {
     $role = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('id');
     DB::table('runa_permissions.user_roles')->insert(['user_public_id' => $this->adminUser->public_id, 'role_id' => $role, 'created_at' => now(), 'updated_at' => now()]);
-    $inactive = app(ChangeIdentity::class)->create(new NewIdentity('blocked-bulk@example.test', name: 'Inactive'));
-    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.permissions.users.select']);
-    $input = ['command' => $operation, 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$this->adminUser->public_id, $inactive->publicId]], 'confirmed' => true];
-    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
-    expect($input['review']['changes']['summary'])->toMatchArray(['accounts' => 2, 'affected_accounts' => $affected, 'executable' => false, 'refusal_reason' => 'last_superadmin_required']);
-    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertConflict()->assertJsonPath('error.code', 'last_superadmin_required');
-    expect(User::where('public_id', $this->adminUser->public_id)->value('active'))->toBeTrue()
-        ->and(User::where('public_id', $inactive->publicId)->value('active'))->toBeFalse();
-})->with([['deactivate', 1], ['toggle_activation', 2]]);
+    $identity = app(ChangeIdentity::class)->create(new NewIdentity('ordinary-session-bulk@example.test', name: 'Ordinary', active: true));
+    $target = User::where('public_id', $identity->publicId)->firstOrFail();
+    DB::transaction(fn () => app(SessionStore::class)->admit(DB::connection(), $target, 'protected-bulk-fixture-session', false));
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.sessions.bulk_revoke', 'runa.permissions.users.select']);
+    $input = ['command' => 'revoke', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$this->adminUser->public_id, $target->public_id]], 'confirmed' => true];
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_sessions/preview', $input)->assertOk()->json('data');
+    expect($input['review']['changes']['summary'])->toMatchArray(['accounts' => 2, 'affected_accounts' => 1, 'sessions' => 1, 'skipped_accounts' => 1]);
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_sessions/commands', $input)->assertOk();
+    expect(DB::table('runa_auth.sessions')->where('user_id', $target->id)->whereNull('revoked_at')->count())->toBe(0)
+        ->and(DB::table('runa_auth.sessions')->where('user_id', $this->adminUser->id)->whereNull('revoked_at')->count())->toBeGreaterThan(0);
+    $this->getJson('/api/runa/auth/session')->assertOk();
+});

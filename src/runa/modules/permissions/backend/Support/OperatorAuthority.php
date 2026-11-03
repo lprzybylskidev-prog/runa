@@ -8,7 +8,7 @@ use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\Modules\Auth\Contracts\OperatorAuthority as OperatorContract;
 
-/** Only the trusted framework operator bridge calls this participant, never public ingress. */
+/** Trusted framework recovery/bulk-membership participant, never direct public ingress. */
 final readonly class OperatorAuthority implements OperatorContract
 {
     public function __construct(private DatabaseManager $database, private AuthorityLock $lock, private AccessTransaction $audit) {}
@@ -35,6 +35,20 @@ final readonly class OperatorAuthority implements OperatorContract
         $role = $this->role($connection, $publicId);
 
         return $connection->table('runa_permissions.user_roles')->where('role_id', $role->id)->where('user_public_id', $publicId)->exists();
+    }
+
+    public function administrators(Connection $connection, array $publicIds): array
+    {
+        if ($publicIds === [] || count($publicIds) > 100 || count(array_unique($publicIds)) !== count($publicIds)) {
+            throw new \InvalidArgumentException('Expected one to 100 distinct selected identities.');
+        }
+        foreach ($publicIds as $publicId) {
+            new TrustedPrincipal($publicId);
+        }
+        $role = $this->role($connection, $publicIds[0]);
+
+        return $connection->table('runa_permissions.user_roles')->where('role_id', $role->id)
+            ->whereIn('user_public_id', $publicIds)->orderBy('user_public_id')->pluck('user_public_id')->all();
     }
 
     /** @return \stdClass&object{id: int, public_id: string} */

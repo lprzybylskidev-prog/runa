@@ -27,6 +27,7 @@ use Runa\Modules\Auth\Contracts\BulkUserChange;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
+use Runa\Modules\Auth\Contracts\OperatorAuthority;
 use Runa\Modules\Auth\Contracts\SessionSelection;
 use Runa\Modules\Auth\InitializeAuth;
 use Runa\Modules\Auth\Models\User;
@@ -278,6 +279,23 @@ it('initializes Audit then Auth exactly once through the real fenced module upda
 });
 
 it('resolves mixed bulk binary inversions into locked native plans with real impact and Audit', function (string $operation): void {
+    app()->instance(OperatorAuthority::class, new class implements OperatorAuthority
+    {
+        public function initialize(Connection $connection, string $publicId): void
+        {
+            throw new LogicException('Not an operator fixture.');
+        }
+
+        public function isAdministrator(Connection $connection, string $publicId): bool
+        {
+            return false;
+        }
+
+        public function administrators(Connection $connection, array $publicIds): array
+        {
+            return [];
+        }
+    });
     $actions = app(ChangeIdentity::class);
     $one = $actions->create(new NewIdentity('invert-one@example.test', name: 'One', active: true));
     $two = $actions->create(new NewIdentity('invert-two@example.test', name: 'Two'));

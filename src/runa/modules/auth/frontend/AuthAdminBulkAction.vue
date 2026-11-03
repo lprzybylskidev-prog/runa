@@ -121,7 +121,7 @@ const selectedCount = computed(() => {
     ];
   return Array.isArray(ids) ? ids.length : 0;
 });
-const blocked = computed(() => summary.value.executable === false);
+const skipped = computed(() => Number(summary.value.skipped_accounts ?? 0));
 const proofStep = ref(false);
 const proofRegion = ref<HTMLElement>();
 const fields = computed(() =>
@@ -182,7 +182,7 @@ async function execute() {
   proofStep.value = false;
 }
 async function submit() {
-  if (!review.value || !command.value || blocked.value) return;
+  if (!review.value || !command.value) return;
   if (proof.value && proof.value.requirement.value !== 'none') {
     proofStep.value = true;
     await proof.value.begin();
@@ -287,7 +287,7 @@ function cancelProof() {
             <dd v-else class="mt-1 text-2xl text-muted">—</dd>
           </div>
         </dl>
-        <dl v-if="review && !blocked" class="mt-3 space-y-2 text-sm">
+        <dl v-if="review" class="mt-3 space-y-2 text-sm">
           <div
             v-for="item in [
               {
@@ -314,13 +314,17 @@ function cancelProof() {
           </div>
         </dl>
       </div>
-      <Alert v-if="blocked" tone="warning" data-bulk-blocked>
+      <Alert v-if="skipped > 0" tone="warning" data-bulk-skipped>
         {{
           tr({
-            pl: 'Nie można wykonać tej operacji: co najmniej jeden aktywny superadministrator musi zachować dostęp. Zmień zaznaczenie kont.',
-            en: 'This operation is blocked: at least one active superadministrator must retain access. Change the account selection.',
+            pl: 'Konta superadministratorów zostaną pominięte. Operacja obejmie pozostałe zaznaczone konta.',
+            en: 'Superadministrator accounts will be skipped. The operation applies to the remaining selected accounts.',
           })
         }}
+        <span class="mt-1 block font-semibold"
+          >{{ tr({ pl: 'Pominięte konta', en: 'Skipped accounts' }) }}:
+          {{ skipped }}</span
+        >
       </Alert>
       <p v-if="summary.affected_accounts === 0" class="text-sm text-muted">
         {{
@@ -341,7 +345,6 @@ function cancelProof() {
           :disabled="
             controller.busy.value ||
             !review ||
-            blocked ||
             summary.affected_accounts === 0 ||
             section.readonly ||
             !command?.available

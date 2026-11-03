@@ -88,7 +88,7 @@ final class BulkUserMutation implements TransactionalMutation
             throw new \LogicException('Bulk mutation has no result.');
         }
 
-        return ['accounts' => $this->users->count()];
+        return ['accounts' => count($this->plans ?? []), 'skipped_accounts' => $this->users->count() - count($this->plans ?? [])];
     }
 
     public function refused(string $reason): void

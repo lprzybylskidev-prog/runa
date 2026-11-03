@@ -1385,6 +1385,11 @@ function operatorAuthorityFixture(): object
         {
             return in_array($publicId, $this->ids, true);
         }
+
+        public function administrators(Connection $connection, array $publicIds): array
+        {
+            return array_values(array_intersect($publicIds, $this->ids));
+        }
     };
     app()->instance(OperatorAuthority::class, $adapter);
 
@@ -1485,6 +1490,7 @@ it('expires and revalidates only allowlisted account exceptions with monotonic v
 })->group('auth-policy-operators');
 
 it('rejects stale bulk revocation previews and rolls back sessions with Audit without another proof', function (): void {
+    operatorAuthorityFixture();
     app()->bind(BulkUserSelection::class, fn () => new class implements BulkUserSelection
     {
         public function authorize(SessionSelection $selection): void {}

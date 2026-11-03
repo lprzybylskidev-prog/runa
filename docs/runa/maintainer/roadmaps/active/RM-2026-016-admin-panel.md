@@ -849,6 +849,16 @@ reassessment before resuming point 3; completed point history remains evidence.
     contextual blocked state, right-aligned confirmation and localized loading.
   - Author focused refusal/switching regressions; format before current asset build
     and native browser readiness. Manual acceptance 11b and final quality 12 remain.
+- [x] 11a58. Exclude every protected superadministrator from all Auth bulk mutations.
+  - Owner decision: bulk user and session/trust actions skip protected role members,
+    including inactive/locked accounts; process the rest and show skipped counts.
+  - Classify membership in one bounded owning Permissions read under authority/Auth
+    locks through the trusted Core bridge; fingerprint classification and refuse
+    changes since preview. Keep native single-account last-administrator guards.
+  - Retire superseded blocked-preview flags/logic/tests/docs, update native API
+    versions/consumers, add focused regressions and prepare current UI/runtime.
+  - Keep user details and individual actions in this same roadmap after owner
+    review of the main directory; do not begin those changes in this point.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5721,3 +5731,96 @@ No containers/networks/images/volumes were created/removed. Supported test clean
 removed its disposable worker database; development/base-test data, caches, backups
 and reports remain preserved. Owner manual point 11b and final verification 12
 remain open.
+
+### Point 11a58 — Protected superadministrators excluded from bulk mutations
+
+Owner decision, 2026-11-03: every Auth bulk operation skips all actual protected
+superadministrator role members, regardless of current eligibility/activity. This
+includes sessions and trusted-device revocation. Preserve original selection
+admission/limits, expose skipped_accounts and apply only to remaining accounts.
+Zero effective targets disable confirmation. No writes/Audit/revocations may affect
+skipped accounts. Recheck role membership under existing authority locks on execute;
+classification participates in the exact preview fingerprint. Single-account
+native guards remain, including protection of the last eligible administrator.
+This supersedes point 11a57's blocked-whole-batch preview design; retire its
+executable/refusal_reason fields and candidate-only counting code/tests/guidance.
+
+Auth-owned OperatorAuthority is an existing trusted Core integration, not a public
+ModuleApis DTO. Add administrators(Connection connection, array publicIds): array
+(list UUIDv7 in/out, maximum 100), implemented by the Permissions-owned role
+participant, delegated through OperatorPermissions. The caller holds registry,
+authority and Auth locks; source/data/fences and the exact default transaction
+remain mandatory. Read current membership in one bounded batch, never per-user
+queries. Auth never reads foreign tables. Document the signature and supported
+bulk/recovery audiences in the canonical operator guide before implementation.
+
+AuthBulkUsers remains the unreleased 2.0.0 candidate. AuthBulkSessions moves to
+2.0.0 because protected-target exclusion changes its previously published 1.0.0
+behavior. Auth stays unreleased 3.0.0; update exact consumers and current docs.
+Owner clarification: user details and individual-action presentation stay in
+RM-2026-016 after completing the main Users directory. Do not start details work
+in this point. The provisional, uncommitted RM-017 draft was withdrawn; no new
+roadmap activation or release metadata is needed for this scope.
+
+Implemented a bounded protected-membership read through the existing trusted Core
+OperatorAuthority bridge. Permissions retains its own role query and exact source/
+data/default-transaction/authority-lock guards. The batch method includes inactive
+and locked members and validates at most 100 distinct UUIDv7 inputs; bulk engines
+perform a constant number of batched reads rather than querying each account.
+The public-boundary source catalogue permits these explicit owning consumers.
+
+Bulk user plans and related inventories exclude protected members, while original
+selected-account state and the protected-ID list remain in the review fingerprint.
+Execution rechecks membership; promotion since preview refuses without writes.
+Return accounts counts processed ordinary targets and skipped_accounts identifies
+excluded targets. Bulk session/trust inventory and revocation likewise exclude
+protected members, preserve original selection limits and fingerprint classification.
+All protected account rows/Audit/session/trust effects remain untouched by bulk
+application. Existing individual native authority guards remain unchanged.
+AuthBulkSessions is now 2.0.0 with exact native/Admin/test consumers synchronized;
+Auth 3.0.0 and Permissions 2.1.0 remain current unreleased candidates. The Permissions
+change is a private trusted batch read, not a new customer mutation API. No schema,
+dependency or runtime configuration changes.
+
+Retired executable/refusal_reason blocked-preview machinery and its tests/current
+claims. The modal now always allows a valid ordinary-target review, displays an
+informational protected-account omission warning/count, and disables only zero-impact
+or otherwise invalid submissions. Current Auth/Permissions authority guides, complete
+API result contracts, source boundary catalogue and module/central changelogs are
+synchronized. Removed stale current-candidate neutral-button/blocked-batch delivery
+claims and refreshed the operator guide's obsolete storage/version introduction.
+Owner/customer AGENTS and skills already route authorization and trusted/public
+boundaries to these guides; no new operating rule, duplicate procedure or customer
+platform-edit authority is needed.
+
+Focused verification:
+
+- Supported backend one parallel process: 6 PASS / 98 assertions for active/inactive
+  administrator preservation across lifecycle, forced-change, preferences and session
+  revocation; ordinary target changes; role promotion invalidating the preview; actor
+  session preservation. The first run found an implicit 1.0.0 Admin binding after
+  API promotion; the binding was corrected explicitly and the same selection passed.
+- Supported isolated prior-consumer scenarios: 4 PASS / 66 assertions for native
+  binary inversions and stale/Audit-rollback bulk sessions; Auth-only fixtures supply
+  the explicit trusted integration instead of relying on absent Permissions storage.
+- Supported frontend: 5 PASS for review switching, omission warning and permitted
+  writes, proof flows and date clearing. No blocked-whole-batch presentation remains.
+- Source formatted before supported runtime asset build. Native local HTTP and browser
+  confirm 15 selected / 1 skipped administrator, 11 affected deactivation targets and
+  14 inversion targets. A mixed actor/pending/extra_1 fixture selection was inverted
+  twice via real reviewed commands; original ordinary activity was restored and the
+  administrator's complete lifecycle projection remained identical. Protected-only
+  selection has zero impact; bulk-session preview also reports one skipped account.
+  The modal keeps the omission warning/count and permits confirmation. Evidence is
+  under .runtime/auth-bulk-protection/ and screenshots under
+  .runtime/artifacts/playwright/auth-bulk-protection/. This is targeted implementation
+  verification/readiness, not the final quality graph or owner manual acceptance.
+
+The provisional RM-017 draft was untracked and removed after owner clarification.
+User details/individual presentation will be reviewed and implemented in this same
+roadmap only after the owner finishes the main directory; no separate roadmap or
+version confirmation is pending. This point changes no detail presentation.
+No containers/networks/images/volumes or durable databases were created/removed.
+Supported runners cleaned disposable runa_test_test_1, preserving base runa_test,
+development data, caches, backups and all evidence. Manual point 11b and final
+verification 12 remain open.

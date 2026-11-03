@@ -14,4 +14,9 @@ interface OperatorAuthority
 
     /** Include inactive administrators; no ordinary permission/eligibility shortcut. */
     public function isAdministrator(Connection $connection, string $publicId): bool;
+
+    /** @param list<string> $publicIds  At most 100 selected UUIDv7 identities.
+     * @return list<string> Current protected members, including inactive accounts.
+     */
+    public function administrators(Connection $connection, array $publicIds): array;
 }

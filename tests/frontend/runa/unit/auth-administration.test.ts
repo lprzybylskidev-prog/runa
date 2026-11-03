@@ -695,8 +695,8 @@ it('Auth administration range filters map compact ranges and reset them with sha
 });
 
 it.each([false, true])(
-  'grouped bulk operations refresh impact and handle a blocked review (%s)',
-  async (blocked) => {
+  'grouped bulk operations refresh impact and allow writes while skipping protected accounts (%s)',
+  async (protectedAccounts) => {
     const bulk = section('bulk_users', [
       { ...field('public_ids', false), type: 'uuid', multiple: true },
       field('summary'),
@@ -732,8 +732,7 @@ it.each([false, true])(
             summary: {
               accounts: 2,
               affected_accounts: 2,
-              executable: !blocked || body!.command === 'activate',
-              refusal_reason: blocked ? 'last_superadmin_required' : null,
+              skipped_accounts: protectedAccounts ? 1 : 0,
             },
           },
           requirement: 'none',
@@ -785,19 +784,11 @@ it.each([false, true])(
     );
     await vi.waitFor(() => expect(form.busy.value).toBe(false));
     expect(writes).toEqual([]);
-    if (blocked) {
-      expect(wrapper.get('[data-bulk-blocked]').text()).toContain(
-        'superadministrator',
+    if (protectedAccounts) {
+      expect(wrapper.get('[data-bulk-skipped]').text()).toContain(
+        'Superadministrator',
       );
       expect(wrapper.get('[data-bulk-impact]').text()).toContain('2');
-      expect(
-        wrapper
-          .findAll('button')
-          .find((button) => button.text() === 'Confirm')!
-          .attributes('disabled'),
-      ).toBeDefined();
-      expect(writes).toEqual([]);
-      return;
     }
     await wrapper
       .findAll('button')

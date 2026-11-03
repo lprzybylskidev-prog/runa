@@ -14,6 +14,7 @@ use Runa\Modules\Auth\Contracts\BulkUserChange;
 use Runa\Modules\Auth\Contracts\BulkUserSelection;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
+use Runa\Modules\Auth\Contracts\OperatorAuthority;
 use Runa\Modules\Auth\Contracts\SessionSelection;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
@@ -35,25 +36,7 @@ final readonly class BulkUsers implements AuthBulkUsers
             return $this->transactions->run(function (Connection $connection) use ($selection, $change): array {
                 $this->transactions->lockAuthority($connection);
                 $users = $this->lock($selection);
-                $original = $users->map(static fn (User $user): User => clone $user);
-                try {
-                    $plans = $this->prepare($connection, $users, $change);
-                } catch (OperationRejected $error) {
-                    if ($error->reason !== 'last_superadmin_required'
-                        || ! in_array($change->operation, ['deactivate', 'delete', 'toggle_activation', 'toggle_deletion', 'factor_reset', 'require_verification'], true)) {
-                        throw $error;
-                    }
-                    // A refused preview describes candidate changes only; no plan is applied.
-                    $affected = $original->filter(static fn (User $user): bool => match ($change->operation) {
-                        'deactivate' => ! $user->trashed() && ($user->active || $user->activate_at !== null || $user->deactivate_at !== null),
-                        'delete', 'toggle_activation' => ! $user->trashed(),
-                        default => true,
-                    })->count();
-
-                    return array_replace($this->snapshot($connection, $original, $change), [
-                        'affected_accounts' => $affected, 'sessions' => 0, 'trusted_devices' => 0, 'executable' => false, 'refusal_reason' => 'last_superadmin_required',
-                    ]);
-                }
+                $plans = $this->prepare($connection, $users, $change);
 
                 return $this->snapshot($connection, $users, $change, $plans);
             });
@@ -110,7 +93,7 @@ final readonly class BulkUsers implements AuthBulkUsers
 
     /** @param Collection<int,User> $users
      * @param  list<User|LifecyclePlan>  $plans  Validated in-memory plans for impact projection; validation needs only the fingerprint.
-     * @return array{fingerprint:string,accounts:int,affected_accounts:int,sessions:int,trusted_devices:int,executable:bool,refusal_reason:?string}
+     * @return array{fingerprint:string,accounts:int,affected_accounts:int,sessions:int,trusted_devices:int,skipped_accounts:int}
      */
     public function snapshot(Connection $connection, Collection $users, BulkUserChange $change, array $plans = []): array
     {
@@ -118,9 +101,11 @@ final readonly class BulkUsers implements AuthBulkUsers
         foreach ($users as $user) {
             $state[] = [$user->public_id, $user->version, $user->security_version, $user->preference_revision];
         }
+        $protected = $this->protectedAccounts($connection, $users);
+        $targets = $users->reject(fn (User $user): bool => in_array($user->public_id, $protected, true));
         $related = [];
         foreach (['sessions', 'trusted_devices', 'entry_tokens', 'policy_exceptions'] as $table) {
-            $rows = $connection->table('runa_auth.'.$table)->whereIn('user_id', $users->modelKeys());
+            $rows = $connection->table('runa_auth.'.$table)->whereIn('user_id', $targets->modelKeys());
             if ($table === 'entry_tokens') {
                 $rows->whereNull('consumed_at')->whereNull('invalidated_at');
             } else {
@@ -143,9 +128,9 @@ final readonly class BulkUsers implements AuthBulkUsers
             }
         }
         if (in_array($change->operation, ['password_reset', 'factor_reset'], true)) {
-            $revoked = $users->modelKeys();
+            $revoked = $targets->modelKeys();
         }
-        $trust = $change->operation === 'revoke_trust' ? $users->modelKeys() : $revoked;
+        $trust = $change->operation === 'revoke_trust' ? $targets->modelKeys() : $revoked;
         $sessions = count(array_filter($related['sessions'], fn ($row) => in_array($row->user_id, $revoked, true)));
         $devices = count(array_filter($related['trusted_devices'], fn ($row) => in_array($row->user_id, $trust, true)));
         $revision = $connection->table('shared.modules')->where('module_id', 'runa.auth')->value('settings_revision');
@@ -165,7 +150,7 @@ final readonly class BulkUsers implements AuthBulkUsers
             $affected += (int) ($rows !== null ? count(array_filter($rows, fn ($row) => $row->user_id === $plan->id)) > 0 : ($change->operation !== 'remove_avatar' || $plan->avatar_path !== null));
         }
 
-        return ['fingerprint' => hash('sha256', json_encode([$revision, $change, $state, $related], JSON_THROW_ON_ERROR)), 'accounts' => $users->count(), 'affected_accounts' => $affected, 'sessions' => $sessions, 'trusted_devices' => $devices, 'executable' => true, 'refusal_reason' => null];
+        return ['fingerprint' => hash('sha256', json_encode([$revision, $change, $state, $related, $protected], JSON_THROW_ON_ERROR)), 'accounts' => $users->count(), 'affected_accounts' => $affected, 'sessions' => $sessions, 'trusted_devices' => $devices, 'skipped_accounts' => count($protected)];
     }
 
     /** @param Collection<int,User> $users
@@ -173,6 +158,8 @@ final readonly class BulkUsers implements AuthBulkUsers
      */
     public function prepare(Connection $connection, Collection $users, BulkUserChange $change): array
     {
+        $protected = $this->protectedAccounts($connection, $users);
+        $users = $users->reject(fn (User $user): bool => in_array($user->public_id, $protected, true));
         // Resolve all binary changes from the same locked snapshot before any plan mutates a model.
         $changes = [];
         $exclude = [];
@@ -211,6 +198,18 @@ final readonly class BulkUsers implements AuthBulkUsers
         }
 
         return $plans;
+    }
+
+    /** @param Collection<int,User> $users
+     * @return list<string>
+     */
+    private function protectedAccounts(Connection $connection, Collection $users): array
+    {
+        if ($users->isEmpty()) {
+            return [];
+        }
+
+        return app(OperatorAuthority::class)->administrators($connection, $users->pluck('public_id')->all());
     }
 
     /** @param list<User|LifecyclePlan> $plans */

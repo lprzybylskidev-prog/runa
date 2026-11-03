@@ -828,7 +828,7 @@ it('integrates Permissions selection grants with reviewed Auth bulk revocation a
     permissionAccessManager($this);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('selected-bulk@example.test', name: 'Selected', active: true));
     $selection = new SessionSelection([$target->publicId]);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthBulkSessions::class, '1.0.0');
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthBulkSessions::class, '2.0.0');
     ($this->directPermission)('runa.auth.sessions.bulk_revoke');
     ($this->asPermissionUser)(function () use ($selection, $api): void {
         expect(fn () => $api->preview($selection))->toThrow(OperationRejected::class);

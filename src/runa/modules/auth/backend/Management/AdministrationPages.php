@@ -478,7 +478,7 @@ final class AdministrationPages implements ManagementPageProvider
             new ManagementBinding('policy2', LifecyclePolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
             new ManagementBinding('policy_history', PolicyHistorySection::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
             new ManagementBinding('bulk_users', BulkUserSection::class, [$target(AuthBulkUsers::class, ['preview', 'execute'], '2.0.0')]),
-            new ManagementBinding('bulk_sessions', BulkSessionSection::class, [$target(AuthBulkSessions::class, ['preview', 'revoke'])]),
+            new ManagementBinding('bulk_sessions', BulkSessionSection::class, [$target(AuthBulkSessions::class, ['preview', 'revoke'], '2.0.0')]),
         ];
     }
 }

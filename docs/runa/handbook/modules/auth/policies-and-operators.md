@@ -1,9 +1,9 @@
 # Auth policies and trusted operator recovery
 
-Auth 0.7.0 adds the transactional `0.6.0 -> 0.7.0` storage/defaults edge,
-AuthPolicies 1.0.0 and AuthBulkSessions 1.0.0. Audit ^0.3.0 and framework API
-^1.0.0 remain unchanged. Install through the fenced ModuleUpdates workflow;
-ordinary startup does not migrate or initialize an administrator.
+Auth 3.0.0 supplies AuthPolicies 1.0.0 and AuthBulkSessions 2.0.0 with
+Audit ^1.0.0 and framework API ^1.0.0. Install the current per-table storage and
+technical initialization through the fenced ModuleUpdates workflow; ordinary
+startup does not migrate or initialize an administrator.
 
 ## One current policy and immutable history
 
@@ -62,7 +62,21 @@ extension never moves the session's captured absolute deadline.
 
 ## Bulk session revocation
 
-AuthBulkSessions accepts an immutable SessionSelection for one/selected UUIDv7
+The public Auth-owned administrative consumption entrypoint is guarded
+`ModuleApis::resolve('runa.auth', AuthBulkSessions::class, '2.0.0')`; the contract
+lives under Auth backend/Contracts and its runtime engine remains private.
+
+```php
+interface AuthBulkSessions {
+    public function preview(SessionSelection $selection, bool $trust = false): array;
+    public function revoke(SessionSelection $selection, bool $trust, string $fingerprint): array;
+}
+// preview: {accounts:list<safe eligible inventory>, selected_accounts:int,
+// skipped_accounts:int, sessions:int, trusted_devices:int, fingerprint:string}
+// revoke: {accounts:int, skipped_accounts:int, sessions:int, trusted_devices:int}
+```
+
+AuthBulkSessions 2.0.0 accepts an immutable SessionSelection for one/selected UUIDv7
 accounts or an explicit all-account selection. Preview contains exact unrevoked
 session identities/counts and optional trust impact. Execution requires
 `runa.auth.sessions.bulk_revoke` and the matching preview fingerprint; no
@@ -79,7 +93,11 @@ inside the same transaction.
 
 Each operation is atomic and limited to 100 accounts and 10000 total session/trust
 rows. All-account mode exceeding these limits refuses before mutation; it never
-silently truncates or partially succeeds. The neutral BulkUserSelection bridge calls guarded PermissionsSelections.users
+silently truncates or partially succeeds among eligible targets. Protected
+superadministrator accounts are explicitly excluded, including inactive/locked
+members; preview reports selected_accounts and skipped_accounts, and accounts
+contains only eligible inventories. Revocation reports processed accounts and
+skipped_accounts. Protected membership participates in the exact fingerprint. The neutral BulkUserSelection bridge calls guarded PermissionsSelections.users
 on both preview and execution, requiring current `runa.permissions.users.select`.
 Selection intent is never a reusable grant; Auth still resolves current targets
 and requires its own bulk permission and exact reviewed fingerprint. Each target
@@ -196,3 +214,16 @@ through the explicit [module fixture workflow](../../data/seeding.md#explicit-mo
 The fixture administrator uses this same real initialization/singleton/authority
 contract and refuses an installation already owned by another administrator.
 It neither resets an existing password nor overrides current security policy.
+
+## Trusted batch authority classification
+
+Auth owns the trusted Core consumption contract OperatorAuthority under
+backend/Contracts; it is not a customer ModuleApis entrypoint. In addition to
+initialize(Connection, string): void and isAdministrator(Connection, string): bool,
+it supports administrators(Connection $connection, array $publicIds): array:
+list<string> UUIDv7 input/output, at most 100 distinct input identities. The Core
+OperatorPermissions bridge delegates to the source-owned Permissions participant
+at runtime. Bulk callers already hold registry/authority/Auth locks on the exact
+default transaction; current Core source/data/fences remain required. The owning
+Permissions query includes inactive/locked superadministrators and batches current
+protected system-role membership without exposing foreign tables to Auth.

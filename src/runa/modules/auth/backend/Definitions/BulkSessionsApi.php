@@ -13,7 +13,7 @@ final class BulkSessionsApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(AuthBulkSessions::class, BulkSessionsProxy::class, BulkSessions::class, '1.0.0', [
+        return new ApiDefinition(AuthBulkSessions::class, BulkSessionsProxy::class, BulkSessions::class, '2.0.0', [
             'preview' => new ApiOperation('sessions.bulk_preview', 'runa.auth.sessions.bulk_revoke'),
             'revoke' => new ApiOperation('sessions.bulk_revoke', 'runa.auth.sessions.bulk_revoke'),
         ]);

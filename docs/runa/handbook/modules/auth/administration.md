@@ -236,8 +236,8 @@ interface AuthBulkUsers {
     public function execute(SessionSelection $selection, BulkUserChange $change, string $fingerprint): array;
 }
 BulkUserChange::__construct(string $operation, ?string $at = null, ?bool $enabled = null)
-// preview: {fingerprint:string, accounts:int, affected_accounts:int, sessions:int, trusted_devices:int, executable:bool, refusal_reason:?string}
-// execute: {accounts:int}
+// preview: {fingerprint:string, accounts:int, affected_accounts:int, sessions:int, trusted_devices:int, skipped_accounts:int}
+// execute: {accounts:int, skipped_accounts:int}
 ```
 
 Only explicit nonempty selections of at most 99 accounts are accepted. Each
@@ -342,9 +342,16 @@ stored enablement, administrator-copy recipient and delivery preferences across
 the explicit owning upgrade. Old pending notices are revalidated against the
 current deadline before delivery; password/session/token deadlines are unchanged.
 
-A native bulk preview blocked by last-superadministrator protection is read-only:
-it returns executable=false and refusal_reason=last_superadmin_required with the
-number of selected accounts whose state the request would change. It claims no
-session/device revocations and cannot be confirmed. The Admin default displays
-these candidate counts and the owning invariant reason in a compact modal;
-execution continues to enforce the same guard independently of presentation.
+Every Auth bulk action excludes protected superadministrator role members, including
+inactive, locked and deleted retained members. The original captured selection and
+99/100 limits remain; `accounts` in user preview is selected count,
+`skipped_accounts` is the protected count and `affected_accounts` counts changes
+only among remaining accounts. Execution `accounts` counts admitted nonprotected
+accounts. The compact modal warns that protected accounts will be skipped, displays
+the skipped count and permits confirmation when ordinary accounts are affected.
+A selection containing only protected accounts has zero impact and cannot be
+confirmed. No skipped account receives bulk mutations, Audit events or session/trust
+revocations. Exact membership is reread under the shared authority lock and included
+in the preview fingerprint, so promotion/demotion requires a new explicit review.
+Single-account native actions retain the last-eligible-administrator invariant;
+individual-action presentation remains outside this bulk-protection change.

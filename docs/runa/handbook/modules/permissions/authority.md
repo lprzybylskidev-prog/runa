@@ -110,3 +110,9 @@ events include old/new sets and provenance. Proofs, all histories, revisions and
 unlinking roll back together. No automatic per-pivot events are invented. Existing
 metadata declares these separate capabilities, preview/proof/revision requirements
 and explicit confirmation and is consumed by the [Admin authority and force-deletion sections](administration.md).
+
+Auth bulk operations exclude every protected superadministrator account before
+mutation, regardless of activity or locks, through the trusted batch membership
+contract. Their preview warns about omitted targets and fingerprints current
+membership. Individual native operations continue to enforce the last eligible
+administrator invariant above. See [Auth bulk contracts](../auth/administration.md#native-bulk-user-operations).

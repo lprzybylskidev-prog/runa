@@ -355,6 +355,8 @@
     "Runa\\Modules\\Auth\\Contracts\\OperatorAuthority": [
       "src/runa/Integration/Core/OperatorPermissions.php",
       "src/runa/Providers/CoreIntegrationServiceProvider.php",
+      "src/runa/modules/auth/backend/Actions/BulkSessions.php",
+      "src/runa/modules/auth/backend/Actions/BulkUsers.php",
       "src/runa/modules/auth/backend/Actions/OperatorAccounts.php",
       "src/runa/modules/auth/backend/Contracts/OperatorAuthority.php",
       "src/runa/modules/permissions/backend/Support/OperatorAuthority.php"
