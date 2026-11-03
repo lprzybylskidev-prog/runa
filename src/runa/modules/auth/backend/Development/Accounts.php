@@ -27,7 +27,7 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
 
     public function seeders(): array
     {
-        return [AuthDevelopmentSeeder::class];
+        return [AuthDevelopmentSeeder::class, DevelopmentAdministratorSeeder::class];
     }
 
     public function populate(): void
@@ -48,7 +48,8 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
                 if ($c->table('runa_auth.development_fixtures')->where('scenario', $scenario)->exists()) {
                     continue;
                 }
-                $input = new NewIdentity('dev.'.$scenario.'@example.test', name: 'Development '.str_replace('_', ' ', $scenario).' '.$number,
+                $email = $scenario === 'administrator' ? config('seeding.development.'.AuthDevelopmentSeeder::class.'.administrator_email') : null;
+                $input = new NewIdentity(is_string($email) && $email !== '' ? $email : 'dev.'.$scenario.'@example.test', name: 'Development '.str_replace('_', ' ', $scenario).' '.$number,
                     login: 'dev.'.$scenario, active: ! in_array($scenario, ['inactive', 'scheduled'], true), approved: $scenario !== 'pending');
                 if ($scenario === 'administrator') {
                     // Existing non-fixture administrators/identifiers refuse; never adopt or regrant them.

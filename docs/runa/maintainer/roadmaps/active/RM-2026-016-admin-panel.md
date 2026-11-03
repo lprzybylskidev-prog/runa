@@ -797,6 +797,14 @@ reassessment before resuming point 3; completed point history remains evidence.
     in root AGENTS and the canonical database guide. Customer authority is unchanged.
   - Deliver focused migration/lifecycle regressions, current documentation and
     runnable assets/data. Manual acceptance and broad final gates remain last.
+- [x] 11a51. Supply configured automatic development administrator seeding.
+  - Owner requests a reusable local account after each database rebuild and
+    explicitly approves a short initial password exception only for that fixture.
+  - Keep credentials in ignored local environment configuration, use the real
+    operator-created superadministrator and preserve existing credentials on reruns.
+  - Opt the local default seed flow into the module development graph; retain
+    production/receipt guards and ordinary runtime password policy. Add focused
+    regressions and prepare a fresh seeded local database before handover.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5314,3 +5322,47 @@ The owner can initialize the freshly seeded administrator's password privately
 with ./bin/artisan runa:seed:accounts administrator --setup. No preset password
 was introduced. Manual frontend acceptance 11b and final verification 12 remain
 open; these focused implementation checks are not the final quality gate.
+
+### Point 11a51 — Automatic configured development administrator
+
+Owner explicitly requests a fixed local administrator after each rebuild and
+approves the shorter initial fixture password on 2026-11-03. Auth now supplies
+DevelopmentAdministratorSeeder after its account corpus; configured local default
+application seeding includes the complete module graph. Credentials live only in
+ignored .env.dev.local/.env; tracked templates contain empty placeholders and an
+off-by-default module-seeding switch. Testing/production defaults do not read
+these local credential inputs. Direct development seeds keep console/environment
+and production-receipt guards. The real operator creates protected administrator
+authority; the credential seeder checks provenance/subject/email/authority,
+initializes only a missing password, verifies mail and consumes operator tokens
+inside the existing default transaction with Audit. Reruns preserve changed private
+credentials and grant/account edits. Runtime password validation is untouched.
+The documented exception is confined to initial development fixture provisioning
+and retires with that optional capability, never as a general validation flag.
+
+Auth retains its unreleased 3.0.0 scope; no public signature or dependent module
+version changes. Source-owned seeding/public command guides and current changelogs
+are synchronized. Both instruction products already delegate seeding and secret
+handling to the canonical guide; no duplicate workflow or customer platform-edit
+authority is added, so AGENTS/skills require no further edits.
+
+Focused supported backend execution: 4 PASS / 46 assertions for automatic default
+seeding, actual protected role, short initial fixture password, normal password
+policy refusal, credential/Audit idempotence, atomic Audit rollback and production
+refusal, plus the unchanged unconfigured interactive corpus. Disposable worker
+cleanup succeeded and preserved runa_test. Knowledge was stale after roadmap edits;
+focused source inspection was used and the index was refreshed for the commit.
+
+The owner additionally authorized an immediate fresh runtime. Announced scope was
+45 tables in local database runa across shared/runa_auth/runa_audit/runa_permissions;
+15 accounts matched development provenance. The exact table list was dropped with
+RESTRICT, native Core preparation and application migration succeeded, then ordinary
+db:seed automatically created the configured administrator plus the complete
+15-account corpus. The app was brought up before audited fixture seeding and queue
+workers received a restart signal. A native HTTP diagnostic initially lacked the
+CSRF bootstrap (419), then used the owning csrf endpoint and confirmed successful
+login plus Admin entry through real HTTP. No password/token was printed. Evidence:
+.runtime/migrations/admin-fresh-prepare.log and admin-login.mjs. No external test
+containers/networks/volumes were created or removed; development services, the test
+base database, caches, backups and reports remain. Manual owner acceptance 11b and
+complete final automated verification 12 remain open.

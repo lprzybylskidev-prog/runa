@@ -372,7 +372,13 @@ graph; `runa:seed:development --modules` executes it only in local/testing conso
 context. `runa:seed:accounts` lists safe local fixture identifiers and unset-password
 status. `runa:seed:accounts <scenario> --setup` uses hidden interactive confirmation
 to initialize only an absent password; it accepts no password argument and never
-replaces existing credentials. Production receipt/environment checks apply even
+replaces existing credentials. Optionally configure the ignored local
+`DEV_SEED_MODULES=true`, `DEV_SEED_ADMIN_EMAIL` and `DEV_SEED_ADMIN_PASSWORD`
+inputs to initialize the protected fixture administrator automatically through
+ordinary `db:seed` after each complete development database rebuild. The owning
+[seeding guide](../data/seeding.md#optional-automatic-development-administrator)
+documents the development-only initial-password exception and production guards.
+Production receipt/environment checks apply even
 with local APP_ENV or --force. Native db:seed/default/production seeding remain
 application-owned. See [seeding](../data/seeding.md#explicit-module-development-contributors)
 for prerequisites, independent tuning, contribution contracts and manual navigation.

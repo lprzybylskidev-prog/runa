@@ -2,6 +2,8 @@
 
 ## 3.0.0 — 2026-11-03
 
+- Add optional locally configured automatic superadministrator fixture seeding after database rebuilds. Keep credentials outside Git, preserve existing passwords, enforce production guards and retain normal runtime password validation; only the initial development fixture permits an owner-approved shorter password.
+
 - Remove independent account expiry in favor of scheduled deactivation, remove users.expires_at and its command/fact/filter, and preserve historical Audit reads. Reminder mail/settings/categories now use scheduled deactivation, including administrator-copy routing. Consolidate unpublished platform, Audit, Auth and Permissions migrations into final per-table CREATE definitions; initialize technical rows through seeds/initializers and recreate the disposable development database. Remove the unnecessary expiry conversion migration and settings rename machinery. Auth moves to 3.0.0 and Lifecycle/Administration/BulkUsers APIs to 2.0.0; current dependent constraints/consumers are synchronized.
 
 ## 2.1.0 — 2026-10-31

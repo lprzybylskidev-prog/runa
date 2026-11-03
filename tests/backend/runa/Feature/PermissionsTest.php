@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\AuthorityGuard;
@@ -49,6 +50,7 @@ use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Contracts\SessionSelection;
 use Runa\Modules\Auth\Development\Accounts;
 use Runa\Modules\Auth\Development\AuthDevelopmentSeeder;
+use Runa\Modules\Auth\Development\DevelopmentAdministratorSeeder;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Permissions\Actions\SynchronizeDeclarations;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
@@ -1112,3 +1114,49 @@ it('serializes permission members of multiple roles as JSON lists', function ():
         }
     });
 })->group('permissions-access');
+
+it('automatically seeds the configured development administrator with a scoped initial password exception', function (): void {
+    config()->set('queue.default', 'database');
+    config()->set('seeding.development_modules', true);
+    $key = 'seeding.development.'.AuthDevelopmentSeeder::class;
+    $password = 'Fixture8';
+    config()->set($key.'.administrator_email', 'owner-fixture@example.test');
+    config()->set($key.'.administrator_password', $password);
+    expect(Artisan::call('db:seed', ['--force' => true]))->toBe(0);
+    $admin = User::where('email', 'owner-fixture@example.test')->firstOrFail();
+    expect(Hash::check($password, $admin->password))->toBeTrue()
+        ->and($admin->email_verified_at)->not->toBeNull()
+        ->and($admin->password_change_required)->toBeFalse();
+    $role = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('id');
+    expect(DB::table('runa_permissions.user_roles')->where('user_public_id', $admin->public_id)->where('role_id', $role)->exists())->toBeTrue();
+    expect(DB::table('runa_auth.operator_tokens')->where('user_id', $admin->id)->whereNull('consumed_at')->exists())->toBeFalse();
+    expect(fn () => DB::transaction(fn () => app(Passwords::class)->replaceLocked(DB::connection(), $admin, 'Other123')))->toThrow(ValidationException::class);
+    $hash = $admin->fresh()->password;
+    $events = DB::table('runa_audit.events')->count();
+    config()->set($key.'.administrator_password', 'Other123');
+    expect(Artisan::call('db:seed', ['--force' => true]))->toBe(0);
+    expect($admin->fresh()->password)->toBe($hash)->and(DB::table('runa_audit.events')->count())->toBe($events);
+    expect(DB::table('runa_audit.events')->get()->toJson())->not->toContain($password, $hash);
+    app()->instance('env', 'production');
+    try {
+        expect(fn () => app(DevelopmentAdministratorSeeder::class)->run())->toThrow(RuntimeException::class);
+    } finally {
+        app()->instance('env', 'testing');
+    }
+});
+
+it('rolls back the configured development administrator password when Audit refuses initialization', function (): void {
+    config()->set('queue.default', 'database');
+    $key = 'seeding.development.'.AuthDevelopmentSeeder::class;
+    config()->set($key.'.administrator_email', 'rollback-fixture@example.test');
+    config()->set($key.'.administrator_password', 'Fixture8');
+    app(Accounts::class)->populate();
+    $admin = User::where('email', 'rollback-fixture@example.test')->firstOrFail();
+    DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT refuse_dev_password CHECK (action <> 'development.password_initialized')");
+    try {
+        expect(fn () => app(DevelopmentAdministratorSeeder::class)->run())->toThrow(AuditUnavailable::class);
+        expect($admin->fresh()->password)->toBeNull()->and($admin->fresh()->email_verified_at)->toBeNull();
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT refuse_dev_password');
+    }
+});
