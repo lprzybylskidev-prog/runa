@@ -831,6 +831,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     grants, last-administrator protection, Audit and per-operation proof. Reuse
     default UI controls and public replacement seams. Implement tests/docs; broad
     verification remains 12 and manual acceptance remains 11b.
+- [x] 11a55. Restore Auth Users runtime build/source alignment after hook formatting.
+  - Reproduce the owner-reported unavailable component; inspect source/build
+    fingerprints, rebuild current assets after formatting/commit hooks and verify
+    native protected Users page plus grouped modal. Preserve identity guards.
+  - Manual acceptance remains 11b and broad final verification remains 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5576,3 +5581,33 @@ No task-created containers/networks/images/volumes require removal. Supported
 runners cleaned disposable runa_test_test_1 after inspecting ownership/activity;
 development data, base runa_test, caches, backups and reports remain preserved.
 Manual owner acceptance 11b and final verification 12 remain open.
+
+### Point 11a55 — Auth Users build/source alignment repair
+
+Owner reports the Users component unavailable after point 11a54. Native browser
+reproduction confirms the message. The Admin resolver correctly refuses mismatched
+source/build identities; investigate asset alignment after source formatting before
+changing component guards or application behavior.
+
+Confirmed cause: the final point-11a54 formatting changed AuthAdminBulkAction.vue
+and components/admin_users.vue after the last asset build/readiness diagnostic.
+The public runa-components.json therefore carried obsolete source hashes, and the
+native Users projection correctly returned component.build_id=null. This was a
+runtime preparation error, not a Vue runtime exception; component guards remain
+unchanged. The earlier pre-format rendered PASS did not cover the final formatted
+source. Rebuilt assets after all source formatting with the supported pnpm build;
+all Auth source hashes now match the component manifest.
+
+Native authenticated HTTP now returns a current build identity. A real browser
+loads the Users table and neutral grouped buttons, opens the activity modal,
+selects inversion and waits for the completed impact preview/enabled confirmation;
+no unavailable-component message remains. Evidence is under
+.runtime/auth-bulk-repair/ and .runtime/artifacts/playwright/auth-bulk-repair/.
+This is targeted runtime repair/readiness, not final quality verification or owner
+manual acceptance. No source behavior, contracts, versions, dependencies, current
+public guides or reusable owner/customer instruction products changed; existing
+manual-readiness policy already requires current built assets. Only roadmap
+evidence is committed, so its formatting cannot invalidate Auth source hashes.
+No containers/networks/volumes/databases were created or removed; all development
+and test data, caches, backups and reports remain preserved. Manual point 11b and
+final point 12 remain open.
