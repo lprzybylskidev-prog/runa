@@ -115,7 +115,7 @@ it('Auth deleted filter defaults to current records and exposes deleted and all 
   );
 });
 
-it.each(['schedule_activation', 'delete'])(
+it.each(['schedule_activation', 'delete', 'set_attempt_lock'])(
   'Auth bulk %s reviews impact and confirms through its password step only when required',
   async (operation) => {
     const protectedAction = operation === 'delete';
@@ -192,6 +192,20 @@ it.each(['schedule_activation', 'delete'])(
     expect(wrapper.find('input[type=password]').exists()).toBe(false);
     expect(wrapper.findAllComponents(DateTimeRangeInput)).toHaveLength(0);
     if (!protectedAction) expect(wrapper.find('input').exists()).toBe(true);
+    if (operation === 'set_attempt_lock') {
+      await vi.waitFor(() => expect(form.busy.value).toBe(false));
+      wrapper
+        .getComponent(Select)
+        .vm.$emit('update:modelValue', 'set_attempt_lock:clear');
+      await vi.waitFor(() =>
+        expect(writes.filter((path) => path.endsWith('/preview'))).toHaveLength(
+          2,
+        ),
+      );
+      await vi.waitFor(() => expect(form.busy.value).toBe(false));
+      expect(form.values.value['bulk_users.at']).toBeNull();
+      expect(wrapper.find('input').exists()).toBe(false);
+    }
     await wrapper
       .findAll('button')
       .find((button) => button.text() === 'Confirm')!
@@ -603,7 +617,7 @@ it('Auth administration keeps filters above bulk actions and creation in the dir
   await wrapper.get('tbody input[type=checkbox]').setValue(true);
   await wrapper
     .findAll('button')
-    .find((b) => b.attributes('data-bulk-command') === 'bulk_users:deactivate')!
+    .find((b) => b.attributes('data-bulk-command') === 'bulk_users:activity')!
     .trigger('click');
   await vi.waitFor(() =>
     expect(form.values.value['bulk_users.public_ids']).toEqual([target]),
@@ -672,4 +686,93 @@ it('Auth administration range filters map compact ranges and reset them with sha
     ).toEqual({ start: null, end: null }),
   );
   expect(wrapper.findAll('fieldset')).toHaveLength(0);
+});
+
+it('grouped bulk operations choose one native command and invalidate the previous review', async () => {
+  const bulk = section('bulk_users', [
+    { ...field('public_ids', false), type: 'uuid', multiple: true },
+    field('summary'),
+  ]);
+  bulk.commands = ['activate', 'deactivate', 'toggle_activation'].map(
+    (key) => ({
+      key,
+      title: key,
+      inputs: ['public_ids'],
+      mode: 'independent',
+      requirement: 'none',
+      destructive: true,
+      preview_required: true,
+      bulk: false,
+      action: null,
+      available: true,
+      intent: 'action',
+    }),
+  );
+  const controller = page([bulk]);
+  const previews: string[] = [];
+  const writes: string[] = [];
+  vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+    const path = new URL(String(input), window.location.origin).pathname;
+    const body = init?.body
+      ? (JSON.parse(String(init.body)) as { command: string })
+      : null;
+    if (path.endsWith('/preview')) {
+      previews.push(body!.command);
+      return response({
+        fingerprint: 'a'.repeat(64),
+        changes: { summary: { accounts: 2, affected_accounts: 2 } },
+        requirement: 'none',
+        every_action: true,
+      });
+    }
+    if (path.endsWith('/commands')) {
+      writes.push(body!.command);
+      return response({
+        status: 'committed',
+        record: null,
+        operation_id: null,
+      });
+    }
+    return response({
+      public_id: null,
+      revision: '0',
+      values: { public_ids: [target], summary: null },
+    });
+  });
+  let form!: AdminFormController;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller);
+        return () =>
+          h(
+            AdminForm,
+            { controller: form },
+            {
+              default: () =>
+                h(AuthAdminBulkAction, {
+                  page: controller,
+                  section: bulk,
+                  controller: form,
+                }),
+            },
+          );
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(previews).toEqual(['activate']));
+  await vi.waitFor(() => expect(form.busy.value).toBe(false));
+  wrapper
+    .getComponent(Select)
+    .vm.$emit('update:modelValue', 'toggle_activation');
+  await vi.waitFor(() =>
+    expect(previews).toEqual(['activate', 'toggle_activation']),
+  );
+  await vi.waitFor(() => expect(form.busy.value).toBe(false));
+  expect(writes).toEqual([]);
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Confirm')!
+    .trigger('click');
+  await vi.waitFor(() => expect(writes).toEqual(['toggle_activation']));
 });

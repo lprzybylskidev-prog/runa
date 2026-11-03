@@ -181,7 +181,7 @@ final class AdministrationPages implements ManagementPageProvider
         'reason' => 'powód',
         'recovery_required' => 'wymagane odzyskanie',
         'replace' => 'zastąp',
-        'require_password_change' => 'wymagaj zmiany hasła',
+        'require_password_change' => 'wymuś zmianę hasła',
         'restore' => 'przywróć',
         'revision' => 'rewizja',
         'running' => 'w toku',
@@ -253,7 +253,10 @@ final class AdministrationPages implements ManagementPageProvider
             'schedule_deactivation' => ['Termin dezaktywacji', 'Deactivation schedule'],
             'set_attempt_lock' => ['Blokada prób', 'Attempt lock'],
             'set_security_lock' => ['Blokada bezpieczeństwa', 'Security lock'],
-            'require_password_change' => ['Wymagana zmiana hasła', 'Required password change'],
+            'toggle_activation' => ['Odwróć aktywność', 'Invert activity'],
+            'toggle_deletion' => ['Odwróć stan usunięcia', 'Invert deletion state'],
+            'toggle_security_lock' => ['Odwróć blokadę bezpieczeństwa', 'Invert security lock'],
+            'require_password_change' => ['Wymuś zmianę hasła', 'Force password change'],
             'invite' => ['Wyślij zaproszenia', 'Send invitations'],
             'invalidate_invitation' => ['Unieważnij zaproszenia', 'Invalidate invitations'],
             'require_verification' => ['Ponów weryfikację e-maili', 'Reverify emails'],
@@ -274,7 +277,7 @@ final class AdministrationPages implements ManagementPageProvider
             if (in_array($operation, ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'], true)) {
                 $inputs[] = 'at';
             }
-            if (in_array($operation, ['set_security_lock', 'require_password_change'], true)) {
+            if ($operation === 'set_security_lock') {
                 $inputs[] = 'enabled';
             }
             $spec = $command($labels[$operation][1], $access['operation'], $access['permission'], $inputs, BulkUserOperations::proof($operation) === 'none' ? null : 'runa.auth.users.bulk.'.$operation, true, true);

@@ -6,7 +6,8 @@ import type {
   AdminComponentRegistry,
   AdminSectionPresentationProps,
 } from '@/runa/admin';
-import { Button, ContentLoading, FormNotifications } from '@/runa/ui';
+import { authBulkGroup } from './bulkGroups';
+import { Button, ContentLoading, FormNotifications, Select } from '@/runa/ui';
 import AuthOperationProofFields from './AuthOperationProofFields.vue';
 
 const props = defineProps<
@@ -15,7 +16,81 @@ const props = defineProps<
   }
 >();
 const { locale, t: tr } = useAdminLocale();
-const command = computed(() => props.section.commands[0]);
+type OperationChoice = {
+  value: string;
+  label: string;
+  command: AdminSectionPresentationProps['section']['commands'][number];
+  enabled: boolean | null;
+  clearDate?: boolean;
+};
+const options = computed(() =>
+  props.section.commands.flatMap<OperationChoice>((command) => {
+    if (command.key === 'set_attempt_lock')
+      return [
+        {
+          value: 'set_attempt_lock:set',
+          label: tr({
+            pl: 'Ustaw blokadę do terminu',
+            en: 'Lock until a deadline',
+          }),
+          command,
+          enabled: null,
+          clearDate: false,
+        },
+        {
+          value: 'set_attempt_lock:clear',
+          label: tr({ pl: 'Usuń blokadę', en: 'Clear lock' }),
+          command,
+          enabled: null,
+          clearDate: true,
+        },
+      ];
+    if (command.key === 'set_security_lock')
+      return [
+        {
+          value: 'set_security_lock:on',
+          label: tr({ pl: 'Włącz blokadę', en: 'Enable lock' }),
+          command,
+          enabled: true,
+        },
+        {
+          value: 'set_security_lock:off',
+          label: tr({ pl: 'Wyłącz blokadę', en: 'Disable lock' }),
+          command,
+          enabled: false,
+        },
+      ];
+    return [
+      { value: command.key, label: tr(command.title), command, enabled: null },
+    ];
+  }),
+);
+const selected = ref(options.value[0]?.value ?? '');
+const choice = computed(() =>
+  options.value.find((option) => option.value === selected.value),
+);
+const command = computed(() => choice.value?.command);
+const grouped = computed(
+  () => !!authBulkGroup(props.section.commands[0]?.key ?? ''),
+);
+function selectOperation(value: string) {
+  proof.value?.reset();
+  proofStep.value = false;
+  selected.value = value;
+  // Changing only the operation must invalidate cached reviews as well as parameter edits.
+  const path = props.controller.fieldPath(props.section.key, 'public_ids');
+  props.controller.set(path, props.controller.values.value[path] ?? []);
+  if (choice.value?.clearDate)
+    props.controller.set(
+      props.controller.fieldPath(props.section.key, 'at'),
+      null,
+    );
+  if (choice.value?.enabled !== null && choice.value?.enabled !== undefined)
+    props.controller.set(
+      props.controller.fieldPath(props.section.key, 'enabled'),
+      choice.value.enabled,
+    );
+}
 const proof = computed(() =>
   command.value
     ? props.controller.proof(props.section.key, command.value.key)
@@ -40,6 +115,8 @@ const fields = computed(() =>
     .filter(
       (field) =>
         !['public_ids', 'summary'].includes(field.key) &&
+        !(grouped.value && field.key === 'enabled') &&
+        !(choice.value?.clearDate && field.key === 'at') &&
         command.value?.inputs.includes(field.key),
     )
     .map((field) =>
@@ -49,14 +126,15 @@ const fields = computed(() =>
     ),
 );
 const signature = computed(() =>
-  JSON.stringify(
+  JSON.stringify([
+    selected.value,
     command.value?.inputs.map(
       (key) =>
         props.controller.values.value[
           props.controller.fieldPath(props.section.key, key)
         ],
     ),
-  ),
+  ]),
 );
 let attempted = '';
 watch(
@@ -128,6 +206,15 @@ function cancelProof() {
       <FormNotifications :locale="locale" :error="proof.error.value" />
     </div>
     <div v-else class="space-y-5 sm:col-span-2" data-bulk-review>
+      <Select
+        v-if="grouped"
+        :label="tr({ pl: 'Operacja', en: 'Operation' })"
+        :model-value="selected"
+        :options="options"
+        :locale="locale"
+        :disabled="controller.busy.value || section.readonly"
+        @update:model-value="selectOperation"
+      />
       <AdminField
         v-for="field in fields"
         :key="field.key"

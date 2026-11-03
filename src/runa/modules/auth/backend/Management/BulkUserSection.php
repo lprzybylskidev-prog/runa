@@ -44,7 +44,7 @@ final readonly class BulkUserSection implements ManagementResourceReader, Manage
         }
         new SessionSelection($input->values['public_ids']);
 
-        return new BulkUserChange($input->command, Moment::seconds($input->values['at'] ?? null), $input->values['enabled'] ?? null);
+        return new BulkUserChange($input->command, Moment::seconds($input->values['at'] ?? null), $input->command === 'require_password_change' ? true : ($input->values['enabled'] ?? null));
     }
 
     public function preview(ManagementWrite $input): ManagementReview

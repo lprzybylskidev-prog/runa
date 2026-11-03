@@ -1910,7 +1910,7 @@ it('Auth user administration executes each native bulk operation with its declar
     if (in_array($operation, ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'], true)) {
         $values['at'] = now()->addDay()->utc()->format('Y-m-d\TH:i:s.000\Z');
     }
-    if (in_array($operation, ['set_security_lock', 'require_password_change'], true)) {
+    if ($operation === 'set_security_lock') {
         $values['enabled'] = true;
     }
     $input = ['command' => $operation, 'public_id' => null, 'revision' => '0', 'values' => $values, 'confirmed' => true];
@@ -2017,4 +2017,17 @@ it('Auth fresh schema and administration expose only activation and scheduled de
             expect(array_column($section['fields'], 'key'))->not->toContain('expires_at', 'approved');
         }
     }
+});
+
+it('Auth bulk inversion refuses stale previews without applying a second inversion', function (): void {
+    $one = app(ChangeIdentity::class)->create(new NewIdentity('invert-active@example.test', name: 'Active', active: true));
+    $two = app(ChangeIdentity::class)->create(new NewIdentity('invert-inactive@example.test', name: 'Inactive'));
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.permissions.users.select']);
+    $input = ['command' => 'toggle_activation', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$one->publicId, $two->publicId]], 'confirmed' => true];
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    expect($input['review']['changes']['summary']['affected_accounts'])->toBe(2);
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertOk();
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertConflict();
+    expect(User::where('public_id', $one->publicId)->value('active'))->toBeFalse()
+        ->and(User::where('public_id', $two->publicId)->value('active'))->toBeTrue();
 });

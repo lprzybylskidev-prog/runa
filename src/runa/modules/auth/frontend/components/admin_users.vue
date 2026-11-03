@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { authBulkGroup } from '../bulkGroups';
 import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
 import { Badge, Button, Card, Dialog, Tabs } from '@/runa/ui';
@@ -96,6 +97,7 @@ const bulkOrder = [
   'remove_avatar',
 ];
 function bulkTone(key: string): 'success' | 'danger' | 'warning' | 'primary' {
+  if (authBulkGroup(key)) return 'primary';
   if (['activate', 'restore', 'schedule_activation'].includes(key))
     return 'success';
   if (
@@ -126,19 +128,36 @@ function bulkTone(key: string): 'success' | 'danger' | 'warning' | 'primary' {
 const bulkChoices = computed(() =>
   (props.controller.page.value?.sections ?? [])
     .filter((s) => ['bulk_sessions', 'bulk_users'].includes(s.key))
-    .flatMap((section) =>
-      section.commands
-        .filter((c) => c.available)
-        .map((command) => ({
-          section,
-          command,
-          value: section.key + ':' + command.key,
-          label:
-            section.key === 'bulk_sessions'
-              ? tr({ pl: 'Unieważnij sesje', en: 'Revoke sessions' })
-              : tr(command.title),
-        })),
-    )
+    .flatMap((section) => {
+      const commands = section.commands.filter((command) => command.available);
+      const seen = new Set<string>();
+      return commands.flatMap((command) => {
+        const group =
+          section.key === 'bulk_users' ? authBulkGroup(command.key) : undefined;
+        const key = group?.key ?? command.key;
+        if (seen.has(key)) return [];
+        seen.add(key);
+        const grouped = group
+          ? commands.filter((candidate) =>
+              group.commands.some((key) => key === candidate.key),
+            )
+          : [command];
+        return [
+          {
+            section,
+            command,
+            commands: grouped,
+            value: section.key + ':' + key,
+            label: tr(
+              group?.title ??
+                (section.key === 'bulk_sessions'
+                  ? { pl: 'Unieważnij sesje', en: 'Revoke sessions' }
+                  : command.title),
+            ),
+          },
+        ];
+      });
+    })
     .sort(
       (a, b) =>
         bulkOrder.indexOf(a.command.key) - bulkOrder.indexOf(b.command.key),
@@ -185,9 +204,7 @@ const canCreate = computed(() =>
 const title = computed(() => {
   if (mode.value === 'create') return tr('Create account');
   if (mode.value === 'bulk')
-    return openedBulk.value
-      ? tr(openedBulk.value.command.title)
-      : tr('Details');
+    return openedBulk.value ? openedBulk.value.label : tr('Details');
   const result = table.resource.result.value;
   const row =
     result && 'items' in result && !('field' in result)
@@ -199,15 +216,16 @@ const title = computed(() => {
 });
 function presentation(section: AdminSectionData): AdminSectionData {
   if (!['bulk_sessions', 'bulk_users'].includes(section.key)) return section;
-  const command = openedBulk.value?.command;
+  const commands = openedBulk.value?.commands ?? [];
   return {
     ...section,
     fields: section.fields.filter(
       (f) =>
         f.key === 'summary' ||
-        (f.key !== 'public_ids' && command?.inputs.includes(f.key)),
+        (f.key !== 'public_ids' &&
+          commands.some((command) => command.inputs.includes(f.key))),
     ),
-    commands: command ? [command] : [],
+    commands,
   };
 }
 async function openBulk(chosen: (typeof bulkChoices.value)[number]) {
@@ -301,7 +319,9 @@ watch(
                 :key="choice.value"
                 :data-bulk-command="choice.value"
                 size="sm"
-                variant="outline"
+                :variant="
+                  authBulkGroup(choice.command.key) ? 'neutral' : 'outline'
+                "
                 :tone="bulkTone(choice.command.key)"
                 :disabled="
                   form.busy.value ||
@@ -412,7 +432,7 @@ watch(
         <div v-else class="space-y-6">
           <AdminComponentBoundary
             v-for="section in sections"
-            :key="section.key"
+            :key="section.key + ':' + activeBulk"
             :identity="controller.page.value!.revision + ':' + section.key"
             :on-failure="(failed) => form.setAvailable(section.key, !failed)"
           >

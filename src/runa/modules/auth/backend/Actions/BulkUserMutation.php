@@ -37,7 +37,7 @@ final class BulkUserMutation implements TransactionalMutation
         if (BulkUserOperations::delivers($this->change->operation)) {
             $grants[] = new MutationAccess('runa.auth', new ApiOperation('entry.deliver'));
         }
-        if ($this->change->operation === 'restore') {
+        if (in_array($this->change->operation, ['restore', 'toggle_deletion'], true)) {
             $grants[] = new MutationAccess('runa.auth', new ApiOperation('administration.users', 'runa.auth.users.deleted.read'));
         }
         $ids = $this->selection->publicIds;

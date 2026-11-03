@@ -14,9 +14,11 @@ use Runa\Contracts\Modules\UpgradeContext;
 use Runa\Integration\Core\DenyAuthorityChanges;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
+use Runa\Modules\Auth\Actions\BulkUsers;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
 use Runa\Modules\Auth\Actions\PolicyHistory;
 use Runa\Modules\Auth\Contracts\AuthIdentities;
@@ -25,6 +27,7 @@ use Runa\Modules\Auth\Contracts\BulkUserChange;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
+use Runa\Modules\Auth\Contracts\SessionSelection;
 use Runa\Modules\Auth\InitializeAuth;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
@@ -273,3 +276,34 @@ it('initializes Audit then Auth exactly once through the real fenced module upda
     $record = app(ModuleRegistry::class)->snapshot()->modules['runa.auth'];
     expect($record->installedVersion)->toBe($record->sourceVersion)->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
 });
+
+it('resolves mixed bulk binary inversions into locked native plans with real impact and Audit', function (string $operation): void {
+    $actions = app(ChangeIdentity::class);
+    $one = $actions->create(new NewIdentity('invert-one@example.test', name: 'One', active: true));
+    $two = $actions->create(new NewIdentity('invert-two@example.test', name: 'Two'));
+    if ($operation === 'toggle_deletion') {
+        $two = $actions->change($two->publicId, $two->version, new LifecycleChange('delete'));
+    }
+    if ($operation === 'toggle_security_lock') {
+        $one = $actions->change($one->publicId, $one->version, new LifecycleChange('set_security_lock', enabled: true));
+    }
+    $owner = app(BulkUsers::class);
+    $selection = new SessionSelection([$one->publicId, $two->publicId]);
+    $change = new BulkUserChange($operation);
+    DB::transaction(function () use ($owner, $selection, $change): void {
+        app(AuthorityLock::class)->acquire(DB::connection());
+        $users = $owner->lock($selection);
+        $plans = $owner->prepare(DB::connection(), $users, $change);
+        expect($owner->snapshot(DB::connection(), $users, $change, $plans)['affected_accounts'])->toBe(2);
+        $owner->apply(DB::connection(), $plans, $change);
+    });
+    $first = User::withTrashed()->where('public_id', $one->publicId)->firstOrFail();
+    $second = User::withTrashed()->where('public_id', $two->publicId)->firstOrFail();
+    match ($operation) {
+        'toggle_activation' => expect($first->active)->toBeFalse()->and($second->active)->toBeTrue(),
+        'toggle_deletion' => expect($first->trashed())->toBeTrue()->and($second->trashed())->toBeFalse()->and($second->active)->toBeFalse(),
+        'toggle_security_lock' => expect($first->security_locked)->toBeFalse()->and($second->security_locked)->toBeTrue(),
+    };
+    expect(DB::table('runa_audit.events')->where('action', 'like', 'identity.%')->count())->toBeGreaterThanOrEqual(4);
+    expect(fn () => new BulkUserChange($operation, enabled: true))->toThrow(InvalidArgumentException::class);
+})->with(['toggle_activation', 'toggle_deletion', 'toggle_security_lock']);

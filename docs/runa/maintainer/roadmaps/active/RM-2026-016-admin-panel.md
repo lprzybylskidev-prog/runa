@@ -820,6 +820,17 @@ reassessment before resuming point 3; completed point history remains evidence.
     password_expiry_days=30. Keep existing actions and their semantics unchanged.
   - Synchronize policy documentation and fixture credential timestamps; author
     exact-boundary regression coverage. Broad verification remains point 12.
+- [x] 11a54. Group related Auth bulk operations with explicit modal choices.
+  - Owner decision, 2026-11-03: neutral grouped buttons; choose activate/deactivate/
+    invert per selected account. Apply analogous grouping to deletion/restoration,
+    lifecycle deadlines, invitations and security locks. Dates/invitations choose
+    concrete operations; only binary states support inversion.
+  - Rename the one-way bulk action to Force password change; no new table column
+    or periodic-expiry opt-out. Keep its native flag contract for standalone/API use.
+  - Resolve inversion atomically under owning locks, preserve stale-preview checks,
+    grants, last-administrator protection, Audit and per-operation proof. Reuse
+    default UI controls and public replacement seams. Implement tests/docs; broad
+    verification remains 12 and manual acceptance remains 11b.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5484,3 +5495,84 @@ not new frontend code. No containers, networks, volumes or databases were reset;
 only the runner-owned disposable worker database was removed. Development data,
 base test database, caches, backups and reports remain. Manual owner acceptance
 11b and complete final verification 12 stay open.
+
+### Point 11a54 — Grouped reviewed Auth bulk actions
+
+Owner decision, 2026-11-03: combine related buttons with an explicit operation
+selector inside the modal; neutral outline styling for grouped operations.
+Activity: activate/deactivate/invert active. Deletion: delete/restore/invert deleted;
+restore retains its native inactive result and identifier/invariant checks.
+Security lock: on/off/invert. Schedules: activation/deactivation with a nullable
+shared date. Invitations: send/invalidate, preserving native eligibility/delivery.
+Attempt lock has explicit set-deadline/clear choices over its native nullable date. Force password change
+is a one-way bulk command with the clear PL label Wymuś zmianę hasła; no new
+periodic-policy toggle or directory column. Native API flags retain their signature.
+Inversion uses the stored binary state shown by account facts, resolves once per
+account under transaction locks and refuses stale previews rather than replaying.
+
+Auth owns additive bulk-only toggle_activation/toggle_deletion/toggle_security_lock
+operations through its guarded AuthBulkUsers 2.0.0 DTO; public signature remains
+BulkUserChange(string operation, ?string at=null, ?bool enabled=null). Toggles accept
+no parameters. Implement in the private native bulk engine, reuse individual
+LifecycleChange plans and record actual per-account lifecycle Audit actions.
+Deletion toggle requires deleted-read authority and fresh password proof; the root
+checks all final excluded administrator targets before applying any account.
+Auth remains unreleased 3.0.0 and existing version ranges stay valid.
+
+Implemented native bulk-only inversions without changing standalone lifecycle
+signatures. The root resolves the complete locked selection before plans mutate
+models, computes all deactivation/deletion exclusions together and retains the
+last-administrator invariant. Deletion inversion carries deleted-read admission
+and its own fresh password proof through native ModuleTransactions. Snapshot
+fingerprints include the selected operation, account revisions and related state;
+changed selections/stale reviews refuse atomically. Actual activate/deactivate,
+delete/restore and security-lock changes retain their ordinary Audit events.
+
+Private frontend grouping consumes only available source-projected commands;
+modal choices retain exact command inputs, grants and proof. Public Select and
+neutral Button variants are reused; changing operation clears old review/proof,
+keeps selected UUIDs and starts a new preview. Inversion is never a frontend
+per-user write loop. Activity/deletion/security-lock provide inversion; schedules
+and invitations retain explicit operations. Attempt lock provides set-deadline/
+clear choices, with no date input for clear. Force password change has no bulk
+boolean parameter and always sets the native flag true; direct native/standalone
+contracts retain their existing clearing capability. No new directory column,
+periodic-expiry exemption or change to the 30-day default was introduced.
+
+Current Auth administration and module/central changelogs are synchronized. The
+public component catalogue points operation selection to the canonical Auth guide;
+existing component/pattern skill references already route to that catalogue.
+Owner/customer AGENTS and skills have no per-command UI contract, so neither needs
+duplicate instructions or new platform-edit authority. Auth remains unreleased
+3.0.0; additive bulk operations fit the current 2.0.0 API candidate and dependent
+version constraints remain valid. No dependency/schema migration or reset.
+
+Focused implementation evidence:
+
+- Supported backend, one parallel process: mixed active/inactive, deleted/retained
+  and locked/unlocked inversions PASS, 3 cases / 53 assertions. Initial diagnostic
+  test referenced the wrong AuthorityLock namespace; fixed the fixture import.
+  The first cleanup refused a still-active worker, preserved it and returned failure.
+  The corrected supported run cleaned the now-inactive worker before execution
+  and cleaned its own worker afterwards, exit 0; runa_test remains preserved.
+- Supported frontend: 4 PASS for grouped operation switching, new preview before
+  confirmation, date clearing, ordinary proof/no-proof flows and single writes;
+  separate table selection/filter/header coverage 2 PASS. A newly added date-clear
+  case initially clicked before the asynchronous replacement preview completed;
+  waiting for that preview fixed the test. No failed checks remain in this point.
+- Supported build prepared current assets/types and native/static error shells.
+  Native local HTTP authenticated the configured administrator and round-tripped
+  activity/security-lock inversion on explicitly identified pending/extra_1 fixture
+  accounts, restoring their original states. Reusing the first preview returned 409. Deletion inversion password-proof issuance passed. The rendered Users page
+  exposes neutral grouped buttons, Force password change and operation selection;
+  the selected inversion preview reached an enabled confirmation. The first browser
+  diagnostic looked for a combobox instead of the existing Select button; correcting
+  only the diagnostic selector passed. Browser/runtime diagnostics and logs live in
+  .runtime/auth-bulk-groups/; screenshot is under
+  .runtime/artifacts/playwright/auth-bulk-groups/. These are targeted readiness checks,
+  not owner manual acceptance or the final complete quality graph.
+
+No task-created containers/networks/images/volumes require removal. Supported
+runners cleaned disposable runa_test_test_1 after inspecting ownership/activity;
+development data, base runa_test, caches, backups and reports remain preserved.
+Manual owner acceptance 11b and final verification 12 remain open.

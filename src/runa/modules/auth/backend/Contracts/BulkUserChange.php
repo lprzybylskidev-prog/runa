@@ -6,7 +6,9 @@ final readonly class BulkUserChange
 {
     public const LIFECYCLE = ['activate', 'deactivate', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change'];
 
-    public const OPERATIONS = [...self::LIFECYCLE, 'invite', 'invalidate_invitation', 'require_verification', 'password_reset', 'factor_reset', 'revoke_trust', 'reset_preferences', 'remove_avatar', 'revoke_exceptions'];
+    public const TOGGLES = ['toggle_activation', 'toggle_deletion', 'toggle_security_lock'];
+
+    public const OPERATIONS = [...self::LIFECYCLE, ...self::TOGGLES, 'invite', 'invalidate_invitation', 'require_verification', 'password_reset', 'factor_reset', 'revoke_trust', 'reset_preferences', 'remove_avatar', 'revoke_exceptions'];
 
     public function __construct(public string $operation, public ?string $at = null, public ?bool $enabled = null)
     {

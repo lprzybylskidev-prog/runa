@@ -73,7 +73,7 @@ final readonly class BulkUsers implements AuthBulkUsers
         }
         $access = BulkUserOperations::access($change->operation);
         $this->guard->enter('runa.auth', new ApiOperation($access['operation'], 'runa.auth.'.$access['permission']));
-        if ($change->operation === 'restore') {
+        if (in_array($change->operation, ['restore', 'toggle_deletion'], true)) {
             $this->guard->enter('runa.auth', new ApiOperation('administration.users', 'runa.auth.users.deleted.read'));
         }
         $this->selector->authorize($selection);
@@ -155,15 +155,31 @@ final readonly class BulkUsers implements AuthBulkUsers
      */
     public function prepare(Connection $connection, Collection $users, BulkUserChange $change): array
     {
-        $exclude = in_array($change->operation, ['deactivate', 'delete', 'factor_reset', 'require_verification'], true) ? $users->pluck('public_id')->all() : [];
+        // Resolve all binary changes from the same locked snapshot before any plan mutates a model.
+        $changes = [];
+        $exclude = [];
+        foreach ($users as $user) {
+            $resolved = match ($change->operation) {
+                'toggle_activation' => new LifecycleChange($user->active ? 'deactivate' : 'activate'),
+                'toggle_deletion' => new LifecycleChange($user->trashed() ? 'restore' : 'delete'),
+                'toggle_security_lock' => new LifecycleChange('set_security_lock', enabled: ! $user->security_locked),
+                default => in_array($change->operation, BulkUserChange::LIFECYCLE, true)
+                    ? new LifecycleChange($change->operation, $change->at, $change->enabled) : null,
+            };
+            $changes[$user->id] = $resolved;
+            if (in_array($resolved?->operation ?? $change->operation, ['deactivate', 'delete', 'factor_reset', 'require_verification'], true)) {
+                $exclude[] = $user->public_id;
+            }
+        }
         $this->authority->assertMayRemove($connection, $exclude);
         $plans = [];
         foreach ($users as $user) {
-            if ($user->trashed() && $change->operation !== 'restore') {
+            $resolved = $changes[$user->id];
+            if ($user->trashed() && $resolved?->operation !== 'restore') {
                 throw new IdentityConflict('identity_deleted');
             }
-            if (in_array($change->operation, BulkUserChange::LIFECYCLE, true)) {
-                $plans[] = app(ChangeIdentity::class)->prepareChangeLocked($connection, $user, new LifecycleChange($change->operation, $change->at, $change->enabled));
+            if ($resolved !== null) {
+                $plans[] = app(ChangeIdentity::class)->prepareChangeLocked($connection, $user, $resolved);
 
                 continue;
             }

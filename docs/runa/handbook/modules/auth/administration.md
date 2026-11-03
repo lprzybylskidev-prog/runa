@@ -144,8 +144,8 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 
 Account creation is in the directory Card header's right actions area. All
 available directory fields are filterable, with one compact DateTimeRangeInput for each inclusive date range. Separate small bulk action buttons sit immediately below filters, above the
-standard table toolbar. Each button opens its own reviewed command for the captured
-selection; only granted and currently enabled actions appear.
+standard table toolbar. Each button opens a reviewed operation for the captured
+selection; related operations share a neutral button and modal operation selector; only granted and currently enabled actions appear.
 Selected UUIDs are captured for review; no manual ID entry or all-account toggle
 exists in this UI. Session revocation admits at most 100 accounts; other reviewed
 user operations admit at most 99, reserving one native transaction subject for the
@@ -248,8 +248,15 @@ activate/deactivate/delete/restore/schedule_activation/
 schedule_deactivation/set_attempt_lock/set_security_lock/
 require_password_change plus invite/invalidate_invitation/require_verification/
 password_reset/factor_reset/revoke_trust/reset_preferences/remove_avatar/
-revoke_exceptions. Reviewed execution rechecks current settings, exact account and
-related-state fingerprint and record policies. Delete, restore, password reset,
+revoke_exceptions, and bulk-only toggle_activation/toggle_deletion/
+toggle_security_lock. These toggles take no date/flag parameters and invert each
+account's stored active/deleted/security-lock state under owning locks. Their
+owner/audience/entrypoint/signature/source home are the AuthBulkUsers contract
+above; private BulkUsers resolves ordinary LifecycleChange plans at runtime.
+Deletion inversion requires users.deleted.read and a fresh password proof, including
+when the selection contains both retained and deleted accounts. Restore always
+leaves accounts inactive. Reviewed execution rechecks current settings, exact account and
+related-state fingerprint and record policies. Delete, restore, deletion inversion, password reset,
 factor reset and exception revocation require one fresh password proof for
 `runa.auth.users.bulk.<operation>`, consumed once through ModuleTransactions after
 validation. All other bulk operations, including session/trust revocation, require
@@ -260,8 +267,8 @@ Standalone and bulk use the same owning locked validation/apply phases. Native
 password reset validates that a password exists and the account may authenticate
 before revoking credentials; an unavailable reset cannot partially revoke state.
 The root locks retained subjects (including deleted restore targets); each owner
-still validates target state. Only restore accepts deleted targets, and it
-additionally requires users.deleted.read. File
+still validates target state. Only restore and deletion inversion accept deleted targets, and both
+additionally require users.deleted.read. File
 uploads, account creation, unique profile/address edits and per-record assignment
 reviews remain individual workflows because they require distinct target input.
 Avatar removal commits only existing owning metadata/Audit; its durable native
@@ -294,9 +301,18 @@ existing JSON range payload and exact authorized filtering remain unchanged.
 Auth directory controls use size sm (36px), matching Audit's shared filter controls.
 Concise PL/EN labels apply consistently to filters, column headings and account
 facts: Two-factor authentication omits the redundant enabled suffix. Bulk actions
-are individual wrapping buttons, with a shared selection count and per-operation
-99/100 limits; no action selector is used. The modal renders only that operation's
-parameters and starts an authoritative impact preview. Selected accounts and
+are wrapping buttons, with a shared selection count and per-operation 99/100 limits.
+Activity (activate/deactivate/invert), deletion (delete/restore/invert), lifecycle
+schedules (activation/deactivation), invitations (send/invalidate) and security lock
+(on/off/invert) each share a neutral button. The modal uses the public Select to
+choose only currently projected, authorized commands, then renders that command's
+parameters and starts an authoritative impact preview. Binary inversion uses each
+account's stored flag; dates and invitation delivery are explicit operations, not
+binary inversion. Attempt lock also has a neutral button with explicit set-deadline/clear choices. Force password
+change is a separate one-way bulk action (no boolean switch); standalone lifecycle
+and native BulkUserChange APIs still support clearing the forced-change flag.
+Operation changes clear the old preview/proof, retain the captured selection and
+require a new impact review before confirmation. No writes are automatically replayed. Selected accounts and
 `affected_accounts` are separate: lifecycle plans count only dirty account state;
 revocation/removal counts only accounts with matching rows or avatars. Credential
 resets, verification mail, invitations and preference reset count each account
