@@ -12,7 +12,7 @@ use Runa\Support\Modules\Api\OperationRejected;
 
 final readonly class BulkSessions implements AuthBulkSessions
 {
-    public function __construct(private EntryTransaction $transactions, private StepUp $stepUp, private BulkUserSelection $selection) {}
+    public function __construct(private EntryTransaction $transactions, private BulkUserSelection $selection) {}
 
     public function preview(SessionSelection $selection, bool $trust = false): array
     {
@@ -29,7 +29,6 @@ final readonly class BulkSessions implements AuthBulkSessions
         return $this->transactions->run(function (Connection $connection) use ($selection, $trust, $fingerprint): array {
             $this->transactions->lockAuthority($connection);
             $this->selection->authorize($selection);
-            $this->stepUp->assertVerified('runa.auth.sessions.bulk_revoke', 'both', everyAction: true);
             $preview = $this->snapshot($connection, $selection, $trust);
             if (! hash_equals($preview['fingerprint'], $fingerprint)) {
                 throw new OperationRejected('session_preview_stale', 'runa.auth', 'sessions.bulk_revoke', 409);

@@ -65,7 +65,7 @@ final class AuthPermissions implements ManagementEntityProvider
                 ['pl' => 'Jawny wybór Permissions i atomowe unieważnienie; limit 100 kont.', 'en' => 'Explicit Permissions selection and atomic revocation; at most 100 accounts.'], [
                     new ManagementField('user_public_id', 'uuid', ['pl' => 'Konta', 'en' => 'Accounts'], ['pl' => 'Wybrane konta lub jawny tryb all.', 'en' => 'Selected accounts or explicit all mode.'], writable: true, referenceModule: 'runa.auth', referenceOperation: 'identity.read', multiple: true),
                     $field('all', 'boolean', true), $field('trust', 'boolean', true),
-                ], [new ManagementOperation(new ApiOperation('sessions.bulk_revoke', 'sessions.bulk_revoke'), ['user_public_id', 'all', 'trust'], 'both', previewRequired: true, bulk: true)]),
+                ], [new ManagementOperation(new ApiOperation('sessions.bulk_revoke', 'sessions.bulk_revoke'), ['user_public_id', 'all', 'trust'], previewRequired: true, bulk: true)]),
             new ManagementEntity('policy', 'policy.read', ['pl' => 'Polityka', 'en' => 'Policy'],
                 ['pl' => 'Bieżące ustawienia modułu i niezmienna historia; podgląd przed publikacją.', 'en' => 'Current ModuleSettings and immutable history; preview before publication.'], [
                     $field('revision', 'integer', true), $field('generation', 'integer', true),

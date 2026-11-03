@@ -148,7 +148,7 @@ all=true. `users` requires current `runa.permissions.users.select`; it returns
 canonical sorted selection intent, never a durable authorization or resolved Auth
 model. AuthBulkSessions rechecks this public operation on preview AND execution
 through its neutral BulkUserSelection bridge. The independent Auth bulk capability,
-fresh session/action-bound both-factor proof, exact impact fingerprint and atomic
+exact impact fingerprint, explicit Admin review confirmation and atomic
 limits remain mandatory. The owning Auth operation expands all accounts inside its
 transaction; unknown selected identities or overflow refuse the complete operation.
 There is no foreign SQL, copied identity store or implicit role-management grant.

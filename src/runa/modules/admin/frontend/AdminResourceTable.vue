@@ -84,6 +84,7 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
     :provider="controller.provider.value"
     :query="controller.query.value"
     :row-key="(row: AdminRecord) => row.public_id!"
+    :row-class="rowClass"
     :caption="tr(controller.section.value?.title ?? tr('Records'))"
     :page-sizes="[10, 25, 50, 100]"
     :selectable="

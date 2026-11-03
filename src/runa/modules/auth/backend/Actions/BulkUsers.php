@@ -92,7 +92,7 @@ final readonly class BulkUsers implements AuthBulkUsers
 
     /** @param Collection<int,User> $users
      * @param  list<User|LifecyclePlan>  $plans  Validated in-memory plans for impact projection; validation needs only the fingerprint.
-     * @return array{fingerprint:string,accounts:int,sessions:int,trusted_devices:int}
+     * @return array{fingerprint:string,accounts:int,affected_accounts:int,sessions:int,trusted_devices:int}
      */
     public function snapshot(Connection $connection, Collection $users, BulkUserChange $change, array $plans = []): array
     {
@@ -110,7 +110,7 @@ final readonly class BulkUsers implements AuthBulkUsers
             }
             // Only safe state enters the review fingerprint; never credentials or recipients.
             $columns = match ($table) {
-                'policy_exceptions' => ['public_id', 'user_id', 'version', 'expires_at'],'entry_tokens' => ['public_id', 'user_id', 'expires_at'],default => ['public_id', 'user_id']
+                'policy_exceptions' => ['public_id', 'user_id', 'version', 'expires_at'],'entry_tokens' => ['public_id', 'user_id', 'purpose', 'expires_at'],default => ['public_id', 'user_id']
             };
             $data = $rows->orderBy('public_id')->limit(10001)->get($columns);
             if ($data->count() > 10000) {
@@ -131,8 +131,23 @@ final readonly class BulkUsers implements AuthBulkUsers
         $sessions = count(array_filter($related['sessions'], fn ($row) => in_array($row->user_id, $revoked, true)));
         $devices = count(array_filter($related['trusted_devices'], fn ($row) => in_array($row->user_id, $trust, true)));
         $revision = $connection->table('shared.modules')->where('module_id', 'runa.auth')->value('settings_revision');
+        $affected = 0;
+        foreach ($plans as $plan) {
+            if ($plan instanceof LifecyclePlan) {
+                $affected += (int) $plan->user->isDirty();
 
-        return ['fingerprint' => hash('sha256', json_encode([$revision, $change, $state, $related], JSON_THROW_ON_ERROR)), 'accounts' => $users->count(), 'sessions' => $sessions, 'trusted_devices' => $devices];
+                continue;
+            }
+            $rows = match ($change->operation) {
+                'revoke_trust' => $related['trusted_devices'],
+                'revoke_exceptions' => $related['policy_exceptions'],
+                'invalidate_invitation' => array_filter($related['entry_tokens'], fn ($row) => $row->purpose === 'invitation'),
+                default => null,
+            };
+            $affected += (int) ($rows !== null ? count(array_filter($rows, fn ($row) => $row->user_id === $plan->id)) > 0 : ($change->operation !== 'remove_avatar' || $plan->avatar_path !== null));
+        }
+
+        return ['fingerprint' => hash('sha256', json_encode([$revision, $change, $state, $related], JSON_THROW_ON_ERROR)), 'accounts' => $users->count(), 'affected_accounts' => $affected, 'sessions' => $sessions, 'trusted_devices' => $devices];
     }
 
     /** @param Collection<int,User> $users

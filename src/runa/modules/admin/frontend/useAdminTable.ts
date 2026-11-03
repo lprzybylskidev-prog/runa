@@ -33,6 +33,7 @@ export function useAdminTable(
   options: {
     adapters?: MaybeRefOrGetter<AdminCollectionAdapters>;
     select?: (publicId: string | null) => Promise<boolean>;
+    omitColumns?: readonly string[];
   } = {},
 ): AdminTableController {
   const { t: tr } = useAdminLocale();
@@ -124,61 +125,65 @@ export function useAdminTable(
     page.page.value?.sections.find((s) => s.key === sectionKey),
   );
   const columns = computed(() =>
-    (section.value?.fields ?? []).map((field) => ({
-      key: field.key,
-      label: tr(field.label),
-      sortable: field.sortable && !field.sensitive,
-      searchable: false,
-      ...(field.type === 'datetime' ? { filterType: 'datetime' as const } : {}),
-      ...(field.key === 'from' &&
-      field.type === 'datetime' &&
-      field.filterable &&
-      section.value?.fields.some(
-        (f) =>
-          f.key === 'until' &&
-          f.type === 'datetime' &&
-          f.filterable &&
-          !f.sensitive,
-      )
-        ? {
-            filterRange: {
-              endKey: 'until',
-              label: tr({ pl: 'Zakres dat', en: 'Date range' }),
-            },
-          }
-        : {}),
-      // The server owns matching; this function only declares a filter key to Table.
-      ...(field.filterable && !field.sensitive ? { filter: () => true } : {}),
-      ...(field.choices.length
-        ? {
-            filterOptions: field.choices.map((value) => ({
-              value,
-              label: tr(value),
-            })),
-          }
-        : field.type === 'boolean'
+    (section.value?.fields ?? [])
+      .filter((field) => !options.omitColumns?.includes(field.key))
+      .map((field) => ({
+        key: field.key,
+        label: tr(field.label),
+        sortable: field.sortable && !field.sensitive,
+        searchable: false,
+        ...(field.type === 'datetime'
+          ? { filterType: 'datetime' as const }
+          : {}),
+        ...(field.key === 'from' &&
+        field.type === 'datetime' &&
+        field.filterable &&
+        section.value?.fields.some(
+          (f) =>
+            f.key === 'until' &&
+            f.type === 'datetime' &&
+            f.filterable &&
+            !f.sensitive,
+        )
           ? {
-              filterOptions: [
-                { value: 'true', label: tr('Yes') },
-                { value: 'false', label: tr('No') },
-              ],
+              filterRange: {
+                endKey: 'until',
+                label: tr({ pl: 'Zakres dat', en: 'Date range' }),
+              },
             }
           : {}),
-      value: (record: AdminRecord): string | number | null => {
-        const value = record.values[field.key];
-        if (value === null || value === undefined) return null;
-        if (field.sensitive)
-          return typeof value === 'object' &&
-            !Array.isArray(value) &&
-            value.set === true
-            ? tr('Set')
-            : tr('Not set');
-        if (typeof value === 'boolean') return value ? tr('Yes') : tr('No');
-        if (typeof value === 'string' || typeof value === 'number')
-          return value;
-        return Array.isArray(value) ? value.join(', ') : null;
-      },
-    })),
+        // The server owns matching; this function only declares a filter key to Table.
+        ...(field.filterable && !field.sensitive ? { filter: () => true } : {}),
+        ...(field.choices.length
+          ? {
+              filterOptions: field.choices.map((value) => ({
+                value,
+                label: tr(value),
+              })),
+            }
+          : field.type === 'boolean'
+            ? {
+                filterOptions: [
+                  { value: 'true', label: tr('Yes') },
+                  { value: 'false', label: tr('No') },
+                ],
+              }
+            : {}),
+        value: (record: AdminRecord): string | number | null => {
+          const value = record.values[field.key];
+          if (value === null || value === undefined) return null;
+          if (field.sensitive)
+            return typeof value === 'object' &&
+              !Array.isArray(value) &&
+              value.set === true
+              ? tr('Set')
+              : tr('Not set');
+          if (typeof value === 'boolean') return value ? tr('Yes') : tr('No');
+          if (typeof value === 'string' || typeof value === 'number')
+            return value;
+          return Array.isArray(value) ? value.join(', ') : null;
+        },
+      })),
   );
   const views = useTableViews({
     columns: () => columns.value,
@@ -386,7 +391,9 @@ export function useAdminTable(
     const next = normalizeTableQuery(
       query.value,
       columns.value.filter((c) => c.sortable).map((c) => c.key),
-      columns.value.filter((c) => c.filter).map((c) => c.key),
+      (section.value?.fields ?? [])
+        .filter((field) => field.filterable && !field.sensitive)
+        .map((field) => field.key),
       100,
     );
     delete next.search;
@@ -552,7 +559,9 @@ export function useAdminTable(
         hasNext: collection?.next != null,
         capabilities: {
           sort: fields.filter((c) => c.sortable).map((c) => c.key),
-          filter: fields.filter((c) => c.filter).map((c) => c.key),
+          filter: (section.value?.fields ?? [])
+            .filter((field) => field.filterable && !field.sensitive)
+            .map((field) => field.key),
           maxPerPage: 100,
         },
       };

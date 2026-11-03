@@ -43,7 +43,9 @@ final class BulkUserMutation implements TransactionalMutation
         $ids = $this->selection->publicIds;
         sort($ids);
 
-        return new MutationDefinition('runa.auth', 'users.bulk.'.$this->change->operation, $grants, $ids, ['runa.auth.users.bulk'], [new MutationProof('runa.auth.users.bulk.'.$this->change->operation, 'both')]);
+        $proof = BulkUserOperations::proof($this->change->operation);
+
+        return new MutationDefinition('runa.auth', 'users.bulk.'.$this->change->operation, $grants, $ids, ['runa.auth.users.bulk'], $proof === 'none' ? [] : [new MutationProof('runa.auth.users.bulk.'.$this->change->operation, $proof)]);
     }
 
     public function preflight(): void

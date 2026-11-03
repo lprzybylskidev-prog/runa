@@ -139,7 +139,7 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | preferences reset               | AuthPreferences.resetAccount; `profiles.read`, `preferences.reset`               | Account preference revision, confirmation; no foreign preference editor                                                                  |
 | exceptions                      | AuthPolicies; `policy.exceptions`                                                | Policy and per-key exception revisions, bounded reason/expiry, both-factor `runa.auth.policy.exception`; null value revokes              |
 | policy / history / restore      | AuthPolicies + owning ModuleSettings; `policy.read`, `policy.write`              | Exact settings revision/generation, reviewed differences and consequences, both-factor `runa.auth.policy.publish`; restore also confirms |
-| bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation, both-factor `runa.auth.sessions.bulk_revoke`  |
+| bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation; no additional operation proof                 |
 
 Account creation is in the directory Card header's right actions area. All
 available directory fields are filterable, with one compact DateTimeRangeInput for each inclusive date range. Separate small bulk action buttons sit immediately below filters, above the
@@ -148,8 +148,8 @@ selection; only granted and currently enabled actions appear.
 Selected UUIDs are captured for review; no manual ID entry or all-account toggle
 exists in this UI. Session revocation admits at most 100 accounts; other reviewed
 user operations admit at most 99, reserving one native transaction subject for the
-actor. Native Permissions selection authority, exact fingerprints, both-factor
-proof and destructive confirmation remain mandatory. All-matching selection is
+actor. Native Permissions selection authority, exact fingerprints and explicit
+reviewed confirmation remain mandatory; operation proof follows the policy below. All-matching selection is
 never converted to all accounts. Optional trust revocation appears only while
 trusted devices are enabled. The public native AuthBulkSessions all-account API
 remains available to its original consumers.
@@ -224,7 +224,7 @@ expansion control without changing collection pagination or security protocols.
 
 ## Native bulk user operations
 
-Auth owns guarded public consumption API `AuthBulkUsers` 1.0.0 (runtime source under
+Auth owns guarded public consumption API `AuthBulkUsers` 1.1.0 (runtime source under
 backend/Contracts, Definitions/BulkUsersApi and BulkUsersProxy; private engine in
 backend/Actions). Resolve it through ModuleApis; customer code never imports the
 engine, models or locked phases.
@@ -235,7 +235,7 @@ interface AuthBulkUsers {
     public function execute(SessionSelection $selection, BulkUserChange $change, string $fingerprint): array;
 }
 BulkUserChange::__construct(string $operation, ?string $at = null, ?bool $enabled = null)
-// preview: {fingerprint:string, accounts:int, sessions:int, trusted_devices:int}
+// preview: {fingerprint:string, accounts:int, affected_accounts:int, sessions:int, trusted_devices:int}
 // execute: {accounts:int}
 ```
 
@@ -248,9 +248,11 @@ schedule_deactivation/set_expiry/set_attempt_lock/set_security_lock/
 require_password_change plus invite/invalidate_invitation/require_verification/
 password_reset/factor_reset/revoke_trust/reset_preferences/remove_avatar/
 revoke_exceptions. Reviewed execution rechecks current settings, exact account and
-related-state fingerprint and record policies. One fresh both-factor proof for
-`runa.auth.users.bulk.<operation>` covers that one reviewed batch; it is consumed
-once through ModuleTransactions after validation. The batch is atomic: refusal,
+related-state fingerprint and record policies. Delete, restore, password reset,
+factor reset and exception revocation require one fresh password proof for
+`runa.auth.users.bulk.<operation>`, consumed once through ModuleTransactions after
+validation. All other bulk operations, including session/trust revocation, require
+no additional operation proof. Admin entry proof and native grants still apply. The batch is atomic: refusal,
 stale input, last-administrator loss or Audit failure rolls back every selected
 account and proof. No per-user HTTP loop or single-record proof reuse is involved.
 Standalone and bulk use the same owning locked validation/apply phases. Native
@@ -292,5 +294,22 @@ Auth directory controls use size sm (36px), matching Audit's shared filter contr
 Concise PL/EN labels apply consistently to filters, column headings and account
 facts: Two-factor authentication omits the redundant enabled suffix. Bulk actions
 are individual wrapping buttons, with a shared selection count and per-operation
-99/100 limits; no action selector or extra execute button is used. Native review,
-proof and destructive confirmation still happen in the chosen command's modal.
+99/100 limits; no action selector is used. The modal renders only that operation's
+parameters and starts an authoritative impact preview. Selected accounts and
+`affected_accounts` are separate: lifecycle plans count only dirty account state;
+revocation/removal counts only accounts with matching rows or avatars. Credential
+resets, verification mail, invitations and preference reset count each account
+whose owning operation performs a reset/delivery/revision change. Activate on
+eight already active and two inactive accounts previews ten selected, two affected.
+Zero-impact batches disable Confirm. Editing inputs invalidates the preview and
+refreshes impact without replaying a write. Confirm opens a password step only
+for the protected operations above; its explicit confirmation submits once.
+Cancel returns to the unchanged review; failed writes require a new explicit
+review/attempt. There is no separate identity button or duplicate confirmation.
+
+Actions follow account lifecycle, invitation/email, credentials/locks, revocations
+and presentation reset order. Semantic success/danger/warning button tones use
+the shared theme in both modes. The directory omits the account-state column
+and picker entry. Its Deleted filter has Not deleted (default), Deleted and All
+choices using unchanged current/deleted/all wire values; deleted records use
+danger row colors. Native deleted-read authority remains required.

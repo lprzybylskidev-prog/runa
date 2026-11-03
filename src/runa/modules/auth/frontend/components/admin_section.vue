@@ -2,6 +2,7 @@
 import { useAdminLocale } from '@/runa/admin';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import AdminAvatar from '../AuthAdminAvatar.vue';
+import AuthAdminBulkAction from '../AuthAdminBulkAction.vue';
 import { computed, watch } from 'vue';
 import {
   formatApplicationInstant,
@@ -11,11 +12,7 @@ import {
   ValuePreview,
 } from '@/runa/ui';
 import { AdminSection, useAdminResource } from '@/runa/admin';
-import type {
-  AdminCommandReview,
-  AdminJson,
-  AdminSectionPresentationProps,
-} from '@/runa/admin';
+import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
 const props = defineProps<AdminSectionPresentationProps>();
 const collectionKeys = [
   'addresses',
@@ -35,11 +32,6 @@ const collection = computed(() =>
 const fields = computed(() => ({
   ...props.section,
   fields: props.section.fields.filter((field) => {
-    if (
-      ['bulk_sessions', 'bulk_users'].includes(props.section.key) &&
-      field.key === 'summary'
-    )
-      return false;
     if (
       collectionKeys.includes(field.key) ||
       field.key === 'avatar_upload_pending'
@@ -146,15 +138,13 @@ function select(row: Record<string, AdminJson>) {
       );
   }
 }
-function reviewCount(review: AdminCommandReview, key: string): string | null {
-  const summary = review.changes.summary;
-  if (!summary || typeof summary !== 'object' || Array.isArray(summary))
-    return null;
-  return typeof summary[key] === 'number' ? String(summary[key]) : null;
-}
 </script>
 <template>
-  <Card>
+  <AuthAdminBulkAction
+    v-if="['bulk_sessions', 'bulk_users'].includes(section.key)"
+    v-bind="props"
+  />
+  <Card v-else>
     <template #header
       ><h2>{{ tr(section.title) }}</h2></template
     >
@@ -221,32 +211,7 @@ function reviewCount(review: AdminCommandReview, key: string): string | null {
       :section="fields"
       :controller="controller"
       :embedded="page.page.value?.key === 'users'"
-    >
-      <template
-        v-if="['bulk_sessions', 'bulk_users'].includes(section.key)"
-        #commandReview="{ review }"
-      >
-        <p class="text-sm font-semibold">{{ tr('Review summary') }}</p>
-        <dl class="grid gap-4 sm:grid-cols-3">
-          <div
-            v-for="item in [
-              { key: 'accounts', label: { pl: 'Konta', en: 'Accounts' } },
-              { key: 'sessions', label: { pl: 'Sesje', en: 'Sessions' } },
-              {
-                key: 'trusted_devices',
-                label: { pl: 'Zaufane urządzenia', en: 'Trusted devices' },
-              },
-            ].filter((item) => reviewCount(review, item.key) !== null)"
-            :key="item.key"
-          >
-            <dt class="text-xs text-muted">{{ tr(item.label) }}</dt>
-            <dd class="mt-1 text-lg font-semibold">
-              {{ reviewCount(review, item.key) }}
-            </dd>
-          </div>
-        </dl>
-      </template>
-    </AdminSection>
+    />
     <AdminAvatar
       v-if="section.key === 'avatar'"
       :page="page"

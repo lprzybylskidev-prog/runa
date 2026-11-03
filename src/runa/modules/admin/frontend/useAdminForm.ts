@@ -646,6 +646,7 @@ export function useAdminForm(
   async function execute(
     key: string,
     name: string,
+    options: { confirmReviewed?: boolean } = {},
   ): Promise<AdminCommandResult | undefined> {
     const section = sections.value.find((section) => section.key === key),
       command = section?.commands.find((command) => command.key === name);
@@ -669,6 +670,7 @@ export function useAdminForm(
     }
     if (
       command.destructive &&
+      !(options.confirmReviewed && command.preview_required && input.review) &&
       !(await ask(command.title, 'Confirm this destructive operation.'))
     )
       return;

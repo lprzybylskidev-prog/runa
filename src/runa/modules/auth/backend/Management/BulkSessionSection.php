@@ -42,7 +42,9 @@ final readonly class BulkSessionSection implements ManagementResourceReader, Man
             }
             $preview = $this->apis->resolve('runa.auth', AuthBulkSessions::class, '1.0.0')->preview(new SessionSelection($input->values['public_ids']), $input->values['trust'] ?? false);
 
-            return new ManagementReview($preview['fingerprint'], ['summary' => ['accounts' => count($preview['accounts']), 'sessions' => $preview['sessions'], ...(app(AdministrationFeatures::class)->enabled('trust') ? ['trusted_devices' => $preview['trusted_devices']] : [])]], 'both', true);
+            $affected = count(array_filter($preview['accounts'], fn ($account) => $account['sessions'] !== [] || $account['trusted_devices'] !== []));
+
+            return new ManagementReview($preview['fingerprint'], ['summary' => ['accounts' => count($preview['accounts']), 'affected_accounts' => $affected, 'sessions' => $preview['sessions'], ...(app(AdministrationFeatures::class)->enabled('trust') ? ['trusted_devices' => $preview['trusted_devices']] : [])]], 'none', true);
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.auth', 'sessions.bulk_preview', 422);
         }

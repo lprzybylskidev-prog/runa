@@ -40,6 +40,12 @@ function date(key: string, value: DateRangeValue) {
   set(key, Object.keys(range).length ? JSON.stringify(range) : null);
 }
 function options(field: AdminFieldData) {
+  if (field.key === 'state')
+    return [
+      { value: 'current', label: tr({ pl: 'Nieusunięte', en: 'Not deleted' }) },
+      { value: 'deleted', label: tr({ pl: 'Usunięte', en: 'Deleted' }) },
+      { value: 'all', label: tr('All') },
+    ];
   return [
     { value: '', label: tr('All') },
     ...(field.type === 'boolean'
@@ -75,8 +81,17 @@ function options(field: AdminFieldData) {
       <Select
         size="sm"
         v-else-if="field.type === 'boolean' || field.type === 'dictionary'"
-        :label="tr(field.label)"
-        :model-value="String(query.filters?.[field.key] ?? '')"
+        :label="
+          field.key === 'state'
+            ? tr({ pl: 'Usunięte', en: 'Deleted' })
+            : tr(field.label)
+        "
+        :model-value="
+          String(
+            query.filters?.[field.key] ??
+              (field.key === 'state' ? 'current' : ''),
+          )
+        "
         :options="options(field)"
         :locale="locale"
         @update:model-value="set(field.key, $event)"

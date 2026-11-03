@@ -65,8 +65,9 @@ extension never moves the session's captured absolute deadline.
 AuthBulkSessions accepts an immutable SessionSelection for one/selected UUIDv7
 accounts or an explicit all-account selection. Preview contains exact unrevoked
 session identities/counts and optional trust impact. Execution requires
-`runa.auth.sessions.bulk_revoke`, a fresh both-factor every-action proof for the
-same action, and the matching preview fingerprint. Re-read account/security/policy
+`runa.auth.sessions.bulk_revoke` and the matching preview fingerprint; no
+additional operation proof is required. The Admin UI requires explicit review
+confirmation after its protected entry. Re-read account/security/policy
 versions and target rows under registry/authority/user locks; changed targets
 require a new preview. Other modules do not query Auth tables.
 
@@ -81,9 +82,9 @@ rows. All-account mode exceeding these limits refuses before mutation; it never
 silently truncates or partially succeeds. The neutral BulkUserSelection bridge calls guarded PermissionsSelections.users
 on both preview and execution, requiring current `runa.permissions.users.select`.
 Selection intent is never a reusable grant; Auth still resolves current targets
-and requires its own bulk permission and both-factor proof. Each target
+and requires its own bulk permission and exact reviewed fingerprint. Each target
 receives a manual Audit event in the same transaction; Audit failure rolls back
-revocations and proof consumption. The supplied Users page places this operation below its directory filters.
+revocations. The supplied Users page places this operation below its directory filters.
 
 ## Scheduled lifecycle
 

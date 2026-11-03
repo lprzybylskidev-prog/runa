@@ -63,6 +63,7 @@ const props = withDefaults(
     columns: readonly TableColumn<Row>[];
     columnState?: readonly TableColumnState[] | undefined;
     rowKey: (row: Row) => string;
+    rowClass?: ((row: Row) => string | undefined) | undefined;
     query: TableQuery;
     caption: string;
     selected?: readonly string[];
@@ -82,6 +83,7 @@ const props = withDefaults(
     refreshDisabled: false,
     retainEmptyFrame: false,
     columnState: undefined,
+    rowClass: undefined,
     rows: () => [],
     provider: undefined,
     selection: undefined,
@@ -829,11 +831,12 @@ function changePage(value: number) {
               v-for="row in page?.rows"
               :key="rowKey(row)"
               class="border-b border-line transition-colors duration-160 motion-reduce:transition-none last:border-0 hover:bg-[var(--runa-surface-hover)]"
-              :class="
+              :class="[
+                rowClass?.(row),
                 selectionContains(effectiveSelection, rowKey(row))
                   ? 'bg-[var(--runa-primary-subtle)]'
-                  : ''
-              "
+                  : '',
+              ]"
             >
               <td v-if="selectable" class="px-3 py-1 align-middle">
                 <AppCheckbox

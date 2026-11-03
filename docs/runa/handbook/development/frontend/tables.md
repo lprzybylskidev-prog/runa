@@ -238,3 +238,9 @@ must supply authorized datetime endpoints; this presentation grants no server
 filter authority. Admin's source adapter pairs the declared filterable datetime
 keys from/until, including Audit; isolated datetime filters retain their existing
 single-moment input. Default range labels and picker controls follow PL/EN.
+
+`Table` accepts optional `rowClass?: (row: Row) => string | undefined` for
+source-controlled row presentation (for example, a deleted record's semantic
+color). The callback preserves selection behavior, row identity and keyboard
+controls. Use existing theme tokens and retain textual state in authorized detail
+views; styling never grants read/write authority.

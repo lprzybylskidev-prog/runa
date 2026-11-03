@@ -14,6 +14,7 @@ use Runa\Modules\Auth\Contracts\AuthBulkUsers;
 use Runa\Modules\Auth\Contracts\BulkUserChange;
 use Runa\Modules\Auth\Contracts\SessionSelection;
 use Runa\Modules\Auth\Support\AdministrationFeatures;
+use Runa\Modules\Auth\Support\BulkUserOperations;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 
@@ -50,9 +51,9 @@ final readonly class BulkUserSection implements ManagementResourceReader, Manage
     {
         try {
             $change = $this->change($input);
-            $preview = $this->apis->resolve('runa.auth', AuthBulkUsers::class, '1.0.0')->preview(new SessionSelection($input->values['public_ids']), $change);
+            $preview = $this->apis->resolve('runa.auth', AuthBulkUsers::class, '1.1.0')->preview(new SessionSelection($input->values['public_ids']), $change);
 
-            $summary = ['accounts' => $preview['accounts']];
+            $summary = ['accounts' => $preview['accounts'], 'affected_accounts' => $preview['affected_accounts']];
             if ($preview['sessions'] > 0) {
                 $summary['sessions'] = $preview['sessions'];
             }
@@ -60,7 +61,7 @@ final readonly class BulkUserSection implements ManagementResourceReader, Manage
                 $summary['trusted_devices'] = $preview['trusted_devices'];
             }
 
-            return new ManagementReview($preview['fingerprint'], ['summary' => $summary], 'both', true);
+            return new ManagementReview($preview['fingerprint'], ['summary' => $summary], BulkUserOperations::proof($change->operation), true);
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.auth', 'users.bulk_preview', 422);
         }
@@ -72,7 +73,7 @@ final readonly class BulkUserSection implements ManagementResourceReader, Manage
         if (! $input->confirmed || ! is_string($input->review['fingerprint'] ?? null) || ! hash_equals($review->fingerprint, $input->review['fingerprint'])) {
             throw new OperationRejected('user_preview_stale', 'runa.auth', 'users.bulk_execute', 409);
         }
-        $this->apis->resolve('runa.auth', AuthBulkUsers::class, '1.0.0')->execute(new SessionSelection($input->values['public_ids']), $this->change($input), $review->fingerprint);
+        $this->apis->resolve('runa.auth', AuthBulkUsers::class, '1.1.0')->execute(new SessionSelection($input->values['public_ids']), $this->change($input), $review->fingerprint);
 
         return new ManagementOutcome('committed');
     }

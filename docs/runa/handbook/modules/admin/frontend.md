@@ -120,6 +120,7 @@ interface AdminFormController {
   execute(
     section: string,
     command: string,
+    options?: { confirmReviewed?: boolean },
   ): Promise<AdminCommandResult | undefined>;
   reviewCommand(
     section: string,
@@ -289,7 +290,7 @@ await resource.read({ kind: 'options', field: 'manager', limit: 25 });
 
 Admin owns `useAdminTable(page: AdminPageController, section: string,
 options?: {adapters?: MaybeRefOrGetter<AdminCollectionAdapters>,
-select?: (publicId:string|null)=>Promise<boolean>}): AdminTableController`
+select?: (publicId:string|null)=>Promise<boolean>, omitColumns?: readonly string[]}): AdminTableController`
 and `AdminResourceTable` through `@/runa/admin`. Their implementation lives under
 Admin frontend and is bundled with the consuming presentation. Module and App
 page replacements can use this source-owned read presentation without private
@@ -320,6 +321,7 @@ interface AdminTableController {
 interface AdminResourceTableProps {
   controller: AdminTableController;
   selectable?: boolean;
+  rowClass?: (row: AdminRecord) => string | undefined;
 }
 ```
 
@@ -1231,3 +1233,14 @@ UI TableColumn.filterRange into one DateTimeRangeInput. This includes the suppli
 Audit history catalogue and preserves source wire fields, initial URL filters,
 reset and saved-query behavior. Other independent datetime descriptors stay
 single-moment filters; Auth owns its existing JSON range serialization.
+
+Auth's reviewed batch presentation uses `execute(section, command,
+{confirmReviewed: true})` only from an explicit Confirm interaction with a current
+required preview. This replaces the controller's additional destructive dialog;
+all other calls retain it. It never skips native review, confirmation, proof,
+validation or authority. The password step uses the same operation-proof owner;
+its explicit confirmation submits the reviewed operation once, without a retry.
+`useAdminTable`'s `omitColumns` removes presentation columns and column-picker
+choices while preserving authorized field filters, row values and server reads.
+`AdminResourceTable.rowClass(row)` forwards the public UI Table row presentation
+callback; it grants no authority and does not change selection or payloads.

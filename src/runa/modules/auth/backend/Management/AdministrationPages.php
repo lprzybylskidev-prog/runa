@@ -246,7 +246,7 @@ final class AdministrationPages implements ManagementPageProvider
             'trust' => ['revoke_device' => $command('Revoke trusted device', 'trust.revoke', 'trust.manage', ['device_id'], destructive: true)],
             'preferences' => ['reset' => $command('Reset account preferences', 'preferences.admin_reset', 'preferences.reset', ['preference_revision'], destructive: true)],
             'exceptions' => ['set' => $command('Set or revoke exception', 'policy.exception', 'policy.exceptions', ['key', 'value', 'reason', 'expires_at', 'exception_version', 'policy_revision'], 'runa.auth.policy.exception', true)],
-            'bulk_sessions' => ['revoke' => $command('Revoke sessions', 'sessions.bulk_revoke', 'sessions.bulk_revoke', ['public_ids', ...(app(AdministrationFeatures::class)->enabled('trust') ? ['trust'] : [])], 'runa.auth.sessions.bulk_revoke', true, true)],
+            'bulk_sessions' => ['revoke' => $command('Revoke sessions', 'sessions.bulk_revoke', 'sessions.bulk_revoke', ['public_ids', ...(app(AdministrationFeatures::class)->enabled('trust') ? ['trust'] : [])], null, true, true)],
         ];
 
         $labels = [
@@ -281,7 +281,7 @@ final class AdministrationPages implements ManagementPageProvider
             if (in_array($operation, ['set_security_lock', 'require_password_change'], true)) {
                 $inputs[] = 'enabled';
             }
-            $spec = $command($labels[$operation][1], $access['operation'], $access['permission'], $inputs, 'runa.auth.users.bulk.'.$operation, true, true);
+            $spec = $command($labels[$operation][1], $access['operation'], $access['permission'], $inputs, BulkUserOperations::proof($operation) === 'none' ? null : 'runa.auth.users.bulk.'.$operation, true, true);
             $spec['title'] = ['pl' => $labels[$operation][0], 'en' => $labels[$operation][1]];
             $commands['bulk_users'][$operation] = $spec;
         }
@@ -447,7 +447,9 @@ final class AdministrationPages implements ManagementPageProvider
             if (! app(AdministrationFeatures::class)->command($key, $name)) {
                 continue;
             }
-            $result[] = new ManagementCommandDefinition($name, $spec['title'], new ManagementOperation(new ApiOperation($spec['operation'], 'runa.auth.'.$spec['permission']), $spec['inputs'], $spec['proof'] === null ? 'none' : 'both', revisionRequired: $key !== 'creation', previewRequired: $spec['preview']), $key, destructive: $spec['destructive'], intent: $key === 'creation' ? 'create' : 'action', proofAction: $spec['proof']);
+            $requirement = $key === 'bulk_users' ? BulkUserOperations::proof($name) : ($spec['proof'] === null ? 'none' : 'both');
+            $title = $key === 'bulk_sessions' ? ['pl' => 'Unieważnij sesje', 'en' => 'Revoke sessions'] : $spec['title'];
+            $result[] = new ManagementCommandDefinition($name, $title, new ManagementOperation(new ApiOperation($spec['operation'], 'runa.auth.'.$spec['permission']), $spec['inputs'], $requirement, revisionRequired: $key !== 'creation', previewRequired: $spec['preview']), $key, destructive: $spec['destructive'], intent: $key === 'creation' ? 'create' : 'action', proofAction: $spec['proof']);
         }
 
         return $result;
@@ -476,7 +478,7 @@ final class AdministrationPages implements ManagementPageProvider
             new ManagementBinding('policy1', SecurityPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
             new ManagementBinding('policy2', LifecyclePolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
             new ManagementBinding('policy_history', PolicyHistorySection::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'])]),
-            new ManagementBinding('bulk_users', BulkUserSection::class, [$target(AuthBulkUsers::class, ['preview', 'execute'])]),
+            new ManagementBinding('bulk_users', BulkUserSection::class, [$target(AuthBulkUsers::class, ['preview', 'execute'], '1.1.0')]),
             new ManagementBinding('bulk_sessions', BulkSessionSection::class, [$target(AuthBulkSessions::class, ['preview', 'revoke'])]),
         ];
     }

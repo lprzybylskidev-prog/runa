@@ -822,22 +822,20 @@ it('integrates first administrator authority once with atomic Audit and resumabl
     expect(fn () => $accounts->recover($user->public_id))->toThrow(RuntimeException::class);
 })->group('core-integration');
 
-it('integrates Permissions selection grants with Auth bulk proof and rolls back failed history', function (): void {
-    $codes = permissionAccessManager($this);
+it('integrates Permissions selection grants with reviewed Auth bulk revocation and rolls back failed history', function (): void {
+    permissionAccessManager($this);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('selected-bulk@example.test', name: 'Selected', active: true, approved: true));
     $selection = new SessionSelection([$target->publicId]);
     $api = app(ModuleApis::class)->resolve('runa.auth', AuthBulkSessions::class, '1.0.0');
     ($this->directPermission)('runa.auth.sessions.bulk_revoke');
-    ($this->asPermissionUser)(function () use ($selection, $api, $codes): void {
+    ($this->asPermissionUser)(function () use ($selection, $api): void {
         expect(fn () => $api->preview($selection))->toThrow(OperationRejected::class);
         ($this->directPermission)('runa.permissions.users.select');
         $preview = $api->preview($selection);
         expect(count($preview['accounts']))->toBe(1);
-        expect(fn () => $api->revoke($selection, false, $preview['fingerprint']))->toThrow(OperationRejected::class);
-        permissionAccessProof($this, $codes[0], 'runa.auth.sessions.bulk_revoke');
         DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT selection_audit_refusal CHECK (false) NOT VALID');
         expect(fn () => $api->revoke($selection, false, $preview['fingerprint']))->toThrow(AuditUnavailable::class);
-        expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.sessions.bulk_revoke')->value('consumed_at'))->toBeNull();
+        expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.sessions.bulk_revoke')->exists())->toBeFalse();
         DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT selection_audit_refusal');
         expect($api->revoke($selection, false, $preview['fingerprint'])['accounts'])->toBe(1)
             ->and(DB::table('runa_audit.events')->where('action', 'sessions.bulk_revoked')->value('actor_label'))->toBe('Permission fixture');

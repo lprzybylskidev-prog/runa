@@ -13,7 +13,7 @@ final class BulkUsersApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(AuthBulkUsers::class, BulkUsersProxy::class, BulkUsers::class, '1.0.0', [
+        return new ApiDefinition(AuthBulkUsers::class, BulkUsersProxy::class, BulkUsers::class, '1.1.0', [
             'preview' => new ApiOperation('users.bulk_preview', 'runa.auth.users.read'),
             'execute' => new ApiOperation('users.bulk_execute', 'runa.auth.users.read'),
         ]);

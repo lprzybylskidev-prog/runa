@@ -341,7 +341,7 @@ at runtime. [Auth administration](../modules/auth/administration.md) owns exact
 signatures, field grants, safe errors and frontend composition. Ordinary customers
 resolve the guarded API or compose `@/runa/auth` / `@/runa/admin`; they never import
 Auth's private management adapters or acquire a reverse backend dependency on Admin.
-The same owning guide declares guarded `AuthBulkUsers` 1.0.0 and immutable
+The same owning guide declares guarded `AuthBulkUsers` 1.1.0 and immutable
 `BulkUserChange` for reviewed atomic user operations; the source public-boundary
 catalogue includes these consumption values, never their private batch engine.
 

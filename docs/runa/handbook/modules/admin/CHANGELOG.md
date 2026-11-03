@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Add optional table rowClass/omitColumns presentation and explicit current-reviewed command confirmation, preserving native security/review checks. Support Auth bulk parameter/impact/password-step presentation without duplicated identity or destructive dialogs.
+
 - Localize 22 source-owned setting/exception choices in PL/EN without changing API values; inherit corrected shared control/feedback defaults.
 
 - Translate the shared Admin unfiltered All choice to Polish Wszystkie, including Auth boolean filters; preserve English copy and wire values.

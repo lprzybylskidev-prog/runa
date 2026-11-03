@@ -8,7 +8,6 @@ use Runa\Modules\Auth\Actions\BulkSessions;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
 use Runa\Modules\Auth\Actions\DeliveryRouting;
 use Runa\Modules\Auth\Actions\SecurityNotices;
-use Runa\Modules\Auth\Actions\StepUp;
 use Runa\Modules\Auth\Contracts\BulkUserSelection;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Contracts\PreferenceScope;
@@ -98,7 +97,7 @@ it('keeps session preview reads constant as the selected account collection grow
             'session_hash' => hash('sha256', 'batch-'.$i), 'security_version' => $user->security_version, 'remembered' => false,
             'authenticated_at' => now(), 'activity_at' => now(), 'expires_at' => now()->addHour()]);
     }
-    $action = new BulkSessions(app(EntryTransaction::class), app(StepUp::class), new class implements BulkUserSelection
+    $action = new BulkSessions(app(EntryTransaction::class), new class implements BulkUserSelection
     {
         public function authorize(SessionSelection $selection): void {}
     });

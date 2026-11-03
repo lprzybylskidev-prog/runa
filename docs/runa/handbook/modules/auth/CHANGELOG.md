@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Extend AuthBulkUsers to 1.1.0 with actual affected-account counts. Refine bulk parameter/review/password-step presentation, translate session revocation and apply semantic action order/colors. Owner-approved batch policy requires fresh password proof only for delete/restore, password/2FA reset and exception revocation; other batches retain native review, grants and Audit without extra proof. Replace the state column with deleted-row colors and a default Not deleted filter.
+
 - Match Auth Users filters to Audit compact controls, shorten account/security labels and expose each authorized bulk command as its own button below filters. Retain selected targets and native reviews/proofs.
 
 - Consolidate date/datetime ranges into one labelled compact field with a shared endpoint popup, valid atomic Apply and Clear/Cancel. Replace expanded Auth range filters and Audit from/until controls; preserve wire keys, timezone/DST and open endpoints.

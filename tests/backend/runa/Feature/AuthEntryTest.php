@@ -1458,7 +1458,7 @@ it('expires and revalidates only allowlisted account exceptions with monotonic v
         ->and(DB::table('runa_auth.policy_exceptions')->whereNull('revoked_at')->count())->toBe(0);
 })->group('auth-policy-operators');
 
-it('rejects stale bulk revocation previews and rolls back proof and sessions with Audit', function (): void {
+it('rejects stale bulk revocation previews and rolls back sessions with Audit without another proof', function (): void {
     app()->bind(BulkUserSelection::class, fn () => new class implements BulkUserSelection
     {
         public function authorize(SessionSelection $selection): void {}
@@ -1467,18 +1467,16 @@ it('rejects stale bulk revocation previews and rolls back proof and sessions wit
     $target = profileVerified('bulk-target@example.test');
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
-    [$secret, $codes] = credentialEnroll($this, $actor);
     $action = app(BulkSessions::class);
     $selection = new SessionSelection([$target->public_id]);
     $preview = $action->preview($selection);
     expect($preview['sessions'])->toBe(1);
-    policyStepUpProof($this, $actor, 'runa.auth.sessions.bulk_revoke', $codes[0]);
     $revoke = fn ($hash) => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $action->revoke($selection, false, $hash));
     expect(fn () => $revoke(str_repeat('0', 64)))->toThrow(OperationRejected::class);
     DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT bulk_fixture_refusal CHECK (false) NOT VALID');
     expect(fn () => $revoke($preview['fingerprint']))->toThrow(AuditUnavailable::class);
     expect(DB::table('runa_auth.sessions')->where('user_id', $target->id)->whereNull('revoked_at')->count())->toBe(1)
-        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.sessions.bulk_revoke')->value('consumed_at'))->toBeNull();
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.sessions.bulk_revoke')->exists())->toBeFalse();
     DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT bulk_fixture_refusal');
     expect($revoke($preview['fingerprint'])['sessions'])->toBe(1)
         ->and(DB::table('runa_auth.sessions')->where('user_id', $target->id)->whereNull('revoked_at')->count())->toBe(0);

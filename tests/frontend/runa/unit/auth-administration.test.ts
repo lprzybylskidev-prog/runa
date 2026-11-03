@@ -3,6 +3,7 @@ import { beforeEach, afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import DirectoryFilters from '../../../../src/runa/modules/auth/frontend/AuthDirectoryFilters.vue';
+import AuthAdminBulkAction from '../../../../src/runa/modules/auth/frontend/AuthAdminBulkAction.vue';
 import { DateTimeRangeInput, Select, NumberInput } from '@/runa/ui';
 import type { TableQuery } from '@/runa/ui';
 import { AuthAdminUsers, AuthAdminSection } from '@/runa/auth';
@@ -77,6 +78,146 @@ const response = (data: unknown) =>
     headers: { 'Content-Type': 'application/json' },
   });
 afterEach(() => vi.restoreAllMocks());
+
+it('Auth deleted filter defaults to current records and exposes deleted and all choices', async () => {
+  const update = vi.fn();
+  const wrapper = mount(DirectoryFilters, {
+    props: {
+      fields: [
+        {
+          ...field('state'),
+          type: 'dictionary',
+          choices: ['current', 'deleted', 'all'],
+        },
+      ],
+      query: { page: 1, perPage: 25, sort: null, filters: {} },
+      update,
+      resetKey: 0,
+      setValidity: vi.fn(),
+    },
+  });
+  const filter = wrapper.getComponent(Select);
+  const presented = filter.props() as {
+    label: string;
+    modelValue: string;
+    options: { value: string; label: string }[];
+  };
+  expect(presented.label).toBe('Deleted');
+  expect(presented.modelValue).toBe('current');
+  expect(presented.options).toEqual([
+    { value: 'current', label: 'Not deleted' },
+    { value: 'deleted', label: 'Deleted' },
+    { value: 'all', label: 'All' },
+  ]);
+  filter.vm.$emit('update:modelValue', 'deleted');
+  expect(update).toHaveBeenCalledWith(
+    expect.objectContaining({ filters: { state: 'deleted' } }),
+  );
+});
+
+it.each(['schedule_activation', 'delete'])(
+  'Auth bulk %s reviews impact and confirms through its password step only when required',
+  async (operation) => {
+    const protectedAction = operation === 'delete';
+    const bulk = section('bulk_users', [
+      { ...field('public_ids', false), type: 'uuid', multiple: true },
+      { ...field('at', false), type: 'datetime' },
+      field('summary'),
+    ]);
+    bulk.commands = [
+      {
+        key: operation,
+        title: operation,
+        inputs: ['public_ids', ...(protectedAction ? [] : ['at'])],
+        mode: 'independent',
+        requirement: protectedAction ? 'password' : 'none',
+        destructive: true,
+        preview_required: true,
+        bulk: false,
+        action: protectedAction ? 'runa.auth.users.bulk.delete' : null,
+        available: true,
+        intent: 'action',
+      },
+    ];
+    const controller = page([bulk]);
+    const writes: string[] = [];
+    vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+      const path = new URL(String(input), window.location.origin).pathname;
+      if (init?.method === 'POST') writes.push(path);
+      if (path.endsWith('/preview'))
+        return response({
+          fingerprint: 'a'.repeat(64),
+          changes: { summary: { accounts: 10, affected_accounts: 2 } },
+          requirement: protectedAction ? 'password' : 'none',
+          every_action: true,
+        });
+      if (path.endsWith('/step-up')) return response({ confirmed: true });
+      if (path.endsWith('/commands'))
+        return response({
+          status: 'committed',
+          record: null,
+          operation_id: null,
+        });
+      return response({
+        public_id: null,
+        revision: '0',
+        values: { public_ids: [target], at: null, summary: null },
+      });
+    });
+    let form!: AdminFormController;
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          form = useAdminForm(controller);
+          return () =>
+            h(
+              AdminForm,
+              { controller: form },
+              {
+                default: () =>
+                  h(AuthAdminBulkAction, {
+                    page: controller,
+                    section: bulk,
+                    controller: form,
+                  }),
+              },
+            );
+        },
+      }),
+    );
+    await vi.waitFor(() =>
+      expect(wrapper.text()).toContain('Affected accounts'),
+    );
+    expect(wrapper.text()).not.toContain('Confirm required operation proof');
+    expect(wrapper.find('input[type=password]').exists()).toBe(false);
+    expect(wrapper.findAllComponents(DateTimeRangeInput)).toHaveLength(0);
+    if (!protectedAction) expect(wrapper.find('input').exists()).toBe(true);
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Confirm')!
+      .trigger('click');
+    if (protectedAction) {
+      await vi.waitFor(() =>
+        expect(wrapper.find('input[type=password]').exists()).toBe(true),
+      );
+      expect(writes.some((path) => path.endsWith('/commands'))).toBe(false);
+      await wrapper.get('input[type=password]').setValue('admin-password');
+      await wrapper
+        .findAll('button')
+        .find((button) => button.text() === 'Confirm')!
+        .trigger('click');
+    }
+    await vi.waitFor(() =>
+      expect(writes.filter((path) => path.endsWith('/commands'))).toHaveLength(
+        1,
+      ),
+    );
+    expect(writes.filter((path) => path.endsWith('/step-up'))).toHaveLength(
+      protectedAction ? 1 : 0,
+    );
+    expect(form.confirmation.value).toBeUndefined();
+  },
+);
 
 it('Auth administration user page selects another account through the shared guarded form controller', async () => {
   const controller = page([

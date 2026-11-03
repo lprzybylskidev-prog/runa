@@ -967,7 +967,7 @@ it('Auth administration publishes and restores through the native policy runner 
     expect(app(ModuleSettings::class)->value('runa.auth', 'public_welcome_enabled'))->toBeTrue();
 });
 
-it('Auth administration keeps selected bulk revocation on the reviewed native selection proof', function (): void {
+it('Auth administration confirms selected bulk revocation without another identity proof', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
     app(ModuleSettings::class)->update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('bulk-admin@example.test', name: 'Bulk target', active: true, approved: true));
@@ -978,10 +978,10 @@ it('Auth administration keeps selected bulk revocation on the reviewed native se
     $stale = $input;
     $stale['review']['fingerprint'] = str_repeat('0', 64);
     $this->postJson('/api/admin/runa.auth/users/sections/bulk_sessions/commands', $stale)->assertConflict();
-    $this->postJson('/api/admin/runa.auth/users/sections/bulk_sessions/commands', $input)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
-    authAdministrationStrongProof($this, 'runa.auth.sessions.bulk_revoke');
+    expect($input['review']['requirement'])->toBe('none')
+        ->and($input['review']['changes']['summary']['affected_accounts'])->toBe(0);
     $this->postJson('/api/admin/runa.auth/users/sections/bulk_sessions/commands', $input)->assertOk()->assertJsonPath('data.status', 'committed');
-    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.sessions.bulk_revoke')->whereNotNull('consumed_at')->exists())->toBeTrue();
+    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.sessions.bulk_revoke')->exists())->toBeFalse();
     $input['values'] = ['public_ids' => [$target->publicId], 'all' => true, 'trust' => false];
     $this->postJson('/api/admin/runa.auth/users/sections/bulk_sessions/preview', $input)->assertUnprocessable();
 });
@@ -1856,7 +1856,7 @@ it('Auth user administration filters all authorized facts before pagination and 
     }
 });
 
-it('Auth user administration executes each native bulk operation with one reviewed proof', function (string $operation): void {
+it('Auth user administration executes each native bulk operation with its declared proof', function (string $operation): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
     app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'new', 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
     DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['password_changed_at' => now()]);
@@ -1924,10 +1924,14 @@ it('Auth user administration executes each native bulk operation with one review
     if ($operation === 'reset_preferences') {
         expect($input['review']['changes']['summary'])->not->toHaveKey('sessions')->not->toHaveKey('trusted_devices');
     }
-    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
-    authAdministrationStrongProof($this, 'runa.auth.users.bulk.'.$operation);
+    $protected = in_array($operation, ['delete', 'restore', 'password_reset', 'factor_reset', 'revoke_exceptions'], true);
+    expect($input['review']['requirement'])->toBe($protected ? 'password' : 'none');
+    if ($protected) {
+        $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
+        $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.users.bulk.'.$operation, 'requirement' => 'password', 'current_password' => 'admin-entry-password'])->assertOk();
+    }
     $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertOk()->assertJsonPath('data.status', 'committed');
-    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.users.bulk.'.$operation)->whereNotNull('consumed_at')->count())->toBe(1);
+    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.users.bulk.'.$operation)->whereNotNull('consumed_at')->count())->toBe($protected ? 1 : 0);
     $users = User::withTrashed()->whereIn('public_id', $ids)->get();
     foreach ($users as $user) {
         match ($operation) {
@@ -1955,6 +1959,22 @@ it('Auth user administration executes each native bulk operation with one review
     }
 })->with([['activate'], ['deactivate'], ['approve'], ['delete'], ['restore'], ['schedule_activation'], ['schedule_deactivation'], ['set_expiry'], ['set_attempt_lock'], ['set_security_lock'], ['require_password_change'], ['invite'], ['invalidate_invitation'], ['require_verification'], ['password_reset'], ['factor_reset'], ['revoke_trust'], ['reset_preferences'], ['remove_avatar'], ['revoke_exceptions']]);
 
+it('Auth bulk activation previews only actual changes in a mixed ten-account selection', function (): void {
+    $ids = [];
+    for ($index = 0; $index < 10; $index++) {
+        $ids[] = app(ChangeIdentity::class)->create(new NewIdentity('mixed-bulk-'.$index.'@example.test', name: 'Mixed bulk', active: $index < 8, approved: true))->publicId;
+    }
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.permissions.users.select']);
+    $input = ['command' => 'activate', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => $ids], 'confirmed' => true];
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    expect($input['review']['changes']['summary'])->toMatchArray(['accounts' => 10, 'affected_accounts' => 2]);
+    $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertOk();
+    expect(User::whereIn('public_id', $ids)->where('active', true)->count())->toBe(10)
+        ->and(User::whereIn('public_id', $ids)->where('version', 2)->count())->toBe(2);
+    $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
+    expect($input['review']['changes']['summary']['affected_accounts'])->toBe(0);
+});
+
 it('Auth user administration refuses changed selection and rolls back a whole failed bulk batch', function (): void {
     $first = app(ChangeIdentity::class)->create(new NewIdentity('atomic-first@example.test', name: 'Atomic first', active: true, approved: true));
     $second = app(ChangeIdentity::class)->create(new NewIdentity('atomic-second@example.test', name: 'Atomic second', active: true, approved: true));
@@ -1968,12 +1988,11 @@ it('Auth user administration refuses changed selection and rolls back a whole fa
     $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertConflict();
     expect(User::where('public_id', $first->publicId)->value('active'))->toBeTrue();
     $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
-    authAdministrationStrongProof($this, 'runa.auth.users.bulk.deactivate');
     DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT bulk_failure CHECK (action <> 'identity.deactivate')");
     try {
         $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertStatus(503);
         expect(User::whereIn('public_id', [$first->publicId, $second->publicId])->where('active', true)->count())->toBe(2)
-            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.users.bulk.deactivate')->value('consumed_at'))->toBeNull();
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.users.bulk.deactivate')->exists())->toBeFalse();
     } finally {
         DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT bulk_failure');
     }

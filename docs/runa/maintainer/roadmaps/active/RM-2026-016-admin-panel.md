@@ -766,6 +766,19 @@ reassessment before resuming point 3; completed point history remains evidence.
     translation catalogues and source-owned Admin metadata; retain technical and
     business identifiers. Repair missing copy in both languages with focused
     interaction checks, synchronized contracts and current built assets.
+- [x] 11a49. Refine Auth bulk action review, impact counts and deleted-user presentation.
+  - Owner request, 2026-11-03: translate session revocation, order/tone the direct
+    actions, show operation parameters and actual affected accounts beside selected
+    count, and replace the account-state column with red deleted rows and a
+    Deleted filter defaulting to current records.
+  - Owner explicitly approves fresh password proof only for delete, restore,
+    password reset, factor reset and exception revocation. Other bulk operations
+    retain explicit reviewed confirmation without another proof. This supersedes
+    the blanket bulk both-factor requirement in points 11a43–44; individual actions,
+    Admin entry, grants, authority protection, Audit and fingerprints stay intact.
+  - Confirm opens the operation's password step when required; no separate identity
+    button or duplicate destructive dialog. Synchronize contracts/regressions and
+    prepare current local assets. Manual acceptance and final gates remain open.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5118,3 +5131,76 @@ canonical guides and shared localization; they need no duplicate rule or changed
 instruction. No disposable Docker/database resources were created; active data,
 services, caches and evidence remain preserved. Owner acceptance 11b and final
 verification/release 12 remain open.
+
+### Point 11a49 — Reviewed Auth bulk actions and deleted-account presentation
+
+The owner approved the explicit five-operation password policy on 2026-11-03.
+Auth's exhaustive source catalogue now applies that requirement in both Admin
+metadata/reviews and the native mutation proof list. Delete, restore, password
+reset, factor reset and exception revocation consume one fresh password proof;
+ordinary batches and bulk session/trust revocation require no additional proof.
+Individual-record stronger proofs, Admin admission, grants, native selection,
+last-administrator protection, fingerprint checks and transactional Audit remain.
+
+A dedicated Auth presentation composes public AdminSection/AdminField and the
+existing operation-proof controller. It shows only selected-command parameters,
+automatically previews changed inputs, separates selected from affected accounts
+and disables zero-impact confirmation. Confirm either executes the reviewed batch
+or replaces its contents with the password step; explicit password confirmation
+submits once. There is no separate identity button, duplicate destructive dialog
+or automatic business retry. New public optional confirmReviewed affects only the
+client dialog for a required current preview; native checks remain authoritative.
+
+AuthBulkUsers 1.1.0 adds affected_accounts while retaining accounts as selected
+count. Lifecycle counts use the actual prepared dirty state; removals/revocations
+use matching owning inventories. All exact-version bindings/consumers and current
+API documentation are synchronized. Auth remains the unreleased 2.1.0 candidate:
+this additive API and relaxed accepted-proof requirement fit its existing MINOR
+scope. Admin remains its creation candidate 0.1.0; no extra no-op upgrade edge or
+migration is introduced. The public table rowClass and omitColumns presentation
+options preserve field-filter authority while removing the state column/picker
+entry. Deleted defaults to current and supports deleted/all with native read grants;
+deleted rows use existing danger tokens. Actions are logically ordered and toned,
+and session revocation uses explicit PL/EN copy.
+
+Owner/customer instruction assessment: root AGENTS and both skill products already
+route security, table/presentation composition and Auth operations to the owning
+public guides. No agent workflow or customer authority changes, so those products
+need no duplicated operation catalogue. Updated guides, API signatures and both
+module/central changelogs carry the capability and policy changes.
+
+Focused evidence (implementation uncertainties only; no broad gate):
+
+- Backend parallel single-worker selection: 22 PASS / 422 assertions for all native
+  operations, password-only admission/consumption, ordinary no-proof submission,
+  session confirmation and the 10 selected / 2 affected / 0 on repeat regression.
+  `.runtime/frontend/RM-2026-016-bulk-backend.log`.
+- Four additional focused guard cases PASS / 48 assertions: stale batch/Audit
+  rollback, Permissions selection and native session rollback/query-growth.
+  `.runtime/frontend/RM-2026-016-bulk-guards.log`.
+- Three frontend cases PASS: parameter/impact review, exact one-command submission,
+  deferred password step without a second dialog, and current/deleted/all filtering.
+  `.runtime/frontend/RM-2026-016-bulk-frontend.log`.
+- The initial serial backend diagnostic correctly refused pre-existing Core schemas
+  in the preserved base test database. The supported disposable parallel worker was
+  then used. An initial exact-version binding mismatch was repaired before the
+  passing focused execution above; no guard or base schema was bypassed/reset.
+- The one-off served-build diagnostic uses bounded synthetic HTTP responses to
+  inspect the compiled custom components; this isolates the presentation without
+  changing owner accounts. PL/dark at 1440px and EN/light at 390px confirm parameter
+  inputs, selected/affected counts, semantic tones/order, password step, one write,
+  exact deleted/current filter payloads, deleted row styling, no state column,
+  no page errors and no modal overflow. Screenshots and report:
+  `.runtime/artifacts/playwright/runa/RM-2026-016-bulk-review/`;
+  `.runtime/frontend/RM-2026-016-bulk-browser-final.log`.
+- Supported manual-runtime asset build passes (strict Vue/TypeScript, Vite and native
+  error shells); `.runtime/frontend/RM-2026-016-bulk-build.log`. This is readiness
+  preparation, not the final frontend quality group. Existing chunk-size advisories
+  remain unchanged. Real development GETs return 200 for the Users page and Auth
+  entry options; unauthenticated Admin entry correctly returns 401.
+
+Local owner URL remains http://localhost:8080/admin/runa.auth/users. Manual owner
+acceptance 11b and complete automated verification/release 12 remain open. No
+Docker resources or persistent data were created/removed. Supported test runners
+removed only their owned inactive runa_test_test_1 worker database and preserved
+runa_test, development data, active services, Qdrant/model caches and reports.

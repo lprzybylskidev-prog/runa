@@ -286,6 +286,7 @@ export interface AdminFormController {
   execute(
     section: string,
     command: string,
+    options?: { confirmReviewed?: boolean },
   ): Promise<AdminCommandResult | undefined>;
   reviewCommand(
     section: string,
@@ -405,6 +406,7 @@ export type AdminActionEmits = { invoke: [] };
 export interface AdminResourceTableProps {
   controller: AdminTableController;
   selectable?: boolean;
+  rowClass?: ((row: AdminRecord) => string | undefined) | undefined;
 }
 /** The owning consumer supplies an authorized, field-bound lookup lane. */
 export interface AdminFieldLookup {

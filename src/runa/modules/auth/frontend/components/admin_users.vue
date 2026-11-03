@@ -21,6 +21,7 @@ watch(tab, (key) => {
   visited.value = new Set([...visited.value, key]);
 });
 const table = useAdminTable(props.controller, 'directory', {
+  omitColumns: ['state'],
   select: async (id) => {
     if (!(await props.form.selectSubject(id))) return false;
     if (id !== null) {
@@ -61,7 +62,6 @@ watch(
       'logged_in',
       'verified',
       'two_factor_enabled',
-      'state',
       'created_at',
     ]);
     table.views.setColumns(
@@ -74,6 +74,58 @@ watch(
   { immediate: true },
 );
 const directory = computed(() => table.section.value);
+const bulkOrder = [
+  'approve',
+  'activate',
+  'schedule_activation',
+  'deactivate',
+  'schedule_deactivation',
+  'set_expiry',
+  'restore',
+  'delete',
+  'invite',
+  'invalidate_invitation',
+  'require_verification',
+  'require_password_change',
+  'password_reset',
+  'factor_reset',
+  'set_attempt_lock',
+  'set_security_lock',
+  'revoke',
+  'revoke_trust',
+  'revoke_exceptions',
+  'reset_preferences',
+  'remove_avatar',
+];
+function bulkTone(key: string): 'success' | 'danger' | 'warning' | 'primary' {
+  if (['activate', 'approve', 'restore', 'schedule_activation'].includes(key))
+    return 'success';
+  if (
+    [
+      'delete',
+      'deactivate',
+      'schedule_deactivation',
+      'set_security_lock',
+      'factor_reset',
+      'revoke',
+      'revoke_trust',
+    ].includes(key)
+  )
+    return 'danger';
+  if (
+    [
+      'require_verification',
+      'require_password_change',
+      'password_reset',
+      'set_attempt_lock',
+      'set_expiry',
+      'invalidate_invitation',
+      'revoke_exceptions',
+    ].includes(key)
+  )
+    return 'warning';
+  return 'primary';
+}
 const bulkChoices = computed(() =>
   (props.controller.page.value?.sections ?? [])
     .filter((s) => ['bulk_sessions', 'bulk_users'].includes(s.key))
@@ -84,8 +136,15 @@ const bulkChoices = computed(() =>
           section,
           command,
           value: section.key + ':' + command.key,
-          label: tr(command.title),
+          label:
+            section.key === 'bulk_sessions'
+              ? tr({ pl: 'Unieważnij sesje', en: 'Revoke sessions' })
+              : tr(command.title),
         })),
+    )
+    .sort(
+      (a, b) =>
+        bulkOrder.indexOf(a.command.key) - bulkOrder.indexOf(b.command.key),
     ),
 );
 const canBulk = computed(() => bulkChoices.value.length > 0);
@@ -208,7 +267,14 @@ watch(
           >{{ tr('Create account') }}</Button
         >
       </template>
-      <AdminResourceTable :controller="table" :selectable="!!canBulk">
+      <AdminResourceTable
+        :controller="table"
+        :selectable="!!canBulk"
+        :row-class="
+          (row) =>
+            row.values.state === 'deleted' ? 'auth-deleted-row' : undefined
+        "
+      >
         <template #filters="{ query, update, resetKey, setValidity }">
           <AuthDirectoryFilters
             :fields="table.section.value?.fields ?? []"
@@ -239,6 +305,7 @@ watch(
                 :data-bulk-command="choice.value"
                 size="sm"
                 variant="outline"
+                :tone="bulkTone(choice.command.key)"
                 :disabled="
                   form.busy.value ||
                   !selection.length ||
@@ -366,3 +433,9 @@ watch(
     </Dialog>
   </div>
 </template>
+<style scoped>
+:deep(.auth-deleted-row) {
+  color: var(--runa-danger-text);
+  background-color: var(--runa-danger-subtle);
+}
+</style>
