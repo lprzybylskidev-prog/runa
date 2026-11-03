@@ -22,7 +22,6 @@ return new class extends Migration
             $table->text('password')->nullable();
             $table->text('remember_token')->nullable();
             $table->boolean('active')->default(false);
-            $table->boolean('approved')->default(false);
             $table->boolean('security_locked')->default(false);
             $table->boolean('password_change_required')->default(false);
             $table->bigInteger('version')->default(1);

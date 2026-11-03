@@ -106,7 +106,7 @@ function entryPolicy(array $patch): void
 
 function entryUser(string $email, bool $password = true): User
 {
-    $identity = app(ChangeIdentity::class)->create(new NewIdentity($email, name: 'Test User', active: true, approved: true));
+    $identity = app(ChangeIdentity::class)->create(new NewIdentity($email, name: 'Test User', active: true));
     $user = User::where('public_id', $identity->publicId)->first();
     if ($password) {
         DB::transaction(function () use ($user): void {
@@ -245,7 +245,7 @@ it('uses guarded named Auth endpoints without Fortify bypasses and rotates cooki
     $this->getJson('/api/runa/auth/session')->assertUnauthorized();
 });
 
-it('keeps registration opt-in generic and atomic with approval distinct from verification', function (): void {
+it('keeps registration opt-in generic and atomic with activation distinct from verification', function (): void {
     $payload = ['email' => 'register@example.test', 'name' => 'Registered', 'password' => 'a-long-test-password', 'password_confirmation' => 'a-long-test-password'];
     $this->postJson('/api/runa/auth/register', $payload)->assertForbidden();
     entryPolicy(['public_registration' => true]);
@@ -255,13 +255,19 @@ it('keeps registration opt-in generic and atomic with approval distinct from ver
         ->and(DB::table('runa_auth.entry_tokens')->count())->toBe(1)->and(DB::table('shared.module_work')->count())->toBe(1);
     $serialized = DB::table('runa_audit.events')->get()->toJson();
     expect($serialized)->not->toContain('register@example.test', 'a-long-test-password');
-    entryPolicy(['registration_approval' => 'administrator']);
+    expect(User::where('email', 'register@example.test')->first()->active)->toBeTrue();
+    entryPolicy(['registration_activation' => 'administrator']);
     $payload['email'] = 'pending@example.test';
+    $this->postJson('/api/runa/auth/register', [...$payload, 'active' => true])->assertUnprocessable();
     $this->postJson('/api/runa/auth/register', $payload)->assertAccepted();
-    expect(User::where('email', 'pending@example.test')->first()->approved)->toBeFalse()
+    expect(User::where('email', 'pending@example.test')->first()->active)->toBeFalse()
         ->and(DB::table('runa_auth.entry_tokens')->count())->toBe(1);
     entryLogin($this, ['identifier' => 'pending@example.test', 'password' => 'a-long-test-password'])
         ->assertUnprocessable()->assertJsonPath('error.code', 'invalid_credentials');
+    $pending = User::where('email', 'pending@example.test')->firstOrFail();
+    app(ChangeIdentity::class)->change($pending->public_id, $pending->version, new LifecycleChange('activate'));
+    entryLogin($this, ['identifier' => 'pending@example.test', 'password' => 'a-long-test-password'])
+        ->assertOk()->assertJsonPath('data.restrictions', ['email_verification_required']);
 });
 
 it('consumes invitation and verification tokens exactly once and fails closed when Audit cannot persist', function (): void {

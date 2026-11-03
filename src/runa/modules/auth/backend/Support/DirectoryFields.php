@@ -16,7 +16,6 @@ final class DirectoryFields
             'first_name' => ['First name', 'text', 'profiles.read', null],
             'surname' => ['Surname', 'text', 'profiles.read', null],
             'active' => ['Active', 'boolean', 'users.read', null],
-            'approved' => ['Approved', 'boolean', 'users.read', null],
             'security_locked' => ['Security Locked', 'boolean', 'users.read', null],
             'logged_in' => ['Logged in', 'boolean', 'sessions.manage', null],
             'session_count' => ['Active sessions', 'integer', 'sessions.manage', null],

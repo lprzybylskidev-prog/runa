@@ -98,7 +98,7 @@ beforeEach(function (): void {
     config()->set('hashing.bcrypt.rounds', 4);
     $settings = app(ModuleSettings::class)->read('runa.auth');
     app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'disabled'], $settings['revision'], $settings['generation']);
-    $identity = app(ChangeIdentity::class)->create(new NewIdentity('admin-entry@example.test', name: 'Admin entry', active: true, approved: true));
+    $identity = app(ChangeIdentity::class)->create(new NewIdentity('admin-entry@example.test', name: 'Admin entry', active: true));
     $this->adminUser = User::where('public_id', $identity->publicId)->firstOrFail();
     DB::transaction(function (): void {
         $this->adminUser->password = Hash::make('admin-entry-password');
@@ -384,7 +384,7 @@ it('validates both owners before Auth first apply and commits profile assignment
     foreach (['runa.auth.profiles.manage', 'runa.auth.eligibility.read', 'runa.permissions.access.manage'] as $code) {
         ($this->adminGrant)($code);
     }
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-mutation@example.test', name: 'Before', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-mutation@example.test', name: 'Before', active: true));
     nativeMutationProof($this);
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
         $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
@@ -408,7 +408,7 @@ it('rolls back Auth first apply assignments and consumed proof before independen
     foreach (['runa.auth.profiles.manage', 'runa.auth.eligibility.read', 'runa.permissions.access.manage'] as $code) {
         ($this->adminGrant)($code);
     }
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-rollback@example.test', name: 'Before', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-rollback@example.test', name: 'Before', active: true));
     nativeMutationProof($this);
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
         $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
@@ -436,8 +436,8 @@ it('rejects stale prewrite review and duplicate native writers or single use dem
     foreach (['runa.auth.profiles.manage', 'runa.auth.eligibility.read', 'runa.permissions.access.manage'] as $code) {
         ($this->adminGrant)($code);
     }
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-stale@example.test', name: 'Before', active: true, approved: true));
-    $other = app(ChangeIdentity::class)->create(new NewIdentity('native-other@example.test', name: 'Other', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-stale@example.test', name: 'Before', active: true));
+    $other = app(ChangeIdentity::class)->create(new NewIdentity('native-other@example.test', name: 'Other', active: true));
     nativeMutationProof($this);
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target, $other): void {
         $apis = app(ModuleApis::class);
@@ -469,7 +469,7 @@ it('fails closed when independent refusal Audit also fails and invalidates rolle
     foreach (['runa.auth.profiles.manage', 'runa.auth.eligibility.read', 'runa.permissions.access.manage'] as $code) {
         ($this->adminGrant)($code);
     }
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-refusal@example.test', name: 'Before', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('native-refusal@example.test', name: 'Before', active: true));
     nativeMutationProof($this);
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
         $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
@@ -587,7 +587,7 @@ it('coordinates an Admin aggregate HTTP review and Auth first atomic Save with s
     $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.permissions.access.manage', 'requirement' => 'both',
         'current_password' => 'admin-entry-password', 'method' => 'totp',
         'code' => app(Google2FA::class)->oathTotp($secret, intdiv(now()->getTimestamp(), 30))])->assertOk();
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate@example.test', name: 'Before', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate@example.test', name: 'Before', active: true));
     $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     $input = adminAggregateInput($this, $target->publicId, [$permission]);
     $this->postJson('/api/admin/runa.auth/users/save', $input)->assertConflict();
@@ -608,7 +608,7 @@ it('coordinates an Admin aggregate HTTP review and Auth first atomic Save with s
 
 it('rolls back an Admin aggregate in either owning Audit failure direction including consumed action proof', function (string $action): void {
     adminAggregateLogin($this);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-rollback@example.test', name: 'Before', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-rollback@example.test', name: 'Before', active: true));
     $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     $input = adminAggregateReview($this, adminAggregateInput($this, $target->publicId, [$permission]));
     // The action comes from this fixed test dataset, never from request input.
@@ -660,7 +660,7 @@ function adminAtomicAppInput(array $input, string $publicId, string $note = 'Aft
 
 it('includes an App editable contribution and rolls back invalid final projection before commit', function (bool $badProjection): void {
     adminAggregateLogin($this);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-app@example.test', name: 'Before', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-app@example.test', name: 'Before', active: true));
     [, $editor] = adminAtomicApp($this, $target->publicId);
     $input = adminAtomicAppInput(adminAggregateInput($this, $target->publicId), $target->publicId);
     $input = adminAggregateReview($this, $input);
@@ -679,7 +679,7 @@ it('includes an App editable contribution and rolls back invalid final projectio
 
 it('rejects missing duplicate incompatible and lost aggregate participants and namespaces owning validation errors', function (): void {
     adminAggregateLogin($this);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-loss@example.test', name: 'Before', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-loss@example.test', name: 'Before', active: true));
     [$provider, , $mutation] = adminAtomicApp($this, $target->publicId);
     $input = adminAtomicAppInput(adminAggregateInput($this, $target->publicId), $target->publicId);
     $missing = $input;
@@ -711,7 +711,7 @@ it('rejects missing duplicate incompatible and lost aggregate participants and n
 
 it('rejects aggregate ABA and expired owning proof without regenerating reviewed intent', function (): void {
     adminAggregateLogin($this);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-aba@example.test', name: 'Before', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-aba@example.test', name: 'Before', active: true));
     $input = adminAggregateReview($this, adminAggregateInput($this, $target->publicId));
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
         $profiles = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.0.0');
@@ -737,8 +737,8 @@ it('rolls back own grant removal when current result authority is lost', functio
 
 it('holds aggregate registry and complete sorted subject locks against an independent PostgreSQL competitor', function (): void {
     adminAggregateLogin($this);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-lock@example.test', name: 'Before', active: true, approved: true));
-    $other = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-subject@example.test', name: 'Other', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-lock@example.test', name: 'Before', active: true));
+    $other = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-subject@example.test', name: 'Other', active: true));
     [, , $mutation] = adminAtomicApp($this, $other->publicId);
     $input = adminAtomicAppInput(adminAggregateInput($this, $target->publicId), $other->publicId);
     $input = adminAggregateReview($this, $input);
@@ -771,7 +771,7 @@ it('holds aggregate registry and complete sorted subject locks against an indepe
 
 it('fails closed when an Admin aggregate rollback refusal Audit is unavailable', function (): void {
     adminAggregateLogin($this);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-refusal@example.test', name: 'Before', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-refusal@example.test', name: 'Before', active: true));
     $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     $input = adminAggregateReview($this, adminAggregateInput($this, $target->publicId, [$permission]));
     DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT aggregate_refusal_failure CHECK (action NOT IN ('assignments.changed', 'access.refused')) NOT VALID");
@@ -839,15 +839,15 @@ it('Auth administration dispatches every lifecycle intent with native revisions 
         $this->adminUser->save();
     });
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['registration_approval' => 'administrator', 'password_expiry_days' => 30], $settings['revision'], $settings['generation']);
+    app(ModuleSettings::class)->update('runa.auth', ['registration_activation' => 'administrator', 'password_expiry_days' => 30], $settings['revision'], $settings['generation']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('lifecycle-admin@example.test', name: 'Lifecycle target'));
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.deleted.read', 'runa.auth.users.manage']);
-    foreach (['approve', 'activate', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change', 'deactivate', 'delete', 'restore'] as $operation) {
+    foreach (['activate', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change', 'deactivate', 'delete', 'restore'] as $operation) {
         $record = authAdministrationRead($this, 'lifecycle', $target->publicId);
         $input = ['command' => 'change', 'public_id' => $target->publicId, 'revision' => $record['revision'],
             'confirmed' => true, 'values' => ['operation' => $operation, 'at' => now()->utc()->addDays($operation === 'schedule_activation' ? 1 : 2)->format('Y-m-d\TH:i:s.000\Z'), 'enabled' => true]];
         $this->postJson('/api/admin/runa.auth/users/sections/lifecycle/commands', $input)->assertOk()->assertJsonPath('data.status', 'committed');
-        if ($operation === 'approve') {
+        if ($operation === 'activate') {
             $this->postJson('/api/admin/runa.auth/users/sections/lifecycle/commands', $input)->assertConflict();
         }
     }
@@ -859,7 +859,7 @@ it('Auth administration dispatches every lifecycle intent with native revisions 
 it('Auth administration keeps creations invitations secondary addresses and preference resets in owning protocols', function (): void {
     authAdministrationLogin($this, ['runa.auth.users.create', 'runa.auth.profiles.read', 'runa.auth.secondary.read', 'runa.auth.secondary.manage', 'runa.auth.invitations.manage', 'runa.auth.preferences.reset']);
     $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', ['command' => 'create', 'revision' => '0', 'public_id' => null,
-        'values' => ['email' => 'created-admin@example.test', 'name' => 'Created account', 'first_name' => null, 'surname' => null, 'login' => null, 'active' => true, 'approved' => true]])->assertOk();
+        'values' => ['email' => 'created-admin@example.test', 'name' => 'Created account', 'first_name' => null, 'surname' => null, 'login' => null, 'active' => true]])->assertOk();
     $user = User::where('email', 'created-admin@example.test')->firstOrFail();
     $invite = ['command' => 'invite', 'public_id' => $user->public_id, 'revision' => (string) $user->version, 'values' => []];
     foreach ([1, 2] as $attempt) {
@@ -897,7 +897,7 @@ it('Auth administration keeps creations invitations secondary addresses and pref
 it('Auth administration refuses stronger operations without native both factor proof', function (string $section, string $command, array $values, string $grant): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
     app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'new', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['generation']);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('strong-admin@example.test', name: 'Strong target', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('strong-admin@example.test', name: 'Strong target', active: true));
     authAdministrationLogin($this, ['runa.auth.profiles.read', 'runa.auth.policy.exceptions', 'runa.auth.'.$grant]);
     if ($section === 'exceptions') {
         $values += ['reason' => 'Temporary reviewed exception', 'expires_at' => now()->utc()->addDay()->format('Y-m-d\TH:i:s\Z'), 'policy_revision' => app(ModuleSettings::class)->read('runa.auth')['revision']];
@@ -970,7 +970,7 @@ it('Auth administration publishes and restores through the native policy runner 
 it('Auth administration confirms selected bulk revocation without another identity proof', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
     app(ModuleSettings::class)->update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('bulk-admin@example.test', name: 'Bulk target', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('bulk-admin@example.test', name: 'Bulk target', active: true));
     authAdministrationLogin($this, ['runa.auth.sessions.bulk_revoke', 'runa.permissions.users.select']);
     $input = ['command' => 'revoke', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$target->publicId], 'trust' => true], 'confirmed' => true];
     $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_sessions/preview', $input)->assertOk()->json('data');
@@ -1006,7 +1006,7 @@ it('Auth administration never treats a read grant as write authority', function 
 });
 
 it('Auth administration preserves native session and trust scoping without disclosing session credentials', function (): void {
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('sessions-admin@example.test', name: 'Session target', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('sessions-admin@example.test', name: 'Session target', active: true));
     $user = User::where('public_id', $target->publicId)->firstOrFail();
     $sessions = DB::transaction(fn () => [
         app(SessionStore::class)->admit(DB::connection(), $user, 'auth-admin-session-one', false),
@@ -1030,7 +1030,7 @@ it('Auth administration preserves native session and trust scoping without discl
 });
 
 it('Auth administration runs native strong account actions with one use proof', function (string $section, string $command, array $values, string $grant, string $proof): void {
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('strong-success@example.test', name: 'Strong target', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('strong-success@example.test', name: 'Strong target', active: true));
     authAdministrationLogin($this, ['runa.auth.profiles.read', 'runa.auth.policy.exceptions', 'runa.auth.'.$grant]);
     if ($command === 'replace') {
         $state = app(ModuleSettings::class)->read('runa.auth');
@@ -1059,7 +1059,7 @@ it('Auth administration maps cleared optional naming fields to the native nullab
     $outcome = app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), fn () => app(ProfileEditor::class)->execute(new ManagementWrite('save', $target->publicId, '1', ['name' => '', 'first_name' => 'New', 'surname' => 'Name', 'login' => ''])));
     expect($outcome->status)->toBe('committed')->and($outcome->record->values)->toBe(['name' => null, 'first_name' => 'New', 'surname' => 'Name', 'login' => null]);
     $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', ['command' => 'create', 'public_id' => null, 'revision' => '0',
-        'values' => ['email' => 'nullable-create@example.test', 'name' => 'Created name', 'first_name' => '', 'surname' => '', 'login' => '', 'active' => false, 'approved' => false]])->assertOk();
+        'values' => ['email' => 'nullable-create@example.test', 'name' => 'Created name', 'first_name' => '', 'surname' => '', 'login' => '', 'active' => false]])->assertOk();
     expect(User::where('email', 'nullable-create@example.test')->value('login'))->toBeNull();
 });
 
@@ -1120,8 +1120,8 @@ it('Permissions Admin adapts reviewed custom definitions with native proof stale
 
 it('Permissions Admin reviews add replace copy and preset semantics without flattening or protected membership', function (): void {
     authAdministrationLogin($this, ['runa.permissions.introspection.read', 'runa.permissions.access.manage', 'runa.auth.eligibility.read']);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('permissions-admin-target@example.test', name: 'Administration target', active: true, approved: true));
-    $source = app(ChangeIdentity::class)->create(new NewIdentity('permissions-admin-source@example.test', name: 'Administration target', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('permissions-admin-target@example.test', name: 'Administration target', active: true));
+    $source = app(ChangeIdentity::class)->create(new NewIdentity('permissions-admin-source@example.test', name: 'Administration target', active: true));
     $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     $path = '/api/admin/runa.permissions/access/sections/access';
     $record = permissionAdministrationRead($this, 'access', 'access', $source->publicId);
@@ -1174,7 +1174,7 @@ it('Audit Admin keeps cursor summaries payload free and detail immutable behind 
 
 it('Permissions Admin separates protected authority and retains the last eligible administrator', function (): void {
     authAdministrationLogin($this, ['runa.permissions.introspection.read', 'runa.permissions.authority.manage']);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('protected-admin-target@example.test', name: 'Administration target', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('protected-admin-target@example.test', name: 'Administration target', active: true));
     $path = '/api/admin/runa.permissions/access/sections/authority';
     $own = permissionAdministrationRead($this, 'access', 'authority', $this->adminUser->public_id);
     $this->postJson($path.'/preview', ['command' => 'change', 'public_id' => $this->adminUser->public_id, 'revision' => $own['revision'], 'values' => ['grant' => true]])->assertForbidden();
@@ -1202,7 +1202,7 @@ it('Permissions Admin force deletion keeps its dedicated grant complete review c
     $input = permissionAdministrationReview($this, $path, permissionDefinitionInput('role', 'force_review', [$permission]));
     authAdministrationStrongProof($this, 'runa.permissions.access.manage');
     $role = $this->postJson($path.'/commands', $input)->assertOk()->json('data.record');
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('force-admin-target@example.test', name: 'Administration target', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('force-admin-target@example.test', name: 'Administration target', active: true));
     $assignmentPath = '/api/admin/runa.permissions/access/sections/access';
     $targetRead = permissionAdministrationRead($this, 'access', 'access', $target->publicId);
     $assign = permissionAdministrationReview($this, $assignmentPath, ['command' => 'assign', 'public_id' => $target->publicId, 'revision' => $targetRead['revision'], 'values' => ['roles' => [$role['public_id']], 'permissions' => [], 'mode' => 'add']]);
@@ -1807,7 +1807,7 @@ it('Auth user administration hides disabled feature metadata and refuses hidden 
 });
 
 it('Auth user administration reports native live sessions and authorized account dates', function (): void {
-    $identity = app(ChangeIdentity::class)->create(new NewIdentity('status-target@example.test', name: 'Status target', active: true, approved: true));
+    $identity = app(ChangeIdentity::class)->create(new NewIdentity('status-target@example.test', name: 'Status target', active: true));
     $target = User::where('public_id', $identity->publicId)->firstOrFail();
     DB::transaction(function () use ($target): void {
         app(SessionStore::class)->admit(DB::connection(), $target, 'fixture-live-session', false);
@@ -1834,10 +1834,10 @@ it('Auth user administration filters all authorized facts before pagination and 
     $settings = app(ModuleSettings::class)->read('runa.auth');
     app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'new', 'email_otp_enabled' => true, 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
     DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['password_changed_at' => now()]);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('filter-facts@example.test', firstName: 'Anna', surname: 'Test', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('filter-facts@example.test', firstName: 'Anna', surname: 'Test', active: true));
     DB::table('runa_auth.users')->where('public_id', $target->publicId)->update(['email_verified_at' => now(), 'password' => Hash::make('test-password'), 'password_changed_at' => now()->subDays(40), 'totp_secret' => app(Encrypter::class)->encrypt('test-secret'), 'recovery_hashes' => json_encode(['one', 'two'])]);
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.profiles.read', 'runa.auth.emails.read', 'runa.auth.sessions.manage', 'runa.auth.passwords.reset', 'runa.auth.two_factor.reset', 'runa.auth.invitations.manage', 'runa.auth.trust.manage', 'runa.auth.avatars.manage']);
-    $filters = ['display_name' => 'Anna Test', 'email' => 'filter-facts@', 'first_name' => 'Anna', 'surname' => 'Test', 'active' => true, 'approved' => true, 'logged_in' => false, 'session_count' => 0, 'verified' => true, 'verification_required' => true, 'two_factor_enabled' => true, 'two_factor_required' => true, 'totp_enrolled' => true, 'email_factor_enrolled' => false, 'recovery_codes_remaining' => 2, 'password_set' => true, 'password_expired' => true, 'invitation_pending' => false, 'trusted_device_count' => 0, 'has_avatar' => false, 'operator_recovery_pending' => false, 'created_at' => json_encode(['from' => now()->subDay()->utc()->format('Y-m-d\TH:i:s.000\Z'), 'until' => now()->addDay()->utc()->format('Y-m-d\TH:i:s\Z')])];
+    $filters = ['display_name' => 'Anna Test', 'email' => 'filter-facts@', 'first_name' => 'Anna', 'surname' => 'Test', 'active' => true, 'logged_in' => false, 'session_count' => 0, 'verified' => true, 'verification_required' => true, 'two_factor_enabled' => true, 'two_factor_required' => true, 'totp_enrolled' => true, 'email_factor_enrolled' => false, 'recovery_codes_remaining' => 2, 'password_set' => true, 'password_expired' => true, 'invitation_pending' => false, 'trusted_device_count' => 0, 'has_avatar' => false, 'operator_recovery_pending' => false, 'created_at' => json_encode(['from' => now()->subDay()->utc()->format('Y-m-d\TH:i:s.000\Z'), 'until' => now()->addDay()->utc()->format('Y-m-d\TH:i:s\Z')])];
     foreach ($filters as $key => $value) {
         $response = $this->getJson('/api/admin/runa.auth/users/sections/directory?'.http_build_query(['kind' => 'page', 'filters' => json_encode([$key => $value])]));
         $this->assertSame(200, $response->status(), $key.': '.($response->json('error.code') ?? 'validation failure'));
@@ -1862,7 +1862,7 @@ it('Auth user administration executes each native bulk operation with its declar
     DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['password_changed_at' => now()]);
     $ids = [];
     foreach (['one', 'two'] as $suffix) {
-        $target = app(ChangeIdentity::class)->create(new NewIdentity('bulk-'.$suffix.'@example.test', name: 'Bulk '.$suffix, active: true, approved: true));
+        $target = app(ChangeIdentity::class)->create(new NewIdentity('bulk-'.$suffix.'@example.test', name: 'Bulk '.$suffix, active: true));
         $ids[] = $target->publicId;
         $values = ['email_verified_at' => now()];
         if ($operation === 'password_reset') {
@@ -1870,9 +1870,6 @@ it('Auth user administration executes each native bulk operation with its declar
         }
         if ($operation === 'activate') {
             $values['active'] = false;
-        }
-        if ($operation === 'approve') {
-            $values['approved'] = false;
         }
         if ($operation === 'restore') {
             $values += ['deleted_at' => now(), 'active' => false];
@@ -1937,7 +1934,6 @@ it('Auth user administration executes each native bulk operation with its declar
         match ($operation) {
             'activate' => expect($user->active)->toBeTrue(),
             'deactivate' => expect($user->active)->toBeFalse(),
-            'approve' => expect($user->approved)->toBeTrue(),
             'delete' => expect($user->trashed())->toBeTrue(),
             'restore' => expect($user->trashed())->toBeFalse()->and($user->active)->toBeFalse(),
             'set_security_lock' => expect($user->security_locked)->toBeTrue(),
@@ -1956,12 +1952,12 @@ it('Auth user administration executes each native bulk operation with its declar
             default => throw new LogicException('Missing bulk expectation.'),
         };
     }
-})->with([['activate'], ['deactivate'], ['approve'], ['delete'], ['restore'], ['schedule_activation'], ['schedule_deactivation'], ['set_attempt_lock'], ['set_security_lock'], ['require_password_change'], ['invite'], ['invalidate_invitation'], ['require_verification'], ['password_reset'], ['factor_reset'], ['revoke_trust'], ['reset_preferences'], ['remove_avatar'], ['revoke_exceptions']]);
+})->with([['activate'], ['deactivate'], ['delete'], ['restore'], ['schedule_activation'], ['schedule_deactivation'], ['set_attempt_lock'], ['set_security_lock'], ['require_password_change'], ['invite'], ['invalidate_invitation'], ['require_verification'], ['password_reset'], ['factor_reset'], ['revoke_trust'], ['reset_preferences'], ['remove_avatar'], ['revoke_exceptions']]);
 
 it('Auth bulk activation previews only actual changes in a mixed ten-account selection', function (): void {
     $ids = [];
     for ($index = 0; $index < 10; $index++) {
-        $ids[] = app(ChangeIdentity::class)->create(new NewIdentity('mixed-bulk-'.$index.'@example.test', name: 'Mixed bulk', active: $index < 8, approved: true))->publicId;
+        $ids[] = app(ChangeIdentity::class)->create(new NewIdentity('mixed-bulk-'.$index.'@example.test', name: 'Mixed bulk', active: $index < 8))->publicId;
     }
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.permissions.users.select']);
     $input = ['command' => 'activate', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => $ids], 'confirmed' => true];
@@ -1975,8 +1971,8 @@ it('Auth bulk activation previews only actual changes in a mixed ten-account sel
 });
 
 it('Auth user administration refuses changed selection and rolls back a whole failed bulk batch', function (): void {
-    $first = app(ChangeIdentity::class)->create(new NewIdentity('atomic-first@example.test', name: 'Atomic first', active: true, approved: true));
-    $second = app(ChangeIdentity::class)->create(new NewIdentity('atomic-second@example.test', name: 'Atomic second', active: true, approved: true));
+    $first = app(ChangeIdentity::class)->create(new NewIdentity('atomic-first@example.test', name: 'Atomic first', active: true));
+    $second = app(ChangeIdentity::class)->create(new NewIdentity('atomic-second@example.test', name: 'Atomic second', active: true));
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.permissions.users.select']);
     $input = ['command' => 'deactivate', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$first->publicId, $second->publicId]], 'confirmed' => true];
     $oversized = $input;
@@ -1998,7 +1994,7 @@ it('Auth user administration refuses changed selection and rolls back a whole fa
 });
 
 it('Auth user administration reads independently granted security invitation and avatar facts without directory authority', function (): void {
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('least-privilege@example.test', name: 'Least privilege', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('least-privilege@example.test', name: 'Least privilege', active: true));
     authAdministrationLogin($this, ['runa.auth.two_factor.reset', 'runa.auth.passwords.reset', 'runa.auth.invitations.manage', 'runa.auth.avatars.manage']);
     $security = authAdministrationRead($this, 'security', $target->publicId)['values'];
     expect($security['two_factor_enabled'])->toBeFalse()->and($security['two_factor_required'])->toBeFalse()->and($security['password_set'])->toBeFalse();
@@ -2008,15 +2004,16 @@ it('Auth user administration reads independently granted security invitation and
     $this->getJson('/api/admin/runa.auth/users/sections/directory?kind=page')->assertNotFound();
 });
 
-it('Auth fresh schema and administration expose only scheduled deactivation', function (): void {
+it('Auth fresh schema and administration expose only activation and scheduled deactivation', function (): void {
     expect(DB::connection()->getSchemaBuilder()->hasColumn('runa_auth.users', 'expires_at'))->toBeFalse();
     expect(fn () => new LifecycleChange('set_expiry'))->toThrow(InvalidArgumentException::class);
-    expect(AdministrationPages::commands()['bulk_users'])->not->toHaveKey('set_expiry');
+    expect(AdministrationPages::commands()['bulk_users'])->not->toHaveKey('set_expiry')->not->toHaveKey('approve');
+    expect(AdministrationPages::commands()['creation']['create']['inputs'])->not->toContain('approved');
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage']);
     $page = $this->getJson('/api/admin/runa.auth/users')->assertOk()->json('data');
     foreach ($page['sections'] as $section) {
         if (in_array($section['key'], ['directory', 'lifecycle'], true)) {
-            expect(array_column($section['fields'], 'key'))->not->toContain('expires_at');
+            expect(array_column($section['fields'], 'key'))->not->toContain('expires_at', 'approved');
         }
     }
 });

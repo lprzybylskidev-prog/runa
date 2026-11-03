@@ -75,7 +75,6 @@ watch(
 );
 const directory = computed(() => table.section.value);
 const bulkOrder = [
-  'approve',
   'activate',
   'schedule_activation',
   'deactivate',
@@ -97,7 +96,7 @@ const bulkOrder = [
   'remove_avatar',
 ];
 function bulkTone(key: string): 'success' | 'danger' | 'warning' | 'primary' {
-  if (['activate', 'approve', 'restore', 'schedule_activation'].includes(key))
+  if (['activate', 'restore', 'schedule_activation'].includes(key))
     return 'success';
   if (
     [
@@ -332,7 +331,6 @@ watch(
         <template
           v-for="key in [
             'active',
-            'approved',
             'logged_in',
             'verified',
             'security_locked',

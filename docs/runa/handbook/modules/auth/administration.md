@@ -2,7 +2,7 @@
 
 # Auth administration
 
-Auth 2.1.0 supplies source-owned administration declarations and adapters, consumed
+Auth 3.0.0 supplies source-owned administration declarations and adapters, consumed
 by Admin without a reverse backend dependency. Business behavior remains available
 through the owning guarded APIs without Admin. This is unreleased source for
 platform 0.7.0; complete browser/security/release verification belongs to
@@ -38,7 +38,7 @@ AdministrativeProfile::__construct(string $publicId, int $version,
 Directory requires `runa.auth.users.read`; `deleted`/`all` additionally require
 `runa.auth.users.deleted.read`. Results contain up to 100 users in UUID ascending
 order and state `current|deleted`. `details` contains safe account metadata:
-active/approval/security-lock flags, activation/deactivation/expiry/attempt-lock
+active/security-lock flags, activation/deactivation/attempt-lock
 moments and created/updated dates. Login additionally requires `profiles.read`;
 email and verification/date require `emails.read`; live-session presence/count,
 latest live login and activity require `sessions.manage`. Hidden values never
@@ -94,9 +94,10 @@ Current configuration filters both declarations and account-state projection.
 Disabled email verification removes status/date/require-verification; verified
 replacement also requires admin bypass opt-in. Zero password_expiry_days removes
 expiry/password-change-required display and its lifecycle command, while ordinary
-password reset remains available. Registration approval policy applies to public
-registration; it never hides administrative approval facts/actions or changes
-explicit NewIdentity approval choices. Disabled secondary emails, trust,
+password reset remains available. Registration activation policy applies to public
+registration; administrator-controlled registration creates inactive accounts.
+The ordinary activation action admits these accounts. There are no separate
+approval facts, filters or commands; NewIdentity exposes only the active flag. Disabled secondary emails, trust,
 TOTP/email factors/recovery codes and administrator avatar editing omit their
 sections/fields/actions. Self-service edit flags never remove separately authorized
 administrator operations. Existing policy exceptions remain readable/revocable;
@@ -165,7 +166,7 @@ local reconciliation; removal confirms. No foreign avatar bytes or storage path
 are exposed by the metadata read.
 
 All named stronger proofs are single use. Lifecycle accepts every supported intent:
-activate/deactivate/approve/delete/restore, schedule activation/deactivation,
+activate/deactivate/delete/restore, schedule activation/deactivation,
 set/clear expiry and attempt lock, set/clear security lock and password-change
 requirement. Auth declaration adapters map cleared optional name/login text to null before
 constructing NewIdentity/ProfileChange, so switching naming modes and clearing a
@@ -243,7 +244,7 @@ Only explicit nonempty selections of at most 99 accounts are accepted. Each
 related inventory is bounded to 10,000 safe state rows; excess refuses. Every operation requires users.read,
 current Permissions user-selection authority and its ordinary owning mutation
 permission. The private source catalogue filters disabled features and defines
-activate/deactivate/approve/delete/restore/schedule_activation/
+activate/deactivate/delete/restore/schedule_activation/
 schedule_deactivation/set_attempt_lock/set_security_lock/
 require_password_change plus invite/invalidate_invitation/require_verification/
 password_reset/factor_reset/revoke_trust/reset_preferences/remove_avatar/

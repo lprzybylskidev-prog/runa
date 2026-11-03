@@ -86,7 +86,7 @@ beforeEach(function (): void {
     {
         public function assertMayRemove(Connection $connection, array $publicIds): void {}
     });
-    $this->permissionUser = app(ChangeIdentity::class)->create(new NewIdentity('permission-fixture@example.test', name: 'Permission fixture', active: true, approved: true));
+    $this->permissionUser = app(ChangeIdentity::class)->create(new NewIdentity('permission-fixture@example.test', name: 'Permission fixture', active: true));
     // Fixture policy disables verification; credentials and step-up are exercised by Auth suites.
     $settings = app(ModuleSettings::class)->read('runa.auth');
     app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'disabled'], $settings['revision'], $settings['generation']);
@@ -341,7 +341,7 @@ function permissionDefinition(string $kind, string $code, array $permissions = [
 
 it('applies reviewed ordinary access snapshots with real step up and preserves direct versus role semantics', function (): void {
     $codes = permissionAccessManager($this);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('access-target@example.test', name: 'Target', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('access-target@example.test', name: 'Target', active: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     ($this->asPermissionUser)(function () use ($codes, $target, $read): void {
         $api = $this->permissionAccess;
@@ -394,7 +394,7 @@ it('applies reviewed ordinary access snapshots with real step up and preserves d
 
 it('refuses stale access previews and protected roles and rolls back aggregate changes with required Audit', function (): void {
     $codes = permissionAccessManager($this);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('access-rollback@example.test', name: 'Target', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('access-rollback@example.test', name: 'Target', active: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     ($this->asPermissionUser)(function () use ($codes, $target, $read): void {
         $api = $this->permissionAccess;
@@ -459,8 +459,8 @@ it('binds custom role membership and preset previews to versions and retains RES
 
 it('copies exact ordinary assignments without flattening roles or replacing protected system membership', function (): void {
     $codes = permissionAccessManager($this);
-    $source = app(ChangeIdentity::class)->create(new NewIdentity('copy-source@example.test', name: 'Source', active: true, approved: true));
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('copy-target@example.test', name: 'Target', active: true, approved: true));
+    $source = app(ChangeIdentity::class)->create(new NewIdentity('copy-source@example.test', name: 'Source', active: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('copy-target@example.test', name: 'Target', active: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     ($this->asPermissionUser)(function () use ($codes, $source, $target, $read): void {
         $api = $this->permissionAccess;
@@ -548,7 +548,6 @@ it('preserves last eligible authority across lifecycle changes without blocking 
         ->and(DB::table('runa_audit.events')->where('outcome', 'refused')->where('action', 'like', 'identity.%')->count())->toBe(2);
     // Existing authority does not prevent creating a new identity or activating it.
     $other = $changes->create(new NewIdentity('authority-backup@example.test', name: 'Backup'));
-    $other = $changes->change($other->publicId, 1, new LifecycleChange('approve'));
     $other = $changes->change($other->publicId, $other->version, new LifecycleChange('activate'));
     permissionSystemMember($other->publicId);
     // A blocked second administrator is not a usable survivor.
@@ -571,7 +570,7 @@ it('preserves last eligible authority across lifecycle changes without blocking 
 
 it('requires dedicated authority grants and real both factor proof while rejecting self escalation and last removal', function (): void {
     $codes = permissionAccessManager($this);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('authority-target@example.test', name: 'Authority target', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('authority-target@example.test', name: 'Authority target', active: true));
     $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
     ($this->asPermissionUser)(function () use ($codes, $target, $api): void {
         expect(fn () => $api->previewAuthority($target->publicId, true))->toThrow(OperationRejected::class);
@@ -599,8 +598,8 @@ it('requires dedicated authority grants and real both factor proof while rejecti
 it('binds force role deletion to practical effects references confirmation and transactional history', function (): void {
     $codes = permissionAccessManager($this);
     ($this->directPermission)('runa.permissions.roles.force_delete');
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('force-role@example.test', name: 'Role recipient', active: true, approved: true));
-    $second = app(ChangeIdentity::class)->create(new NewIdentity('force-role-second@example.test', name: 'Second recipient', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('force-role@example.test', name: 'Role recipient', active: true));
+    $second = app(ChangeIdentity::class)->create(new NewIdentity('force-role-second@example.test', name: 'Second recipient', active: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
     ($this->asPermissionUser)(function () use ($api, $codes, $target, $second, $read): void {
@@ -659,7 +658,7 @@ it('binds force role deletion to practical effects references confirmation and t
 it('refuses stale force deletion after recipient changes and preserves other effective grant sources', function (): void {
     $codes = permissionAccessManager($this);
     ($this->directPermission)('runa.permissions.roles.force_delete');
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('force-stale@example.test', name: 'Stale recipient', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('force-stale@example.test', name: 'Stale recipient', active: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     ($this->asPermissionUser)(function () use ($codes, $target, $read): void {
         $ordinary = $this->permissionAccess;
@@ -684,7 +683,7 @@ it('audits scheduled last authority refusal without starving unrelated lifecycle
     permissionSystemMember($this->permissionUser->publicId);
     app()->bind(AuthorityGuard::class, ProtectedAuthority::class);
     $changes = app(ChangeIdentity::class);
-    $other = $changes->create(new NewIdentity('scheduled-other@example.test', name: 'Scheduled', active: true, approved: true));
+    $other = $changes->create(new NewIdentity('scheduled-other@example.test', name: 'Scheduled', active: true));
     $at = now('UTC')->addMinute()->format('Y-m-d\TH:i:s\Z');
     foreach ([$this->permissionUser->publicId, $other->publicId] as $id) {
         $changes->change($id, 1, new LifecycleChange('schedule_deactivation', at: $at));
@@ -698,7 +697,7 @@ it('audits scheduled last authority refusal without starving unrelated lifecycle
 })->group('permissions-authority');
 
 it('serializes two real concurrent last authority removals under the shared transaction lock', function (): void {
-    $other = app(ChangeIdentity::class)->create(new NewIdentity('parallel-authority@example.test', name: 'Parallel', active: true, approved: true));
+    $other = app(ChangeIdentity::class)->create(new NewIdentity('parallel-authority@example.test', name: 'Parallel', active: true));
     foreach ([$this->permissionUser->publicId, $other->publicId] as $id) {
         permissionSystemMember($id);
     }
@@ -765,7 +764,7 @@ it('keeps the last superadministrator active through self service and rolls back
 it('rolls back dedicated authority membership revision and proof after required grant history fails', function (): void {
     $codes = permissionAccessManager($this);
     ($this->directPermission)('runa.permissions.authority.manage');
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('authority-rollback@example.test', name: 'Rollback', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('authority-rollback@example.test', name: 'Rollback', active: true));
     ($this->asPermissionUser)(function () use ($codes, $target): void {
         $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
         $preview = $api->previewAuthority($target->publicId, true);
@@ -826,7 +825,7 @@ it('integrates first administrator authority once with atomic Audit and resumabl
 
 it('integrates Permissions selection grants with reviewed Auth bulk revocation and rolls back failed history', function (): void {
     permissionAccessManager($this);
-    $target = app(ChangeIdentity::class)->create(new NewIdentity('selected-bulk@example.test', name: 'Selected', active: true, approved: true));
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('selected-bulk@example.test', name: 'Selected', active: true));
     $selection = new SessionSelection([$target->publicId]);
     $api = app(ModuleApis::class)->resolve('runa.auth', AuthBulkSessions::class, '1.0.0');
     ($this->directPermission)('runa.auth.sessions.bulk_revoke');
@@ -864,7 +863,7 @@ it('projects safe Core management and resolves historical Auth identity without 
         User::where('public_id', $this->permissionUser->publicId)->update(['name' => 'Historical name', 'deleted_at' => now(), 'active' => false]);
     });
     // Historical subjects do not need to be eligible; only the authorized reader does.
-    $reader = app(ChangeIdentity::class)->create(new NewIdentity('history-reader@example.test', name: 'Reader', active: true, approved: true));
+    $reader = app(ChangeIdentity::class)->create(new NewIdentity('history-reader@example.test', name: 'Reader', active: true));
     $id = DB::table('runa_permissions.permissions')->where('code', 'runa.auth.identities.read')->value('id');
     DB::table('runa_permissions.user_permissions')->insert(['user_public_id' => $reader->publicId, 'permission_id' => $id, 'created_at' => now(), 'updated_at' => now()]);
     app(PrincipalScope::class)->run(new TrustedPrincipal($reader->publicId), function (): void {

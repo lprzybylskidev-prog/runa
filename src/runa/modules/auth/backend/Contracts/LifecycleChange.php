@@ -8,7 +8,7 @@ final readonly class LifecycleChange
     {
         $dates = ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'];
         $flags = ['set_security_lock', 'require_password_change'];
-        if (! in_array($operation, [...$dates, ...$flags, 'activate', 'deactivate', 'approve', 'delete', 'restore'], true)
+        if (! in_array($operation, [...$dates, ...$flags, 'activate', 'deactivate', 'delete', 'restore'], true)
             || (! in_array($operation, $dates, true) && $at !== null)
             || (in_array($operation, $flags, true) !== ($enabled !== null))) {
             throw new \InvalidArgumentException('Invalid lifecycle change.');

@@ -11,6 +11,7 @@ final class AccountHistory
     public static function fields(): array
     {
         $factors = ['authenticator_enabled', 'email_factor', 'setup_pending', 'spare_codes_remaining', 'spare_codes_replaced'];
+        // Retired approval/expiry keys remain read-only for historical Audit records.
         $lifecycle = ['active', 'approved', 'deleted_at', 'activate_at', 'deactivate_at', 'expires_at', 'security_locked', 'attempt_locked_until', 'renewal_required'];
         $actions = [
             'profile.changed' => ['name', 'first_name', 'surname', 'login'],

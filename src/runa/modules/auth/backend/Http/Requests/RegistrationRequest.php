@@ -27,7 +27,7 @@ final class RegistrationRequest extends FormRequest
             'name' => ['nullable', 'string', 'max:160'], 'first_name' => ['nullable', 'string', 'max:160'], 'surname' => ['nullable', 'string', 'max:160'],
             'password' => EntryPassword::rules(),
             'password_confirmation' => ['required', 'string', 'max:72'],
-            'active' => ['prohibited'], 'approved' => ['prohibited'], 'email_verified_at' => ['prohibited'],
+            'active' => ['prohibited'], 'email_verified_at' => ['prohibited'],
         ];
     }
 

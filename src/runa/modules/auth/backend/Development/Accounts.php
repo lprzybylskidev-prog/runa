@@ -50,7 +50,7 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
                 }
                 $email = $scenario === 'administrator' ? config('seeding.development.'.AuthDevelopmentSeeder::class.'.administrator_email') : null;
                 $input = new NewIdentity(is_string($email) && $email !== '' ? $email : 'dev.'.$scenario.'@example.test', name: 'Development '.str_replace('_', ' ', $scenario).' '.$number,
-                    login: 'dev.'.$scenario, active: ! in_array($scenario, ['inactive', 'scheduled'], true), approved: $scenario !== 'pending');
+                    login: 'dev.'.$scenario, active: ! in_array($scenario, ['pending', 'inactive', 'scheduled'], true));
                 if ($scenario === 'administrator') {
                     // Existing non-fixture administrators/identifiers refuse; never adopt or regrant them.
                     if ($c->table('runa_auth.initialization')->where('id', 1)->value('completed_at') !== null) {

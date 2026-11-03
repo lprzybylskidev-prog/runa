@@ -39,7 +39,7 @@ protected administrative contracts, technical trust storage and cleanup.
 Auth 0.4.0 adds [password recovery/2FA, trust issuance and step-up](security.md).
 
 Login verifies hashes before evaluating all independent account blockers, including
-scheduled activation. Unknown, incorrect, pending approval, inactive, deleted,
+scheduled activation. Unknown, incorrect, inactive, deleted,
 expired or locked identities get the same 422 `invalid_credentials`; no lifecycle
 reason or account existence is returned. Absent/passwordless accounts perform the
 same expensive hashing work. Successful admission synchronously records Audit,
@@ -90,7 +90,7 @@ Input supports exactly the existing complete exclusive naming alternatives and
 identifier normalization. Registration and initial invitation passwords use the shared configurable
 [credential policy](security.md), defaulting to at least 12 characters and at most 72 UTF-8 bytes without NUL, protecting native
 bcrypt's input boundary. The shared policy also enforces configured complexity/history.
-Explicitly supplied activation/approval/verification flags are prohibited; unknown
+Explicitly supplied activation/verification flags are prohibited; unknown
 fields are never mass assigned. Known frontend validation and entry UI use the [screen contract](entry-ui.md). No management HTTP endpoints or placeholder pages are added.
 
 Registration passes the validated password and password_confirmation together to
@@ -102,15 +102,18 @@ value enters Audit or response projections.
 | Module setting              | Default   | Bounds/meaning                  |
 | --------------------------- | --------- | ------------------------------- |
 | public_registration         | false     | Explicit opt-in                 |
-| registration_approval       | automatic | automatic or administrator      |
+| registration_activation     | automatic | automatic or administrator      |
 | invitation_minutes          | 1440      | 5–10080 minutes                 |
 | verification_minutes        | 60        | 5–1440 minutes                  |
 | invitation_reminder_minutes | 0         | 0 disables, maximum 10080       |
 | invitation_reminder_count   | 0         | Maximum 10 per invitation chain |
 
 Enabled registration creates a new UUIDv7 identity, native hash and synchronous Audit
-atomically. Approval and verification stay independent. An approved registration
-queues primary-email verification when required; a pending approval sends no actionable message.
+atomically. Activation and verification stay independent. Automatic registration
+creates an active account and queues primary-email verification when required.
+Administrator-controlled registration creates an inactive account and sends no
+actionable message. Ordinary account activation subsequently allows login into
+the required verification flow; the user may request verification there.
 It issues no authenticated session. A uniqueness conflict returns the same 202
 accepted payload as a creation; PostgreSQL claims arbitrate races. Disabled
 registration returns 403 `registration_unavailable` independently of existence.
@@ -122,8 +125,8 @@ issues or manually resends for an eligible passwordless identity; resend rotates
 and invalidates prior tokens. `invalidate(publicId, expectedVersion)` revokes pending
 invitations. Both require `runa.auth.invitations.manage`, current availability and
 the neutral authority participant backed by Permissions (denial when integration is unavailable).
-Neither returns a token, email, internal ID or model. Before activation/deactivation,
-expiry, locks, deletion or pending approval, issuance/delivery/consumption refuses.
+Neither returns a token, email, internal ID or model. When lifecycle activation/deactivation, locks or deletion block the account,
+issuance/delivery/consumption refuses.
 
 Random 256-bit secrets use SHA-256 equality hashes; only a pending private delivery
 copy is encrypted with the externally managed Laravel key. Never serialize these

@@ -170,7 +170,7 @@ Development and customer clones initialize explicitly using the same local CLI;
 ordinary reopen/start/update never issues another administrator.
 
 Recovery targets an existing administrator, including an inactive one, but never
-restores a soft-deleted identity. It explicitly reactivates/approves/unlocks the
+restores a soft-deleted identity. It explicitly reactivates/unlocks the
 account, clears activation/deactivation/expiry dates and old factor enrollment,
 revokes all sessions/trust/proofs/entry tokens, advances revocation generation and
 requires completion using the new token. An account-wide pending-recovery blocker

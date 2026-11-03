@@ -20,7 +20,6 @@ use Runa\Support\Modules\Data\ModuleModel;
  * @property string|null $password
  * @property string|null $remember_token
  * @property bool $active
- * @property bool $approved
  * @property bool $security_locked
  * @property bool $password_change_required
  * @property int $version
@@ -75,7 +74,7 @@ final class User extends ModuleModel implements AuthenticatableContract, MustVer
     protected function casts(): array
     {
         return [
-            'operator_recovery_pending' => 'boolean', 'preference_revision' => 'integer', 'preference_legacy_claimed' => 'boolean', 'verification_forced' => 'boolean', 'verification_required' => 'boolean', 'active' => 'boolean', 'approved' => 'boolean', 'security_locked' => 'boolean',
+            'operator_recovery_pending' => 'boolean', 'preference_revision' => 'integer', 'preference_legacy_claimed' => 'boolean', 'verification_forced' => 'boolean', 'verification_required' => 'boolean', 'active' => 'boolean', 'security_locked' => 'boolean',
             'password_change_required' => 'boolean', 'version' => 'integer', 'security_version' => 'integer',
             'activate_at' => 'immutable_datetime', 'deactivate_at' => 'immutable_datetime',
             'attempt_locked_until' => 'immutable_datetime',

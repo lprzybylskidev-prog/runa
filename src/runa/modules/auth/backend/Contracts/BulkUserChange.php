@@ -4,7 +4,7 @@ namespace Runa\Modules\Auth\Contracts;
 
 final readonly class BulkUserChange
 {
-    public const LIFECYCLE = ['activate', 'deactivate', 'approve', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change'];
+    public const LIFECYCLE = ['activate', 'deactivate', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change'];
 
     public const OPERATIONS = [...self::LIFECYCLE, 'invite', 'invalidate_invitation', 'require_verification', 'password_reset', 'factor_reset', 'revoke_trust', 'reset_preferences', 'remove_avatar', 'revoke_exceptions'];
 

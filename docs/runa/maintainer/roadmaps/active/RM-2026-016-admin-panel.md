@@ -805,6 +805,16 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Opt the local default seed flow into the module development graph; retain
     production/receipt guards and ordinary runtime password policy. Add focused
     regressions and prepare a fresh seeded local database before handover.
+- [x] 11a52. Consolidate account admission into activation and scheduled lifecycle.
+  - Owner decision, 2026-11-03: remove approved and approve; current activity plus
+    activate_at/deactivate_at govern lifecycle admission. Registration requiring
+    administrator intervention creates an inactive account; activation admits it.
+  - Replace registration_approval with registration_activation (automatic or
+    administrator), update owning APIs, consumers, declarations, fixtures and UI.
+    Retain historical Audit presentation; preserve independent verification/locks.
+  - Correct unpublished CREATE definitions, prepare the identified disposable local
+    runtime, author regression coverage and synchronize current docs/instruction
+    products. Only focused uncertainty checks here; broad verification stays in 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5366,3 +5376,72 @@ login plus Admin entry through real HTTP. No password/token was printed. Evidenc
 containers/networks/volumes were created or removed; development services, the test
 base database, caches, backups and reports remain. Manual owner acceptance 11b and
 complete final automated verification 12 remain open.
+
+### Point 11a52 — Account activation as the single lifecycle admission state
+
+Owner decision, 2026-11-03: approved/approve are redundant for the intended product.
+Remove them from current storage, creation, eligibility, administration and bulk
+operations. Keep active plus future activate_at/deactivate_at. Automatic public
+registration creates active accounts; administrator-controlled registration creates
+inactive accounts, subsequently admitted through ordinary activation. Rename the
+source setting to registration_activation; do not retain compatibility aliases.
+This supersedes point 11a43's requirement to retain independent approval facts and
+NewIdentity approval input. Historical Audit actions/fields remain readable.
+Auth's unreleased 3.0.0 and Lifecycle/Administration/BulkUsers 2.0.0 already cover
+incompatible changes in this candidate; assess all consumers without inventing
+an intermediate released version. Platform feature/0.7.0 is unchanged.
+
+Implementation removes approval storage/casts, creation DTO input, eligibility
+blocker, standalone/bulk command, directory metadata/filter and form controls.
+All current NewIdentity consumers and tests use activity only. The pending
+registration fixture is inactive; operator/recovery and configured development
+administrator provisioning retain their own security invariants. Registration
+activation has PL/EN source labels. Retired Audit keys/action labels remain read-only.
+The module and API versions above already include these unpublished incompatible
+changes; dependent version ranges remain valid. No compatibility adapter is added.
+
+Current Auth identity, administration, transport/operator guides, module changelog
+and central changelog are synchronized. Owner/customer AGENTS and domain skills
+already route lifecycle and public APIs to these canonical guides and contain no
+approval-specific contract; they require no additional rule or duplicate procedure.
+The frontend removes metadata/buttons without adding a component/pattern, so the
+existing component/pattern references remain applicable. Historical API signature
+inventories and closed roadmaps remain untouched.
+
+Focused supported verification:
+
+- test-backend --parallel --processes=1 with the registration, exact UTC eligibility
+  and identity/schema scenarios: 3 PASS / 85 assertions. Covers inactive manual
+  registration, refusal of client-supplied activity, activation followed by restricted
+  verification login, obsolete operation rejection and absent approval storage.
+- Initial sequential attempt stopped before assertions because runa_test retains
+  older platform migration history; no data/history was silently rewritten. The
+  parallel worker was created fresh, cleaned successfully and runa_test preserved.
+- Additional native Admin lifecycle/creation/bulk/schema selection, one parallel
+  process: worker SIGSEGV/139, parent exit 1, no completed cases reported or other
+  execution failure; guarded worker cleanup exited 0. Assess PASS under the owner
+  backend SIGSEGV exception, with all interrupted Admin assertions explicitly
+  unclaimed. Native tool execution output is retained in the session; no native
+  result was rewritten and no retry/root-cause work was required by the policy.
+- Manual-runtime preparation built current assets with the supported pnpm build.
+  Native HTTP authenticated the configured administrator, confirmed protected Users
+  and policy API responses without approval fields/actions/settings, then loaded
+  the rendered Users page with activation present. The first browser diagnostic
+  used a dot instead of the existing colon action key; correcting only its selector
+  passed. This is readiness evidence, not owner manual acceptance or the final gate.
+
+Local rebuild scope was inspected and announced: exactly 45 tables owned by runa
+in local database runa across shared/runa_auth/runa_audit/runa_permissions; all 15
+accounts had explicit development-fixture provenance. Under maintenance mode the
+announced tables, including both native/module ledgers, were dropped with RESTRICT.
+Native forward platform/Core preparation and application migration succeeded;
+ordinary configured db:seed recreated 15 accounts and the private administrator.
+Maintenance mode was cleared and queue restart signaled. The current catalog has
+active/activate_at/deactivate_at and no approved column. Runtime readiness evidence
+is under .runtime/auth-activation/, the after-schema snapshot under
+.runtime/migrations/schema-activation-after.json and the rendered screenshot under
+.runtime/artifacts/playwright/auth-activation/. No containers/networks/images or
+volumes were created/removed. Task-created worker runa_test_test_1 was cleaned by
+the supported runner; base runa_test, development services, caches, backups and
+reports remain preserved. Manual acceptance 11b and final verification 12 remain
+open.

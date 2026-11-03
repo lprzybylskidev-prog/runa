@@ -41,7 +41,7 @@ final class DevelopmentAdministratorSeeder extends ManagedSeeder
             if ($user->password !== null) {
                 return;
             }
-            if ($user->email !== $email || $user->deleted_at !== null || ! $user->active || ! $user->approved
+            if ($user->email !== $email || $user->deleted_at !== null || ! $user->active
                 || $connection->table('runa_auth.initialization')->where('id', 1)->value('subject') !== $subject
                 || ! app(OperatorAuthority::class)->isAdministrator($connection, $user->public_id)) {
                 throw new \RuntimeException('Configured development administrator does not match the owned operator fixture.');

@@ -60,9 +60,6 @@ final readonly class LookupIdentity implements AuthIdentities
         if ($user->trashed()) {
             $blockers[] = 'deleted';
         }
-        if (! $user->approved) {
-            $blockers[] = 'approval_required';
-        }
         if ($user->activate_at !== null && $now->lt($user->activate_at)) {
             $blockers[] = 'before_activation';
         } elseif (! $user->active && ($user->activate_at === null || $now->lt($user->activate_at))) {

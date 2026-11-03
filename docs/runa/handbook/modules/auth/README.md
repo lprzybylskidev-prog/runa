@@ -56,7 +56,12 @@ Permission checks use the current Permissions grants; missing readiness or grant
 
 `AuthLifecycle` version `2.0.0` offers `create(NewIdentity): Identity`, requiring
 `runa.auth.users.create`, and `change(publicId, expectedVersion, LifecycleChange)`
-requiring `runa.auth.users.manage`. These are administrative backend contracts. Auth-owned [administration declarations and guarded reads](administration.md) expose them through the existing Admin command transport without changing these signatures. A permission does not substitute for the separate authority
+requiring `runa.auth.users.manage`. These are administrative backend contracts.
+The Auth-owned public creation DTO has the complete signature
+`NewIdentity::__construct(string $email, ?string $name = null, ?string $firstName = null,
+?string $surname = null, ?string $login = null, bool $active = false)`. It lives under
+`backend/Contracts` and is consumed through the guarded lifecycle API at runtime.
+It contains no credentials or independent approval state. Auth-owned [administration declarations and guarded reads](administration.md) expose them through the existing Admin command transport without changing these signatures. A permission does not substitute for the separate authority
 invariant participant; `AuthorityGuard` lazily resolves the trusted Permissions
 participant and refuses missing/stale integration. Deactivate/delete exclude the
 target from usable administrators; non-removing work uses an empty exclusion set.
@@ -104,7 +109,7 @@ identifier takeover, account merge, historical rekeying or physical deletion.
 
 Every relevant ingress must evaluate current state and UTC time. Never cache an
 initial login result or rely on scheduler cadence. `Eligibility` reports all current
-blockers separately: deleted, approval_required, before_activation/inactive,
+blockers separately: deleted, before_activation/inactive,
 deactivated, security_locked and attempt_locked. Email verification and
 password change remain distinct restricted-flow requirements. `mayAuthenticate()`
 requires no blockers; `mayOperate()` additionally requires no restrictions.
@@ -115,9 +120,10 @@ Activation before activate_at is denied even when the active flag is true. At
 activate_at, scheduled activation becomes effective independently of the stored
 active flag. At deactivate_at the deactivated blocker applies; at
 attempt_locked_until the temporary lock ends. Account access has no independent
-expiry date. Approval, activation, verification and both lock types remain separate.
+expiry date. Activation, verification and both lock types remain separate.
+There is no independent approval flag or approval operation.
 
-`LifecycleChange` operations: approve, activate, deactivate, delete, restore,
+`LifecycleChange` operations: activate, deactivate, delete, restore,
 schedule_activation, schedule_deactivation, set_security_lock,
 set_attempt_lock and require_password_change. Date values use canonical
 `YYYY-MM-DDTHH:MM:SSZ`; null clears a date. Scheduling accepts future activation/

@@ -60,7 +60,7 @@ it('batches reminder history and current policy exceptions across the locked acc
     $state = $settings->read('runa.auth');
     $settings->update('runa.auth', ['notice_account_deactivation' => true, 'email_verification' => 'disabled'], $state['revision'], $state['generation']);
     for ($i = 0; $i < 4; $i++) {
-        $identity = app(ChangeIdentity::class)->create(new NewIdentity('reminder-growth-'.$i.'@example.test', name: 'Reminder User', active: true, approved: true));
+        $identity = app(ChangeIdentity::class)->create(new NewIdentity('reminder-growth-'.$i.'@example.test', name: 'Reminder User', active: true));
         DB::transaction(function () use ($identity): void {
             $user = User::where('public_id', $identity->publicId)->firstOrFail();
             $user->deactivate_at = now()->addDays(2);
@@ -91,7 +91,7 @@ it('keeps session preview reads constant as the selected account collection grow
     $db = DB::connection();
     $db->beginTransaction();
     for ($i = 0; $i < 4; $i++) {
-        $identity = app(ChangeIdentity::class)->create(new NewIdentity('bulk-growth-'.$i.'@example.test', name: 'Batch User', active: true, approved: true));
+        $identity = app(ChangeIdentity::class)->create(new NewIdentity('bulk-growth-'.$i.'@example.test', name: 'Batch User', active: true));
         $users[] = $user = User::where('public_id', $identity->publicId)->firstOrFail();
         $db->table('runa_auth.sessions')->insert(['public_id' => (string) Str::uuid7(), 'user_id' => $user->id,
             'session_hash' => hash('sha256', 'batch-'.$i), 'security_version' => $user->security_version, 'remembered' => false,
@@ -122,8 +122,8 @@ it('keeps session preview reads constant as the selected account collection grow
 });
 
 it('loads growing preference snapshots with one query while preserving defaults migration and account isolation', function (): void {
-    $identity = app(ChangeIdentity::class)->create(new NewIdentity('snapshot@example.test', name: 'Snapshot User', active: true, approved: true));
-    $otherIdentity = app(ChangeIdentity::class)->create(new NewIdentity('snapshot-other@example.test', name: 'Other User', active: true, approved: true));
+    $identity = app(ChangeIdentity::class)->create(new NewIdentity('snapshot@example.test', name: 'Snapshot User', active: true));
+    $otherIdentity = app(ChangeIdentity::class)->create(new NewIdentity('snapshot-other@example.test', name: 'Other User', active: true));
     $user = User::where('public_id', $identity->publicId)->firstOrFail();
     $other = User::where('public_id', $otherIdentity->publicId)->firstOrFail();
     $db = DB::connection();

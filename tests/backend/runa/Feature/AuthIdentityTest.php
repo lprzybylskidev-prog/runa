@@ -4,6 +4,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\OperationAuthorizer;
@@ -20,6 +21,7 @@ use Runa\Modules\Auth\Actions\ChangeIdentity;
 use Runa\Modules\Auth\Actions\PolicyHistory;
 use Runa\Modules\Auth\Contracts\AuthIdentities;
 use Runa\Modules\Auth\Contracts\AuthLifecycle;
+use Runa\Modules\Auth\Contracts\BulkUserChange;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
@@ -95,6 +97,7 @@ afterEach(function (): void {
 });
 
 it('normalizes Auth names and identifiers and enforces PostgreSQL naming and claim invariants', function (): void {
+    expect(Schema::hasColumn('runa_auth.users', 'approved'))->toBeFalse();
     $actions = app(ChangeIdentity::class);
     $one = $actions->create(new NewIdentity('  One@Example.test ', name: 'One Person', login: ' First.Login '));
     $two = $actions->create(new NewIdentity('two@example.test', firstName: 'Druga', surname: 'Osoba'));
@@ -128,11 +131,12 @@ it('evaluates independent Auth predicates at exact UTC boundaries without schedu
     $actions = app(ChangeIdentity::class);
     $identity = $actions->create(new NewIdentity('states@example.test', name: 'States'));
     $lookup = app(LookupIdentity::class);
-    expect($lookup->eligibility($identity->publicId)->blockers)->toBe(['approval_required', 'inactive']);
+    expect($lookup->eligibility($identity->publicId)->blockers)->toBe(['inactive']);
+    expect(fn () => new LifecycleChange('approve'))->toThrow(InvalidArgumentException::class);
+    expect(fn () => new BulkUserChange('approve'))->toThrow(InvalidArgumentException::class);
     $change = function (LifecycleChange $change) use (&$identity, $actions): void {
         $identity = $actions->change($identity->publicId, $identity->version, $change);
     };
-    $change(new LifecycleChange('approve'));
     $change(new LifecycleChange('schedule_activation', '2026-10-23T11:00:00Z'));
     $change(new LifecycleChange('schedule_deactivation', '2026-10-23T13:00:00Z'));
     $change(new LifecycleChange('set_security_lock', enabled: true));
@@ -222,7 +226,7 @@ it('denies Auth public reads and writes before Permissions and denies lifecycle 
     app(PrincipalScope::class)->run(new TrustedPrincipal($identity->publicId), function () use ($identities, $identity): void {
         $projection = $identities->identity($identity->publicId);
         expect($projection)->toEqual($identity)
-            ->and($identities->eligibility($identity->publicId)->blockers)->toBe(['approval_required', 'inactive']);
+            ->and($identities->eligibility($identity->publicId)->blockers)->toBe(['inactive']);
         expect(fn () => $projection->displayName = 'forged')->toThrow(Error::class);
         expect(json_encode($projection))->not->toContain('private@example.test');
     });

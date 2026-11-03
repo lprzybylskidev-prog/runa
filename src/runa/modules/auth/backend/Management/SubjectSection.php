@@ -39,7 +39,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
     public function read(ManagementRead $input): ManagementRecord
     {
         if (static::KEY === 'creation') {
-            return new ManagementRecord(null, '0', ['email' => null, 'name' => null, 'first_name' => null, 'surname' => null, 'login' => null, 'active' => false, 'approved' => false]);
+            return new ManagementRecord(null, '0', ['email' => null, 'name' => null, 'first_name' => null, 'surname' => null, 'login' => null, 'active' => false]);
         }
         $id = $input->publicId ?? $this->principals->current()?->publicId ?? throw new OperationRejected('authentication_required', 'runa.auth', 'administration.read', 401);
         if ($input->cursor !== null) {
@@ -113,7 +113,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             }
             $version = (int) $input->revision;
             $result = match (static::KEY.'.'.$input->command) {
-                'creation.create' => $this->api(AuthLifecycle::class, '2.0.0')->create(new NewIdentity($v['email'], $v['name'], $v['first_name'], $v['surname'], $v['login'], $v['active'], $v['approved'])),
+                'creation.create' => $this->api(AuthLifecycle::class, '2.0.0')->create(new NewIdentity($v['email'], $v['name'], $v['first_name'], $v['surname'], $v['login'], $v['active'])),
                 'lifecycle.change' => $this->api(AuthLifecycle::class, '2.0.0')->change($id, $version, new LifecycleChange($v['operation'], in_array($v['operation'], ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'], true) ? Moment::seconds($v['at']) : null, in_array($v['operation'], ['set_security_lock', 'require_password_change'], true) ? $v['enabled'] : null)),
                 'invitations.invite' => $this->api(AuthInvitations::class)->invite($id, $version),
                 'invitations.invalidate' => $this->api(AuthInvitations::class)->invalidate($id, $version),

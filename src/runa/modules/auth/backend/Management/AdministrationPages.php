@@ -168,8 +168,6 @@ final class AdministrationPages implements ManagementPageProvider
         'active' => 'aktywne',
         'add' => 'dodaj',
         'address_id' => 'UUID adresu',
-        'approve' => 'zatwierdź',
-        'approved' => 'zatwierdzone',
         'committed' => 'zatwierdzono',
         'deactivate' => 'dezaktywuj',
         'delete' => 'usuń',
@@ -228,7 +226,7 @@ final class AdministrationPages implements ManagementPageProvider
         $command = static fn (string $title, string $operation, string $permission, array $inputs = [], ?string $proof = null, bool $destructive = false, bool $preview = false): array => compact('title', 'operation', 'permission', 'inputs', 'proof', 'destructive', 'preview');
 
         $commands = [
-            'creation' => ['create' => $command('Create account', 'identity.create', 'users.create', ['email', 'name', 'first_name', 'surname', 'login', 'active', 'approved'])],
+            'creation' => ['create' => $command('Create account', 'identity.create', 'users.create', ['email', 'name', 'first_name', 'surname', 'login', 'active'])],
             'lifecycle' => ['change' => $command('Apply lifecycle change', 'identity.change', 'users.manage', ['operation', 'at', 'enabled'], destructive: true)],
             'invitations' => ['invite' => $command('Send or resend invitation', 'invitation.issue', 'invitations.manage'),
                 'invalidate' => $command('Invalidate invitation', 'invitation.invalidate', 'invitations.manage', destructive: true)],
@@ -250,7 +248,7 @@ final class AdministrationPages implements ManagementPageProvider
 
         $labels = [
             'activate' => ['Aktywuj konta', 'Activate accounts'], 'deactivate' => ['Dezaktywuj konta', 'Deactivate accounts'],
-            'approve' => ['Zatwierdź konta', 'Approve accounts'], 'delete' => ['Usuń konta', 'Delete accounts'], 'restore' => ['Przywróć konta', 'Restore accounts'],
+            'delete' => ['Usuń konta', 'Delete accounts'], 'restore' => ['Przywróć konta', 'Restore accounts'],
             'schedule_activation' => ['Termin aktywacji', 'Activation schedule'],
             'schedule_deactivation' => ['Termin dezaktywacji', 'Deactivation schedule'],
             'set_attempt_lock' => ['Blokada prób', 'Attempt lock'],
@@ -293,10 +291,10 @@ final class AdministrationPages implements ManagementPageProvider
         $sections = [new ManagementSection('directory', 'User directory', 'runa.auth.users.read', null, 'directory', self::directoryFields(), view: 'table')];
         $fields = [
             'eligibility' => [self::field('blockers', 'Authentication blockers', read: 'eligibility.read'), self::field('restrictions', 'Operation restrictions', read: 'eligibility.read')],
-            'creation' => [self::field('email', 'Email', write: 'users.create', read: 'users.create'), ...self::names('users.create'), self::field('active', 'Active', 'boolean', 'users.create', 'users.create'), self::field('approved', 'Approved', 'boolean', 'users.create', 'users.create')],
-            'lifecycle' => [self::field('operation', 'Lifecycle operation', 'dictionary', 'users.manage', 'users.read', choices: ['activate', 'deactivate', 'approve', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change']),
+            'creation' => [self::field('email', 'Email', write: 'users.create', read: 'users.create'), ...self::names('users.create'), self::field('active', 'Active', 'boolean', 'users.create', 'users.create')],
+            'lifecycle' => [self::field('operation', 'Lifecycle operation', 'dictionary', 'users.manage', 'users.read', choices: ['activate', 'deactivate', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change']),
                 self::field('at', 'Deadline (empty clears)', 'datetime', 'users.manage', 'users.read'), self::field('enabled', 'Enable selected flag', 'boolean', 'users.manage', 'users.read'),
-                ...array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), in_array($key, ['active', 'approved', 'deleted', 'security_locked', 'password_change_required'], true) ? 'boolean' : 'datetime', read: 'users.read'), ['active', 'approved', 'deleted', 'security_locked', 'password_change_required', 'activate_at', 'deactivate_at', 'attempt_locked_until'])],
+                ...array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), in_array($key, ['active', 'deleted', 'security_locked', 'password_change_required'], true) ? 'boolean' : 'datetime', read: 'users.read'), ['active', 'deleted', 'security_locked', 'password_change_required', 'activate_at', 'deactivate_at', 'attempt_locked_until'])],
             'invitations' => [],
             'primary_email' => [self::field('current_email', 'Current primary email', read: 'emails.read'), self::field('verified', 'Verified', 'boolean', read: 'emails.read'), self::field('verification_required', 'Verification required', 'boolean', read: 'emails.read'), self::field('email', 'New email', write: 'emails.manage', read: 'profiles.read'), self::field('replacement_email', 'Verified replacement email', write: 'emails.verify_bypass', read: 'profiles.read')],
             'secondary' => [self::field('addresses', 'Secondary addresses', read: 'secondary.read'), self::field('address_id', 'Secondary address UUID', 'uuid', 'secondary.manage', 'secondary.read'), self::field('email', 'New email', write: 'secondary.manage', read: 'secondary.read')],

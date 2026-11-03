@@ -47,14 +47,14 @@ final readonly class ChangeIdentity implements AuthLifecycle
                 'name' => $input->name, 'first_name' => $input->firstName, 'surname' => $input->surname,
                 'email' => $input->email, 'email_claim' => $input->email,
                 'login' => $input->login, 'login_claim' => $input->login,
-                'active' => $input->active, 'approved' => $input->approved,
+                'active' => $input->active,
                 'version' => 1, 'security_version' => 1,
                 'verification_required' => $this->settings->value('runa.auth', 'email_verification') !== 'disabled',
             ]);
             app(EmailAddresses::class)->available($connection, $user, $input->email, true);
             $user->save();
             // No names, addresses, login, password or token in lifecycle history.
-            $this->record('identity.created', $user, ['active' => ['old' => null, 'new' => $input->active], 'approved' => ['old' => null, 'new' => $input->approved]]);
+            $this->record('identity.created', $user, ['active' => ['old' => null, 'new' => $input->active]]);
 
             return $user->identity();
         });
@@ -97,9 +97,6 @@ final readonly class ChangeIdentity implements AuthLifecycle
         $now = CarbonImmutable::now('UTC');
         $deactivationReached = $user->deactivate_at !== null && $now->gte($user->deactivate_at);
         switch ($change->operation) {
-            case 'approve':
-                $user->approved = true;
-                break;
             case 'activate':
                 $user->active = true;
                 $user->activate_at = null;
@@ -248,7 +245,7 @@ final readonly class ChangeIdentity implements AuthLifecycle
     private function state(User $user): array
     {
         $state = [];
-        foreach (['active', 'approved', 'deleted_at', 'activate_at', 'deactivate_at',
+        foreach (['active', 'deleted_at', 'activate_at', 'deactivate_at',
             'security_locked', 'attempt_locked_until', 'password_change_required', 'security_version', 'version'] as $key) {
             $value = $user->$key;
             $state[$key === 'password_change_required' ? 'renewal_required' : $key] = $value instanceof \DateTimeInterface ? $value->format('Y-m-d\TH:i:s.u\Z') : $value;
