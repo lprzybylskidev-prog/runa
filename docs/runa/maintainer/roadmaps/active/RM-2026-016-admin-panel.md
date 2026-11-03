@@ -785,10 +785,16 @@ reassessment before resuming point 3; completed point history remains evidence.
     preserving reminder mail against scheduled deactivation, including settings and
     the administrator copy. Rename owning categories/settings and preserve values;
     password, token, session and exception deadlines retain their independent meaning.
-  - Forward existing account deadlines to the earlier deactivation deadline before
-    dropping the column; refuse conflicting activation schedules without data loss.
-    Preserve historical Audit records. Retire owning obsolete settings/routing and
-    synchronize breaking module/API versions and current consumers.
+  - Owner correction: edit the original CREATE migration and rebuild disposable
+    development storage rather than retaining a transition for unpublished data.
+    Preserve historical evidence, synchronize breaking module/API contracts and
+    remove the unnecessary interim settings/data migration machinery.
+  - Review all current platform/module/application migrations: consolidate final
+    CREATE definitions, normally one file per table, remove corrective/data UPDATE
+    migrations and move initialization rows to their owning seeds/initializers.
+    Update current fixtures, generators, tooling and documentation references.
+  - Record the explicit standing pre-1.0 migration-edit/full-dev-test-reset policy
+    in root AGENTS and the canonical database guide. Customer authority is unchanged.
   - Deliver focused migration/lifecycle regressions, current documentation and
     runnable assets/data. Manual acceptance and broad final gates remain last.
 - [ ] 11b. Owner manual frontend acceptance.

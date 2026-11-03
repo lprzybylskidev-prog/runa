@@ -180,7 +180,18 @@ Retry only known transient deadlock/serialization conditions, and only when the 
 
 ## Migration policy
 
-For a rebuildable development model that has not been used with production data, migrations may be edited/cleaned; prefer one migration per database object/table where practical. Define logical PostgreSQL column order in the original migration, without MySQL-style after() concepts. Edit an uncommitted migration rather than adding a redundant correction.
+For a rebuildable development model that has not been used with production data,
+migrations may be edited, deleted and consolidated, including committed files.
+Owner decision, 2026-11-03: until Runa platform 1.0.0, an active roadmap already
+authorizes correcting original CREATE definitions and fully resetting/reseeding
+identified Runa development/test databases. Prefer that workflow over corrective
+ALTER/UPDATE migrations, data transfers or compatibility upgrades solely for
+unpublished intermediate development schemas and disposable data. Normally use
+one file per table with its complete current columns, indexes and constraints;
+a small cohesive table group is acceptable. Defining constraints/indexes alongside
+table creation is part of that CREATE definition, not a later corrective migration.
+Keep initial rows in seeders/initializers. Define logical PostgreSQL column order
+in the original migration, without MySQL-style after() concepts.
 
 Never edit a committed migration that may have run in production. Use new forward migrations for production schema changes. Changing an already applied file does not cause Laravel to execute it again; verify real old-to-new schema/data transitions during platform update acceptance. Migration decisions use the actual installation and data context.
 

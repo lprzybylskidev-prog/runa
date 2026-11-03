@@ -222,7 +222,25 @@ PostgreSQL only.
 - Optimistic concurrency is the default for business edit forms.
 - After production has ever been deployed, never edit a committed migration that may have run there. See the database migration policy.
 
-Before any real production deployment, an active roadmap authorizes necessary identified Runa dev/test database resets and volume rebuilds under `docs/runa/handbook/architecture/database.md`, without repeated approval for hypothetical production data. Inspect ownership/context and show exact destructive scope first; uncertain ownership or irreplaceable data requires clarification. Ordinary reopen remains nondestructive.
+Until Runa platform 1.0.0, the owner explicitly authorizes editing, deleting and
+consolidating existing Runa migrations, including committed migrations, and fully
+resetting/reseeding identified Runa development/test databases within an active
+roadmap. Prefer correcting the original CREATE definitions and rebuilding the
+database over adding ALTER/UPDATE/data-transfer migrations solely to preserve an
+unpublished development schema or its disposable data. Normally use one migration
+per table, with its complete current columns, indexes and constraints; a small
+cohesive table group is acceptable. Put initial data in seeders/initializers.
+Do not build compatibility upgrade machinery for intermediate development states.
+Apply the actual supported reset procedure across platform/module/application
+storage and their ledgers; ordinary application migrate:fresh alone does not reset
+Runa storage. Follow `docs/runa/handbook/architecture/database.md`.
+
+Inspect ownership/context and show the exact destructive scope before a reset;
+this standing authorization requires no repeated approval for rebuildable dev/test
+data or hypothetical production data. Real production/customer data, backups and
+uncertain or irreplaceable data remain protected. Before any real production
+deployment, necessary identified development volume rebuilds have the same standing
+authorization. Ordinary reopen remains nondestructive.
 
 Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/database.md`.
 
