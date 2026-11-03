@@ -859,6 +859,9 @@ reassessment before resuming point 3; completed point history remains evidence.
     versions/consumers, add focused regressions and prepare current UI/runtime.
   - Keep user details and individual actions in this same roadmap after owner
     review of the main directory; do not begin those changes in this point.
+- [x] 11a59. Restore spacing after additional Auth bulk modal fields.
+  - Give parameter fields real layout wrappers so the existing spacing separates
+    them from the impact summary; check rendered desktop/mobile date fields.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5824,3 +5827,21 @@ No containers/networks/images/volumes or durable databases were created/removed.
 Supported runners cleaned disposable runa_test_test_1, preserving base runa_test,
 development data, caches, backups and all evidence. Manual point 11b and final
 verification 12 remain open.
+
+### Point 11a59 — Spacing after Auth bulk parameters
+
+Additional parameter fields now have real layout wrappers. AdminField's
+component boundary uses display:contents, which prevented the parent space-y
+margin from separating the field from the impact summary. The existing 20px
+spacing now applies consistently without changing shared controls or public APIs.
+
+The supported frontend build passed. A native browser diagnostic checked activation
+and deactivation date fields at 1440px and 390px in light/dark themes: all eight
+measurements showed a 20px gap before the summary. Screenshots remain under
+`.runtime/artifacts/playwright/auth-bulk-spacing`; the diagnostic performed no bulk
+writes. No new tests or broad suites were needed for this layout correction.
+
+No reusable component/pattern, public capability or instruction rule changed;
+current handbook, root skills and customer instruction products need no changes.
+No Docker resources or database resets were involved. Owner acceptance 11b and
+final verification/release 12 remain open.

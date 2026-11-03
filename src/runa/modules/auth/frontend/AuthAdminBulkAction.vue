@@ -229,31 +229,31 @@ function cancelProof() {
         :disabled="controller.busy.value || section.readonly"
         @update:model-value="selectOperation"
       />
-      <AdminField
-        v-for="field in fields"
-        :key="field.key"
-        :field="field"
-        :model-value="
-          controller.values.value[
-            controller.fieldPath(section.key, field.key)
-          ] ?? null
-        "
-        :errors="
-          controller.errors.value[
-            controller.fieldPath(section.key, field.key)
-          ] ?? []
-        "
-        :readonly="section.readonly"
-        :busy="controller.busy.value"
-        :components="components"
-        @update:model-value="set(field.key, $event)"
-        @availability="
-          controller.setAvailable(
-            controller.fieldPath(section.key, field.key),
-            $event,
-          )
-        "
-      />
+      <div v-for="field in fields" :key="field.key" data-bulk-parameter>
+        <AdminField
+          :field="field"
+          :model-value="
+            controller.values.value[
+              controller.fieldPath(section.key, field.key)
+            ] ?? null
+          "
+          :errors="
+            controller.errors.value[
+              controller.fieldPath(section.key, field.key)
+            ] ?? []
+          "
+          :readonly="section.readonly"
+          :busy="controller.busy.value"
+          :components="components"
+          @update:model-value="set(field.key, $event)"
+          @availability="
+            controller.setAvailable(
+              controller.fieldPath(section.key, field.key),
+              $event,
+            )
+          "
+        />
+      </div>
       <div
         class="rounded-lg border border-line p-4"
         aria-live="polite"
