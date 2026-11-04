@@ -161,9 +161,11 @@ the proof atomically with the business change and Audit; rollback restores both.
 It cannot authorize a second committed action. The next action must reconfirm.
 Cleanup bounds expired proof storage. Jobs/CLI cannot inherit browser proof state.
 
-`AuthSecurity` API `1.0.0` provides `requestPasswordReset(publicId, expectedVersion)`,
+`AuthSecurity` API `1.1.0` provides `requestPasswordReset(publicId, expectedVersion)`,
 `resetFactors(publicId, expectedVersion)`, `trustedDevices(publicId, before)` and
-`revokeDevice(publicId, deviceId)`. Dedicated permissions are respectively
+`revokeDevice(publicId, deviceId)`. Versioned all-device revocation is
+`revokeDevices(publicId, expectedVersion)`, with the same trust grant and owning
+transactional Audit. Dedicated permissions are respectively
 `runa.auth.passwords.reset`, `runa.auth.two_factor.reset` and
 `runa.auth.trust.manage`. Reset mutations additionally require the neutral authority
 invariant and every-action `both` step-up, keyed `runa.auth.password.admin_reset`

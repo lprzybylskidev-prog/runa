@@ -871,7 +871,7 @@ it('keeps privileged factor recovery denied without authority and requires fresh
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
     [$secret, $codes] = credentialEnroll($this, $actor);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthSecurity::class, '1.0.0');
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthSecurity::class, '1.1.0');
     expect(fn () => $api->resetFactors($target->public_id, 1))->toThrow(OperationRejected::class);
     $scope = app(PrincipalScope::class);
     $reset = fn () => $scope->run(new TrustedPrincipal($actor->public_id), fn () => app(ManageSecurity::class)->resetFactors($target->public_id, 1));
@@ -1329,7 +1329,7 @@ it('persists declared own preferences with revision conflicts adoption reset and
     entryLogin($this, ['identifier' => $other->email, 'password' => 'a-long-test-password'])->assertOk();
     $this->postJson($endpoint, $base + ['operation' => 'snapshot'])->assertOk()->assertJsonPath('data.revision', 0)->assertJsonPath('data.values.1.value', 'system');
     app(PrincipalScope::class)->run(new TrustedPrincipal($other->public_id), function (): void {
-        $api = app(ModuleApis::class)->resolve('runa.auth', AuthPreferences::class, '1.0.0');
+        $api = app(ModuleApis::class)->resolve('runa.auth', AuthPreferences::class, '1.1.0');
         $scope = new PreferenceScope('runa', 'runa.auth', 'global', 'theme');
         expect($api->read($scope)['value'])->toBe('system');
         expect($api->write($scope, new PreferenceValue('dark'), 0)['value'])->toBe('dark');
@@ -1413,7 +1413,7 @@ it('keeps settings history effects and Audit atomic and restores as a new versio
         ->and($settings->read('runa.auth')['revision'])->toBe($revision + 2)
         ->and(User::find($user->id)->password_change_required)->toBeTrue()
         ->and(DB::table('runa_auth.policy_versions')->count())->toBe(3);
-    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '1.0.0')->history())->toThrow(OperationRejected::class);
+    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '1.1.0')->history())->toThrow(OperationRejected::class);
 })->group('auth-policy-operators');
 
 function operatorAuthorityFixture(): object

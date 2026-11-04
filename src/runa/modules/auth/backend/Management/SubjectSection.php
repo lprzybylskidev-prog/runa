@@ -17,7 +17,6 @@ use Runa\Modules\Auth\Contracts\AuthIdentities;
 use Runa\Modules\Auth\Contracts\AuthInvitations;
 use Runa\Modules\Auth\Contracts\AuthLifecycle;
 use Runa\Modules\Auth\Contracts\AuthPolicies;
-use Runa\Modules\Auth\Contracts\AuthPreferences;
 use Runa\Modules\Auth\Contracts\AuthProfiles;
 use Runa\Modules\Auth\Contracts\AuthSecurity;
 use Runa\Modules\Auth\Contracts\AuthSessions;
@@ -76,11 +75,15 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
                 'eligibility' => $this->eligibility($id),
                 'sessions' => ['sessions' => json_encode($this->api(AuthSessions::class)->listFor($id, $input->cursor), JSON_THROW_ON_ERROR), 'session_id' => null],
                 'security' => [],
-                'trust' => ['devices' => json_encode($this->api(AuthSecurity::class)->trustedDevices($id, $input->cursor), JSON_THROW_ON_ERROR), 'device_id' => null],
-                'exceptions' => ['exceptions' => json_encode($this->api(AuthPolicies::class)->exceptions($id), JSON_THROW_ON_ERROR), 'key' => 'session_idle_minutes', 'value' => null,
+                'trust' => ['devices' => json_encode($this->api(AuthSecurity::class, '1.1.0')->trustedDevices($id, $input->cursor), JSON_THROW_ON_ERROR), 'device_id' => null],
+                'exceptions' => ['exception_versions' => json_encode($this->api(AuthPolicies::class, '1.1.0')->exceptionVersions($id), JSON_THROW_ON_ERROR), 'exceptions' => json_encode($this->api(AuthPolicies::class, '1.1.0')->exceptions($id), JSON_THROW_ON_ERROR), 'key' => 'session_idle_minutes', 'value' => null,
                     'reason' => null, 'expires_at' => null, 'exception_version' => 0, 'policy_revision' => $this->settings->read('runa.auth')['revision']],
                 default => [],
             };
+        }
+
+        if (static::KEY === 'exceptions') {
+            $values['exception_version'] = json_decode($values['exception_versions'], true, flags: JSON_THROW_ON_ERROR)[$values['key']] ?? 0;
         }
 
         return new ManagementRecord($id, (string) $version, $values);
@@ -120,11 +123,12 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
                 'secondary.remove' => $this->api(AuthProfiles::class, '2.0.0')->removeSecondary($id, $version, $v['address_id']),
                 'sessions.revoke' => $this->api(AuthSessions::class)->revoke($id, $v['session_id']),
                 'sessions.revoke_all' => $this->api(AuthSessions::class)->revokeAll($id),
-                'security.password_reset' => $this->api(AuthSecurity::class)->requestPasswordReset($id, $version),
-                'security.factor_reset' => $this->api(AuthSecurity::class)->resetFactors($id, $version),
-                'trust.revoke_device' => $this->api(AuthSecurity::class)->revokeDevice($id, $v['device_id']),
-                'preferences.reset' => $this->api(AuthPreferences::class)->resetAccount($id, $v['preference_revision']),
-                'exceptions.set' => $this->api(AuthPolicies::class)->exception($id, $v['key'], $v['value'], $v['reason'], Moment::seconds($v['expires_at']) ?? throw new \InvalidArgumentException('Missing exception deadline.'), $v['exception_version'], $v['policy_revision']),
+                'security.password_reset' => $this->api(AuthSecurity::class, '1.1.0')->requestPasswordReset($id, $version),
+                'security.factor_reset' => $this->api(AuthSecurity::class, '1.1.0')->resetFactors($id, $version),
+                'trust.revoke_all' => $this->api(AuthSecurity::class, '1.1.0')->revokeDevices($id, $version),
+                'trust.revoke_device' => $this->api(AuthSecurity::class, '1.1.0')->revokeDevice($id, $v['device_id']),
+                'exceptions.revoke_all' => $this->api(AuthPolicies::class, '1.1.0')->revokeExceptions($id, $version),
+                'exceptions.set' => $this->api(AuthPolicies::class, '1.1.0')->exception($id, $v['key'], $v['value'], $v['reason'], Moment::seconds($v['expires_at']) ?? throw new \InvalidArgumentException('Missing exception deadline.'), $v['exception_version'], $v['policy_revision']),
                 default => throw new \InvalidArgumentException('Unknown administration command.'),
             };
             if ($result === false) {

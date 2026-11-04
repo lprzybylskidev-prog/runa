@@ -37,6 +37,8 @@ final class AuthPermissions implements ManagementEntityProvider
             new ManagementPermission('emails.reverify', ['pl' => 'Wymaganie weryfikacji adresu', 'en' => 'Require email verification'], ['pl' => 'Wymaganie weryfikacji adresu.', 'en' => 'Require email verification.']),
             new ManagementPermission('addresses.read', ['pl' => 'Odczyt adresów odbiorców', 'en' => 'Read recipient addresses'], ['pl' => 'Odczyt adresów odbiorców.', 'en' => 'Read recipient addresses.']),
             new ManagementPermission('delivery.resolve', ['pl' => 'Rozstrzyganie dostarczania', 'en' => 'Resolve delivery'], ['pl' => 'Rozstrzyganie dostarczania.', 'en' => 'Resolve delivery.']),
+            new ManagementPermission('preferences.read', ['pl' => 'Odczyt preferencji użytkowników', 'en' => 'Read user preferences'], ['pl' => 'Odczyt preferencji wybranego konta.', 'en' => 'Read selected account preferences.']),
+            new ManagementPermission('preferences.manage', ['pl' => 'Edycja preferencji użytkowników', 'en' => 'Edit user preferences'], ['pl' => 'Zmiana preferencji i powiadomień wybranego konta.', 'en' => 'Edit selected account presentation and notification preferences.']),
             new ManagementPermission('preferences.reset', ['pl' => 'Resetowanie preferencji', 'en' => 'Reset preferences'], ['pl' => 'Resetowanie preferencji.', 'en' => 'Reset preferences.']),
             new ManagementPermission('policy.read', ['pl' => 'Odczyt polityki', 'en' => 'Read policy'], ['pl' => 'Odczyt polityki.', 'en' => 'Read policy.']),
             new ManagementPermission('policy.write', ['pl' => 'Zmiana polityki', 'en' => 'Write policy'], ['pl' => 'Zmiana polityki.', 'en' => 'Write policy.']),

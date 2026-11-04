@@ -1,6 +1,6 @@
 # Auth policies and trusted operator recovery
 
-Auth 3.0.0 supplies AuthPolicies 1.0.0 and AuthBulkSessions 2.0.0 with
+Auth 3.1.0 supplies AuthPolicies 1.1.0 and AuthBulkSessions 2.0.0 with
 Audit ^1.0.0 and framework API ^1.0.0. Install the current per-table storage and
 technical initialization through the fenced ModuleUpdates workflow; ordinary
 startup does not migrate or initialize an administrator.

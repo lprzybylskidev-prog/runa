@@ -1234,13 +1234,25 @@ Audit history catalogue and preserves source wire fields, initial URL filters,
 reset and saved-query behavior. Other independent datetime descriptors stay
 single-moment filters; Auth owns its existing JSON range serialization.
 
-Auth's reviewed batch presentation uses `execute(section, command,
-{confirmReviewed: true})` only from an explicit Confirm interaction with a current
-required preview. This replaces the controller's additional destructive dialog;
-all other calls retain it. It never skips native review, confirmation, proof,
+Auth's reviewed batch and individual-operation presentation uses `execute(section, command,
+{confirmReviewed: true})` only from an explicit Confirm interaction; a current
+preview remains mandatory for commands declaring one. This replaces the controller's additional destructive dialog;
+calls without that explicit review confirmation retain it. It never skips native review, confirmation, proof,
 validation or authority. The password step uses the same operation-proof owner;
 its explicit confirmation submits the reviewed operation once, without a retry.
 `useAdminTable`'s `omitColumns` removes presentation columns and column-picker
 choices while preserving authorized field filters, row values and server reads.
 `AdminResourceTable.rowClass(row)` forwards the public UI Table row presentation
 callback; it grants no authority and does not change selection or payloads.
+
+### Supplied user-detail forms
+
+The Auth Users page retains its public `AdminPageProps` replacement boundary and
+manifest-bound section/field overrides. Its default record editor groups sections
+into at most three nonempty tabs, preserves visited drafts, and uses explicit
+per-form submissions. Revision/UUID fields are controller metadata rather than
+operator inputs. Configuration/grant withdrawals remove the affected controls and
+clear proof state; unknown contributed sections remain in User. See the
+[Auth layout and native API map](../auth/administration.md#task-based-user-details).
+Standalone source-native participant writers are supported alongside aggregate
+Save; the aggregate participant completeness rule remains unchanged.

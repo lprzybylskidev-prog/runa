@@ -12,6 +12,7 @@ final class AdminUpgrades implements UpgradeProvider
     {
         return [
             new UpgradeDefinition('initialize', null, '0.1.0', InitializeAdmin::class),
+            new UpgradeDefinition('standalone_participants', '0.1.0', '0.2.0', InitializeAdmin::class),
         ];
     }
 

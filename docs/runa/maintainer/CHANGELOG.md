@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Rebuild user details into at most three task-based tabs with individual actions, independent editable forms and target-account presentation/notification preferences. Hide technical revisions/UUIDs, request proof after submit and preserve all native grants, reviews, concurrency and Audit. Auth 3.1.0 / Preferences, Security and Policies APIs 1.1.0; Admin 0.2.0 supports native standalone participant forms alongside complete aggregate Save.
+
 - Unify horizontal wheel scrolling and directional dotted overflow cues across tables, content/modal tabs and application top navigation. Preserve table-body vertical scrolling, native Ctrl+wheel, keyboard/touch access and existing public component APIs.
 
 - Omit operational editors for configuration-disabled capabilities. Keep authorized account facts read-only, hide disabled verification/factor/avatar editors and notification recipients, and dismiss withdrawn editors without losing unrelated drafts. Document the shared visibility rule in owner/customer frontend guidance. Preserve native backend enforcement.

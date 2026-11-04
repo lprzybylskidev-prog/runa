@@ -851,3 +851,142 @@ it.each([
     ).toContain('Current values are being checked');
   },
 );
+
+it('rebuilt user details groups capabilities and keeps revision tokens out of operator inputs', async () => {
+  const { default: Details } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserDetails.vue');
+  const controller = page([
+    section('profile', [field('name', false)]),
+    section('preferences', [
+      field('locale', false),
+      field('theme', false),
+      field('delivery', false),
+      field('categories'),
+      field('recipients'),
+      { ...field('preference_revision', false), type: 'integer' },
+    ]),
+    section('security', [field('password_set')]),
+    section('exceptions', [
+      field('exceptions'),
+      field('key', false),
+      { ...field('exception_version', false), type: 'integer' },
+      { ...field('policy_revision', false), type: 'integer' },
+    ]),
+  ]);
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    const key = url.pathname.split('/').at(-1);
+    const values =
+      key === 'preferences'
+        ? {
+            locale: 'pl',
+            theme: 'system',
+            delivery: '[]',
+            categories: '[]',
+            recipients: '[]',
+            preference_revision: 7,
+          }
+        : key === 'exceptions'
+          ? {
+              exceptions: '[]',
+              key: 'session_idle_minutes',
+              exception_version: 0,
+              policy_revision: 8,
+            }
+          : key === 'security'
+            ? { password_set: 'Yes' }
+            : { name: 'Target account' };
+    return response({ public_id: target, revision: '1', values });
+  });
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () => h(Details, { controller, form });
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.findAll('[role=tab]')).toHaveLength(3));
+  expect(wrapper.findAll('[role=tab]').map((tab) => tab.text())).toEqual([
+    'User',
+    'Security',
+    'Rules and exceptions',
+  ]);
+  expect(wrapper.find('input[name=preference_revision]').exists()).toBe(false);
+  expect(wrapper.text()).not.toContain('preference_revision');
+  await wrapper.findAll('[role=tab]')[2]!.trigger('click');
+  await vi.waitFor(() =>
+    expect(wrapper.find('[data-user-section=exceptions]').exists()).toBe(true),
+  );
+  expect(wrapper.text()).not.toContain('exception_version');
+  expect(wrapper.text()).not.toContain('policy_revision');
+});
+
+it('rebuilt user detail actions request identity proof only after operation submission', async () => {
+  const { default: Details } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserDetails.vue');
+  const security = section('security', [field('password_set')]);
+  security.commands = [
+    {
+      key: 'password_reset',
+      title: 'Request password reset',
+      mode: 'independent',
+      intent: 'action',
+      inputs: [],
+      requirement: 'password',
+      action: 'runa.auth.password.admin_reset',
+      destructive: true,
+      bulk: false,
+      preview_required: false,
+      available: true,
+    },
+  ];
+  const controller = page([
+    section('profile', [field('name', false)]),
+    security,
+  ]);
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    return response({
+      public_id: target,
+      revision: '1',
+      values: url.pathname.endsWith('/security')
+        ? { password_set: 'Yes' }
+        : { name: 'Target account' },
+    });
+  });
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () => h(Details, { controller, form });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain('Request password reset'),
+  );
+  expect(document.querySelector('input[type=password]')).toBeNull();
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Request password reset')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(document.querySelector('[role=dialog]')).not.toBeNull(),
+  );
+  expect(document.querySelector('input[type=password]')).toBeNull();
+  const submit = document.querySelector<HTMLButtonElement>(
+    '[role=dialog] button[type=submit]',
+  );
+  submit!.click();
+  await vi.waitFor(() =>
+    expect(document.querySelector('input[type=password]')).not.toBeNull(),
+  );
+  expect(document.body.textContent).toContain('Confirm your identity');
+});

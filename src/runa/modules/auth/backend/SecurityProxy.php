@@ -31,6 +31,14 @@ final class SecurityProxy extends GuardedApi implements AuthSecurity
         return $result;
     }
 
+    public function revokeDevices(string $publicId, int $expectedVersion): bool
+    {
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion]);
+
+        return $result;
+    }
+
     public function revokeDevice(string $publicId, string $deviceId): bool
     {
         /** @var bool $result */

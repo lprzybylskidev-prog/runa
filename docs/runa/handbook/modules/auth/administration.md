@@ -2,7 +2,7 @@
 
 # Auth administration
 
-Auth 3.0.0 supplies source-owned administration declarations and adapters, consumed
+Auth 3.1.0 supplies source-owned administration declarations and adapters, consumed
 by Admin without a reverse backend dependency. Business behavior remains available
 through the owning guarded APIs without Admin. This is unreleased source for
 platform 0.7.0; complete browser/security/release verification belongs to
@@ -126,7 +126,7 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | directory / lifecycle           | AuthAdministration; `users.read`, extra `users.deleted.read` as above                                                                   | Bounded cursors / current account version                                                                                                                                               |
 | eligibility                     | AuthIdentities; `eligibility.read`                                                                                                      | Current blockers/restrictions; no credential projection                                                                                                                                 |
-| profile / access                | AuthProfiles 2.0.0 / Permissions contribution                                                                                           | Existing native atomic Save; [composition](../admin/composition.md)                                                                                                                     |
+| profile / access                | AuthProfiles 2.0.0 / Permissions contribution                                                                                           | Native standalone form or complete aggregate Save; [composition](../admin/composition.md)                                                                                               |
 | creation                        | AuthLifecycle 2.1.0 create; `users.create`, `invitations.manage` for invitation, `emails.verify_bypass` for administrative verification | No subject, revision 0; configured creation uses single-use `runa.auth.users.create` (password, both factors for administrative verification), current password policy and atomic Audit |
 | lifecycle change                | AuthLifecycle.change; `users.manage`                                                                                                    | Exact account version; explicit confirmation, last-eligible administrator and identifier reuse/restore checks                                                                           |
 | invitation / invalidate         | AuthInvitations; `invitations.manage`                                                                                                   | Exact version, resend rotates private token; invalidate confirms; no secret result                                                                                                      |
@@ -138,7 +138,7 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | trusted devices list/revoke     | AuthSecurity; `trust.manage`                                                                                                            | Bounded before-cursor; device UUID, confirmation; no token/factor metadata                                                                                                              |
 | password reset                  | AuthSecurity.requestPasswordReset; `passwords.reset`                                                                                    | Version, confirmation, both-factor `runa.auth.password.admin_reset`; private reset delivery                                                                                             |
 | factor reset                    | AuthSecurity.resetFactors; `two_factor.reset`                                                                                           | Version, confirmation, both-factor `runa.auth.two_factor.reset`; native authority/revocation                                                                                            |
-| preferences reset               | AuthPreferences.resetAccount; `profiles.read`, `preferences.reset`                                                                      | Account preference revision, confirmation; no foreign preference editor                                                                                                                 |
+| preferences reset               | AuthPreferences.resetAccount; `preferences.read`, `preferences.reset`                                                                   | Account preference revision and confirmation; presentation-only reset                                                                                                                   |
 | exceptions                      | AuthPolicies; `policy.exceptions`                                                                                                       | Policy and per-key exception revisions, bounded reason/expiry, both-factor `runa.auth.policy.exception`; null value revokes                                                             |
 | policy / history / restore      | AuthPolicies + owning ModuleSettings; `policy.read`, `policy.write`                                                                     | Exact settings revision/generation, reviewed differences and consequences, both-factor `runa.auth.policy.publish`; restore also confirms                                                |
 | bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants                                                        | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation; no additional operation proof                                                                |
@@ -433,3 +433,62 @@ revocations. Exact membership is reread under the shared authority lock and incl
 in the preview fingerprint, so promotion/demotion requires a new explicit review.
 Single-account native actions retain the last-eligible-administrator invariant;
 individual-action presentation remains outside this bulk-protection change.
+
+## Task-based user details
+
+Auth 3.1.0 replaces the default per-section tabs with at most three nonempty
+areas: User, Security, Rules and exceptions. User starts with individual action
+buttons, then editable identity/avatar, account status/access conditions, emails,
+assignments and preferences. Security groups credential/factor facts, sessions and
+trusted devices. Rules and exceptions holds bounded exception history and editing.
+Existing lifecycle schedules, invitation/verification/password/factor operations,
+reset, avatar management and all native read grants remain available. Individual
+operations use their native target APIs rather than the bulk API, whose protected
+superadministrator exclusions remain unchanged.
+
+Identity and assignment forms can execute their native standalone writer through
+the section command route; the optional shared aggregate Save still requires the
+complete current participant set. Independent forms submit only their own fields,
+refresh authoritative reads in place and preserve other dirty forms. A preview is
+required where declared; explicit submission opens the owning proof fields and
+executes once after successful confirmation. Required grants, native stronger
+proof, last-administrator checks and atomic Audit are never replaced by UI state.
+
+Revision tokens, exception/policy versions and selected record UUIDs remain in the
+controller. Session/device/address actions select the actual row. Exception editing
+selects the current key's latest version automatically; an existing exception can
+be edited or explicitly revoked. Bounded session/device paging remains available.
+No token/version input is presented to an operator.
+
+Additional guarded public consumption APIs, implemented with their owning proxies
+and Actions under Auth `backend`, are runtime capabilities for authorized server
+consumers through `ModuleApis`; management adapters are private:
+
+```php
+// AuthSecurity API 1.1.0, permission runa.auth.trust.manage
+public function revokeDevices(string $publicId, int $expectedVersion): bool;
+// AuthPolicies API 1.1.0, permission runa.auth.policy.exceptions
+// Fresh both-factor runa.auth.policy.exception proof, consumed once in transaction.
+public function revokeExceptions(string $publicId, int $expectedVersion): bool;
+```
+
+Both lock the authority and target, compare the current identity version and reuse
+the owning transactional revocation/Audit phases. Other methods in those contracts
+retain their signatures and demands. Exact-version consumers use 1.1.0. See
+[administrative preferences](preferences.md#administrative-account-preferences)
+for the separate preference revision, recipient grants and complete signatures.
+
+Presentation replacement continues through public `AdminPageProps`,
+`AdminSectionPresentationProps`, `AdminField` and `AdminFormController`, plus the
+manifest-bound section/component registry and `useAdminPresentation`. Unknown
+contributions remain visible in User. Customer field/section replacements retain
+their existing resolution and authority boundaries; customers never copy private
+Auth controllers or access foreign models. The new default detail components are
+private presentation implementations, not additional customer imports.
+
+`AuthPolicies` 1.1.0 additionally exposes
+`exceptionVersions(string $publicId): array<string, int>` under
+`runa.auth.policy.exceptions`. It projects each key's current monotonic version
+independently of the bounded history page, so editing another rule remains correct
+even after more than 50 historical changes to a different rule. These values stay
+in the form controller; they are not operator inputs.

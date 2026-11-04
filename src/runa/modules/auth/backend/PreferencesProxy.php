@@ -7,8 +7,25 @@ use Runa\Modules\Auth\Contracts\PreferenceScope;
 use Runa\Modules\Auth\Contracts\PreferenceValue;
 use Runa\Support\Modules\Api\GuardedApi;
 
+/** @phpstan-import-type AdministrativePreferences from AuthPreferences */
 final class PreferencesProxy extends GuardedApi implements AuthPreferences
 {
+    public function account(string $publicId): array
+    {
+        /** @var AdministrativePreferences $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId]);
+
+        return $result;
+    }
+
+    public function updateAccount(string $publicId, string $locale, string $theme, array $delivery, int $revision): array
+    {
+        /** @var array{account:string,revision:int} $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $locale, $theme, $delivery, $revision]);
+
+        return $result;
+    }
+
     public function read(PreferenceScope $scope): array
     {
         /** @var array{account: string, revision: int, scope: string, version: int, value: mixed, stored: bool, legacy_claimed: bool} $result */

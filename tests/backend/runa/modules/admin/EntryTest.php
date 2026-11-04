@@ -2251,3 +2251,56 @@ it('Auth bulk previews preserve specific schedule and deleted-account refusal re
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.permissions.users.select', 'runa.auth.users.manage']);
     $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', ['command' => $command, 'public_id' => null, 'revision' => '0', 'values' => $values, 'confirmed' => false])->assertConflict()->assertJsonPath('error.code', $reason);
 })->with(['schedule_must_be_future', 'invalid_schedule_order', 'identity_deleted']);
+
+it('saves one user detail form without requiring unrelated aggregate participants', function (): void {
+    adminAggregateLogin($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('individual-detail@example.test', name: 'Before', active: true));
+    $path = '/api/admin/runa.auth/users/sections/profile';
+    $record = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
+    $input = ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'],
+        'values' => array_replace($record['values'], ['name' => 'Individual change'])];
+    $this->postJson($path.'/commands', $input)->assertOk()->assertJsonPath('data.record.values.name', 'Individual change');
+    expect(DB::table('runa_audit.events')->where('action', 'assignments.changed')->count())->toBe(0);
+    $this->postJson($path.'/commands', $input)->assertConflict();
+});
+
+it('edits target preferences atomically without changing the administrator or weakening delivery rules', function (): void {
+    foreach (['runa.auth.preferences.read', 'runa.auth.preferences.manage', 'runa.auth.addresses.read'] as $grant) {
+        ($this->adminGrant)($grant);
+    }
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminGrant)('runa.auth.identities.read');
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('target-preferences@example.test', name: 'Target', active: false));
+    $path = '/api/admin/runa.auth/users/sections/preferences';
+    $record = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
+    $values = ['locale' => 'en', 'theme' => 'dark', 'delivery' => $record['values']['delivery']];
+    $input = ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'], 'values' => $values];
+    $this->postJson($path.'/commands', $input)->assertOk()->assertJsonPath('data.record.values.locale', 'en')->assertJsonPath('data.record.values.theme', 'dark');
+    expect($this->adminUser->fresh()->preference_revision)->toBe(0)
+        ->and(DB::table('runa_audit.events')->where('action', 'preferences.admin_changed')->count())->toBe(1);
+    $this->postJson($path.'/commands', $input)->assertConflict();
+    $fresh = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
+    $categories = json_decode($fresh['values']['categories'], true, flags: JSON_THROW_ON_ERROR);
+    $mandatory = array_values(array_filter($categories, fn ($entry) => $entry['mandatory'] || $entry['sensitive']))[0];
+    $bad = ['locale' => 'pl', 'theme' => 'light', 'delivery' => json_encode([['module' => $mandatory['module'], 'key' => $mandatory['key'], 'enabled' => false, 'recipients' => ['primary']]], JSON_THROW_ON_ERROR)];
+    $this->postJson($path.'/commands', ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $fresh['revision'], 'values' => $bad])->assertUnprocessable();
+    $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->assertJsonPath('data.values.locale', 'en')->assertJsonPath('data.revision', $fresh['revision']);
+});
+
+it('separates target preference read manage and recipient-address grants', function (): void {
+    ($this->adminGrant)('runa.auth.preferences.read');
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminGrant)('runa.auth.identities.read');
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('private-preferences@example.test', name: 'Private', active: true));
+    $path = '/api/admin/runa.auth/users/sections/preferences';
+    $record = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
+    expect(json_decode($record['values']['recipients'], true))->toBe([])
+        ->and(json_decode($record['values']['categories'], true))->toBe([]);
+    $this->postJson($path.'/commands', ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'],
+        'values' => ['locale' => 'en', 'theme' => 'dark', 'delivery' => '[]']])->assertUnprocessable();
+    expect(User::where('public_id', $target->publicId)->value('preference_revision'))->toBe(0);
+});

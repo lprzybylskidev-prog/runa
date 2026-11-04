@@ -137,6 +137,36 @@ final readonly class Policies implements AuthPolicies
         }
     }
 
+    public function exceptionVersions(string $publicId): array
+    {
+        new TrustedPrincipal($publicId);
+        $user = User::withTrashed()->where('public_id', $publicId)->firstOrFail();
+        $versions = [];
+        /** @var \stdClass&object{key:string,version:int|string} $row */
+        foreach (app('db')->connection()->table('runa_auth.policy_exceptions')->where('user_id', $user->id)->selectRaw('key, MAX(version) AS version')->groupBy('key')->get() as $row) {
+            $versions[$row->key] = (int) $row->version;
+        }
+
+        return $versions;
+    }
+
+    public function revokeExceptions(string $publicId, int $expectedVersion): bool
+    {
+        new TrustedPrincipal($publicId);
+
+        return $this->transactions->run(function (Connection $connection) use ($publicId, $expectedVersion): bool {
+            $this->transactions->lockAuthority($connection);
+            $this->stepUp->assertVerified('runa.auth.policy.exception', 'both', everyAction: true);
+            $user = User::withTrashed()->where('public_id', $publicId)->lockForUpdate()->first();
+            if ($user === null || $user->version !== $expectedVersion) {
+                return false;
+            }
+            $this->revokeExceptionsLocked($connection, $user);
+
+            return true;
+        });
+    }
+
     public function exception(string $publicId, string $key, ?int $value, string $reason, string $expiresAt, int $version, int $policyRevision): array
     {
         new TrustedPrincipal($publicId);

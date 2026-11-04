@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import AuthAdminUserDetails from '../AuthAdminUserDetails.vue';
 import { authBulkGroup } from '../bulkGroups';
 import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
-import { Badge, Button, Card, Dialog, Tabs } from '@/runa/ui';
+import { Badge, Button, Card, ContentLoading, Dialog } from '@/runa/ui';
 import {
   AdminComponentBoundary,
   AdminForm,
@@ -15,16 +16,19 @@ import type { AdminPageProps, AdminSectionData } from '@/runa/admin';
 const props = defineProps<AdminPageProps>();
 const { locale: adminLocale, t: tr } = useAdminLocale();
 const open = ref(false);
+const selecting = ref(false);
 const mode = ref<'record' | 'create' | 'bulk'>('record');
-const tab = ref('lifecycle');
-const visited = ref(new Set<string>());
-watch(tab, (key) => {
-  visited.value = new Set([...visited.value, key]);
-});
 const table = useAdminTable(props.controller, 'directory', {
   omitColumns: ['state'],
   select: async (id) => {
-    if (!(await props.form.selectSubject(id))) return false;
+    mode.value = id === null ? 'create' : 'record';
+    selecting.value = true;
+    open.value = true;
+    if (!(await props.form.selectSubject(id))) {
+      selecting.value = false;
+      open.value = false;
+      return false;
+    }
     if (id !== null) {
       // Shared Save requires the complete authorized atomic participant set,
       // even while its presentation lives in another tab.
@@ -40,11 +44,7 @@ const table = useAdminTable(props.controller, 'directory', {
       );
     }
     mode.value = id === null ? 'create' : 'record';
-    tab.value = sections.value.some((s) => s.key === 'lifecycle')
-      ? 'lifecycle'
-      : (sections.value[0]?.key ?? '');
-    visited.value = new Set([tab.value]);
-    open.value = true;
+    selecting.value = false;
     return true;
   },
 });
@@ -185,16 +185,6 @@ const sections = computed(() =>
       section.key,
     );
   }),
-);
-const tabs = computed(() =>
-  sections.value.map((s) => ({
-    id: s.key,
-    label: tr(
-      s.key === 'lifecycle'
-        ? { pl: 'Stan konta', en: 'Account status' }
-        : s.title,
-    ),
-  })),
 );
 const canCreate = computed(() =>
   props.controller.page.value?.sections.some(
@@ -396,7 +386,12 @@ watch(
       :busy="form.busy.value"
       @update:model-value="!$event && close()"
     >
-      <template v-if="mode === 'create'">
+      <ContentLoading
+        v-if="selecting"
+        shape="form"
+        :label="tr('Loading record details')"
+      />
+      <template v-else-if="mode === 'create'">
         <AdminComponentBoundary
           v-for="section in sections"
           :key="section.key"
@@ -411,34 +406,14 @@ watch(
           />
         </AdminComponentBoundary>
       </template>
+      <AuthAdminUserDetails
+        v-else-if="mode === 'record'"
+        :controller="controller"
+        :form="form"
+        :components="components"
+      />
       <AdminForm v-else :controller="form">
-        <Tabs
-          class="min-w-0"
-          v-if="mode === 'record'"
-          v-model="tab"
-          :items="tabs"
-          :label="tr('Details')"
-        >
-          <template
-            v-for="section in sections"
-            :key="section.key"
-            #[section.key]
-          >
-            <AdminComponentBoundary
-              v-if="visited.has(section.key)"
-              :identity="controller.page.value!.revision + ':' + section.key"
-              :on-failure="(failed) => form.setAvailable(section.key, !failed)"
-            >
-              <AdminSectionContent
-                :page="controller"
-                :section="section"
-                :controller="form"
-                :components="components"
-              />
-            </AdminComponentBoundary>
-          </template>
-        </Tabs>
-        <div v-else class="space-y-6">
+        <div class="space-y-6">
           <AdminComponentBoundary
             v-for="section in sections"
             :key="section.key + ':' + activeBulk"
@@ -453,7 +428,7 @@ watch(
             />
           </AdminComponentBoundary>
         </div>
-        <template v-if="mode !== 'record'" #actions><span /></template>
+        <template #actions><span /></template>
       </AdminForm>
     </Dialog>
   </div>

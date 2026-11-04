@@ -248,9 +248,6 @@ final readonly class Projection
         $candidate = $preview ? array_replace($input, ['confirmed' => true]) : $input;
         $write = $this->writeInput($sectionOwner, $section, $candidate, $discovery['generation']);
         $command = array_values(array_filter($section->commands, fn ($command): bool => $command->key === $write->command))[0];
-        if ($command->mode !== 'independent') {
-            throw new OperationRejected('admin_atomic_required', 'runa.admin', 'command', 409);
-        }
         if (! $preview && $command->safety->previewRequired && $write->review === null) {
             throw new OperationRejected('admin_review_required', 'runa.admin', 'command', 409);
         }

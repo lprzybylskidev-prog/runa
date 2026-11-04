@@ -14,5 +14,7 @@ interface AuthSecurity
      */
     public function trustedDevices(string $publicId, ?string $before = null): array;
 
+    public function revokeDevices(string $publicId, int $expectedVersion): bool;
+
     public function revokeDevice(string $publicId, string $deviceId): bool;
 }

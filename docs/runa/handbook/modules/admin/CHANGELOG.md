@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Admin 0.2.0: allow source-owned ManagementWriter participant commands to run standalone through guarded section routes while retaining complete aggregate Save. Explicit reviewed UI confirmation can precede required proof without a second destructive dialog.
+
 - Accept Auth 3.0.0 and current 2.0.0 administrative/lifecycle APIs after redundant account-expiry removal.
 
 - Add optional table rowClass/omitColumns presentation and explicit current-reviewed command confirmation, preserving native security/review checks. Support Auth bulk parameter/impact/password-step presentation without duplicated identity or destructive dialogs.

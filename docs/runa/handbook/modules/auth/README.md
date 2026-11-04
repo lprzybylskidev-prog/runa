@@ -20,7 +20,7 @@ are delivered. [Permissions action grants and introspection](../permissions/READ
 ordinary assignment/preset/copy and [protected authority](../permissions/authority.md)
 are delivered. First-administrator bootstrap grants the actual Permissions system role through the trusted operator adapter; installer invitations and private no-mail CLI setup are delivered.
 The explicit [development corpus](../../data/seeding.md#explicit-module-development-contributors) supplies local scenarios, safe account discovery and private initial setup, independently of production initialization.
-The unreleased 3.0.0 administration source supplies Users and policy views through
+The unreleased 3.1.0 administration source supplies Users and policy views through
 Admin; see [administration](administration.md). Owner browser acceptance and final
 release verification remain open. Administrative operations require current native grants.
 

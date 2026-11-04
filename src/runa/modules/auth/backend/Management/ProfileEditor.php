@@ -17,6 +17,7 @@ use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Auth\Actions\ProfileMutation;
 use Runa\Modules\Auth\Actions\Profiles;
+use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\ProfileChange;
 use Runa\Modules\Auth\Models\User;
 use Runa\Support\Modules\Api\OperationRejected;
@@ -78,7 +79,11 @@ final readonly class ProfileEditor implements ManagementParticipant, ManagementR
     public function execute(ManagementWrite $input): ManagementOutcome
     {
         $mutation = $this->prepare($input);
-        $result = $this->transactions->run([$mutation]);
+        try {
+            $result = $this->transactions->run([$mutation]);
+        } catch (IdentityConflict) {
+            throw new OperationRejected('identity_conflict', 'runa.auth', 'profile.edit', 409);
+        }
 
         return $this->project($result['runa.auth.'.$mutation->definition()->key]);
     }

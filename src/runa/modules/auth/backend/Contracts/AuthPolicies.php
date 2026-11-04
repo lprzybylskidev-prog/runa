@@ -31,8 +31,11 @@ interface AuthPolicies
      */
     public function restore(int $sourceRevision, int $revision, int $generation): array;
 
-    /**
-     * @return array{public_id: string|null, version: int}
-     */
+    /** @return array<string, int> */
+    public function exceptionVersions(string $publicId): array;
+
+    public function revokeExceptions(string $publicId, int $expectedVersion): bool;
+
+    /** @return array{public_id: string|null, version: int} */
     public function exception(string $publicId, string $key, ?int $value, string $reason, string $expiresAt, int $version, int $policyRevision): array;
 }

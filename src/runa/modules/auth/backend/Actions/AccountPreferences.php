@@ -4,7 +4,9 @@ namespace Runa\Modules\Auth\Actions;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
+use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\OperationScope;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Auth\Contracts\AuthPreferences;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
@@ -17,12 +19,80 @@ use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\PreferenceDeclarations;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\ModuleIdentity;
+use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** @phpstan-import-type PreferenceRead from AccountPreferenceSnapshot */
 final readonly class AccountPreferences implements AuthPreferences
 {
     public function __construct(private EntryTransaction $transactions, private PreferenceDeclarations $declarations,
-        private PrincipalScope $principals, private AccountPreferenceSnapshot $snapshots) {}
+        private PrincipalScope $principals, private AccountPreferenceSnapshot $snapshots,
+        private OperationAuthorizer $authorizer, private OperationScope $scope) {}
+
+    public function account(string $publicId): array
+    {
+        new TrustedPrincipal($publicId);
+
+        return $this->target($publicId, function (Connection $connection, User $user): array {
+            $locale = $this->readLocked($connection, $user, new PreferenceScope('runa', 'runa.auth', 'global', 'locale'));
+            $theme = $this->readLocked($connection, $user, new PreferenceScope('runa', 'runa.auth', 'global', 'theme'));
+            assert(is_string($locale['value']) && is_string($theme['value']));
+            $canReadAddresses = $this->allowsAddresses();
+            $recipients = $canReadAddresses ? [['value' => 'primary', 'label' => $user->email]] : [];
+            if ($canReadAddresses && app(ModuleSettings::class)->value('runa.auth', 'secondary_emails_enabled')) {
+                /** @var \stdClass&object{public_id:string,email:string} $row */
+                foreach ($connection->table('runa_auth.secondary_emails')->where('user_id', $user->id)->whereNull('deleted_at')->whereNotNull('verified_at')->get(['public_id', 'email']) as $row) {
+                    $recipients[] = ['value' => $row->public_id, 'label' => $row->email];
+                }
+            }
+
+            return ['account' => $user->public_id, 'revision' => $user->preference_revision, 'locale' => $locale['value'], 'theme' => $theme['value'],
+                'categories' => $canReadAddresses ? app(DeliveryRouting::class)->own($connection, $user)['categories'] : [], 'recipients' => $recipients];
+        });
+    }
+
+    public function updateAccount(string $publicId, string $locale, string $theme, array $delivery, int $revision): array
+    {
+        new TrustedPrincipal($publicId);
+        if ($delivery !== [] && ! $this->allowsAddresses()) {
+            throw new OperationRejected('permission_denied', 'runa.auth', 'preferences.admin_write', 403);
+        }
+        if (! array_is_list($delivery) || count($delivery) > 128) {
+            throw new OperationRejected('preference_invalid', 'runa.auth', 'preferences.admin_write', 422);
+        }
+
+        return $this->target($publicId, function (Connection $connection, User $user) use ($locale, $theme, $delivery, $revision): array {
+            $this->revision($user, $revision);
+            foreach (['locale' => $locale, 'theme' => $theme] as $key => $value) {
+                $scope = new PreferenceScope('runa', 'runa.auth', 'global', $key);
+                if ($this->readLocked($connection, $user, $scope)['value'] !== $value) {
+                    $this->writeLocked($connection, $user, $scope, new PreferenceValue($value), $user->preference_revision);
+                }
+            }
+            $routing = app(DeliveryRouting::class);
+            $current = $routing->own($connection, $user)['categories'];
+            $seen = [];
+            foreach ($delivery as $entry) {
+                if (! is_array($entry) || count($entry) !== 4 || ! is_string($entry['module'] ?? null) || ! is_string($entry['key'] ?? null)
+                    || ! is_bool($entry['enabled'] ?? null) || ! is_array($entry['recipients'] ?? null) || ! array_is_list($entry['recipients'])
+                    || ($entry['enabled'] && $entry['recipients'] === []) || count(array_unique($entry['recipients'], SORT_REGULAR)) !== count($entry['recipients']) || count($entry['recipients']) > 100 || array_filter($entry['recipients'], fn ($id) => ! is_string($id)) !== []) {
+                    throw new OperationRejected('preference_invalid', 'runa.auth', 'preferences.admin_write', 422);
+                }
+                $key = $entry['module'].':'.$entry['key'];
+                $before = array_values(array_filter($current, fn ($item) => $item['module'] === $entry['module'] && $item['key'] === $entry['key']))[0] ?? null;
+                if (isset($seen[$key]) || $before === null) {
+                    throw new OperationRejected('delivery_category_unavailable', 'runa.auth', 'preferences.admin_write', 422);
+                }
+                $seen[$key] = true;
+                if ($before['enabled'] !== $entry['enabled'] || $before['recipients'] !== $entry['recipients']) {
+                    $routing->configure($connection, $user, ['module' => $entry['module'], 'category' => $entry['key'], 'enabled' => $entry['enabled'],
+                        'recipients' => $entry['recipients'], 'revision' => $user->preference_revision]);
+                }
+            }
+            $this->transactions->record('preferences.admin_changed', $user, ['preference_revision' => ['old' => $revision, 'new' => $user->preference_revision]]);
+
+            return ['account' => $user->public_id, 'revision' => $user->preference_revision];
+        });
+    }
 
     public function read(PreferenceScope $scope): array
     {
@@ -31,20 +101,24 @@ final readonly class AccountPreferences implements AuthPreferences
 
     public function write(PreferenceScope $scope, PreferenceValue $value, int $revision): array
     {
-        return $this->target(null, function (Connection $connection, User $user) use ($scope, $value, $revision): array {
-            $this->revision($user, $revision);
-            [$provider, $definition] = $this->declarations->resolve($scope);
-            $this->declarations->validate($provider, $definition, $value->value);
-            $before = $this->readLocked($connection, $user, $scope)['value'];
-            $connection->table('runa_auth.preferences')->updateOrInsert(['user_id' => $user->id, 'scope' => $scope->id()],
-                ['module' => $scope->module, 'value' => json_encode($value->value, JSON_THROW_ON_ERROR), 'definition_version' => $definition->version,
-                    'updated_at' => now(), 'created_at' => now()]);
-            $user->preference_revision++;
-            $user->save();
-            $this->recordPreference($user, $scope, $before, $value->value, 'preferences.changed');
+        return $this->target(null, fn (Connection $connection, User $user): array => $this->writeLocked($connection, $user, $scope, $value, $revision));
+    }
 
-            return $this->readLocked($connection, $user, $scope);
-        });
+    /** @return PreferenceRead */
+    private function writeLocked(Connection $connection, User $user, PreferenceScope $scope, PreferenceValue $value, int $revision): array
+    {
+        $this->revision($user, $revision);
+        [$provider, $definition] = $this->declarations->resolve($scope);
+        $this->declarations->validate($provider, $definition, $value->value);
+        $before = $this->readLocked($connection, $user, $scope)['value'];
+        $connection->table('runa_auth.preferences')->updateOrInsert(['user_id' => $user->id, 'scope' => $scope->id()],
+            ['module' => $scope->module, 'value' => json_encode($value->value, JSON_THROW_ON_ERROR), 'definition_version' => $definition->version,
+                'updated_at' => now(), 'created_at' => now()]);
+        $user->preference_revision++;
+        $user->save();
+        $this->recordPreference($user, $scope, $before, $value->value, 'preferences.changed');
+
+        return $this->readLocked($connection, $user, $scope);
     }
 
     public function reset(?string $module, ?PreferenceScope $scope, int $revision): array
@@ -187,6 +261,13 @@ final readonly class AccountPreferences implements AuthPreferences
         return ['account' => $user->public_id, 'revision' => $user->preference_revision];
     }
 
+    private function allowsAddresses(): bool
+    {
+        $context = $this->scope->current();
+
+        return $context !== null && $context->moduleId === 'runa.auth' && $this->authorizer->allows($context, 'runa.auth.addresses.read');
+    }
+
     private function displayOnly(PreferenceScope $scope): bool
     {
         return $scope->module === 'runa.auth' && $scope->view === 'global' && in_array($scope->key, ['locale', 'theme'], true);
@@ -218,8 +299,8 @@ final readonly class AccountPreferences implements AuthPreferences
         return $this->transactions->run(function (Connection $connection) use ($target, $work): mixed {
             $this->transactions->lockAuthority($connection);
             $id = $target ?? $this->principals->current()?->publicId;
-            $user = $id === null ? null : User::where('public_id', $id)->lockForUpdate()->first();
-            if ($user === null || ! app(LookupIdentity::class)->evaluate($user, CarbonImmutable::now('UTC'))->mayOperate()) {
+            $user = $id === null ? null : ($target === null ? User::query() : User::withTrashed())->where('public_id', $id)->lockForUpdate()->first();
+            if ($user === null || ($target === null && ! app(LookupIdentity::class)->evaluate($user, CarbonImmutable::now('UTC'))->mayOperate())) {
                 throw new OperationRejected('authentication_required', 'runa.auth', 'preferences', 401);
             }
 

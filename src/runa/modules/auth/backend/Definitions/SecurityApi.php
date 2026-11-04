@@ -13,10 +13,11 @@ final class SecurityApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(AuthSecurity::class, SecurityProxy::class, ManageSecurity::class, '1.0.0', [
+        return new ApiDefinition(AuthSecurity::class, SecurityProxy::class, ManageSecurity::class, '1.1.0', [
             'requestPasswordReset' => new ApiOperation('password.admin_reset', 'runa.auth.passwords.reset'),
             'resetFactors' => new ApiOperation('two_factor.admin_reset', 'runa.auth.two_factor.reset'),
             'trustedDevices' => new ApiOperation('trust.list', 'runa.auth.trust.manage'),
+            'revokeDevices' => new ApiOperation('trust.revoke_all', 'runa.auth.trust.manage'),
             'revokeDevice' => new ApiOperation('trust.revoke', 'runa.auth.trust.manage'),
         ]);
     }

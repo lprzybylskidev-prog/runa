@@ -25,7 +25,7 @@ use Runa\Modules\Auth\Contracts\PreferenceScope;
 use Runa\Modules\Auth\Contracts\PreferenceValue;
 use Runa\Support\Modules\Api\ModuleApis;
 
-$preferences = app(ModuleApis::class)->resolve('runa.auth', AuthPreferences::class, '1.0.0');
+$preferences = app(ModuleApis::class)->resolve('runa.auth', AuthPreferences::class, '1.1.0');
 $scope = new PreferenceScope('my-app', 'app.projects', 'list', 'statistics.mode');
 $current = $preferences->read($scope);
 $preferences->write($scope, new PreferenceValue('filtered'), $current['revision']);
@@ -260,3 +260,48 @@ preference exists. Hydrating/changing application defaults never persists a user
 preference. Public useApplicationDisplayDefaults/formatApplicationInstant supplies
 the display timezone without changing UTC storage or date-only values. See
 [application presentation](../admin/frontend.md#application-display-defaults-image-drafts-and-page-headings).
+
+## Administrative account preferences
+
+Auth 3.1.0 supplies additive `AuthPreferences` API **1.1.0**. Existing self-service
+methods retain their current-principal binding and signatures. Administrative
+methods explicitly select another account through the guarded adapter:
+
+```php
+// Permission: runa.auth.preferences.read
+public function account(string $publicId): array;
+// Permission: runa.auth.preferences.manage
+public function updateAccount(string $publicId, string $locale, string $theme,
+    array $delivery, int $revision): array;
+```
+
+Owner: Auth. Audience: authorized server consumers and the private Admin adapter.
+Entrypoint: `ModuleApis::resolve('runa.auth', AuthPreferences::class, '1.1.0')`.
+Implementation: Auth's `backend/Actions/AccountPreferences` and guarded proxy/API
+provider; runtime delivery, no development tooling dependency.
+
+`account` returns `{account, revision, locale, theme, categories, recipients}`.
+Categories use the own-account delivery projection; recipient options are
+`{value, label}` for primary and current verified secondary addresses. Delivery
+categories and address labels additionally require `runa.auth.addresses.read`;
+without that grant both lists are empty. Language/theme reads remain available.
+`delivery` is a list of `{module, key, enabled, recipients: list<string>}`; omitted
+categories remain unchanged. Unknown/duplicate categories, invalid locale/theme,
+unavailable recipients and attempts to disable or redirect mandatory/sensitive
+categories are refused. A nonempty delivery patch requires the address-read grant.
+An enabled optional category must select at least one current recipient.
+
+One default PostgreSQL transaction locks authority and the selected account,
+checks the supplied preference revision and reuses source-owned preference
+validation and delivery configuration. Invalid/stale changes roll back the whole
+form, including Audit. Accepted changes emit `preferences.admin_changed` alongside
+owning delivery history. `updateAccount` returns `{account, revision}`. Inactive
+and deleted targets can be inspected/edited administratively without changing
+principal identity or granting login. Existing `resetAccount` remains a
+presentation-only reset under its separate reset grant.
+
+The default User tab edits language, theme and optional email categories using the
+same choices/routing constraints as self-service. No revision input is displayed.
+Drafts live in the selected subject's form controller; saving never connects the
+administrator's own preference adapter to the target. Refresh and stale-write
+reconciliation retain dirty values and require explicit conflict resolution.

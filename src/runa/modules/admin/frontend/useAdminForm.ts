@@ -670,7 +670,10 @@ export function useAdminForm(
     }
     if (
       command.destructive &&
-      !(options.confirmReviewed && command.preview_required && input.review) &&
+      !(
+        options.confirmReviewed &&
+        (!command.preview_required || input.review)
+      ) &&
       !(await ask(command.title, 'Confirm this destructive operation.'))
     )
       return;

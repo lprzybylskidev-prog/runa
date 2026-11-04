@@ -923,6 +923,19 @@ reassessment before resuming point 3; completed point history remains evidence.
     vertical content scrolling. Review all supplied horizontal-scroll consumers.
   - Synchronize public guidance/instruction references, add focused regression
     evidence and prepare built assets for owner acceptance. Broad gates remain 12.
+- [ ] 11a67. Rebuild user details around owner-approved task-based forms.
+  - Maximum three purposeful tabs: User, Security, Rules and exceptions; omit empty tabs.
+  - Main tab: individual action buttons, editable identity/avatar/status, email forms,
+    assignments and complete own-profile-equivalent presentation/delivery preferences.
+  - Preserve every existing capability, configuration/grant/record restriction,
+    reviewed action, proof, concurrency check and atomic Audit. Revisions/UUIDs are
+    controller-owned, never operator input. Authenticate after submit when required.
+  - Security groups credentials/factors, sessions and trusted devices; exceptions
+    retain reasons/deadlines/current-value editing without technical version fields.
+  - Add guarded target-account preference reads/writes using owning validation and
+    delivery rules. Keep administrator and target-account preference caches isolated.
+  - Synchronize current docs, public replacement contracts, module versions/tests;
+    prepare working assets for repeated owner acceptance. Broad checks remain point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6320,3 +6333,74 @@ quality or owner acceptance. Mandatory hooks and current knowledge accompany the
 commit. No task-created Docker/database resources needed cleanup; active services,
 development/base test data, caches, backups and evidence remain preserved. Owner
 manual acceptance 11b and final automated verification/release 12 remain open.
+
+### Point 11a67 — User details rebuild (in progress)
+
+2026-11-04 — Owner approved a complete rebuild rather than incremental tab
+polishing. Three tabs are a maximum, not a target: User, Security, Rules and
+exceptions. Main-tab order is actions, editable identity/status, then independent
+email/access/preference forms. Existing operations and security remain intact;
+technical revision/UUID inputs disappear and stronger proof follows submission.
+Administrator preference editing must match self-service, including delivery.
+The owner explicitly requested implementation after accepting this layout.
+Platform release metadata remains the already approved feature/0.7.0.
+
+Capability map: eligibility/lifecycle/invitations/profile/avatar/primary and
+secondary email/assignments/preferences move to User; security/sessions/trust move
+to Security; exceptions move to Rules and exceptions. Lifecycle schedules and
+all existing bulk-equivalent individual actions remain available from User.
+Each form saves only its own values; native participant writers support standalone
+commands as well as their existing complete aggregate Save. Aggregate semantics
+remain unchanged. Target preferences are Auth-owned guarded runtime APIs, with
+separate read/manage grants, target revision, owning validation and transactional
+Audit; self-service identity binding is never substituted for an admin target.
+
+No new dependency, schema change or new roadmap/release is required. Public
+composition continues through AdminPageProps/AdminSectionPresentationProps and
+the existing manifest/replacement registry. Owner/customer guidance assessment,
+focused regression evidence and asset readiness are recorded at completion.
+
+Implementation: Auth's new default record view groups all supplied sections and
+unknown contributions into the agreed tabs. Native standalone profile/assignment
+writers retain the public aggregate route. Single-user controls use native APIs,
+not bulk's protected-account filtering. Target preferences have independent
+read/manage/reset grants and preserve address-read restrictions, mandatory routes,
+source declaration validation and transactional rollback. Guarded APIs
+Preferences/Security/Policies advance additively to 1.1.0; Auth 3.1.0 and Admin
+0.2.0 include explicit forward source steps without schema/data migration.
+Required Auth email/exception inputs now project their actual UX requirements.
+Exception-version projection is independent of the last-50 history bound.
+
+Knowledge was available/current before implementation; the bounded current-intent
+query selected account UI, Auth administration and module documentation, whose
+original sources were opened. Current public Auth preference/administration and
+Admin composition/frontend guides and central/module changelogs are synchronized.
+Root AGENTS and owner/customer skills already delegate forms, capability visibility,
+public adapters, proof and reconciliation to these canonical guides; no new generic
+rule, protected-edit authority or duplicated procedure is needed in either product.
+
+Focused implementation checks resolve the new standalone-write and selected-account
+boundary, target preference atomicity/staleness/mandatory routing and separate
+read/manage/address grants; frontend cases cover grouping/token hiding, post-submit
+proof and existing target selection. The initial serial diagnostic could not start
+because base runa_test retains legacy migration history; it changed no data. The
+supported one-worker parallel mode starts fresh disposable runa_test_test_1, cleans
+it after each run and preserves the base database. Early diagnostic failures and
+all native reports are preserved; complete final backend/frontend acceptance remains
+point 12. No global/database reset, dependency, Docker topology or production
+change is part of this point.
+
+Read-only local preparation preflight: environment local, database runa, no active
+transition, no pending migrations. Only Auth user_details 3.0.0 -> 3.1.0 and Admin
+standalone_participants 0.1.0 -> 0.2.0 are pending. Forward preparation, current asset
+build and native rendered readiness follow the implementation commit; owner manual
+acceptance 11b and broad verification/release 12 remain open.
+
+Focused results before readiness preparation: 5 backend cases / 94 assertions PASS
+in supported parallel mode with one worker (new standalone and preference cases
+plus the existing native/HTTP aggregate compatibility cases); cleanup exit 0 and
+runa_test_test_1 removed by the runner. Three frontend cases PASS for detail grouping,
+technical-token hiding, post-submit proof and existing target selection. Source
+asset/type build passed before the final readiness polish; rebuild the exact
+formatted source after mandatory hooks. These are focused diagnostics, not a full
+backend/frontend/quality or owner-acceptance claim.

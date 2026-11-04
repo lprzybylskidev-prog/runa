@@ -90,6 +90,22 @@ final readonly class ManageSecurity implements AuthSecurity
         return $this->devices->listFor($publicId, $before);
     }
 
+    public function revokeDevices(string $publicId, int $expectedVersion): bool
+    {
+        new TrustedPrincipal($publicId);
+
+        return $this->transactions->run(function (Connection $connection) use ($publicId, $expectedVersion): bool {
+            $this->transactions->lockAuthority($connection);
+            $user = User::withTrashed()->where('public_id', $publicId)->lockForUpdate()->first();
+            if ($user === null || $user->version !== $expectedVersion) {
+                return false;
+            }
+            $this->devices->revokeAllLocked($connection, $user);
+
+            return true;
+        });
+    }
+
     public function revokeDevice(string $publicId, string $deviceId): bool
     {
         return $this->devices->revoke($publicId, $deviceId);

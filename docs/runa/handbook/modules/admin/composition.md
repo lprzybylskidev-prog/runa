@@ -142,3 +142,14 @@ an independent PostgreSQL backend with a bounded lock timeout; the phase probe
 checks registry and complete sorted subject locks before any apply. Full scenario,
 concurrency and rendered acceptance run in final roadmap verification, not during
 ordinary implementation. Excluded cases are not reported as PASS.
+
+## Standalone participant forms
+
+Admin 0.2.0 also admits an atomic command through its section `/preview` and
+`/commands` routes when the source-owned binding implements `ManagementWriter`.
+It runs that native standalone writer after entry admission ends, retaining the
+same projected inputs, grants, revisions, review, destructive confirmation and
+proof demands. `ManagementParticipant` alone does not supply standalone execution.
+This does not change aggregate `/save`: that route still requires every current
+writable participant. Auth user details uses standalone profile/access forms so
+saving one form never submits another form's dirty draft.
