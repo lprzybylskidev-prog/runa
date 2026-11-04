@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Artisan;
 use Runa\Database\Seeders\DatabaseSeeder;
+use Runa\Modules\Auth\Development\ReviewFeatures;
 use Runa\Support\Seeding\SeedContext;
 use Runa\Support\Seeding\SeedGraph;
 use Tests\Fixtures\BrokenSeed;
@@ -63,6 +64,7 @@ it('refuses explicit development corpus and direct seeders in a production insta
     try {
         expect(fn () => Artisan::call('runa:seed:development', ['--force' => true]))->toThrow(InvalidArgumentException::class, 'production');
         expect(fn () => app(DemoSeed::class)->run())->toThrow(InvalidArgumentException::class, 'production');
+        expect(fn () => app(ReviewFeatures::class)->enable())->toThrow(InvalidArgumentException::class, 'production');
         expect(Artisan::call('runa:seed:accounts'))->toBe(1);
     } finally {
         app()->setBasePath($original);

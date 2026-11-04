@@ -33,6 +33,7 @@ final class ProfileHttp implements HttpProvider
             new HttpEndpoint('GET', 'profile/avatar', new ApiOperation('avatar.read'), Http\AvatarReadController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'profile/avatar', new ApiOperation('avatar.upload'), Http\AvatarUploadController::class, HttpAccess::Authenticated),
             new HttpEndpoint('DELETE', 'profile/avatar', new ApiOperation('avatar.remove'), Http\AvatarRemoveController::class, HttpAccess::Authenticated),
+            new HttpEndpoint('GET', 'users/avatar', new ApiOperation('avatar.admin_read', 'runa.auth.avatars.manage'), Http\AvatarReadController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'users/avatar', new ApiOperation('avatar.admin_upload', 'runa.auth.avatars.manage'), Http\AdminAvatarUploadController::class, HttpAccess::Authenticated),
             new HttpEndpoint('DELETE', 'users/avatar', new ApiOperation('avatar.admin_remove', 'runa.auth.avatars.manage'), Http\AdminAvatarRemoveController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'email/complete', new ApiOperation('email.complete'), Http\EmailCompleteController::class, HttpAccess::Public),

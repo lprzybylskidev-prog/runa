@@ -168,8 +168,18 @@ async function mutate(remove = false) {
     v-if="record && !section.readonly && record.values.avatar_max_kib"
     class="mt-4 space-y-4"
   >
-    <div v-if="preview" class="flex justify-center">
-      <Avatar :src="preview" initials="" :size="80" />
+    <div class="flex justify-center" data-admin-avatar-preview>
+      <Avatar
+        :key="record.public_id ?? ''"
+        :src="
+          preview ||
+          (record.values.has_avatar
+            ? `/api/runa/auth/users/avatar?public_id=${encodeURIComponent(record.public_id!)}&v=${record.revision}`
+            : '')
+        "
+        :initials="String(record.values.avatar_initials ?? '')"
+        :size="80"
+      />
     </div>
     <FileInput
       v-model="originals"

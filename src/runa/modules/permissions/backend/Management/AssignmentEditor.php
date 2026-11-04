@@ -42,17 +42,34 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
 
     public function options(ManagementOptionsRead $input): ManagementOptions
     {
-        if (! in_array($input->field, ['roles', 'permissions'], true) || $input->filters !== []) {
+        if (! in_array($input->field, ['roles', 'permissions'], true) || array_diff(array_keys($input->filters), ['search', 'language', 'selected']) !== []) {
             throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.definitions', 422);
         }
-        $result = $this->api()->definitions($input->field === 'roles' ? 'role' : 'permission', $input->cursor);
+        $language = $input->filters['language'] ?? 'en';
+        $search = $input->filters['search'] ?? '';
+        if (! in_array($language, ['pl', 'en'], true) || ! is_string($search) || mb_strlen($search) > 160) {
+            throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.definitions', 422);
+        }
+        $filters = ['search' => $search];
+        if (isset($input->filters['selected'])) {
+            try {
+                $ids = json_decode($input->filters['selected'], true, flags: JSON_THROW_ON_ERROR);
+                if (! is_array($ids)) {
+                    throw new \InvalidArgumentException('Invalid selected definitions.');
+                }
+                $filters['public_ids'] = (new AssignmentSet($ids))->roles;
+            } catch (\JsonException|\InvalidArgumentException|\TypeError) {
+                throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.definitions', 422);
+            }
+        }
+        $result = $this->api()->definitions($input->field === 'roles' ? 'role' : 'permission', $input->cursor, $filters);
         // The owning API pages at 100; respect the narrower consumer page without losing the cursor.
         $items = array_slice($result['items'], 0, $input->limit);
         $next = count($result['items']) > count($items) ? $items[array_key_last($items)]['public_id'] : $result['next'];
 
         $items = array_values(array_filter($items, fn ($item): bool => $input->field !== 'roles' || $item['code'] !== 'runa.permissions.super_admin'));
 
-        return new ManagementOptions($input->field, array_map(fn ($item): array => ['value' => $item['public_id'], 'label' => $item['name_en']], $items), $next);
+        return new ManagementOptions($input->field, array_map(fn ($item): array => ['value' => $item['public_id'], 'label' => $item['name_'.$language]], $items), $next);
     }
 
     public function page(ManagementRead $input): ManagementPageResult
@@ -115,6 +132,6 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
 
     private function api(): PermissionsAccess
     {
-        return $this->apis->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        return $this->apis->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
     }
 }

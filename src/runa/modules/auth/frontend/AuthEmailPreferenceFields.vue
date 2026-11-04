@@ -18,7 +18,7 @@ const emit = defineEmits<{
       />
     </div>
     <Select
-      v-if="enabled"
+      v-if="enabled && recipientSelection === true && options.length > 1"
       :multiple="true"
       size="sm"
       :label="locale === 'pl' ? 'Wyślij na' : 'Send to'"

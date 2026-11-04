@@ -363,3 +363,26 @@ it.each(['pl', 'en'] as const)(
     ]);
   },
 );
+
+it('readonly account booleans share localized semantic badges and retain null facts', async () => {
+  savePreference('runa.locale', 'en');
+  const wrapper = mount(AdminField, {
+    props: {
+      field: field({ key: 'security_locked', type: 'boolean', readonly: true }),
+      modelValue: true,
+      errors: [],
+      readonly: true,
+      busy: false,
+    },
+  });
+  expect(wrapper.get('[data-tone=danger]').text()).toBe('Yes');
+  savePreference('runa.locale', 'pl');
+  await vi.waitFor(() =>
+    expect(wrapper.get('[data-tone=danger]').text()).toBe('Tak'),
+  );
+  await wrapper.setProps({ modelValue: false });
+  expect(wrapper.get('[data-tone=neutral]').text()).toBe('Nie');
+  await wrapper.setProps({ modelValue: null });
+  expect(wrapper.text()).toContain('—');
+  expect(wrapper.find('[data-tone]').exists()).toBe(false);
+});

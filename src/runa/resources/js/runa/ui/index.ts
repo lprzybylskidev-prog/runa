@@ -206,3 +206,5 @@ export type { ValuePreviewProps } from './valuePreview';
 
 export { default as ContentLoading } from '../../components/AppContentLoading.vue';
 export type { ContentLoadingProps, ContentLoadingShape } from './loading';
+
+export { default as BooleanBadge } from '../../components/AppBooleanBadge.vue';

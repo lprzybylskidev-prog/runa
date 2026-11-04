@@ -118,9 +118,9 @@ acceptance belongs to the roadmap's final verification, not per-point execution.
 
 ## Current native API versions and intentional break
 
-Auth and Permissions develop at independent 2.0.0 for the intentional replacement
+Auth 3.1.0 and Permissions 2.1.0 retain the intentional replacement
 of arbitrary ambient transaction nesting on AuthProfiles.edit and
-PermissionsAccess.applyAssignments. Their guarded API versions are 2.0.0; other
+PermissionsAccess.applyAssignments. Their guarded API versions are AuthProfiles 2.0.0 and PermissionsAccess 2.1.0; other
 Core guarded APIs remain at their declared versions. Call standalone writes with
 no ambient transaction. Source-owned composition uses the documented phases;
 there is no v1 alias or nested whole-write compatibility path. Current native

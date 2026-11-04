@@ -119,6 +119,14 @@ final class User extends ModuleModel implements AuthenticatableContract, MustVer
         throw new \LogicException('Verification requires the owning single-use token Action.');
     }
 
+    public function initials(): string
+    {
+        $parts = $this->name !== null ? preg_split('/\s+/u', $this->name) : [$this->first_name, $this->surname];
+        $parts = is_array($parts) ? array_values(array_filter($parts, 'is_string')) : [];
+
+        return mb_strtoupper(mb_substr($parts[0] ?? '', 0, 1).(count($parts) > 1 ? mb_substr($parts[array_key_last($parts)], 0, 1) : ''));
+    }
+
     public function identity(): Identity
     {
         return new Identity($this->public_id, $this->name ?? $this->first_name.' '.$this->surname, $this->trashed(), $this->version);

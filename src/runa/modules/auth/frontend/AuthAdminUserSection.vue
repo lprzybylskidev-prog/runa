@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { identityDrafts } from './identityDrafts';
 import { computed, reactive, ref, watch } from 'vue';
 import {
   AdminField,
+  adminBooleanTone,
   AdminSection,
   useAdminLocale,
   useAdminResource,
@@ -14,6 +16,7 @@ import type {
 } from '@/runa/admin';
 import {
   Alert,
+  BooleanBadge,
   Button,
   Card,
   ContentLoading,
@@ -32,6 +35,7 @@ import {
   AuthEmailPreferenceFields,
 } from '@/runa/auth';
 import type { AuthIdentityField } from '@/runa/auth';
+import { PermissionsAssignments } from '@/runa/permissions';
 import AuthAdminAvatar from './AuthAdminAvatar.vue';
 const props = defineProps<
   AdminSectionPresentationProps & {
@@ -102,6 +106,8 @@ const fields = computed(() =>
     if (
       [
         'identifier_mode',
+        'has_avatar',
+        'avatar_initials',
         'preference_revision',
         'exception_versions',
         'exception_version',
@@ -114,6 +120,7 @@ const fields = computed(() =>
         'operation',
         'at',
         'enabled',
+        'recipient_selection_enabled',
         'categories',
         'recipients',
         'delivery',
@@ -158,6 +165,7 @@ const record = computed(
   () => props.controller.records.value[props.section.key],
 );
 const naming = ref('full');
+const nameDrafts = identityDrafts(get, set);
 const attempted = ref(false);
 const touched = reactive(new Set<string>());
 const identityKeys: AuthIdentityField[] = [
@@ -185,6 +193,7 @@ watch(
         formValuesEqual(get(key), value.values[key] ?? null),
       )
     ) {
+      nameDrafts.clear();
       naming.value = value.values.name ? 'single' : 'full';
       attempted.value = false;
       touched.clear();
@@ -193,9 +202,8 @@ watch(
   { immediate: true },
 );
 function changeNaming(value: string) {
+  nameDrafts.change(naming.value, value);
   naming.value = value;
-  for (const key of value === 'full' ? ['name'] : ['first_name', 'surname'])
-    set(key, null);
 }
 const identityIssues = computed<Record<string, string>>(() => {
   if (kind.value !== 'profile') return {};
@@ -272,6 +280,7 @@ const dirty = computed(
     ),
 );
 function revert() {
+  nameDrafts.clear();
   for (const field of props.section.fields)
     if (!field.readonly)
       set(field.key, record.value?.values[field.key] ?? null);
@@ -540,7 +549,20 @@ const fieldTitle = (key: string) =>
   );
 </script>
 <template>
-  <Card :data-user-section="kind">
+  <PermissionsAssignments
+    v-if="
+      section.key === 'runa.permissions.user_access.assignments' &&
+      !presentation.field &&
+      !section.fields.some((field) => field.component)
+    "
+    :page="page"
+    :section="section"
+    :controller="controller"
+    @submit="
+      (section, command, fields) => emit('submit', section, command, fields)
+    "
+  />
+  <Card v-else :data-user-section="kind">
     <template #header
       ><h2>{{ labels[kind] ?? t(section.title) }}</h2></template
     >
@@ -596,11 +618,17 @@ const fieldTitle = (key: string) =>
                   >
                     <dt class="text-xs text-muted">{{ fieldTitle(key) }}</dt>
                     <dd class="mt-1 break-words">
-                      {{
+                      <BooleanBadge
+                        v-if="typeof row[key] === 'boolean'"
+                        :value="row[key] as boolean"
+                        :locale="locale"
+                        :tone="adminBooleanTone(key, row[key] as boolean)"
+                      />
+                      <template v-else>{{
                         key === 'key' && typeof row[key] === 'string'
                           ? t(row[key])
                           : display(row[key] ?? null, key)
-                      }}
+                      }}</template>
                     </dd>
                   </div>
                 </dl>
@@ -815,6 +843,7 @@ const fieldTitle = (key: string) =>
                 />
               </FormSection>
               <FormSection
+                v-if="categories.length"
                 :title="text('Powiadomienia e-mail', 'Email notifications')"
               >
                 <div v-if="categories.length" class="divide-y divide-line">
@@ -832,6 +861,9 @@ const fieldTitle = (key: string) =>
                     "
                     :enabled="deliveryValue(category)?.enabled === true"
                     :recipients="recipientIds(category)"
+                    :recipient-selection="
+                      get('recipient_selection_enabled') === true
+                    "
                     :options="recipients"
                     :disabled="preferenceReadonly || controller.busy.value"
                     :error="
@@ -851,22 +883,6 @@ const fieldTitle = (key: string) =>
                     "
                   />
                 </div>
-                <p v-else class="text-sm text-muted">
-                  {{
-                    text(
-                      'Brak dostępnych powiadomień e-mail.',
-                      'No email notifications are available.',
-                    )
-                  }}
-                </p>
-                <p class="text-sm text-muted">
-                  {{
-                    text(
-                      'Wiadomości wymagane ze względów bezpieczeństwa są wysyłane na główny adres.',
-                      'Required security messages are delivered to the primary email.',
-                    )
-                  }}
-                </p>
               </FormSection>
             </template>
             <AuthAdminAvatar

@@ -141,9 +141,6 @@ final readonly class Profiles
     /** @return ProfileSnapshot */
     public function projection(User $user): array
     {
-        $initials = $user->name !== null ? preg_split('/\s+/u', $user->name) : [$user->first_name, $user->surname];
-        $initials = is_array($initials) ? array_values(array_filter($initials, 'is_string')) : [];
-        $initials = mb_strtoupper(mb_substr($initials[0] ?? '', 0, 1).(count($initials) > 1 ? mb_substr($initials[array_key_last($initials)], 0, 1) : ''));
         /** @var list<\stdClass> $secondary */
         $secondary = $this->value('secondary_emails_enabled') ? app('db')->connection()->table('runa_auth.secondary_emails')
             ->where('user_id', $user->id)->whereNull('deleted_at')->orderBy('id')->get(['public_id', 'email', 'verified_at'])->toArray() : [];
@@ -156,7 +153,7 @@ final readonly class Profiles
         return ['public_id' => $user->public_id, 'version' => $user->version, 'display_name' => $user->identity()->displayName,
             'name' => $user->name, 'first_name' => $user->first_name, 'surname' => $user->surname, 'login' => $user->login,
             'email' => $user->email, 'email_verified' => $user->email_verified_at !== null, 'secondary_emails' => $secondary,
-            'initials' => $initials, 'has_avatar' => $this->value('avatar_enabled') && $user->avatar_path !== null, 'capabilities' => $capabilities];
+            'initials' => $user->initials(), 'has_avatar' => $this->value('avatar_enabled') && $user->avatar_path !== null, 'capabilities' => $capabilities];
     }
 
     public function version(User $user, int $version): void

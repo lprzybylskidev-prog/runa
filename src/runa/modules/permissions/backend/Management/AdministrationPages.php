@@ -180,7 +180,7 @@ final class AdministrationPages implements ManagementPageProvider
 
     public function bindings(): array
     {
-        $access = new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.0.0', ['assignments', 'previewAssignments', 'previewCopy', 'previewPreset', 'applyAssignments', 'definitions', 'definition', 'previewDefinition', 'saveDefinition', 'deleteDefinition']);
+        $access = new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.1.0', ['assignments', 'previewAssignments', 'previewCopy', 'previewPreset', 'applyAssignments', 'definitions', 'definition', 'previewDefinition', 'saveDefinition', 'deleteDefinition']);
         $authority = new ManagementApiTarget('runa.permissions', PermissionsAuthority::class, '1.0.0', ['previewAuthority', 'applyAuthority', 'previewRoleDeletion', 'forceDeleteRole']);
 
         return [new ManagementBinding('role_editor', RoleEditor::class, [$access, $authority]),

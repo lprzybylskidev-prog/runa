@@ -50,3 +50,5 @@ export {
 export { default as AdminModuleCard } from '../../../../modules/admin/frontend/AdminModuleCard.vue';
 
 export { default as AdminOperationHistory } from '../../../../modules/admin/frontend/AdminOperationHistory.vue';
+
+export { adminBooleanTone } from '../../../../modules/admin/frontend/booleanTone';

@@ -373,7 +373,8 @@ the composing account/Admin controller retains those responsibilities.
   `field(key: AuthIdentityField,value: string|null)`, `blur(key: AuthIdentityField)`.
   The default slot inserts content before Login; named `name`, `first_name`,
   `surname`, `login` slots replace the corresponding visible control. The parent
-  clears inactive naming fields only on an explicit format change. Hydration and
+  preserves inactive naming drafts locally and normalizes the write to the active
+  representation. Switching format restores its prior draft. Hydration and
   background refresh never silently discard identity values. Creation, selected
   user details and own-account details consume this same component; each retains
   its own validation and permitted fields. Omit Login in email-only mode.
@@ -385,10 +386,13 @@ the composing account/Admin controller retains those responsibilities.
 - `AuthEmailPreferenceFields` takes `AuthEmailPreferenceFieldsProps`:
   `locale: 'pl'|'en'`, `label: string`, `enabled: boolean`, `recipients: string[]`,
   `options: {value:string,label:string}[]`, `error?: string|readonly string[]`,
-  `disabled?: boolean`. Events: `update:enabled(value: boolean)` and
+  `disabled?: boolean`, `recipientSelection?: boolean` (false). Events: `update:enabled(value: boolean)` and
   `update:recipients(value: string[])`. It shares the category Switch and compact
   multiple Send to selector. Disabled optional categories retain their Switch
-  and omit recipients. Parents omit categories unavailable by configuration.
+  and omit recipients. The recipient selector also requires explicit
+  `recipientSelection=true` from the owning secondary-email capability and more
+  than one address; stale recipient options never override a disabled capability.
+  Own/Admin parents omit categories unavailable by configuration.
 
 All prop interfaces and `AuthIdentityField` are exported through the same facade.
 Preference controls have no slots; compose them in the existing Form/FormSection

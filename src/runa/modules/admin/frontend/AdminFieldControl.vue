@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { DateTimeInput, formatApplicationInstant } from '@/runa/ui';
+import { adminBooleanTone } from './booleanTone';
+import {
+  BooleanBadge,
+  DateTimeInput,
+  formatApplicationInstant,
+} from '@/runa/ui';
 import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
@@ -122,7 +127,13 @@ function integer(value: string | null) {
       ></template
     >
     <template #default="{ id, describedBy }"
-      ><ValuePreview
+      ><BooleanBadge
+        v-if="typeof modelValue === 'boolean'"
+        :value="modelValue"
+        :locale="adminLocale"
+        :tone="adminBooleanTone(field.key, modelValue)" />
+      <ValuePreview
+        v-else
         :aria-labelledby="`${id}-label`"
         :aria-describedby="describedBy"
         :text="display"

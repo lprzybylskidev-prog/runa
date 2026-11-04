@@ -438,8 +438,10 @@ individual-action presentation remains outside this bulk-protection change.
 
 Auth 3.1.0 replaces the default per-section tabs with at most three nonempty
 areas: User, Security, Rules and exceptions. User starts with individual action
-buttons, then editable identity/avatar, account status/access conditions, emails,
-assignments and preferences. Security groups credential/factor facts, sessions and
+buttons, then editable identity/avatar, one complete account-status grid, primary/secondary emails,
+searchable assignments and preferences. Status consolidates authorized verification
+and invitation dates, lifecycle, activity and credential/factor facts; separate
+access-condition and invitation cards are omitted. Security groups sessions and
 trusted devices. Rules and exceptions holds bounded exception history and editing.
 Existing lifecycle schedules, invitation/verification/password/factor operations,
 reset, avatar management and all native read grants remain available. Individual
@@ -499,7 +501,9 @@ The default selected-user form is titled User details/Dane użytkownika and comp
 public `AuthIdentityFields`, also used by creation and own-account details. Read-only
 `identifier_mode` comes from the guarded profile record, never from a writable
 operator field; the native write still accepts exactly the four identity inputs.
-Name-format changes clear the inactive fields only after an explicit choice.
+Name-format changes retain both drafts locally in creation and selected-user forms;
+only the active representation enters the write projection. Switching back restores
+the draft. A clean authoritative refresh or explicit Revert clears this local cache.
 Admin field replacements remain supported through the identity component's named
 slots and the existing guarded AdminField resolution.
 
@@ -509,17 +513,32 @@ and factor/session/trust revocation uses danger. Individual operation confirmati
 uses the selected action's tone; Cancel retains the ordinary neutral treatment.
 Session/device/address row actions use the same semantic outline buttons.
 
-Email forms display one native change method at a time, validate email immediately
-and submit that method on Enter. Save/Revert affect only their owning form and
+One Email addresses card lists the primary address and available secondary
+addresses. Add/Edit opens the shared email dialog; Remove selects the actual row.
+The primary editor offers the permitted confirmation-link/administrator-verification
+methods, validates email immediately and submits only that native command on Enter. Save/Revert affect only their owning form and
 preserve unrelated drafts. Preferences share appearance/notification controls and
 terminology with the account view, with one explicit atomic Save preferences.
 Avatar selection uses the existing AuthAvatarCropper, 20 MB source-image bound,
 the target's final upload bound and local preview/adjust/revert. Captured target and
 revision survive cropping; a concurrent change requires a local conflict decision.
-The current private avatar read remains own-account only; administrative preview
-shows the newly prepared local image and never substitutes the operator's image.
+The selected account renders the shared Avatar with its private administrative
+image read or initials fallback; prepared uploads replace it with a local preview.
+The native private response and deleted-account visibility are documented in
+[profile](profile.md#administrative-avatar-presentation).
 No new avatar-read authority or private byte route is introduced.
 
 See [shared fields](account-ui.md#shared-identity-and-preference-fields) for the
 complete public composition contracts. Native profile/address/avatar/proof/Audit
 orchestration remains in the existing owners.
+
+Readonly boolean facts use the public BooleanBadge also used by Admin table cells;
+filters and editable switches remain controls. Security risk flags share Admin's
+semantic tone mapping. Structured raw Audit evidence retains its original values.
+Permissions owns the public searchable assignment presentation and bounded server
+catalogue; see [Permissions assignments](../permissions/README.md).
+
+Custom section replacements remain authoritative. A replaced email field keeps its
+original section and AdminField renderer instead of entering the consolidated
+default email editor. Replaced assignment fields retain the generic Admin field
+composition; the default searchable catalogue never silently discards an extension.

@@ -44,13 +44,28 @@ final readonly class ManageAccess implements PermissionsAccess
         return $this->assignments->apply($reviewed);
     }
 
-    public function definitions(string $kind, ?string $after = null): array
+    public function definitions(string $kind, ?string $after = null, array $filters = []): array
     {
         $table = $this->state->table($kind);
         if ($after !== null) {
             new TrustedPrincipal($after);
         }
         $definitions = $this->database->connection()->table('runa_permissions.'.$table)->whereNull('deleted_at');
+        if (array_diff(array_keys($filters), ['search', 'public_ids']) !== [] || (isset($filters['search']) && (! is_string($filters['search']) || mb_strlen($filters['search']) > 160))) {
+            throw new \InvalidArgumentException('Invalid definition filters.');
+        }
+        if (array_key_exists('public_ids', $filters)) {
+            if (! is_array($filters['public_ids'])) {
+                throw new \InvalidArgumentException('Invalid definition references.');
+            }
+            $ids = (new AssignmentSet($filters['public_ids']))->roles;
+            $definitions->whereIn('public_id', $ids);
+        }
+        $search = trim($filters['search'] ?? '');
+        if ($search !== '') {
+            $pattern = '%'.addcslashes($search, '\\%_').'%';
+            $definitions->where(fn ($query) => $query->where('code', 'ilike', $pattern)->orWhere('name_pl', 'ilike', $pattern)->orWhere('name_en', 'ilike', $pattern));
+        }
         $total = (clone $definitions)->count();
         /** @var Collection<int, \stdClass&object{public_id: string, code: string, name_pl: string, name_en: string, version: int}> $rows */
         $rows = $definitions

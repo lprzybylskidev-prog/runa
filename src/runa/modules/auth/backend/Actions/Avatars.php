@@ -12,7 +12,9 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 use Runa\Contracts\Modules\AuthorityGuard;
+use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\OperationScope;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Support\EntryTransaction;
@@ -24,14 +26,30 @@ use Runa\Support\Modules\Storage\ModuleStorage;
 final readonly class Avatars
 {
     public function __construct(private SecurityContext $context, private Profiles $profiles, private EntryTransaction $transactions,
-        private ModuleStorage $storage, private AuthorityGuard $authority) {}
+        private ModuleStorage $storage, private AuthorityGuard $authority, private OperationAuthorizer $authorizer, private OperationScope $scope) {}
 
     /**
      * @return array{contents: string|null, type: string|null}
      */
-    public function read(Request $request): array
+    public function read(Request $request, bool $admin = false): array
     {
-        return $this->context->run($request, function (Connection $connection, User $user): array {
+        if ($admin) {
+            Validator::make($request->query(), ['public_id' => ['required', 'uuid:7']])->validate();
+        }
+
+        return $this->context->run($request, function (Connection $connection, User $user) use ($request, $admin): array {
+            if ($admin) {
+                $context = $this->scope->current();
+                if ($context === null || $context->moduleId !== 'runa.auth' || ! $this->authorizer->allows($context, 'runa.auth.avatars.manage')
+                    || ! in_array($this->profiles->value('avatar_editor'), ['admin', 'both'], true)) {
+                    $this->refuse('permission_denied');
+                }
+                $target = User::withTrashed()->where('public_id', $request->string('public_id')->toString())->first();
+                if ($target === null || ($target->trashed() && ! $this->authorizer->allows($context, 'runa.auth.users.deleted.read'))) {
+                    $this->refuse('avatar_missing', 404);
+                }
+                $user = $target;
+            }
             if (! $this->profiles->value('avatar_enabled') || $user->avatar_path === null) {
                 $this->refuse('avatar_missing', 404);
             }

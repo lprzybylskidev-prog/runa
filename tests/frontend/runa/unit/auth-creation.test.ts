@@ -186,9 +186,23 @@ it('Auth creation switches naming credentials and lifecycle choices without reta
   await vi.waitFor(() =>
     expect(wrapper.find('[data-auth-creation]').exists()).toBe(true),
   );
+  await wrapper.get('input[name="first_name"]').setValue('Ada');
+  await wrapper.get('input[name="surname"]').setValue('Nowak');
   await wrapper.get('input[value="single"]').setValue();
   expect(wrapper.find('input[name="name"]').exists()).toBe(true);
   expect(wrapper.find('input[name="first_name"]').exists()).toBe(false);
+  await wrapper.get('input[name="name"]').setValue('Working name');
+  await wrapper.get('input[value="full"]').setValue();
+  expect(
+    wrapper.get<HTMLInputElement>('input[name="first_name"]').element.value,
+  ).toBe('Ada');
+  expect(
+    wrapper.get<HTMLInputElement>('input[name="surname"]').element.value,
+  ).toBe('Nowak');
+  await wrapper.get('input[value="single"]').setValue();
+  expect(
+    wrapper.get<HTMLInputElement>('input[name="name"]').element.value,
+  ).toBe('Working name');
   await wrapper.get('input[value="password"]').setValue();
   await wrapper.get('input[name="password"]').setValue('long-initial-password');
   await wrapper.get('input[value="invitation"]').setValue();

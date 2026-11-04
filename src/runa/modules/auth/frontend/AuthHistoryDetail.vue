@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatApplicationInstant } from '@/runa/ui';
+import { BooleanBadge, formatApplicationInstant } from '@/runa/ui';
 import { Dialog, Button, FormNotifications } from '@/runa/ui';
 import type { HistoryValue } from './historyDetails';
 import type {
@@ -174,13 +174,23 @@ function value(v: HistoryValue, field?: string): string {
               <p class="mb-1 text-xs text-muted">
                 {{ text('Przed', 'Before') }}
               </p>
-              <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">
+              <BooleanBadge
+                v-if="typeof change.before === 'boolean'"
+                :value="change.before"
+                :locale="locale"
+              />
+              <p v-else class="whitespace-pre-wrap [overflow-wrap:anywhere]">
                 {{ value(change.before, change.field) }}
               </p>
             </div>
             <div>
               <p class="mb-1 text-xs text-muted">{{ text('Po', 'After') }}</p>
-              <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">
+              <BooleanBadge
+                v-if="typeof change.after === 'boolean'"
+                :value="change.after"
+                :locale="locale"
+              />
+              <p v-else class="whitespace-pre-wrap [overflow-wrap:anywhere]">
                 {{ value(change.after, change.field) }}
               </p>
             </div>

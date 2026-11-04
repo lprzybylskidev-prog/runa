@@ -943,6 +943,17 @@ reassessment before resuming point 3; completed point history remains evidence.
     avatar cropping; preserve all native guarded operations and three-tab grouping.
   - Synchronize current guides, focused regression evidence and compiled rendered
     readiness before returning to owner manual acceptance.
+- [x] 11a69. Refine user details after the owner's eight-point review.
+  - Preserve naming drafts across mode switches in creation/details/own account.
+  - Display guarded selected-user avatar/initials; consolidate all authorized
+    status/verification/invitation facts, reuse boolean badges system-wide and
+    remove separate eligibility/invitation presentation.
+  - Rebuild primary/secondary email management and scalable role/direct-permission
+    assignment presentation with bounded server search and selected-item hydration.
+  - Development seeding enables the full review feature preset; own/Admin recipient
+    selectors disappear when secondary delivery is disabled or has no choice.
+  - Remove redundant explanatory copy, synchronize public contracts/guidance,
+    focused regressions, current assets and rendered readiness before owner review.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6530,3 +6541,73 @@ schedule-clear explanation and rejection of an empty Set attempt lock before pro
 All eight language/theme/width combinations and post-submit proof checks passed
 again. The final current build and screenshots are retained at the existing paths.
 No additional data/resource cleanup is required; owner acceptance/final gates stay open.
+
+### Point 11a69 — Owner review refinements
+
+The owner explicitly requests the eight refinements listed above. Preserve existing
+native guarded writes, proof after submit, separate grants, optimistic conflicts,
+configuration-based capability omission and Audit. Hidden naming drafts remain
+local; inactive values are normalized only in the write projection. Selected-avatar
+bytes use Auth's native private response/security context with the existing admin
+avatar grant; no storage path or own-account identity substitution is permitted.
+Permissions owns its custom catalogue and extends its guarded definitions read with
+bounded search/selected-ID filters; Auth composes it through the existing Admin
+section seam. Additive PermissionsAccess 2.1.0 remains in the unreleased Permissions
+2.1.0 module candidate; Auth 3.1.0/Admin 0.2.0 candidates own their refinements.
+No schema change, dependency or reset is required. Full verification remains 12;
+manual frontend acceptance remains 11b.
+
+Owner steering adds development-seeder feature completeness and recipient-control
+visibility to this same point. Explicit module development seeding now applies the
+full review preset through audited revision/generation-checked settings, idempotently,
+before populating accounts. It enables feature availability and keeps 2FA optional;
+no production default, password, factor enrollment or account state is overwritten.
+The earlier optional configuration question is resolved by the owner's explicit
+instruction. The shared recipient field requires the owning secondary-email
+capability and more than one available address, in both own/Admin preferences.
+
+Implementation evidence for 11a69: the focused frontend selection passes 17 cases,
+covering creation/selected/own naming drafts, both recipient-capability consumers,
+server catalogue search with named selections outside the page, email row commands
+and shared localized semantic boolean facts. Six focused backend cases pass with
+129 assertions, covering standalone/aggregate writes, bounded filtered assignment
+reads, private selected-avatar bytes/deleted visibility and idempotent development
+seeding/production refusal. An additional avatar grant-negative case passes with
+21 assertions. Initial failures were new fixture issues (boolean metadata type,
+checkbox-versus-switch selector, controlled-form tick and required inactive deleted
+state); corrected fixtures now exercise the real contracts. No broad gate was run.
+
+The explicit development seed plan contains exactly Auth corpus, first administrator
+and Permissions corpus. `runa:seed:development --modules` completed all three in
+the existing local environment without reset; credentials and existing account/factor
+state remain preserved. Native compiled Nginx readiness passes PL/EN, light/dark,
+390px/1440px and all three tabs, including secondary-address editor visibility,
+name round-trip restoration, status badges, selected avatar crop/revert and proof
+after submission. Browser diagnostics perform no account-management write. The
+locale-only read projection leaves the operator's preferences unchanged. Screenshots
+were inspected for status, emails, assignments and responsive layouts. Evidence:
+.runtime/user-details/review-build.log, review-readiness.log and
+.runtime/artifacts/playwright/user-details. Final formatting/build readiness is
+repeated before commit; this is preparation, not owner acceptance.
+
+Documentation/instruction assessment: synchronized owning Auth, Permissions and
+Admin contracts, API catalogue, transaction guide, development seeding, frontend
+component/forms guides and module/central changelogs. Owner and separately authored
+customer frontend references point to the canonical concise-form and reuse rules.
+Root AGENTS/skill entrypoints already require component reuse and dependent
+capability omission; no constitutional rule changes. Auth 3.1.0/Admin 0.2.0 and
+Permissions 2.1.0 remain the unreleased candidates; additive PermissionsAccess
+2.1.0 and current exact consumers are synchronized. Native custom section/field
+composition, read grants, proof, optimistic conflicts and Audit remain authoritative.
+
+Supported test cleanup exited 0 and removed only the disposable runa_test_test_1.
+Base runa_test, development runa, credentials, active development services, caches,
+backups and reports remain preserved. No task-created Docker resources require
+cleanup. Manual owner acceptance 11b and final affected-area verification/release
+12 remain open.
+
+Post-format results: 17 focused frontend cases and all six focused backend cases /
+129 assertions pass again. The asset/type build and native rendered readiness pass
+again for both languages/themes/widths. No source/build mutation overlapped the
+aggregate tests. Mandatory staged hooks and knowledge freshness accompany this
+point commit; owner acceptance and final roadmap gates remain open.

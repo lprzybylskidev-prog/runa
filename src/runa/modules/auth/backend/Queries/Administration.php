@@ -66,6 +66,7 @@ final readonly class Administration implements AuthAdministration
         $result = ['public_id' => $user->public_id, 'version' => $user->version, 'deleted' => $user->trashed(), ...$facts];
         if ($this->allows('avatars.manage') && app(AdministrationFeatures::class)->enabled('avatar')) {
             $result['has_avatar'] = $user->avatar_path !== null;
+            $result['avatar_initials'] = $user->initials();
             $result['avatar_max_kib'] = $this->settings->integer('runa.auth', 'avatar_max_kib');
         }
 

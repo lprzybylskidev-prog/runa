@@ -26,3 +26,7 @@ For Auth identity and preference composition, use the existing public
 [shared fields](../../../../docs/runa/handbook/modules/auth/account-ui.md#shared-identity-and-preference-fields)
 consumed by creation, user administration and own-account views. Their pure
 presentation contracts retain the composing controller's draft/security ownership.
+
+Readonly boolean facts and Admin cells reuse public BooleanBadge from the component
+catalogue. Searchable role/direct-permission assignment composition uses the public
+PermissionsAssignments contract in `docs/runa/handbook/modules/permissions/README.md#searchable-assignment-catalogue`.

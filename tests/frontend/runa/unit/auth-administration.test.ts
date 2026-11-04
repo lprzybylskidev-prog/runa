@@ -2,7 +2,7 @@
 import { savePreference } from '../../../../src/runa/resources/js/lib/preferences';
 import { beforeEach, afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
-import { computed, defineComponent, h, ref, shallowRef } from 'vue';
+import { computed, defineComponent, h, nextTick, ref, shallowRef } from 'vue';
 import DirectoryFilters from '../../../../src/runa/modules/auth/frontend/AuthDirectoryFilters.vue';
 import AuthAdminBulkAction from '../../../../src/runa/modules/auth/frontend/AuthAdminBulkAction.vue';
 import { DateTimeRangeInput, Select, NumberInput } from '@/runa/ui';
@@ -867,6 +867,7 @@ it('rebuilt user details groups capabilities and keeps revision tokens out of op
       { ...field('preference_revision', false), type: 'integer' },
     ]),
     section('security', [field('password_set')]),
+    section('sessions', [field('sessions')]),
     section('exceptions', [
       field('exceptions'),
       field('key', false),
@@ -1075,6 +1076,17 @@ it('user detail identity uses creation fields and reverts only its own draft', a
   expect(wrapper.text()).toContain('Complete this field.');
   await wrapper.get('input[name=first_name]').setValue('New');
   await wrapper.get('input[name=surname]').setValue('Name');
+  await wrapper.get('input[type=radio][value=single]').setValue();
+  expect(wrapper.get<HTMLInputElement>('input[name=name]').element.value).toBe(
+    'Target account',
+  );
+  await wrapper.get('input[type=radio][value=full]').setValue();
+  expect(
+    wrapper.get<HTMLInputElement>('input[name=first_name]').element.value,
+  ).toBe('New');
+  expect(
+    wrapper.get<HTMLInputElement>('input[name=surname]').element.value,
+  ).toBe('Name');
   await wrapper.get('form').trigger('submit');
   expect(submitted).toHaveBeenCalledWith('profile', 'save', []);
   await wrapper
@@ -1158,4 +1170,281 @@ it('user email form validates and submits the selected native workflow on Enter'
     .setValue('verified@example.test');
   await wrapper.get('form').trigger('submit');
   expect(submitted).toHaveBeenLastCalledWith('primary_email', 'replace', []);
+});
+
+it('hides admin recipient selectors when the owning module disables secondary emails', async () => {
+  const { default: UserSection } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserSection.vue');
+  const preferences = section(
+    'preferences',
+    [
+      'locale',
+      'theme',
+      'delivery',
+      'categories',
+      'recipients',
+      'recipient_selection_enabled',
+    ].map((key) => ({
+      ...field(key, !['locale', 'theme', 'delivery'].includes(key)),
+      type:
+        key === 'recipient_selection_enabled'
+          ? ('boolean' as const)
+          : ('text' as const),
+    })),
+  );
+  const controller = page([preferences]);
+  vi.spyOn(window, 'fetch').mockImplementation(async () =>
+    response({
+      public_id: target,
+      revision: '1',
+      values: {
+        locale: 'en',
+        theme: 'system',
+        recipient_selection_enabled: false,
+        categories: JSON.stringify([
+          {
+            module: 'runa.auth',
+            key: 'optional',
+            names: { pl: 'Nowa przeglądarka', en: 'New browser' },
+            mandatory: false,
+            sensitive: false,
+          },
+        ]),
+        delivery: JSON.stringify([
+          {
+            module: 'runa.auth',
+            key: 'optional',
+            enabled: true,
+            recipients: ['primary'],
+          },
+        ]),
+        recipients: JSON.stringify([
+          { value: 'primary', label: 'target@example.test' },
+          { value: actor, label: 'secondary@example.test' },
+        ]),
+      },
+    }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () =>
+          h(UserSection, {
+            page: controller,
+            section: preferences,
+            controller: form,
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(
+      wrapper.find('[data-auth-email-preference-fields]').exists(),
+      wrapper.html(),
+    ).toBe(true),
+  );
+  expect(wrapper.findComponent(Select).exists()).toBe(false);
+  expect(wrapper.text()).not.toContain('Required security messages');
+});
+
+it('assignment catalogue searches on the server while retaining named selections outside the current page', async () => {
+  const { PermissionsAssignments } = await import('@/runa/permissions');
+  const assignments = section('runa.permissions.user_access.assignments', [
+    { ...field('roles', false), type: 'uuid', multiple: true, lookup: true },
+    {
+      ...field('permissions', false),
+      type: 'uuid',
+      multiple: true,
+      lookup: true,
+    },
+  ]);
+  assignments.commands = [
+    {
+      key: 'save',
+      title: 'Save access',
+      mode: 'atomic',
+      intent: 'save',
+      inputs: ['roles', 'permissions'],
+      requirement: 'both',
+      action: 'runa.permissions.access.manage',
+      destructive: true,
+      bulk: false,
+      preview_required: true,
+      available: true,
+    },
+  ];
+  const controller = page([assignments]);
+  const searched: string[] = [];
+  const secondRole = '01900000-0000-7000-8000-000000000003';
+  vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+    if (init?.method && init.method !== 'GET')
+      throw new Error('Unexpected write.');
+    const url = new URL(String(input), window.location.origin);
+    if (url.searchParams.get('kind') === 'options') {
+      const filters = JSON.parse(url.searchParams.get('filters') ?? '{}') as {
+        search?: string;
+        selected?: string;
+      };
+      const key = url.searchParams.get('field');
+      if (filters.search) searched.push(filters.search);
+      return response({
+        field: key,
+        items:
+          key === 'permissions'
+            ? []
+            : filters.selected
+              ? [{ value: actor, label: 'Assigned role' }]
+              : filters.search === 'finance'
+                ? [{ value: secondRole, label: 'Finance role' }]
+                : [{ value: actor, label: 'Assigned role' }],
+        next: null,
+      });
+    }
+    return response({
+      public_id: target,
+      revision: '1',
+      values: { roles: [actor], permissions: [] },
+    });
+  });
+  let form!: AdminFormController;
+  const submitted = vi.fn();
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () =>
+          h(PermissionsAssignments, {
+            page: controller,
+            section: assignments,
+            controller: form,
+            onSubmit: submitted,
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Assigned role'));
+  const roles = wrapper.get('[data-assignment-field=roles]');
+  await roles.get('input[type=text]').setValue('finance');
+  await vi.waitFor(() => expect(searched).toContain('finance'));
+  await vi.waitFor(() => expect(roles.text()).toContain('Finance role'));
+  expect(roles.text()).toContain('Assigned role');
+  await roles.get('input[type=checkbox]:not([role=switch])').setValue(true);
+  expect(form.values.value[form.fieldPath(assignments.key, 'roles')]).toEqual([
+    actor,
+    secondRole,
+  ]);
+  await wrapper.get('form').trigger('submit');
+  expect(submitted).toHaveBeenCalledWith(assignments.key, 'save', []);
+});
+
+it('email management validates native commands and keeps secondary row identity out of visible inputs', async () => {
+  const { default: Emails } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminEmails.vue');
+  const primary = section('primary_email', [
+    field('current_email'),
+    field('email', false),
+  ]);
+  const secondary = section('secondary', [
+    field('addresses'),
+    { ...field('address_id', false), type: 'uuid' },
+    field('email', false),
+  ]);
+  for (const [source, keys] of [
+    [primary, ['change']],
+    [secondary, ['add', 'change', 'remove']],
+  ] as const) {
+    source.commands = keys.map((key) => ({
+      key,
+      title: key,
+      mode: 'independent',
+      intent: 'action',
+      inputs: ['email'],
+      requirement: 'password',
+      action: key,
+      destructive: key === 'remove',
+      bulk: false,
+      preview_required: false,
+      available: true,
+    }));
+  }
+  const controller = page([primary, secondary]);
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    response({
+      public_id: target,
+      revision: '1',
+      values: String(input).includes('/secondary')
+        ? {
+            addresses: JSON.stringify([
+              { public_id: actor, email: 'other@example.test', verified: true },
+            ]),
+            address_id: null,
+            email: '',
+          }
+        : { current_email: 'target@example.test', email: '' },
+    }),
+  );
+  let form!: AdminFormController;
+  const submit = vi.fn();
+  const operation = vi.fn();
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () =>
+          h(Emails, {
+            page: controller,
+            controller: form,
+            section: primary,
+            sources: [primary, secondary],
+            onSubmit: submit,
+            onOperation: operation,
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain('other@example.test'),
+  );
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Edit')!
+    .trigger('click');
+  const { TextInput, Form, Dialog } = await import('@/runa/ui');
+  const editor = wrapper.getComponent(Dialog);
+  expect(editor.getComponent(TextInput).props('modelValue')).toBe(
+    'other@example.test',
+  );
+  expect(document.querySelector('input[name=address_id]')).toBeNull();
+  editor.getComponent(TextInput).vm.$emit('update:modelValue', 'invalid');
+  await editor.getComponent(Form).trigger('submit');
+  expect(submit).not.toHaveBeenCalled();
+  editor
+    .getComponent(TextInput)
+    .vm.$emit('update:modelValue', 'updated@example.test');
+  await nextTick();
+  await editor.getComponent(Form).trigger('submit');
+  expect(submit).toHaveBeenCalledWith('secondary', 'change', []);
+  expect(form.values.value[form.fieldPath('secondary', 'address_id')]).toBe(
+    actor,
+  );
+  expect(form.values.value[form.fieldPath('secondary', 'email')]).toBe(
+    'updated@example.test',
+  );
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Remove')!
+    .trigger('click');
+  expect(operation).toHaveBeenCalledWith('secondary', 'remove', {
+    address_id: actor,
+  });
 });

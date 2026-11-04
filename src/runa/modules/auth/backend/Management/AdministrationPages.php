@@ -307,7 +307,7 @@ final class AdministrationPages implements ManagementPageProvider
             'preferences' => [self::field('locale', ['pl' => 'Język', 'en' => 'Language'], 'dictionary', 'preferences.manage', 'preferences.read', choices: ['pl', 'en']),
                 self::field('theme', ['pl' => 'Motyw', 'en' => 'Theme'], 'dictionary', 'preferences.manage', 'preferences.read', choices: ['light', 'dark', 'system']),
                 self::field('delivery', 'Email preferences', write: 'preferences.manage', read: 'preferences.read'),
-                self::field('categories', 'Email categories', read: 'preferences.read'), self::field('recipients', 'Recipients', read: 'preferences.read'),
+                self::field('recipient_selection_enabled', 'Secondary email selection', 'boolean', read: 'preferences.read'), self::field('categories', 'Email categories', read: 'preferences.read'), self::field('recipients', 'Recipients', read: 'preferences.read'),
                 self::field('preference_revision', 'Current preference revision', 'integer', 'preferences.reset', 'preferences.read')],
             'exceptions' => [self::field('exception_versions', 'Exception versions', read: 'policy.exceptions'), self::field('exceptions', 'Exceptions (latest 50)', read: 'policy.exceptions'), self::field('key', 'Policy key', 'dictionary', 'policy.exceptions', 'policy.exceptions', choices: ['password_expiry_days', 'session_idle_minutes']), self::field('value', 'Value (empty revokes)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('reason', 'Reason', write: 'policy.exceptions', read: 'policy.exceptions'), self::field('expires_at', 'Expiry (within 30 days)', 'datetime', 'policy.exceptions', 'policy.exceptions'), self::field('exception_version', 'Current exception version (0 if absent)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('policy_revision', 'Current policy revision', 'integer', 'policy.exceptions', 'policy.exceptions')],
         ];
@@ -361,6 +361,7 @@ final class AdministrationPages implements ManagementPageProvider
         if ($features->enabled('avatar')) {
             $sections[] = new ManagementSection('avatar', ['pl' => 'Avatar', 'en' => 'Avatar'], 'runa.auth.avatars.manage', 'runa.auth.avatars.manage', 'avatar', [
                 self::field('has_avatar', ['pl' => 'Avatar ustawiony', 'en' => 'Avatar set'], 'boolean', read: 'avatars.manage'),
+                self::field('avatar_initials', ['pl' => 'Inicjały', 'en' => 'Initials'], read: 'avatars.manage'),
                 self::field('avatar_upload_pending', ['pl' => 'Wybrano plik', 'en' => 'File selected'], 'boolean', 'avatars.manage', 'avatars.manage'),
                 self::field('avatar_max_kib', ['pl' => 'Limit rozmiaru (KiB)', 'en' => 'Size limit (KiB)'], 'integer', read: 'avatars.manage'),
             ], required: false, component: 'runa.auth.admin_section');

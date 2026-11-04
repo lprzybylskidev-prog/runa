@@ -24,6 +24,7 @@ export interface AuthEmailPreferenceFieldsProps {
   label: string;
   enabled: boolean;
   recipients: string[];
+  recipientSelection?: boolean;
   options: { value: string; label: string }[];
   error?: string | readonly string[];
   disabled?: boolean;

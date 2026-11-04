@@ -1,8 +1,8 @@
 # Ordinary access management
 
-Permissions supplies guarded `PermissionsAccess` API 2.0.0. Resolve it through
+Permissions supplies guarded `PermissionsAccess` API 2.1.0. Resolve it through
 ModuleApis; never resolve its implementation or write assignment tables directly.
-The current module requires Auth ^2.0.0 and Audit ^1.0.0; framework API remains 1.0.0.
+The current module requires Auth ^2.0.0 || ^3.0.0 and Audit ^1.0.0; framework API remains 1.0.0.
 The explicit 0.1.0 → 0.2.0 edge validates new storage; the transactional updater
 runs the forward migration for fresh installs and upgrades, without assigning users.
 
@@ -35,7 +35,7 @@ use Runa\Modules\Permissions\Contracts\AssignmentSet;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
 use Runa\Support\Modules\Api\ModuleApis;
 
-$access = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+$access = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
 $review = $access->previewAssignments($userPublicId, new AssignmentSet(
     roles: [$rolePublicId], permissions: [$permissionPublicId],
 ));
@@ -77,8 +77,8 @@ consumes its proof but creates no duplicate assignment event or revision.
 
 ## Custom roles and presets
 
-`definitions(kind, after)` lists at most 100 safe dictionary summaries with an
-exclusive UUIDv7 cursor; `definition(kind, publicId)` returns the owned dictionary,
+`definitions(kind, after, filters = [])` lists at most 100 safe dictionary summaries with an
+exclusive UUIDv7 cursor and optional bounded [search/selected-ID filters](README.md#searchable-assignment-catalogue); `definition(kind, publicId)` returns the owned dictionary,
 version and assignments. Read/list kind is `role`, `preset` or `permission`; permissions are read-only
 source dictionaries. Use their safe UUIDv7 summaries to select direct grants.
 Mutation kind is exactly `role` or `preset`.
@@ -152,7 +152,7 @@ final verification point.
 
 Administrative profile/assignment standalone writes now use the framework's
 [native phased transaction protocol](../../architecture/module-transactions.md).
-Call AuthProfiles / PermissionsAccess at API 2.0.0 without an ambient transaction;
+Call AuthProfiles 2.0.0 / PermissionsAccess 2.1.0 without an ambient transaction;
 aggregate callers use source-owned participants. This intentionally replaces
 nested whole-write composition, preserving current grants, reviewed differences,
 stronger action proof and atomic owning Audit. Source/global settings and external

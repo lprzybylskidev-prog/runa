@@ -226,3 +226,14 @@ commits both endpoints null. Cancel, Escape or outside dismissal discard the loc
 picker draft and retain the committed range. Reset discards draft state and closes
 the panel. Open-ended ranges are supported. No duplicate endpoint heading appears
 in the surrounding form/filter grid; endpoint labels belong inside the panel.
+
+## Concise form composition
+
+Reuse the owning module's established labels, controls and task layout. Omit
+redundant explanatory copy that adds no decision or action; do not repeat facts
+in separate summary cards. Consolidate related readonly status in one place and
+keep technical revisions/IDs in the controller. Apply the
+[capability visibility contract](customization.md#configuration-based-capability-visibility)
+to dependent fields as well as whole forms, including recipient selectors whose
+secondary-address feature is unavailable. Native authorization, concurrency,
+security proof and required feedback remain with their owning controllers.

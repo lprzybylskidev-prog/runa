@@ -1256,3 +1256,15 @@ clear proof state; unknown contributed sections remain in User. See the
 [Auth layout and native API map](../auth/administration.md#task-based-user-details).
 Standalone source-native participant writers are supported alongside aggregate
 Save; the aggregate participant completeness rule remains unchanged.
+
+### Boolean status presentation
+
+Admin's default readonly fields and resource-table boolean cells compose public
+`BooleanBadge` from `@/runa/ui`; the component catalogue owns its full contract.
+Public `adminBooleanTone(key: string, value: boolean): BadgeTone`, implemented in
+`src/runa/modules/admin/frontend/booleanTone.ts` and exported from `@/runa/admin`,
+is supported for platform/App Admin presentation. False is neutral. True is danger
+for `security_locked`/`deleted`, warning for password expiry/change requirement,
+pending invitation/operator recovery/TOTP setup and required verification, and
+success otherwise. This frontend helper confers no authorization or account policy.
+Editable/filter controls and machine-readable exports retain native boolean values.

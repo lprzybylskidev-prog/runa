@@ -307,6 +307,9 @@ defineExpose({ beginReset, reload });
               :label="choice.names[locale]"
               :enabled="drafts[keyOf(choice)]!.enabled"
               :recipients="drafts[keyOf(choice)]!.recipients"
+              :recipient-selection="
+                profile?.capabilities.secondary_emails_enabled === true
+              "
               :options="recipientOptions"
               :error="recipientErrors[keyOf(choice)] ?? ''"
               :disabled="busy"

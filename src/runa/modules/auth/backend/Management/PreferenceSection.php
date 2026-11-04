@@ -14,10 +14,11 @@ use Runa\Modules\Auth\Contracts\AuthPreferences;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
+use Runa\Support\Modules\Settings\ModuleSettings;
 
 final readonly class PreferenceSection implements ManagementResourceReader, ManagementWriter
 {
-    public function __construct(private ModuleApis $apis) {}
+    public function __construct(private ModuleApis $apis, private ModuleSettings $settings) {}
 
     private function api(): AuthPreferences
     {
@@ -36,6 +37,7 @@ final readonly class PreferenceSection implements ManagementResourceReader, Mana
             'delivery' => json_encode(array_map(fn ($entry) => array_intersect_key($entry, array_flip(['module', 'key', 'enabled', 'recipients'])), $state['categories']), JSON_THROW_ON_ERROR),
             'categories' => json_encode($state['categories'], JSON_THROW_ON_ERROR), 'recipients' => json_encode($state['recipients'], JSON_THROW_ON_ERROR),
             'preference_revision' => $state['revision'],
+            'recipient_selection_enabled' => $this->settings->boolean('runa.auth', 'secondary_emails_enabled'),
         ]);
     }
 

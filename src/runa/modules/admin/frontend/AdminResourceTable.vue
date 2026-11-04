@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
+import { adminBooleanTone } from './booleanTone';
 import { computed } from 'vue';
 import type { TableColumn } from '@/runa/ui';
 import {
   Table,
+  BooleanBadge,
   formatApplicationInstant,
   Button,
   FormNotifications,
@@ -160,15 +162,27 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
           controller.section.value?.fields.some(
             (declared) =>
               declared.key === field.key &&
-              (declared.type === 'datetime' || declared.choices.length > 0),
+              (['datetime', 'boolean'].includes(declared.type) ||
+                declared.choices.length > 0),
           ),
       )"
       :key="column.key"
       #[`cell-${column.key}`]="scope"
     >
-      <slot :name="`cell-${column.key}`" v-bind="scope">{{
-        displayCell(column, scope.row)
-      }}</slot>
+      <slot :name="`cell-${column.key}`" v-bind="scope">
+        <BooleanBadge
+          v-if="typeof scope.row.values[column.key] === 'boolean'"
+          :value="scope.row.values[column.key] as boolean"
+          :locale="adminLocale"
+          :tone="
+            adminBooleanTone(
+              column.key,
+              scope.row.values[column.key] as boolean,
+            )
+          "
+        />
+        <template v-else>{{ displayCell(column, scope.row) }}</template>
+      </slot>
     </template>
   </Table>
   <ConfirmDialog

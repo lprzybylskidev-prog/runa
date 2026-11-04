@@ -7,6 +7,8 @@ use Runa\Contracts\Modules\ManagementApiTarget;
 use Runa\Contracts\Modules\ManagementBinding;
 use Runa\Contracts\Modules\ManagementCommandDefinition;
 use Runa\Contracts\Modules\ManagementContribution;
+use Runa\Contracts\Modules\ManagementField;
+use Runa\Contracts\Modules\ManagementFieldAccess;
 use Runa\Contracts\Modules\ManagementOperation;
 use Runa\Contracts\Modules\ManagementPageProvider;
 use Runa\Contracts\Modules\ManagementSection;
@@ -46,6 +48,11 @@ final class AssignmentContribution implements ManagementPageProvider
             $fields[] = AdministrationPages::field($key, $label, 'uuid', 'access.manage', multiple: true);
         }
 
+        foreach (['search', 'language', 'selected'] as $filter) {
+            $text = ['pl' => $filter, 'en' => $filter];
+            $fields[] = new ManagementFieldAccess(new ManagementField($filter, 'text', $text, $text, filterable: true, maxLength: $filter === 'selected' ? 8192 : 160), 'runa.permissions.introspection.read');
+        }
+
         return [new ManagementContribution('user_access', 'runa.auth.users.profile', new ManagementSection('assignments', 'Access',
             'runa.permissions.introspection.read', 'runa.permissions.access.manage', 'assignments', $fields, [
                 new ManagementCommandDefinition('save', 'Save access', new ManagementOperation(new ApiOperation('access.apply_assignments', 'runa.permissions.access.manage'),
@@ -57,7 +64,7 @@ final class AssignmentContribution implements ManagementPageProvider
     public function bindings(): array
     {
         return [new ManagementBinding('assignments', AssignmentEditor::class, [
-            new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.0.0', ['assignments', 'previewAssignments', 'applyAssignments', 'definitions']),
+            new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.1.0', ['assignments', 'previewAssignments', 'applyAssignments', 'definitions']),
         ], AssignmentEditor::class)];
     }
 }

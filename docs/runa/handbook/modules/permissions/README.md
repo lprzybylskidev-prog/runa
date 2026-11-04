@@ -1,7 +1,7 @@
 # Permissions
 
 Current Core `runa.permissions` source develops at independent version `2.1.0`
-for platform >=0.7.0 <0.8.0, requiring `runa.auth ^2.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
+for platform >=0.7.0 <0.8.0, requiring `runa.auth ^2.0.0 || ^3.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
 `runa.permissions.super_admin` role, with **no user assignments**. Matching installed
@@ -127,7 +127,7 @@ effective is still false without a grant and current eligibility/availability.
 ## Delivery boundary
 
 Custom-role/preset CRUD and reviewed assignment/copy operations use PermissionsAccess
-2.0.0 under the [ordinary access contract](access.md). Protected superadmin
+2.1.0 under the [ordinary access contract](access.md). Protected superadmin
 assignment/removal, last-superadmin participation and confirmed custom-role force
 deletion use the separate [protected authority contract](authority.md). The neutral
 AuthorityGuard now resolves the trusted Permissions participant and refuses missing
@@ -176,3 +176,21 @@ availability and record Policies remain mandatory and are rechecked on export.
 It is declared by Permissions 2.1.0 and synchronized by `table_exports` forward
 preparation. Source role declarations may grant it through the ordinary contract;
 no automatic ordinary-user assignment or generic superadmin bypass is added.
+
+### Searchable assignment catalogue
+
+Permissions owns the public `PermissionsAssignments` presentation exported through
+`@/runa/permissions`, implemented in `src/runa/modules/permissions/frontend`
+and supported for platform/App Admin-section composition, taking `AdminSectionPresentationProps` and emitting
+`submit(section: string, command: string, fields?: string[])`. It has no slots and ships in frontend
+assets, uses the existing Admin controller/resource lane and leaves native review,
+proof, grants, protected membership and transactions with Permissions. Public
+PermissionsAccess 2.1.0 extends `definitions(string $kind, ?string $after = null,
+array $filters = []): array` with optional `search: string` (at most 160 characters)
+and `public_ids: list<string>` (at most 100 UUIDv7 references). The return shape
+remains `{items: list<{public_id,code,name_pl,name_en,version}>,next: ?string,total:int}`.
+Kinds remain role/permission/preset. Filters run in the owning bounded PostgreSQL
+read; pagination preserves the public-ID cursor and totals describe the filtered
+set. Proxies, exact-version consumers and native declarations use 2.1.0. This
+additive runtime server-consumption API remains guarded through ModuleApis; no
+foreign query or grant resolver becomes a presentation API.

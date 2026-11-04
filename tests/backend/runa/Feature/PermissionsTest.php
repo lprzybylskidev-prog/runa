@@ -319,7 +319,7 @@ function permissionAccessManager($test): array
     $begin = $test->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'permission-access-password'])->assertOk()->json('data');
     $code = app(Google2FA::class)->oathTotp($begin['secret'], intdiv(now()->getTimestamp(), 30));
     $codes = $test->postJson('/api/runa/auth/security/totp-confirm', ['current_password' => 'permission-access-password', 'enrollment_code' => $code])->assertOk()->json('data.recovery_codes');
-    $test->permissionAccess = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+    $test->permissionAccess = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
 
     return $codes;
 }
@@ -514,7 +514,7 @@ it('rolls back custom role and preset member writes after their aggregate Audit 
 })->group('permissions-access');
 
 it('denies access writers without native grants and bounds public assignment inputs', function (): void {
-    $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+    $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
     expect(fn () => $api->definitions('role'))->toThrow(OperationRejected::class);
     ($this->asPermissionUser)(function () use ($api): void {
         expect(fn () => $api->previewAssignments($this->permissionUser->publicId, new AssignmentSet))->toThrow(OperationRejected::class);
@@ -564,7 +564,7 @@ it('preserves last eligible authority across lifecycle changes without blocking 
     $changes->change($this->permissionUser->publicId, 2, new LifecycleChange('activate'));
     expect(User::where('public_id', $this->permissionUser->publicId)->value('active'))->toBeTrue();
     ($this->asPermissionUser)(function (): void {
-        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
         expect($api->assignments($this->permissionUser->publicId)['super_admin'])->toBeTrue();
     });
 })->group('permissions-authority');
@@ -927,6 +927,11 @@ it('seeds module development corpus idempotently and preserves private credentia
     expect(Artisan::call('runa:seed:plan', ['--modules' => true]))->toBe(0);
     expect(DB::table('runa_auth.development_fixtures')->count())->toBe(0);
     expect(Artisan::call('runa:seed:development', ['--modules' => true]))->toBe(0);
+    expect(app(ModuleSettings::class)->boolean('runa.auth', 'secondary_emails_enabled'))->toBeTrue()
+        ->and(app(ModuleSettings::class)->boolean('runa.auth', 'own_login_history'))->toBeTrue()
+        ->and(app(ModuleSettings::class)->boolean('runa.auth', 'trusted_devices_enabled'))->toBeTrue()
+        ->and(app(ModuleSettings::class)->text('runa.auth', 'identifier_mode'))->toBe('either')
+        ->and(app(ModuleSettings::class)->text('runa.auth', 'two_factor_required'))->toBe('optional');
     $accounts = app(DevelopmentFixtures::class)->contributor('runa.auth');
     expect($accounts)->toBeInstanceOf(DevelopmentAccounts::class);
     $rows = array_column($accounts->accounts(), null, 'scenario');

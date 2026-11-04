@@ -1,7 +1,7 @@
 # Permissions administration
 
 RM-2026-016 point 8 supplies Permissions-owned Admin declarations and adapters at
-module 2.0.0 / PermissionsAccess 2.0.0, PermissionsAuthority and Permissions 1.0.0.
+module 2.1.0 / PermissionsAccess 2.1.0, PermissionsAuthority and Permissions 1.0.0.
 All pages require current Admin entry/password proof and module availability;
 Permissions owns native validation, record rules, revisions, proof and Audit.
 There is no reverse backend dependency on Admin or foreign persistence access.
@@ -59,12 +59,13 @@ No foreign private adapters or copied security logic are supported extension sea
 Focused source/interaction diagnostics are recorded in the active roadmap; complete
 backend/browser/concurrency/release acceptance remains its final point.
 
-`PermissionsAccess.definitions(string $kind, ?string $after = null)` returns
+`PermissionsAccess.definitions(string $kind, ?string $after = null, array $filters = [])` returns
 `{items: list<{public_id: string, code: string, name_pl: string, name_en: string,
 version: int}>, next: ?string, total: int}`. Permissions owns this guarded runtime
 contract in `backend/Contracts/PermissionsAccess.php`; its private owning Action
 counts in SQL and Admin forwards the value without foreign reads or estimation.
-The total includes zero, is independent of the page cursor and confers no write
+Optional bounded search/selected-ID filters follow the [catalogue contract](README.md#searchable-assignment-catalogue).
+The total includes zero, describes the filtered set independently of the page cursor and confers no write
 authority or snapshot guarantee. Customers resolve the public guarded API.
 
 Default definition fields and reviewed differences reuse Admin's public

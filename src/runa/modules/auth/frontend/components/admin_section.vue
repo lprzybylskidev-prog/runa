@@ -11,6 +11,7 @@ import {
   Button,
   Card,
   ValuePreview,
+  BooleanBadge,
 } from '@/runa/ui';
 import { AdminSection, useAdminResource } from '@/runa/admin';
 import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
@@ -171,7 +172,13 @@ function select(row: Record<string, AdminJson>) {
             <div v-for="(value, key) in row" :key="key" class="min-w-0">
               <dt class="font-semibold">{{ tr(String(key)) }}</dt>
               <dd class="mt-1 min-w-0">
+                <BooleanBadge
+                  v-if="typeof value === 'boolean'"
+                  :value="value"
+                  :locale="adminLocale"
+                />
                 <ValuePreview
+                  v-else
                   :text="display(value, String(key))"
                   :format="
                     value !== null && typeof value === 'object'

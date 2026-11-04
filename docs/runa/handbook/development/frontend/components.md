@@ -564,3 +564,15 @@ TemporalRangeInputProps/DateRangeValue, reset/focus handles and precise datetime
 zone/draft contract are documented in [forms](forms.md#compact-temporal-ranges).
 Filters use size sm; ordinary forms retain md. Input layout no longer expands
 into two labelled fields in its surrounding grid.
+
+## Readonly boolean facts
+
+Public `BooleanBadge` from `@/runa/ui` is owned by the platform component system
+(`resources/js/components/AppBooleanBadge.vue`), delivered as frontend assets and
+supported for App/module composition. Props: `value: boolean|null`,
+`locale?: 'pl'|'en'` (pl), `tone?: BadgeTone`, `size?: 'sm'|'md'` (sm); no events
+or slots. It renders localized Yes/No (Tak/Nie), null as an em dash, true as
+success and false as neutral unless tone overrides it. Reuse it for readonly facts
+and table boolean cells; filters and editable booleans retain their controls.
+Admin exports `adminBooleanTone(key: string, value: boolean): BadgeTone` from
+`@/runa/admin` for its shared account-risk mapping; see the Admin frontend guide.

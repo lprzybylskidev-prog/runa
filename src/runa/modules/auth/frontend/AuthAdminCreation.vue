@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { identityDrafts } from './identityDrafts';
 import { computed, nextTick, onScopeDispose, reactive, ref, watch } from 'vue';
 import { useAdminLocale } from '@/runa/admin';
 import type {
@@ -119,8 +120,10 @@ const passwordHint = computed(() => {
       : []),
   ].join(' ');
 });
+const nameDrafts = identityDrafts(get, set);
 watch(record, () => {
   if (!props.controller.dirty.value) {
+    nameDrafts.clear();
     activation.value =
       get('active') === true
         ? 'active'
@@ -132,9 +135,8 @@ watch(record, () => {
   }
 });
 function changeNaming(value: string) {
+  nameDrafts.change(naming.value, value);
   naming.value = value;
-  for (const key of value === 'full' ? ['name'] : ['first_name', 'surname'])
-    set(key, null);
 }
 function changeActivation(value: string) {
   activation.value = value;

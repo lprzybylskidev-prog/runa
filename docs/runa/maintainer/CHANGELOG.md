@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Refine user details with retained naming drafts, real avatars, consolidated account facts, email management and searchable assignments. Apply a complete development review preset and hide notification recipients when secondary addresses are unavailable in both own/Admin preferences.
+
 - Align Auth user details with creation and account forms using public shared identity and preference controls, bulk action tones, native avatar cropping and form-local Save/Revert. Keep guarded target operations and post-submit proof.
 
 - Rebuild user details into at most three task-based tabs with individual actions, independent editable forms and target-account presentation/notification preferences. Hide technical revisions/UUIDs, request proof after submit and preserve all native grants, reviews, concurrency and Audit. Auth 3.1.0 / Preferences, Security and Policies APIs 1.1.0; Admin 0.2.0 supports native standalone participant forms alongside complete aggregate Save.

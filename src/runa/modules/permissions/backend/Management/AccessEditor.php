@@ -90,7 +90,7 @@ final readonly class AccessEditor implements ManagementOptionsReader, Management
 
     private function api(): PermissionsAccess
     {
-        return $this->apis->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        return $this->apis->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
     }
 
     private function invalid(): OperationRejected

@@ -2,7 +2,13 @@
 import { useAdminLocale } from '@/runa/admin';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
-import { FormNotifications, Button, Card, Table } from '@/runa/ui';
+import {
+  BooleanBadge,
+  FormNotifications,
+  Button,
+  Card,
+  Table,
+} from '@/runa/ui';
 import type { TableColumn, TableQuery } from '@/runa/ui';
 import { useAdminResource } from '@/runa/admin';
 import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
@@ -112,7 +118,18 @@ async function next() {
       :columns="columns"
       :row-key="(row: Record<string, AdminJson>) => String(row.code)"
       :caption="tr('Current bounded permission page')"
-    />
+    >
+      <template
+        v-for="key in ['direct', 'roles_truncated', 'available', 'effective']"
+        :key="key"
+        #[`cell-${key}`]="{ row }"
+      >
+        <BooleanBadge
+          :value="typeof row[key] === 'boolean' ? row[key] : null"
+          :locale="adminLocale"
+        />
+      </template>
+    </Table>
     <div class="mt-3 flex gap-2">
       <Button
         size="sm"

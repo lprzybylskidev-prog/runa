@@ -204,7 +204,7 @@ its existing four fields; it is not expanded with arbitrary Audit payloads.
 
 Administrative profile/assignment standalone writes now use the framework's
 [native phased transaction protocol](../../architecture/module-transactions.md).
-Call AuthProfiles / PermissionsAccess at API 2.0.0 without an ambient transaction;
+Call AuthProfiles 2.0.0 / PermissionsAccess 2.1.0 without an ambient transaction;
 aggregate callers use source-owned participants. This intentionally replaces
 nested whole-write composition, preserving current grants, reviewed differences,
 stronger action proof and atomic owning Audit. Source/global settings and external
@@ -237,3 +237,15 @@ The named authenticated GET `/api/runa/auth/profile/table-export` endpoint
 current Auth availability. It returns `{data:{allowed:true}}`; denial is HTTP 403.
 The account controller checks this capability and repeats it before bounded loaded
 session/device/history exports; existing self-service reads still own the data.
+
+### Administrative avatar presentation
+
+Auth owns GET `/api/runa/auth/users/avatar?public_id=<UUIDv7>` for authorized
+administrative presentation, guarded by `runa.auth.avatars.manage` and current
+avatar/admin-editor availability. Its private inline image response uses the same
+MIME, no-store, nosniff and CSP headers as the own-avatar route. The native Auth
+Action rechecks target visibility, including the separate deleted-account read
+grant, and never exposes storage paths. A missing image uses the shared Avatar's
+initials fallback. This is a runtime HTTP consumption endpoint for authenticated
+Admin/application presentation; implementation stays in Auth backend. Existing
+POST/DELETE and own-avatar route contracts remain unchanged.

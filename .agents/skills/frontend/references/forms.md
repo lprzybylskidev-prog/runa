@@ -7,3 +7,7 @@ For screen/controller replacement read [frontend adoption](../../../../docs/runa
 for exact module behavior follow its linked public guide. Maintain contracts and
 examples there, with application-specific patterns in local App guidance.
 Customer composition never authorizes protected platform edits or copied security logic.
+
+For concise shared labels/layout, consolidated facts and omission of redundant copy,
+follow `docs/runa/handbook/development/frontend/forms.md#concise-form-composition`;
+apply capability visibility to dependent controls as well as whole forms.

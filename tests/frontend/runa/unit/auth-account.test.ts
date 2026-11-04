@@ -1898,6 +1898,14 @@ it('factor dialogs keep failures inside their focus boundary and never replay af
 });
 
 function preferenceDeliveryFixture() {
+  currentProfile.capabilities.secondary_emails_enabled = true;
+  currentProfile.secondary_emails = [
+    {
+      public_id: other,
+      email: 'secondary@example.test',
+      verified_at: '2026-10-01T00:00:00Z',
+    },
+  ];
   let revision = 3;
   const categories = [
     {
@@ -3021,4 +3029,50 @@ it('account subview deep links initialize the requested available tab', async ()
       'Preferencje',
     ),
   );
+});
+
+it('hides recipient selection when secondary email capability is off even with stale address choices', async () => {
+  preferenceDeliveryFixture();
+  currentProfile.capabilities.secondary_emails_enabled = false;
+  const wrapper = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await openPreferences(wrapper);
+  expect(
+    wrapper
+      .get('[data-delivery-category=optional]')
+      .findComponent(Select)
+      .exists(),
+  ).toBe(false);
+  expect(
+    wrapper
+      .get('[data-delivery-category=optional]')
+      .find('input[role=switch]')
+      .exists(),
+  ).toBe(true);
+  expect(writes).toHaveLength(0);
+});
+
+it('retains both own identity drafts when switching name formats without submitting', async () => {
+  const wrapper = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(wrapper);
+  const identity = wrapper.get(
+    '[data-account-section=details] [data-auth-identity-fields]',
+  );
+  await identity.get('input[value=full]').setValue();
+  await identity.get('input[name=first_name]').setValue('Ada');
+  await identity.get('input[name=surname]').setValue('Nowak');
+  await identity.get('input[value=single]').setValue();
+  expect(identity.get<HTMLInputElement>('input[name=name]').element.value).toBe(
+    'Test User',
+  );
+  await identity.get('input[value=full]').setValue();
+  expect(
+    identity.get<HTMLInputElement>('input[name=first_name]').element.value,
+  ).toBe('Ada');
+  expect(
+    identity.get<HTMLInputElement>('input[name=surname]').element.value,
+  ).toBe('Nowak');
+  expect(writes).toHaveLength(0);
 });

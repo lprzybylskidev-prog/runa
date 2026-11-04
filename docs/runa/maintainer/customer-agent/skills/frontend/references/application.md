@@ -54,3 +54,12 @@ For application-owned Auth forms, compose the public identity and preference
 fields documented in `docs/runa/handbook/modules/auth/account-ui.md#shared-identity-and-preference-fields`.
 Keep draft reconciliation and guarded writes with the composing controller;
 shared presentation controls do not grant access or authorize protected edits.
+
+For concise shared labels/layout, consolidated facts and omission of redundant copy,
+follow `docs/runa/handbook/development/frontend/forms.md#concise-form-composition`;
+apply capability visibility to dependent controls as well as whole forms.
+
+For readonly boolean facts reuse public BooleanBadge from the component catalogue;
+Admin assignment composition may use public PermissionsAssignments from
+`docs/runa/handbook/modules/permissions/README.md#searchable-assignment-catalogue`.
+Keep native guarded review/proof with the supplied controller.

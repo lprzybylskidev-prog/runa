@@ -66,6 +66,7 @@ use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Data\ModuleTransactions;
 use Runa\Support\Modules\Development\ModuleContractSuite;
 use Runa\Support\Modules\Settings\ModuleSettings;
+use Runa\Support\Modules\Storage\ModuleStorage;
 use Runa\Support\Modules\Work\ModuleWork;
 use Symfony\Component\Mime\Email;
 use Tests\Fixtures\AggregateCompetition;
@@ -388,7 +389,7 @@ it('validates both owners before Auth first apply and commits profile assignment
     $target = app(ChangeIdentity::class)->create(new NewIdentity('native-mutation@example.test', name: 'Before', active: true));
     nativeMutationProof($this);
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
-        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
         $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
         $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
         $assignment = app(ChangeAssignments::class)->mutation($review);
@@ -412,7 +413,7 @@ it('rolls back Auth first apply assignments and consumed proof before independen
     $target = app(ChangeIdentity::class)->create(new NewIdentity('native-rollback@example.test', name: 'Before', active: true));
     nativeMutationProof($this);
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
-        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
         $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
         $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
         $assignment = app(ChangeAssignments::class)->mutation($review);
@@ -443,7 +444,7 @@ it('rejects stale prewrite review and duplicate native writers or single use dem
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target, $other): void {
         $apis = app(ModuleApis::class);
         expect(fn () => $apis->resolve('runa.auth', AuthProfiles::class, '1.0.0'))->toThrow(OperationRejected::class);
-        $api = $apis->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        $api = $apis->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
         $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
         $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
         $second = $api->previewAssignments($other->publicId, new AssignmentSet(permissions: [$read]));
@@ -473,7 +474,7 @@ it('fails closed when independent refusal Audit also fails and invalidates rolle
     $target = app(ChangeIdentity::class)->create(new NewIdentity('native-refusal@example.test', name: 'Before', active: true));
     nativeMutationProof($this);
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
-        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.0.0');
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
         $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
         $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
         $assignment = app(ChangeAssignments::class)->mutation($review);
@@ -2304,4 +2305,47 @@ it('separates target preference read manage and recipient-address grants', funct
     $this->postJson($path.'/commands', ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'],
         'values' => ['locale' => 'en', 'theme' => 'dark', 'delivery' => '[]']])->assertUnprocessable();
     expect(User::where('public_id', $target->publicId)->value('preference_revision'))->toBe(0);
+});
+
+it('searches assignment definitions before paging and hydrates selected labels with native bounds', function (): void {
+    adminAggregateLogin($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('assignment-search@example.test', name: 'Assignment search', active: true));
+    $rows = [];
+    for ($index = 0; $index < 105; $index++) {
+        $rows[] = ['public_id' => (string) Str::uuid7(), 'code' => 'custom.catalogue_'.$index, 'system' => false, 'name_pl' => 'Katalog '.$index, 'name_en' => 'Catalogue '.$index, 'description_pl' => '', 'description_en' => '', 'version' => 1, 'created_at' => now(), 'updated_at' => now()];
+    }
+    DB::table('runa_permissions.roles')->insert($rows);
+    $id = (string) Str::uuid7();
+    DB::table('runa_permissions.roles')->insert(['public_id' => $id, 'code' => 'custom.finance_search', 'system' => false, 'name_pl' => 'Finanse lokalne', 'name_en' => 'Local finance', 'description_pl' => '', 'description_en' => '', 'version' => 1, 'created_at' => now(), 'updated_at' => now()]);
+    $path = '/api/admin/runa.auth/users/sections/runa.permissions.user_access.assignments?';
+    $query = ['kind' => 'options', 'field' => 'roles', 'public_id' => $target->publicId, 'limit' => 1, 'filters' => json_encode(['search' => 'finanse', 'language' => 'pl'])];
+    $this->getJson($path.http_build_query($query))->assertOk()->assertJsonPath('data.items.0.value', $id)->assertJsonPath('data.items.0.label', 'Finanse lokalne')->assertJsonPath('data.next', null);
+    $query['filters'] = json_encode(['selected' => json_encode([$id]), 'language' => 'en']);
+    $this->getJson($path.http_build_query($query))->assertOk()->assertJsonPath('data.items.0.label', 'Local finance');
+    $query['filters'] = json_encode(['selected' => 'not-json']);
+    $this->getJson($path.http_build_query($query))->assertUnprocessable();
+    $query['filters'] = json_encode(['search' => str_repeat('x', 161)]);
+    $this->getJson($path.http_build_query($query))->assertUnprocessable();
+});
+
+it('reads only authorized selected account avatar bytes with private headers and deleted visibility', function (): void {
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('avatar-reader@example.test', name: 'Target Image', active: true));
+    $path = 'avatars/'.$target->publicId.'/read-fixture.png';
+    $contents = base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j4N0AAAAASUVORK5CYII=', true);
+    app(ModuleStorage::class)->disk('runa.auth')->put($path, $contents);
+    DB::table('runa_auth.users')->where('public_id', $target->publicId)->update(['avatar_path' => $path, 'avatar_type' => 'image/png']);
+    authAdministrationLogin($this, []);
+    $this->get('/api/runa/auth/users/avatar?public_id='.$target->publicId)->assertForbidden();
+    ($this->adminGrant)('runa.auth.avatars.manage');
+    $events = DB::table('runa_audit.events')->count();
+    $url = '/api/runa/auth/users/avatar?public_id='.$target->publicId;
+    $this->get($url)->assertOk()->assertContent($contents)->assertHeader('Content-Type', 'image/png')->assertHeader('X-Content-Type-Options', 'nosniff');
+    expect($this->get($url)->headers->get('Cache-Control'))->toContain('private')->toContain('no-store');
+    $this->get('/api/runa/auth/profile/avatar')->assertNotFound();
+    $this->get('/api/runa/auth/users/avatar?public_id=wrong')->assertUnprocessable();
+    DB::table('runa_auth.users')->where('public_id', $target->publicId)->update(['active' => false, 'deleted_at' => now()]);
+    $this->get($url)->assertNotFound();
+    ($this->adminGrant)('runa.auth.users.deleted.read');
+    $this->get($url)->assertOk()->assertContent($contents);
+    expect(DB::table('runa_audit.events')->count())->toBe($events);
 });

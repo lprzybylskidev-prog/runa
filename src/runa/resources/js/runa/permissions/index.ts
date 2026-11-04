@@ -2,3 +2,5 @@ export { default as PermissionsAdminDefinitions } from '../../../../modules/perm
 export { default as PermissionsAdminDefinition } from '../../../../modules/permissions/frontend/components/admin_definition.vue';
 export { default as PermissionsAdminAccess } from '../../../../modules/permissions/frontend/components/admin_access.vue';
 export { default as PermissionsAdminEffective } from '../../../../modules/permissions/frontend/components/admin_effective.vue';
+
+export { default as PermissionsAssignments } from '../../../../modules/permissions/frontend/PermissionsAssignments.vue';

@@ -74,9 +74,9 @@ source versions below are not a claim of completed release acceptance.
 | Owner         | Current source / target                   | Contract disposition                                                                                                                                              |
 | ------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Platform      | Prepared 0.7.0 candidate, feature         | Owner-approved runtime metadata permits manual frontend acceptance; published baseline remains 0.6.2 until verified closure.                                      |
-| Admin         | Development 0.1.0; creation release 1.0.0 | Requires Audit ^1.0.0 and Auth/Permissions ^2.0.0; no unpublished 0.2.0 compatibility edge.                                                                       |
-| Auth          | 2.0.0                                     | AuthProfiles API 2.0.0; other current guarded interfaces retain their declared versions. Administrative reads and owning Admin adapters are delivered in point 7. |
-| Permissions   | 2.1.0                                     | PermissionsAccess API 2.0.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions.                           |
+| Admin         | Development 0.2.0; creation release 1.0.0 | Requires Audit ^1.0.0, Auth ^2.0.0                                                                                                                                |     | ^3.0.0 and Permissions ^2.0.0; no unpublished 0.2.0 compatibility edge. |
+| Auth          | 3.1.0                                     | AuthProfiles API 2.0.0; other current guarded interfaces retain their declared versions. Administrative reads and owning Admin adapters are delivered in point 7. |
+| Permissions   | 2.1.0                                     | PermissionsAccess API 2.1.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions.                           |
 | Audit         | Current 1.1.0 candidate                   | Owning read/record contracts stay at 1.0.0; point 8 supplies the guarded read-only viewer.                                                                        |
 | Framework API | 1.0.0                                     | New trusted transaction extension; constructor changes remain internal.                                                                                           |
 | App scaffold  | 0.0.0                                     | Its supplied Runa range is >=0.2.1 <0.8.0; customer ranges remain application-owned.                                                                              |
@@ -170,8 +170,8 @@ the administrative behavior and boundaries.
 
 The owner approved direct native Auth/Permissions/framework refactoring on
 2026-10-30. The [phased transaction contract](../../architecture/module-transactions.md)
-supersedes the earlier unchanged-API composition proposal. AuthProfiles and
-PermissionsAccess use guarded API 2.0.0 with independent Auth 2.1.0 and Permissions 2.1.0; standalone
+supersedes the earlier unchanged-API composition proposal. AuthProfiles 2.0.0 and
+PermissionsAccess 2.1.0 ship with independent Auth 3.1.0 and Permissions 2.1.0; standalone
 writes have a root boundary, while source composition joins native phases.
 Auth/Permissions require platform >=0.7.0 <0.8.0. Audit develops as independent 1.1.0 with unchanged guarded read/record signatures.
 The native path and Admin aggregate dispatch are implemented; complete owning

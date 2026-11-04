@@ -3,7 +3,7 @@ import AuthAdminUserDetails from '../AuthAdminUserDetails.vue';
 import { authBulkGroup, authActionTone } from '../bulkGroups';
 import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
-import { Badge, Button, Card, ContentLoading, Dialog } from '@/runa/ui';
+import { Button, Card, ContentLoading, Dialog } from '@/runa/ui';
 import {
   AdminComponentBoundary,
   AdminForm,
@@ -306,38 +306,6 @@ watch(
               }}
             </p>
           </div>
-        </template>
-        <template
-          v-for="key in [
-            'active',
-            'logged_in',
-            'verified',
-            'security_locked',
-            'two_factor_enabled',
-            'two_factor_required',
-            'totp_enrolled',
-            'email_factor_enrolled',
-            'password_set',
-            'password_expired',
-            'invitation_pending',
-          ]"
-          :key="key"
-          #[`cell-${key}`]="{ row }"
-        >
-          <Badge
-            v-if="typeof row.values[key] === 'boolean'"
-            size="sm"
-            :tone="
-              row.values[key]
-                ? key === 'security_locked'
-                  ? 'danger'
-                  : 'success'
-                : 'neutral'
-            "
-          >
-            {{ tr(row.values[key] ? 'Yes' : 'No') }}
-          </Badge>
-          <span v-else>—</span>
         </template>
         <template #actions="{ row }">
           <Button

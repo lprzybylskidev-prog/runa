@@ -27,6 +27,8 @@ import {
 } from '@/runa/ui';
 import { authActionTone } from './bulkGroups';
 import AuthOperationProofFields from './AuthOperationProofFields.vue';
+import AuthAdminUserStatus from './AuthAdminUserStatus.vue';
+import AuthAdminEmails from './AuthAdminEmails.vue';
 import AuthAdminUserSection from './AuthAdminUserSection.vue';
 const props = defineProps<AdminPageProps>();
 const { locale, t } = useAdminLocale();
@@ -46,12 +48,68 @@ const sections = computed(() =>
       ),
   ),
 );
+const statusSources = computed(() =>
+  sections.value
+    .filter(
+      (section) =>
+        ['lifecycle', 'primary_email', 'security', 'invitations'].includes(
+          section.key,
+        ) && supplied(section),
+    )
+    .sort(
+      (a, b) =>
+        ['lifecycle', 'primary_email', 'security', 'invitations'].indexOf(
+          a.key,
+        ) -
+        ['lifecycle', 'primary_email', 'security', 'invitations'].indexOf(
+          b.key,
+        ),
+    ),
+);
+const emailSources = computed(() =>
+  sections.value.filter(
+    (section) =>
+      ['primary_email', 'secondary'].includes(section.key) && supplied(section),
+  ),
+);
+const presented = computed(() => {
+  const list = sections.value.filter(
+    (section) =>
+      ![
+        'lifecycle',
+        'eligibility',
+        'invitations',
+        'security',
+        'primary_email',
+        'secondary',
+      ].includes(section.key) || !supplied(section),
+  );
+  const source = statusSources.value[0];
+  if (source)
+    list.push({
+      ...source,
+      key: 'status',
+      fields: [],
+      commands: [],
+      component: null,
+    });
+  const email = emailSources.value[0];
+  if (email)
+    list.push({
+      ...email,
+      key: 'emails',
+      fields: [],
+      commands: [],
+      component: null,
+    });
+  return list;
+});
 const groups = computed(() =>
   [
     {
       id: 'user',
       label: text('Użytkownik', 'User'),
-      sections: sections.value
+      sections: presented.value
         .filter(
           (section) =>
             !['security', 'sessions', 'trust', 'exceptions'].includes(
@@ -63,14 +121,14 @@ const groups = computed(() =>
     {
       id: 'security',
       label: text('Bezpieczeństwo', 'Security'),
-      sections: sections.value.filter((section) =>
+      sections: presented.value.filter((section) =>
         ['security', 'sessions', 'trust'].includes(section.key),
       ),
     },
     {
       id: 'rules',
       label: text('Zasady i wyjątki', 'Rules and exceptions'),
-      sections: sections.value.filter(
+      sections: presented.value.filter(
         (section) => section.key === 'exceptions',
       ),
     },
@@ -81,11 +139,8 @@ function order(section: AdminSectionData) {
   const index = [
     'profile',
     'avatar',
-    'lifecycle',
-    'eligibility',
-    'primary_email',
-    'secondary',
-    'invitations',
+    'status',
+    'emails',
     'preferences',
   ].indexOf(section.key);
   return index < 0 ? 10 : section.key === 'preferences' ? 9 : index;
@@ -502,12 +557,7 @@ async function submitForm(key: string, name: string, fields: string[] = []) {
     region.value?.querySelector<HTMLElement>('[aria-invalid=true]')?.focus();
     return;
   }
-  if (
-    !target.destructive &&
-    !target.preview_required &&
-    target.requirement === 'none'
-  )
-    await submit();
+  await submit();
 }
 watch(
   () => props.controller.state.value,
@@ -526,22 +576,7 @@ watch(command, (value) => {
 });
 onScopeDispose(() => proof.value?.reset());
 void props.form.activateSection('lifecycle');
-const securityFacts = computed(
-  () =>
-    sections.value
-      .find((section) => section.key === 'lifecycle')
-      ?.fields.filter((field) =>
-        [
-          'logged_in',
-          'session_count',
-          'authenticated_at',
-          'activity_at',
-          'last_login_at',
-          'last_activity_at',
-          'trusted_device_count',
-        ].includes(field.key),
-      ) ?? [],
-);
+
 function supplied(section: AdminSectionData) {
   const known = [
     'profile',
@@ -551,6 +586,8 @@ function supplied(section: AdminSectionData) {
     'primary_email',
     'secondary',
     'invitations',
+    'status',
+    'emails',
     'preferences',
     'security',
     'sessions',
@@ -559,6 +596,9 @@ function supplied(section: AdminSectionData) {
   ];
   return (
     !presentation.value.section &&
+    (!['primary_email', 'secondary'].includes(section.key) ||
+      (!presentation.value.field &&
+        !section.fields.some((field) => field.component))) &&
     !section.diagnostic &&
     (section.component === null ||
       section.component?.key === 'runa.auth.admin_section') &&
@@ -610,27 +650,6 @@ function supplied(section: AdminSectionData) {
               >
             </div>
           </Card>
-          <Card v-if="group.id === 'security' && securityFacts.length">
-            <template #header
-              ><h2>
-                {{ text('Aktywność i logowanie', 'Activity and sign-in') }}
-              </h2></template
-            >
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <AdminField
-                v-for="field in securityFacts"
-                :key="field.key"
-                :field="field"
-                :model-value="
-                  form.values.value[form.fieldPath('lifecycle', field.key)] ??
-                  null
-                "
-                readonly
-                :errors="[]"
-                :busy="form.busy.value"
-              />
-            </div>
-          </Card>
 
           <div
             :class="
@@ -649,7 +668,25 @@ function supplied(section: AdminSectionData) {
                   : ''
               "
             >
+              <AuthAdminUserStatus
+                v-if="item.key === 'status'"
+                :page="controller"
+                :controller="form"
+                :section="item"
+                :sources="statusSources"
+                :components="components"
+              />
+              <AuthAdminEmails
+                v-else-if="item.key === 'emails'"
+                :page="controller"
+                :controller="form"
+                :section="item"
+                :sources="emailSources"
+                @submit="submitForm"
+                @operation="rowOperation"
+              />
               <AdminComponentBoundary
+                v-else
                 :identity="controller.page.value!.revision + ':' + item.key"
                 :on-failure="(failed) => form.setAvailable(item.key, !failed)"
               >
