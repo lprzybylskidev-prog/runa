@@ -15,6 +15,11 @@ const en = {
   open: 'Confirm required operation proof',
   fresh: 'Confirm a fresh operation proof',
   confirmed: 'Proof confirmed. Submit the operation explicitly.',
+  invalidProof:
+    'Identity verification failed. Check your password and current code.',
+  throttled: 'Too many attempts. Try again later.',
+  csrf: 'Form security was renewed. Enter your credentials and confirm again.',
+  signedOut: 'Your session expired. Sign in again.',
   failed: 'Proof confirmation could not be completed. Try again explicitly.',
   noMethod: 'No eligible proof method is available.',
   fields: 'Complete the required proof fields.',
@@ -35,6 +40,11 @@ const pl: Record<keyof typeof en, string> = {
   open: 'Potwierdź tożsamość przed operacją',
   fresh: 'Potwierdź tożsamość ponownie',
   confirmed: 'Tożsamość potwierdzona. Wykonaj operację osobno.',
+  invalidProof:
+    'Nie udało się potwierdzić tożsamości. Sprawdź hasło i aktualny kod.',
+  throttled: 'Zbyt wiele prób. Spróbuj później.',
+  csrf: 'Zabezpieczenie formularza odnowione. Wpisz dane i potwierdź ponownie.',
+  signedOut: 'Sesja wygasła. Zaloguj się ponownie.',
   failed: 'Nie udało się potwierdzić tożsamości. Spróbuj ponownie.',
   noMethod: 'Brak dostępnej metody potwierdzenia.',
   fields: 'Uzupełnij wymagane pola potwierdzenia.',

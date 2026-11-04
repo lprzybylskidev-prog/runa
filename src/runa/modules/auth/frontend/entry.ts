@@ -188,6 +188,7 @@ export async function authPost(
 export function authFailure(error: unknown): {
   code: string;
   fields: string[];
+  reason?: string;
 } {
   if (!(error instanceof ApiError)) return { code: 'unavailable', fields: [] };
   let body: Record<string, unknown> = {};
@@ -197,6 +198,11 @@ export function authFailure(error: unknown): {
     /* Unknown errors stay generic. */
   }
   return {
+    ...(error.status < 500 &&
+    typeof body.code === 'string' &&
+    /^[a-z][a-z0-9_]{0,127}$/.test(body.code)
+      ? { reason: body.code }
+      : {}),
     code:
       error.status >= 500
         ? 'unavailable'

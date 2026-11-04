@@ -3080,3 +3080,52 @@ it('retains both own identity drafts when switching name formats without submitt
   ).toBe('Nowak');
   expect(writes).toHaveLength(0);
 });
+
+it.each(['identifier_conflict', 'secondary_limit'])(
+  'secondary address refusal %s preserves the draft and explains the business reason',
+  async (reason) => {
+    Object.assign(currentProfile.capabilities, {
+      secondary_emails_enabled: true,
+      secondary_self_add: true,
+    });
+    const w = mount(AuthAccount, { props: { accountId: id } });
+    await loaded(w);
+    const form = w.get('[data-account-section=secondary]');
+    await form.get('[name=secondary_email]').setValue('occupied@example.test');
+    write = () => json(reason, reason === 'identifier_conflict' ? 409 : 422);
+    await form.trigger('submit');
+    await vi.waitFor(() => expect(writes).toHaveLength(1));
+    await flushPromises();
+    expect(
+      (form.get('[name=secondary_email]').element as HTMLInputElement).value,
+    ).toBe('occupied@example.test');
+    expect(document.body.textContent).not.toContain('Aktualne dane pobrano');
+    if (reason === 'identifier_conflict') {
+      expect(form.text()).toContain(
+        'Ten adres e-mail jest już zajęty. Wybierz inny.',
+      );
+      expect(
+        form.get('[name=secondary_email]').attributes('aria-invalid'),
+      ).toBe('true');
+    } else {
+      expect(document.body.textContent).toContain(
+        'Osiągnięto limit dodatkowych adresów',
+      );
+    }
+  },
+);
+
+it('occupied login has an inline error while an actual stale profile still reconciles', async () => {
+  const { state } = mountController(() => useAuthAccount(id));
+  await vi.waitFor(() => expect(state.ready.value).toBe(true));
+  state.fields.login = 'occupied.login';
+  write = () => json('identifier_conflict', 409);
+  await state.submit();
+  expect(state.errors.login).toBe('Ten login jest już zajęty. Wybierz inny.');
+  expect(state.failure.value).toBe('identifier_conflict');
+  expect(state.fields.login).toBe('occupied.login');
+  write = () => json('identity_stale', 409);
+  await state.submit();
+  expect(state.failure.value).toBe('conflict');
+  expect(state.fields.login).toBe('occupied.login');
+});

@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Unify own/Admin secondary-email presentation and audit supplied error flows. Preserve business refusals through profile, secondary, security and aggregate adapters; show specific localized field/operation feedback for identifiers, limits, preferences, proof and access changes.
+
 - Remove redundant operation scope/instruction copy and unify visible progress across shared forms, Admin/Auth/Permissions actions and the reference panel. Submit Buttons inherit local Form busy; independent reads/actions keep explicit progress owners and existing proof/draft/security boundaries.
 
 - Refine user details with retained naming drafts, real avatars, consolidated account facts, email management and searchable assignments. Apply a complete development review preset and hide notification recipients when secondary addresses are unavailable in both own/Admin preferences.

@@ -170,6 +170,10 @@ transactional Audit. Dedicated permissions are respectively
 `runa.auth.trust.manage`. Reset mutations additionally require the neutral authority
 invariant and every-action `both` step-up, keyed `runa.auth.password.admin_reset`
 or `runa.auth.two_factor.reset`, in the caller's transaction. The integrated Permissions participant enforces the last-eligible-superadministrator invariant; missing or unavailable integration denies the operation.
+Missing/stale reset targets return false. An ineligible password-reset target throws
+`IdentityConflict('password_reset_unavailable')`; Admin retains that safe reason,
+including the transaction rollback and unconsumed proof. No password or submitted
+identifier appears in this refusal.
 Infrastructure emergency recovery uses its separate guarded workflow.
 
 ## Named HTTP surface

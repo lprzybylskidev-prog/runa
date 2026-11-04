@@ -52,10 +52,16 @@ function act(action: () => void, success: string) {
       !['invalid_view_name', 'view_limit'].includes(cause.message)
     )
       throw cause;
-    error.value = text(
-      'Podaj unikalną nazwę (1–80 znaków). Możesz zapisać do 50 widoków.',
-      'Enter a unique name (1–80 characters). You can save up to 50 views.',
-    );
+    error.value =
+      cause.message === 'view_limit'
+        ? text(
+            'Osiągnięto limit 50 widoków. Usuń jeden z nich, aby dodać kolejny.',
+            'The 50-view limit has been reached. Remove a view before adding another.',
+          )
+        : text(
+            'Podaj unikalną nazwę od 1 do 80 znaków.',
+            'Enter a unique name from 1 to 80 characters.',
+          );
   }
 }
 function visibility(key: string, visible: boolean) {

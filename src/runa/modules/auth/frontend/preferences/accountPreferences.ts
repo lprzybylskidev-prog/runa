@@ -1,3 +1,5 @@
+import { accountFailureMessages } from '../account/failures';
+import { authFailure } from '../entry';
 import {
   request,
   observeRequests,
@@ -14,6 +16,7 @@ type Entry = { version: number; value: unknown; stored: boolean };
 type Status = {
   pending: boolean;
   error: 'conflict' | 'save_failed' | 'load_failed' | null;
+  message?: readonly [string, string];
 };
 type Transport = (
   input: Record<string, unknown>,
@@ -71,8 +74,15 @@ export function createAccountPreferenceStore(
   let status: Status = { pending: false, error: null };
   let pending = 0;
   const notify = () => listeners.forEach((listener) => listener());
-  function updateStatus(error: Status['error'] = null) {
-    status = { pending: pending > 0, error };
+  function updateStatus(
+    error: Status['error'] = null,
+    message?: readonly [string, string],
+  ) {
+    status = {
+      pending: pending > 0,
+      error,
+      ...(error && message ? { message } : {}),
+    };
     statusListeners.forEach((listener) => listener());
   }
   function clear(next: string | null, app: string) {
@@ -214,10 +224,17 @@ export function createAccountPreferenceStore(
           updateStatus(status.error);
           throw error;
         }
+        const stale =
+          error instanceof ApiError &&
+          error.status === 409 &&
+          (!authFailure(error).reason ||
+            ['preferences_stale', 'identity_stale'].includes(
+              authFailure(error).reason!,
+            ));
         // Refresh reads, never replay the rejected mutation with a new revision.
         ready = false;
         mutationEpoch++;
-        if (error instanceof ApiError && error.status === 409) {
+        if (stale) {
           try {
             const fresh = envelope(
               await send({ operation: 'snapshot', application: app }, signal),
@@ -233,7 +250,7 @@ export function createAccountPreferenceStore(
         updateStatus(
           error instanceof RequestCancelledError
             ? null
-            : error instanceof ApiError && error.status === 409
+            : stale
               ? !ready
                 ? 'load_failed'
                 : input.operation === 'external'
@@ -244,6 +261,11 @@ export function createAccountPreferenceStore(
                 : input.operation === 'external'
                   ? null
                   : 'save_failed',
+          input.operation !== 'external' &&
+            authFailure(error).reason &&
+            Object.hasOwn(accountFailureMessages, authFailure(error).reason!)
+            ? accountFailureMessages[authFailure(error).reason!]
+            : undefined,
         );
         throw error;
       });

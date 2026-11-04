@@ -105,8 +105,16 @@ conservative local review. A removed target cannot be retained as a valid edit.
 `current`, `locale`, `busy`, `allowKeep` props and `accept`/`keep` events. The feature
 owns merging, resolution, token advancement and subsequent explicit submission.
 
-On HTTP 409, automatically fetch current data without replaying the write. Report
-that the rejected change was not saved; retain its draft. Cancel older queued
+On a stale-revision HTTP 409, automatically fetch current data without replaying
+the write. Report the version conflict and retain its draft. HTTP status alone
+is insufficient: business refusals can also use 409. Preserve their stable reason
+through owner adapters and aggregate coordinators, and show reviewed localized
+copy for that reason instead of claiming a stale revision or successful refresh.
+Known field-specific refusals belong beside the affected control as well as the
+operation outcome. Never claim highlighted fields when no field was identified.
+Unknown exceptions/network failures retain a safe fallback; never echo raw server
+messages, submitted identifiers, SQL errors or unreviewed reason strings.
+Anonymous entry keeps its non-enumerating responses. Cancel older queued
 mutation intents after a failed mutation rather than rebasing them implicitly.
 Fence late responses by account/view/request generation; cancel and unsubscribe
 on disposal/logout. Refresh must not steal focus, clear validation unnecessarily,
@@ -250,3 +258,8 @@ Do not replace progress with generic scope statements or fast-changing status
 sentences. Keep stable action labels, actionable failures, meaningful consequences
 and durable pending/recovery states. No global HTTP counter or artificial request
 delay is introduced. Reduced motion uses the existing static progress cues.
+
+Shared export operations also preserve allowlisted HTTP refusal codes such as
+`export_limit` and `selection_stale`, alongside local provider errors. Unknown
+HTTP/server failures retain the safe export fallback; no payload message is shown.
+Table-view name validation and the 50-view limit have separate recovery messages.

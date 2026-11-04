@@ -478,8 +478,16 @@ async function execute() {
     { confirmReviewed: true },
   );
   if (result?.status === 'committed') {
+    const emailDraft =
+      restoreParameters &&
+      pending.value?.section === 'secondary' &&
+      pending.value.command === 'change'
+        ? new Map(previous)
+        : undefined;
     close(false);
     await props.form.refresh();
+    if (emailDraft && props.controller.state.value === 'ready')
+      for (const [key, value] of emailDraft) props.form.set(key, value);
   } else {
     stage.value = 'parameters';
     proof.value?.reset();

@@ -1,3 +1,7 @@
+import {
+  accountFailureMessages,
+  accountFailureField,
+} from './account/failures';
 import { createAccountProfile } from './account/profile';
 import { createAccountLists } from './account/lists';
 import { createAccountDelivery } from './account/delivery';
@@ -286,8 +290,28 @@ export function useAuthAccount(accountId: string) {
     } catch (error) {
       if (!alive || error instanceof RequestCancelledError) return;
       const result = authFailure(error);
-      failure.value = result.code;
-      if (result.code === 'conflict') {
+      failure.value =
+        result.reason && Object.hasOwn(accountFailureMessages, result.reason)
+          ? result.reason
+          : result.code;
+      const accepted = acceptedFields ?? fieldNames.value;
+      const refusalField = accountFailureField(failure.value, accepted);
+      if (refusalField) {
+        const copy = accountFailureMessages[failure.value]!;
+        errors[refusalField] =
+          failure.value === 'identifier_conflict'
+            ? refusalField === 'login'
+              ? text(
+                  'Ten login jest już zajęty. Wybierz inny.',
+                  'This login is already in use. Choose another.',
+                )
+              : text(
+                  'Ten adres e-mail jest już zajęty. Wybierz inny.',
+                  'This email address is already in use. Choose another.',
+                )
+            : text(copy[0], copy[1]);
+      }
+      if (failure.value === 'conflict') {
         if (['avatar', 'avatarRemove'].includes(task.value))
           avatarConflict.value = true;
         try {
@@ -303,9 +327,10 @@ export function useAuthAccount(accountId: string) {
             (acceptedFields ?? fieldNames.value).includes(k) ||
             (task.value === 'avatar' && k === 'avatar'),
         )
-        .forEach(
-          (k) => (errors[k] = text('Sprawdź wartość.', 'Check this value.')),
-        );
+        .forEach((k) => {
+          if (!errors[k])
+            errors[k] = text('Sprawdź wartość.', 'Check this value.');
+        });
     } finally {
       if (alive) {
         busy.value = false;
@@ -929,34 +954,38 @@ export function useAuthAccount(accountId: string) {
     );
   }
   const failureText = computed(() =>
-    failure.value === 'conflict'
-      ? text(
-          'Nie zapisano zmian. Aktualne dane pobrano automatycznie; Twoje zmiany zostały zachowane.',
-          'Changes were not saved. Current data was loaded automatically; your edits were preserved.',
-        )
-      : failure.value === 'refresh_failed'
-        ? text(
-            'Nie udało się pobrać aktualnych danych. Twoje zmiany zostały zachowane.',
-            'Unable to load current data. Your edits were preserved.',
-          )
-        : failure.value === 'csrf'
+    failure.value === 'identifier_conflict' && (errors.email || errors.login)
+      ? (errors.email || errors.login)!
+      : Object.hasOwn(accountFailureMessages, failure.value)
+        ? text(...accountFailureMessages[failure.value]!)
+        : failure.value === 'conflict'
           ? text(
-              'Odśwież zabezpieczenie formularza i ponów zapis.',
-              'Renew form security and submit again.',
+              'Dane zmieniły się w międzyczasie. Sprawdź bieżące wartości przed zapisem.',
+              'Data changed in the meantime. Review the current values before saving.',
             )
-          : failure.value === 'confirmation'
-            ? text('Potwierdź operację.', 'Confirm the operation.')
-            : failure.value === 'file_required'
-              ? text('Wybierz obraz.', 'Choose an image.')
-              : failure.value === 'throttled'
-                ? text(
-                    'Zbyt wiele prób. Spróbuj później.',
-                    'Too many attempts. Try again later.',
-                  )
-                : text(
-                    'Nie udało się wykonać operacji. Sprawdź dane i spróbuj ponownie.',
-                    'The operation failed. Check your values and try again.',
-                  ),
+          : failure.value === 'refresh_failed'
+            ? text(
+                'Nie udało się pobrać aktualnych danych. Twoje zmiany zostały zachowane.',
+                'Unable to load current data. Your edits were preserved.',
+              )
+            : failure.value === 'csrf'
+              ? text(
+                  'Odśwież zabezpieczenie formularza i ponów zapis.',
+                  'Renew form security and submit again.',
+                )
+              : failure.value === 'confirmation'
+                ? text('Potwierdź operację.', 'Confirm the operation.')
+                : failure.value === 'file_required'
+                  ? text('Wybierz obraz.', 'Choose an image.')
+                  : failure.value === 'throttled'
+                    ? text(
+                        'Zbyt wiele prób. Spróbuj później.',
+                        'Too many attempts. Try again later.',
+                      )
+                    : text(
+                        'Nie udało się wykonać operacji. Sprawdź dane i spróbuj ponownie.',
+                        'The operation failed. Check your values and try again.',
+                      ),
   );
   watch(busy, (value) => {
     if (!value && refreshAgain) refreshVisible();

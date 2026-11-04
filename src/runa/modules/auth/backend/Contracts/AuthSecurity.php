@@ -5,6 +5,7 @@ namespace Runa\Modules\Auth\Contracts;
 /** Administrative permission-protected operations. No credentials cross this boundary. */
 interface AuthSecurity
 {
+    /** False denotes a missing/stale target; IdentityConflict carries a safe business refusal. */
     public function requestPasswordReset(string $publicId, int $expectedVersion): bool;
 
     public function resetFactors(string $publicId, int $expectedVersion): bool;

@@ -256,7 +256,7 @@ const emailIssues = computed<Record<string, string>>(() => {
 });
 function emailErrors(key: string) {
   return [
-    ...(props.controller.errors.value[path(key)] ?? []),
+    ...(props.controller.errors.value[path(key)] ?? []).map(t),
     ...((attempted.value || touched.has(key)) && emailIssues.value[key]
       ? [emailIssues.value[key]!]
       : []),
@@ -267,7 +267,7 @@ const identityErrors = computed(() =>
     identityKeys.map((key) => [
       key,
       [
-        ...(props.controller.errors.value[path(key)] ?? []),
+        ...(props.controller.errors.value[path(key)] ?? []).map(t),
         ...((attempted.value || touched.has(key)) && identityIssues.value[key]
           ? [identityIssues.value[key]!]
           : []),

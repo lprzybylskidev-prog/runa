@@ -1042,6 +1042,7 @@ it('keeps secondary addresses independently verified notification only and stops
     $user = profileVerified('secondary-owner@example.test');
     $other = profileVerified('secondary-other@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/secondary-emails', ['version' => 1, 'email' => $other->email])->assertConflict()->assertJsonPath('error.code', 'identifier_conflict');
     $add = $this->postJson('/api/runa/auth/profile/secondary-emails', ['version' => 1, 'email' => 'notice-only@example.test'])->assertOk()->json('data.public_id');
     $manager = app(ManageProfiles::class);
     expect($manager->notificationEmails($user->public_id))->toBe([]);

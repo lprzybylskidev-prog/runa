@@ -103,3 +103,6 @@ export type {
   AuthDisplayPreferenceFieldsProps,
   AuthEmailPreferenceFieldsProps,
 } from '../../../../modules/auth/frontend/contracts/fields';
+
+export { default as AuthSecondaryEmailFields } from '../../../../modules/auth/frontend/AuthSecondaryEmailFields.vue';
+export type { AuthSecondaryEmailFieldsProps } from '../../../../modules/auth/frontend/contracts/fields';

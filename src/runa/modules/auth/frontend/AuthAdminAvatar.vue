@@ -10,6 +10,7 @@ import {
   FormConflict,
   FormNotifications,
 } from '@/runa/ui';
+import { authFailure } from './entry';
 import AuthAvatarCropper from './AuthAvatarCropper.vue';
 import { useAdminLocale } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
@@ -136,7 +137,11 @@ async function mutate(remove = false) {
           signal,
         });
       } catch (cause) {
-        if (cause instanceof ApiError && cause.status === 422)
+        if (
+          cause instanceof ApiError &&
+          cause.status === 422 &&
+          !authFailure(cause).reason
+        )
           throw new ApiError(422, {
             errors: { avatar_upload_pending: ['Invalid input.'] },
           });
@@ -194,9 +199,11 @@ async function mutate(remove = false) {
       :max-bytes="20 * 1024 * 1024"
       :locale="locale"
       :error="
-        controller.errors.value[
-          controller.fieldPath(section.key, 'avatar_upload_pending')
-        ] ?? []
+        (
+          controller.errors.value[
+            controller.fieldPath(section.key, 'avatar_upload_pending')
+          ] ?? []
+        ).map(tr)
       "
       :disabled="controller.busy.value"
     />

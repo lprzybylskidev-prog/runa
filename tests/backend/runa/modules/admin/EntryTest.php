@@ -2349,3 +2349,51 @@ it('reads only authorized selected account avatar bytes with private headers and
     $this->get($url)->assertOk()->assertContent($contents);
     expect(DB::table('runa_audit.events')->count())->toBe($events);
 });
+
+it('preserves identifier refusals through Admin profile and secondary adapters without mutation', function (): void {
+    authAdministrationLogin($this, ['runa.auth.profiles.read', 'runa.auth.profiles.manage', 'runa.auth.secondary.read', 'runa.auth.secondary.manage']);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('refusal-target@example.test', name: 'Before', login: 'refusal_target'));
+    app(ChangeIdentity::class)->create(new NewIdentity('occupied@example.test', name: 'Occupied', login: 'occupied_login'));
+    $settings = app(ModuleSettings::class)->read('runa.auth');
+    app(ModuleSettings::class)->update('runa.auth', ['secondary_emails_enabled' => true, 'secondary_email_sharing' => false], $settings['revision'], $settings['generation']);
+    $profile = authAdministrationRead($this, 'profile', $target->publicId);
+    $values = array_intersect_key($profile['values'], array_flip(['name', 'first_name', 'surname', 'login']));
+    $values['login'] = 'occupied_login';
+    $this->postJson('/api/admin/runa.auth/users/sections/profile/commands', ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $profile['revision'], 'values' => $values])
+        ->assertConflict()->assertJsonPath('error.code', 'identifier_conflict');
+    $secondary = authAdministrationRead($this, 'secondary', $target->publicId);
+    expect($secondary['values']['secondary_email_limit'])->toBe(app(ModuleSettings::class)->integer('runa.auth', 'secondary_email_limit'));
+    $this->postJson('/api/admin/runa.auth/users/sections/secondary/commands', ['command' => 'add', 'public_id' => $target->publicId, 'revision' => $secondary['revision'], 'values' => ['email' => 'occupied@example.test']])
+        ->assertConflict()->assertJsonPath('error.code', 'identifier_conflict');
+    expect(User::where('public_id', $target->publicId)->value('login'))->toBe('refusal_target');
+    expect(DB::table('runa_auth.secondary_emails')->count())->toBe(0);
+});
+
+it('preserves identifier refusals through aggregate Save and rolls back every participant', function (): void {
+    adminAggregateLogin($this);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-refusal@example.test', name: 'Before', login: 'aggregate_target', active: true));
+    app(ChangeIdentity::class)->create(new NewIdentity('aggregate-occupied@example.test', name: 'Occupied', login: 'aggregate_occupied'));
+    $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
+    $input = adminAggregateInput($this, $target->publicId, [$permission]);
+    $input['participants'][1]['input']['values']['login'] = 'aggregate_occupied';
+    $input = adminAggregateReview($this, $input);
+    $this->postJson('/api/admin/runa.auth/users/save', $input)->assertConflict()->assertJsonPath('error.code', 'identifier_conflict');
+    expect(User::where('public_id', $target->publicId)->value('name'))->toBe('Before');
+    expect(User::where('public_id', $target->publicId)->value('login'))->toBe('aggregate_target');
+    expect(DB::table('runa_permissions.user_permissions')->where('user_public_id', $target->publicId)->count())->toBe(0);
+});
+
+it('reports an ineligible administrative password reset without consuming proof or changing the account', function (): void {
+    foreach (['runa.admin.enter', 'runa.auth.identities.read', 'runa.auth.passwords.reset'] as $grant) {
+        ($this->adminGrant)($grant);
+    }
+    nativeMutationProof($this);
+    ($this->adminProof)();
+    CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds(31));
+    $secret = app(Encrypter::class)->decryptString($this->adminUser->fresh()->totp_secret);
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.password.admin_reset', 'requirement' => 'both', 'current_password' => 'admin-entry-password', 'method' => 'totp', 'code' => app(Google2FA::class)->oathTotp($secret, intdiv(now()->getTimestamp(), 30))])->assertOk();
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('passwordless-refusal@example.test', name: 'Passwordless', active: true));
+    $this->postJson('/api/admin/runa.auth/users/sections/security/commands', ['command' => 'password_reset', 'public_id' => $target->publicId, 'revision' => (string) $target->version, 'values' => [], 'confirmed' => true])->assertConflict()->assertJsonPath('error.code', 'password_reset_unavailable');
+    expect(User::where('public_id', $target->publicId)->value('version'))->toBe($target->version);
+    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.password.admin_reset')->value('consumed_at'))->toBeNull();
+});

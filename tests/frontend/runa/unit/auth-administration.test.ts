@@ -849,7 +849,7 @@ it.each([
         new ApiError(409, { error: { code: 'user_preview_stale' } }),
         [],
       ).message,
-    ).toContain('Check the current values');
+    ).toContain('Review the operation effects again');
   },
 );
 
@@ -1356,6 +1356,7 @@ it('email management validates native commands and keeps secondary row identity 
   ]);
   const secondary = section('secondary', [
     field('addresses'),
+    { ...field('secondary_email_limit'), type: 'integer' },
     { ...field('address_id', false), type: 'uuid' },
     field('email', false),
   ]);
@@ -1384,8 +1385,13 @@ it('email management validates native commands and keeps secondary row identity 
       revision: '1',
       values: String(input).includes('/secondary')
         ? {
+            secondary_email_limit: 5,
             addresses: JSON.stringify([
-              { public_id: actor, email: 'other@example.test', verified: true },
+              {
+                public_id: actor,
+                email: 'other@example.test',
+                verified: false,
+              },
             ]),
             address_id: null,
             email: '',
@@ -1422,13 +1428,17 @@ it('email management validates native commands and keeps secondary row identity 
     .findAll('button')
     .find((button) => button.text() === 'Edit')!
     .trigger('click');
-  const { TextInput, Form, Dialog } = await import('@/runa/ui');
-  const editor = wrapper.getComponent(Dialog);
+  const { TextInput, Form } = await import('@/runa/ui');
+  const { AuthSecondaryEmailFields } = await import('@/runa/auth');
+  const editor = wrapper.getComponent(AuthSecondaryEmailFields);
+  expect(editor.text()).toContain('1 / 5');
+  expect(document.querySelector('[role=dialog]')).toBeNull();
   expect(editor.getComponent(TextInput).props('modelValue')).toBe(
     'other@example.test',
   );
   expect(document.querySelector('input[name=address_id]')).toBeNull();
   editor.getComponent(TextInput).vm.$emit('update:modelValue', 'invalid');
+  await nextTick();
   await editor.getComponent(Form).trigger('submit');
   expect(submit).not.toHaveBeenCalled();
   editor
@@ -1450,4 +1460,70 @@ it('email management validates native commands and keeps secondary row identity 
   expect(operation).toHaveBeenCalledWith('secondary', 'remove', {
     address_id: actor,
   });
+  await editor
+    .findAll('button')
+    .find((button) => button.text() === 'Resend')!
+    .trigger('click');
+  expect(operation).toHaveBeenLastCalledWith('secondary', 'change', {
+    address_id: actor,
+    email: 'other@example.test',
+  });
+  expect(form.values.value[form.fieldPath('secondary', 'email')]).toBe(
+    'updated@example.test',
+  );
+  form.errors.value[form.fieldPath('secondary', 'email')] = [
+    'This email address is already in use. Choose another.',
+  ];
+  savePreference('runa.locale', 'pl');
+  await nextTick();
+  expect(editor.text()).toContain(
+    'Ten adres e-mail jest już zajęty. Wybierz inny.',
+  );
+  expect(editor.text()).not.toContain('This email address is already in use');
+});
+
+it.each([
+  ['identifier_conflict', 'secondary.email', 'already in use'],
+  ['access_definition_conflict', 'definition.code', 'already in use'],
+  ['last_superadmin_required', '', 'superadministrator must remain'],
+  ['secondary_limit', '', 'limit has been reached'],
+  ['access_role_referenced', '', 'used by other roles'],
+  ['recipient_unavailable', '', 'current verified address'],
+])(
+  'administrative refusal %s survives both envelopes and scopes field errors',
+  (reason, field, copy) => {
+    for (const payload of [{ reason }, { error: { code: reason } }]) {
+      const result = writeFailure(
+        new ApiError(409, payload),
+        field ? [field, 'unrelated.name'] : [],
+      );
+      expect(result.message).toContain(copy);
+      if (field) expect(result.errors).toEqual({ [field]: [result.message] });
+      else expect(result.errors).toBeUndefined();
+    }
+    expect(
+      writeFailure(
+        new ApiError(500, { reason, message: 'private failure' }),
+        [],
+      ).message,
+    ).not.toContain(copy);
+  },
+);
+
+it('unknown refusals never echo payloads or claim nonexistent highlighted fields', () => {
+  for (const reason of [
+    'private failure',
+    'unrecognized_reason',
+    'constructor',
+    '__proto__',
+  ]) {
+    const result = writeFailure(
+      new ApiError(422, { reason, message: 'secret value' }),
+      ['email'],
+    );
+    expect(result.message).toBe(
+      'Invalid operation data. Check the entered values.',
+    );
+    expect(result.errors).toEqual({});
+  }
 });

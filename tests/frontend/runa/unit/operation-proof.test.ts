@@ -121,3 +121,76 @@ it('factor discovery shows local loading until native methods settle', async () 
   expect(w.find('input[name=current_password]').exists()).toBe(true);
   expect(proof.methods.value).toEqual(['totp', 'recovery']);
 });
+
+it('proof refusals explain invalid credentials and throttling while clearing secrets', async () => {
+  let reason = 'security_proof_invalid';
+  let status = 422;
+  vi.spyOn(window, 'fetch').mockImplementation(
+    async () =>
+      new Response(JSON.stringify({ error: { code: reason } }), {
+        status,
+        headers: { 'Content-Type': 'application/json' },
+      }),
+  );
+  let proof!: OperationProofController;
+  mount(
+    defineComponent({
+      setup() {
+        proof = useOperationProof({
+          identity: () => 'session',
+          action: () => 'test',
+          requirement: () => 'password',
+          locale: () => 'pl',
+        });
+        return () => h(AuthOperationProof, { controller: proof });
+      },
+    }),
+  );
+  await proof.begin();
+  proof.password.value = 'transient';
+  await proof.confirm();
+  expect(proof.error.value).toContain('Sprawdź hasło i aktualny kod');
+  expect(proof.password.value).toBe('');
+  expect(proof.confirmed.value).toBe(false);
+  reason = 'throttled';
+  status = 429;
+  proof.password.value = 'transient';
+  await proof.confirm();
+  expect(proof.error.value).toContain('Zbyt wiele prób');
+  expect(proof.password.value).toBe('');
+});
+
+it('expired proof security renews CSRF as a read and requires another explicit confirmation', async () => {
+  const calls: string[] = [];
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const path = String(input);
+    calls.push(path);
+    return path.endsWith('/csrf')
+      ? reply({ ready: true })
+      : new Response(
+          JSON.stringify({ error: { code: 'csrf_token_mismatch' } }),
+          { status: 419, headers: { 'Content-Type': 'application/json' } },
+        );
+  });
+  let proof!: OperationProofController;
+  mount(
+    defineComponent({
+      setup() {
+        proof = useOperationProof({
+          identity: () => 'session',
+          action: () => 'test',
+          requirement: () => 'password',
+          locale: () => 'pl',
+        });
+        return () => h(AuthOperationProof, { controller: proof });
+      },
+    }),
+  );
+  await proof.begin();
+  proof.password.value = 'transient';
+  await proof.confirm();
+  expect(calls).toEqual(['/api/runa/auth/step-up', '/api/runa/auth/csrf']);
+  expect(proof.error.value).toContain('Zabezpieczenie formularza odnowione');
+  expect(proof.password.value).toBe('');
+  expect(proof.confirmed.value).toBe(false);
+});

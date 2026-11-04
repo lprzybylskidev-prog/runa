@@ -82,8 +82,8 @@ final readonly class ProfileEditor implements ManagementParticipant, ManagementR
         $mutation = $this->prepare($input);
         try {
             $result = $this->transactions->run([$mutation]);
-        } catch (IdentityConflict) {
-            throw new OperationRejected('identity_conflict', 'runa.auth', 'profile.edit', 409);
+        } catch (IdentityConflict $error) {
+            throw new OperationRejected($error->getMessage(), 'runa.auth', 'profile.edit', 409);
         }
 
         return $this->project($result['runa.auth.'.$mutation->definition()->key]);

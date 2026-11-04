@@ -2,6 +2,7 @@ import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { ApiError, request } from '@/runa/http';
 import { useDirtyGuard } from '@/runa/ui';
 import type { AdminController, AdminJson } from './contracts';
+import { writeFailure } from './writeFailure';
 import { object } from './decode';
 import {
   refuseAdmin,
@@ -165,11 +166,10 @@ export function useAdminOperations(admin: AdminController) {
       )
         refuseAdmin(admin, failure);
       conflict.value = failure instanceof ApiError && failure.status === 409;
+      const refusal = writeFailure(failure, Object.keys(input));
       error.value = settingsFailure
         ? 'Application settings are temporarily unavailable. Your draft is retained.'
-        : conflict.value
-          ? 'State changed or the operation could not complete. Refresh and review before another explicit attempt.'
-          : 'The operation could not be completed. Check your authority and input.';
+        : refusal.message;
     } finally {
       if (own === epoch) {
         busy.value = false;

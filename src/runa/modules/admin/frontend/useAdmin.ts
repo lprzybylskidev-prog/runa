@@ -17,6 +17,7 @@ import type {
   AdminState,
 } from './contracts';
 import { adminPath, decodeBootstrap, object } from './decode';
+import { refusalMessages } from './refusals';
 import { navigateWithGuards } from './runtime';
 
 export function adminFailure(error: unknown): {
@@ -35,6 +36,10 @@ export function adminFailure(error: unknown): {
     } catch {
       /* Safe generic error. */
     }
+    const message =
+      error.status < 500 && Object.hasOwn(refusalMessages, reason)
+        ? refusalMessages[reason]
+        : undefined;
     if (error.status === 403 && reason === 'step_up_required')
       return {
         state: 'proof_required',
@@ -48,15 +53,17 @@ export function adminFailure(error: unknown): {
         state: 'forbidden',
         error: {
           reason,
-          message: 'Administrator panel access is not available.',
+          message: message ?? 'Administrator panel access is not available.',
         },
       };
+    if (message) return { state: 'failed', error: { reason, message } };
     if (error.status === 404 || error.status === 409 || error.status === 503)
       return {
         state: 'unavailable',
         error: {
           reason,
-          message: 'The administrator panel is currently unavailable.',
+          message:
+            message ?? 'The administrator panel is currently unavailable.',
         },
       };
   }

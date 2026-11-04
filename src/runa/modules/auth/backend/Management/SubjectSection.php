@@ -64,7 +64,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             $values = match (static::KEY) {
                 'primary_email' => ['current_email' => $profile->primaryEmail['email'] ?? null, 'verified' => $profile->primaryEmail['verified'] ?? null,
                     'verification_required' => $profile->primaryEmail['verification_required'] ?? null, 'email' => null, 'replacement_email' => null],
-                'secondary' => ['addresses' => json_encode($profile->secondaryEmails, JSON_THROW_ON_ERROR), 'address_id' => null, 'email' => null],
+                'secondary' => ['secondary_email_limit' => $this->settings->integer('runa.auth', 'secondary_email_limit'), 'addresses' => json_encode($profile->secondaryEmails, JSON_THROW_ON_ERROR), 'address_id' => null, 'email' => null],
                 'preferences' => ['preference_revision' => $profile->preferenceRevision],
             };
         } else {
@@ -143,8 +143,8 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             }
 
             return new ManagementOutcome('committed', $record);
-        } catch (IdentityConflict) {
-            throw new OperationRejected('identity_conflict', 'runa.auth', 'administration.command', 409);
+        } catch (IdentityConflict $error) {
+            throw new OperationRejected($error->getMessage(), 'runa.auth', 'administration.command', 409);
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.auth', 'administration.command', 422);
         }

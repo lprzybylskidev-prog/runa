@@ -39,11 +39,7 @@ final readonly class ManageSecurity implements AuthSecurity
             if ($user === null || $user->version !== $expectedVersion) {
                 return false;
             }
-            try {
-                $this->validateChangeLocked($connection, $user, $factors);
-            } catch (IdentityConflict) {
-                return false;
-            }
+            $this->validateChangeLocked($connection, $user, $factors);
 
             return $this->applyChangeLocked($connection, $user, $factors);
         });

@@ -2,6 +2,156 @@ import type { AdminMessages } from './contracts';
 
 /** Reviewed Polish presentation for source-owned Admin/Core labels; never business values. */
 export const adminMessages: AdminMessages = {
+  'This login is already in use. Choose another.':
+    'Ten login jest już zajęty. Wybierz inny.',
+  'This email address is already in use. Choose another.':
+    'Ten adres e-mail jest już zajęty. Wybierz inny.',
+
+  'This audit event is no longer available.':
+    'To zdarzenie audytu jest już niedostępne.',
+  'This history event is no longer available.':
+    'To zdarzenie historii jest już niedostępne.',
+  'The history cursor expired. Return to the first page.':
+    'Kursor historii wygasł. Wróć do pierwszej strony.',
+
+  'Application settings changed. Review the current values before saving.':
+    'Ustawienia aplikacji zmieniły się. Sprawdź bieżące wartości przed zapisem.',
+  'Invalid application settings. Check the entered values.':
+    'Nieprawidłowe ustawienia aplikacji. Sprawdź wpisane wartości.',
+
+  'This email address or login is already in use. Choose another.':
+    'Ten adres e-mail lub login jest już zajęty. Wybierz inny.',
+  'The secondary address limit has been reached. Remove an address before adding another.':
+    'Osiągnięto limit dodatkowych adresów. Usuń jeden z nich, aby dodać kolejny.',
+  'This secondary address was removed. Select a current address.':
+    'Ten dodatkowy adres został usunięty. Wybierz aktualny adres.',
+  'Secondary email addresses are disabled.':
+    'Dodatkowe adresy e-mail są wyłączone.',
+  'Editing secondary email addresses is disabled.':
+    'Zmiana dodatkowych adresów e-mail jest wyłączona.',
+  'Enter a different email address.': 'Podaj adres inny niż obecny.',
+  'Changing the primary email address is disabled.':
+    'Zmiana głównego adresu e-mail jest wyłączona.',
+  'The verification link is invalid or expired. Send a new link.':
+    'Link potwierdzający jest nieprawidłowy lub wygasł. Wyślij nowy link.',
+  'Choose a password different from recently used passwords.':
+    'Wybierz hasło inne niż ostatnio używane.',
+  'Identity verification failed. Check your password and current code.':
+    'Nie udało się potwierdzić tożsamości. Sprawdź hasło i aktualny kod.',
+  'The selected recipient is unavailable. Select a current verified address.':
+    'Wybrany adres odbiorcy jest niedostępny. Wybierz aktualny, potwierdzony adres.',
+  'Required notifications cannot be disabled.':
+    'Nie można wyłączyć wymaganych powiadomień.',
+  'This notification category is unavailable.':
+    'Ta kategoria powiadomień jest niedostępna.',
+  'Editing this profile field is disabled.':
+    'Zmiana tego pola profilu jest wyłączona.',
+  'A login is required.': 'Login jest wymagany.',
+  'Invalid image. Choose a supported file within the size limit.':
+    'Nieprawidłowy obraz. Wybierz obsługiwany plik w dozwolonym rozmiarze.',
+  'The uploaded image expired. Select it again.':
+    'Przesłany obraz wygasł. Wybierz go ponownie.',
+  'Avatar editing is disabled.': 'Zmiana awatara jest wyłączona.',
+  'The avatar has already been removed.': 'Awatar został już usunięty.',
+  'Changing your own account state is disabled.':
+    'Samodzielna zmiana stanu konta jest wyłączona.',
+  'Invalid preference value. Choose an available option.':
+    'Nieprawidłowa wartość preferencji. Wybierz dostępną opcję.',
+  'This preference is unavailable.': 'Ta preferencja jest niedostępna.',
+  'Preferences for this module are unavailable.':
+    'Preferencje tego modułu są niedostępne.',
+  'Settings from this device have already been adopted.':
+    'Ustawienia tego urządzenia zostały już przeniesione.',
+  'Your account requires an additional step. Complete it before editing.':
+    'Konto wymaga dodatkowego kroku. Dokończ go przed zmianą danych.',
+  'You do not have permission for this operation.':
+    'Nie masz uprawnień do tej operacji.',
+  'Verification expired. Confirm the operation again.':
+    'Potwierdzenie wygasło. Potwierdź operację ponownie.',
+  'User data changed. Review the current values before saving.':
+    'Dane użytkownika zmieniły się. Sprawdź bieżące wartości przed zapisem.',
+  'User state changed. Review current data before trying again.':
+    'Stan użytkownika zmienił się. Sprawdź bieżące dane przed ponowieniem operacji.',
+  'This account is no longer available.': 'To konto jest już niedostępne.',
+  'Preferences changed. Review the current values before saving.':
+    'Preferencje zmieniły się. Sprawdź bieżące wartości przed zapisem.',
+  'The policy changed. Review the current rules before saving.':
+    'Polityka zmieniła się. Sprawdź bieżące zasady przed zapisem.',
+  'The exception changed. Review the current values before saving.':
+    'Wyjątek zmienił się. Sprawdź bieżące wartości przed zapisem.',
+  'At least one active superadministrator must remain.':
+    'Musi pozostać co najmniej jeden aktywny superadministrator.',
+  'You cannot grant yourself superadministrator authority.':
+    'Nie możesz nadać sobie uprawnień superadministratora.',
+  'These privileges cannot be changed. Keep at least one active superadministrator.':
+    'Nie można zmienić tych uprawnień. Zachowaj co najmniej jednego aktywnego superadministratora.',
+  'This role or permission code is already in use. Choose another.':
+    'Taki kod roli lub uprawnienia jest już zajęty. Wybierz inny.',
+  'This role or permission is managed by the system and cannot be changed.':
+    'Ta rola lub uprawnienie jest zarządzane przez system i nie może być zmienione.',
+  'This role is used by other roles. Remove those references before deleting it.':
+    'Ta rola jest używana przez inne role. Usuń te powiązania przed jej usunięciem.',
+  'A selected role or permission is unavailable or protected. Change the selection.':
+    'Wybrana rola lub uprawnienie jest niedostępne albo chronione. Zmień wybór.',
+  'Too many roles or permissions selected. Reduce the selection.':
+    'Wybrano zbyt wiele ról lub uprawnień. Zmniejsz zaznaczenie.',
+  'This change affects too many permission relationships. Split it into smaller operations.':
+    'Zmiana obejmuje zbyt wiele powiązań uprawnień. Podziel ją na mniejsze operacje.',
+  'Too many roles would be deleted. Reduce the selection.':
+    'Usunięcie obejmuje zbyt wiele ról. Zmniejsz zaznaczenie.',
+  'This role has assignments. Review the effects and confirm deletion.':
+    'Ta rola ma przypisania. Przejrzyj skutki i potwierdź jej usunięcie.',
+  'The selected user is unavailable.': 'Wybrany użytkownik jest niedostępny.',
+  'The selected role or permission is no longer available.':
+    'Wybrana rola lub uprawnienie jest już niedostępne.',
+  'The role or permission changed. Review current values before saving.':
+    'Rola lub uprawnienie zmieniło się. Sprawdź bieżące wartości przed zapisem.',
+  'Roles or permissions changed. Review the operation effects again.':
+    'Role lub uprawnienia zmieniły się. Ponownie przejrzyj skutki operacji.',
+  'Form data changed. Review the current values before saving.':
+    'Dane formularza zmieniły się. Sprawdź bieżące wartości przed zapisem.',
+  'The operation effects changed. Review them again before confirming.':
+    'Skutki operacji zmieniły się. Przejrzyj je ponownie przed zatwierdzeniem.',
+  'Review the operation effects before confirming.':
+    'Przejrzyj skutki operacji przed zatwierdzeniem.',
+  'Available form sections changed. Review current data before saving.':
+    'Dostępne sekcje formularza zmieniły się. Sprawdź bieżące dane przed zapisem.',
+  'These sections cannot be saved together. Save them separately.':
+    'Te sekcje nie mogą zostać zapisane razem. Zapisz je osobno.',
+  'This form is no longer available. Return to the list and open it again.':
+    'Ten formularz jest już niedostępny. Wróć do listy i otwórz go ponownie.',
+  'The operation state changed. Load current data and review the operation again.':
+    'Stan operacji zmienił się. Pobierz aktualne dane i przejrzyj operację ponownie.',
+  'Invalid operation data. Check the entered values.':
+    'Nieprawidłowe dane operacji. Sprawdź wpisane wartości.',
+  'The result is too large to display. Narrow the scope.':
+    'Wynik jest zbyt duży do wyświetlenia. Zawęź zakres.',
+  'This module is no longer available.': 'Ten moduł jest już niedostępny.',
+  'The operation could not complete. Check its current state before trying again.':
+    'Nie udało się zakończyć operacji. Sprawdź jej aktualny stan przed ponowieniem.',
+  'Form security expired. Renew it and submit again.':
+    'Sesja formularza wygasła. Odśwież zabezpieczenie i zatwierdź ponownie.',
+  'Your session expired. Sign in again.':
+    'Sesja wygasła. Zaloguj się ponownie.',
+  'Verify your identity to perform the operation.':
+    'Potwierdź tożsamość, aby wykonać operację.',
+  'Preferences for this application are unavailable.':
+    'Preferencje tej aplikacji są niedostępne.',
+  'Administrator email verification is disabled.':
+    'Potwierdzanie adresu przez administratora jest wyłączone.',
+  'Invalid session selection. Select current sessions.':
+    'Zaznaczenie sesji jest nieprawidłowe. Wybierz aktualne sesje.',
+  'Too many sessions selected. Reduce the selection.':
+    'Zaznaczono zbyt wiele sesji. Zmniejsz zaznaczenie.',
+  'Invalid user selection. Select current accounts.':
+    'Zaznaczenie użytkowników jest nieprawidłowe. Wybierz aktualne konta.',
+  'Too many users selected. Reduce the selection.':
+    'Zaznaczono zbyt wielu użytkowników. Zmniejsz zaznaczenie.',
+  'Selected accounts changed. Review the operation effects again.':
+    'Stan wybranych kont zmienił się. Ponownie przejrzyj skutki operacji.',
+  'Selected sessions changed. Review the operation effects again.':
+    'Zaznaczone sesje zmieniły się. Ponownie przejrzyj skutki operacji.',
+
   'Choose a future activation or deactivation date.':
     'Wybierz przyszły termin aktywacji lub dezaktywacji.',
   'Activation must be scheduled before deactivation. Check the selected accounts and dates.':

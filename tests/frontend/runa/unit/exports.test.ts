@@ -532,3 +532,28 @@ it('rejects cross-origin downloads and malformed statuses from an API provider',
     }),
   ).toThrow('invalid_operation_response');
 });
+
+it('export HTTP refusals preserve reviewed reasons and hide unknown server messages', async () => {
+  const { operationFailure } =
+    await import('../../../../src/runa/resources/js/composables/useOperation');
+  const { ApiError } = await import('@/runa/http');
+  for (const payload of [
+    { reason: 'export_limit' },
+    { error: { code: 'export_limit' } },
+  ]) {
+    expect(operationFailure(new ApiError(422, payload)).code).toBe(
+      'export_limit',
+    );
+    expect(operationFailure(new ApiError(503, payload)).code).toBe(
+      'operation_failed',
+    );
+  }
+  expect(
+    operationFailure(
+      new ApiError(422, {
+        error: { code: 'private_detail' },
+        message: 'secret',
+      }),
+    ),
+  ).toEqual({ code: 'operation_failed', message: '', retryable: true });
+});

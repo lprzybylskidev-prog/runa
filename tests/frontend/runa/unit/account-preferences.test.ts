@@ -400,3 +400,20 @@ it('Admin bilingual guest preference subscribers receive writes and resets witho
   expect(requests).toBe(0);
   stop();
 });
+
+it('preference business refusals retain specific copy without pretending the revision changed', async () => {
+  let reads = 0;
+  const store = createAccountPreferenceStore(guest(), async (input) => {
+    if (input.operation === 'snapshot') {
+      reads++;
+      return snapshot('A');
+    }
+    throw new ApiError(409, { error: { code: 'preferences_already_adopted' } });
+  });
+  await store.connect('A');
+  store.store.write(scope, 'runa.theme', theme, 'dark');
+  await store.flush();
+  expect(store.status().error).toBe('save_failed');
+  expect(store.status().message?.[0]).toContain('zostały już przeniesione');
+  expect(reads).toBe(1);
+});

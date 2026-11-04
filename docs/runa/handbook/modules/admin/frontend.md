@@ -1279,3 +1279,20 @@ activity; row status progress belongs to the selected row. Initial record retrie
 use ContentLoading. Conflict copy reports the unsaved change and requests review
 of current values, without claiming that a finished reconciliation is still running.
 Owning preview/proof/execute, draft and recovery contracts are unchanged.
+
+### Actionable write refusals
+
+The default write adapter retains reviewed business reasons from either the
+Management `reason` or Auth `error.code` envelope, including standalone commands,
+atomic aggregate Save and operational settings. Known address/login/password,
+role/permission, last-superadministrator, selection, schedule and policy refusals
+use Polish/English copy and field errors when exactly one declared input matches.
+Stale revisions/reviews retain distinct copy and automatic read reconciliation;
+no rejected write is replayed. An unknown 422 without field paths does not claim
+highlighted fields. Server exception messages and unknown reason strings are
+never rendered. Unknown/infrastructure failures retain safe fallback feedback.
+
+Auth's default secondary-email section composes the public
+[shared address fields](../auth/account-ui.md#shared-secondary-email-presentation),
+including the configured count/limit, verified/pending badges and inline editing.
+Native command grants and post-submit operation proof remain with useAdminForm.

@@ -2,6 +2,8 @@
 
 ## 3.0.0 — 2026-11-03
 
+- Auth 3.1.0: share secondary-email list/inline editing through public AuthSecondaryEmailFields. Preserve occupied identifier and password-reset refusal codes, distinguish business refusals from stale revisions, and give actionable account/preference/proof feedback while retaining anonymous non-enumeration.
+
 - Remove generic operation-scope filler, show factor-discovery skeletons and explicit action progress, and expose account refreshing for retained read feedback.
 
 - Preserve inactive name drafts, show selected-avatar bytes/initials, consolidate account facts and rebuild email management. Hide recipient selectors with disabled secondary addresses and apply the complete review preset during explicit development seeding.

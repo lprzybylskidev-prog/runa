@@ -38,8 +38,8 @@ final readonly class Aggregate
         } catch (ValidationException) {
             // Owning late validation cannot expose private messages or foreign field paths.
             throw ValidationException::withMessages(['participants' => ['Invalid input.']]);
-        } catch (IdentityConflict) {
-            throw new OperationRejected('admin_revision_stale', 'runa.admin', 'save', 409);
+        } catch (IdentityConflict $error) {
+            throw new OperationRejected($error->getMessage(), 'runa.admin', 'save', 409);
         } catch (OperationRejected $error) {
             throw $error;
         } catch (\Throwable) {

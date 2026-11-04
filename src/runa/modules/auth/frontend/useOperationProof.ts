@@ -1,5 +1,6 @@
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import {
+  authFailure,
   authGet,
   authPost,
   data,
@@ -29,7 +30,16 @@ export function useOperationProof(options: {
   const open = ref(false),
     busy = ref(false),
     confirmed = ref(false);
-  const errorKey = ref<'failed' | 'noMethod' | 'fields' | ''>('');
+  const errorKey = ref<
+    | 'failed'
+    | 'noMethod'
+    | 'fields'
+    | 'invalidProof'
+    | 'throttled'
+    | 'csrf'
+    | 'signedOut'
+    | ''
+  >('');
   const error = computed(() =>
     errorKey.value ? copy.value[errorKey.value] : '',
   );
@@ -62,9 +72,30 @@ export function useOperationProof(options: {
     errorKey.value = '';
     try {
       await action(abort.signal);
-    } catch {
-      if (alive && own === epoch && stamp === identity())
-        errorKey.value = 'failed';
+    } catch (cause) {
+      if (alive && own === epoch && stamp === identity()) {
+        const result = authFailure(cause);
+        if (result.code === 'csrf') {
+          try {
+            await authGet('csrf', abort.signal);
+          } catch {
+            if (alive && own === epoch && stamp === identity())
+              errorKey.value = 'failed';
+            return;
+          }
+          if (!alive || own !== epoch || stamp !== identity()) return;
+        }
+        errorKey.value =
+          result.code === 'security_proof_invalid'
+            ? 'invalidProof'
+            : result.code === 'throttled'
+              ? 'throttled'
+              : result.code === 'csrf'
+                ? 'csrf'
+                : result.code === 'signed_out'
+                  ? 'signedOut'
+                  : 'failed';
+      }
     } finally {
       if (own === epoch) {
         password.value = '';

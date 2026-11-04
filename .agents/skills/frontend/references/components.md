@@ -30,3 +30,7 @@ presentation contracts retain the composing controller's draft/security ownershi
 Readonly boolean facts and Admin cells reuse public BooleanBadge from the component
 catalogue. Searchable role/direct-permission assignment composition uses the public
 PermissionsAssignments contract in `docs/runa/handbook/modules/permissions/README.md#searchable-assignment-catalogue`.
+
+Auth secondary-address lists/editors reuse the public `AuthSecondaryEmailFields`
+contract in `docs/runa/handbook/modules/auth/account-ui.md#shared-secondary-email-presentation`.
+Keep owning confirmation/security behavior in the composing controller.

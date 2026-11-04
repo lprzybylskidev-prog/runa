@@ -15,3 +15,12 @@ apply capability visibility to dependent controls as well as whole forms.
 For visible mutation/read feedback and the local Form/submit-Button busy contract,
 follow `docs/runa/handbook/development/frontend/forms.md#visible-operation-progress`.
 Generic scope or loading copy never substitutes for shared progress presentation.
+
+For actionable failures, follow the public forms guide's
+`Values, dirty baselines and request failures` and `Automatic read reconciliation`.
+Keep stable business reasons distinct from stale revisions across adapters and
+aggregate writes; use reviewed localized copy and affected fields. A generic
+fallback is for unknown failures, never a substitute for a known refusal.
+Compose Auth secondary addresses through
+`docs/runa/handbook/modules/auth/account-ui.md#shared-secondary-email-presentation`;
+the shared fields retain controller-owned grants, proof and reconciliation.

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 import { useAdminLocale } from '@/runa/admin';
 import type {
   AdminJson,
@@ -8,7 +8,6 @@ import type {
 } from '@/runa/admin';
 import {
   Alert,
-  BooleanBadge,
   Button,
   Card,
   ContentLoading,
@@ -18,6 +17,7 @@ import {
   RadioGroup,
   TextInput,
 } from '@/runa/ui';
+import AuthSecondaryEmailFields from './AuthSecondaryEmailFields.vue';
 const props = defineProps<
   AdminSectionPresentationProps & { sources: AdminSectionData[] }
 >();
@@ -85,16 +85,12 @@ const addresses = computed(() => {
     return [];
   }
 });
-const editing = ref<'primary' | 'secondary'>();
+const editing = ref<'primary'>();
 const method = ref('change');
 const attempted = ref(false);
-const activeSection = computed(() =>
-  editing.value === 'primary' ? primary.value : secondary.value,
-);
+const activeSection = primary;
 const fieldKey = computed(() =>
-  editing.value === 'primary' && method.value === 'replace'
-    ? 'replacement_email'
-    : 'email',
+  method.value === 'replace' ? 'replacement_email' : 'email',
 );
 const email = computed({
   get: () => String(get(activeSection.value?.key ?? '', fieldKey.value) ?? ''),
@@ -120,18 +116,67 @@ const conflicts = computed(() =>
     ),
   ),
 );
-function open(
-  kind: 'primary' | 'secondary',
-  address?: { public_id: string; email: string },
-) {
+function open() {
   attempted.value = false;
-  editing.value = kind;
-  if (kind === 'primary')
-    method.value = available(primary.value, 'change') ? 'change' : 'replace';
-  else {
-    set('secondary', 'address_id', address?.public_id ?? null);
-    set('secondary', 'email', address?.email ?? '');
-  }
+  editing.value = 'primary';
+  method.value = available(primary.value, 'change') ? 'change' : 'replace';
+}
+const secondaryEmail = computed({
+  get: () => String(get('secondary', 'email') ?? ''),
+  set: (value: string) => set('secondary', 'email', value),
+});
+const secondaryEditing = computed(() =>
+  typeof get('secondary', 'address_id') === 'string'
+    ? String(get('secondary', 'address_id'))
+    : null,
+);
+const secondaryConflicts = computed(() =>
+  props.controller.conflicts.value.filter((conflict) =>
+    conflict.path.startsWith('secondary.'),
+  ),
+);
+const secondaryForm = ref<{ focusEmail: () => void }>();
+async function editSecondary(publicId: string) {
+  if (props.controller.busy.value) return;
+  const address = addresses.value.find((row) => row.public_id === publicId);
+  if (!address) return;
+  set('secondary', 'address_id', address.public_id);
+  secondaryEmail.value = address.email;
+  await nextTick();
+  secondaryForm.value?.focusEmail();
+}
+function cancelSecondary() {
+  if (props.controller.busy.value) return;
+  for (const key of ['address_id', 'email'])
+    set(
+      'secondary',
+      key,
+      props.controller.records.value.secondary?.values[key] ?? null,
+    );
+}
+function submitSecondary() {
+  const command = secondaryEditing.value ? 'change' : 'add';
+  if (
+    props.controller.busy.value ||
+    secondaryConflicts.value.length ||
+    !available(secondary.value, command)
+  )
+    return;
+  emit('submit', 'secondary', command, []);
+}
+function resendSecondary(publicId: string) {
+  const address = addresses.value.find((row) => row.public_id === publicId);
+  if (
+    !address ||
+    props.controller.busy.value ||
+    !available(secondary.value, 'change')
+  )
+    return;
+  // A separate reviewed command must not overwrite an unrelated dirty editor.
+  emit('operation', 'secondary', 'change', {
+    address_id: publicId,
+    email: address.email,
+  });
 }
 watch(
   [
@@ -168,12 +213,7 @@ function submit() {
   attempted.value = true;
   if (issue.value || conflicts.value.length || !activeSection.value) return;
   const section = activeSection.value.key;
-  const command =
-    editing.value === 'primary'
-      ? method.value
-      : get('secondary', 'address_id')
-        ? 'change'
-        : 'add';
+  const command = method.value;
   if (!available(activeSection.value, command)) return;
   editing.value = undefined;
   emit('submit', section, command, []);
@@ -219,79 +259,55 @@ function remove(publicId: string) {
           :disabled="
             controller.busy.value || !controller.records.value.primary_email
           "
-          @click="open('primary')"
+          @click="open()"
           >{{ text('Zmień adres', 'Change email') }}</Button
         >
       </div>
-      <div
+      <AuthSecondaryEmailFields
         v-if="secondary && controller.records.value.secondary"
-        class="space-y-3"
-        data-secondary-emails
+        ref="secondaryForm"
+        :locale="locale"
+        :addresses="addresses"
+        :limit="Number(get('secondary', 'secondary_email_limit') ?? 0)"
+        :email="secondaryEmail"
+        :editing="secondaryEditing"
+        :busy="controller.busy.value"
+        :can-add="available(secondary, 'add')"
+        :can-change="available(secondary, 'change')"
+        :can-remove="available(secondary, 'remove')"
+        :conflicted="!!secondaryConflicts.length"
+        :error="
+          (
+            controller.errors.value[
+              controller.fieldPath('secondary', 'email')
+            ] ?? []
+          ).map(t)
+        "
+        @update:email="secondaryEmail = $event"
+        @edit="editSecondary"
+        @resend="resendSecondary"
+        @remove="remove"
+        @submit="submitSecondary"
+        @cancel="cancelSecondary"
       >
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <h3 class="text-sm font-semibold">
-            {{ text('Dodatkowe adresy', 'Secondary emails') }}
-          </h3>
-          <Button
-            v-if="available(secondary, 'add')"
-            size="sm"
-            variant="outline"
-            :disabled="
-              controller.busy.value || !controller.records.value.secondary
-            "
-            @click="open('secondary')"
-            >{{ text('Dodaj adres', 'Add email') }}</Button
-          >
-        </div>
-        <div
-          v-for="address in addresses"
-          :key="address.public_id"
-          class="flex flex-wrap items-center justify-between gap-3 border-b border-line py-3 last:border-0"
-        >
-          <div class="min-w-0 space-y-1">
-            <p class="break-words">{{ address.email }}</p>
-            <div class="flex items-center gap-2 text-xs text-muted">
-              {{ text('Potwierdzony', 'Verified') }}
-              <BooleanBadge :value="address.verified" :locale="locale" />
-            </div>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <Button
-              v-if="available(secondary, 'change')"
-              size="sm"
-              variant="outline"
-              :disabled="controller.busy.value"
-              @click="open('secondary', address)"
-              >{{ text('Edytuj', 'Edit') }}</Button
-            ><Button
-              v-if="available(secondary, 'remove')"
-              size="sm"
-              variant="outline"
-              tone="danger"
-              :disabled="controller.busy.value"
-              @click="remove(address.public_id)"
-              >{{ text('Usuń', 'Remove') }}</Button
-            >
-          </div>
-        </div>
-        <p v-if="!addresses.length" class="text-sm text-muted">
-          {{
-            text('Brak dodatkowych adresów.', 'No secondary email addresses.')
-          }}
-        </p>
-      </div>
+        <template #before-field>
+          <FormConflict
+            v-for="conflict in secondaryConflicts"
+            :key="conflict.path"
+            :locale="locale"
+            :current="String(conflict.remote ?? '—')"
+            :busy="controller.busy.value"
+            @accept="controller.resolve(conflict.path, 'remote')"
+            @keep="controller.resolve(conflict.path, 'local')"
+          />
+        </template>
+      </AuthSecondaryEmailFields>
     </ContentLoading>
   </Card>
   <Dialog
     :model-value="!!editing"
     :locale="locale"
-    :title="
-      editing === 'primary'
-        ? text('Zmień główny adres e-mail', 'Change primary email')
-        : get('secondary', 'address_id')
-          ? text('Edytuj adres e-mail', 'Edit email')
-          : text('Dodaj adres e-mail', 'Add email')
-    "
+    :title="text('Zmień główny adres e-mail', 'Change primary email')"
     :busy="controller.busy.value"
     @update:model-value="!$event && close()"
   >
@@ -302,11 +318,7 @@ function remove(publicId: string) {
       @submit="submit"
     >
       <RadioGroup
-        v-if="
-          editing === 'primary' &&
-          available(primary, 'change') &&
-          available(primary, 'replace')
-        "
+        v-if="available(primary, 'change') && available(primary, 'replace')"
         v-model="method"
         :label="text('Potwierdzenie adresu', 'Email verification')"
         :options="[
@@ -336,9 +348,11 @@ function remove(publicId: string) {
         :error="[
           ...(attempted && issue ? [issue] : []),
           ...(activeSection
-            ? (controller.errors.value[
-                controller.fieldPath(activeSection.key, fieldKey)
-              ] ?? [])
+            ? (
+                controller.errors.value[
+                  controller.fieldPath(activeSection.key, fieldKey)
+                ] ?? []
+              ).map(t)
             : []),
         ]"
       />
@@ -353,7 +367,7 @@ function remove(publicId: string) {
       />
       <template #actions
         ><Button type="submit" variant="outline">{{
-          editing === 'primary' && method === 'change'
+          method === 'change'
             ? text('Wyślij link zmiany', 'Send change link')
             : text('Zapisz adres', 'Save email')
         }}</Button

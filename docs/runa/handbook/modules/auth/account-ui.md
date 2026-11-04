@@ -406,3 +406,40 @@ appearance changes retain the existing display transition, notification rows ret
 independent Save/Revert and conflicts, and administrative preferences retain an
 explicit atomic Save/Revert for the selected account. Selecting another user's
 language/theme never changes the administrator's own presentation.
+
+### Shared secondary-email presentation
+
+Auth owns the public `AuthSecondaryEmailFields` component exported by `@/runa/auth`,
+implemented in `modules/auth/frontend/AuthSecondaryEmailFields.vue`. Application
+compositions, own-account and Admin use the same list, verification badges and
+inline editor. This is pure presentation; the composing controller owns reads,
+drafts, capability admission, removal confirmation, security proof and writes.
+
+`AuthSecondaryEmailFieldsProps` takes `locale: 'pl'|'en'`,
+`addresses: readonly {public_id: string; email: string; verified: boolean}[]`,
+`limit: number`, `email: string`, `editing?: string|null`, `busy?: boolean`,
+`canAdd?: boolean`, `canChange?: boolean`, `canRemove?: boolean`,
+`error?: string|readonly string[]`, `conflicted?: boolean`.
+Events: `update:email(value: string)`, `edit(publicId: string)`,
+`resend(publicId: string)`, `remove(publicId: string)`, `submit()`, `cancel()`.
+The `before-field` slot hosts controller-owned conflict resolution. Exposed
+`focusInvalid()` and `focusEmail()` support asynchronous error/edit focus.
+Capabilities default false; busy defaults false. The editor performs immediate
+required/email validation; authoritative errors remain controller-owned. It omits
+Add at the configured limit and uses Change to resend unverified addresses.
+
+Authenticated account failures retain reviewed business codes before coarse HTTP
+classification: occupied email/login, address limits, reused password, invalid
+proof, notification recipients and preferences have specific Polish/English copy.
+Known email/login/password errors attach to the caller's accepted input only.
+Business 409 does not claim the profile revision changed; stale identity or
+preference revisions still reconcile without replay. Display-preference status
+can carry a reviewed localized message pair through the shared feedback control;
+external delivery mutations retain their own outcome to avoid duplicate feedback.
+Operation proof distinguishes rejected credentials, throttling, expired security
+and signed-out state, and always erases submitted secrets. Anonymous Auth entry
+retains its existing non-enumeration rules.
+
+A rejected proof with HTTP 419 renews CSRF through the existing guarded read while
+busy, clears credentials and requests a new explicit confirmation. It never
+replays proof submission or the protected business write.

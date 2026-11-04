@@ -969,6 +969,15 @@ reassessment before resuming point 3; completed point history remains evidence.
     proofs and aggregate completeness.
   - Synchronize shared contracts, owner/customer references, focused regressions
     and current compiled rendered readiness before returning to owner acceptance.
+- [x] 11a72. Reuse secondary-email presentation and audit actionable failures system-wide.
+  - Compose own-account and administrator addresses from one Auth-owned presentation;
+    preserve native grants, drafts, proof and reconciliation.
+  - Audit HTTP classification, module adapters, aggregate writes and supplied consumers;
+    retain safe business reasons and distinguish them from stale revisions.
+  - Show localized actionable refusals and field errors without leaking identifiers,
+    private exception messages or anonymous account existence.
+  - Synchronize contracts and both guidance products, add focused regressions and
+    prepare current rendered assets before repeating owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6733,3 +6742,90 @@ base runa_test, private credentials, development services, durable files/data,
 caches, backups and reports remain preserved; no reset was performed. No task-created
 Docker resources require cleanup. Owner acceptance 11b and final affected-area
 verification/release 12 remain open.
+
+### Point 11a72 — Shared secondary addresses and system-wide refusal review
+
+The owner reports that Admin secondary addresses diverge from the own-account
+pattern and an occupied address receives a false revision-conflict message. The
+owner explicitly requires a system-wide search for the same failure class.
+
+Reviewed the shared HTTP/form/export/preference consumers, Auth entry/account and
+Admin presentation, module Management adapters, standalone/aggregate execution,
+Permissions assignments/definitions, Audit reads and the application reference
+panel. Source searches are retained in `.runtime/user-details/error-audit.txt` and
+`admin-refusals.txt`. Knowledge was current and queried for business-refusal/field
+reconciliation guidance; the original forms/Admin/Auth/public API guides supplied
+the operating contracts. Laravel Boost validation/error documentation confirmed
+transport behavior. Only relevant frontend/Vue/Tailwind/backend/Laravel/security
+skills and references were loaded.
+
+Findings and implemented corrections:
+
+- Own and Admin secondary addresses now compose public AuthSecondaryEmailFields:
+  one verified/pending list, count/limit, quiet row actions and inline editor.
+  Parent controllers retain native reads, drafts, removal confirmation, grants,
+  post-submit proof and reconciliation. The Admin projection adds readonly
+  secondary_email_limit. Resend does not replace an unrelated inline draft.
+- Auth's coarse HTTP 409 classification previously erased identifier_conflict;
+  authenticated account feedback now retains reviewed business reasons first.
+  Occupied email/login and reused passwords attach to the relevant accepted input.
+  Actual stale revisions retain automatic read reconciliation and explicit writes.
+  Anonymous registration/recovery/login retain their non-enumerating responses.
+- Profile/secondary adapters and aggregate Save previously replaced IdentityConflict
+  reasons with identity_conflict/admin_revision_stale. They preserve the contract's
+  safe stable reason. Password-reset eligibility no longer becomes false/stale;
+  it retains password_reset_unavailable with rollback and unconsumed action proof.
+- Admin standalone, aggregate and operational feedback now recognizes reviewed
+  identifier, address, preference, recipient, policy, schedule, selection, role,
+  protected-definition and last-superadministrator refusals. Known Audit/history
+  read refusals retain context. Unknown 422 without field paths no longer claims
+  highlighted fields. Raw server messages, unknown reasons and 5xx details remain
+  hidden behind safe fallbacks.
+- Direct Auth Admin identity/email/avatar controls now translate owner field errors,
+  as shared AdminField already did. Avatar adaptation preserves known 422 reasons.
+  Account preference feedback preserves reviewed business copy; external delivery
+  mutations keep their own outcome without duplication.
+- Operation proof distinguishes invalid credentials, throttling, signed-out state
+  and expired form security. A 419 renews CSRF by read only, erases credentials and
+  requires an explicit new confirmation. Export HTTP refusals retain allowlisted
+  codes; table-view name and view-limit errors have separate recovery messages.
+- Generic useForm remains a domain-neutral primitive; actual supplied write owners
+  interpret business reasons. The reference ping and unknown read/network failures
+  retain appropriate safe retry feedback, with no fabricated business diagnosis.
+
+Public Auth composition/security, Admin frontend, canonical forms and module/central
+changelogs are synchronized. Owner frontend component/form references and customer
+frontend composition guidance point to the canonical contracts. Root AGENTS and
+backend/security guidance already require safe failures, controller ownership and
+pattern reuse, so no constitutional or duplicate instruction change is needed.
+Auth 3.1.0/Admin 0.2.0 remain existing unreleased candidates; presentation addition
+and corrected refusal semantics are included there. No migrations, new dependency,
+reset, production setting or release/activation change is required.
+
+Focused verification: 33 frontend tests PASS (six files; other cases skipped),
+covering occupied identifiers, address drafts/reconciliation, shared inline Admin
+editing and live Polish errors, business reasons/field scoping, preferences,
+operational settings, proof secret cleanup/419 and export refusal safety. Four
+native backend cases PASS, 80 assertions, through the supported one-worker parallel
+runner: own secondary address conflict, standalone profile/secondary adapters,
+aggregate rollback and ineligible password reset/proof preservation. An initial
+assertion used the outer reason envelope instead of the actual inner error.code;
+it was corrected. A subsequent coordinator execution was interrupted with exit
+143 and was not counted as PASS; the completed supported rerun supplies the result.
+Inactive disposable worker cleanup succeeded before/after the completed run;
+base runa_test and development data remain preserved.
+
+Current full frontend asset build PASS. Native compiled user details readiness
+covers Polish/English, light/dark and 390/1440px with no record writes. Additional
+native own/Admin refusal checks submit an already-claimed primary address, assert
+actual HTTP 409 identifier_conflict, retained input, localized inline feedback,
+local submit animation and unchanged profile version/address list. Screenshots
+were inspected, including the repaired Polish field message. Evidence is under
+`.runtime/user-details/email-*.log` and
+`.runtime/artifacts/playwright/email-refusals/`; browser sessions are logged out.
+
+These focused checks/build/rendered observations are implementation readiness,
+not owner acceptance or complete final quality PASS. Mandatory staged hooks and
+knowledge freshness accompany this commit. No task-created Docker resource needs
+removal; active services, development/base test data, caches, backups and reports
+are preserved. Owner acceptance 11b and final verification/release 12 remain open.

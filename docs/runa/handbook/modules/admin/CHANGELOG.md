@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Admin 0.2.0: retain business reasons through aggregate Save and operational writes, localize known refusals and map identifiable fields. Compose the shared Auth secondary-email editor with native grants and proof.
+
 - Reuse local Form/submit-Button progress, show review/settings/history and selected-row read activity, and keep conflict feedback actionable after reconciliation.
 
 - Share localized BooleanBadge for readonly facts and table booleans, with one semantic account-risk tone catalogue.

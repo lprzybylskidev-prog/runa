@@ -29,3 +29,17 @@ export interface AuthEmailPreferenceFieldsProps {
   error?: string | readonly string[];
   disabled?: boolean;
 }
+
+export interface AuthSecondaryEmailFieldsProps {
+  locale: 'pl' | 'en';
+  addresses: readonly { public_id: string; email: string; verified: boolean }[];
+  limit: number;
+  email: string;
+  editing?: string | null;
+  busy?: boolean;
+  canAdd?: boolean;
+  canChange?: boolean;
+  canRemove?: boolean;
+  error?: string | readonly string[];
+  conflicted?: boolean;
+}

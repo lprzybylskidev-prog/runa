@@ -16,13 +16,15 @@ function reload() {
     :locale="locale"
     :error="
       status.error
-        ? locale === 'pl'
-          ? status.error === 'conflict'
-            ? 'Nie zapisano tej zmiany. Aktualne preferencje pobrano automatycznie; wybierz ustawienie ponownie.'
-            : 'Nie udało się zsynchronizować preferencji. Spróbuj ponownie.'
-          : status.error === 'conflict'
-            ? 'This change was not saved. Current preferences were loaded automatically; choose the setting again.'
-            : 'Unable to synchronize preferences. Try again.'
+        ? status.message
+          ? status.message[locale === 'pl' ? 0 : 1]
+          : locale === 'pl'
+            ? status.error === 'conflict'
+              ? 'Preferencje zmieniły się. Wybierz ustawienie ponownie.'
+              : 'Nie udało się zsynchronizować preferencji. Spróbuj ponownie.'
+            : status.error === 'conflict'
+              ? 'Preferences changed. Choose the setting again.'
+              : 'Unable to synchronize preferences. Try again.'
         : ''
     "
   >
