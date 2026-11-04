@@ -215,6 +215,7 @@ Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/d
 - Responsive desktop/tablet/mobile from day one.
 - Light and dark themes from day one.
 - Frontend validation handles known UX errors immediately; backend remains security/integrity authority.
+- Omit forms, sections and controls for capabilities disabled by current module configuration; do not render disabled substitutes or empty wrappers. Keep configuration switches and transient loading/write/prerequisite states distinct. Follow [capability visibility](docs/runa/handbook/development/frontend/customization.md#configuration-based-capability-visibility).
 - Reuse established components/page patterns before inventing new ones; maintain the frontend skill’s component and pattern references in the same task.
 - Sidebar navigation selects areas/modules; subview links use the shared top bar. Follow [page-navigation composition](docs/runa/handbook/development/frontend/page-layouts.md#page-level-navigation-composition).
 - Use one thin HTTP client/wrapper, not scattered fetch calls.

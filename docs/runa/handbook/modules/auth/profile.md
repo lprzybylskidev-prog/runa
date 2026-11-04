@@ -34,6 +34,8 @@ Audit rolls mutations back and returns safe 503. Session loss uses established 4
 `profile` returns public_id, version, display_name, the exclusive name or
 first_name/surname representation, login, primary email/verification, secondary
 public_id/email/verified_at rows, initials, has_avatar and current capabilities.
+The additive boolean capability `email_verification_enabled` reports whether the
+current module policy permits the optional primary-address verification controls.
 It never returns internal IDs, private storage paths, credentials or tokens.
 Name/login edits are complete replacements: supply either name or both first_name
 and surname, plus the desired login (null clears it). Naming/normalization rules

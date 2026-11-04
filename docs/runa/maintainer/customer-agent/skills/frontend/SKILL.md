@@ -41,6 +41,8 @@ recovery and modal-focus requirements. Contextual
 security/availability warnings, reconciliation and durable progress/results retain
 their owning state presentation. Check these distinctions during view review.
 
+For configuration-driven forms, follow `docs/runa/handbook/development/frontend/customization.md#configuration-based-capability-visibility`: omit disabled capabilities and empty wrappers, including in App replacements. Configuration editors and temporary operation/prerequisite states retain their own controls. Report protected-platform mismatches to its owner.
+
 Use `docs/runa/handbook/architecture/public-api.md` to distinguish supported
 extension/consumption APIs from platform internals. Consume documented backend
 adapters and frontend facades from application-owned code; neither a Contracts

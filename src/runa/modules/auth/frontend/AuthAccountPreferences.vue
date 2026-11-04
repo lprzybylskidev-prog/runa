@@ -133,6 +133,13 @@ function keep(choice: Choice) {
   if (failedKey.value === keyOf(choice) && failure.value === 'conflict')
     failure.value = '';
 }
+function setEnabled(choice: Choice, enabled: boolean) {
+  const draft = drafts[keyOf(choice)];
+  if (!draft) return;
+  draft.enabled = enabled;
+  if (!enabled && !draft.recipients.length) draft.recipients = ['primary'];
+  if (!enabled) delete recipientErrors[keyOf(choice)];
+}
 async function save(choice: Choice) {
   if (busy.value) return;
   const key = keyOf(choice),
@@ -311,18 +318,19 @@ defineExpose({ beginReset, reload });
             />
             <div class="min-w-0 font-semibold [overflow-wrap:anywhere]">
               <Switch
-                v-model="drafts[keyOf(choice)]!.enabled"
+                :model-value="drafts[keyOf(choice)]!.enabled"
                 :label="choice.names[locale]"
+                @update:model-value="setEnabled(choice, $event)"
               />
             </div>
             <Select
+              v-if="drafts[keyOf(choice)]!.enabled"
               v-model="drafts[keyOf(choice)]!.recipients"
               :multiple="true"
               size="sm"
               :label="text('Wyślij na', 'Send to')"
               :options="recipientOptions"
               :locale="locale"
-              :disabled="!drafts[keyOf(choice)]!.enabled"
               :error="recipientErrors[keyOf(choice)] ?? ''"
               @update:model-value="delete recipientErrors[keyOf(choice)]"
             />

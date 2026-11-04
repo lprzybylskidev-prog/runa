@@ -959,6 +959,17 @@ function profileSecret(string $purpose): string
     return Crypt::decryptString(DB::table('runa_auth.profile_mail')->where('purpose', $purpose)->latest('id')->value('delivery_secret'));
 }
 
+it('projects current module capability visibility without enabling forbidden profile writes', function (): void {
+    $user = profileVerified('capability-visibility@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->getJson('/api/runa/auth/profile')->assertOk()->assertJsonPath('data.capabilities.email_verification_enabled', true);
+    entryPolicy(['email_verification' => 'disabled', 'own_name_editable' => false, 'own_email_editable' => false, 'avatar_editor' => 'admin']);
+    $this->getJson('/api/runa/auth/profile')->assertOk()->assertJsonPath('data.capabilities.email_verification_enabled', false)
+        ->assertJsonPath('data.capabilities.own_name_editable', false)->assertJsonPath('data.capabilities.own_email_editable', false)
+        ->assertJsonPath('data.capabilities.avatar_editor', 'admin');
+    $this->patchJson('/api/runa/auth/profile', ['version' => $user->version, 'name' => 'Forbidden edit'])->assertForbidden();
+});
+
 it('keeps private profile edits versioned and self scoped with complete naming policy and safe history', function (): void {
     $user = profileVerified('private-profile@example.test');
     $other = profileVerified('other-profile@example.test');

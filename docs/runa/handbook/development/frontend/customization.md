@@ -34,6 +34,38 @@ come from the shared CSS; add application CSS after that import. Tailwind scans
 application resources/modules and platform source. Keep complete utility names
 statically discoverable. See [branding/layouts](../../architecture/frontend.md).
 
+## Configuration-based capability visibility
+
+When current module configuration disables a capability, omit its operational
+forms, inputs, actions and enclosing sections from the rendered UI. Do not replace
+them with disabled controls, explanatory placeholders, empty cards/tabs or empty
+navigation destinations. Apply the same rule to supplied defaults, App views and
+partial/full presentation replacements. Use the owning current capability
+projection; never infer configuration from a previous successful operation.
+
+Compose independent capabilities separately: disabling profile edits removes the
+edit form, while authorized profile facts may remain as ordinary read-only text.
+Disabling avatar editing removes upload/save controls; an authorized existing
+avatar may remain as an image. Disabling every factor removes the factor card,
+while enabled password or trusted-device capabilities retain their own sections.
+Hide dependent recipient inputs when a notification category is turned off, while
+keeping its enable switch and explicit Save available.
+
+Configuration editors that enable/reconfigure a capability remain available to
+authorized operators. A temporarily busy control, loading region, validation/
+conflict state or unmet prerequisite of an enabled feature is distinct from a
+configuration-disabled capability and may use its documented disabled state.
+Module diagnostics/recovery and mandatory current security-completion flows retain
+their owning availability contracts. Backend permission/policy/validation remains
+authoritative; hiding a form does not authorize a write.
+
+React to current configuration changes without reinitializing unrelated dirty
+drafts or replaying writes. Remove invalid selected options and close unavailable
+editors; discard their secret/proof state. Review sibling consumers of a shared
+capability and cover enabled/disabled transitions at the owning controller or
+rendered-component boundary. Customer findings in protected Runa source are
+reported to its owner, not repaired through protected edits.
+
 ## Compose with supplied screens
 
 `AuthApplication` also accepts a `loading` slot with `{ account: boolean }` for the destination page skeleton before session validation. Do not mount protected controllers or forms in this slot. Its default account loading presentation is shared with the default account screen.

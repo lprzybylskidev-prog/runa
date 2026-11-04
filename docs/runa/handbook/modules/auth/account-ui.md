@@ -83,7 +83,9 @@ page structure. The account fallback is public `AuthAccountLoading`, replaceable
 through `AuthPresentationProvider.components.accountLoading`; both initialization
 stages use that same presentation.
 The default account editor groups identity, private avatar, password and two-factor
-settings in four shared Cards. Details, avatar and password have visible Forms;
+settings in shared Cards. Details and avatar Forms appear only when their current
+capabilities allow editing; otherwise authorized facts use plain text or an image.
+The password Form remains available independently;
 two-factor actions open shared dialogs. Each submission keeps its own credential
 draft, validation and pending state. Wide screens use two
 independent column stacks: details/password on the left, avatar/two-factor on the
@@ -182,7 +184,8 @@ recipients, and dirty rows expose Save/Revert. Edits stay local until Save. Savi
 reverting or refreshing one row preserves other unsaved row drafts.
 Incoming snapshots merge clean/disjoint fields without overwriting dirty ones;
 overlapping recipient edits use local FormConflict decisions. Recipient
-selection is disabled while the category is off, preserving its configured values.
+selection is omitted while the category is off, preserving its valid configured
+values. The subscription switch and explicit Save remain available.
 Known empty-recipient errors stop locally; server revision/recipient/security rules
 remain authoritative. Required-message summaries are omitted from Preferences;
 mandatory/sensitive delivery remains primary-only on the server. Empty/loading/failed
@@ -216,7 +219,14 @@ Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/FileInput/
   safe event details (`sukces`/`success`, `odmowa`/`refused`); raw event codes remain
   canonical.
 
-Disabled features disappear. Read-only fields and avatar policy remain enforced by
+Disabled features and their empty wrappers disappear under the shared
+[capability visibility contract](../../development/frontend/customization.md#configuration-based-capability-visibility).
+Disabled factor methods are omitted even when previously enrolled; the security
+Card disappears when neither factors nor trusted devices are available. Optional
+verification controls follow current email-verification policy. Capability
+withdrawal closes affected factor/avatar/secondary-address/lifecycle editors and
+clears their private proof/enrollment state, preserving unrelated drafts.
+Read-only fields and avatar policy remain enforced by
 the backend if policy changes after load. Self-deactivate/delete require an explicit
 confirmation, fresh password step-up and the Permissions-backed neutral authority invariant, including protection of the last eligible superadministrator. Unavailable authority integration refuses the operation.
 Secrets/files clear after attempts/unmount. TOTP setup keys and single-display

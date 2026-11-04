@@ -151,6 +151,7 @@ final readonly class Profiles
         foreach (['own_name_editable', 'own_login_editable', 'own_email_editable', 'secondary_emails_enabled', 'secondary_self_add', 'secondary_self_change', 'secondary_self_remove', 'avatar_enabled', 'avatar_editor', 'avatar_max_kib', 'secondary_email_limit', 'own_login_history', 'own_account_history', 'self_deactivate', 'self_delete'] as $key) {
             $capabilities[$key] = $this->value($key);
         }
+        $capabilities['email_verification_enabled'] = $this->value('email_verification') !== 'disabled';
 
         return ['public_id' => $user->public_id, 'version' => $user->version, 'display_name' => $user->identity()->displayName,
             'name' => $user->name, 'first_name' => $user->first_name, 'surname' => $user->surname, 'login' => $user->login,

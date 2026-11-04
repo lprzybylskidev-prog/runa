@@ -93,6 +93,22 @@ function cancelEdit() {
   email.value = '';
   Object.keys(secondaryErrors).forEach((key) => delete secondaryErrors[key]);
 }
+watch(
+  () => [
+    has('secondary_emails_enabled'),
+    has('secondary_self_change'),
+    has('secondary_self_remove'),
+  ],
+  () => {
+    if (
+      !has('secondary_emails_enabled') ||
+      (editing.value && !has('secondary_self_change'))
+    )
+      cancelEdit();
+    if (!has('secondary_emails_enabled') || !has('secondary_self_remove'))
+      removing.value = undefined;
+  },
+);
 async function edit(address: Address) {
   if (busy.value) return;
   emailConflict.value = undefined;
@@ -239,7 +255,7 @@ async function remove() {
       }}
     </p>
     <Form
-      v-if="editing || canAdd"
+      v-if="editing ? has('secondary_self_change') : canAdd"
       ref="form"
       data-account-section="secondary"
       :label="

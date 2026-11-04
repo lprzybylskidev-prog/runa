@@ -98,6 +98,19 @@ export function useAuthAccount(accountId: string) {
       security.value?.trusted_devices_enabled === true &&
       proofMethods.value.length > 0,
   );
+  watch([security, secret, qrCode, codes], () => {
+    const current = security.value;
+    if (!current) return;
+    if (!current.totp_enabled) {
+      secret.value = '';
+      qrCode.value = '';
+    }
+    if (
+      (!current.totp_enabled || !current.recovery_codes_enabled) &&
+      codes.value.length
+    )
+      codes.value = [];
+  });
   let refreshPromise: Promise<void> | undefined;
   let refreshAgain = false;
   let refreshingPreferenceSnapshot = false;

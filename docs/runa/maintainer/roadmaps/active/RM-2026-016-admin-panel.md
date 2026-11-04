@@ -904,7 +904,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     the Auth settings view and hide creation verification when unavailable.
   - Preserve native grants/proofs and initial-setup API capabilities, synchronize
     current guides and prepare current assets for repeated owner acceptance.
-- [ ] 11a65. Enforce configuration-based visibility across module presentations.
+- [x] 11a65. Enforce configuration-based visibility across module presentations.
   - Owner decision, 2026-11-04: when a module capability is disabled in its current
     configuration, omit its forms/sections/controls entirely rather than presenting
     disabled controls. Keep transient pending/loading/conflict states distinct.
@@ -6184,3 +6184,75 @@ horizontal overflow or page exception. Screenshots are preserved under
 issued in development. Supported backend cleanup removed only runa_test_test_1;
 base/development data, active Docker resources, caches, backups and evidence remain.
 Manual acceptance and broad final verification remain points 11b and 12.
+
+### Point 11a65 — Configuration-based module capability visibility
+
+Recorded the owner's omission rule in root/customer AGENTS and both frontend
+skills, referencing the canonical Configuration-based capability visibility section
+in the public customization guide. Operational forms, controls and empty wrappers
+for configuration-disabled capabilities are absent; authorized read-only facts may
+remain. Configuration switches, busy/loading/conflict states, prerequisites of
+enabled features, independent diagnostics/recovery and mandatory security
+completion retain their owning contracts. Customer guidance continues to forbid
+protected platform edits. CLAUDE/agent-contract references already delegate to
+these contracts and need no duplicate rule. Auth guides and both changelogs are
+synchronized; no new skill, dependency or public signature is introduced.
+
+Local knowledge was available/current before the source review. The bounded query
+module feature disabled frontend capability visibility is preserved in
+.runtime/module-capability-visibility/knowledge-initial.json; the original module
+frontend/settings and configuration architecture sources were opened before use.
+The supplied module/App frontend inventory covered 112 Vue/TypeScript paths through
+configuration/capability/disabled-binding searches, followed by focused inspection
+of matching owners; this is a source review, not complete functional acceptance of
+every screen. Findings and dispositions:
+
+- Auth creation now omits unavailable administrative verification (11a64).
+  Profile details/avatar editors now disappear when self-edit capability is off;
+  authorized facts remain text/image, with no disabled substitute Form. A new safe
+  profile capability email_verification_enabled controls optional verification UI.
+- Factor methods no longer remain visible solely because they were previously
+  enrolled. An empty factor/trust Card and right column disappear. Policy withdrawal
+  closes affected dialogs and clears password/proof/enrollment secrets, including
+  late-arriving enrollment data. Avatar crop completion cannot reopen a withdrawn
+  editor. Password and unrelated dirty identity drafts remain independent.
+- Secondary address editors/confirmation close when their capability is withdrawn;
+  an already selected self-lifecycle task cannot retain its Form after disabling.
+  Notification categories omit recipient controls while off; enable and explicit
+  Save remain. An invalid empty draft falls back to primary for disabled-category
+  persistence, retaining native recipient validation.
+- Auth entry/welcome registration and remember controls already use availability
+  conditionals; disabled registration exposes explanation without an entry Form.
+  Account tabs, histories and global secondary-address availability already gate
+  their owning presentation. Existing missing-proof/email-verification prerequisites
+  belong to enabled features and retain documented temporary disabled states.
+- Auth Admin sections/fields/actions are filtered by native AdministrationFeatures
+  and current projections. Admin module enable/settings/recovery/diagnostic controls
+  manage configuration and intentionally remain. Audit/Permissions supplied views
+  have no separate configuration-disabled operational editors in the reviewed
+  bindings; their disabled controls concern busy/paging/read prerequisites. The
+  minimal App composition/reference module adds no independent analogous editor.
+
+Auth remains the unpublished 3.0.0 candidate; the additive safe boolean uses the
+existing open capability projection without an API signature/version change.
+Backend refusal, permissions and Audit paths remain authoritative and unchanged.
+
+Focused evidence in .runtime/module-capability-visibility: two backend cases PASS
+(39 assertions) cover current capability projection and forbidden profile writes;
+eight frontend cases PASS cover omission, live withdrawal, proof/late-secret
+cleanup, independent drafts, secondary editor withdrawal, recipient toggling and
+existing crop/reconciliation behavior. The supported asset/type build PASS prepares
+current assets. A compiled Nginx/browser diagnostic with simulated disabled profile/
+security projections confirms absent forms/cards, retained read-only facts/password
+form, no writes/page exceptions/horizontal overflow at 1440px and 390px in light/
+dark. Screenshots are in .runtime/artifacts/playwright/module-capability-visibility.
+This bounded browser diagnostic is explicitly simulated-policy presentation evidence,
+not native whole-application policy acceptance. Native capability enforcement is
+covered separately by the focused backend cases. No broad verification was run.
+
+Supported backend cleanup removed only the runner-owned runa_test_test_1. No task
+Docker resources were created, no policy/credential change or database reset was
+performed in this point. Active development services/data, base runa_test, model/
+Qdrant caches, backups and all evidence remain. Mandatory hooks and knowledge
+freshness accompany the commit. Manual owner acceptance 11b and final automated
+verification/release 12 remain open.

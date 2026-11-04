@@ -89,6 +89,7 @@ const profile: Profile = {
     own_name_editable: true,
     own_login_editable: true,
     own_email_editable: true,
+    email_verification_enabled: true,
     secondary_emails_enabled: false,
     secondary_email_limit: 5,
     avatar_enabled: true,
@@ -201,6 +202,103 @@ async function loaded(w: ReturnType<typeof mount>) {
   await vi.waitFor(() => expect(w.find('form').exists()).toBe(true));
   await flushPromises();
 }
+
+it('disabled module capabilities omit account editors while retaining authorized facts and password changes', async () => {
+  Object.assign(currentProfile.capabilities, {
+    own_name_editable: false,
+    own_login_editable: false,
+    own_email_editable: false,
+    email_verification_enabled: false,
+    avatar_editor: 'admin',
+  });
+  currentProfile.email_verified = false;
+  Object.assign(currentSecurity, {
+    totp_enabled: false,
+    email_otp_enabled: false,
+    trusted_devices_enabled: false,
+    recovery_codes_enabled: false,
+  });
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  expect(w.find('[data-account-section=details]').exists()).toBe(false);
+  expect(w.find('[data-account-section=avatar]').exists()).toBe(false);
+  expect(w.find('[data-account-security]').exists()).toBe(false);
+  expect(w.find('[data-account-section=password]').exists()).toBe(true);
+  expect(w.get('[data-account-readonly-details]').text()).toContain(
+    'test@example.test',
+  );
+  expect(w.find('[data-account-readonly-avatar]').exists()).toBe(true);
+  expect(
+    w
+      .findAll('button')
+      .some((button) => button.text() === 'Wyślij wiadomość weryfikacyjną'),
+  ).toBe(false);
+  expect(writes).toHaveLength(0);
+});
+
+it('disabled module capability changes close factor forms and clear their secrets without discarding unrelated drafts', async () => {
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  await w.get('input[name="name"]').setValue('Unrelated draft');
+  await w
+    .get('[data-account-security]')
+    .findAll('button')
+    .find((button) => button.text() === 'Skonfiguruj')!
+    .trigger('click');
+  await flushPromises();
+  state.sectionFields.security.current_password = 'private-proof';
+  Object.assign(currentSecurity, {
+    totp_enabled: false,
+    email_otp_enabled: false,
+    trusted_devices_enabled: false,
+  });
+  await state.refresh();
+  await vi.waitFor(() =>
+    expect(w.find('[data-account-section=security]').exists()).toBe(false),
+  );
+  expect(w.find('[data-account-security]').exists()).toBe(false);
+  expect(state.sectionFields.security.current_password).toBe('');
+  state.secret.value = 'late-enrollment-secret';
+  state.qrCode.value = 'late-private-image';
+  await flushPromises();
+  expect(state.secret.value).toBe('');
+  expect(state.qrCode.value).toBe('');
+  expect(w.get('input[name="name"]').element).toHaveProperty(
+    'value',
+    'Unrelated draft',
+  );
+  expect(writes).toHaveLength(0);
+});
+
+it('disabled module editing capabilities remove forms and proof state on a live profile refresh', async () => {
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.sectionFields.password.password = 'unrelated-password-draft';
+  state.sectionFields.details.current_password = 'private-proof';
+  currentProfile = {
+    ...currentProfile,
+    version: 6,
+    capabilities: {
+      ...currentProfile.capabilities,
+      own_name_editable: false,
+      own_login_editable: false,
+      own_email_editable: false,
+      avatar_enabled: false,
+    },
+  };
+  await state.refresh();
+  await vi.waitFor(() =>
+    expect(w.find('[data-account-section=details]').exists()).toBe(false),
+  );
+  expect(w.find('[data-account-section=avatar]').exists()).toBe(false);
+  expect(state.sectionFields.details.current_password).toBe('');
+  expect(state.sectionFields.password.password).toBe(
+    'unrelated-password-draft',
+  );
+  expect(writes).toHaveLength(0);
+});
 
 it('loads session rows once with a centered spinner and no visible loading text', async () => {
   const original = vi.mocked(window.fetch).getMockImplementation()!;
@@ -1926,6 +2024,30 @@ it('preferences expose header reset and explicit language/theme options with inl
   expect(writes).toHaveLength(0);
 });
 
+it('disabled module notification options omit recipient controls and remain explicitly re-enableable', async () => {
+  preferenceDeliveryFixture();
+  const w = mount(AuthAccount, {
+    props: { accountId: id },
+    attachTo: document.body,
+  });
+  await openPreferences(w);
+  const row = w.get('[data-delivery-category=optional]');
+  const select = row.getComponent<MultiSelectInstance>(Select);
+  select.vm.$emit('update:modelValue', []);
+  await flushPromises();
+  await row.get('input[role=switch]').setValue(false);
+  expect(row.findComponent(Select).exists()).toBe(false);
+  expect(row.find('input[role=switch]').exists()).toBe(true);
+  await row.trigger('submit');
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  expect(writes[0]?.body).toMatchObject({
+    enabled: false,
+    recipients: ['primary'],
+  });
+  await row.get('input[role=switch]').setValue(true);
+  expect(row.findComponent(Select).exists()).toBe(true);
+});
+
 it('inline delivery drafts validate recipients, revert one row and preserve another unsaved row after a revisioned save', async () => {
   const categories = preferenceDeliveryFixture();
   categories.push({
@@ -2269,6 +2391,32 @@ it('secondary address refresh preserves dirty email and resolves only that edito
     (w.get('[name=secondary_email]').element as HTMLInputElement).value,
   ).toBe('remote@example.test');
   expect(state.fields.name).toBe('Unsaved identity');
+});
+
+it('disabled module secondary editing closes the existing draft without changing other sections', async () => {
+  Object.assign(currentProfile.capabilities, {
+    secondary_emails_enabled: true,
+    secondary_self_add: false,
+    secondary_self_change: true,
+  });
+  currentProfile.secondary_emails = [
+    { public_id: other, email: 'before@example.test', verified_at: null },
+  ];
+  const w = mount(AuthAccount, { props: { accountId: id } });
+  await loaded(w);
+  await w
+    .get('button[aria-label="Edytuj adres: before@example.test"]')
+    .trigger('click');
+  await w.get('[name=secondary_email]').setValue('private-draft@example.test');
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.fields.name = 'Keep my name';
+  currentProfile.capabilities.secondary_self_change = false;
+  await state.refresh();
+  await flushPromises();
+  expect(w.find('[data-account-section="secondary"]').exists()).toBe(false);
+  expect(w.text()).toContain('before@example.test');
+  expect(state.fields.name).toBe('Keep my name');
+  expect(writes).toHaveLength(0);
 });
 
 it('account refresh retains a trailing focus invalidation while an earlier read is pending', async () => {

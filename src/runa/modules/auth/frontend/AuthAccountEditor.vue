@@ -49,9 +49,35 @@ const {
   resolveAvatar,
 } = props.account;
 const detailForm = ref<{ focusInvalid: () => void }>();
+const canEditDetails = computed(() =>
+  ['own_name_editable', 'own_login_editable', 'own_email_editable'].some(has),
+);
+const hasRightColumn = computed(
+  () =>
+    has('avatar_enabled') ||
+    props.account.security.value?.totp_enabled ||
+    props.account.security.value?.email_otp_enabled ||
+    props.account.security.value?.trusted_devices_enabled,
+);
+watch(canEditDetails, (allowed) => {
+  if (!allowed)
+    for (const key of Object.keys(sectionFields.details))
+      sectionFields.details[key] = '';
+});
 const avatarForm = ref<{ focusInvalid: () => void }>();
 const passwordForm = ref<{ focusInvalid: () => void }>();
 const originals = ref<readonly File[]>([]);
+watch(canAvatar, (allowed) => {
+  if (!allowed) {
+    originals.value = [];
+    files.value = [];
+    removeAvatar.value = false;
+    cropOpen.value = false;
+    removeOpen.value = false;
+    for (const key of Object.keys(sectionFields.avatar))
+      sectionFields.avatar[key] = '';
+  }
+});
 const cropOpen = ref(false);
 const removeOpen = ref(false);
 const secondaryModalOpen = ref(false);
@@ -149,6 +175,7 @@ async function applyCrop() {
   cropping.value = true;
   try {
     const cropped = await cropper.value.crop();
+    if (!canAvatar.value || !cropOpen.value) return;
     files.value = [cropped];
     clearPreview();
     previewUrl.value = URL.createObjectURL(cropped);
@@ -172,7 +199,8 @@ function closeCrop(value: boolean) {
 <template>
   <div
     v-if="profile"
-    class="grid min-w-0 items-start gap-6 xl:grid-cols-2"
+    class="grid min-w-0 items-start gap-6"
+    :class="hasRightColumn ? 'xl:grid-cols-2' : undefined"
     :inert="codes.length > 0 || undefined"
   >
     <div class="min-w-0 space-y-6">
@@ -181,6 +209,7 @@ function closeCrop(value: boolean) {
           ><h3>{{ text('Dane konta', 'Account details') }}</h3></template
         >
         <Form
+          v-if="canEditDetails"
           ref="detailForm"
           data-account-section="details"
           :label="text('Dane konta', 'Account details')"
@@ -240,16 +269,16 @@ function closeCrop(value: boolean) {
             {{ profile.display_name }}
           </p>
           <TextInput
+            v-if="has('own_email_editable')"
             :model-value="fields.email ?? ''"
             name="email"
             type="email"
             autocomplete="email"
             :label="text('Adres e-mail', 'Email address')"
-            :readonly="!has('own_email_editable')"
             required
             :error="sectionErrors.details.email ?? ''"
             :helper="
-              profile.email_verified
+              profile.email_verified || !has('email_verification_enabled')
                 ? ''
                 : text('Adres niepotwierdzony.', 'Email not verified.')
             "
@@ -258,33 +287,49 @@ function closeCrop(value: boolean) {
               delete sectionErrors.details.email;
             "
           />
-          <Button
-            v-if="!profile.email_verified"
-            :busy="busy"
-            @click="sendVerification"
-            >{{
-              text('Wyślij wiadomość weryfikacyjną', 'Send verification email')
-            }}</Button
-          >
+          <p v-else class="text-sm [overflow-wrap:anywhere]">
+            {{ profile.email }}
+          </p>
           <AuthAccountProof
             v-if="has('own_email_editable') && fields.email !== profile.email"
             :account="account"
             section="details"
           />
           <template #actions
-            ><Button
-              type="submit"
-              variant="outline"
-              :busy="busy"
-              :disabled="
-                !has('own_name_editable') &&
-                !has('own_login_editable') &&
-                !has('own_email_editable')
-              "
-              >{{ text('Zapisz dane', 'Save details') }}</Button
-            ></template
+            ><Button type="submit" variant="outline" :busy="busy">{{
+              text('Zapisz dane', 'Save details')
+            }}</Button></template
           >
         </Form>
+        <dl
+          v-else
+          class="space-y-3 text-sm [overflow-wrap:anywhere]"
+          data-account-readonly-details
+        >
+          <div>
+            <dt class="font-semibold">{{ text('Nazwa', 'Name') }}</dt>
+            <dd>{{ profile.display_name }}</dd>
+          </div>
+          <div>
+            <dt class="font-semibold">
+              {{ text('Adres e-mail', 'Email address') }}
+            </dt>
+            <dd>{{ profile.email }}</dd>
+          </div>
+          <div v-if="profile.login">
+            <dt class="font-semibold">Login</dt>
+            <dd>{{ profile.login }}</dd>
+          </div>
+        </dl>
+        <Button
+          v-if="has('email_verification_enabled') && !profile.email_verified"
+          class="mt-5"
+          :busy="busy"
+          @click="sendVerification"
+          >{{
+            text('Wyślij wiadomość weryfikacyjną', 'Send verification email')
+          }}</Button
+        >
         <AuthSecondaryEmails
           :account="account"
           @feedback-modal="secondaryModalOpen = $event"
@@ -328,12 +373,13 @@ function closeCrop(value: boolean) {
         </Form>
       </Card>
     </div>
-    <div class="min-w-0 space-y-6">
+    <div v-if="hasRightColumn" class="min-w-0 space-y-6">
       <Card v-if="has('avatar_enabled')">
         <template #header
           ><h3>{{ text('Zdjęcie profilowe', 'Profile image') }}</h3></template
         >
         <Form
+          v-if="canAvatar"
           ref="avatarForm"
           data-account-section="avatar"
           :label="text('Zdjęcie profilowe', 'Profile image')"
@@ -419,7 +465,7 @@ function closeCrop(value: boolean) {
               type="submit"
               variant="outline"
               :busy="busy || cropping"
-              :disabled="!canAvatar || (!files.length && !removeAvatar)"
+              :disabled="!files.length && !removeAvatar"
               >{{ text('Zapisz zdjęcie', 'Save image') }}</Button
             >
             <Button
@@ -432,6 +478,17 @@ function closeCrop(value: boolean) {
             ></template
           >
         </Form>
+        <div v-else class="flex justify-center" data-account-readonly-avatar>
+          <Avatar
+            :src="
+              profile.has_avatar
+                ? `/api/runa/auth/profile/avatar?v=${profile.version}`
+                : ''
+            "
+            :initials="profile.initials"
+            :size="80"
+          />
+        </div>
       </Card>
       <AuthAccountSecurity
         :account="account"

@@ -37,6 +37,8 @@ and follow its repeat-attempt, recovery and modal-focus requirements. Contextual
 security/availability warnings, reconciliation and durable progress/results retain
 their owning state presentation. Check these distinctions during view review.
 
+For configuration-driven forms, apply [capability visibility](../../../docs/runa/handbook/development/frontend/customization.md#configuration-based-capability-visibility): omit disabled capabilities and empty wrappers, including in replacement views. Configuration editors and temporary operation/prerequisite states retain their own controls.
+
 | Task                                   | Load selectively                                                            |
 | -------------------------------------- | --------------------------------------------------------------------------- |
 | Accessibility/states/performance       | references/accessibility-responsive.md; references/ux-design-performance.md |

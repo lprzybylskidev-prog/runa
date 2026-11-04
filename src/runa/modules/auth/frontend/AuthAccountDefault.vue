@@ -154,11 +154,26 @@ const methodOptions = computed(() =>
           : text('Kod odzyskiwania', 'Recovery code'),
   })),
 );
+const lifecycleTaskAvailable = computed(() =>
+  task.value === 'deactivate'
+    ? has('self_deactivate')
+    : task.value === 'delete'
+      ? has('self_delete')
+      : true,
+);
+watch(lifecycleTaskAvailable, (available) => {
+  if (!available) {
+    fields.current_password = '';
+    fields.code = '';
+    confirmed.value = false;
+  }
+});
 const formVisible = computed(
   () =>
-    ['details', 'security', 'addresses'].includes(tab.value) ||
-    (tab.value === 'avatar' && canAvatar.value) ||
-    (tab.value === 'trust' && proofMethods.value.length > 0),
+    lifecycleTaskAvailable.value &&
+    (['details', 'security', 'addresses'].includes(tab.value) ||
+      (tab.value === 'avatar' && canAvatar.value) ||
+      (tab.value === 'trust' && proofMethods.value.length > 0)),
 );
 const visibleTabs = computed(() => {
   const visible = tabs.value.filter(

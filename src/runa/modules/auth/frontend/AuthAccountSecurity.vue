@@ -82,7 +82,7 @@ const actions = computed(() => [
         },
       ]
     : []),
-  ...(secret.value
+  ...(security.value?.totp_enabled && secret.value
     ? [
         {
           value: 'totpConfirm',
@@ -116,7 +116,8 @@ const actions = computed(() => [
   ...(security.value?.enrolled.length
     ? [{ value: 'disable', label: text('Wyłącz metodę', 'Disable method') }]
     : []),
-  ...(security.value?.recovery_codes_enabled &&
+  ...(security.value?.totp_enabled &&
+  security.value.recovery_codes_enabled &&
   security.value.enrolled.includes('totp')
     ? [
         {
@@ -131,7 +132,7 @@ const actions = computed(() => [
 ]);
 
 const methods = computed(() => [
-  ...(security.value?.totp_enabled || security.value?.enrolled.includes('totp')
+  ...(security.value?.totp_enabled
     ? [
         {
           value: 'totp',
@@ -145,8 +146,7 @@ const methods = computed(() => [
         },
       ]
     : []),
-  ...(security.value?.email_otp_enabled ||
-  security.value?.enrolled.includes('email')
+  ...(security.value?.email_otp_enabled
     ? [
         {
           value: 'email',
@@ -175,6 +175,20 @@ const operationLabel = computed(() =>
     : (actions.value.find((action) => action.value === overviewAction.value)
         ?.label ?? ''),
 );
+watch([actions, methods, () => security.value?.trusted_devices_enabled], () => {
+  if (
+    (modal.value === 'devices' && !security.value?.trusted_devices_enabled) ||
+    (overviewAction.value !== 'none' &&
+      (!actions.value.some((action) => action.value === overviewAction.value) ||
+        (overviewAction.value === 'disable' &&
+          !methods.value.some(
+            (candidate) => candidate.value === target.value,
+          ))))
+  ) {
+    modal.value = null;
+    clearDraft();
+  }
+});
 function selectMethod(value: string, enrolled: boolean) {
   setAction(
     enrolled ? 'disable' : value === 'totp' ? 'totpBegin' : 'emailEnable',
@@ -260,10 +274,17 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
 ]);
 </script>
 <template>
-  <Card data-account-security>
+  <Card
+    v-if="methods.length || security?.trusted_devices_enabled"
+    data-account-security
+  >
     <template #header
       ><h3>
-        {{ text('Uwierzytelnianie dwuetapowe', 'Two-factor authentication') }}
+        {{
+          methods.length
+            ? text('Uwierzytelnianie dwuetapowe', 'Two-factor authentication')
+            : text('Zaufane urządzenia', 'Trusted devices')
+        }}
       </h3></template
     >
     <div class="space-y-4">
@@ -292,7 +313,9 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
       </div>
       <Button
         v-if="
-          security?.recovery_codes_enabled && security.enrolled.includes('totp')
+          security?.totp_enabled &&
+          security.recovery_codes_enabled &&
+          security.enrolled.includes('totp')
         "
         variant="outline"
         :disabled="busy || modal !== null"
@@ -304,7 +327,8 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
 
       <section
         v-if="security?.trusted_devices_enabled"
-        class="space-y-3 border-t border-line pt-4"
+        class="space-y-3"
+        :class="methods.length ? 'border-t border-line pt-4' : ''"
         data-trusted-devices
       >
         <p v-if="!canTrustDevice" class="text-xs text-muted">
