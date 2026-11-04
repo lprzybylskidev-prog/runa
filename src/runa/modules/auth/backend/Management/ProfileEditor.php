@@ -22,11 +22,12 @@ use Runa\Modules\Auth\Contracts\ProfileChange;
 use Runa\Modules\Auth\Models\User;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Data\ModuleTransactions;
+use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Auth-owned declaration adapter, not a foreign persistence/factory entrypoint. */
 final readonly class ProfileEditor implements ManagementParticipant, ManagementResourceReader, ManagementWriter
 {
-    public function __construct(private OperationGuard $guard, private Profiles $profiles, private ModuleTransactions $transactions, private PrincipalScope $principals) {}
+    public function __construct(private OperationGuard $guard, private Profiles $profiles, private ModuleTransactions $transactions, private PrincipalScope $principals, private ModuleSettings $settings) {}
 
     public function read(ManagementRead $input): ManagementRecord
     {
@@ -38,7 +39,7 @@ final readonly class ProfileEditor implements ManagementParticipant, ManagementR
         }
 
         return new ManagementRecord($user->public_id, (string) $user->version,
-            ['name' => $user->name, 'first_name' => $user->first_name, 'surname' => $user->surname, 'login' => $user->login]);
+            ['name' => $user->name, 'first_name' => $user->first_name, 'surname' => $user->surname, 'login' => $user->login, 'identifier_mode' => $this->settings->value('runa.auth', 'identifier_mode')]);
     }
 
     public function page(ManagementRead $input): ManagementPageResult

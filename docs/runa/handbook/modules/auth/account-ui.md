@@ -352,3 +352,48 @@ ignored. Unchanged activity updates and opening the dropdown do not refetch it.
 The [shared shell contract](../admin/frontend.md#shared-session-shell-and-account-menu-seam)
 owns complete props/slots and availability/proof boundaries. Full frontend
 replacements retain these public controllers without copying session/security logic.
+
+## Shared identity and preference fields
+
+Auth owns three public presentation controls exported from `@/runa/auth`. Their
+implementation lives in `src/runa/modules/auth/frontend`, ships in frontend
+assets and is supported for platform and application presentation composition.
+They do not fetch, persist, authorize, reconcile drafts or perform security steps;
+the composing account/Admin controller retains those responsibilities.
+
+- `AuthIdentityFields` uses the creation form's name-format choices, localized
+  identity labels, autocomplete and 160/64-character name/login limits. Props
+  `AuthIdentityFieldsProps`: `locale: 'pl'|'en'`, `naming: string` (`full` or
+  `single`), `columns?: 1|2` (2), `values: Partial<Record<AuthIdentityField,string|null>>`, optional
+  `errors: Partial<Record<AuthIdentityField,string|readonly string[]>>`,
+  `showName?: boolean` and `showLogin?: boolean` (both true),
+  `loginRequired?: boolean`, `readonly?: boolean`, `disabled?: boolean` (false),
+  `readonlyFields?: readonly string[]` (empty). `AuthIdentityField` is
+  `'name'|'first_name'|'surname'|'login'`. Events: `update:naming(value: string)`,
+  `field(key: AuthIdentityField,value: string|null)`, `blur(key: AuthIdentityField)`.
+  The default slot inserts content before Login; named `name`, `first_name`,
+  `surname`, `login` slots replace the corresponding visible control. The parent
+  clears inactive naming fields only on an explicit format change. Hydration and
+  background refresh never silently discard identity values. Creation, selected
+  user details and own-account details consume this same component; each retains
+  its own validation and permitted fields. Omit Login in email-only mode.
+- `AuthDisplayPreferenceFields` takes `AuthDisplayPreferenceFieldsProps`:
+  `locale: 'pl'|'en'`, `language: string`, `theme: string`, `disabled?: boolean`.
+  Events: `update:language(value: string)`, `update:theme(value: string)`.
+  It renders the same Interface language and System/Light/Dark radio groups in
+  own-account and selected-account preferences.
+- `AuthEmailPreferenceFields` takes `AuthEmailPreferenceFieldsProps`:
+  `locale: 'pl'|'en'`, `label: string`, `enabled: boolean`, `recipients: string[]`,
+  `options: {value:string,label:string}[]`, `error?: string|readonly string[]`,
+  `disabled?: boolean`. Events: `update:enabled(value: boolean)` and
+  `update:recipients(value: string[])`. It shares the category Switch and compact
+  multiple Send to selector. Disabled optional categories retain their Switch
+  and omit recipients. Parents omit categories unavailable by configuration.
+
+All prop interfaces and `AuthIdentityField` are exported through the same facade.
+Preference controls have no slots; compose them in the existing Form/FormSection
+and Card primitives or replace them using these value/event contracts. Own-account
+appearance changes retain the existing display transition, notification rows retain
+independent Save/Revert and conflicts, and administrative preferences retain an
+explicit atomic Save/Revert for the selected account. Selecting another user's
+language/theme never changes the administrator's own presentation.

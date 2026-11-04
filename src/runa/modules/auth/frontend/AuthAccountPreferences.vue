@@ -7,11 +7,12 @@ import {
   Form,
   FormNotifications,
   FormConflict,
-  RadioGroup,
-  Select,
   Skeleton,
-  Switch,
 } from '@/runa/ui';
+import {
+  AuthDisplayPreferenceFields,
+  AuthEmailPreferenceFields,
+} from '@/runa/auth';
 import type { useDisplayPreferences } from '../../../resources/js/composables/useDisplayPreferences';
 import type { useAuthAccount } from './useAuthAccount';
 type Choice = ReturnType<typeof useAuthAccount>['delivery']['value'][number];
@@ -220,29 +221,14 @@ defineExpose({ beginReset, reload });
           {{ text('Wygląd i język', 'Appearance and language') }}
         </h3></template
       >
-      <fieldset :disabled="busy" class="min-w-0 space-y-6">
-        <RadioGroup
-          :model-value="display.locale.value"
-          name="preference-language"
-          :label="text('Język interfejsu', 'Interface language')"
-          :options="[
-            { value: 'pl', label: 'Polski' },
-            { value: 'en', label: 'English' },
-          ]"
-          @update:model-value="selectDisplay('language', $event)"
-        />
-        <RadioGroup
-          :model-value="display.theme.value"
-          name="preference-theme"
-          :label="text('Motyw', 'Theme')"
-          :options="[
-            { value: 'system', label: text('Systemowy', 'System') },
-            { value: 'light', label: text('Jasny', 'Light') },
-            { value: 'dark', label: text('Ciemny', 'Dark') },
-          ]"
-          @update:model-value="selectDisplay('theme', $event)"
-        />
-      </fieldset>
+      <AuthDisplayPreferenceFields
+        :locale="locale"
+        :language="display.locale.value"
+        :theme="display.theme.value"
+        :disabled="busy"
+        @update:language="selectDisplay('language', $event)"
+        @update:theme="selectDisplay('theme', $event)"
+      />
     </Card>
     <Card data-preferences-delivery>
       <template #header
@@ -316,23 +302,19 @@ defineExpose({ beginReset, reload });
               @accept="revert(choice)"
               @keep="keep(choice)"
             />
-            <div class="min-w-0 font-semibold [overflow-wrap:anywhere]">
-              <Switch
-                :model-value="drafts[keyOf(choice)]!.enabled"
-                :label="choice.names[locale]"
-                @update:model-value="setEnabled(choice, $event)"
-              />
-            </div>
-            <Select
-              v-if="drafts[keyOf(choice)]!.enabled"
-              v-model="drafts[keyOf(choice)]!.recipients"
-              :multiple="true"
-              size="sm"
-              :label="text('Wyślij na', 'Send to')"
-              :options="recipientOptions"
+            <AuthEmailPreferenceFields
               :locale="locale"
+              :label="choice.names[locale]"
+              :enabled="drafts[keyOf(choice)]!.enabled"
+              :recipients="drafts[keyOf(choice)]!.recipients"
+              :options="recipientOptions"
               :error="recipientErrors[keyOf(choice)] ?? ''"
-              @update:model-value="delete recipientErrors[keyOf(choice)]"
+              :disabled="busy"
+              @update:enabled="setEnabled(choice, $event)"
+              @update:recipients="
+                drafts[keyOf(choice)]!.recipients = $event;
+                delete recipientErrors[keyOf(choice)];
+              "
             />
             <template v-if="dirty(choice)" #actions>
               <Button type="submit" size="sm" variant="outline" :busy="busy">{{

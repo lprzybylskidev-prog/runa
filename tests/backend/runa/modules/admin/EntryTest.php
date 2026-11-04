@@ -551,7 +551,7 @@ function adminAggregateInput(object $test, string $publicId, array $permissions 
 
     return ['revision' => $page['revision'], 'participants' => [
         ['id' => $id, 'input' => ['command' => 'save', 'public_id' => $publicId, 'revision' => $access['revision'], 'values' => ['roles' => [], 'permissions' => $permissions]]],
-        ['id' => 'profile', 'input' => ['command' => 'save', 'public_id' => $publicId, 'revision' => $profile['revision'], 'values' => array_replace($profile['values'], ['name' => 'After'])]],
+        ['id' => 'profile', 'input' => ['command' => 'save', 'public_id' => $publicId, 'revision' => $profile['revision'], 'values' => array_replace(array_intersect_key($profile['values'], array_flip(['name', 'first_name', 'surname', 'login'])), ['name' => 'After'])]],
     ]];
 }
 
@@ -2257,8 +2257,9 @@ it('saves one user detail form without requiring unrelated aggregate participant
     $target = app(ChangeIdentity::class)->create(new NewIdentity('individual-detail@example.test', name: 'Before', active: true));
     $path = '/api/admin/runa.auth/users/sections/profile';
     $record = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
+    expect($record['values']['identifier_mode'])->toBeIn(['email', 'login', 'either']);
     $input = ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'],
-        'values' => array_replace($record['values'], ['name' => 'Individual change'])];
+        'values' => array_replace(array_intersect_key($record['values'], array_flip(['name', 'first_name', 'surname', 'login'])), ['name' => 'Individual change'])];
     $this->postJson($path.'/commands', $input)->assertOk()->assertJsonPath('data.record.values.name', 'Individual change');
     expect(DB::table('runa_audit.events')->where('action', 'assignments.changed')->count())->toBe(0);
     $this->postJson($path.'/commands', $input)->assertConflict();

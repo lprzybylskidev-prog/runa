@@ -37,3 +37,36 @@ export function authBulkGroup(command: string) {
     group.commands.some((key) => key === command),
   );
 }
+
+export function authActionTone(
+  key: string,
+  grouped = false,
+): 'success' | 'danger' | 'warning' | 'primary' {
+  if (grouped && authBulkGroup(key)) return 'primary';
+  if (['activate', 'restore', 'schedule_activation'].includes(key))
+    return 'success';
+  if (
+    [
+      'delete',
+      'deactivate',
+      'schedule_deactivation',
+      'set_security_lock',
+      'factor_reset',
+      'revoke',
+      'revoke_trust',
+    ].includes(key)
+  )
+    return 'danger';
+  if (
+    [
+      'require_verification',
+      'require_password_change',
+      'password_reset',
+      'set_attempt_lock',
+      'invalidate_invitation',
+      'revoke_exceptions',
+    ].includes(key)
+  )
+    return 'warning';
+  return 'primary';
+}

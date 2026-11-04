@@ -93,3 +93,13 @@ export type {
   ProtectedActivityOptions,
   ProtectedActivityStatus,
 } from '../../../../modules/auth/frontend/useProtectedActivity';
+
+export { default as AuthIdentityFields } from '../../../../modules/auth/frontend/AuthIdentityFields.vue';
+export { default as AuthDisplayPreferenceFields } from '../../../../modules/auth/frontend/AuthDisplayPreferenceFields.vue';
+export { default as AuthEmailPreferenceFields } from '../../../../modules/auth/frontend/AuthEmailPreferenceFields.vue';
+export type {
+  AuthIdentityField,
+  AuthIdentityFieldsProps,
+  AuthDisplayPreferenceFieldsProps,
+  AuthEmailPreferenceFieldsProps,
+} from '../../../../modules/auth/frontend/contracts/fields';

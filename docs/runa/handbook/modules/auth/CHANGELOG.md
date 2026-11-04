@@ -2,6 +2,7 @@
 
 ## 3.0.0 — 2026-11-03
 
+- Auth 3.1.0: align selected-user details with creation, bulk action tones and own-account identity/preferences/avatar cropping; export shared presentation fields with independent controller ownership.
 - Auth 3.1.0: rebuild user details around User, Security and Rules/exceptions; add permissioned target preference reads/atomic edits and individual all-device/exception revocation. Preferences/Security/Policies APIs advance additively to 1.1.0; preserve self-service binding, native proofs, delivery constraints and Audit.
 
 - Omit operational editors for configuration-disabled capabilities. Keep authorized account facts read-only, hide disabled verification/factor/avatar editors and notification recipients, and dismiss withdrawn editors without losing unrelated drafts. Document the shared visibility rule in owner/customer frontend guidance. Preserve native backend enforcement.

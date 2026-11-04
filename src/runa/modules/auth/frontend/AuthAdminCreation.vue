@@ -6,7 +6,7 @@ import type {
   AdminSectionPresentationProps,
   AdminComponentRegistry,
 } from '@/runa/admin';
-import { AuthOperationProof } from '@/runa/auth';
+import { AuthIdentityFields, AuthOperationProof } from '@/runa/auth';
 import {
   Button,
   Checkbox,
@@ -371,51 +371,28 @@ async function submit() {
       </template>
       <div class="min-w-0 space-y-6" data-auth-creation>
         <FormSection :title="text('Dane użytkownika', 'User details')">
-          <RadioGroup
-            :model-value="naming"
-            :label="text('Sposób prezentacji nazwy', 'Name format')"
-            :disabled="readonly"
-            :options="[
-              {
-                value: 'full',
-                label: text('Imię i nazwisko', 'First name and surname'),
-              },
-              {
-                value: 'single',
-                label: text('Nazwa wyświetlana', 'Display name'),
-              },
-            ]"
-            @update:model-value="changeNaming"
-          />
-          <div class="grid min-w-0 gap-5 md:grid-cols-2">
-            <TextInput
-              v-for="key in naming === 'full'
-                ? ['first_name', 'surname']
-                : ['name']"
-              :key="key"
-              :model-value="string(key)"
-              :name="key"
-              :autocomplete="
-                key === 'first_name'
-                  ? 'given-name'
-                  : key === 'surname'
-                    ? 'family-name'
-                    : 'name'
-              "
-              :label="
-                key === 'first_name'
-                  ? text('Imię', 'First name')
-                  : key === 'surname'
-                    ? text('Nazwisko', 'Surname')
-                    : text('Nazwa wyświetlana', 'Display name')
-              "
-              required
-              :maxlength="160"
-              :readonly="readonly"
-              :error="errors(key)"
-              @blur="touched.add(key)"
-              @update:model-value="set(key, $event)"
-            />
+          <AuthIdentityFields
+            :locale="locale"
+            :naming="naming"
+            :values="{
+              name: string('name'),
+              first_name: string('first_name'),
+              surname: string('surname'),
+              login: string('login'),
+            }"
+            :errors="{
+              name: errors('name'),
+              first_name: errors('first_name'),
+              surname: errors('surname'),
+              login: errors('login'),
+            }"
+            :show-login="string('identifier_mode') !== 'email'"
+            :login-required="string('identifier_mode') === 'login'"
+            :readonly="readonly"
+            @update:naming="changeNaming"
+            @field="set"
+            @blur="touched.add($event)"
+          >
             <TextInput
               :model-value="string('email')"
               name="email"
@@ -429,20 +406,7 @@ async function submit() {
               @blur="touched.add('email')"
               @update:model-value="set('email', $event)"
             />
-            <TextInput
-              v-if="string('identifier_mode') !== 'email'"
-              :model-value="string('login')"
-              name="login"
-              autocomplete="username"
-              :label="text('Login', 'Login')"
-              :required="string('identifier_mode') === 'login'"
-              :maxlength="64"
-              :readonly="readonly"
-              :error="errors('login')"
-              @blur="touched.add('login')"
-              @update:model-value="set('login', $event)"
-            />
-          </div>
+          </AuthIdentityFields>
         </FormSection>
         <FormSection :title="text('Aktywność konta', 'Account activity')">
           <RadioGroup

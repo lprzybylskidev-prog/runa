@@ -492,3 +492,34 @@ private presentation implementations, not additional customer imports.
 independently of the bounded history page, so editing another rule remains correct
 even after more than 50 historical changes to a different rule. These values stay
 in the form controller; they are not operator inputs.
+
+### Consistency with creation and account forms
+
+The default selected-user form is titled User details/Dane użytkownika and composes
+public `AuthIdentityFields`, also used by creation and own-account details. Read-only
+`identifier_mode` comes from the guarded profile record, never from a writable
+operator field; the native write still accepts exactly the four identity inputs.
+Name-format changes clear the inactive fields only after an explicit choice.
+Admin field replacements remain supported through the identity component's named
+slots and the existing guarded AdminField resolution.
+
+Toolbar buttons share the bulk view's action-tone catalogue. Mixed operation groups
+retain their shared group tone; password/verification/exception actions use warning,
+and factor/session/trust revocation uses danger. Individual operation confirmation
+uses the selected action's tone; Cancel retains the ordinary neutral treatment.
+Session/device/address row actions use the same semantic outline buttons.
+
+Email forms display one native change method at a time, validate email immediately
+and submit that method on Enter. Save/Revert affect only their owning form and
+preserve unrelated drafts. Preferences share appearance/notification controls and
+terminology with the account view, with one explicit atomic Save preferences.
+Avatar selection uses the existing AuthAvatarCropper, 20 MB source-image bound,
+the target's final upload bound and local preview/adjust/revert. Captured target and
+revision survive cropping; a concurrent change requires a local conflict decision.
+The current private avatar read remains own-account only; administrative preview
+shows the newly prepared local image and never substitutes the operator's image.
+No new avatar-read authority or private byte route is introduced.
+
+See [shared fields](account-ui.md#shared-identity-and-preference-fields) for the
+complete public composition contracts. Native profile/address/avatar/proof/Audit
+orchestration remains in the existing owners.

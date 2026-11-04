@@ -21,3 +21,8 @@ replacing presentation; automatic reads never count as user activity.
 For horizontal viewports follow the public components guide's
 [horizontal scrolling contract](../../../../docs/runa/handbook/development/frontend/components.md#horizontal-scrolling):
 reuse consistent wheel handling and directional dotted overflow cues, including modal tabs.
+
+For Auth identity and preference composition, use the existing public
+[shared fields](../../../../docs/runa/handbook/modules/auth/account-ui.md#shared-identity-and-preference-fields)
+consumed by creation, user administration and own-account views. Their pure
+presentation contracts retain the composing controller's draft/security ownership.

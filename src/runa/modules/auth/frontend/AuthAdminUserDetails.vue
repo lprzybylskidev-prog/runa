@@ -24,6 +24,7 @@ import {
   Select,
   Tabs,
 } from '@/runa/ui';
+import { authActionTone } from './bulkGroups';
 import AuthOperationProofFields from './AuthOperationProofFields.vue';
 import AuthAdminUserSection from './AuthAdminUserSection.vue';
 const props = defineProps<AdminPageProps>();
@@ -103,6 +104,24 @@ type Action = {
   values?: Record<string, AdminJson>;
   fields?: string[];
 };
+function actionKey(action: Action): string {
+  if (typeof action.values?.operation === 'string')
+    return action.values.operation;
+  return (
+    (
+      {
+        'invitations.invalidate': 'invalidate_invitation',
+        'primary_email.require_verification': 'require_verification',
+        'security.reset': 'factor_reset',
+        'security.reset_password': 'password_reset',
+        'sessions.revoke_all': 'revoke',
+        'trust.revoke_all': 'revoke_trust',
+        'preferences.reset': 'reset_preferences',
+        'exceptions.revoke_all': 'revoke_exceptions',
+      } as Record<string, string>
+    )[`${action.section}.${action.command}`] ?? action.command
+  );
+}
 const definition = (action: Action) =>
   sections.value
     .find((section) => section.key === action.section)
@@ -255,7 +274,12 @@ const toolbar = computed(() => {
           'Odwołaj wszystkie wyjątki',
           'Revoke all exceptions',
         ],
-        ['preferences', 'reset', 'Zresetuj preferencje', 'Reset preferences'],
+        [
+          'preferences',
+          'reset',
+          'Przywróć preferencje widoku',
+          'Reset view preferences',
+        ],
       ] as const
     ).map(([section, command, pl, en]) => ({
       title: { pl, en },
@@ -556,6 +580,12 @@ function supplied(section: AdminSectionData) {
                 :key="t(item.title)"
                 size="sm"
                 variant="outline"
+                :tone="
+                  authActionTone(
+                    actionKey(item.actions[0]!),
+                    item.actions.length > 1,
+                  )
+                "
                 :disabled="form.busy.value"
                 @click="open(item.actions, true)"
                 >{{ t(item.title) }}</Button
@@ -681,6 +711,19 @@ function supplied(section: AdminSectionData) {
               )
             }}
           </p>
+          <p
+            v-if="
+              pending?.section === 'preferences' && pending.command === 'reset'
+            "
+            class="text-sm text-muted"
+          >
+            {{
+              text(
+                'Przywraca domyślny wygląd, język oraz ustawienia menu i tabel. Zachowuje ustawienia powiadomień e-mail.',
+                'Restores default appearance, language, menu and table preferences. Keeps email notification settings.',
+              )
+            }}
+          </p>
           <AdminField
             v-for="field in fields"
             :key="field.key"
@@ -689,8 +732,20 @@ function supplied(section: AdminSectionData) {
                 ? {
                     ...field,
                     label: {
-                      pl: 'Termin (puste usuwa termin)',
-                      en: 'Deadline (empty clears)',
+                      pl:
+                        pending?.values?.operation === 'schedule_activation'
+                          ? 'Termin aktywacji'
+                          : pending?.values?.operation ===
+                              'schedule_deactivation'
+                            ? 'Termin dezaktywacji'
+                            : 'Blokada prób do',
+                      en:
+                        pending?.values?.operation === 'schedule_activation'
+                          ? 'Activation date'
+                          : pending?.values?.operation ===
+                              'schedule_deactivation'
+                            ? 'Deactivation date'
+                            : 'Attempt lock until',
                     },
                   }
                 : field
@@ -738,14 +793,16 @@ function supplied(section: AdminSectionData) {
         /></template>
         <template #actions>
           <template v-if="stage !== 'proof'"
-            ><Button type="submit" variant="outline">{{
-              command?.preview_required && !review
-                ? text('Sprawdź zmiany', 'Review changes')
-                : text('Zatwierdź', 'Confirm')
-            }}</Button
-            ><Button tone="danger" variant="outline" @click="close()">{{
-              t('Cancel')
-            }}</Button></template
+            ><Button
+              type="submit"
+              variant="outline"
+              :tone="pending ? authActionTone(actionKey(pending)) : 'primary'"
+              >{{
+                command?.preview_required && !review
+                  ? text('Sprawdź zmiany', 'Review changes')
+                  : text('Zatwierdź', 'Confirm')
+              }}</Button
+            ><Button @click="close()">{{ t('Cancel') }}</Button></template
           >
         </template>
       </Form>

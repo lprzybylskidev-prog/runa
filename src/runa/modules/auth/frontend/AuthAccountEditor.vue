@@ -10,10 +10,10 @@ import {
   Form,
   FormNotifications,
   FormConflict,
-  RadioGroup,
   TextInput,
 } from '@/runa/ui';
 import type { AccountSection, useAuthAccount } from './useAuthAccount';
+import { AuthIdentityFields } from '@/runa/auth';
 import AuthAccountProof from './AuthAccountProof.vue';
 import AuthAvatarCropper from './AuthAvatarCropper.vue';
 import AuthAccountSecurity from './AuthAccountSecurity.vue';
@@ -123,14 +123,6 @@ const cropper = ref<InstanceType<typeof AuthAvatarCropper>>();
 const cropReady = ref(false),
   cropError = ref(''),
   cropping = ref(false);
-const identityFields = computed(() => [
-  ...(has('own_name_editable')
-    ? naming.value === 'single'
-      ? ['name']
-      : ['first_name', 'surname']
-    : []),
-  ...(has('own_login_editable') ? ['login'] : []),
-]);
 const labels = computed<Record<string, string>>(() => ({
   name: text('Nazwa wyświetlana', 'Display name'),
   first_name: text('Imię', 'First name'),
@@ -232,36 +224,37 @@ function closeCrop(value: boolean) {
             @accept="resolveDetails()"
             @keep="resolveDetails(true)"
           />
-          <RadioGroup
-            v-if="has('own_name_editable')"
-            v-model="naming"
-            :label="text('Sposób prezentacji nazwy', 'Name format')"
-            :options="[
-              { value: 'single', label: text('Jedna nazwa', 'Single name') },
-              {
-                value: 'full',
-                label: text('Imię i nazwisko', 'First name and surname'),
-              },
-            ]"
+          <AuthIdentityFields
+            v-if="
+              has('own_name_editable') ||
+              (has('own_login_editable') &&
+                options?.identifier_mode !== 'email')
+            "
+            :locale="locale"
+            :naming="naming"
+            :columns="
+              naming === 'single' &&
+              (!has('own_login_editable') ||
+                options?.identifier_mode === 'email')
+                ? 1
+                : 2
+            "
+            :values="fields"
+            :errors="sectionErrors.details"
+            :show-name="has('own_name_editable')"
+            :show-login="
+              has('own_login_editable') && options?.identifier_mode !== 'email'
+            "
+            :login-required="options?.identifier_mode === 'login'"
+            :disabled="busy"
+            @update:naming="naming = $event"
+            @field="
+              (key, value) => {
+                fields[key] = value ?? '';
+                delete sectionErrors.details[key];
+              }
+            "
           />
-          <div class="grid min-w-0 gap-5 md:grid-cols-2">
-            <TextInput
-              v-for="name in identityFields"
-              :key="name"
-              :model-value="fields[name] ?? ''"
-              :name="name"
-              :label="labels[name] ?? name"
-              :required="
-                name !== 'login' || options?.identifier_mode === 'login'
-              "
-              :error="sectionErrors.details[name] ?? ''"
-              autocomplete="off"
-              @update:model-value="
-                fields[name] = $event ?? '';
-                delete sectionErrors.details[name];
-              "
-            />
-          </div>
           <p
             v-if="!has('own_name_editable')"
             class="text-sm [overflow-wrap:anywhere]"

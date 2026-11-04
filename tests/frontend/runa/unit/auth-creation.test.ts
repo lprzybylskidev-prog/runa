@@ -1,3 +1,4 @@
+import { savePreference } from '../../../../src/runa/resources/js/lib/preferences';
 import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
@@ -12,7 +13,7 @@ import type {
 } from '@/runa/admin';
 
 enableAutoUnmount(afterEach);
-beforeEach(() => localStorage.setItem('runa.locale', 'en'));
+beforeEach(() => savePreference('runa.locale', 'en'));
 afterEach(() => {
   localStorage.removeItem('runa.locale');
   vi.restoreAllMocks();

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import {
   AdminField,
   AdminSection,
   useAdminLocale,
   useAdminResource,
+  useAdminPresentation,
 } from '@/runa/admin';
 import type {
   AdminJson,
@@ -19,10 +20,18 @@ import {
   Form,
   FormConflict,
   FormNotifications,
-  Select,
-  Switch,
+  RadioGroup,
+  TextInput,
+  FormSection,
+  formValuesEqual,
   formatApplicationInstant,
 } from '@/runa/ui';
+import {
+  AuthIdentityFields,
+  AuthDisplayPreferenceFields,
+  AuthEmailPreferenceFields,
+} from '@/runa/auth';
+import type { AuthIdentityField } from '@/runa/auth';
 import AuthAdminAvatar from './AuthAdminAvatar.vue';
 const props = defineProps<
   AdminSectionPresentationProps & {
@@ -39,6 +48,7 @@ const emit = defineEmits<{
 }>();
 const { locale, t } = useAdminLocale();
 const text = (pl: string, en: string) => t({ pl, en });
+const presentation = useAdminPresentation();
 const resource = useAdminResource(props.page, props.section.key);
 watch(
   () => props.controller.records.value[props.section.key],
@@ -91,6 +101,7 @@ const fields = computed(() =>
   props.section.fields.filter((field) => {
     if (
       [
+        'identifier_mode',
         'preference_revision',
         'exception_versions',
         'exception_version',
@@ -124,10 +135,187 @@ const fields = computed(() =>
         'deleted_at',
         'operator_recovery_pending',
       ].includes(field.key);
-    if (kind.value === 'preferences') return false;
+    if (['preferences', 'profile'].includes(kind.value)) return false;
+    if (
+      kind.value === 'primary_email' &&
+      ['email', 'replacement_email'].includes(field.key)
+    )
+      return (
+        field.key ===
+        (emailCommand.value === 'replace' ? 'replacement_email' : 'email')
+      );
     return true;
   }),
 );
+const customIdentityFields = computed(() =>
+  props.section.fields.filter(
+    (field) =>
+      identityKeys.includes(field.key as AuthIdentityField) &&
+      (field.component || presentation.value.field),
+  ),
+);
+const record = computed(
+  () => props.controller.records.value[props.section.key],
+);
+const naming = ref('full');
+const attempted = ref(false);
+const touched = reactive(new Set<string>());
+const identityKeys: AuthIdentityField[] = [
+  'name',
+  'first_name',
+  'surname',
+  'login',
+];
+const identityValues = computed(
+  () =>
+    Object.fromEntries(
+      identityKeys.map((key) => [
+        key,
+        typeof get(key) === 'string' ? get(key) : null,
+      ]),
+    ) as Record<AuthIdentityField, string | null>,
+);
+watch(
+  record,
+  (value, before) => {
+    if (kind.value !== 'profile' || !value) return;
+    if (
+      value.public_id !== before?.public_id ||
+      identityKeys.every((key) =>
+        formValuesEqual(get(key), value.values[key] ?? null),
+      )
+    ) {
+      naming.value = value.values.name ? 'single' : 'full';
+      attempted.value = false;
+      touched.clear();
+    }
+  },
+  { immediate: true },
+);
+function changeNaming(value: string) {
+  naming.value = value;
+  for (const key of value === 'full' ? ['name'] : ['first_name', 'surname'])
+    set(key, null);
+}
+const identityIssues = computed<Record<string, string>>(() => {
+  if (kind.value !== 'profile') return {};
+  const issues: Record<string, string> = {};
+  for (const key of naming.value === 'full'
+    ? ['first_name', 'surname']
+    : ['name']) {
+    const value = String(get(key) ?? '');
+    if (!value.trim())
+      issues[key] = text('Wypełnij to pole.', 'Complete this field.');
+    else if (
+      value.trim() !== value ||
+      [...value].length > 160 ||
+      /\p{C}/u.test(value)
+    )
+      issues[key] = text('Popraw dane.', 'Correct this value.');
+  }
+  const login = String(get('login') ?? '');
+  if (get('identifier_mode') === 'login' && !login)
+    issues.login = text('Wypełnij to pole.', 'Complete this field.');
+  else if (login && !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(login))
+    issues.login = text('Niepoprawny login.', 'Invalid login.');
+  return issues;
+});
+const emailIssues = computed<Record<string, string>>(() => {
+  if (!['primary_email', 'secondary'].includes(kind.value)) return {};
+  const issues: Record<string, string> = {};
+  for (const field of fields.value.filter(
+    (field) =>
+      ['email', 'replacement_email'].includes(field.key) && !field.readonly,
+  )) {
+    const value = String(get(field.key) ?? '');
+    if (!value.trim())
+      issues[field.key] = text('Wypełnij to pole.', 'Complete this field.');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) || value.length > 254)
+      issues[field.key] = text(
+        'Podaj poprawny adres e-mail.',
+        'Enter a valid email address.',
+      );
+  }
+  return issues;
+});
+function emailErrors(key: string) {
+  return [
+    ...(props.controller.errors.value[path(key)] ?? []),
+    ...((attempted.value || touched.has(key)) && emailIssues.value[key]
+      ? [emailIssues.value[key]!]
+      : []),
+  ];
+}
+const identityErrors = computed(() =>
+  Object.fromEntries(
+    identityKeys.map((key) => [
+      key,
+      [
+        ...(props.controller.errors.value[path(key)] ?? []),
+        ...((attempted.value || touched.has(key)) && identityIssues.value[key]
+          ? [identityIssues.value[key]!]
+          : []),
+      ],
+    ]),
+  ),
+);
+const dirty = computed(
+  () =>
+    !!record.value &&
+    props.section.fields.some(
+      (field) =>
+        !field.readonly &&
+        !formValuesEqual(
+          get(field.key),
+          record.value?.values[field.key] ?? null,
+        ),
+    ),
+);
+function revert() {
+  for (const field of props.section.fields)
+    if (!field.readonly)
+      set(field.key, record.value?.values[field.key] ?? null);
+  for (const conflict of conflicts.value)
+    props.controller.resolve(conflict.path, 'remote');
+  attempted.value = false;
+  touched.clear();
+  if (kind.value === 'profile')
+    naming.value = record.value?.values.name ? 'single' : 'full';
+}
+const emailOperation = ref('change');
+const emailCommands = computed(() =>
+  commands.value.filter((command) =>
+    ['change', 'replace'].includes(command.key),
+  ),
+);
+const emailCommand = computed(() =>
+  emailCommands.value.some((command) => command.key === emailOperation.value)
+    ? emailOperation.value
+    : emailCommands.value[0]?.key,
+);
+const submitCommand = computed(() =>
+  kind.value === 'primary_email'
+    ? emailCommand.value
+    : kind.value === 'secondary'
+      ? get('address_id')
+        ? 'change'
+        : 'add'
+      : kind.value === 'exceptions'
+        ? 'set'
+        : canSave.value
+          ? 'save'
+          : undefined,
+);
+function submit() {
+  attempted.value = true;
+  if (
+    Object.keys(identityIssues.value).length ||
+    Object.keys(emailIssues.value).length ||
+    !submitCommand.value
+  )
+    return;
+  emit('submit', props.section.key, submitCommand.value, []);
+}
 const emailFact = computed(() =>
   props.page.page.value?.sections
     .find((section) => section.key === 'lifecycle')
@@ -188,12 +376,53 @@ const preferenceErrors = computed(() =>
     (row) => deliveryValue(row)?.enabled === true && !recipientIds(row).length,
   ),
 );
-const labels: Record<string, string> = {
+const labels = computed<Record<string, string>>(() => ({
+  profile: text('Dane użytkownika', 'User details'),
+  avatar: text('Zdjęcie profilowe', 'Profile image'),
   secondary: text('Adresy dodatkowe', 'Secondary emails'),
   lifecycle: text('Stan konta', 'Account status'),
   eligibility: text('Warunki dostępu', 'Access conditions'),
   assignments: text('Role i uprawnienia', 'Roles and permissions'),
-};
+}));
+function fieldValue(key: string): AdminJson {
+  if (kind.value !== 'eligibility') return get(key);
+  const labels: Record<string, { pl: string; en: string }> = {
+    operator_recovery_required: {
+      pl: 'Wymagane odzyskanie przez operatora',
+      en: 'Operator recovery required',
+    },
+    deleted: { pl: 'Konto usunięte', en: 'Account deleted' },
+    before_activation: {
+      pl: 'Oczekuje na termin aktywacji',
+      en: 'Awaiting activation date',
+    },
+    inactive: { pl: 'Konto nieaktywne', en: 'Account inactive' },
+    deactivated: {
+      pl: 'Upłynął termin dezaktywacji',
+      en: 'Deactivation date reached',
+    },
+    security_locked: { pl: 'Blokada bezpieczeństwa', en: 'Security lock' },
+    attempt_locked: {
+      pl: 'Blokada prób logowania',
+      en: 'Sign-in attempt lock',
+    },
+    email_verification_required: {
+      pl: 'Wymagane potwierdzenie adresu e-mail',
+      en: 'Email verification required',
+    },
+    password_change_required: {
+      pl: 'Wymagana zmiana hasła',
+      en: 'Password change required',
+    },
+  };
+  const codes = String(get(key) ?? '')
+    .split(',')
+    .map((code) => code.trim())
+    .filter(Boolean);
+  return codes.length
+    ? codes.map((code) => t(labels[code] ?? code)).join(' · ')
+    : text('Brak', 'None');
+}
 function display(value: AdminJson, key: string): string {
   if (value === null) return '—';
   if (typeof value === 'boolean') return t(value ? 'Yes' : 'No');
@@ -318,8 +547,14 @@ const fieldTitle = (key: string) =>
     <Form
       :label="labels[kind] ?? t(section.title)"
       :busy="controller.busy.value"
-      :valid="!conflicts.length && !preferenceErrors"
-      @submit="emit('submit', section.key, 'save', [])"
+      :valid="
+        !conflicts.length &&
+        !preferenceErrors &&
+        !Object.keys(identityIssues).length &&
+        !Object.keys(emailIssues).length
+      "
+      @invalid="attempted = true"
+      @submit="submit"
     >
       <AdminSection :section="section" :controller="controller" embedded>
         <template #default>
@@ -373,6 +608,8 @@ const fieldTitle = (key: string) =>
                   <Button
                     v-if="['secondary', 'exceptions'].includes(kind)"
                     size="sm"
+                    variant="outline"
+                    :disabled="controller.busy.value"
                     @click="edit(row)"
                     >{{ text('Edytuj', 'Edit') }}</Button
                   >
@@ -390,6 +627,8 @@ const fieldTitle = (key: string) =>
                     :key="command.key"
                     size="sm"
                     variant="outline"
+                    :tone="kind === 'exceptions' ? 'warning' : 'danger'"
+                    :disabled="controller.busy.value"
                     @click="rowAction(row, command.key)"
                     >{{
                       kind === 'exceptions'
@@ -404,7 +643,22 @@ const fieldTitle = (key: string) =>
               v-else-if="collectionKey && controller.records.value[section.key]"
               class="text-sm text-muted"
             >
-              {{ t('No entries in this bounded result.') }}
+              {{
+                text(
+                  {
+                    secondary: 'Brak dodatkowych adresów.',
+                    sessions: 'Brak aktywnych sesji.',
+                    trust: 'Brak zaufanych urządzeń.',
+                    exceptions: 'Brak wyjątków.',
+                  }[kind as 'secondary' | 'sessions' | 'trust' | 'exceptions'],
+                  {
+                    secondary: 'No secondary email addresses.',
+                    sessions: 'No active sessions.',
+                    trust: 'No trusted devices.',
+                    exceptions: 'No exceptions.',
+                  }[kind as 'secondary' | 'sessions' | 'trust' | 'exceptions'],
+                )
+              }}
             </p>
             <div
               v-if="cursor && (next || resource.result.value)"
@@ -420,27 +674,120 @@ const fieldTitle = (key: string) =>
                 >{{ t('Older entries') }}</Button
               >
             </div>
+            <AuthIdentityFields
+              v-if="kind === 'profile'"
+              :locale="locale"
+              :naming="naming"
+              :columns="
+                naming === 'single' && get('identifier_mode') === 'email'
+                  ? 1
+                  : 2
+              "
+              :values="identityValues"
+              :errors="identityErrors"
+              :show-login="get('identifier_mode') !== 'email'"
+              :login-required="get('identifier_mode') === 'login'"
+              :readonly="section.readonly"
+              :readonly-fields="
+                section.fields
+                  .filter((field) => field.readonly)
+                  .map((field) => field.key)
+              "
+              :disabled="controller.busy.value"
+              @update:naming="changeNaming"
+              @field="set"
+              @blur="touched.add($event)"
+            >
+              <template
+                v-for="field in customIdentityFields"
+                :key="field.key"
+                #[field.key]
+              >
+                <AdminField
+                  :field="field"
+                  :model-value="fieldValue(field.key)"
+                  :errors="controller.errors.value[path(field.key)] ?? []"
+                  :readonly="section.readonly || field.readonly"
+                  :busy="controller.busy.value"
+                  :components="components"
+                  @update:model-value="set(field.key, $event)"
+                  @availability="
+                    controller.setAvailable(path(field.key), $event)
+                  "
+                />
+              </template>
+            </AuthIdentityFields>
+            <RadioGroup
+              v-if="
+                kind === 'primary_email' &&
+                emailCommands.length > 1 &&
+                !section.readonly
+              "
+              :label="text('Sposób zmiany adresu', 'Email change method')"
+              :model-value="emailCommand ?? null"
+              :disabled="controller.busy.value"
+              :options="
+                emailCommands.map((command) => ({
+                  value: command.key,
+                  label: t(command.title),
+                }))
+              "
+              @update:model-value="emailOperation = $event"
+            />
             <div
               class="grid min-w-0 gap-4 sm:grid-cols-2"
               :class="kind === 'lifecycle' ? 'lg:grid-cols-3' : ''"
             >
-              <AdminField
-                v-for="field in fields"
-                :key="field.key"
-                :field="field"
-                :model-value="get(field.key)"
-                :errors="controller.errors.value[path(field.key)] ?? []"
-                :readonly="section.readonly || field.readonly"
-                :busy="controller.busy.value"
-                :lookup="
-                  field.lookup
-                    ? controller.lookup(section.key, field.key)
-                    : undefined
-                "
-                :components="components"
-                @update:model-value="set(field.key, $event)"
-                @availability="controller.setAvailable(path(field.key), $event)"
-              />
+              <template v-for="field in fields" :key="field.key">
+                <TextInput
+                  v-if="
+                    ['primary_email', 'secondary'].includes(kind) &&
+                    ['email', 'replacement_email'].includes(field.key) &&
+                    !field.component &&
+                    !presentation.field
+                  "
+                  :model-value="String(get(field.key) ?? '')"
+                  :name="field.key"
+                  type="email"
+                  autocomplete="email"
+                  :label="text('Nowy adres e-mail', 'New email address')"
+                  :maxlength="254"
+                  required
+                  :readonly="section.readonly || field.readonly"
+                  :disabled="controller.busy.value"
+                  :error="emailErrors(field.key)"
+                  @blur="touched.add(field.key)"
+                  @update:model-value="set(field.key, $event)"
+                />
+                <AdminField
+                  v-else
+                  :field="
+                    ['email', 'replacement_email'].includes(field.key)
+                      ? {
+                          ...field,
+                          label: {
+                            pl: 'Nowy adres e-mail',
+                            en: 'New email address',
+                          },
+                        }
+                      : field
+                  "
+                  :model-value="fieldValue(field.key)"
+                  :errors="controller.errors.value[path(field.key)] ?? []"
+                  :readonly="section.readonly || field.readonly"
+                  :busy="controller.busy.value"
+                  :lookup="
+                    field.lookup
+                      ? controller.lookup(section.key, field.key)
+                      : undefined
+                  "
+                  :components="components"
+                  @update:model-value="set(field.key, $event)"
+                  @availability="
+                    controller.setAvailable(path(field.key), $event)
+                  "
+                />
+              </template>
             </div>
             <AdminField
               v-if="kind === 'primary_email' && emailFact"
@@ -455,79 +802,72 @@ const fieldTitle = (key: string) =>
               :busy="controller.busy.value"
             />
             <template v-if="kind === 'preferences'">
-              <div class="grid gap-4 sm:grid-cols-2">
-                <Select
-                  :label="text('Język', 'Language')"
-                  :model-value="String(get('locale') ?? 'pl')"
-                  :options="[
-                    { value: 'pl', label: 'Polski' },
-                    { value: 'en', label: 'English' },
-                  ]"
-                  :locale="locale"
-                  :disabled="preferenceReadonly"
-                  @update:model-value="set('locale', $event)"
-                />
-                <Select
-                  :label="text('Motyw', 'Theme')"
-                  :model-value="String(get('theme') ?? 'system')"
-                  :options="[
-                    { value: 'light', label: text('Jasny', 'Light') },
-                    { value: 'dark', label: text('Ciemny', 'Dark') },
-                    { value: 'system', label: text('Systemowy', 'System') },
-                  ]"
-                  :locale="locale"
-                  :disabled="preferenceReadonly"
-                  @update:model-value="set('theme', $event)"
-                />
-              </div>
-              <div
-                v-for="category in categories"
-                :key="String(category.module) + ':' + String(category.key)"
-                class="space-y-3 rounded-lg border border-line p-4"
+              <FormSection
+                :title="text('Wygląd i język', 'Appearance and language')"
               >
-                <Switch
-                  :label="
-                    category.names &&
-                    typeof category.names === 'object' &&
-                    !Array.isArray(category.names)
-                      ? String(category.names[locale] ?? category.key)
-                      : String(category.key)
-                  "
-                  :model-value="deliveryValue(category)?.enabled === true"
-                  :disabled="preferenceReadonly"
-                  @update:model-value="
-                    updateDelivery(category, { enabled: $event })
-                  "
-                />
-                <Select
-                  v-if="deliveryValue(category)?.enabled"
-                  multiple
-                  :label="text('Odbiorcy', 'Recipients')"
-                  :model-value="recipientIds(category)"
-                  :options="recipients"
+                <AuthDisplayPreferenceFields
                   :locale="locale"
-                  :disabled="preferenceReadonly"
-                  :error="
-                    !recipientIds(category).length
-                      ? text(
-                          'Wybierz co najmniej jeden adres.',
-                          'Select at least one address.',
-                        )
-                      : ''
-                  "
-                  @update:model-value="
-                    updateDelivery(category, { recipients: $event })
-                  "
+                  :language="String(get('locale') ?? 'pl')"
+                  :theme="String(get('theme') ?? 'system')"
+                  :disabled="preferenceReadonly || controller.busy.value"
+                  @update:language="set('locale', $event)"
+                  @update:theme="set('theme', $event)"
                 />
-              </div>
-              <p class="text-sm text-muted">
-                {{
-                  text(
-                    'Wiadomości wymagane ze względów bezpieczeństwa są wysyłane na główny adres.',
-                    'Required security messages are delivered to the primary email.',
-                  )
-                }}
-              </p>
+              </FormSection>
+              <FormSection
+                :title="text('Powiadomienia e-mail', 'Email notifications')"
+              >
+                <div v-if="categories.length" class="divide-y divide-line">
+                  <AuthEmailPreferenceFields
+                    v-for="category in categories"
+                    :key="String(category.module) + ':' + String(category.key)"
+                    class="py-5 first:pt-0 last:pb-0"
+                    :locale="locale"
+                    :label="
+                      category.names &&
+                      typeof category.names === 'object' &&
+                      !Array.isArray(category.names)
+                        ? String(category.names[locale] ?? category.key)
+                        : String(category.key)
+                    "
+                    :enabled="deliveryValue(category)?.enabled === true"
+                    :recipients="recipientIds(category)"
+                    :options="recipients"
+                    :disabled="preferenceReadonly || controller.busy.value"
+                    :error="
+                      deliveryValue(category)?.enabled &&
+                      !recipientIds(category).length
+                        ? text(
+                            'Wybierz co najmniej jeden adres.',
+                            'Select at least one address.',
+                          )
+                        : ''
+                    "
+                    @update:enabled="
+                      updateDelivery(category, { enabled: $event })
+                    "
+                    @update:recipients="
+                      updateDelivery(category, { recipients: $event })
+                    "
+                  />
+                </div>
+                <p v-else class="text-sm text-muted">
+                  {{
+                    text(
+                      'Brak dostępnych powiadomień e-mail.',
+                      'No email notifications are available.',
+                    )
+                  }}
+                </p>
+                <p class="text-sm text-muted">
+                  {{
+                    text(
+                      'Wiadomości wymagane ze względów bezpieczeństwa są wysyłane na główny adres.',
+                      'Required security messages are delivered to the primary email.',
+                    )
+                  }}
+                </p>
+              </FormSection>
             </template>
             <AuthAdminAvatar
               v-if="kind === 'avatar'"
@@ -547,51 +887,55 @@ const fieldTitle = (key: string) =>
           </div>
         </template>
       </AdminSection>
-      <template #actions>
+      <template
+        v-if="
+          record &&
+          !section.readonly &&
+          ((submitCommand &&
+            (dirty || ['secondary', 'exceptions'].includes(kind))) ||
+            (kind === 'secondary' && get('address_id')))
+        "
+        #actions
+      >
         <Button
-          v-if="canSave"
+          v-if="
+            record &&
+            submitCommand &&
+            !section.readonly &&
+            (dirty || ['secondary', 'exceptions'].includes(kind))
+          "
           type="submit"
           variant="outline"
-          :disabled="section.readonly || !!conflicts.length"
-          >{{ t('Save') }}</Button
+          :busy="controller.busy.value"
+          :disabled="!!conflicts.length"
+          >{{
+            kind === 'profile'
+              ? text('Zapisz dane', 'Save details')
+              : kind === 'preferences'
+                ? text('Zapisz preferencje', 'Save preferences')
+                : kind === 'exceptions'
+                  ? text('Zapisz wyjątek', 'Save exception')
+                  : t(
+                      commands.find((command) => command.key === submitCommand)
+                        ?.title ?? 'Save',
+                    )
+          }}</Button
         >
-        <template
-          v-if="['primary_email', 'secondary', 'exceptions'].includes(kind)"
+        <Button
+          v-if="dirty && !section.readonly"
+          :disabled="controller.busy.value"
+          @click="revert"
+          >{{ text('Cofnij zmiany', 'Revert changes') }}</Button
         >
-          <Button
-            v-for="command in commands.filter(
-              (command) =>
-                !['remove', 'revoke_all', 'require_verification'].includes(
-                  command.key,
-                ) &&
-                (kind !== 'secondary' ||
-                  command.key === (get('address_id') ? 'change' : 'add')),
-            )"
-            :key="command.key"
-            variant="outline"
-            :disabled="
-              section.readonly ||
-              !!conflicts.length ||
-              (kind === 'secondary' &&
-                command.key === 'change' &&
-                !get('address_id'))
-            "
-            @click="emit('submit', section.key, command.key, [])"
-            >{{
-              kind === 'exceptions'
-                ? text('Zapisz wyjątek', 'Save exception')
-                : t(command.title)
-            }}</Button
-          >
-          <Button
-            v-if="kind === 'secondary' && get('address_id')"
-            @click="
-              set('address_id', null);
-              set('email', '');
-            "
-            >{{ text('Nowy adres', 'New address') }}</Button
-          >
-        </template>
+        <Button
+          v-if="kind === 'secondary' && get('address_id')"
+          :disabled="controller.busy.value"
+          @click="
+            set('address_id', null);
+            set('email', '');
+          "
+          >{{ text('Anuluj edycję adresu', 'Cancel editing address') }}</Button
+        >
       </template>
     </Form>
   </Card>

@@ -49,3 +49,8 @@ and guarded AuthStepUp section APIs from
 `docs/runa/handbook/modules/auth/security.md#protected-section-idle-access`.
 Preserve controller scope, admitted identity and protected roots/portals when
 replacing presentation; automatic reads never count as user activity.
+
+For application-owned Auth forms, compose the public identity and preference
+fields documented in `docs/runa/handbook/modules/auth/account-ui.md#shared-identity-and-preference-fields`.
+Keep draft reconciliation and guarded writes with the composing controller;
+shared presentation controls do not grant access or authorize protected edits.

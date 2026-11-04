@@ -54,9 +54,11 @@ final class ProfilePage implements ManagementPageProvider
                 'runa.auth.identities.read', 'runa.auth.profiles.manage');
         }
 
+        $fields[] = new ManagementFieldAccess(new ManagementField('identifier_mode', 'text', ['pl' => 'Sposób logowania', 'en' => 'Login identifier'], ['pl' => 'Sposób logowania', 'en' => 'Login identifier']), 'runa.auth.identities.read');
+
         return [new ManagementPage('users', 'Users', 'runa.auth.identities.read', [
             ...(new AdministrationPages)->userSections(),
-            new ManagementSection('profile', 'Profile', 'runa.auth.identities.read', 'runa.auth.profiles.manage', 'profile', $fields, [
+            new ManagementSection('profile', ['pl' => 'Dane użytkownika', 'en' => 'User details'], 'runa.auth.identities.read', 'runa.auth.profiles.manage', 'profile', $fields, [
                 new ManagementCommandDefinition('save', 'Save profile', new ManagementOperation(new ApiOperation('profile.edit', 'runa.auth.profiles.manage'),
                     ['name', 'first_name', 'surname', 'login']), 'profile', 'atomic', ProfileEditor::class, intent: 'save'),
             ]),

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AuthAdminUserDetails from '../AuthAdminUserDetails.vue';
-import { authBulkGroup } from '../bulkGroups';
+import { authBulkGroup, authActionTone } from '../bulkGroups';
 import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
 import { Badge, Button, Card, ContentLoading, Dialog } from '@/runa/ui';
@@ -96,35 +96,6 @@ const bulkOrder = [
   'reset_preferences',
   'remove_avatar',
 ];
-function bulkTone(key: string): 'success' | 'danger' | 'warning' | 'primary' {
-  if (authBulkGroup(key)) return 'primary';
-  if (['activate', 'restore', 'schedule_activation'].includes(key))
-    return 'success';
-  if (
-    [
-      'delete',
-      'deactivate',
-      'schedule_deactivation',
-      'set_security_lock',
-      'factor_reset',
-      'revoke',
-      'revoke_trust',
-    ].includes(key)
-  )
-    return 'danger';
-  if (
-    [
-      'require_verification',
-      'require_password_change',
-      'password_reset',
-      'set_attempt_lock',
-      'invalidate_invitation',
-      'revoke_exceptions',
-    ].includes(key)
-  )
-    return 'warning';
-  return 'primary';
-}
 const bulkChoices = computed(() =>
   (props.controller.page.value?.sections ?? [])
     .filter((s) => ['bulk_sessions', 'bulk_users'].includes(s.key))
@@ -310,7 +281,7 @@ watch(
                 :data-bulk-command="choice.value"
                 size="sm"
                 variant="outline"
-                :tone="bulkTone(choice.command.key)"
+                :tone="authActionTone(choice.command.key, true)"
                 :disabled="
                   form.busy.value ||
                   !selection.length ||

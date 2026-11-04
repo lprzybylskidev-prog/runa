@@ -936,6 +936,13 @@ reassessment before resuming point 3; completed point history remains evidence.
     delivery rules. Keep administrator and target-account preference caches isolated.
   - Synchronize current docs, public replacement contracts, module versions/tests;
     prepare working assets for repeated owner acceptance. Broad checks remain point 12.
+- [x] 11a68. Align user details with existing Auth presentation and workflows.
+  - Review creation, bulk actions and own-account forms; share identity and
+    preference controls through the public Auth facade rather than duplicate them.
+  - Align action tones, terminology, form submission, dirty/revert behavior and
+    avatar cropping; preserve all native guarded operations and three-tab grouping.
+  - Synchronize current guides, focused regression evidence and compiled rendered
+    readiness before returning to owner manual acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6438,3 +6445,66 @@ active development services, runa development data, base runa_test, Qdrant/model
 builder caches, backups and verification evidence remain preserved. Point 11a67
 is complete; owner manual acceptance 11b and affected-area final verification/
 release 12 remain open.
+
+### Point 11a68 — Existing Auth pattern alignment
+
+The owner rejected the visual/functional inconsistency of the rebuilt details.
+Creation is the reference for name format, identity labels and field constraints;
+bulk controls own action grouping/tones; own-account forms own appearance controls,
+notification terminology, dirty/revert actions and avatar cropping. Keep native
+selected-account writes, target fencing, proof after submission, availability and
+independent forms. Shared presentation controls do not acquire security authority.
+The existing unreleased Auth 3.1.0 candidate owns these refinements; no dependency,
+schema change or additional release is needed. Manual acceptance 11b and broad
+verification/release 12 remain open.
+
+Implementation: creation, own account and selected-account identity now compose
+AuthIdentityFields; both preference presentations compose AuthDisplayPreferenceFields
+and AuthEmailPreferenceFields. Their complete value/event/slot contracts and source/
+runtime ownership are documented in the public account guide and Auth facade.
+Native account/Admin controllers retain all writes, dirty reconciliation and proof.
+Profile reads project the actual read-only identifier mode; the native writer still
+accepts exactly four identity inputs. Custom Admin identity fields retain guarded
+replacement resolution through named slots. Shared action tones are consumed by
+bulk and single-user controls. Email forms validate the selected method and Enter
+submits that command; local Save/Revert leaves unrelated drafts intact. Avatar
+selection reuses native AuthAvatarCropper, source/final bounds, target/revision
+fences and preview/adjust/revert. No new private-avatar read route is introduced.
+Empty action slots are omitted; single-name fields use available width. Eligibility
+facts use readable localized reasons. Reset-view copy identifies the presentation
+scope and preserved notification settings.
+
+Documentation/instruction assessment: synchronized account/admin guides and module/
+central changelogs; added canonical shared-field references to both the owner
+frontend reference and separately authored customer application reference. Root
+AGENTS and skill entrypoints already require reuse/public composition and need no
+new rule or authority. Auth remains the unreleased 3.1.0 candidate; its additive
+presentation exports require no further independent module version increment.
+
+Focused implementation diagnostics: 14 frontend cases PASS across creation,
+selected-user identity/email/proof/tone behavior and existing own-account display/
+notification reconciliation; 2 backend cases / 51 assertions PASS for standalone
+profile writes and the existing complete aggregate HTTP flow. Initial diagnostics
+caught a malformed new field declaration and the multi-select's required boolean
+binding; both were corrected. Shared test fixtures now write locale through the
+actual preference adapter, avoiding cached guest state left by another file.
+Supported backend cleanup exited 0 and removed only runa_test_test_1. Base runa_test,
+development runa and all durable data remain preserved. No broad gate was run.
+
+Asset/type builds PASS; compiled native Nginx readiness PASS for PL/EN, light/dark,
+390px/1440px and all three tabs. Actual DOM interactions exercised name-format
+validation/revert, selected-account appearance drafts without changing the operator,
+warning/danger actions, decoded avatar crop/apply/preview/revert and proof only after
+operation submission. No account-management write was issued by browser diagnostics.
+Settled screenshots were inspected, including the corrected full-width single-name
+field. Evidence: .runtime/user-details/patterns-build.log,
+.runtime/user-details/patterns-readiness.log and
+.runtime/artifacts/playwright/user-details. Earlier browser attempts correctly
+refused stale compiled component identities after further source edits; rebuilding
+the exact source resolved this without weakening the build guard. Final hooks and
+post-format asset readiness accompany the commit.
+
+No task-created Docker container/network/image/volume required cleanup. Active
+development services, base/development data, Qdrant/model/builder caches, backups
+and reports remain preserved. Owner acceptance 11b and final affected-area automated
+verification/release 12 remain open; focused readiness does not supply owner sign-off.

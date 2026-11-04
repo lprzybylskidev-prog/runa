@@ -1,4 +1,5 @@
 /* eslint-disable vue/one-component-per-file -- Independent administrative presentation fixtures. */
+import { savePreference } from '../../../../src/runa/resources/js/lib/preferences';
 import { beforeEach, afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
@@ -18,7 +19,7 @@ import type {
   AdminSectionData,
 } from '@/runa/admin';
 enableAutoUnmount(afterEach);
-beforeEach(() => localStorage.setItem('runa.locale', 'en'));
+beforeEach(() => savePreference('runa.locale', 'en'));
 afterEach(() => localStorage.removeItem('runa.locale'));
 const actor = '01900000-0000-7000-8000-000000000001';
 const target = '01900000-0000-7000-8000-000000000002';
@@ -972,6 +973,12 @@ it('rebuilt user detail actions request identity proof only after operation subm
   await vi.waitFor(() =>
     expect(wrapper.text()).toContain('Request password reset'),
   );
+  expect(
+    wrapper
+      .findAll('button')
+      .find((button) => button.text() === 'Request password reset')!
+      .attributes('data-tone'),
+  ).toBe('warning');
   expect(document.querySelector('input[type=password]')).toBeNull();
   await wrapper
     .findAll('button')
@@ -989,4 +996,166 @@ it('rebuilt user detail actions request identity proof only after operation subm
     expect(document.querySelector('input[type=password]')).not.toBeNull(),
   );
   expect(document.body.textContent).toContain('Confirm your identity');
+});
+
+it('user detail identity uses creation fields and reverts only its own draft', async () => {
+  const { default: UserSection } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserSection.vue');
+  const profile = section('profile', [
+    field('name', false),
+    field('first_name', false),
+    field('surname', false),
+    field('login', false),
+    field('identifier_mode'),
+  ]);
+  profile.commands = [
+    {
+      key: 'save',
+      title: 'Save details',
+      mode: 'atomic',
+      intent: 'save',
+      inputs: ['name', 'first_name', 'surname', 'login'],
+      requirement: 'none',
+      action: null,
+      destructive: false,
+      bulk: false,
+      preview_required: false,
+      available: true,
+    },
+  ];
+  const preferences = section('preferences', [field('theme', false)]);
+  const controller = page([profile, preferences]);
+  const submitted = vi.fn();
+  let form!: AdminFormController;
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    response({
+      public_id: target,
+      revision: '1',
+      values: String(input).includes('/preferences')
+        ? { theme: 'system' }
+        : {
+            name: 'Target account',
+            first_name: null,
+            surname: null,
+            login: null,
+            identifier_mode: 'email',
+          },
+    }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () =>
+          h(UserSection, {
+            page: controller,
+            section: profile,
+            controller: form,
+            onSubmit: submitted,
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.find('input[name=name]').exists()).toBe(true),
+  );
+  expect(wrapper.text()).toContain('User details');
+  expect(wrapper.text()).toContain('Name format');
+  expect(wrapper.find('input[name=login]').exists()).toBe(false);
+  expect(wrapper.find('input[name=name]').attributes('maxlength')).toBe('160');
+  await form.activateSection('preferences');
+  form.set(form.fieldPath('preferences', 'theme'), 'dark');
+  await wrapper.get('input[type=radio][value=full]').setValue();
+  expect(form.values.value[form.fieldPath('profile', 'name')]).toBeNull();
+  await wrapper.get('form').trigger('submit');
+  expect(submitted).not.toHaveBeenCalled();
+  expect(wrapper.text()).toContain('Complete this field.');
+  await wrapper.get('input[name=first_name]').setValue('New');
+  await wrapper.get('input[name=surname]').setValue('Name');
+  await wrapper.get('form').trigger('submit');
+  expect(submitted).toHaveBeenCalledWith('profile', 'save', []);
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Revert changes')!
+    .trigger('click');
+  expect(wrapper.get<HTMLInputElement>('input[name=name]').element.value).toBe(
+    'Target account',
+  );
+  expect(form.values.value[form.fieldPath('preferences', 'theme')]).toBe(
+    'dark',
+  );
+});
+
+it('user email form validates and submits the selected native workflow on Enter', async () => {
+  const { default: UserSection } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserSection.vue');
+  const email = section('primary_email', [
+    field('current_email'),
+    { ...field('email', false), required: true },
+    { ...field('replacement_email', false), required: true },
+  ]);
+  email.commands = ['change', 'replace'].map((key) => ({
+    key,
+    title: key === 'change' ? 'Change primary email' : 'Replace verified email',
+    mode: 'independent',
+    intent: 'action',
+    inputs: [key === 'change' ? 'email' : 'replacement_email'],
+    requirement: 'password',
+    action: 'runa.auth.email.admin_change',
+    destructive: true,
+    bulk: false,
+    preview_required: false,
+    available: true,
+  }));
+  const controller = page([email]);
+  const submitted = vi.fn();
+  vi.spyOn(window, 'fetch').mockImplementation(async () =>
+    response({
+      public_id: target,
+      revision: '1',
+      values: {
+        current_email: 'target@example.test',
+        email: null,
+        replacement_email: null,
+      },
+    }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () =>
+          h(UserSection, {
+            page: controller,
+            section: email,
+            controller: form,
+            onSubmit: submitted,
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.find('input[name=email]').exists()).toBe(true),
+  );
+  expect(wrapper.find('input[name=replacement_email]').exists()).toBe(false);
+  await wrapper.get('input[name=email]').setValue('invalid');
+  await wrapper.get('form').trigger('submit');
+  expect(submitted).not.toHaveBeenCalled();
+  expect(wrapper.text()).toContain('Enter a valid email address.');
+  await wrapper.get('input[name=email]').setValue('new@example.test');
+  await wrapper.get('form').trigger('submit');
+  expect(submitted).toHaveBeenLastCalledWith('primary_email', 'change', []);
+  await wrapper.get('input[type=radio][value=replace]').setValue();
+  expect(wrapper.find('input[name=email]').exists()).toBe(false);
+  await wrapper
+    .get('input[name=replacement_email]')
+    .setValue('verified@example.test');
+  await wrapper.get('form').trigger('submit');
+  expect(submitted).toHaveBeenLastCalledWith('primary_email', 'replace', []);
 });
