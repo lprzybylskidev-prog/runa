@@ -6508,3 +6508,25 @@ No task-created Docker container/network/image/volume required cleanup. Active
 development services, base/development data, Qdrant/model/builder caches, backups
 and reports remain preserved. Owner acceptance 11b and final affected-area automated
 verification/release 12 remain open; focused readiness does not supply owner sign-off.
+
+Post-format review confirmed the visible main sections and omitted disabled
+secondary-address capability. Schedule dialogs now explain the native empty-date
+clear behavior, while Set attempt lock requires its chosen deadline; the explicit
+Clear attempt lock action remains available. Rendered operation readiness is
+repeated after this copy/validation correction before handoff.
+
+Rendered assignment review also found English field labels embedded in Polish
+metadata. The Permissions contribution now reuses its existing AdministrationPages
+field catalogue, retaining the same grants/lookups/writer and delivering Role /
+Uprawnienia. This correction remains in the unreleased Permissions 2.1.0 candidate;
+its changelog is synchronized. The focused aggregate HTTP/profile cases are rerun
+because their actual declaration source changed.
+
+Follow-up results: 2 backend cases / 51 assertions PASS again, cleanup 0 and only
+runa_test_test_1 removed. An aggregate attempt returned 409 while compiled asset
+evidence was being rebuilt; the unchanged focused cases passed with stable assets.
+Native PL/EN readiness additionally checked actual localized assignment labels,
+schedule-clear explanation and rejection of an empty Set attempt lock before proof.
+All eight language/theme/width combinations and post-submit proof checks passed
+again. The final current build and screenshots are retained at the existing paths.
+No additional data/resource cleanup is required; owner acceptance/final gates stay open.

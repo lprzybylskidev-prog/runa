@@ -7,8 +7,6 @@ use Runa\Contracts\Modules\ManagementApiTarget;
 use Runa\Contracts\Modules\ManagementBinding;
 use Runa\Contracts\Modules\ManagementCommandDefinition;
 use Runa\Contracts\Modules\ManagementContribution;
-use Runa\Contracts\Modules\ManagementField;
-use Runa\Contracts\Modules\ManagementFieldAccess;
 use Runa\Contracts\Modules\ManagementOperation;
 use Runa\Contracts\Modules\ManagementPageProvider;
 use Runa\Contracts\Modules\ManagementSection;
@@ -45,10 +43,7 @@ final class AssignmentContribution implements ManagementPageProvider
     {
         $fields = [];
         foreach (['roles' => 'Roles', 'permissions' => 'Permissions'] as $key => $label) {
-            $text = ['pl' => $label, 'en' => $label];
-            $fields[] = new ManagementFieldAccess(new ManagementField($key, 'uuid', $text, $text, writable: true,
-                referenceModule: 'runa.permissions', referenceOperation: 'access.definitions', multiple: true),
-                'runa.permissions.introspection.read', 'runa.permissions.access.manage');
+            $fields[] = AdministrationPages::field($key, $label, 'uuid', 'access.manage', multiple: true);
         }
 
         return [new ManagementContribution('user_access', 'runa.auth.users.profile', new ManagementSection('assignments', 'Access',

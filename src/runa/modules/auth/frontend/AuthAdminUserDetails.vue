@@ -10,6 +10,7 @@ import {
 } from '@/runa/admin';
 import type {
   AdminJson,
+  AdminFieldData,
   AdminPageProps,
   AdminSectionData,
   AdminText,
@@ -378,6 +379,23 @@ async function open(items: Action[], restore = false) {
   stage.value = 'parameters';
   await select('0');
 }
+function operationField(field: AdminFieldData): AdminFieldData {
+  if (pending.value?.section !== 'lifecycle' || field.key !== 'at')
+    return field;
+  const operation = pending.value?.values?.operation;
+  return {
+    ...field,
+    required:
+      operation === 'set_attempt_lock' &&
+      !!pending.value?.fields?.includes('at'),
+    label:
+      operation === 'schedule_activation'
+        ? { pl: 'Termin aktywacji', en: 'Activation date' }
+        : operation === 'schedule_deactivation'
+          ? { pl: 'Termin dezaktywacji', en: 'Deactivation date' }
+          : { pl: 'Blokada prób do', en: 'Sign-in attempt lock until' },
+  };
+}
 function valid() {
   if (!command.value || !section.value) return false;
   let valid = true;
@@ -385,7 +403,7 @@ function valid() {
     const field = section.value.fields.find((field) => field.key === key);
     if (!field || field.readonly) return false;
     const errors = validateAdminField(
-      field,
+      operationField(field),
       props.form.values.value[path(key)] ?? null,
     );
     props.form.errors.value[path(key)] = errors;
@@ -727,35 +745,29 @@ function supplied(section: AdminSectionData) {
           <AdminField
             v-for="field in fields"
             :key="field.key"
-            :field="
-              field.key === 'at'
-                ? {
-                    ...field,
-                    label: {
-                      pl:
-                        pending?.values?.operation === 'schedule_activation'
-                          ? 'Termin aktywacji'
-                          : pending?.values?.operation ===
-                              'schedule_deactivation'
-                            ? 'Termin dezaktywacji'
-                            : 'Blokada prób do',
-                      en:
-                        pending?.values?.operation === 'schedule_activation'
-                          ? 'Activation date'
-                          : pending?.values?.operation ===
-                              'schedule_deactivation'
-                            ? 'Deactivation date'
-                            : 'Attempt lock until',
-                    },
-                  }
-                : field
-            "
+            :field="operationField(field)"
             :model-value="form.values.value[path(field.key)] ?? null"
             :errors="form.errors.value[path(field.key)] ?? []"
             :busy="form.busy.value"
             :readonly="field.readonly"
             @update:model-value="form.set(path(field.key), $event)"
           />
+          <p
+            v-if="
+              fields.some((field) => field.key === 'at') &&
+              ['schedule_activation', 'schedule_deactivation'].includes(
+                String(pending?.values?.operation),
+              )
+            "
+            class="text-sm text-muted"
+          >
+            {{
+              text(
+                'Pozostaw termin pusty, aby usunąć zaplanowaną datę.',
+                'Leave the date empty to remove the schedule.',
+              )
+            }}
+          </p>
           <div
             v-if="stage === 'review' && review"
             class="rounded-lg border border-line p-4 text-sm"

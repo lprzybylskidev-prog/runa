@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Reuse the Permissions field catalogue for Auth account assignments, preserving native UUID lookups/grants while providing Polish Role/Uprawnienia labels.
+
 - Accept Auth 3.0.0 after account-expiry retirement; Permissions behavior and guarded API contracts remain unchanged.
 
 - Reuse shared Admin long-value and JSON review previews without changing definition locks or confirmation/proof protocols.
