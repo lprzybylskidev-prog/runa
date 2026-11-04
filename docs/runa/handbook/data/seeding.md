@@ -232,8 +232,11 @@ identity/grant store. Neither production updates nor normal reopen invoke them.
 ### Optional automatic development administrator
 
 For local development, set `DEV_SEED_MODULES=true`, `DEV_SEED_ADMIN_EMAIL` and
-`DEV_SEED_ADMIN_PASSWORD` in the ignored `.env.dev.local` overlay and materialized
-local `.env`. The supplied application DatabaseSeeder then includes the module
+`DEV_SEED_ADMIN_PASSWORD` in the ignored private `.env.dev.local` overlay.
+Development prepare/setup preserves these entries and materializes them into
+local `.env`; explicit overlay entries override `.env`, while omitted entries
+preserve runtime configuration. See [environment file responsibilities](../development/environment-files.md)
+for quoting and clearing values. The supplied application DatabaseSeeder then includes the module
 development graph in ordinary `db:seed` and `migrate:fresh --seed`. Prepare the
 Core modules first; an application-only fresh command does not rebuild protected
 platform/module storage. Run the complete scoped rebuild before default seeding

@@ -872,6 +872,14 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Present identity/profile search first, then account state, credential/security
     status, sessions/trust and related date ranges. Preserve grants, filter values,
     table-column order and the existing responsive controls.
+- [x] 11a62. Repair private development seed configuration through editor reopen.
+  - Preserve the documented seed overlay across prepare/profile/device operations;
+    materialize explicit values into local Laravel .env without logging secrets,
+    rotating account credentials or automatically seeding/migrating at reopen.
+  - Cover prepare/profile repetition, dotenv value preservation, explicit clearing,
+    unrelated configuration preservation and unsafe private-file rejection.
+    Synchronize current environment/seeding guidance and assess both instruction
+    products. Only focused diagnostics here; broad verification remains point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -5959,3 +5967,48 @@ remain under .runtime/artifacts/playwright/auth-filter-order, with diagnostics i
 presentation-only reorder. No development bulk write, database reset or Docker
 resource change occurred. Owner acceptance 11b and final verification/release 12
 remain open; user details/individual actions remain later work in this roadmap.
+
+### Point 11a62 — Private development seed overlay and editor reopen
+
+The owner's 2026-11-04 reopen failed before Compose startup because preparation
+rejected the documented DEV_SEED_MODULES/ADMIN_EMAIL/ADMIN_PASSWORD entries in
+.env.dev.local. DevelopmentConfig now accepts all nine documented local seed keys,
+preserves their single-line dotenv values through profile/device persistence and
+materializes explicitly present entries into Laravel's local .env during
+prepare/setup. Explicit false/empty values disable/clear configuration; omitted
+entries preserve existing runtime values. Unrelated configuration, application/test
+database credentials and account passwords are preserved. No seed/migration is
+added to reopen, and .env.testing receives no local administrator overlay.
+
+The overlay now uses the existing bounded, owned, mode-600, no-symlink secret-file
+reader. Newly created profiles are private before secret bytes are written.
+Unknown-setting errors do not echo input. Profile output and generated Compose
+resource overrides contain no seed inputs. Native transport fixtures now create
+their private profiles with the same permissions. Current environment/seeding
+guides and the unreleased central changelog describe the repaired behavior.
+Root AGENTS/owner skills and the customer instruction bundle already delegate
+environment/seeding procedures and secret handling to the canonical handbook;
+neither product needs duplicated configuration rules or changed authority.
+This repairs delivered development tooling without changing module APIs/manifests;
+Auth retains its existing unpublished candidate version.
+
+Focused supported tooling run: 7 EnvironmentOwnership tests PASS, including four
+new regressions for prepare/profile repetition, raw quoted special characters,
+explicit override/clearing, untouched unrelated inputs, private-file refusal and
+secret-safe diagnostics. Real host runa:dev:prepare and runa:dev:config pass with
+the owner's original private overlay. Supported runa:dev:up restored the existing
+development services with successful setup and healthy application dependencies.
+A read-only PHP diagnostic using the existing Composer/Laravel bootstrap confirms
+the enabled module graph and exact administrator email/password agreement between
+the parsed overlay and actual Laravel config; it emits only PASS, no values.
+Tinker is not installed, so its unavailable command was replaced by that bounded
+diagnostic, not by a new dependency. Editor GUI reopening itself remains unobserved.
+Knowledge was initially unavailable with all services stopped, then stale after
+documentation changes; source inspection grounded the repair. Incremental indexing
+is required for the mandatory commit hook. Manual acceptance 11b and broad final
+verification/release 12 remain open.
+
+No database reset, seeding or credential rotation occurred. Existing development
+containers were started and preserved; no disposable test container/network/volume
+was introduced or removed. Development/test data, Qdrant/model caches, backups and
+verification reports remain preserved.

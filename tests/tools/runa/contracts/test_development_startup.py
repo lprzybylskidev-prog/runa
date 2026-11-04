@@ -343,6 +343,98 @@ class CustomerHookSetup(DevelopmentFixture):
 
 
 class EnvironmentOwnership(DevelopmentFixture):
+    def seed_environment(self, root: Path) -> None:
+        (root / ".devcontainer").mkdir()
+        for name in (".env.dev.example", ".env.test.example"):
+            (root / name).write_text("DB_PASSWORD=\nAPP_KEY=\n")
+
+    def test_prepare_and_profile_preserve_and_materialize_private_seed_overlay(self) -> None:
+        root = self.dev.workspace.root
+        self.seed_environment(root)
+        seeds = {
+            "DEV_SEED_MODULES": "true",
+            "DEV_SEED_ADMIN_EMAIL": "fixture@example.test",
+            "DEV_SEED_ADMIN_PASSWORD": "'synthetic $VALUE # \" slash\\end'",
+            "DEV_SEED_AUTH_USERS_COUNT": "3",
+            "DEV_SEED_AUTH_RANDOM": "false",
+            "DEV_SEED_AUTH_SEED": "17",
+            "DEV_SEED_PERMISSIONS_ROLES_COUNT": "2",
+            "DEV_SEED_PERMISSIONS_RANDOM": "true",
+            "DEV_SEED_PERMISSIONS_SEED": "23",
+        }
+        local = root / ".env.dev.local"
+        local.write_text("".join(f"{key}={value}\n" for key, value in seeds.items()))
+        local.chmod(0o600)
+        with (
+            patch.object(type(self.dev.configuration), "resolve_embeddings"),
+            contextlib.redirect_stdout(io.StringIO()) as output,
+        ):
+            self.assertEqual(self.dev.main(["prepare"]), 0)
+            before = (root / ".env").read_bytes()
+            self.assertEqual(self.dev.main(["profile", "low"]), 0)
+            self.assertEqual(self.dev.main(["profile"]), 0)
+            self.assertEqual(self.dev.main(["prepare"]), 0)
+        self.assertEqual(before, (root / ".env").read_bytes())
+        loaded = self.dev.configuration.load()
+        runtime = self.dev.configuration.private_environment(root / ".env")
+        for key, value in seeds.items():
+            self.assertEqual(loaded[key], value)
+            self.assertEqual(runtime[key], value)
+            self.assertNotIn(key, output.getvalue())
+            self.assertNotIn(key, self.dev.configuration.override.read_text())
+        self.assertNotIn(seeds["DEV_SEED_ADMIN_PASSWORD"], output.getvalue())
+        self.assertEqual(local.stat().st_mode & 0o777, 0o600)
+        self.processes.run.assert_not_called()  # Prepare neither seeds nor migrates.
+
+    def test_overlay_replaces_only_explicit_keys_and_supports_disabling_and_clearing(self) -> None:
+        root = self.dev.workspace.root
+        self.seed_environment(root)
+        self.dev.configuration.environment_files()
+        env = root / ".env"
+        with env.open("a") as stream:
+            stream.write(
+                "# Customer settings\nUNRELATED=preserved\nDEV_SEED_MODULES=true\n"
+                "DEV_SEED_ADMIN_EMAIL=runtime@example.test\n"
+                "DEV_SEED_ADMIN_PASSWORD=old-fixture\nDEV_SEED_ADMIN_PASSWORD=duplicate"
+            )
+        local = root / ".env.dev.local"
+        local.write_text("DEV_SEED_MODULES=false\nDEV_SEED_ADMIN_PASSWORD=\n")
+        local.chmod(0o600)
+        self.dev.configuration.environment_files()
+        content = env.read_text()
+        self.assertIn("# Customer settings\nUNRELATED=preserved\n", content)
+        self.assertIn("DEV_SEED_MODULES=false\n", content)
+        self.assertIn("DEV_SEED_ADMIN_EMAIL=runtime@example.test\n", content)
+        self.assertIn("DEV_SEED_ADMIN_PASSWORD=\n", content)
+        self.assertEqual(content.count("DEV_SEED_ADMIN_PASSWORD="), 1)
+        local.unlink()
+        self.dev.configuration.environment_files()
+        self.assertEqual(env.read_text(), content)
+
+    def test_private_overlay_refuses_unsafe_files_before_materialization(self) -> None:
+        root = self.dev.workspace.root
+        self.seed_environment(root)
+        local = root / ".env.dev.local"
+        local.write_text("DEV_SEED_ADMIN_PASSWORD=synthetic-fixture\n")
+        local.chmod(0o644)
+        with self.assertRaisesRegex(ValueError, "private owned regular"):
+            self.dev.configuration.environment_files()
+        self.assertFalse((root / ".env").exists())
+        local.unlink()
+        outside = root / "untouched"
+        local.symlink_to(outside)
+        with self.assertRaisesRegex(ValueError, "symlinks"):
+            self.dev.configuration.load()
+        self.assertFalse(outside.exists())
+
+    def test_invalid_overlay_diagnostic_does_not_echo_input(self) -> None:
+        local = self.dev.workspace.root / ".env.dev.local"
+        local.write_text("synthetic-private-input\n")
+        local.chmod(0o600)
+        with self.assertRaises(ValueError) as failure:
+            self.dev.configuration.load()
+        self.assertNotIn("synthetic-private-input", str(failure.exception))
+
     def test_repeat_preserves_secrets_and_reports_testing_mismatch_without_values(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
