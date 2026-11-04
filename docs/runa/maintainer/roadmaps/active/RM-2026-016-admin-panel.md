@@ -954,6 +954,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     selectors disappear when secondary delivery is disabled or has no choice.
   - Remove redundant explanatory copy, synchronize public contracts/guidance,
     focused regressions, current assets and rendered readiness before owner review.
+- [x] 11a70. Recreate the local development database at the owner's explicit request.
+  - Inspect and announce the exact local table/fixture scope, rebuild platform,
+    Core and application ledgers through native preparation, and reseed the full
+    review preset with the privately configured administrator.
+  - Preserve other databases/files/volumes and verify native login/UI readiness.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6611,3 +6616,39 @@ Post-format results: 17 focused frontend cases and all six focused backend cases
 again for both languages/themes/widths. No source/build mutation overlapped the
 aggregate tests. Mandatory staged hooks and knowledge freshness accompany this
 point commit; owner acceptance and final roadmap gates remain open.
+
+### Point 11a70 — Fresh local database for owner review
+
+2026-11-04: the owner explicitly requests a fresh migration/reseed after 11a69.
+Inspected local PostgreSQL database `runa`, role `runa`, port 5432: exactly 45
+tables owned by runa across shared/runa_auth/runa_audit/runa_permissions, all 15
+accounts carrying development-fixture provenance and zero reserved jobs. The
+complete deletion scope was announced before execution; no unknown App module
+storage or foreign-owned table was present. Under maintenance, the exact inspected
+list (including native/module migration and initialization ledgers) was dropped
+in one transaction with RESTRICT; schema ownership remained intact.
+
+Native platform/Core forward preparation at source
+8d139c61ac7a1c289f2f8364244bede5b0639c1c completed, followed by application
+migrate. After leaving maintenance, ordinary configured db:seed ran all three
+module-development contributors, including the full feature review preset and
+privately configured initial administrator. Queue restart was signaled. The
+result contains 45 tables, 15 fixture accounts, Auth 3.1.0, Admin 0.2.0, Audit
+1.1.0 and Permissions 2.1.0. The existing private .env credentials were retained
+and used for the newly seeded administrator; old sessions/settings/Audit were
+intentionally replaced by fresh development data.
+
+Evidence: .runtime/user-details/fresh/scope.json, prepare.log, after.json and
+readiness.log. This is owner-requested operational preparation, not a new runtime
+capability or instruction rule; public docs and both instruction products need no
+change. No source migration was modified and no broad quality gate is needed for
+this preparation. Base runa_test and every other database, schemas/ownership,
+files, Docker resources/volumes, backups, caches and earlier reports were preserved.
+No task-created Docker resource requires removal. Owner acceptance 11b and final
+affected-area verification/release 12 remain open.
+
+Native compiled Nginx readiness PASS after the fresh seed: private administrator
+login and Admin entry, all three user-detail tabs, full secondary-address editing
+availability, PL/EN, light/dark and 390px/1440px. Name round-trip restoration,
+status badges, crop/revert and proof after submit passed again without account
+management writes. The diagnostic logged out its own session.
