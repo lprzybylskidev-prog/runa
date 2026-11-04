@@ -82,3 +82,7 @@ For high-cardinality domain controls, follow
 Prefer the owning dedicated editor while preserving shared chrome, bounded remote
 search, off-page selections and native security orchestration. Reuse does not mean
 stacking unrelated generic inputs or duplicating the selected catalogue.
+
+Custom native controls require rendered pointer/hover/pressed/focus and disabled
+checks, including checkbox hit areas; composing shared paint alone does not supply
+interaction states. The Permissions catalogue guide documents the supplied default.

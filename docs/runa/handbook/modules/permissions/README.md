@@ -208,6 +208,11 @@ choices. A failed or pending read cannot authorize selecting stale results.
 
 The toolbar uses the shared small search-field size with bounded desktop width;
 category controls fit their labels on wide screens and distribute space on mobile.
+Category/scope/page buttons expose pointer, hover, pressed and keyboard-focus
+states. Disabled pagination and locked row/bulk choices use a default cursor and
+avoid actionable hover treatment. Native checkboxes inherit their row's cursor;
+reduced-motion preferences suppress added transitions.
+
 Quiet scope controls, aligned counters and lightweight pagination keep chrome
 subordinate to catalogue rows. Touch rows remain taller on narrow screens.
 

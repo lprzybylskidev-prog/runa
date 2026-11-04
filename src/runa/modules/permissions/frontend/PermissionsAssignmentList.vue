@@ -321,7 +321,7 @@ const locked = computed(
       >
         <button
           type="button"
-          class="min-h-8 rounded px-3 text-xs focus-visible:outline-2 focus-visible:outline-accent"
+          class="min-h-8 cursor-pointer rounded px-3 text-xs transition-colors hover:bg-primary/10 active:bg-primary/15 disabled:cursor-default motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-accent"
           :class="
             !assignedOnly
               ? 'bg-surface text-ink shadow-sm'
@@ -334,7 +334,7 @@ const locked = computed(
         </button>
         <button
           type="button"
-          class="min-h-8 rounded px-3 text-xs focus-visible:outline-2 focus-visible:outline-accent"
+          class="min-h-8 cursor-pointer rounded px-3 text-xs transition-colors hover:bg-primary/10 active:bg-primary/15 disabled:cursor-default motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-accent"
           :class="
             assignedOnly
               ? 'bg-surface text-ink shadow-sm'
@@ -386,19 +386,19 @@ const locked = computed(
         <label
           v-for="option in visibleOptions"
           :key="option.value"
-          class="flex min-h-11 min-w-0 cursor-pointer sm:min-h-10 items-center gap-3 border-b border-line/60 px-3 py-2 text-sm last:border-0 hover:bg-primary/5 has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-accent"
+          class="flex min-h-11 min-w-0 sm:min-h-10 items-center gap-3 border-b border-line/60 px-3 py-2 text-sm last:border-0 has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-accent"
           :class="[
             selected.includes(option.value) ? 'bg-primary/5' : '',
             locked ||
             (!selected.includes(option.value) && selected.length >= 100)
               ? 'cursor-default'
-              : '',
+              : 'cursor-pointer hover:bg-primary/5',
           ]"
           :data-assignment-option="option.value"
         >
           <input
             type="checkbox"
-            class="runa-choice-input shrink-0"
+            class="runa-choice-input shrink-0 assignment-choice"
             :checked="selected.includes(option.value)"
             :disabled="
               locked ||
@@ -436,11 +436,11 @@ const locked = computed(
       <div class="flex min-h-9 flex-wrap items-center gap-x-4 gap-y-2">
         <label
           v-if="!readonly && visibleOptions.length"
-          class="flex min-h-9 cursor-pointer items-center gap-2"
+          class="flex min-h-9 cursor-pointer items-center gap-2 has-[:disabled]:cursor-default"
         >
           <input
             type="checkbox"
-            class="runa-choice-input"
+            class="runa-choice-input assignment-choice"
             :aria-label="text('Zaznacz widoczne', 'Select visible')"
             :checked="allVisible"
             :indeterminate="selectedVisible > 0 && !allVisible"
@@ -460,7 +460,7 @@ const locked = computed(
       <div v-if="next || previous.length" class="flex items-center gap-2">
         <button
           type="button"
-          class="flex size-8 items-center justify-center rounded text-ink hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
+          class="flex size-8 cursor-pointer items-center justify-center rounded text-ink transition-colors enabled:hover:bg-primary/5 enabled:active:bg-primary/10 disabled:cursor-default motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
           :disabled="!previous.length || resource.busy.value || waiting"
           :aria-label="text('Poprzednia strona', 'Previous page')"
           @click="back"
@@ -481,7 +481,7 @@ const locked = computed(
         >
         <button
           type="button"
-          class="flex size-8 items-center justify-center rounded text-ink hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
+          class="flex size-8 cursor-pointer items-center justify-center rounded text-ink transition-colors enabled:hover:bg-primary/5 enabled:active:bg-primary/10 disabled:cursor-default motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
           :disabled="!next || resource.busy.value || waiting"
           :aria-label="text('Następna strona', 'Next page')"
           @click="forward"
@@ -506,5 +506,9 @@ const locked = computed(
 /* Shared small-field chrome owns padding; reserve the compact search prefix. */
 .assignment-search[data-size='sm'] {
   padding-inline-start: calc(var(--spacing) * 8);
+}
+/* Native checkbox paint does not inherit the clickable row cursor by default. */
+.assignment-choice {
+  cursor: inherit;
 }
 </style>

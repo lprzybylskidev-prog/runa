@@ -130,7 +130,7 @@ function revert() {
               v-for="field in fields"
               :key="field"
               type="button"
-              class="flex min-h-10 min-w-0 flex-1 items-center justify-center gap-2 border-b-2 px-3 py-2 text-xs font-medium sm:flex-none transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+              class="flex min-h-10 min-w-0 flex-1 cursor-pointer disabled:cursor-default hover:bg-primary/5 active:bg-primary/10 motion-reduce:transition-none items-center justify-center gap-2 border-b-2 px-3 py-2 text-xs font-medium sm:flex-none transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
               :class="
                 active === field
                   ? 'border-primary text-primary'

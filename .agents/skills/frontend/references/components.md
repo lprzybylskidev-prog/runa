@@ -40,3 +40,8 @@ For high-cardinality domain controls, follow
 Prefer the owning dedicated editor while preserving shared chrome, bounded remote
 search, off-page selections and native security orchestration. Reuse does not mean
 stacking unrelated generic inputs or duplicating the selected catalogue.
+
+When composing custom native controls, verify computed pointer/hover/pressed/focus
+and disabled behavior in the rendered build, including checkbox hit areas. Follow
+`docs/runa/handbook/modules/permissions/README.md#searchable-assignment-catalogue`
+for the supplied access editor's interaction states.

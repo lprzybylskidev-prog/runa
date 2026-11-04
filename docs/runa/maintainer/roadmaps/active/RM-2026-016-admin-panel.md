@@ -990,6 +990,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     rows, counters and pagination without changing catalogue or write behavior.
   - Prepare current assets and inspect PL/EN, light/dark and mobile/desktop states;
     synchronize current presentation documentation and commit before owner review.
+- [x] 11a75. Complete custom access-editor interaction affordances.
+  - Audit category/scope/page buttons and row/bulk selection for enabled pointer,
+    hover/pressed/focus treatment and truthful disabled cursors.
+  - Verify computed browser states with current assets, synchronize presentation
+    guidance and commit before repeating owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6943,3 +6948,34 @@ area gates remain point 12 and owner manual acceptance remains 11b.
 Mandatory staged hooks and knowledge freshness accompany the commit. No disposable
 Docker/database resources were created; active services, development/base test data,
 caches and earlier evidence remain preserved.
+
+### Point 11a75 — Complete access-editor interaction affordances
+
+The owner reports missing hover cursors on All/Assigned after visual polish.
+Audited every custom category/scope/page button and row/bulk choice in the editor.
+Enabled buttons now have explicit pointer, hover, pressed and keyboard-focus
+states; transitions respect reduced motion. Disabled pagination retains its default
+cursor and no enabled hover paint. Locked/limited rows retain a default cursor
+without actionable hover paint, and bulk selection reflects disabled state.
+Native checkboxes explicitly inherit their label cursor through module-local CSS;
+the attempted cursor-inherit utility was absent from compiled CSS and actual
+browser computed-style inspection caught it. No write or catalogue behavior changes.
+
+Knowledge status was current; a bounded interaction query and original control,
+accessibility and theme sources grounded the correction. Public signatures and
+existing unreleased Permissions 2.1.0 remain unchanged. Permissions guide and
+module/central changelogs are synchronized. Owner/customer frontend references now
+explicitly require rendered cursor/state checks for custom native controls; root
+AGENTS needs no constitutional change.
+
+Current strict frontend build PASS. Native compiled checks PASS in Polish/English,
+390/1440px and light/dark: enabled/disabled computed button cursors, row and checkbox
+pointer inheritance, actual hover background changes, focus-visible outline,
+disabled page hover stability and existing search/pagination/draft/Revert behavior.
+Evidence: `.runtime/user-details/assignments-interaction-*.log` and
+`.runtime/artifacts/playwright/assignments-interaction/`. Browser sessions are logged
+out and no management commands were written. This reversible style repair adds no
+implementation-mirroring tests or backend/broad checks; final verification remains
+12 and owner acceptance remains 11b. Mandatory staged hooks and knowledge freshness
+accompany the commit. No disposable Docker/database resources were created; active
+services, development/base test data, caches and evidence are preserved.
