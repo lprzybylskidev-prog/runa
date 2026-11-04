@@ -15,7 +15,9 @@ const props = defineProps<
 >();
 const { t } = useAdminLocale();
 const settled = ref(false);
+const refreshing = ref(false);
 async function load(retry = false) {
+  refreshing.value = retry;
   try {
     if (retry) await props.controller.refresh();
     else
@@ -26,6 +28,7 @@ async function load(retry = false) {
       );
   } finally {
     settled.value = true;
+    refreshing.value = false;
   }
 }
 void load();
@@ -72,12 +75,13 @@ const missing = computed(() =>
     >
     <ContentLoading
       :loading="!settled && missing"
+      :refreshing="refreshing"
       shape="detail"
       :label="t('Loading record details')"
     >
       <Alert v-if="missing" tone="warning"
         >{{ t('Unable to load the current record.') }}
-        <Button size="sm" @click="load(true)">{{
+        <Button :busy="refreshing" size="sm" @click="load(true)">{{
           t('Retry loading')
         }}</Button></Alert
       >

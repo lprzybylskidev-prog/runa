@@ -312,7 +312,12 @@ presentation until the authoritative snapshot arrives; logout/switch still fence
 
 Clean profile fields merge automatically. Dirty identity/email fields, secondary
 address editors, avatar files and password/factor drafts remain in memory. Overlapping
-identity/secondary/recipient edits render FormConflict locally. The controller
+identity/secondary/recipient edits render FormConflict locally. The public frontend controller, implemented in Auth's `frontend/useAuthAccount.ts`
+and exported through `@/runa/auth`, additionally exposes `refreshing: Ref<boolean>`
+for its coalesced authoritative read pipeline. It ships as frontend runtime for
+platform/App account composition. It is distinct from the mutation/proof `busy`
+flag and clears on success/failure; requests, account fences and writes retain
+their existing owners. Refresh actions bind it for visible progress. The controller
 exposes refresh, detailConflicts/resolveDetails and avatarConflict/resolveAvatar;
 resolution changes local state only and requires an explicit subsequent save.
 The current profile has no separate avatar-content revision, so an external profile

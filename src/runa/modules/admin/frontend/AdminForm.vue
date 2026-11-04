@@ -78,6 +78,7 @@ async function save() {
       </slot>
       <slot name="actions" :controller="controller">
         <Button
+          :busy="controller.busy.value"
           v-if="atomic"
           :disabled="
             controller.blocked.value || !!controller.conflicts.value.length

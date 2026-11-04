@@ -72,8 +72,11 @@ const needsProof = computed(
         delete sectionErrors[section].code;
       "
     />
-    <Button v-if="method === 'email'" @click="sendCode">{{
-      text('Wyślij kod', 'Send code')
-    }}</Button>
+    <Button
+      :busy="account.busy.value"
+      v-if="method === 'email'"
+      @click="sendCode"
+      >{{ text('Wyślij kod', 'Send code') }}</Button
+    >
   </template>
 </template>

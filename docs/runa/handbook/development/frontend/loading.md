@@ -35,7 +35,9 @@ focus and drafts, using ContentLoading refreshing for local pulsing without
 remounting content. Failures settle into explicit retry/error; they never leave
 placeholders indefinitely. Reduced motion/print show static geometry/content.
 Tables retain their existing circular read/refresh indicators. Busy buttons retain
-embedded action progress; the previously accepted language/theme cover retains
+embedded action progress. Submit Buttons without an explicit busy prop inherit
+only their nearest Form's busy state; independent actions bind their own owner.
+Generic scope/loading sentences are not progress indicators; the previously accepted language/theme cover retains
 its dedicated transition/spinner. These are not content-loading defaults. Placeholder and retained-content pulse share `src/runa/resources/css/content-loading.css`
 (1600ms, reduced-motion/print static). Source
 lint restricts Spinner to those UI owners and rejects standalone view imports.

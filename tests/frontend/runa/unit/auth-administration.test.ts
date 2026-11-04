@@ -841,7 +841,7 @@ it.each([
     for (const payload of [{ error: { code: reason } }, { reason }]) {
       const failure = writeFailure(new ApiError(409, payload), []);
       expect(failure.reason).toBe(reason);
-      expect(failure.message).not.toContain('Current values are being checked');
+      expect(failure.message).not.toContain('Check the current values');
       expect(failure.message).not.toContain('currently unavailable');
     }
     expect(
@@ -849,7 +849,7 @@ it.each([
         new ApiError(409, { error: { code: 'user_preview_stale' } }),
         [],
       ).message,
-    ).toContain('Current values are being checked');
+    ).toContain('Check the current values');
   },
 );
 
@@ -989,6 +989,9 @@ it('rebuilt user detail actions request identity proof only after operation subm
     expect(document.querySelector('[role=dialog]')).not.toBeNull(),
   );
   expect(document.querySelector('input[type=password]')).toBeNull();
+  expect(document.querySelector('[role=dialog]')?.textContent).not.toContain(
+    'This operation applies only to this user.',
+  );
   const submit = document.querySelector<HTMLButtonElement>(
     '[role=dialog] button[type=submit]',
   );

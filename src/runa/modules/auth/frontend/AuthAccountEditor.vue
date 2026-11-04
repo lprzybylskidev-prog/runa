@@ -532,9 +532,12 @@ function closeCrop(value: boolean) {
       :locale="locale"
     >
       <template #actions>
-        <Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button>
+        <Button
+          :busy="busy"
+          v-if="failure === 'csrf'"
+          @click="account.refreshCsrf"
+          >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
+        >
       </template>
     </FormNotifications>
   </ConfirmDialog>

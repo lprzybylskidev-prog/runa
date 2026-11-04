@@ -453,6 +453,7 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
         >
       </Table>
       <Button
+        :busy="trustedLoading"
         v-if="trustedCursor"
         :disabled="busy"
         @click="loadTrustedDevices(true)"
@@ -468,9 +469,12 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
       :locale="locale"
     >
       <template #actions
-        ><Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button></template
+        ><Button
+          :busy="busy"
+          v-if="failure === 'csrf'"
+          @click="account.refreshCsrf"
+          >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
+        ></template
       >
     </FormNotifications>
   </Dialog>
@@ -503,9 +507,12 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
       :locale="locale"
     >
       <template #actions
-        ><Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button></template
+        ><Button
+          :busy="busy"
+          v-if="failure === 'csrf'"
+          @click="account.refreshCsrf"
+          >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
+        ></template
       >
     </FormNotifications>
   </ConfirmDialog>

@@ -323,8 +323,8 @@ function cancelProof() {
       <Alert v-if="skipped > 0" tone="warning" data-bulk-skipped>
         {{
           tr({
-            pl: 'Konta superadministratorów zostaną pominięte. Operacja obejmie pozostałe zaznaczone konta.',
-            en: 'Superadministrator accounts will be skipped. The operation applies to the remaining selected accounts.',
+            pl: 'Konta superadministratorów zostaną pominięte.',
+            en: 'Superadministrator accounts will be skipped.',
           })
         }}
         <span class="mt-1 block font-semibold"
@@ -367,6 +367,7 @@ function cancelProof() {
           >{{ tr({ pl: 'Sprawdź skutki', en: 'Review impact' }) }}</Button
         >
         <Button
+          :busy="controller.busy.value"
           :disabled="
             controller.busy.value ||
             !review ||

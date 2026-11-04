@@ -86,3 +86,38 @@ it('Admin operation proof fences late confirmations after account invalidation',
   expect(proof.confirmed.value).toBe(false);
   expect(proof.password.value).toBe('');
 });
+
+it('factor discovery shows local loading until native methods settle', async () => {
+  let finish!: (response: Response) => void;
+  vi.spyOn(window, 'fetch').mockImplementation(
+    async () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+  );
+  let proof!: OperationProofController;
+  const w = mount(
+    defineComponent({
+      setup() {
+        proof = useOperationProof({
+          identity: () => 'session',
+          action: () => 'runa.permissions.access.manage',
+          requirement: () => 'both',
+        });
+        return () => h(AuthOperationProof, { controller: proof });
+      },
+    }),
+  );
+  const pending = proof.begin();
+  await vi.waitFor(() =>
+    expect(w.find('[data-content-loading=form]').exists()).toBe(true),
+  );
+  expect(w.find('input[name=current_password]').exists()).toBe(false);
+  finish(reply(security));
+  await pending;
+  await vi.waitFor(() =>
+    expect(w.find('[data-content-loading]').exists()).toBe(false),
+  );
+  expect(w.find('input[name=current_password]').exists()).toBe(true);
+  expect(proof.methods.value).toEqual(['totp', 'recovery']);
+});

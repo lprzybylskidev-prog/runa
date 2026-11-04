@@ -17,6 +17,14 @@ const emit = defineEmits<{
 }>();
 const { locale, t } = useAdminLocale();
 const settled = ref(false);
+async function retry() {
+  settled.value = false;
+  try {
+    await props.controller.refresh();
+  } finally {
+    settled.value = true;
+  }
+}
 void props.controller.activateSection(props.section.key).finally(() => {
   settled.value = true;
 });
@@ -120,7 +128,9 @@ function revert() {
       </Form>
       <div v-else class="space-y-3">
         <p>{{ t('Unable to load the current record.') }}</p>
-        <Button @click="controller.refresh">{{ t('Retry loading') }}</Button>
+        <Button :busy="controller.busy.value" @click="retry">{{
+          t('Retry loading')
+        }}</Button>
       </div>
     </ContentLoading>
   </Card>

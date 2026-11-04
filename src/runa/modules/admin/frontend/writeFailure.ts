@@ -28,8 +28,7 @@ export function writeFailure(
   if (cause.status === 409)
     return {
       ...failure,
-      message:
-        'This change was not saved. Current values are being checked; your edits are preserved.',
+      message: 'This change was not saved. Check the current values.',
     };
   if (cause.status === 422) {
     const errors: Record<string, readonly string[]> = {};

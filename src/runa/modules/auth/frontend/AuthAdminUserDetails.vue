@@ -717,13 +717,13 @@ function supplied(section: AdminSectionData) {
       :title="pending ? t(pending.title) : ''"
       :locale="locale"
       size="md"
-      :busy="form.busy.value"
+      :busy="form.busy.value || proof?.busy.value === true"
       @update:model-value="!$event && close()"
     >
       <Form
         v-if="pending"
         :label="t(pending.title)"
-        :busy="form.busy.value"
+        :busy="form.busy.value || proof?.busy.value === true"
         @submit="stage === 'proof' ? confirmProof() : submit()"
       >
         <div
@@ -758,14 +758,6 @@ function supplied(section: AdminSectionData) {
             :locale="locale"
             @update:model-value="select"
           />
-          <p class="text-sm text-muted">
-            {{
-              text(
-                'Operacja dotyczy wyłącznie tego użytkownika.',
-                'This operation applies only to this user.',
-              )
-            }}
-          </p>
           <p
             v-if="
               pending?.section === 'preferences' && pending.command === 'reset'
@@ -809,14 +801,6 @@ function supplied(section: AdminSectionData) {
             v-if="stage === 'review' && review"
             class="rounded-lg border border-line p-4 text-sm"
           >
-            <p class="font-semibold">
-              {{
-                text(
-                  'Sprawdź zmiany przed zatwierdzeniem.',
-                  'Review the changes before confirming.',
-                )
-              }}
-            </p>
             <p v-for="(change, key) in review.changes" :key="key" class="mt-2">
               {{ t(String(key)) }}:
               {{

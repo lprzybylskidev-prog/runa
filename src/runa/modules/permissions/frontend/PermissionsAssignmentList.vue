@@ -199,12 +199,19 @@ function back() {
         :key="id"
         class="flex min-w-0 items-center justify-between gap-2 text-sm"
       >
-        <span class="min-w-0 break-words">{{
-          labels.get(id) ??
-          (resolved.has(id) || selectedResource.error.value
-            ? text('Niedostępne przypisanie', 'Unavailable assignment')
-            : text('Wczytywanie nazwy…', 'Loading name…'))
-        }}</span
+        <ContentLoading
+          :loading="
+            !labels.has(id) &&
+            !resolved.has(id) &&
+            !selectedResource.error.value
+          "
+          :lines="1"
+          :label="t('Loading record details')"
+          class="min-w-0 flex-1"
+          ><span class="break-words">{{
+            labels.get(id) ??
+            text('Niedostępne przypisanie', 'Unavailable assignment')
+          }}</span></ContentLoading
         ><Button
           v-if="!readonly"
           size="sm"
@@ -242,6 +249,7 @@ function back() {
       "
       ><template #actions
         ><Button
+          :busy="resource.busy.value || selectedResource.busy.value"
           size="sm"
           @click="
             read();

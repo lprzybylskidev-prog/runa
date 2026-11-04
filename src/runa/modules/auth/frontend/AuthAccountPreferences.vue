@@ -258,6 +258,7 @@ defineExpose({ beginReset, reload });
             }}
           </p>
           <Button
+            :busy="busy || account.refreshing.value"
             v-if="failure"
             variant="outline"
             :disabled="busy"
@@ -327,6 +328,7 @@ defineExpose({ beginReset, reload });
                 text('Cofnij zmiany', 'Revert changes')
               }}</Button>
               <Button
+                :busy="busy || account.refreshing.value"
                 v-if="
                   failure === 'refresh_failed' && failedKey === keyOf(choice)
                 "
@@ -367,10 +369,13 @@ defineExpose({ beginReset, reload });
       :error="failure ? failureText : ''"
       :locale="locale"
       ><template #actions
-        ><Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button
         ><Button
+          :busy="busy"
+          v-if="failure === 'csrf'"
+          @click="account.refreshCsrf"
+          >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
+        ><Button
+          :busy="busy || account.refreshing.value"
           v-if="failure === 'refresh_failed'"
           @click="account.refresh()"
           >{{ text('Spróbuj pobrać ponownie', 'Retry loading') }}</Button

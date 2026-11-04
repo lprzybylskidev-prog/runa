@@ -274,8 +274,6 @@ export const adminMessages: AdminMessages = {
   'Disable the module before unregistering it.':
     'Przed wyrejestrowaniem wyłącz moduł.',
   'Unregister dependent modules first.': 'Najpierw wyrejestruj moduły zależne.',
-  'Ordinary assignments, copy and presets preserve protected membership. Each operation requires its own review and fresh both-factor proof. Protected authority uses a separate action and confirmation.':
-    'Zwykłe przypisania, kopiowanie i zestawy zachowują chronione członkostwo. Każda operacja wymaga osobnego przeglądu oraz ponownego potwierdzenia hasłem i drugim składnikiem. Chronione uprawnienia zmienia się osobną akcją z potwierdzeniem.',
   Outcome: 'Wynik',
   Progress: 'Postęp',
   'Public UUID.': 'Publiczny UUID.',
@@ -341,8 +339,8 @@ export const adminMessages: AdminMessages = {
     'Ten komponent administracyjny jest niedostępny.',
   'This administration page is unavailable.':
     'Ta strona administracyjna jest niedostępna.',
-  'This change was not saved. Current values are being checked; your edits are preserved.':
-    'Zmiana nie została zapisana. Trwa sprawdzanie bieżących wartości; Twoje zmiany zostały zachowane.',
+  'This change was not saved. Check the current values.':
+    'Nie zapisano zmiany. Sprawdź aktualne wartości.',
   'This field is currently unavailable.': 'To pole jest chwilowo niedostępne.',
   'This field is required.': 'To pole jest wymagane.',
   'This lookup is currently unavailable.':

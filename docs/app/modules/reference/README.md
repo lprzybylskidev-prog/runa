@@ -56,3 +56,7 @@ The reference SettingsProvider demonstrates the native source/CLI settings
 contract; it has no generic Admin settings tab. Administrator-facing configuration
 requires a dedicated owned page with change history and its own validated workflow,
 as described in the Admin authoring guide. Existing values remain preserved.
+
+The example panel binds its own request state to public Button busy, retaining a
+stable action label and result/error output; no loading sentence or separate
+spinner implementation is needed.

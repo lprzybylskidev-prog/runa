@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Remove redundant operation scope/instruction copy and unify visible progress across shared forms, Admin/Auth/Permissions actions and the reference panel. Submit Buttons inherit local Form busy; independent reads/actions keep explicit progress owners and existing proof/draft/security boundaries.
+
 - Refine user details with retained naming drafts, real avatars, consolidated account facts, email management and searchable assignments. Apply a complete development review preset and hide notification recipients when secondary addresses are unavailable in both own/Admin preferences.
 
 - Align Auth user details with creation and account forms using public shared identity and preference controls, bulk action tones, native avatar cropping and form-local Save/Revert. Keep guarded target operations and post-submit proof.

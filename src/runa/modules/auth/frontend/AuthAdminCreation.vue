@@ -367,7 +367,7 @@ async function submit() {
             )
           "
         />
-        <Button @click="read(true)">{{
+        <Button :busy="busy" @click="read(true)">{{
           text('Spróbuj ponownie', 'Retry loading')
         }}</Button>
       </template>

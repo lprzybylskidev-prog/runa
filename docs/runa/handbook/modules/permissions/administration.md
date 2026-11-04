@@ -72,3 +72,9 @@ Default definition fields and reviewed differences reuse Admin's public
 ValuePreview presentation: long values have explicit Show all/Collapse, and JSON
 reviews are indented without changing payload tokens. Expansion changes only the
 local display and never confirms, submits or refreshes a reviewed operation.
+
+Account selection uses local action progress through the existing Admin form
+controller. The default access page omits generic explanations of ordinary versus
+protected authority; native reviews, stronger proofs, protected membership and
+separate authority actions remain enforced by their existing owners. Assignment
+Save inherits Form progress and record-read retries reveal the shared skeleton.

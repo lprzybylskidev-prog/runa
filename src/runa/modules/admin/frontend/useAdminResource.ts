@@ -204,7 +204,6 @@ export function useAdminResource(
       projection.readonly ||
       projection.diagnostic ||
       !command?.available ||
-      command.mode !== 'independent' ||
       Object.keys(input.values).some(
         (key) =>
           !command.inputs.includes(key) ||

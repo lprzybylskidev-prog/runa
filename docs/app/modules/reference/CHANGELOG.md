@@ -2,6 +2,8 @@
 
 ## 0.2.0 — 2026-10-31
 
+- Reuse shared Button busy animation for connection checks and retain the action label.
+
 - Adopt source-only HealthPolicy schema 2, removing runtime mode overrides. Require
   platform >=0.7.0 and add the source_health forward edge without domain data changes.
 

@@ -237,3 +237,16 @@ keep technical revisions/IDs in the controller. Apply the
 to dependent fields as well as whole forms, including recipient selectors whose
 secondary-address feature is unavailable. Native authorization, concurrency,
 security proof and required feedback remain with their owning controllers.
+
+## Visible operation progress
+
+Set Form busy from its owning operation. Public submit Buttons inherit that local
+state when their busy prop is omitted; Cancel and other button actions do not.
+Explicit busy remains available for a different owner. Independent async actions
+(review, refresh, send code, row-status reads) bind their own Button busy state.
+Use ContentLoading for dependent reads and retained-content refresh, including
+factor-method discovery; keep drafts/focus mounted once content is available.
+Do not replace progress with generic scope statements or fast-changing status
+sentences. Keep stable action labels, actionable failures, meaningful consequences
+and durable pending/recovery states. No global HTTP counter or artificial request
+delay is introduced. Reduced motion uses the existing static progress cues.

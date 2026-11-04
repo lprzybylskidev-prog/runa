@@ -1,4 +1,5 @@
 /* eslint-disable vue/one-component-per-file -- Independent mounted operation and navigation harnesses. */
+import { savePreference } from '../../../../src/runa/resources/js/lib/preferences';
 import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, flushPromises, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
@@ -23,7 +24,7 @@ import type {
 enableAutoUnmount(afterEach);
 beforeEach(() => {
   window.history.replaceState({}, '', '/admin');
-  localStorage.setItem('runa.locale', 'en');
+  savePreference('runa.locale', 'en');
 });
 const id = '01900000-0000-7000-8000-000000000001';
 function admin(): AdminController {
@@ -633,7 +634,11 @@ it.each(['selection', 'deep link'])(
         document.body.querySelectorAll<HTMLButtonElement>(
           '[role="dialog"] button',
         ),
-      ).find((button) => button.textContent?.trim() === label)!;
+      ).find((button) =>
+        label === 'Refresh tasks'
+          ? button.matches('[data-active-work] button[aria-label="Refresh"]')
+          : button.textContent?.trim() === label,
+      )!;
     await vi.waitFor(() => expect(workReads).toHaveLength(1));
     workReads[0]!(response({ work: [], truncated: false }));
     await vi.waitFor(() =>
@@ -656,7 +661,7 @@ it.each(['selection', 'deep link'])(
     expect(panel.hidden).toBe(false);
     expect(panel.querySelector('[data-module="app.safe"]')).toBe(card);
     expect(button('Diagnose now').getAttribute('aria-busy')).toBe('true');
-    expect(button('Refresh tasks').getAttribute('aria-busy')).not.toBe('true');
+    expect(button('Refresh tasks').querySelector('.animate-spin')).toBeNull();
     finishDiagnosis(
       response({
         module: 'app.safe',
@@ -697,12 +702,12 @@ it.each(['selection', 'deep link'])(
     button('Refresh tasks').click();
     await vi.waitFor(() => expect(workReads).toHaveLength(3));
     expect(document.body.querySelector('[data-active-work]')).not.toBeNull();
-    expect(button('Refresh tasks').getAttribute('aria-busy')).toBe('true');
+    expect(
+      button('Refresh tasks').querySelector('.animate-spin'),
+    ).not.toBeNull();
     workReads[2]!(response({ work: [], truncated: false }));
     await vi.waitFor(() =>
-      expect(button('Refresh tasks').getAttribute('aria-busy')).not.toBe(
-        'true',
-      ),
+      expect(button('Refresh tasks').querySelector('.animate-spin')).toBeNull(),
     );
     expect(
       document.body.querySelector('[data-active-work] table'),
@@ -1141,7 +1146,9 @@ it.each(['failure', 'authority loss'])(
       expect(w.findComponent(AdminOperationResult).exists()).toBe(false);
     } else {
       await vi.waitFor(() =>
-        expect(modal()?.textContent).toContain('Refresh and review'),
+        expect(modal()?.closest('.dialog-backdrop')?.textContent).toContain(
+          'Refresh and review',
+        ),
       );
       expect(modal()?.querySelector('.app-skeleton')).toBeNull();
       const dialog = modal()!.closest('[role="dialog"]')!;
@@ -1162,7 +1169,7 @@ it.each(['failure', 'authority loss'])(
 it.each(['enable', 'disable', 'unregister'] as const)(
   'Polish module %s confirmation translates its cancel action',
   async (intent) => {
-    localStorage.setItem('runa.locale', 'pl');
+    savePreference('runa.locale', 'pl');
     vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
       const path = String(input).split('?')[0]!;
       if (path.endsWith('/capabilities'))

@@ -11,3 +11,7 @@ Customer composition never authorizes protected platform edits or copied securit
 For concise shared labels/layout, consolidated facts and omission of redundant copy,
 follow `docs/runa/handbook/development/frontend/forms.md#concise-form-composition`;
 apply capability visibility to dependent controls as well as whole forms.
+
+For visible mutation/read feedback and the local Form/submit-Button busy contract,
+follow `docs/runa/handbook/development/frontend/forms.md#visible-operation-progress`.
+Generic scope or loading copy never substitutes for shared progress presentation.

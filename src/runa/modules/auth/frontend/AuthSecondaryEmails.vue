@@ -218,6 +218,7 @@ async function remove() {
             >{{ text('Edytuj', 'Edit') }}</Button
           >
           <Button
+            :busy="busy"
             v-if="!address.verified_at && has('secondary_self_change')"
             variant="ghost"
             size="sm"
@@ -370,9 +371,12 @@ async function remove() {
       :locale="locale"
     >
       <template #actions>
-        <Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button>
+        <Button
+          :busy="busy"
+          v-if="failure === 'csrf'"
+          @click="account.refreshCsrf"
+          >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
+        >
       </template>
     </FormNotifications>
   </ConfirmDialog>

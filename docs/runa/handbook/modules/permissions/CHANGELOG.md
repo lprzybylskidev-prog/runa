@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Omit generic access instructions and show account-selection, assignment-submit and retry progress through shared controls.
+
 - Add public searchable PermissionsAssignments presentation and bounded server definition search/selected-ID hydration through PermissionsAccess 2.1.0; preserve native grants, proof, revision and transactional Audit.
 
 - Reuse the Permissions field catalogue for Auth account assignments, preserving native UUID lookups/grants while providing Polish Role/Uprawnienia labels.

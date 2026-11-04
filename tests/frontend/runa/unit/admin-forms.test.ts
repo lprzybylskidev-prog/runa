@@ -923,3 +923,58 @@ it('Admin native HTTP operations abort and ignore completion after authority los
   expect(form.records.value).toEqual({});
   expect(form.notice.value).toBe('');
 });
+
+it('native atomic participants review and save one section with visible activity and preserve unrelated drafts', async () => {
+  const data = descriptor();
+  data.sections[0]!.commands = [
+    command({ mode: 'atomic', preview_required: true }),
+  ];
+  data.sections.push({ ...data.sections[0]!, key: 'access', title: 'Access' });
+  const { form } = harness(data);
+  await vi.waitFor(() => expect(form.records.value.access).toBeDefined());
+  form.set('profile.name', 'Changed profile');
+  form.set('access.name', 'Keep unrelated draft');
+  let release!: (response: Response) => void;
+  const paths: string[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    if (init?.method !== 'POST') return respond({ data: server });
+    paths.push(String(input));
+    if (String(input).endsWith('/preview'))
+      return new Promise((resolve) => {
+        release = resolve;
+      });
+    return respond({
+      data: {
+        status: 'committed',
+        record: record({
+          revision: 'r2',
+          values: { ...server.values, name: 'Changed profile' },
+        }),
+        operation_id: null,
+      },
+    });
+  });
+  const preview = form.reviewCommand('profile', 'save');
+  await vi.waitFor(() => expect(release).toBeTypeOf('function'));
+  expect(form.busy.value).toBe(true);
+  release(
+    respond({
+      data: {
+        fingerprint: 'native-review',
+        changes: { name: { old: 'Before', new: 'Changed profile' } },
+        requirement: 'none',
+        every_action: false,
+      },
+    }),
+  );
+  await preview;
+  expect(form.busy.value).toBe(false);
+  expect(form.commandReviews.value['profile:save']?.fingerprint).toBe(
+    'native-review',
+  );
+  expect((await form.execute('profile', 'save'))?.status).toBe('committed');
+  expect(paths).toHaveLength(2);
+  expect(paths.every((path) => path.includes('/sections/profile/'))).toBe(true);
+  expect(form.values.value['access.name']).toBe('Keep unrelated draft');
+  expect(form.dirty.value).toBe(true);
+});

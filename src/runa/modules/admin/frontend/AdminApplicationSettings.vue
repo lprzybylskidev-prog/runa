@@ -59,9 +59,12 @@ onMounted(async () => {
         @invalid="settings.save"
       >
         <div class="flex flex-wrap items-center justify-end gap-3">
-          <Button :disabled="controller.busy.value" @click="settings.refresh">{{
-            tr('Refresh current settings')
-          }}</Button>
+          <Button
+            :busy="controller.refreshing.value"
+            :disabled="controller.busy.value"
+            @click="settings.refresh"
+            >{{ tr('Refresh current settings') }}</Button
+          >
         </div>
         <FormNotifications
           :locale="adminLocale"
@@ -80,6 +83,7 @@ onMounted(async () => {
         >
           <template #actions>
             <Button
+              :busy="controller.refreshing.value"
               v-if="settings.invalid.value || controller.error.value"
               :disabled="controller.busy.value"
               @click="settings.refresh"

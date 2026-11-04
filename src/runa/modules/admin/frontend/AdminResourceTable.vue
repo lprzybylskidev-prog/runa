@@ -62,6 +62,7 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
   >
     <template #actions
       ><Button
+        :busy="controller.resource.busy.value"
         size="sm"
         :disabled="controller.resource.busy.value"
         @click="controller.refresh"

@@ -59,6 +59,14 @@ watch(
   () => resource.clear(),
 );
 const settled = ref(false);
+async function retry() {
+  settled.value = false;
+  try {
+    await props.controller.refresh();
+  } finally {
+    settled.value = true;
+  }
+}
 void props.controller.activateSection(props.section.key).finally(() => {
   settled.value = true;
 });
@@ -591,7 +599,7 @@ const fieldTitle = (key: string) =>
             tone="warning"
             class="md:col-span-2"
             >{{ t('Unable to load the current record.') }}
-            <Button size="sm" @click="controller.refresh">{{
+            <Button :busy="controller.busy.value" size="sm" @click="retry">{{
               t('Retry loading')
             }}</Button></Alert
           >

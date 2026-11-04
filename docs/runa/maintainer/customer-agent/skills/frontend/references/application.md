@@ -63,3 +63,7 @@ For readonly boolean facts reuse public BooleanBadge from the component catalogu
 Admin assignment composition may use public PermissionsAssignments from
 `docs/runa/handbook/modules/permissions/README.md#searchable-assignment-catalogue`.
 Keep native guarded review/proof with the supplied controller.
+
+For visible mutation/read feedback and the local Form/submit-Button busy contract,
+follow `docs/runa/handbook/development/frontend/forms.md#visible-operation-progress`.
+Generic scope or loading copy never substitutes for shared progress presentation.

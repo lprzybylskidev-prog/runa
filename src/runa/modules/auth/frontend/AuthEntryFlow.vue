@@ -290,16 +290,17 @@ const readiness = useViewReadiness({
               :label="t('remember')"
             />
             <Button
+              :busy="busy"
               v-if="method === 'email' && needsProof"
               variant="outline"
               @click="sendEmail"
               >{{ t('sendCode') }}</Button
             >
             <template v-if="screen === 'verify' && !isTokenPage">
-              <Button variant="outline" @click="sendEmail">{{
+              <Button :busy="busy" variant="outline" @click="sendEmail">{{
                 t('resend')
               }}</Button>
-              <Button @click="refresh">{{ t('refresh') }}</Button>
+              <Button :busy="busy" @click="refresh">{{ t('refresh') }}</Button>
             </template>
           </template>
           <template v-if="hasSubmit || failure" #actions>
@@ -353,10 +354,11 @@ const readiness = useViewReadiness({
       <Button v-if="!ready && failure" @click="initialize">{{
         t('retry')
       }}</Button>
-      <Button v-if="failure === 'csrf'" @click="refreshCsrf">{{
+      <Button :busy="busy" v-if="failure === 'csrf'" @click="refreshCsrf">{{
         t('refreshCsrf')
       }}</Button>
       <Button
+        :busy="busy"
         v-if="session && ['conflict', 'account_restricted'].includes(failure)"
         @click="refresh"
         >{{ t('refresh') }}</Button

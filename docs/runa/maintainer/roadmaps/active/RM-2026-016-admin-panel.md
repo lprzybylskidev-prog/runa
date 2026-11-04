@@ -959,6 +959,16 @@ reassessment before resuming point 3; completed point history remains evidence.
     Core and application ledgers through native preparation, and reseed the full
     review preset with the privately configured administrator.
   - Preserve other databases/files/volumes and verify native login/UI readiness.
+- [x] 11a71. Replace redundant operation copy with consistent visible progress.
+  - Audit supplied platform/module/App forms, dialogs and action/read controls.
+  - Remove scope/loading filler, preserve actionable failures and meaningful effects.
+  - Reuse shared Button busy and ContentLoading, preserving drafts, proof, reduced
+    motion and immediate requests; no artificial request delay or global counter.
+  - Align frontend section dispatch with the already delivered native standalone
+    participant contract; retain server-owned writer admission, grants, reviews,
+    proofs and aggregate completeness.
+  - Synchronize shared contracts, owner/customer references, focused regressions
+    and current compiled rendered readiness before returning to owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6652,3 +6662,74 @@ login and Admin entry, all three user-detail tabs, full secondary-address editin
 availability, PL/EN, light/dark and 390px/1440px. Name round-trip restoration,
 status badges, crop/revert and proof after submit passed again without account
 management writes. The diagnostic logged out its own session.
+
+### Point 11a71 — Concise operation feedback and visible progress
+
+The owner requests a system-wide review after finding the redundant single-user
+operation sentence. Audited Vue action/read/copy consumers across Core modules,
+platform UI and App reference presentation. Default submit Buttons now inherit
+only their nearest Form's busy state unless explicitly overridden. Cancel, ordinary
+buttons, other forms and standalone controls retain independent behavior. The
+private injection remains UI implementation; public consumption stays Form/Button.
+
+Added explicit activity to 37 async controls plus selected-row operation/work reads
+and account selection, reusing existing Button progress. Auth factor-method and
+assignment-label discovery reuse ContentLoading; retry paths settle through local
+skeleton/retained-content refresh. Account refreshing exposes the coalesced read
+state separately from mutation/proof busy. Table refresh already rotates its own
+icon and shows its established read indicator; no duplicate spinner was added.
+Audit already uses the shared record/payload loading contract and needs no new
+private presentation. Synchronous edit/remove/revert controls keep immediate
+behavior. Shared progress respects existing reduced-motion/print rules.
+
+Removed the single-user scope sentence, repeated review/lifecycle instructions,
+redundant Permissions access tutorial and visible diagnostic/name-loading filler.
+The reference panel keeps a stable action label with Button busy. Preserved actual
+skipped-account reasons/counts, reset effects, empty-date behavior, validation,
+conflicts, required feedback and durable pending/recovery states. Conflict copy
+reports the unsaved change and asks for review rather than claiming a completed
+read is still running.
+
+Controlled native preview inspection uncovered an obsolete frontend-only
+independent-mode restriction, contradicting the already delivered native standalone
+participant contract from 11a67. Removed that restriction from useAdminResource:
+source-projected atomic participants can use their declared native section writer.
+The backend still resolves/adopts the exact writer, grants, target, proof/review,
+revision and transaction; complete aggregate Save is unchanged. No new execution
+API, generic dispatch or security exception was introduced. The focused regression
+exercises a real section preview/command lane, visible pending state and preservation
+of an unrelated dirty participant, instead of only testing submit emission.
+
+Focused diagnostics: 49 frontend cases PASS across local submit progress, explicit
+overrides, factor discovery, native standalone dispatch, ordinary native click
+guards, account read reconciliation/drafts, operations/history/diagnosis and existing
+Auth workflows. Two backend cases / 51 assertions PASS for standalone profile
+mutation and the complete aggregate HTTP protocol. Earlier failures exposed stale
+test expectations for a disabled-category recipient selector, the table's icon-only
+refresh control and toast placement in the owning modal backdrop. Updated those
+fixtures to the existing public presentation contracts and used the actual locale
+preference adapter. No broad quality gate was run.
+
+The asset/type build PASS and compiled native Nginx inspection PASS: a held native
+Permissions preview shows the submit spinner without scope filler; held factor
+discovery shows its local skeleton and then settles. These controlled read/preview
+responses are diagnostic-only and add no runtime delay. Screenshots were inspected
+at 390/1440px, light/dark. The ordinary PL/EN/light/dark/width/tab readiness also
+passes, including proof after submission. Browser diagnostics perform no account
+management write and log out their own sessions. Evidence:
+.runtime/user-details/progress-build.log, progress-readiness.log,
+progress-layout-readiness.log and .runtime/artifacts/playwright/user-details.
+
+Synchronized canonical component/forms/loading, Auth/Admin/Permissions and reference
+guides/changelogs, central changelog and both owner/customer frontend references.
+Root AGENTS and skill entrypoints already require shared progress, concise copy and
+canonical contracts; no constitutional change is needed. The existing unreleased
+Auth 3.1.0, Admin 0.2.0, Permissions 2.1.0 and reference 0.2.0 candidates retain
+their versions; no backend/schema/API version or dependency changes. Final staged
+formatting/hooks, knowledge freshness and exact compiled evidence accompany commit.
+
+Supported backend cleanup exited 0 and removed only runa_test_test_1. Local runa,
+base runa_test, private credentials, development services, durable files/data,
+caches, backups and reports remain preserved; no reset was performed. No task-created
+Docker resources require cleanup. Owner acceptance 11b and final affected-area
+verification/release 12 remain open.

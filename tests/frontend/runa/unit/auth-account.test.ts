@@ -2331,6 +2331,8 @@ it('preference refresh merges disjoint delivery changes without replacing local 
   await w.getComponent(AuthAccountPreferences).props('account').refresh();
   await flushPromises();
   expect(row.getComponent(Switch).props('modelValue')).toBe(false);
+  expect(row.findComponent(Select).exists()).toBe(false);
+  await row.get('input[role=switch]').setValue(true);
   expect(
     row.getComponent<MultiSelectInstance>(Select).props('modelValue'),
   ).toEqual([other]);
@@ -2445,12 +2447,14 @@ it('account refresh retains a trailing focus invalidation while an earlier read 
     return original(input, init);
   });
   const first = state.refresh();
+  expect(state.refreshing.value).toBe(true);
   await vi.waitFor(() => expect(release).toBeDefined());
   currentProfile = { ...currentProfile, version: 6, name: 'Remote update' };
   window.dispatchEvent(new Event('focus'));
   release!(json(profile));
   await first;
   await vi.waitFor(() => expect(state.profile.value?.version).toBe(6));
+  expect(state.refreshing.value).toBe(false);
   expect(state.fields.name).toBe('My pending draft');
   expect(state.detailConflicts.name).toBe('Remote update');
   expect(writes).toHaveLength(0);

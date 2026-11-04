@@ -38,6 +38,16 @@ const secondary = computed(() =>
   props.sources.find((source) => source.key === 'secondary'),
 );
 const settled = ref(false);
+const refreshing = ref(false);
+async function retry() {
+  if (refreshing.value) return;
+  refreshing.value = true;
+  try {
+    await props.controller.refresh();
+  } finally {
+    refreshing.value = false;
+  }
+}
 void Promise.all(
   props.sources.map((source) => props.controller.activateSection(source.key)),
 ).finally(() => {
@@ -179,13 +189,14 @@ function remove(publicId: string) {
     >
     <ContentLoading
       :loading="!settled"
+      :refreshing="refreshing"
       shape="detail"
       :label="t('Loading record details')"
       class="space-y-5"
     >
       <Alert v-if="missing" tone="warning"
         >{{ t('Unable to load the current record.')
-        }}<Button size="sm" @click="controller.refresh">{{
+        }}<Button :busy="refreshing" size="sm" @click="retry">{{
           t('Retry loading')
         }}</Button></Alert
       >

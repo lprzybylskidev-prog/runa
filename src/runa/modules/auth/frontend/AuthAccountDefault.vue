@@ -544,9 +544,12 @@ const passwordHint = computed(() =>
               delete errors[name];
             "
           />
-          <Button v-if="needsProof && method === 'email'" @click="sendCode">{{
-            text('Wyślij kod', 'Send code')
-          }}</Button>
+          <Button
+            :busy="busy"
+            v-if="needsProof && method === 'email'"
+            @click="sendCode"
+            >{{ text('Wyślij kod', 'Send code') }}</Button
+          >
           <div
             v-if="secret"
             class="space-y-3 border-l-2 border-[var(--runa-primary-solid)] pl-4"
@@ -656,6 +659,7 @@ const passwordHint = computed(() =>
               >{{ text('Szczegóły', 'Details') }}</Button
             >
             <Button
+              :busy="busy"
               v-else-if="!history"
               tone="danger"
               :disabled="busy"
@@ -699,10 +703,11 @@ const passwordHint = computed(() =>
     :locale="locale"
   >
     <template #actions>
-      <Button v-if="failure === 'csrf'" @click="refreshCsrf">{{
+      <Button :busy="busy" v-if="failure === 'csrf'" @click="refreshCsrf">{{
         text('Odśwież zabezpieczenie', 'Renew form security')
       }}</Button>
       <Button
+        :busy="busy || account.refreshing.value"
         v-if="failure && (!ready || failure === 'refresh_failed')"
         @click="!ready ? initialize() : account.refresh()"
         >{{ text('Spróbuj pobrać ponownie', 'Retry loading') }}</Button

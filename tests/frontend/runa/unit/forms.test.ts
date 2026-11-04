@@ -288,3 +288,58 @@ it('rejects nonfinite values instead of silently serializing them as null', () =
     TypeError,
   );
 });
+
+it('Form submit actions show owned progress while retaining drafts and independent actions', async () => {
+  const { Button } = await import('@/runa/ui');
+  const { h } = await import('vue');
+  const w = mount(Form, {
+    props: { busy: false },
+    slots: {
+      default: () =>
+        h(TextInput, { modelValue: 'Unsaved draft', label: 'Name' }),
+      actions: () => [
+        h(Button, { type: 'submit' }, () => 'Save'),
+        h(Button, {}, () => 'Cancel'),
+      ],
+    },
+  });
+  const draft = w.get('input').element;
+  const other = mount(Button, {
+    props: { type: 'submit' },
+    slots: { default: 'Other form' },
+  });
+  await w.setProps({ busy: true });
+  expect(w.get('button[type=submit]').attributes('aria-busy')).toBe('true');
+  expect(w.find('button[type=submit] .button-spinner').exists()).toBe(true);
+  expect(w.get('button[type=button]').find('.button-spinner').exists()).toBe(
+    false,
+  );
+  expect(other.find('.button-spinner').exists()).toBe(false);
+  expect(w.get('input').element).toBe(draft);
+  expect(w.get('input').element.value).toBe('Unsaved draft');
+  await w.setProps({ busy: false });
+  expect(w.find('.button-spinner').exists()).toBe(false);
+  expect(w.get('button[type=submit]').attributes('disabled')).toBeUndefined();
+});
+
+it('explicit action progress overrides the nearest Form submit default', async () => {
+  const { Button } = await import('@/runa/ui');
+  const { h } = await import('vue');
+  const w = mount(Form, {
+    props: { busy: true },
+    slots: {
+      actions: () => [
+        h(
+          Button,
+          { type: 'submit', busy: false },
+          () => 'Different progress owner',
+        ),
+        h(Button, { type: 'button', busy: true }, () => 'Send code'),
+      ],
+    },
+  });
+  expect(w.get('button[type=submit]').find('.button-spinner').exists()).toBe(
+    false,
+  );
+  expect(w.get('button[type=button]').attributes('aria-busy')).toBe('true');
+});

@@ -42,6 +42,7 @@ export function useAuthAccount(accountId: string) {
     options = shallowRef<EntryOptions>();
   const tab = ref<AccountTab>('details'),
     task = ref<AccountTask>('details');
+  const refreshing = ref(false);
   const busy = ref(false),
     ready = ref(false),
     failure = ref(''),
@@ -320,6 +321,7 @@ export function useAuthAccount(accountId: string) {
   async function refreshAccount(duringOperation = false): Promise<void> {
     if (!alive || !ready.value || (busy.value && !duringOperation)) return;
     if (refreshPromise) return refreshPromise;
+    refreshing.value = true;
     refreshPromise = (async () => {
       await loadProfile();
       await refreshTableExportAuthority();
@@ -351,6 +353,7 @@ export function useAuthAccount(accountId: string) {
       await refreshPromise;
     } finally {
       refreshPromise = undefined;
+      refreshing.value = false;
       if (refreshAgain && alive && !busy.value) refreshVisible();
     }
   }
@@ -1025,6 +1028,7 @@ export function useAuthAccount(accountId: string) {
     tab,
     task,
     busy,
+    refreshing,
     pageLoading,
     trustedLoading,
     ready,

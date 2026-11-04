@@ -42,6 +42,7 @@ const loading = ref(false),
   error = ref(''),
   needsRead = ref(true);
 const result = shallowRef<AdminOperationData>();
+const statusId = ref<string>();
 let epoch = 0,
   alive = true;
 function date(value: string) {
@@ -188,12 +189,18 @@ async function refresh(older = false) {
   }
 }
 async function status(row: HistoryRow) {
+  if (props.controller.busy.value || props.controller.refreshing.value) return;
   const own = epoch;
-  const next = await props.controller.read(
-    row.intent === 'settings' ? 'settings.status' : 'modules.status',
-    { id: row.public_id },
-  );
-  if (alive && own === epoch && next) result.value = next;
+  statusId.value = row.public_id;
+  try {
+    const next = await props.controller.read(
+      row.intent === 'settings' ? 'settings.status' : 'modules.status',
+      { id: row.public_id },
+    );
+    if (alive && own === epoch && next) result.value = next;
+  } finally {
+    if (statusId.value === row.public_id) statusId.value = undefined;
+  }
 }
 watch(
   () => [props.module, props.controller.contextRevision.value],
@@ -261,7 +268,7 @@ async function exportRows() {
     </div>
     <FormNotifications :locale="locale" :error="!pending ? tr(error) : ''">
       <template #actions
-        ><Button :disabled="pending" @click="refresh()">{{
+        ><Button :busy="loading" :disabled="pending" @click="refresh()">{{
           tr('Retry')
         }}</Button></template
       >
@@ -295,6 +302,7 @@ async function exportRows() {
           :disabled="
             pending || controller.busy.value || controller.refreshing.value
           "
+          :busy="statusId === row.public_id"
           @click="status(row)"
           >{{ tr('Read status') }}</Button
         >
@@ -312,6 +320,7 @@ async function exportRows() {
       </template>
     </Table>
     <Button
+      :busy="loading"
       v-if="cursor"
       size="sm"
       :disabled="

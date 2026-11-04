@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { nextTick, ref, useId } from 'vue';
+import { computed, nextTick, provide, ref, useId } from 'vue';
+import { formActivity } from '../composables/formActivity';
 const props = withDefaults(
   defineProps<{
     busy?: boolean;
@@ -17,6 +18,10 @@ const props = withDefaults(
     description: '',
     columns: 1,
   },
+);
+provide(
+  formActivity,
+  computed(() => props.busy),
 );
 const emit = defineEmits<{ submit: [event: SubmitEvent]; invalid: [] }>();
 const id = useId();

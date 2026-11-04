@@ -2,6 +2,8 @@
 
 ## 0.1.0 — 2026-10-31
 
+- Reuse local Form/submit-Button progress, show review/settings/history and selected-row read activity, and keep conflict feedback actionable after reconciliation.
+
 - Share localized BooleanBadge for readonly facts and table booleans, with one semantic account-risk tone catalogue.
 
 - Admin 0.2.0: allow source-owned ManagementWriter participant commands to run standalone through guarded section routes while retaining complete aggregate Save. Explicit reviewed UI confirmation can precede required proof without a second destructive dialog.

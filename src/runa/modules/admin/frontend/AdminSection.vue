@@ -102,9 +102,13 @@ async function retry() {
             ? tr('This section is currently unavailable.')
             : tr('Unable to load the current record.')
         }}
-        <Button size="sm" :disabled="controller.busy.value" @click="retry">{{
-          tr('Retry loading')
-        }}</Button>
+        <Button
+          :busy="controller.busy.value"
+          size="sm"
+          :disabled="controller.busy.value"
+          @click="retry"
+          >{{ tr('Retry loading') }}</Button
+        >
       </Alert>
       <AdminField
         v-for="field in fields"

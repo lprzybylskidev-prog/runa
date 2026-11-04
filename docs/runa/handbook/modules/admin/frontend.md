@@ -266,8 +266,10 @@ session admission. Call resource composables in a Vue scope and dispose them wit
 their page. This resource read lane does not own editable drafts; all its writes and reads join the shared page
 mutation/revision lane used by useAdminForm.
 
-`command(input)` executes one projected independent command; `preview(input)`
-returns AdminCommandReview. Unknown/read-only/atomic/unavailable commands, forbidden
+`command(input)` executes one projected native section command, including an
+atomic participant with a source-declared native standalone writer; `preview(input)`
+returns AdminCommandReview. The server resolves that writer and retains all native
+proof/review/grant/transaction rules. Unknown/read-only/unavailable commands, forbidden
 input keys, missing review and missing destructive confirmation refuse locally.
 No write is retried. Safe errors preserve drafts; 409 triggers shared current reads.
 Entry-scope proof denial returns to native entry confirmation; operation-scope
@@ -1268,3 +1270,12 @@ for `security_locked`/`deleted`, warning for password expiry/change requirement,
 pending invitation/operator recovery/TOTP setup and required verification, and
 success otherwise. This frontend helper confers no authorization or account policy.
 Editable/filter controls and machine-readable exports retain native boolean values.
+
+### Operation progress
+
+Default forms compose the public Form/submit-Button local busy contract. Independent
+review, settings refresh, operation-history and row-status reads bind their owning
+activity; row status progress belongs to the selected row. Initial record retries
+use ContentLoading. Conflict copy reports the unsaved change and requests review
+of current values, without claiming that a finished reconciliation is still running.
+Owning preview/proof/execute, draft and recovery contracts are unchanged.

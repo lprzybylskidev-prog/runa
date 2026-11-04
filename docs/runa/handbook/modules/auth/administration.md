@@ -542,3 +542,10 @@ Custom section replacements remain authoritative. A replaced email field keeps i
 original section and AdminField renderer instead of entering the consolidated
 default email editor. Replaced assignment fields retain the generic Admin field
 composition; the default searchable catalogue never silently discards an extension.
+
+Operation dialogs omit generic single-user scope/instruction paragraphs. Their
+Forms and submit actions show native operation/proof progress; factor-method
+discovery uses ContentLoading. Independent bulk review/execute and retry controls
+bind their own activity. Account status/email retries preserve revealed content
+with local refresh feedback. Meaningful reset scope, schedule-clear instructions,
+skipped-target reasons and persistent failures remain actionable feedback.

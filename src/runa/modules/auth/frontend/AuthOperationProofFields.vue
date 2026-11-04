@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Button, RadioGroup, TextInput } from '@/runa/ui';
+import { Button, ContentLoading, RadioGroup, TextInput } from '@/runa/ui';
 import type { OperationProofController } from './useOperationProof';
 import { operationProofCopy } from './operationProofCopy';
 import { useLocale } from '../../../resources/js/composables/useLocale';
@@ -14,7 +14,16 @@ const { locale } = useLocale();
 const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
 </script>
 <template>
-  <div class="space-y-4">
+  <ContentLoading
+    :loading="
+      controller.busy.value &&
+      ['second_factor', 'both'].includes(controller.requirement.value) &&
+      !controller.methods.value.length
+    "
+    shape="form"
+    :label="copy.title"
+    class="space-y-4"
+  >
     <TextInput
       v-if="['password', 'both'].includes(controller.requirement.value)"
       :model-value="controller.password.value"
@@ -51,6 +60,7 @@ const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
         @update:model-value="controller.code.value = $event ?? ''"
       />
       <Button
+        :busy="controller.busy.value"
         type="button"
         v-if="controller.method.value === 'email'"
         :disabled="controller.busy.value"
@@ -74,5 +84,5 @@ const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
         >{{ copy.cancel }}</Button
       >
     </div>
-  </div>
+  </ContentLoading>
 </template>

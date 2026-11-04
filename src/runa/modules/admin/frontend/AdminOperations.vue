@@ -114,6 +114,20 @@ function navigateSection(href: string, event: MouseEvent) {
 const work = shallowRef<AdminOperationData>();
 const preview = shallowRef<AdminOperationData>();
 const result = shallowRef<AdminOperationData>();
+const workStatusId = ref<string>();
+async function readWorkStatus(row: AdminOperationData) {
+  if (controller.busy.value || controller.refreshing.value) return;
+  const id = String(row.workId);
+  workStatusId.value = id;
+  try {
+    const next = await controller.read('work.status', {
+      id: row.workId ?? null,
+    });
+    if (next) result.value = next;
+  } finally {
+    if (workStatusId.value === id) workStatusId.value = undefined;
+  }
+}
 const diagnosis = shallowRef<AdminOperationData>();
 const diagnosisOpen = ref(false);
 let diagnosisRequest = 0;
@@ -583,9 +597,12 @@ defineExpose({ controller });
         :error="tr(controller.error.value)"
       >
         <template #actions
-          ><Button :disabled="controller.busy.value" @click="refresh()">{{
-            tr('Retry')
-          }}</Button></template
+          ><Button
+            :busy="controller.refreshing.value"
+            :disabled="controller.busy.value"
+            @click="refresh()"
+            >{{ tr('Retry') }}</Button
+          ></template
         >
       </FormNotifications>
       <PageNavigation
@@ -652,12 +669,6 @@ defineExpose({ controller });
           >
             <div class="flex flex-wrap items-end justify-end gap-4">
               <div class="flex flex-wrap items-center gap-4">
-                <span
-                  v-if="diagnosticsLoading && !filterLoading"
-                  class="flex items-center gap-2 text-xs text-muted"
-                  data-diagnostics-refresh
-                  >{{ tr('Refreshing…') }}</span
-                >
                 <Select
                   :label="tr('Module state')"
                   v-model="filter"
@@ -845,13 +856,8 @@ defineExpose({ controller });
               <Button
                 size="sm"
                 :disabled="controller.busy.value || controller.refreshing.value"
-                @click="
-                  controller
-                    .read('work.status', { id: row.workId ?? null })
-                    .then((value) => {
-                      if (value) result = value;
-                    })
-                "
+                :busy="workStatusId === String(row.workId)"
+                @click="readWorkStatus(row)"
                 >{{ tr('Refresh work status') }}</Button
               >
             </template>
@@ -892,6 +898,7 @@ defineExpose({ controller });
     </div>
     <template #footer>
       <Button
+        :busy="pendingCommand === 'health.diagnose'"
         v-if="controller.error.value && !diagnosis"
         :disabled="controller.busy.value"
         @click="diagnose"
@@ -919,9 +926,6 @@ defineExpose({ controller });
     @update:model-value="!$event && closeReview()"
   >
     <div class="space-y-4" data-module-lifecycle-review>
-      <p class="text-sm">
-        {{ tr('Confirm the module action after reviewing its effects.') }}
-      </p>
       <FormNotifications
         :locale="adminLocale"
         :error="tr(controller.error.value)"
