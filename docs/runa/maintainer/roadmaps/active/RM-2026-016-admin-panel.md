@@ -914,6 +914,15 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Preserve native server-side enforcement, dirty-draft/access-loss boundaries,
     supported public presentation seams and independent diagnostic/recovery views.
     Prepare current assets for owner acceptance; broad gates remain point 12.
+- [x] 11a66. Unify horizontal wheel scrolling and overflow indicators.
+  - Owner request, 2026-11-04: apply table-style horizontal wheel input and the
+    shell's dotted directional overflow cues consistently to every horizontal
+    scroller, including modal tabs and application top navigation.
+  - Reuse shared internal scrolling/measurement and visual rules; preserve native
+    Ctrl+wheel, touch/keyboard access, table header/rail synchronization and normal
+    vertical content scrolling. Review all supplied horizontal-scroll consumers.
+  - Synchronize public guidance/instruction references, add focused regression
+    evidence and prepare built assets for owner acceptance. Broad gates remain 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6256,3 +6265,58 @@ performed in this point. Active development services/data, base runa_test, model
 Qdrant caches, backups and all evidence remain. Mandatory hooks and knowledge
 freshness accompany the commit. Manual owner acceptance 11b and final automated
 verification/release 12 remain open.
+
+### Point 11a66 — Consistent horizontal scrolling and dotted overflow cues
+
+Unified the supplied horizontal viewports through private Runa UI
+useHorizontalScroll: shared dominant-axis wheel conversion, pixel/line/page units,
+Ctrl+wheel preservation, endpoint containment and directional overflow measurement.
+Resize/content/scroll observation refreshes cues and disconnects on owner cleanup.
+ApplicationLayout top navigation, content/modal Tabs and the Table viewport consume
+that owner. Table header/pinned rail synchronization and vertical wheel over body
+rows remain unchanged. The common runa-horizontal-frame paint now supplies the
+existing shell dotted edge treatment everywhere: left/right indicators only toward
+hidden content, no pointer interception, reduced-motion-aware opacity transition.
+Public Table/Tabs/ApplicationLayout props/events/slots remain unchanged; the private
+composable/CSS are delivered runtime internals, not an additional customer API.
+No module-owned source/API/version changes are needed; platform remains 0.7.0
+candidate. Current assets are built for repeated owner acceptance.
+
+Knowledge was available/current at point start. The bounded current-intent query
+horizontal scrolling wheel overflow indicators selected the frontend architecture,
+tables and page-layout guides; their original horizontal-scroll contracts were
+opened. Evidence is in .runtime/scroll-knowledge-status.json and
+.runtime/scroll-knowledge-search.json. Source inventory searched all supplied src
+Vue/TypeScript/CSS horizontal overflow/scrollLeft/wheel owners. Explicit horizontal
+viewports are the shell top menu, Tabs (including Auth user-details dialogs), and
+Table's region/pinned rail. Generic overflow:auto in Dialog/Tooltip/Popover/Select/
+Toast is ordinary vertically bounded overlay content; wheel conversion there would
+break vertical content use and is intentionally outside this horizontal contract.
+Avatar crop wheel zoom is also independent and preserved.
+
+Synchronized the canonical public components horizontal-scrolling contract, tables
+and page-layout references, central changelog and owner/customer frontend guidance.
+Root/customer AGENTS already delegate shared components/presentation behavior to
+these public guides and need no duplicate low-level rule. No dependency, schema,
+policy, credential, production or Docker topology/resource change occurred.
+
+Focused implementation evidence in .runtime/horizontal-scroll:
+
+- Supported test-frontend filter horizontal tabs share|table viewport pins|navigates
+  tabs with arrows: 3 PASS, exit/cleanup 0. Actual browser geometry proves movement,
+  line/page/trackpad intent, Ctrl+wheel, endpoint containment, fit/content/resize cue
+  transitions, table synchronization, body scrolling and tab keyboard/preserved
+  inactive-content semantics.
+- Supported production asset/type build PASS. The existing dependency-runner dynamic
+  import and large export-chunk notices remain advisory; no new dependency added.
+- Native Nginx/compiled Admin browser diagnostic: actual top menu, users table
+  header and user-details modal Tabs respond to mouse wheel and show matching
+  pointer-transparent dotted cues. Screenshots at 390px/1440px light/dark have no
+  dialog horizontal overflow or page errors. No record write was issued.
+  Evidence: .runtime/artifacts/playwright/horizontal-scroll and readiness.log.
+
+These focused diagnostics prepare the views; they do not claim full E2E/final
+quality or owner acceptance. Mandatory hooks and current knowledge accompany the
+commit. No task-created Docker/database resources needed cleanup; active services,
+development/base test data, caches, backups and evidence remain preserved. Owner
+manual acceptance 11b and final automated verification/release 12 remain open.

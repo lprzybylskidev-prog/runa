@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useHorizontalScroll } from '../composables/useHorizontalScroll';
 import { usePageNavigationHost } from '../composables/usePageNavigationHost';
 import { inject, toRef } from 'vue';
 import { provideLocale } from '../composables/useLocale';
@@ -204,60 +205,8 @@ function keydown(event: globalThis.KeyboardEvent) {
   }
 }
 const topNavElement = ref<globalThis.HTMLElement>();
-const topOverflow = ref({ left: false, right: false });
-let topNavObserver: globalThis.ResizeObserver | undefined;
-function updateTopOverflow() {
-  const element = topNavElement.value;
-  const next = {
-    left: !!element && element.scrollLeft > 1,
-    right:
-      !!element &&
-      element.scrollWidth - element.clientWidth - element.scrollLeft > 1,
-  };
-  if (
-    next.left !== topOverflow.value.left ||
-    next.right !== topOverflow.value.right
-  )
-    topOverflow.value = next;
-}
-watch(
-  topNavElement,
-  (element) => {
-    topNavObserver?.disconnect();
-    if (element) {
-      topNavObserver = new globalThis.ResizeObserver(updateTopOverflow);
-      topNavObserver.observe(element);
-      if (element.firstElementChild)
-        topNavObserver.observe(element.firstElementChild);
-    }
-    updateTopOverflow();
-  },
-  { flush: 'post' },
-);
-watch(topEntries, async () => {
-  await nextTick();
-  updateTopOverflow();
-});
-onScopeDispose(() => topNavObserver?.disconnect());
-function scrollTopNavigation(event: globalThis.WheelEvent) {
-  if (event.ctrlKey || !(event.currentTarget instanceof window.HTMLElement))
-    return;
-  const navigation = event.currentTarget;
-  if (navigation.scrollWidth <= navigation.clientWidth) return;
-  const delta =
-    Math.abs(event.deltaX) > Math.abs(event.deltaY)
-      ? event.deltaX
-      : event.deltaY;
-  if (!delta) return;
-  event.preventDefault();
-  const unit =
-    event.deltaMode === 1
-      ? 16
-      : event.deltaMode === 2
-        ? navigation.clientWidth
-        : 1;
-  navigation.scrollLeft += delta * unit;
-}
+const { edges: topOverflow, wheel: scrollTopNavigation } =
+  useHorizontalScroll(topNavElement);
 let unlockDrawerScroll: (() => void) | undefined;
 watch(drawer, (open) => {
   unlockDrawerScroll?.();
@@ -413,7 +362,7 @@ onScopeDispose(() => {
           >
           <div
             v-if="topbar"
-            class="shell-top-nav-frame"
+            class="shell-top-nav-frame runa-horizontal-frame"
             :class="{
               'has-overflow-left': topOverflow.left,
               'has-overflow-right': topOverflow.right,
@@ -423,7 +372,6 @@ onScopeDispose(() => {
               ref="topNavElement"
               class="shell-top-nav"
               :aria-label="t('areas')"
-              @scroll="updateTopOverflow"
               @wheel="scrollTopNavigation"
             >
               <AppSkeleton

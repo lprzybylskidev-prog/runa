@@ -11,7 +11,9 @@ wide tables horizontally, including line/page wheel modes and native trackpad
 horizontal intent. At either horizontal end the gesture does not chain to page
 scrolling. Ctrl+wheel keeps browser zoom; tables that fit retain normal page
 scrolling, as does wheel input over body rows. Tables that fit their container
-need no horizontal scrollbar. The private viewport
+need no horizontal scrollbar. Directional dotted edge cues follow the shared
+[horizontal scrolling contract](components.md#horizontal-scrolling), also used by
+Tabs and ApplicationLayout top navigation. The private viewport
 composable applies compositor-layer transforms to the header and rail in the same
 passive scroll event, without waiting for another animation frame or Vue render;
 column/overflow measurements run on resize rather than each scroll. The composable

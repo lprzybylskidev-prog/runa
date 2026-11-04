@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Unify horizontal wheel scrolling and directional dotted overflow cues across tables, content/modal tabs and application top navigation. Preserve table-body vertical scrolling, native Ctrl+wheel, keyboard/touch access and existing public component APIs.
+
 - Omit operational editors for configuration-disabled capabilities. Keep authorized account facts read-only, hide disabled verification/factor/avatar editors and notification recipients, and dismiss withdrawn editors without losing unrelated drafts. Document the shared visibility rule in owner/customer frontend guidance. Preserve native backend enforcement.
 
 - Simplify account creation copy and remove its optional security controls. Keep a concise outcome summary. Enable administrative email verification by default, retain its editable Auth policy control and omit creation verification entirely when unavailable. Preserve native permissions, stronger proof and Audit.

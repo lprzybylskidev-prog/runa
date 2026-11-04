@@ -17,3 +17,7 @@ and guarded AuthStepUp section APIs from
 `docs/runa/handbook/modules/auth/security.md#protected-section-idle-access`.
 Preserve controller scope, admitted identity and protected roots/portals when
 replacing presentation; automatic reads never count as user activity.
+
+For horizontal viewports follow the public components guide's
+[horizontal scrolling contract](../../../../docs/runa/handbook/development/frontend/components.md#horizontal-scrolling):
+reuse consistent wheel handling and directional dotted overflow cues, including modal tabs.

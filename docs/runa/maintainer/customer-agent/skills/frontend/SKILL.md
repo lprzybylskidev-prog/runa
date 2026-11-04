@@ -79,6 +79,11 @@ MinimalLayout alone enables sparse constellation-point glow and occasional
 brand-illustration point laps. Keep ApplicationLayout
 static and use the public layout opt-out/motion contract when wrapping layouts.
 
+For horizontal viewports, follow
+`docs/runa/handbook/development/frontend/components.md#horizontal-scrolling`;
+compose supplied controls or retain consistent wheel handling and dotted directional
+cues in application-owned replacements. Do not import private platform composables.
+
 Follow `docs/runa/handbook/ai/skills-policy.md#shared-point-workflow` for shared
 point timing, canonical docs and local-extension maintenance. Application scope
 and protected-platform boundaries remain governed by installed AGENTS.

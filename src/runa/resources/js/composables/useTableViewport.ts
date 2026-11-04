@@ -1,3 +1,4 @@
+import { useHorizontalScroll } from './useHorizontalScroll';
 import { ref, watch } from 'vue';
 import type { Ref } from 'vue';
 
@@ -5,6 +6,7 @@ import type { Ref } from 'vue';
 export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
   const region = ref<HTMLDivElement>();
   const scrollbar = ref<HTMLDivElement>();
+  const { edges, measure: measureEdges, wheel } = useHorizontalScroll(region);
   const overflow = ref(false);
   const width = ref(0);
   const headerHeight = ref(0);
@@ -17,29 +19,11 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
     const target = source === 'table' ? rail : content;
     const left = source === 'table' ? content.scrollLeft : rail.scrollLeft;
     if (Math.abs(target.scrollLeft - left) > 0.5) target.scrollLeft = left;
+    measureEdges();
   }
 
   function scrollHeader(event: WheelEvent) {
-    const content = region.value;
-    if (
-      event.ctrlKey ||
-      !content ||
-      content.scrollWidth <= content.clientWidth + 1
-    )
-      return;
-    const delta =
-      Math.abs(event.deltaX) > Math.abs(event.deltaY)
-        ? event.deltaX
-        : event.deltaY;
-    if (!delta) return;
-    event.preventDefault();
-    const unit =
-      event.deltaMode === 1
-        ? 16
-        : event.deltaMode === 2
-          ? content.clientWidth
-          : 1;
-    content.scrollLeft += delta * unit;
+    wheel(event);
     synchronize('table');
   }
 
@@ -145,6 +129,7 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
         element instanceof globalThis.HTMLDivElement ? element : undefined;
     },
     overflow,
+    edges,
     width,
     headerHeight,
     railHeight,

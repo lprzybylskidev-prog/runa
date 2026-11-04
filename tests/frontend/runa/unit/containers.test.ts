@@ -1,4 +1,4 @@
-import { afterEach, expect, it } from '@runa/testing/vitest';
+import { afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import {
   Accordion,
@@ -115,4 +115,71 @@ it('supports controlled dropdown opening and ordinary card slots without a shell
       slots: { header: 'Title', default: 'Body', footer: 'Footer' },
     }).text(),
   ).toBe('TitleBodyFooter');
+});
+
+it('horizontal tabs share wheel movement and directional cues through resize and content changes', async () => {
+  const w = mount(Tabs, {
+    attachTo: document.body,
+    props: {
+      label: 'Overflowing sections',
+      modelValue: 'a',
+      items: [
+        { id: 'a', label: 'First' },
+        { id: 'b', label: 'Second' },
+        { id: 'c', label: 'Third' },
+      ],
+    },
+  });
+  const list = w.get('[role="tablist"]').element as HTMLElement;
+  const frame = w.get('.runa-horizontal-frame');
+  // Unit fixtures do not load shared CSS/Tailwind: provide actual browser geometry.
+  (frame.element as HTMLElement).style.width = '200px';
+  list.style.cssText = 'display:flex;overflow-x:auto;width:200px';
+  w.findAll('[role="tab"]').forEach((tab) => {
+    (tab.element as HTMLElement).style.cssText = 'flex:0 0 180px';
+  });
+  await vi.waitFor(() =>
+    expect(frame.classes()).toContain('has-overflow-right'),
+  );
+  expect(frame.classes()).not.toContain('has-overflow-left');
+  const wheel = (init: WheelEventInit) => {
+    const event = new WheelEvent('wheel', {
+      bubbles: true,
+      cancelable: true,
+      ...init,
+    });
+    list.dispatchEvent(event);
+    return event;
+  };
+  expect(wheel({ deltaY: 2, deltaMode: 1 }).defaultPrevented).toBe(true);
+  expect(list.scrollLeft).toBe(32);
+  await vi.waitFor(() =>
+    expect(frame.classes()).toContain('has-overflow-left'),
+  );
+  wheel({ deltaX: 40, deltaY: 2 });
+  expect(list.scrollLeft).toBe(72);
+  expect(wheel({ deltaY: 50, ctrlKey: true }).defaultPrevented).toBe(false);
+  expect(list.scrollLeft).toBe(72);
+  wheel({ deltaY: 1, deltaMode: 2 });
+  expect(list.scrollLeft).toBe(272);
+  wheel({ deltaY: 10000 });
+  await vi.waitFor(() =>
+    expect(frame.classes()).not.toContain('has-overflow-right'),
+  );
+  expect(wheel({ deltaY: 20 }).defaultPrevented).toBe(true);
+  list.scrollLeft = 0;
+  list.dispatchEvent(new Event('scroll'));
+  await vi.waitFor(() =>
+    expect(frame.classes()).not.toContain('has-overflow-left'),
+  );
+  await w.setProps({ items: [{ id: 'a', label: 'First' }] });
+  await vi.waitFor(() =>
+    expect(frame.classes()).not.toContain('has-overflow-right'),
+  );
+  expect(wheel({ deltaY: 20 }).defaultPrevented).toBe(false);
+  await w.setProps({ items: [{ id: 'a', label: 'Long section' }] });
+  list.style.width = '100px';
+  await vi.waitFor(() =>
+    expect(frame.classes()).toContain('has-overflow-right'),
+  );
 });

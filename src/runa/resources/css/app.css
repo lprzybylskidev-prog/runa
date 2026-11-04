@@ -1106,7 +1106,7 @@ button.app-button.shell-avatar-button:active:not(:disabled) {
   --feedback-subtle: var(--runa-danger-subtle);
 }
 
-/* Dedicated shell overflow cues; the content component library stays independent. */
+/* Shell geometry and shared directional cues for horizontal viewports. */
 .has-sidebar .shell-header {
   padding-left: 24px;
 }
@@ -1120,39 +1120,43 @@ button.app-button.shell-avatar-button:active:not(:disabled) {
 .shell-top-nav-frame > .shell-top-nav {
   flex: 1 1 0;
 }
-.shell-top-nav-frame::before,
-.shell-top-nav-frame::after {
+.runa-horizontal-frame {
+  position: relative;
+  min-width: 0;
+}
+.runa-horizontal-frame::before,
+.runa-horizontal-frame::after {
   content: '';
   position: absolute;
   top: 10px;
   bottom: 12px;
   width: 8px;
-  z-index: 1;
+  z-index: 20;
   opacity: 0;
   pointer-events: none;
   transition: opacity 160ms ease-out;
 }
-.shell-top-nav-frame::before {
+.runa-horizontal-frame::before {
   left: 0;
   background:
     radial-gradient(circle, var(--runa-primary-text) 1px, transparent 1.2px)
       left center / 2px 8px repeat-y,
     linear-gradient(to right, var(--runa-surface), transparent);
 }
-.shell-top-nav-frame::after {
+.runa-horizontal-frame::after {
   right: 0;
   background:
     radial-gradient(circle, var(--runa-primary-text) 1px, transparent 1.2px)
       right center / 2px 8px repeat-y,
     linear-gradient(to left, var(--runa-surface), transparent);
 }
-.shell-top-nav-frame.has-overflow-left::before,
-.shell-top-nav-frame.has-overflow-right::after {
+.runa-horizontal-frame.has-overflow-left::before,
+.runa-horizontal-frame.has-overflow-right::after {
   opacity: 1;
 }
 @media (prefers-reduced-motion: reduce) {
-  .shell-top-nav-frame::before,
-  .shell-top-nav-frame::after {
+  .runa-horizontal-frame::before,
+  .runa-horizontal-frame::after {
     transition: none;
   }
 }

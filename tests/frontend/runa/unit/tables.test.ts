@@ -135,6 +135,11 @@ it('table viewport pins the original header inside a scrolling region and synchr
       (cell.element as HTMLElement).style.height = '35px';
     });
     await vi.waitFor(() => expect(rail.style.display).not.toBe('none'));
+    await vi.waitFor(() =>
+      expect(wrapper.get('[data-table-viewport]').classes()).toContain(
+        'has-overflow-right',
+      ),
+    );
     const originalHead = wrapper.get('thead').element;
     const labelCell = wrapper.get('th[data-column-key="name"]').element;
     const headBounds = originalHead.getBoundingClientRect();
@@ -158,6 +163,11 @@ it('table viewport pins the original header inside a scrolling region and synchr
     };
     expect(wheel(originalHead, { deltaY: 80 }).defaultPrevented).toBe(true);
     expect(region.scrollLeft).toBe(80);
+    await vi.waitFor(() =>
+      expect(wrapper.get('[data-table-viewport]').classes()).toContain(
+        'has-overflow-left',
+      ),
+    );
     expect(rail.scrollLeft).toBe(80);
     wheel(originalHead, { deltaY: 2, deltaMode: 1 });
     expect(region.scrollLeft).toBe(112);

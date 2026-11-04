@@ -284,6 +284,7 @@ const loading = computed(
 const state = computed(() => (loading.value ? 'loading' : sourceState.value));
 const tableElement = ref<globalThis.HTMLTableElement>();
 const {
+  edges,
   setRegion,
   setScrollbar,
   overflow,
@@ -694,7 +695,15 @@ function changePage(value: number) {
         </template>
       </AppAsyncContent>
     </div>
-    <div v-else class="relative" data-table-viewport>
+    <div
+      v-else
+      class="runa-horizontal-frame"
+      :class="{
+        'has-overflow-left': edges.left,
+        'has-overflow-right': edges.right,
+      }"
+      data-table-viewport
+    >
       <div
         :ref="setRegion"
         role="region"

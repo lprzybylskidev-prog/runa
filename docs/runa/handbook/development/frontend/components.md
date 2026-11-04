@@ -177,6 +177,30 @@ and URL/guard behavior are defined in [page layouts](page-layouts.md#page-level-
 Sidebar entries select areas/modules; page-level navigation belongs in the top
 bar. Forms and record/operation actions remain in content.
 
+## Horizontal scrolling
+
+Supplied Table, Tabs (including modal tabs) and ApplicationLayout top navigation
+share horizontal wheel handling and decorative dotted left/right edge cues.
+Cues appear only toward hidden content, update on scrolling, resizing and content
+changes, and disappear when content fits. They ignore pointer input and respect
+reduced motion. Keep this behavior consistent in future horizontal viewports.
+
+Over an overflowing menu/tab strip or table header/scroll rail, the dominant wheel
+axis moves content horizontally; pixel, line and page deltas are supported. At an
+endpoint the gesture remains within that horizontal control. Ctrl+wheel preserves
+native zoom. Content that fits retains normal vertical scrolling. Table body rows
+also retain vertical wheel scrolling. Native touch/trackpad/scrollbar access and
+existing keyboard/focus semantics remain available.
+
+Ownership is Runa UI; public consumption remains Table/Tabs/ApplicationLayout from
+`@/runa/ui` with their existing props/events/slots. Their private
+useHorizontalScroll implementation and runa-horizontal-frame styling are delivered
+runtime internals, not a new customer helper API. Customers compose the supplied
+components or implement the same behavior in their own presentation; they do not
+import the private composable. Vertical dialogs, popovers, tooltips, selects and
+toasts use their existing wrapping/height constraints, not horizontal wheel
+conversion for ordinary vertical content.
+
 ## Content containers and navigation
 
 - Public `Card`, `Divider`, `Accordion`, `Tabs`, `Dropdown`, `Breadcrumbs`, `Pagination` map to `src/runa/resources/js/components/App*.vue`; types `TabItem`/`BreadcrumbItem` come from `@/runa/ui`. No shell, router or global installation is required.
