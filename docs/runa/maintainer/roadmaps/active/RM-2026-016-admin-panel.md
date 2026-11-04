@@ -978,6 +978,13 @@ reassessment before resuming point 3; completed point history remains evidence.
     private exception messages or anonymous account existence.
   - Synchronize contracts and both guidance products, add focused regressions and
     prepare current rendered assets before repeating owner acceptance.
+- [x] 11a73. Replace sprawling assignments with a dedicated compact access editor.
+  - Use one catalogue with role/direct-permission switching, integrated search,
+    assigned filtering, dense selectable rows and bounded pagination.
+  - Remove duplicated selected-item lists and stacked generic field composition;
+    preserve selections across searches/pages and native review/proof/reconciliation.
+  - Verify large catalogues, keyboard/readonly/loading states and rendered PL/EN,
+    responsive light/dark presentation; synchronize contracts/guidance and assets.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6829,3 +6836,67 @@ not owner acceptance or complete final quality PASS. Mandatory staged hooks and
 knowledge freshness accompany this commit. No task-created Docker resource needs
 removal; active services, development/base test data, caches, backups and reports
 are preserved. Owner acceptance 11b and final verification/release 12 remain open.
+
+### Point 11a73 — Dedicated compact access editor
+
+The owner rejects the role/direct-permission section's sprawling generic form
+composition and duplicated selected rows. The requested design must remain usable
+with dozens of roles and hundreds of permissions. This is a presentation repair
+inside the current roadmap, before manual acceptance; no second roadmap or new
+business/security premise is introduced.
+
+Rebuilt the Permissions-owned public PermissionsAssignments default around one
+compact workspace. Role/direct-permission controls show draft counts; the active
+catalogue has integrated search, All/Assigned scope, dense full-row checkbox labels,
+a bounded scroll region and cursor pagination. Removed the separate selected list,
+large field labels/switches and repeated action rows. Selection/search/page state
+survives category switching; inactive categories load on demand. Search Enter reads
+without submitting the surrounding form, and only dirty writable drafts may start
+native review. Visible-page selection retains off-page choices. Missing selected
+references remain removable from Assigned without exposing UUIDs. Readonly access
+allows browsing/search but no selection changes. Pending searches/reads prevent
+selection against stale results; focus remains local when assigned rows disappear.
+
+The custom module editor reuses theme tokens, native choice/field chrome, loading,
+feedback and the existing Admin controller, rather than imposing generic input
+components on the domain interaction. The search prefix explicitly reserves space
+against the shared unlayered field CSS. Existing native bounds remain 25 catalogue
+entries per page and 100 selected references per category; available catalogue size
+is independent of that assignment bound. No write API, grant, record revision,
+review, protected membership, proof or transaction behavior is reimplemented.
+
+Knowledge status was current and a bounded query located the Permissions catalogue,
+administration and component references; originals were read. Relevant frontend,
+Vue and Tailwind skills, visual direction, form, accessibility and installed
+Tailwind 4.3.3 source tokens were used. Public component signature/replacement seam
+is unchanged. Canonical forms document when a high-cardinality domain needs a
+dedicated editor. Permissions guides, module/central changelogs and both owner and
+customer frontend references are synchronized. Root AGENTS already preserves domain
+ownership/security/pattern reuse; no constitutional change is necessary.
+Permissions remains the existing unreleased 2.1.0 candidate, with no backend/API,
+migration, seeder, dependency or configuration change.
+
+Focused supported frontend verification: seven tests PASS across two files,
+including the new 70-role/350-permission catalogue, server searches for off-page
+entries, bounded pagination, independent retained category searches, selections,
+readonly access, unavailable-reference removal, bulk/off-page preservation and
+existing operation-proof admission/fencing. Tests use controlled read fixtures and
+reject writes. The initial hidden-panel visibility assertion needed a real mounted
+DOM; attaching the fixture corrected that diagnostic. No broad suite was run.
+Backend tests are not selected for this frontend-only repair because native backend
+contracts are unchanged. Full affected-area verification remains point 12.
+
+Current frontend build PASS. Compiled native readiness uses the actual Nginx/API
+catalogue in Polish/English, light/dark and 390/1440px: category visibility, server
+search, cursors, empty results, retained drafts, explicit review boundaries, Revert,
+search-prefix spacing and no horizontal overflow. Desktop assignment-card height
+is bounded below 650px. Screenshots under
+`.runtime/artifacts/playwright/assignments-compact/` were inspected. Native preview
+and factor-discovery readiness also PASS with retained drafts, submit progress and
+post-submit proof; it stops before any management command. Evidence remains in
+`.runtime/user-details/assignments-*.log`. Browser sessions are logged out.
+
+Mandatory staged hooks and current knowledge accompany this commit. No task-created
+Docker resources or databases need cleanup; active services, development/base test
+data, caches and previous reports remain preserved. Owner manual acceptance 11b
+and final verification/release 12 remain open.

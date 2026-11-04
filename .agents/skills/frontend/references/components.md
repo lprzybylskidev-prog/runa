@@ -34,3 +34,9 @@ PermissionsAssignments contract in `docs/runa/handbook/modules/permissions/READM
 Auth secondary-address lists/editors reuse the public `AuthSecondaryEmailFields`
 contract in `docs/runa/handbook/modules/auth/account-ui.md#shared-secondary-email-presentation`.
 Keep owning confirmation/security behavior in the composing controller.
+
+For high-cardinality domain controls, follow
+`docs/runa/handbook/development/frontend/forms.md#specialized-collection-editors`.
+Prefer the owning dedicated editor while preserving shared chrome, bounded remote
+search, off-page selections and native security orchestration. Reuse does not mean
+stacking unrelated generic inputs or duplicating the selected catalogue.

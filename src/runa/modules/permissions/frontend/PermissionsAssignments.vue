@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useAdminLocale } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
 import {
@@ -51,6 +51,21 @@ const fields = computed(() =>
     props.section.fields.some((field) => field.key === key),
   ),
 );
+const active = ref<'roles' | 'permissions'>('roles');
+const count = (key: string) => {
+  const value =
+    props.controller.values.value[
+      props.controller.fieldPath(props.section.key, key)
+    ];
+  return Array.isArray(value) ? value.length : 0;
+};
+watch(
+  fields,
+  (value) => {
+    if (!value.includes(active.value) && value[0]) active.value = value[0];
+  },
+  { immediate: true },
+);
 const dirty = computed(() =>
   ['roles', 'permissions'].some(
     (key) =>
@@ -88,7 +103,7 @@ function revert() {
         v-if="record"
         :label="t(section.title)"
         :busy="controller.busy.value"
-        :valid="!conflicts.length"
+        :valid="writable && dirty && !conflicts.length"
         @submit="emit('submit', section.key, 'save', [])"
       >
         <FormConflict
@@ -105,10 +120,45 @@ function revert() {
           @accept="controller.resolve(conflict.path, 'remote')"
           @keep="controller.resolve(conflict.path, 'local')"
         />
-        <div class="grid min-w-0 gap-6 lg:grid-cols-2">
+        <div class="min-w-0 rounded border border-line" data-access-editor>
+          <div
+            class="flex border-b border-line bg-surface"
+            role="group"
+            :aria-label="t({ pl: 'Rodzaj przypisania', en: 'Assignment type' })"
+          >
+            <button
+              v-for="field in fields"
+              :key="field"
+              type="button"
+              class="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+              :class="
+                active === field
+                  ? 'border-primary bg-primary/5 text-primary'
+                  : 'border-transparent text-muted hover:bg-primary/5 hover:text-ink'
+              "
+              :aria-pressed="active === field"
+              :data-access-kind="field"
+              @click="active = field"
+            >
+              <span>{{
+                field === 'roles'
+                  ? t({ pl: 'Role', en: 'Roles' })
+                  : t({
+                      pl: 'Uprawnienia bezpośrednie',
+                      en: 'Direct permissions',
+                    })
+              }}</span>
+              <span
+                class="rounded bg-primary/10 px-1.5 py-0.5 text-xs tabular-nums"
+                >{{ count(field) }}</span
+              >
+            </button>
+          </div>
           <PermissionsAssignmentList
             v-for="field in fields"
+            v-show="active === field"
             :key="field"
+            :active="active === field"
             :page="page"
             :section="section"
             :controller="controller"

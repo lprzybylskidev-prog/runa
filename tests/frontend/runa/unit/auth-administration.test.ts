@@ -1254,7 +1254,7 @@ it('hides admin recipient selectors when the owning module disables secondary em
   expect(wrapper.text()).not.toContain('Required security messages');
 });
 
-it('assignment catalogue searches on the server while retaining named selections outside the current page', async () => {
+it('assignment catalogue searches on the server without duplicating off-page selections', async () => {
   const { PermissionsAssignments } = await import('@/runa/permissions');
   const assignments = section('runa.permissions.user_access.assignments', [
     { ...field('roles', false), type: 'uuid', multiple: true, lookup: true },
@@ -1334,11 +1334,11 @@ it('assignment catalogue searches on the server while retaining named selections
   );
   await vi.waitFor(() => expect(wrapper.text()).toContain('Assigned role'));
   const roles = wrapper.get('[data-assignment-field=roles]');
-  await roles.get('input[type=text]').setValue('finance');
+  await roles.get('input[type=search]').setValue('finance');
   await vi.waitFor(() => expect(searched).toContain('finance'));
   await vi.waitFor(() => expect(roles.text()).toContain('Finance role'));
-  expect(roles.text()).toContain('Assigned role');
-  await roles.get('input[type=checkbox]:not([role=switch])').setValue(true);
+  expect(roles.text()).not.toContain('Assigned role');
+  await roles.get('[data-assignment-rows] input[type=checkbox]').setValue(true);
   expect(form.values.value[form.fieldPath(assignments.key, 'roles')]).toEqual([
     actor,
     secondRole,
@@ -1526,4 +1526,228 @@ it('unknown refusals never echo payloads or claim nonexistent highlighted fields
     );
     expect(result.errors).toEqual({});
   }
+});
+
+async function compactAssignmentFixture(readonly = false) {
+  const { PermissionsAssignments } = await import('@/runa/permissions');
+  const id = (index: number) =>
+    `01900000-0000-7000-8000-${String(index).padStart(12, '0')}`;
+  const roles = Array.from({ length: 70 }, (_, index) => ({
+    value: id(index + 1),
+    label: `Role ${String(index + 1).padStart(3, '0')}`,
+  }));
+  const permissions = Array.from({ length: 350 }, (_, index) => ({
+    value: id(index + 101),
+    label: `Permission ${String(index + 1).padStart(3, '0')}`,
+  }));
+  const source = section('runa.permissions.user_access.assignments', [
+    { ...field('roles', readonly), multiple: true, type: 'uuid', lookup: true },
+    {
+      ...field('permissions', readonly),
+      multiple: true,
+      type: 'uuid',
+      lookup: true,
+    },
+  ]);
+  source.readonly = readonly;
+  source.commands = [
+    {
+      key: 'save',
+      title: 'Save access',
+      mode: 'atomic',
+      intent: 'save',
+      inputs: ['roles', 'permissions'],
+      requirement: 'both',
+      action: 'runa.permissions.access.manage',
+      destructive: true,
+      bulk: false,
+      preview_required: true,
+      available: !readonly,
+    },
+  ];
+  const owner = page([source]);
+  const requests: { field: string; search: string; limit: number }[] = [];
+  vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+    if (init?.method && init.method !== 'GET')
+      throw new Error('Unexpected write.');
+    const url = new URL(String(input), window.location.origin);
+    if (url.searchParams.get('kind') !== 'options')
+      return response({
+        public_id: target,
+        revision: '1',
+        values: { roles: [id(61)], permissions: [] },
+      });
+    const filters = JSON.parse(url.searchParams.get('filters') ?? '{}') as {
+      search?: string;
+      selected?: string;
+    };
+    const key = url.searchParams.get('field')!;
+    const limit = Number(url.searchParams.get('limit'));
+    requests.push({ field: key, search: filters.search ?? '', limit });
+    let items = key === 'roles' ? roles : permissions;
+    if (filters.selected) {
+      const selected = JSON.parse(filters.selected) as string[];
+      items = items.filter((item) => selected.includes(item.value));
+    }
+    items = items.filter((item) =>
+      item.label.toLowerCase().includes((filters.search ?? '').toLowerCase()),
+    );
+    const cursor = url.searchParams.get('cursor');
+    if (cursor) items = items.filter((item) => item.value > cursor);
+    const visible = items.slice(0, limit);
+    return response({
+      field: key,
+      items: visible,
+      next: items.length > visible.length ? visible.at(-1)!.value : null,
+    });
+  });
+  let form!: AdminFormController;
+  const submitted = vi.fn();
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(owner, { publicId: ref(target), autoRead: false });
+        return () =>
+          h(PermissionsAssignments, {
+            page: owner,
+            section: source,
+            controller: form,
+            onSubmit: submitted,
+          });
+      },
+    }),
+    { attachTo: document.body },
+  );
+  await vi.waitFor(() =>
+    expect(
+      wrapper.findAll('[data-assignment-field=roles] [data-assignment-option]'),
+    ).toHaveLength(25),
+  );
+  return { wrapper, form, source, id, requests, submitted };
+}
+
+it('compact access editor handles 70 roles and 350 permissions with bounded pages and independent retained searches', async () => {
+  const { wrapper, form, source, id, requests, submitted } =
+    await compactAssignmentFixture();
+  const roles = wrapper.get('[data-assignment-field=roles]');
+  const permissions = wrapper.get('[data-assignment-field=permissions]');
+  expect(permissions.isVisible()).toBe(false);
+  expect(requests.some((request) => request.field === 'permissions')).toBe(
+    false,
+  );
+  await roles.get('input[type=search]').setValue('Role 070');
+  await roles.get('input[type=search]').trigger('keydown', { key: 'Enter' });
+  await vi.waitFor(() =>
+    expect(roles.findAll('[data-assignment-option]')).toHaveLength(1),
+  );
+  expect(submitted).not.toHaveBeenCalled();
+  await roles.get('[data-assignment-rows] input').setValue(true);
+  expect(form.values.value[form.fieldPath(source.key, 'roles')]).toEqual([
+    id(61),
+    id(70),
+  ]);
+  await wrapper.get('[data-access-kind=permissions]').trigger('click');
+  await vi.waitFor(() =>
+    expect(permissions.findAll('[data-assignment-option]')).toHaveLength(25),
+  );
+  await permissions.get('[aria-label="Next page"]').trigger('click');
+  await vi.waitFor(() =>
+    expect(permissions.text()).toContain('Permission 026'),
+  );
+  await permissions.get('[data-assignment-rows] input').setValue(true);
+  await permissions.get('input[type=search]').setValue('Permission 350');
+  await vi.waitFor(() =>
+    expect(permissions.findAll('[data-assignment-option]')).toHaveLength(1),
+  );
+  await permissions.get('[data-assignment-rows] input').setValue(true);
+  expect(form.values.value[form.fieldPath(source.key, 'permissions')]).toEqual([
+    id(126),
+    id(450),
+  ]);
+  await wrapper.get('[data-access-kind=roles]').trigger('click');
+  expect(
+    (roles.get('input[type=search]').element as HTMLInputElement).value,
+  ).toBe('Role 070');
+  await roles.get('input[type=search]').setValue('');
+  await roles
+    .findAll('button')
+    .find((button) => button.text() === 'Assigned')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(roles.findAll('[data-assignment-option]')).toHaveLength(2),
+  );
+  expect(roles.text()).toContain('Role 061');
+  expect(roles.text()).toContain('Role 070');
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Revert changes')!
+    .trigger('click');
+  await vi.waitFor(() => expect(form.dirty.value).toBe(false));
+  expect(form.values.value[form.fieldPath(source.key, 'roles')]).toEqual([
+    id(61),
+  ]);
+  expect(form.values.value[form.fieldPath(source.key, 'permissions')]).toEqual(
+    [],
+  );
+  expect(requests.every((request) => request.limit <= 100)).toBe(true);
+  expect(
+    requests
+      .filter((request) => request.search)
+      .every((request) => request.limit === 25),
+  ).toBe(true);
+});
+
+it('compact access editor keeps readonly catalogues searchable without permitting assignment edits', async () => {
+  const { wrapper, form, source, id, submitted } =
+    await compactAssignmentFixture(true);
+  const roles = wrapper.get('[data-assignment-field=roles]');
+  expect(
+    roles.get('[data-assignment-rows] input').attributes('disabled'),
+  ).toBeDefined();
+  await roles.get('input[type=search]').setValue('Role 061');
+  await vi.waitFor(() => expect(roles.text()).toContain('Role 061'));
+  await roles.get('input[type=search]').trigger('keydown', { key: 'Enter' });
+  expect(submitted).not.toHaveBeenCalled();
+  expect(form.values.value[form.fieldPath(source.key, 'roles')]).toEqual([
+    id(61),
+  ]);
+  expect(
+    wrapper
+      .findAll('button')
+      .some((button) => button.text() === 'Review changes'),
+  ).toBe(false);
+});
+
+it('compact access editor can remove unavailable assignments and bulk selection retains off-page choices', async () => {
+  const { wrapper, form, source, id } = await compactAssignmentFixture();
+  const roles = wrapper.get('[data-assignment-field=roles]');
+  await roles.get('input[aria-label="Select visible"]').setValue(true);
+  const chosen = form.values.value[
+    form.fieldPath(source.key, 'roles')
+  ] as string[];
+  expect(chosen).toHaveLength(26);
+  expect(chosen).toContain(id(61));
+  await roles.get('[aria-label="Next page"]').trigger('click');
+  await vi.waitFor(() => expect(roles.text()).toContain('Role 026'));
+  expect(
+    (roles.get('[data-assignment-rows] input').element as HTMLInputElement)
+      .checked,
+  ).toBe(false);
+  form.set(form.fieldPath(source.key, 'roles'), [id(61), id(999)]);
+  await roles
+    .findAll('button')
+    .find((button) => button.text() === 'Assigned')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(roles.findAll('[data-assignment-option]')).toHaveLength(2),
+  );
+  const unavailable = roles.get(`[data-assignment-option="${id(999)}"] input`);
+  expect((unavailable.element as HTMLInputElement).checked).toBe(true);
+  await unavailable.setValue(false);
+  await vi.waitFor(() =>
+    expect(roles.text()).not.toContain('Unavailable assignment'),
+  );
+  expect(form.values.value[form.fieldPath(source.key, 'roles')]).toEqual([
+    id(61),
+  ]);
 });

@@ -78,3 +78,9 @@ controller. The default access page omits generic explanations of ordinary versu
 protected authority; native reviews, stronger proofs, protected membership and
 separate authority actions remain enforced by their existing owners. Assignment
 Save inherits Form progress and record-read retries reveal the shared skeleton.
+
+Selected-user access editing uses the dedicated public
+[PermissionsAssignments catalogue](README.md#searchable-assignment-catalogue).
+Role/direct-permission category controls share one compact workspace with server
+search and assigned filtering; category switching retains local queries/pages and
+all draft choices. Presentation changes do not change native write APIs or grants.

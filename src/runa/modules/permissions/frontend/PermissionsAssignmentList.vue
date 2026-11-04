@@ -1,18 +1,13 @@
 <script setup lang="ts">
-import { computed, onScopeDispose, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onScopeDispose, reactive, ref, watch } from 'vue';
 import { useAdminLocale, useAdminResource } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
-import {
-  Badge,
-  Button,
-  Checkbox,
-  ContentLoading,
-  FormNotifications,
-  Switch,
-  TextInput,
-} from '@/runa/ui';
+import { Button, ContentLoading, FormNotifications } from '@/runa/ui';
 const props = defineProps<
-  AdminSectionPresentationProps & { field: 'roles' | 'permissions' }
+  AdminSectionPresentationProps & {
+    field: 'roles' | 'permissions';
+    active: boolean;
+  }
 >();
 const { locale, t } = useAdminLocale();
 const text = (pl: string, en: string) => t({ pl, en });
@@ -24,6 +19,8 @@ const cursor = ref<string>();
 const previous = ref<(string | undefined)[]>([]);
 const labels = reactive(new Map<string, string>());
 const loaded = ref(false);
+const waiting = ref(false);
+const rows = ref<HTMLElement>();
 const resolved = reactive(new Set<string>());
 const record = computed(
   () => props.controller.records.value[props.section.key],
@@ -59,18 +56,25 @@ const title = computed(() =>
 );
 let timer: ReturnType<typeof setTimeout> | undefined;
 let epoch = 0;
+let hydrationEpoch = 0;
 onScopeDispose(() => {
   epoch++;
+  hydrationEpoch++;
   if (timer) clearTimeout(timer);
 });
 async function read(reset = false) {
+  if (timer) {
+    clearTimeout(timer);
+    timer = undefined;
+  }
   if (reset) {
     cursor.value = undefined;
     previous.value = [];
   }
   const id = record.value?.public_id;
-  if (!id || props.page.state.value !== 'ready') return;
+  if (!props.active || !id || props.page.state.value !== 'ready') return;
   const own = ++epoch;
+  const focusedRow = rows.value?.contains(document.activeElement);
   const language = locale.value;
   await resource.read({
     kind: 'options',
@@ -94,12 +98,26 @@ async function read(reset = false) {
     return;
   for (const item of options.value) labels.set(item.value, item.label);
   loaded.value = true;
+  waiting.value = false;
+  await nextTick();
+  if (focusedRow && document.activeElement === document.body)
+    rows.value?.querySelector<HTMLInputElement>('input')?.focus();
+  if (
+    !options.value.length &&
+    cursor.value &&
+    previous.value.length &&
+    !resource.error.value
+  )
+    back();
 }
 async function hydrate() {
   const id = record.value?.public_id;
-  const ids = selected.value.filter((value) => !labels.has(value));
+  const ids = selected.value.filter(
+    (value) => !resolved.has(value) && !labels.has(value),
+  );
   const language = locale.value;
-  if (!id || !ids.length) return;
+  if (!props.active || !id || !ids.length) return;
+  const own = ++hydrationEpoch;
   await selectedResource.read({
     kind: 'options',
     public_id: id,
@@ -107,18 +125,28 @@ async function hydrate() {
     limit: 100,
     filters: { selected: JSON.stringify(ids), language },
   });
-  if (record.value?.public_id !== id || locale.value !== language) return;
+  if (
+    own !== hydrationEpoch ||
+    record.value?.public_id !== id ||
+    locale.value !== language
+  )
+    return;
   const data = selectedResource.result.value;
   if (data && 'field' in data) {
     for (const item of data.items) labels.set(item.value, item.label);
-    for (const id of ids) resolved.add(id);
+    for (const id of ids) {
+      if (!data.items.some((item) => item.value === id)) labels.delete(id);
+      resolved.add(id);
+    }
   }
 }
 watch(
   [() => record.value?.public_id, locale],
   () => {
     epoch++;
+    hydrationEpoch++;
     if (timer) clearTimeout(timer);
+    waiting.value = false;
     labels.clear();
     resolved.clear();
     resource.clear();
@@ -131,7 +159,32 @@ watch(
   },
   { immediate: true },
 );
+watch(
+  () => props.active,
+  (active) => {
+    if (active) {
+      void read();
+      void hydrate();
+    }
+  },
+);
+watch(
+  () => record.value?.revision,
+  (value, before) => {
+    if (!before || value === before) return;
+    resolved.clear();
+    labels.clear();
+    void read();
+    void hydrate();
+  },
+);
+function searchNow() {
+  if (timer) clearTimeout(timer);
+  waiting.value = true;
+  void read(true);
+}
 watch(query, () => {
+  waiting.value = true;
   if (timer) clearTimeout(timer);
   timer = setTimeout(() => {
     void read(true);
@@ -144,11 +197,17 @@ watch(
   () => selected.value.join('\0'),
   () => {
     void hydrate();
-    if (assignedOnly.value) void read(true);
+    if (assignedOnly.value) void read();
   },
 );
 function update(id: string, checked: boolean | null) {
-  if (readonly.value || props.controller.busy.value) return;
+  if (
+    readonly.value ||
+    props.controller.busy.value ||
+    resource.busy.value ||
+    waiting.value
+  )
+    return;
   const values = new Set(selected.value);
   if (checked) {
     if (values.size >= 100 && !values.has(id)) return;
@@ -157,10 +216,16 @@ function update(id: string, checked: boolean | null) {
   props.controller.set(path.value, [...values]);
 }
 function selectPage(checked: boolean) {
-  if (readonly.value || props.controller.busy.value) return;
+  if (
+    readonly.value ||
+    props.controller.busy.value ||
+    resource.busy.value ||
+    waiting.value
+  )
+    return;
   const ids = new Set(selected.value);
-  for (const option of options.value) {
-    if (checked && ids.size < 100) ids.add(option.value);
+  for (const option of visibleOptions.value) {
+    if (checked && !option.unavailable && ids.size < 100) ids.add(option.value);
     else if (!checked) ids.delete(option.value);
   }
   props.controller.set(path.value, [...ids]);
@@ -178,67 +243,111 @@ function back() {
   previous.value = history;
   void read();
 }
+const visibleOptions = computed(() => {
+  const rows = options.value.map((option) => ({
+    ...option,
+    unavailable: false,
+  }));
+  if (assignedOnly.value && !cursor.value && !query.value.trim())
+    for (const id of selected.value)
+      if (resolved.has(id) && !labels.has(id))
+        rows.push({
+          value: id,
+          label: text('Niedostępne przypisanie', 'Unavailable assignment'),
+          unavailable: true,
+        });
+  return rows;
+});
+const selectedVisible = computed(
+  () =>
+    visibleOptions.value.filter((option) =>
+      selected.value.includes(option.value),
+    ).length,
+);
+const allVisible = computed(
+  () =>
+    !!visibleOptions.value.length &&
+    selectedVisible.value === visibleOptions.value.length,
+);
+const locked = computed(
+  () =>
+    readonly.value ||
+    props.controller.busy.value ||
+    resource.busy.value ||
+    waiting.value,
+);
 </script>
 <template>
-  <section
-    class="min-w-0 space-y-4"
-    :data-assignment-field="field"
-    :aria-label="title"
-  >
-    <div class="flex items-center justify-between gap-3">
-      <h3 class="text-sm font-semibold">{{ title }}</h3>
-      <Badge size="sm">{{ selected.length }}/100</Badge>
-    </div>
+  <section class="min-w-0" :data-assignment-field="field" :aria-label="title">
     <div
-      v-if="selected.length"
-      class="max-h-40 space-y-2 overflow-y-auto rounded border border-line p-3"
-      :aria-label="text('Przypisane', 'Assigned')"
+      class="flex flex-wrap items-center gap-2 border-b border-line p-2 sm:flex-nowrap"
     >
-      <div
-        v-for="id in selected"
-        :key="id"
-        class="flex min-w-0 items-center justify-between gap-2 text-sm"
-      >
-        <ContentLoading
-          :loading="
-            !labels.has(id) &&
-            !resolved.has(id) &&
-            !selectedResource.error.value
-          "
-          :lines="1"
-          :label="t('Loading record details')"
-          class="min-w-0 flex-1"
-          ><span class="break-words">{{
-            labels.get(id) ??
-            text('Niedostępne przypisanie', 'Unavailable assignment')
-          }}</span></ContentLoading
-        ><Button
-          v-if="!readonly"
-          size="sm"
-          :disabled="controller.busy.value"
-          :aria-label="
-            text('Usuń przypisanie: ', 'Remove assignment: ') +
-            (labels.get(id) ?? '')
-          "
-          @click="update(id, false)"
-          >{{ text('Usuń', 'Remove') }}</Button
+      <div class="relative min-w-0 flex-1 basis-48">
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
         >
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m16 16 5 5" />
+        </svg>
+        <input
+          v-model="query"
+          type="search"
+          @keydown.enter.prevent="searchNow"
+          :aria-label="
+            field === 'roles'
+              ? text('Szukaj ról', 'Search roles')
+              : text('Szukaj uprawnień', 'Search permissions')
+          "
+          :placeholder="
+            field === 'roles'
+              ? text('Szukaj ról…', 'Search roles…')
+              : text('Szukaj uprawnień…', 'Search permissions…')
+          "
+          maxlength="160"
+          autocomplete="off"
+          class="runa-field-control assignment-search"
+        />
+      </div>
+      <div
+        class="flex shrink-0 rounded border border-line p-0.5"
+        role="group"
+        :aria-label="text('Zakres katalogu', 'Catalogue scope')"
+      >
+        <button
+          type="button"
+          class="min-h-9 rounded px-3 text-xs focus-visible:outline-2 focus-visible:outline-accent"
+          :class="
+            !assignedOnly
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted hover:text-ink'
+          "
+          :aria-pressed="!assignedOnly"
+          @click="assignedOnly = false"
+        >
+          {{ text('Wszystkie', 'All') }}
+        </button>
+        <button
+          type="button"
+          class="min-h-9 rounded px-3 text-xs focus-visible:outline-2 focus-visible:outline-accent"
+          :class="
+            assignedOnly
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted hover:text-ink'
+          "
+          :aria-pressed="assignedOnly"
+          @click="assignedOnly = true"
+        >
+          {{ text('Przypisane', 'Assigned') }}
+        </button>
       </div>
     </div>
-    <TextInput
-      v-model="query"
-      :label="
-        field === 'roles'
-          ? text('Szukaj ról', 'Search roles')
-          : text('Szukaj uprawnień', 'Search permissions')
-      "
-      :maxlength="160"
-    />
-    <Switch
-      v-model="assignedOnly"
-      :label="text('Tylko przypisane', 'Assigned only')"
-    />
     <FormNotifications
+      v-if="active"
       :locale="locale"
       :error="
         t(
@@ -247,7 +356,8 @@ function back() {
             '',
         )
       "
-      ><template #actions
+    >
+      <template #actions
         ><Button
           :busy="resource.busy.value || selectedResource.busy.value"
           size="sm"
@@ -257,62 +367,143 @@ function back() {
           "
           >{{ t('Retry loading') }}</Button
         ></template
-      ></FormNotifications
-    >
+      >
+    </FormNotifications>
     <ContentLoading
       :loading="!loaded"
-      :refreshing="loaded && resource.busy.value"
-      shape="detail"
+      :refreshing="loaded && (resource.busy.value || waiting)"
+      :lines="5"
       :label="t('Loading record details')"
     >
       <div
-        class="max-h-72 min-w-0 divide-y divide-line overflow-y-auto rounded border border-line"
+        class="max-h-80 min-w-0 overflow-y-auto overscroll-contain"
+        :aria-label="title"
+        role="group"
+        ref="rows"
+        data-assignment-rows
       >
-        <div v-for="option in options" :key="option.value" class="p-3">
-          <Checkbox
-            :label="option.label"
-            :model-value="selected.includes(option.value)"
+        <label
+          v-for="option in visibleOptions"
+          :key="option.value"
+          class="flex min-h-11 min-w-0 cursor-pointer items-center gap-3 border-b border-line/60 px-3 py-2 text-sm last:border-0 hover:bg-primary/5 has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-accent"
+          :class="[
+            selected.includes(option.value) ? 'bg-primary/5' : '',
+            locked ||
+            (!selected.includes(option.value) && selected.length >= 100)
+              ? 'cursor-default'
+              : '',
+          ]"
+          :data-assignment-option="option.value"
+        >
+          <input
+            type="checkbox"
+            class="runa-choice-input shrink-0"
+            :checked="selected.includes(option.value)"
             :disabled="
-              readonly ||
-              controller.busy.value ||
+              locked ||
               (!selected.includes(option.value) && selected.length >= 100)
             "
-            @update:model-value="update(option.value, $event)"
+            @change="
+              update(option.value, ($event.target as HTMLInputElement).checked)
+            "
           />
+          <span class="min-w-0 flex-1 break-words">{{ option.label }}</span>
+          <span v-if="option.unavailable" class="text-xs text-muted">{{
+            text('Niedostępne', 'Unavailable')
+          }}</span>
+        </label>
+        <div
+          v-if="!visibleOptions.length"
+          class="flex min-h-32 items-center justify-center px-4 py-6 text-center text-sm text-muted"
+        >
+          {{
+            query.trim()
+              ? text(
+                  'Nie znaleziono pasujących pozycji.',
+                  'No matching entries.',
+                )
+              : assignedOnly
+                ? text('Brak przypisań.', 'No assignments.')
+                : text('Brak dostępnych pozycji.', 'No available entries.')
+          }}
         </div>
-        <p v-if="!options.length" class="p-3 text-sm text-muted">
-          {{ text('Brak wyników.', 'No results.') }}
-        </p>
       </div>
     </ContentLoading>
-    <div class="flex flex-wrap items-center gap-2">
-      <Button
-        v-if="!readonly && options.length"
-        size="sm"
-        :disabled="
-          controller.busy.value || resource.busy.value || selected.length >= 100
-        "
-        @click="selectPage(true)"
-        >{{ text('Zaznacz widoczne', 'Select visible') }}</Button
-      ><Button
-        v-if="
-          !readonly && options.some((option) => selected.includes(option.value))
-        "
-        size="sm"
-        :disabled="controller.busy.value || resource.busy.value"
-        @click="selectPage(false)"
-        >{{ text('Odznacz widoczne', 'Deselect visible') }}</Button
-      ><Button
-        size="sm"
-        :disabled="!previous.length || resource.busy.value"
-        @click="back"
-        >{{ text('Poprzednie', 'Previous') }}</Button
-      ><Button
-        size="sm"
-        :disabled="!next || resource.busy.value"
-        @click="forward"
-        >{{ text('Następne', 'Next') }}</Button
-      >
+    <div
+      class="flex flex-wrap items-center justify-between gap-2 border-t border-line bg-surface px-3 py-2 text-xs text-muted"
+    >
+      <div class="flex min-h-9 flex-wrap items-center gap-x-4 gap-y-2">
+        <label
+          v-if="!readonly && visibleOptions.length"
+          class="flex min-h-9 cursor-pointer items-center gap-2"
+        >
+          <input
+            type="checkbox"
+            class="runa-choice-input"
+            :aria-label="text('Zaznacz widoczne', 'Select visible')"
+            :checked="allVisible"
+            :indeterminate="selectedVisible > 0 && !allVisible"
+            :disabled="locked || (!allVisible && selected.length >= 100)"
+            @change="selectPage(($event.target as HTMLInputElement).checked)"
+          />
+          {{ text('Zaznacz widoczne', 'Select visible') }}
+        </label>
+        <span aria-live="polite">
+          <span class="sr-only">{{ text('Wybrano', 'Selected') }}</span>
+          <strong class="font-medium text-ink tabular-nums">{{
+            selected.length
+          }}</strong>
+          / 100</span
+        >
+      </div>
+      <div v-if="next || previous.length" class="flex items-center gap-2">
+        <button
+          type="button"
+          class="flex size-9 items-center justify-center rounded border border-line text-ink hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
+          :disabled="!previous.length || resource.busy.value || waiting"
+          :aria-label="text('Poprzednia strona', 'Previous page')"
+          @click="back"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            class="size-4"
+          >
+            <path d="m14 6-6 6 6 6" />
+          </svg>
+        </button>
+        <span class="tabular-nums"
+          >{{ text('Strona', 'Page') }} {{ previous.length + 1 }}</span
+        >
+        <button
+          type="button"
+          class="flex size-9 items-center justify-center rounded border border-line text-ink hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
+          :disabled="!next || resource.busy.value || waiting"
+          :aria-label="text('Następna strona', 'Next page')"
+          @click="forward"
+        >
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            class="size-4"
+          >
+            <path d="m10 6 6 6-6 6" />
+          </svg>
+        </button>
+      </div>
     </div>
   </section>
 </template>
+
+<style scoped>
+/* The shared unlayered field chrome owns padding; reserve its search prefix explicitly. */
+.assignment-search {
+  padding-inline-start: calc(var(--spacing) * 9);
+}
+</style>

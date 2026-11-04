@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Replace the expanded assignment lists with a dedicated compact catalogue editor, integrated search/assigned scope, retained category queries/pages, dense rows and bounded pagination. Preserve readonly browsing, unavailable-assignment removal and native proof/review.
+
 - Omit generic access instructions and show account-selection, assignment-submit and retry progress through shared controls.
 
 - Add public searchable PermissionsAssignments presentation and bounded server definition search/selected-ID hydration through PermissionsAccess 2.1.0; preserve native grants, proof, revision and transactional Audit.

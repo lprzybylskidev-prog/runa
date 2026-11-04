@@ -235,6 +235,19 @@ picker draft and retain the committed range. Reset discards draft state and clos
 the panel. Open-ended ranges are supported. No duplicate endpoint heading appears
 in the surrounding form/filter grid; endpoint labels belong inside the panel.
 
+## Specialized collection editors
+
+High-cardinality domain interactions can require a dedicated editor rather than a
+stack of generic fields. Reuse existing tokens, field/choice chrome, loading,
+feedback and guarded controllers within that editor; reuse does not require a
+form assembled from unrelated visible controls. Keep search, scope, rows and page
+operations in one compact workspace. Avoid duplicating assigned entries above the
+same selectable catalogue. Use bounded server search/pages for large remote sets,
+preserve choices outside the visible result, and keep search Enter independent of
+form submission. Follow the Permissions-owned
+[access editor](../../modules/permissions/README.md#searchable-assignment-catalogue)
+for the supplied roles/direct-permission use case.
+
 ## Concise form composition
 
 Reuse the owning module's established labels, controls and task layout. Omit

@@ -194,3 +194,21 @@ read; pagination preserves the public-ID cursor and totals describe the filtered
 set. Proxies, exact-version consumers and native declarations use 2.1.0. This
 additive runtime server-consumption API remains guarded through ModuleApis; no
 foreign query or grant resolver becomes a presentation API.
+
+The default is a dedicated compact access editor: one catalogue, role/direct-
+permission selectors with draft counts, integrated server search, All/Assigned
+scope, dense selectable rows and a bounded scroll region. The same selected entry
+is never repeated in a separate chip/list above the catalogue. Each category keeps
+its own query/cursor across switching; inactive categories load on demand.
+Catalogue pages contain at most 25 entries. Selected-ID hydration is bounded to
+100; it also keeps unavailable assignments removable from Assigned without exposing
+UUIDs. Existing native assignment limits remain 100 per category, independent of
+the available catalogue size. Visible-page select/deselect preserves off-page
+choices. A failed or pending read cannot authorize selecting stale results.
+
+Enter in search runs a read and never submits the enclosing access form. Native
+checkboxes, focus treatment and semantic field chrome retain Runa's shared visual
+language inside the dedicated editor. Keyboard navigation, readonly browsing,
+local loading, Polish/English and light/dark/mobile presentation remain supported.
+Review/Revert belongs to the complete roles/direct-permissions draft; the native
+controller owns dirty guards, optimistic conflicts, review and operation proof.
