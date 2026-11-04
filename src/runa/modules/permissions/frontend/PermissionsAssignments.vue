@@ -122,7 +122,7 @@ function revert() {
         />
         <div class="min-w-0 rounded border border-line" data-access-editor>
           <div
-            class="flex border-b border-line bg-surface"
+            class="flex gap-1 border-b border-line px-2"
             role="group"
             :aria-label="t({ pl: 'Rodzaj przypisania', en: 'Assignment type' })"
           >
@@ -130,10 +130,10 @@ function revert() {
               v-for="field in fields"
               :key="field"
               type="button"
-              class="flex min-h-11 min-w-0 flex-1 items-center justify-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
+              class="flex min-h-10 min-w-0 flex-1 items-center justify-center gap-2 border-b-2 px-3 py-2 text-xs font-medium sm:flex-none transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-accent"
               :class="
                 active === field
-                  ? 'border-primary bg-primary/5 text-primary'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-muted hover:bg-primary/5 hover:text-ink'
               "
               :aria-pressed="active === field"
@@ -149,7 +149,12 @@ function revert() {
                     })
               }}</span>
               <span
-                class="rounded bg-primary/10 px-1.5 py-0.5 text-xs tabular-nums"
+                class="min-w-5 rounded px-1.5 py-0.5 text-center text-xs tabular-nums"
+                :class="
+                  active === field
+                    ? 'bg-primary/10 text-primary'
+                    : 'bg-line/30 text-muted'
+                "
                 >{{ count(field) }}</span
               >
             </button>

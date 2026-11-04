@@ -280,16 +280,16 @@ const locked = computed(
 <template>
   <section class="min-w-0" :data-assignment-field="field" :aria-label="title">
     <div
-      class="flex flex-wrap items-center gap-2 border-b border-line p-2 sm:flex-nowrap"
+      class="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 py-2 sm:flex-nowrap"
     >
-      <div class="relative min-w-0 flex-1 basis-48">
+      <div class="relative min-w-0 flex-1 basis-full sm:max-w-80 sm:basis-auto">
         <svg
           aria-hidden="true"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
           stroke-width="1.6"
-          class="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted"
+          class="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted"
         >
           <circle cx="10.5" cy="10.5" r="6.5" />
           <path d="m16 16 5 5" />
@@ -297,6 +297,7 @@ const locked = computed(
         <input
           v-model="query"
           type="search"
+          data-size="sm"
           @keydown.enter.prevent="searchNow"
           :aria-label="
             field === 'roles'
@@ -314,16 +315,16 @@ const locked = computed(
         />
       </div>
       <div
-        class="flex shrink-0 rounded border border-line p-0.5"
+        class="flex shrink-0 gap-0.5 rounded bg-line/20 p-0.5"
         role="group"
         :aria-label="text('Zakres katalogu', 'Catalogue scope')"
       >
         <button
           type="button"
-          class="min-h-9 rounded px-3 text-xs focus-visible:outline-2 focus-visible:outline-accent"
+          class="min-h-8 rounded px-3 text-xs focus-visible:outline-2 focus-visible:outline-accent"
           :class="
             !assignedOnly
-              ? 'bg-primary/10 text-primary'
+              ? 'bg-surface text-ink shadow-sm'
               : 'text-muted hover:text-ink'
           "
           :aria-pressed="!assignedOnly"
@@ -333,10 +334,10 @@ const locked = computed(
         </button>
         <button
           type="button"
-          class="min-h-9 rounded px-3 text-xs focus-visible:outline-2 focus-visible:outline-accent"
+          class="min-h-8 rounded px-3 text-xs focus-visible:outline-2 focus-visible:outline-accent"
           :class="
             assignedOnly
-              ? 'bg-primary/10 text-primary'
+              ? 'bg-surface text-ink shadow-sm'
               : 'text-muted hover:text-ink'
           "
           :aria-pressed="assignedOnly"
@@ -385,7 +386,7 @@ const locked = computed(
         <label
           v-for="option in visibleOptions"
           :key="option.value"
-          class="flex min-h-11 min-w-0 cursor-pointer items-center gap-3 border-b border-line/60 px-3 py-2 text-sm last:border-0 hover:bg-primary/5 has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-accent"
+          class="flex min-h-11 min-w-0 cursor-pointer sm:min-h-10 items-center gap-3 border-b border-line/60 px-3 py-2 text-sm last:border-0 hover:bg-primary/5 has-[:focus-visible]:outline-2 has-[:focus-visible]:-outline-offset-2 has-[:focus-visible]:outline-accent"
           :class="[
             selected.includes(option.value) ? 'bg-primary/5' : '',
             locked ||
@@ -430,7 +431,7 @@ const locked = computed(
       </div>
     </ContentLoading>
     <div
-      class="flex flex-wrap items-center justify-between gap-2 border-t border-line bg-surface px-3 py-2 text-xs text-muted"
+      class="flex flex-wrap items-center justify-between gap-2 border-t border-line px-3 py-1.5 text-xs text-muted"
     >
       <div class="flex min-h-9 flex-wrap items-center gap-x-4 gap-y-2">
         <label
@@ -459,7 +460,7 @@ const locked = computed(
       <div v-if="next || previous.length" class="flex items-center gap-2">
         <button
           type="button"
-          class="flex size-9 items-center justify-center rounded border border-line text-ink hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
+          class="flex size-8 items-center justify-center rounded text-ink hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
           :disabled="!previous.length || resource.busy.value || waiting"
           :aria-label="text('Poprzednia strona', 'Previous page')"
           @click="back"
@@ -480,7 +481,7 @@ const locked = computed(
         >
         <button
           type="button"
-          class="flex size-9 items-center justify-center rounded border border-line text-ink hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
+          class="flex size-8 items-center justify-center rounded text-ink hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
           :disabled="!next || resource.busy.value || waiting"
           :aria-label="text('Następna strona', 'Next page')"
           @click="forward"
@@ -502,8 +503,8 @@ const locked = computed(
 </template>
 
 <style scoped>
-/* The shared unlayered field chrome owns padding; reserve its search prefix explicitly. */
-.assignment-search {
-  padding-inline-start: calc(var(--spacing) * 9);
+/* Shared small-field chrome owns padding; reserve the compact search prefix. */
+.assignment-search[data-size='sm'] {
+  padding-inline-start: calc(var(--spacing) * 8);
 }
 </style>

@@ -206,6 +206,11 @@ UUIDs. Existing native assignment limits remain 100 per category, independent of
 the available catalogue size. Visible-page select/deselect preserves off-page
 choices. A failed or pending read cannot authorize selecting stale results.
 
+The toolbar uses the shared small search-field size with bounded desktop width;
+category controls fit their labels on wide screens and distribute space on mobile.
+Quiet scope controls, aligned counters and lightweight pagination keep chrome
+subordinate to catalogue rows. Touch rows remain taller on narrow screens.
+
 Enter in search runs a read and never submits the enclosing access form. Native
 checkboxes, focus treatment and semantic field chrome retain Runa's shared visual
 language inside the dedicated editor. Keyboard navigation, readonly browsing,

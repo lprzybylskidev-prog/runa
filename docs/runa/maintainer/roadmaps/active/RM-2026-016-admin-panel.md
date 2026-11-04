@@ -985,6 +985,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     preserve selections across searches/pages and native review/proof/reconciliation.
   - Verify large catalogues, keyboard/readonly/loading states and rendered PL/EN,
     responsive light/dark presentation; synchronize contracts/guidance and assets.
+- [x] 11a74. Polish the dedicated access editor's visual proportions.
+  - Reduce search height/desktop width, lighten category/filter chrome and align
+    rows, counters and pagination without changing catalogue or write behavior.
+  - Prepare current assets and inspect PL/EN, light/dark and mobile/desktop states;
+    synchronize current presentation documentation and commit before owner review.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6900,3 +6905,41 @@ Mandatory staged hooks and current knowledge accompany this commit. No task-crea
 Docker resources or databases need cleanup; active services, development/base test
 data, caches and previous reports remain preserved. Owner manual acceptance 11b
 and final verification/release 12 remain open.
+
+### Point 11a74 — Access-editor visual polish
+
+The owner accepts the dedicated-editor direction and requests smaller search and
+more polished overall proportions. Refined presentation only: shared small search
+chrome gives a 36px control, bounded to 320px on desktop and full width on mobile.
+Its icon and prefix padding follow that size. Category controls fit label widths
+on desktop instead of filling half the workspace; quieter counters and an underline
+carry active state. Scope controls align with the search height and use lighter
+chrome. Desktop catalogue rows are denser while mobile rows retain their touch
+height. Footer spacing and borderless page controls reduce visual weight. Native
+inputs, labels, focus treatment, loading and all existing controller behavior remain.
+
+The active roadmap, current components, shared small-field CSS and visual/accessibility
+references were read. Knowledge was current and queried for compact field/toolbar
+patterns. Frontend and Tailwind guidance applies; no dependency or backend API was
+introduced. Permissions public props/events, native review/proof, pagination,
+selection limits and replacement seams are unchanged. Current Permissions guide
+and module/central changelogs describe the refined defaults. Existing owner/customer
+frontend guidance already covers dedicated editors, shared chrome and responsive
+acceptance; no instruction-product or constitutional change is necessary.
+Permissions remains the existing unreleased 2.1.0 candidate.
+
+Current frontend build PASS, including strict TypeScript and native/static assets.
+Native compiled checks against Nginx/API PASS for Polish/English, light/dark and
+390/1440px: actual search height at most 38px, desktop width at most 321px, reserved
+prefix space, category visibility, cursor/search results, retained dirty selection,
+Revert, no implicit search submit and no horizontal overflow. Both desktop and
+mobile screenshots were inspected, including dark roles and light permissions.
+Evidence: `.runtime/user-details/assignments-polish-*.log` and
+`.runtime/artifacts/playwright/assignments-polish/`. Sessions were logged out and
+no management write was submitted. This reversible style-only correction needs no
+new implementation-mirroring tests or backend/broad verification; final affected-
+area gates remain point 12 and owner manual acceptance remains 11b.
+
+Mandatory staged hooks and knowledge freshness accompany the commit. No disposable
+Docker/database resources were created; active services, development/base test data,
+caches and earlier evidence remain preserved.

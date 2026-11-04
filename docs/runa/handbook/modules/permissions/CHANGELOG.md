@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Polish assignment-editor visuals with the shared small search field, bounded desktop width, natural category widths and quiet aligned filters, counts and page controls.
+
 - Replace the expanded assignment lists with a dedicated compact catalogue editor, integrated search/assigned scope, retained category queries/pages, dense rows and bounded pagination. Preserve readonly browsing, unavailable-assignment removal and native proof/review.
 
 - Omit generic access instructions and show account-selection, assignment-submit and retry progress through shared controls.

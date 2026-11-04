@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Refine access-editor proportions with compact bounded search, label-sized category controls, quieter filters/counters and lighter row/pagination chrome across desktop/mobile themes.
+
 - Replace sprawling role/direct-permission forms with a dedicated compact access editor: one searchable catalogue, assigned filtering, retained category state and bounded pages without duplicate selected lists. Preserve native review, proof and draft reconciliation.
 
 - Unify own/Admin secondary-email presentation and audit supplied error flows. Preserve business refusals through profile, secondary, security and aggregate adapters; show specific localized field/operation feedback for identifiers, limits, preferences, proof and access changes.
