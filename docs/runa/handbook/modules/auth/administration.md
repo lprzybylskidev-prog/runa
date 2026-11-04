@@ -92,7 +92,7 @@ restrictions.
 
 Current configuration filters both declarations and account-state projection.
 Disabled email verification removes status/date/require-verification; verified
-replacement also requires admin bypass opt-in. Zero password_expiry_days removes
+replacement also requires admin bypass enablement. Zero password_expiry_days removes
 expiry/password-change-required display and its lifecycle command, while ordinary
 password reset remains available. The initial password-change choice in creation
 remains independent of periodic password expiry. Registration activation policy applies to public
@@ -131,7 +131,7 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | lifecycle change                | AuthLifecycle.change; `users.manage`                                                                                                    | Exact account version; explicit confirmation, last-eligible administrator and identifier reuse/restore checks                                                                           |
 | invitation / invalidate         | AuthInvitations; `invitations.manage`                                                                                                   | Exact version, resend rotates private token; invalidate confirms; no secret result                                                                                                      |
 | primary email / change          | AuthProfiles.changeEmail; `profiles.read`, `emails.manage`                                                                              | Version, both-factor action `runa.auth.email.admin_change`, native recipient confirmations                                                                                              |
-| verified replacement            | AuthProfiles.replaceVerifiedEmail; `profiles.read`, `emails.verify_bypass`                                                              | Version, policy opt-in, confirmation, both-factor `runa.auth.email.admin_bypass`                                                                                                        |
+| verified replacement            | AuthProfiles.replaceVerifiedEmail; `profiles.read`, `emails.verify_bypass`                                                              | Version, policy enablement, confirmation, both-factor `runa.auth.email.admin_bypass`                                                                                                    |
 | require verification            | AuthProfiles.requireVerification; `profiles.read`, `emails.reverify`                                                                    | Version, confirmation, both-factor `runa.auth.email.require_verification`                                                                                                               |
 | secondary add/change/remove     | AuthProfiles; `profiles.read`, `secondary.read`, `secondary.manage`                                                                     | Version, address UUID, native policy/limits/verification; remove confirms                                                                                                               |
 | sessions list/revoke/revoke-all | AuthSessions; `sessions.manage`                                                                                                         | Target UUID and session UUID; native bounded before-cursor, explicit revoke confirmation                                                                                                |
@@ -173,7 +173,7 @@ incompatible with invitation mode. Normal transport, expiry, single-use, recipie
 generation, deletion and other security guards remain. Invitation acceptance verifies
 the email and sets the first password without activating or authenticating the
 account. Administrative verification also requires the existing bypass policy
-opt-in and emits an explicit safe `email.admin_verified` event. Initial credentials
+enablement and emits an explicit safe `email.admin_verified` event. Initial credentials
 emit `password.initial_set` without secret values. Failure rolls back the entire
 creation, token/work, success Audit and proof consumption.
 
@@ -182,7 +182,11 @@ password-policy metadata. Password/confirmation reads expose only `{set:false}`;
 they never return a draft or hash. Capability fields use their own invitation/
 verification grants, while the native writer always repeats authorization.
 The default creation presentation groups identity, account activity, first password,
-verification and optional security controls with an access/delivery summary. Roles,
+verification with an access/delivery summary. Verification is omitted when the
+policy or its grant is unavailable; the policy defaults enabled and remains
+editable in the Auth settings view. Initial security/attempt locks remain available
+through the native setup API and existing individual account workflows; the default
+creation form does not present them. Roles,
 direct grants, policy exceptions, secondary addresses and avatar changes retain
 their separate existing owning workflows after creation; enrolled factors, recovery
 codes, sessions/trust and historical timestamps are not editable initial facts.

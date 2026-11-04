@@ -8,7 +8,6 @@ import type {
 } from '@/runa/admin';
 import { AuthOperationProof } from '@/runa/auth';
 import {
-  Badge,
   Button,
   Checkbox,
   ContentLoading,
@@ -36,7 +35,6 @@ const attempt = ref(0);
 const naming = ref('full');
 const activation = ref('inactive');
 const deactivation = ref(false);
-const advanced = ref(true);
 const touched = reactive(new Set<string>());
 const temporalValid = reactive<Record<string, boolean>>({});
 const record = computed(
@@ -82,6 +80,9 @@ function set(key: string, value: AdminJson) {
 const credentials = computed(() => string('credential_mode'));
 const canInvite = computed(() => get('invitation_allowed') === true);
 const canVerify = computed(() => get('email_verification_allowed') === true);
+watch(canVerify, (allowed) => {
+  if (!allowed && get('email_verified') === true) set('email_verified', false);
+});
 const policy = computed<EntryOptions['password'] | undefined>(() => {
   try {
     const value: unknown = JSON.parse(string('password_policy'));
@@ -281,8 +282,8 @@ const summary = computed(() =>
       : []),
     credentials.value === 'invitation'
       ? text(
-          'Zaproszenie zostanie zlecone do wysyłki od razu. Użytkownik ustawi hasło i potwierdzi e-mail, nawet przed aktywacją.',
-          'An invitation will be queued immediately. The user can set a password and verify their email before activation.',
+          'Zaproszenie zostanie zlecone do wysyłki od razu. Użytkownik ustawi hasło i potwierdzi e-mail.',
+          'An invitation will be queued immediately. The user will set a password and verify their email.',
         )
       : credentials.value === 'password'
         ? text(
@@ -312,22 +313,11 @@ const summary = computed(() =>
           ),
         ]
       : []),
-    ...(get('security_locked') === true || !!string('attempt_locked_until')
-      ? [
-          text(
-            'Dodatkowa blokada uniemożliwi logowanie do czasu jej zdjęcia lub upływu terminu.',
-            'An additional lock prevents sign-in until it is removed or expires.',
-          ),
-        ]
-      : []),
   ].filter(Boolean),
 );
 async function submit() {
   attempt.value++;
-  if (Object.keys(issues.value).length) {
-    if (issues.value.attempt_locked_until || issues.value.credential_mode)
-      advanced.value = false;
-  } else if (command.value && !readonly.value) {
+  if (!Object.keys(issues.value).length && command.value && !readonly.value) {
     const review = await props.controller.reviewCommand(
       props.section.key,
       command.value.key,
@@ -380,23 +370,6 @@ async function submit() {
         }}</Button>
       </template>
       <div class="min-w-0 space-y-6" data-auth-creation>
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <p class="max-w-2xl text-sm text-muted">
-            {{
-              text(
-                'Ustal dane użytkownika, sposób ustawienia hasła i moment uzyskania dostępu.',
-                'Choose the user details, initial password setup and when access begins.',
-              )
-            }}
-          </p>
-          <Badge :tone="activation === 'active' ? 'success' : 'neutral'">{{
-            activation === 'active'
-              ? text('Aktywne od razu', 'Active immediately')
-              : activation === 'scheduled'
-                ? text('Zaplanowana aktywacja', 'Scheduled activation')
-                : text('Nieaktywne', 'Inactive')
-          }}</Badge>
-        </div>
         <FormSection :title="text('Dane użytkownika', 'User details')">
           <RadioGroup
             :model-value="naming"
@@ -567,14 +540,6 @@ async function submit() {
             ]"
             @update:model-value="changeCredentials"
           />
-          <p v-if="credentials === 'invitation'" class="text-sm text-muted">
-            {{
-              text(
-                'Użytkownik od razu otrzyma link do ustawienia hasła. Przyjęcie zaproszenia potwierdza adres e-mail, ale nie aktywuje konta.',
-                'The user receives a password setup link immediately. Accepting it verifies the email but does not activate the account.',
-              )
-            }}
-          </p>
           <template v-if="credentials === 'password'">
             <div class="grid min-w-0 gap-5 md:grid-cols-2">
               <TextInput
@@ -614,6 +579,7 @@ async function submit() {
           </template>
         </FormSection>
         <FormSection
+          v-if="canVerify"
           :title="text('Weryfikacja adresu e-mail', 'Email verification')"
         >
           <Checkbox
@@ -624,55 +590,9 @@ async function submit() {
                 'I verify this email address as an administrator',
               )
             "
-            :helper="
-              text(
-                'Użytkownik nie będzie musiał osobno potwierdzać tego adresu. Decyzja zostanie zapisana w historii Audit.',
-                'The user will not need to verify this address separately. Audit history will record this decision.',
-              )
-            "
-            :disabled="readonly || !canVerify"
+            :disabled="readonly"
             :error="errors('email_verified')"
             @update:model-value="set('email_verified', $event === true)"
-          />
-          <p v-if="!canVerify" class="text-xs text-muted">
-            {{
-              text(
-                'Opcja wymaga uprawnienia do administracyjnego potwierdzania adresów i włączenia jej w polityce Auth.',
-                'This option requires email verification bypass permission and an enabled Auth policy setting.',
-              )
-            }}
-          </p>
-        </FormSection>
-        <FormSection
-          :title="text('Dodatkowe zabezpieczenia', 'Additional security')"
-          collapsible
-          v-model:collapsed="advanced"
-        >
-          <Checkbox
-            :model-value="get('security_locked') === true"
-            :label="
-              text(
-                'Utwórz konto z blokadą bezpieczeństwa',
-                'Create with a security lock',
-              )
-            "
-            :disabled="readonly"
-            @update:model-value="set('security_locked', $event === true)"
-          />
-          <DateTimeInput
-            :model-value="string('attempt_locked_until') || null"
-            :label="text('Zablokuj logowanie do', 'Block sign-in until')"
-            :locale="locale"
-            :helper="
-              text(
-                'Opcjonalnie. Blokada działa niezależnie od aktywacji konta.',
-                'Optional. This lock applies independently of account activation.',
-              )
-            "
-            :disabled="readonly"
-            :error="errors('attempt_locked_until')"
-            @validity="temporalValid.attempt_locked_until = $event"
-            @update:model-value="set('attempt_locked_until', $event)"
           />
         </FormSection>
         <div

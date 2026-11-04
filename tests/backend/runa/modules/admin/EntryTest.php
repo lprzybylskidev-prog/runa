@@ -1074,6 +1074,23 @@ function authCreationValues(array $patch = []): array
         'security_locked' => false, 'attempt_locked_until' => null, 'password_change_required' => false], $patch);
 }
 
+it('Auth creation verification defaults on and remains configurable in the Auth policy view', function (): void {
+    authAdministrationLogin($this, ['runa.auth.users.create', 'runa.auth.emails.verify_bypass', 'runa.auth.policy.read', 'runa.auth.policy.write']);
+    $settings = app(ModuleSettings::class);
+    expect($settings->boolean('runa.auth', 'admin_email_verification_bypass'))->toBeTrue();
+    $page = $this->getJson('/api/admin/runa.auth/policy')->assertOk()->json('data');
+    $fields = array_merge(...array_column($page['sections'], 'fields'));
+    $field = array_values(array_filter($fields, fn ($field) => $field['key'] === 'admin_email_verification_bypass'))[0];
+    expect($field['type'])->toBe('boolean')->and($field['readonly'])->toBeFalse()
+        ->and($field['label']['pl'])->toBe('Administracyjne potwierdzanie adresów e-mail');
+    expect(authAdministrationRead($this, 'creation')['values']['email_verification_allowed'])->toBeTrue();
+    $state = $settings->read('runa.auth');
+    $settings->update('runa.auth', ['admin_email_verification_bypass' => false], $state['revision'], $state['generation']);
+    expect(authAdministrationRead($this, 'creation')['values']['email_verification_allowed'])->toBeFalse();
+    $this->postJson('/api/admin/runa.auth/users/sections/creation/preview', ['command' => 'create', 'public_id' => null, 'revision' => '0',
+        'values' => authCreationValues(['email_verified' => true])])->assertForbidden()->assertJsonPath('error.code', 'email_bypass_disabled');
+});
+
 it('Auth creation atomically configures credentials schedules verification and locks without delivery', function (): void {
     authAdministrationLogin($this, ['runa.auth.users.create', 'runa.auth.emails.verify_bypass']);
     DB::transaction(function (): void {

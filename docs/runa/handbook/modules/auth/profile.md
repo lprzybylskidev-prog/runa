@@ -102,8 +102,11 @@ page or user-management HTTP CRUD is supplied. Ordinary administrative operation
 | notificationEmails(publicId)                                 | runa.auth.addresses.read       | verified notification-only secondaries for an eligible account                            |
 
 Normal administrative email change verifies the new address before replacement;
-it does not require old-address consent. Bypass defaults disabled through
-`admin_email_verification_bypass` and requires its distinct permission. Both
+it does not require old-address consent. Administrative email verification defaults enabled through
+`admin_email_verification_bypass`; the Auth policy view exposes the boolean
+“Administrative email verification” control. Disabling it removes the creation
+verification section and the existing verified-replacement action. The distinct
+permission and both-factor proof remain required. Both
 completion paths revoke all sessions/trust, advance security generation and notify
 the former primary. All account changes and proof consumption commit with Audit;
 a failure cannot consume proof while rolling back the mutation.

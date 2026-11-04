@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Simplify account creation copy and remove its optional security controls. Keep a concise outcome summary. Enable administrative email verification by default, retain its editable Auth policy control and omit creation verification entirely when unavailable. Preserve native permissions, stronger proof and Audit.
+
 - Deliver comprehensive atomic account creation through AuthLifecycle 2.1.0 with initial password/invitation choices, independent activation/deactivation schedules, administrative email verification, initial locks and forced password change. Supply a conditional PL/EN form and access/delivery summary. Send and accept invitations before activation without issuing a session; show account_inactive only after correct login credentials. Preserve owning policy/grants/proofs, Audit and token security guards.
 
 - Repair editor reopen with private development seed settings: accept and preserve the documented overlay across profile/device changes, materialize explicit entries into Laravel's local environment and keep credentials out of profile output and generated Compose overrides. Reopen still never seeds or migrates data.

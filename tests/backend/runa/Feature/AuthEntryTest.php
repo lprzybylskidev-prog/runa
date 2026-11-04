@@ -1052,6 +1052,7 @@ it('keeps secondary addresses independently verified notification only and stops
 });
 
 it('requires dedicated permission fresh both factor proof and configured bypass for administrative email changes', function (): void {
+    entryPolicy(['admin_email_verification_bypass' => false]);
     $actor = profileVerified('email-admin@example.test');
     $target = profileVerified('email-target@example.test');
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();

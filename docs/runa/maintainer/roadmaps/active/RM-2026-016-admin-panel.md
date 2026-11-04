@@ -895,6 +895,25 @@ reassessment before resuming point 3; completed point history remains evidence.
     the public replacement/controller seams and secret-safe reads and failures.
   - Update current contracts/changelog, author focused regressions and prepare current
     assets/runtime for owner acceptance. Broad verification remains point 12.
+- [x] 11a64. Refine account creation copy and administrative verification defaults.
+  - Owner decision, 2026-11-04: remove introductory copy/status, invitation helper,
+    verification explanations and the optional security section from creation.
+    Keep a concise outcome summary without historical/pre-activation commentary.
+  - Enable administrative email verification by default and in the current local
+    Auth policy through its audited settings workflow; keep the policy control in
+    the Auth settings view and hide creation verification when unavailable.
+  - Preserve native grants/proofs and initial-setup API capabilities, synchronize
+    current guides and prepare current assets for repeated owner acceptance.
+- [ ] 11a65. Enforce configuration-based visibility across module presentations.
+  - Owner decision, 2026-11-04: when a module capability is disabled in its current
+    configuration, omit its forms/sections/controls entirely rather than presenting
+    disabled controls. Keep transient pending/loading/conflict states distinct.
+  - Maintain the reusable rule in both owner/customer instruction products and the
+    canonical frontend guide. Review current supplied module/App presentations,
+    record the bounded inventory and repair demonstrated configuration mismatches.
+  - Preserve native server-side enforcement, dirty-draft/access-loss boundaries,
+    supported public presentation seams and independent diagnostic/recovery views.
+    Prepare current assets for owner acceptance; broad gates remain point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6126,3 +6145,42 @@ Supported runners removed only their disposable runa_test_test_1 workers. The ba
 runa_test, development accounts/data, active services, model/Qdrant caches, backups
 and all reports/screenshots were preserved. No Docker container, network, image,
 volume, database reset or credential rotation was created/performed for this point.
+
+### Point 11a64 — Concise creation and configurable administrative verification
+
+Removed the introductory sentence/status badge, invitation helper, verification
+explanations and optional security section from the default account creation form.
+The outcome summary remains and no longer includes pre-activation commentary.
+Native initial-lock API capabilities and individual account workflows remain;
+this point narrows their default creation presentation.
+
+Administrative email verification now defaults enabled. Its existing editable
+boolean is explicitly named Administrative email verification (Polish:
+Administracyjne potwierdzanie adresów e-mail) in the Auth policy view. The complete
+creation verification section is omitted without current policy/grant; withdrawal
+clears a previously selected confirmation while preserving unrelated dirty data.
+Permissions, stronger proof and native Audit remain unchanged. Current profile/
+administration guidance and both changelogs are synchronized. No reusable rule
+changed in this point; the owner's subsequent general visibility rule and source
+review are recorded separately in point 11a65, which remains open.
+
+The existing local Auth policy was explicitly enabled through supported
+runa:modules:settings with captured revision/generation and system actor
+owner-maintenance. Operation 01a1a65c-9e2b-7241-b75a-e33f8a8fdbcc succeeded at registry
+generation 9, retaining the owning settings history/Audit. No database reset or
+credential change occurred. Fresh installations use the new true source default;
+existing installations retain deliberate persisted choices until explicitly changed.
+Auth remains the unpublished 3.0.0 candidate with unchanged API versions.
+
+Focused evidence under .runtime/auth-creation-refinement: two backend cases PASS
+(44 assertions) prove the new default, editable policy projection, disabled-policy
+refusal and retained native permission/both-factor behavior. Six frontend cases
+PASS, including dynamic section removal and preservation of an unrelated draft.
+The supported build passed. Native Nginx/browser diagnostics confirm the actual
+policy control is editable and true, verification is visible/enabled in creation,
+removed copy/controls are absent, and 1440px/390px light/dark rendering has no
+horizontal overflow or page exception. Screenshots are preserved under
+.runtime/artifacts/playwright/auth-creation-refinement. No creation write was
+issued in development. Supported backend cleanup removed only runa_test_test_1;
+base/development data, active Docker resources, caches, backups and evidence remain.
+Manual acceptance and broad final verification remain points 11b and 12.

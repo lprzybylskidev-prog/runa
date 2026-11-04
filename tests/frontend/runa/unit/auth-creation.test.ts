@@ -139,9 +139,45 @@ const json = (data: unknown, status = 200) =>
     status,
     headers: { 'Content-Type': 'application/json' },
   });
-function read() {
-  return json({ public_id: null, revision: '0', values: defaults() });
+function read(patch: Record<string, AdminJson> = {}) {
+  return json({
+    public_id: null,
+    revision: '0',
+    values: { ...defaults(), ...patch },
+  });
 }
+
+it('Auth creation hides unavailable verification and clears a withdrawn option without discarding other edits', async () => {
+  let allowed = true;
+  vi.spyOn(globalThis, 'fetch').mockImplementation(async () =>
+    read({ email_verification_allowed: allowed }),
+  );
+  const { wrapper, form } = fixture();
+  await vi.waitFor(() =>
+    expect(wrapper.find('[data-auth-creation]').exists()).toBe(true),
+  );
+  const verification = wrapper
+    .findAll('input[type="checkbox"]')
+    .find((input) =>
+      input.element
+        .closest('label')
+        ?.textContent?.includes('I verify this email'),
+    );
+  expect(verification).toBeDefined();
+  await verification!.setValue(true);
+  await wrapper.get('input[name="email"]').setValue('draft@example.test');
+  allowed = false;
+  await form.refresh();
+  await vi.waitFor(() =>
+    expect(wrapper.text()).not.toContain('Email verification'),
+  );
+  expect(form.values.value[form.fieldPath('creation', 'email_verified')]).toBe(
+    false,
+  );
+  expect(form.values.value[form.fieldPath('creation', 'email')]).toBe(
+    'draft@example.test',
+  );
+});
 
 it('Auth creation switches naming credentials and lifecycle choices without retaining hidden secrets', async () => {
   vi.spyOn(globalThis, 'fetch').mockImplementation(async () => read());
@@ -160,7 +196,7 @@ it('Auth creation switches naming credentials and lifecycle choices without reta
     set: false,
   });
   expect(wrapper.get('[data-creation-summary]').text()).toContain(
-    'before activation',
+    'verify their email',
   );
   await wrapper.get('input[value="scheduled"]').setValue();
   expect(wrapper.text()).toContain('Activation date');
