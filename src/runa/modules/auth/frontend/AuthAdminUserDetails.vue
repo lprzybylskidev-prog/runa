@@ -207,12 +207,18 @@ const toolbar = computed(() => {
       ],
     },
     {
-      title: { pl: 'Wymuś zmianę hasła', en: 'Force password change' },
+      title: { pl: 'Zmiana hasła', en: 'Password change' },
       actions: [
         life(
           'require_password_change',
           'Wymuś zmianę hasła',
           'Force password change',
+        ),
+        life(
+          'require_password_change',
+          'Cofnij wymuszenie zmiany hasła',
+          'Clear forced password change',
+          { enabled: false },
         ),
       ],
     },
@@ -532,7 +538,10 @@ function supplied(section: AdminSectionData) {
       :label="text('Szczegóły użytkownika', 'User details')"
     >
       <template v-for="group in groups" :key="group.id" #[group.id]>
-        <div v-if="visited.has(group.id)" class="space-y-5 pt-4">
+        <div
+          v-if="visited.has(group.id)"
+          class="flex min-w-0 flex-col gap-5 pt-4"
+        >
           <Card v-if="group.id === 'user' && toolbar.length">
             <template #header
               ><h2>{{ text('Akcje', 'Actions') }}</h2></template
@@ -575,29 +584,46 @@ function supplied(section: AdminSectionData) {
             </div>
           </Card>
 
-          <AdminComponentBoundary
-            v-for="item in group.sections"
-            :key="item.key"
-            :identity="controller.page.value!.revision + ':' + item.key"
-            :on-failure="(failed) => form.setAvailable(item.key, !failed)"
+          <div
+            :class="
+              group.id === 'user'
+                ? 'grid min-w-0 gap-5 lg:grid-cols-2'
+                : 'flex min-w-0 flex-col gap-5'
+            "
           >
-            <AuthAdminUserSection
-              v-if="supplied(item)"
-              :page="controller"
-              :controller="form"
-              :section="item"
-              :components="components"
-              @submit="submitForm"
-              @operation="rowOperation"
-            />
-            <AdminSectionContent
-              v-else
-              :page="controller"
-              :controller="form"
-              :section="item"
-              :components="components"
-            />
-          </AdminComponentBoundary>
+            <div
+              v-for="item in group.sections"
+              :key="item.key"
+              class="min-w-0"
+              :class="
+                group.id === 'user' && !['profile', 'avatar'].includes(item.key)
+                  ? 'lg:col-span-2'
+                  : ''
+              "
+            >
+              <AdminComponentBoundary
+                :identity="controller.page.value!.revision + ':' + item.key"
+                :on-failure="(failed) => form.setAvailable(item.key, !failed)"
+              >
+                <AuthAdminUserSection
+                  v-if="supplied(item)"
+                  :page="controller"
+                  :controller="form"
+                  :section="item"
+                  :components="components"
+                  @submit="submitForm"
+                  @operation="rowOperation"
+                />
+                <AdminSectionContent
+                  v-else
+                  :page="controller"
+                  :controller="form"
+                  :section="item"
+                  :components="components"
+                />
+              </AdminComponentBoundary>
+            </div>
+          </div>
         </div>
       </template>
     </Tabs>

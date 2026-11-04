@@ -923,7 +923,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     vertical content scrolling. Review all supplied horizontal-scroll consumers.
   - Synchronize public guidance/instruction references, add focused regression
     evidence and prepare built assets for owner acceptance. Broad gates remain 12.
-- [ ] 11a67. Rebuild user details around owner-approved task-based forms.
+- [x] 11a67. Rebuild user details around owner-approved task-based forms.
   - Maximum three purposeful tabs: User, Security, Rules and exceptions; omit empty tabs.
   - Main tab: individual action buttons, editable identity/avatar/status, email forms,
     assignments and complete own-profile-equivalent presentation/delivery preferences.
@@ -6334,7 +6334,7 @@ commit. No task-created Docker/database resources needed cleanup; active service
 development/base test data, caches, backups and evidence remain preserved. Owner
 manual acceptance 11b and final automated verification/release 12 remain open.
 
-### Point 11a67 — User details rebuild (in progress)
+### Point 11a67 — User details rebuild
 
 2026-11-04 — Owner approved a complete rebuild rather than incremental tab
 polishing. Three tabs are a maximum, not a target: User, Security, Rules and
@@ -6404,3 +6404,37 @@ technical-token hiding, post-submit proof and existing target selection. Source
 asset/type build passed before the final readiness polish; rebuild the exact
 formatted source after mandatory hooks. These are focused diagnostics, not a full
 backend/frontend/quality or owner-acceptance claim.
+
+Readiness completion: implementation commit 42949a6b passed mandatory hooks.
+The supported forward modules phase applied exactly Auth user_details and Admin
+standalone_participants to local runa; no migration/reset or account/assignment
+replacement occurred. Evidence: .runtime/user-details/forward.log. The initial
+relative-path invocation did not open the primitive and performed no operation;
+the absolute supported source path completed successfully. Source assets and
+native error shells were rebuilt after hook formatting and after final density/
+paging repairs; type/build exit 0. Existing export-chunk size warnings remain
+advisory, with no new dependency.
+
+Final presentation polish keeps Profile/Avatar side by side on desktop, stacks
+mobile content, uses actual layout gaps across component boundaries, retains both
+setting and clearing forced password change, and keeps Latest entries available
+when an older session/device page is empty. Focused frontend selection remains
+3 PASS after these behavior repairs. No further backend behavior changed.
+
+Native compiled Nginx readiness completed for PL/EN, light/dark and 390px/1440px,
+including all three tabs, completed visible record loads, no technical revision/
+UUID text, preference controls and proof appearing only after operation submit.
+All eight language/width/theme combinations and both proof flows passed without
+page errors. Locale inspection overrides only the own-preference snapshot read;
+no account-management write was issued. The final diagnostic signs out only its
+own browser session. Current screenshots and the foreground diagnostic are under
+.runtime/artifacts/playwright/user-details and .runtime/user-details/readiness.mjs.
+These focused geometry/loading/proof checks prepare owner acceptance and do not
+claim complete E2E/security verification or owner sign-off.
+
+No task-created Docker container/network/image/volume needed removal. Supported
+backend runners removed their exact disposable runa_test_test_1 after execution;
+active development services, runa development data, base runa_test, Qdrant/model/
+builder caches, backups and verification evidence remain preserved. Point 11a67
+is complete; owner manual acceptance 11b and affected-area final verification/
+release 12 remain open.

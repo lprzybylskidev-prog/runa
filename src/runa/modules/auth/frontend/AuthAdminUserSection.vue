@@ -406,13 +406,16 @@ const fieldTitle = (key: string) =>
             >
               {{ t('No entries in this bounded result.') }}
             </p>
-            <div v-if="cursor && next" class="flex gap-2">
+            <div
+              v-if="cursor && (next || resource.result.value)"
+              class="flex gap-2"
+            >
               <Button size="sm" @click="resource.clear()">{{
                 t('Latest entries')
               }}</Button>
               <Button
                 size="sm"
-                :disabled="resource.busy.value"
+                :disabled="resource.busy.value || !next"
                 @click="older"
                 >{{ t('Older entries') }}</Button
               >
