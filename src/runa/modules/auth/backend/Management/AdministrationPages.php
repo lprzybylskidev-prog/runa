@@ -226,7 +226,7 @@ final class AdministrationPages implements ManagementPageProvider
         $command = static fn (string $title, string $operation, string $permission, array $inputs = [], ?string $proof = null, bool $destructive = false, bool $preview = false): array => compact('title', 'operation', 'permission', 'inputs', 'proof', 'destructive', 'preview');
 
         $commands = [
-            'creation' => ['create' => $command('Create account', 'identity.create', 'users.create', ['email', 'name', 'first_name', 'surname', 'login', 'active'])],
+            'creation' => ['create' => $command('Create account', 'identity.create', 'users.create', CreationSection::INPUTS, 'runa.auth.users.create')],
             'lifecycle' => ['change' => $command('Apply lifecycle change', 'identity.change', 'users.manage', ['operation', 'at', 'enabled'], destructive: true)],
             'invitations' => ['invite' => $command('Send or resend invitation', 'invitation.issue', 'invitations.manage'),
                 'invalidate' => $command('Invalidate invitation', 'invitation.invalidate', 'invitations.manage', destructive: true)],
@@ -294,7 +294,7 @@ final class AdministrationPages implements ManagementPageProvider
         $sections = [new ManagementSection('directory', 'User directory', 'runa.auth.users.read', null, 'directory', self::directoryFields(), view: 'table')];
         $fields = [
             'eligibility' => [self::field('blockers', 'Authentication blockers', read: 'eligibility.read'), self::field('restrictions', 'Operation restrictions', read: 'eligibility.read')],
-            'creation' => [self::field('email', 'Email', write: 'users.create', read: 'users.create'), ...self::names('users.create'), self::field('active', 'Active', 'boolean', 'users.create', 'users.create')],
+            'creation' => self::creationFields(),
             'lifecycle' => [self::field('operation', 'Lifecycle operation', 'dictionary', 'users.manage', 'users.read', choices: ['activate', 'deactivate', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change']),
                 self::field('at', 'Deadline (empty clears)', 'datetime', 'users.manage', 'users.read'), self::field('enabled', 'Enable selected flag', 'boolean', 'users.manage', 'users.read'),
                 ...array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), in_array($key, ['active', 'deleted', 'security_locked', 'password_change_required'], true) ? 'boolean' : 'datetime', read: 'users.read'), ['active', 'deleted', 'security_locked', 'password_change_required', 'activate_at', 'deactivate_at', 'attempt_locked_until'])],
@@ -337,7 +337,8 @@ final class AdministrationPages implements ManagementPageProvider
         $fields['lifecycle'][0] = self::field('operation', 'Lifecycle operation', 'dictionary', 'users.manage', 'users.read',
             choices: array_values(array_filter($fields['lifecycle'][0]->field->choices, $features->lifecycle(...))));
         foreach ($fields as $key => $items) {
-            $fields[$key] = array_values(array_filter($items, fn ($access) => $features->field($access->field->key)));
+            $fields[$key] = array_values(array_filter($items, fn ($access) => ($key === 'creation' && $access->field->key === 'password_change_required')
+                || $features->field($access->field->key)));
         }
         if (! $features->enabled('secondary')) {
             unset($fields['secondary']);
@@ -424,6 +425,30 @@ final class AdministrationPages implements ManagementPageProvider
         return [new ManagementPage('policy', 'Authentication policy', 'runa.auth.policy.read', $sections, order: 20)];
     }
 
+    private static function creationFields(): array
+    {
+        $fields = [self::field('email', 'Email', write: 'users.create', read: 'users.create'), ...self::names('users.create')];
+        foreach (['active' => ['Aktywne', 'Active'], 'email_verified' => ['Adres potwierdzony przez administratora', 'Email verified by administrator'],
+            'security_locked' => ['Blokada bezpieczeństwa', 'Security lock'], 'password_change_required' => ['Zmiana hasła przy pierwszym logowaniu', 'Change password at first sign-in']] as $key => [$pl, $en]) {
+            $fields[] = self::field($key, compact('pl', 'en'), 'boolean', 'users.create', 'users.create');
+        }
+        foreach (['activate_at' => ['Termin aktywacji', 'Activation date'], 'deactivate_at' => ['Termin dezaktywacji', 'Deactivation date'],
+            'attempt_locked_until' => ['Blokada logowania do', 'Login locked until']] as $key => [$pl, $en]) {
+            $fields[] = self::field($key, compact('pl', 'en'), 'datetime', 'users.create', 'users.create');
+        }
+        $fields[] = self::field('credential_mode', ['pl' => 'Pierwsze hasło', 'en' => 'Initial password'], 'dictionary', 'users.create', 'users.create', choices: ['none', 'invitation', 'password']);
+        foreach (['password' => ['Hasło', 'Password'], 'password_confirmation' => ['Powtórz hasło', 'Confirm password']] as $key => [$pl, $en]) {
+            $text = compact('pl', 'en');
+            $fields[] = new ManagementFieldAccess(new ManagementField($key, 'text', $text, $text, writable: true, sensitive: true, maxLength: 72), 'runa.auth.users.create', 'runa.auth.users.create');
+        }
+        $fields[] = self::field('identifier_mode', 'Login identifier', 'dictionary', read: 'users.create', choices: ['email', 'login', 'either']);
+        $fields[] = self::field('password_policy', 'Password policy', read: 'users.create');
+        $fields[] = self::field('invitation_allowed', 'Invitation available', 'boolean', read: 'invitations.manage');
+        $fields[] = self::field('email_verification_allowed', 'Administrative verification available', 'boolean', read: 'emails.verify_bypass');
+
+        return $fields;
+    }
+
     private static function names(string $grant): array
     {
         return array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), write: $grant, read: $grant), ['name', 'first_name', 'surname', 'login']);
@@ -446,7 +471,7 @@ final class AdministrationPages implements ManagementPageProvider
             if (! app(AdministrationFeatures::class)->command($key, $name)) {
                 continue;
             }
-            $requirement = $key === 'bulk_users' ? BulkUserOperations::proof($name) : ($spec['proof'] === null ? 'none' : 'both');
+            $requirement = $key === 'creation' ? 'password' : ($key === 'bulk_users' ? BulkUserOperations::proof($name) : ($spec['proof'] === null ? 'none' : 'both'));
             $title = $key === 'bulk_sessions' ? ['pl' => 'Unieważnij sesje', 'en' => 'Revoke sessions'] : $spec['title'];
             $result[] = new ManagementCommandDefinition($name, $title, new ManagementOperation(new ApiOperation($spec['operation'], 'runa.auth.'.$spec['permission']), $spec['inputs'], $requirement, revisionRequired: $key !== 'creation', previewRequired: $spec['preview']), $key, destructive: $spec['destructive'], intent: $key === 'creation' ? 'create' : 'action', proofAction: $spec['proof']);
         }
@@ -463,8 +488,8 @@ final class AdministrationPages implements ManagementPageProvider
             new ManagementBinding('avatar', AvatarSection::class, [$target(AuthAdministration::class, ['facts'], '2.0.0')]),
             new ManagementBinding('directory', Directory::class, [$target(AuthAdministration::class, ['users'], '2.0.0')]),
             new ManagementBinding('eligibility', EligibilitySection::class, [$target(AuthIdentities::class, ['identity', 'eligibility'])]),
-            new ManagementBinding('creation', CreationSection::class, [$target(AuthLifecycle::class, ['create'], '2.0.0')]),
-            new ManagementBinding('lifecycle', LifecycleSection::class, [$target(AuthAdministration::class, ['lifecycle'], '2.0.0'), $target(AuthLifecycle::class, ['change'], '2.0.0')]),
+            new ManagementBinding('creation', CreationSection::class, [$target(AuthLifecycle::class, ['create'], '2.1.0')]),
+            new ManagementBinding('lifecycle', LifecycleSection::class, [$target(AuthAdministration::class, ['lifecycle'], '2.0.0'), $target(AuthLifecycle::class, ['change'], '2.1.0')]),
             new ManagementBinding('invitations', InvitationSection::class, [$target(AuthAdministration::class, ['facts'], '2.0.0'), $identity, $target(AuthInvitations::class, ['invite', 'invalidate'])]),
             new ManagementBinding('primary_email', EmailSection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthProfiles::class, ['changeEmail', 'replaceVerifiedEmail', 'requireVerification'], '2.0.0')]),
             new ManagementBinding('secondary', SecondarySection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthProfiles::class, ['addSecondary', 'changeSecondary', 'removeSecondary'], '2.0.0')]),

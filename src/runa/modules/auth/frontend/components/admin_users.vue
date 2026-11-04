@@ -396,7 +396,22 @@ watch(
       :busy="form.busy.value"
       @update:model-value="!$event && close()"
     >
-      <AdminForm :controller="form">
+      <template v-if="mode === 'create'">
+        <AdminComponentBoundary
+          v-for="section in sections"
+          :key="section.key"
+          :identity="controller.page.value!.revision + ':' + section.key"
+          :on-failure="(failed) => form.setAvailable(section.key, !failed)"
+        >
+          <AdminSectionContent
+            :page="controller"
+            :section="section"
+            :controller="form"
+            :components="components"
+          />
+        </AdminComponentBoundary>
+      </template>
+      <AdminForm v-else :controller="form">
         <Tabs
           class="min-w-0"
           v-if="mode === 'record'"

@@ -8,8 +8,8 @@ export const adminMessages: AdminMessages = {
     'Termin aktywacji musi poprzedzać termin dezaktywacji. Sprawdź zaznaczone konta i terminy.',
   'This operation cannot be applied to deleted accounts. Change the selection or restore them first.':
     'Tej operacji nie można wykonać na usuniętych kontach. Zmień zaznaczenie lub najpierw przywróć konta.',
-  'An invitation cannot be sent to an account that already has a password or cannot sign in.':
-    'Nie można wysłać zaproszenia do konta, które ma już hasło lub nie może się logować.',
+  'An invitation requires a passwordless account without security locks, deletion or reached deactivation.':
+    'Zaproszenie wymaga konta bez hasła, blokad bezpieczeństwa, usunięcia i osiągniętego terminu dezaktywacji.',
   'A password reset requires an account with a password that can sign in.':
     'Reset hasła wymaga konta z hasłem, które może się logować.',
   'This operation cannot be applied to the current account selection. Check the account states and try again.':

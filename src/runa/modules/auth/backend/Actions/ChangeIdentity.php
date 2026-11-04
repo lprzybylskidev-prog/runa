@@ -7,8 +7,12 @@ use Closure;
 use Illuminate\Database\Connection;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
+use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\Modules\Audit\Contracts\AuditEntity;
 use Runa\Modules\Audit\Contracts\AuditEvent;
@@ -16,11 +20,14 @@ use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Auth\Contracts\AuthLifecycle;
 use Runa\Modules\Auth\Contracts\Identity;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
+use Runa\Modules\Auth\Contracts\IdentitySetup;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Support\EntryPassword;
 use Runa\Modules\Auth\Support\LifecyclePlan;
 use Runa\Support\Modules\Api\ModuleApis;
+use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Trusted owning use cases. Administrative ingress additionally requires API permission. */
@@ -31,17 +38,48 @@ final readonly class ChangeIdentity implements AuthLifecycle
         private AuthorityGuard $authority, private ModuleSettings $settings,
     ) {}
 
-    public function create(NewIdentity $input): Identity
+    public function create(NewIdentity $input, #[\SensitiveParameter] ?IdentitySetup $setup = null): Identity
     {
-        return $this->transaction('identity.create', null, function (Connection $connection) use ($input): Identity {
+        if ($setup?->credentials === 'invitation') {
+            app(OperationGuard::class)->enter('runa.auth', new ApiOperation('invitation.issue', 'runa.auth.invitations.manage'));
+        }
+        if ($setup?->emailVerified) {
+            app(OperationGuard::class)->enter('runa.auth', new ApiOperation('email.admin_bypass', 'runa.auth.emails.verify_bypass'));
+        }
+
+        return $this->transaction('identity.create', null, function (Connection $connection) use ($input, $setup): Identity {
             // Read settings while holding the registry lock, before domain/advisory locks.
-            $this->registryLock($connection);
+            // Creation may enqueue invitation delivery; take the work-compatible lock first.
+            $connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first()
+                ?? throw new \RuntimeException('Module registry unavailable.');
             $mode = $this->settings->value('runa.auth', 'identifier_mode');
             if ($mode === 'login' && $input->login === null) {
                 throw new IdentityConflict('login_required');
             }
             $this->lock->acquire($connection);
             $this->guard($connection, []);
+            if ($setup !== null) {
+                app(StepUp::class)->assertVerified('runa.auth.users.create', $setup->emailVerified ? 'both' : 'password', everyAction: true);
+                if ($setup->emailVerified && ! $this->settings->boolean('runa.auth', 'admin_email_verification_bypass')) {
+                    throw new OperationRejected('email_bypass_disabled', 'runa.auth', 'identity.create', 403);
+                }
+                $now = CarbonImmutable::now('UTC');
+                foreach ([$setup->activateAt, $setup->deactivateAt, $setup->attemptLockedUntil] as $moment) {
+                    if ($moment !== null && CarbonImmutable::parse($moment)->lte($now)) {
+                        throw new IdentityConflict('schedule_must_be_future');
+                    }
+                }
+                if (($input->active && $setup->activateAt !== null)
+                    || ($setup->activateAt !== null && $setup->deactivateAt !== null && CarbonImmutable::parse($setup->activateAt)->gte(CarbonImmutable::parse($setup->deactivateAt)))) {
+                    throw new IdentityConflict('invalid_schedule_order');
+                }
+                if ($setup->credentials === 'invitation' && ($setup->securityLocked || $setup->attemptLockedUntil !== null)) {
+                    throw new IdentityConflict('invitation_unavailable');
+                }
+                if ($setup->password !== null) {
+                    Validator::make(['password' => $setup->password, 'password_confirmation' => $setup->password], ['password' => EntryPassword::rules()])->validate();
+                }
+            }
             $user = new User;
             $user->forceFill([
                 'name' => $input->name, 'first_name' => $input->firstName, 'surname' => $input->surname,
@@ -50,11 +88,32 @@ final readonly class ChangeIdentity implements AuthLifecycle
                 'active' => $input->active,
                 'version' => 1, 'security_version' => 1,
                 'verification_required' => $this->settings->value('runa.auth', 'email_verification') !== 'disabled',
+                'email_verified_at' => $setup?->emailVerified ? CarbonImmutable::now('UTC') : null,
+                'password' => $setup?->password === null ? null : Hash::make($setup->password),
+                'password_changed_at' => $setup?->password === null ? null : CarbonImmutable::now('UTC'),
+                'activate_at' => $setup?->activateAt, 'deactivate_at' => $setup?->deactivateAt,
+                'security_locked' => $setup?->securityLocked ?? false,
+                'attempt_locked_until' => $setup?->attemptLockedUntil,
+                'password_change_required' => $setup?->passwordChangeRequired ?? false,
             ]);
             app(EmailAddresses::class)->available($connection, $user, $input->email, true);
             $user->save();
             // No names, addresses, login, password or token in lifecycle history.
-            $this->record('identity.created', $user, ['active' => ['old' => null, 'new' => $input->active]]);
+            $changes = ['active' => ['old' => null, 'new' => $input->active]];
+            if ($setup !== null) {
+                foreach (['activate_at', 'deactivate_at', 'security_locked', 'attempt_locked_until', 'renewal_required'] as $key) {
+                    $changes[$key] = ['old' => null, 'new' => $this->state($user)[$key]];
+                }
+            }
+            $this->record('identity.created', $user, $changes);
+            if ($setup?->emailVerified) {
+                $this->record('email.admin_verified', $user, ['verified' => ['old' => false, 'new' => true]]);
+            }
+            if ($setup?->credentials === 'password') {
+                $this->record('password.initial_set', $user, []);
+            } elseif ($setup?->credentials === 'invitation' && ! app(EntryTokens::class)->issueLocked($connection, $user, 'invitation')) {
+                throw new IdentityConflict('invitation_unavailable');
+            }
 
             return $user->identity();
         });

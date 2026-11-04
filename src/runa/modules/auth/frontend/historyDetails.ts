@@ -162,6 +162,14 @@ export const historyEventNames: Record<string, readonly [string, string]> = {
     'Account policy exception revoked',
   ],
   'identity.created': ['Utworzenie konta', 'Account created'],
+  'email.admin_verified': [
+    'Administracyjne potwierdzenie e-maila',
+    'Email verified by administrator',
+  ],
+  'password.initial_set': [
+    'Ustawienie pierwszego hasła przez administratora',
+    'Initial password set by administrator',
+  ],
   'identity.approve': ['Zatwierdzenie konta', 'Account approved'],
   'identity.activate': ['Aktywacja konta', 'Account activated'],
   'identity.restore': ['Przywrócenie konta', 'Account restored'],

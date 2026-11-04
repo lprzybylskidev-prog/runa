@@ -73,7 +73,9 @@ final readonly class EntryTokens implements AuthInvitations
             || ! in_array($purpose, ['invitation', 'verification', 'reset', 'email_otp'], true)) {
             throw new \LogicException('Invalid Auth token transaction.');
         }
-        if (! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()
+        if (! ($purpose === 'invitation'
+            ? $this->identities->mayAcceptInvitation($user, CarbonImmutable::now('UTC'))
+            : $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate())
             || ($purpose === 'invitation' && $user->password !== null)
             || ($purpose === 'verification' && $user->email_verified_at !== null)
             || ($purpose === 'reset' && $user->password === null)
@@ -128,7 +130,9 @@ final readonly class EntryTokens implements AuthInvitations
             if ($user === null || $token === null || $token->consumed_at !== null || $token->invalidated_at !== null
                 || CarbonImmutable::parse($token->expires_at)->lte(CarbonImmutable::now('UTC'))
                 || $token->recipient !== $user->email || $token->security_version !== $user->security_version
-                || ! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()
+                || ! ($purpose === 'invitation'
+                    ? $this->identities->mayAcceptInvitation($user, CarbonImmutable::now('UTC'))
+                    : $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate())
                 || ($purpose === 'invitation' && ($user->password !== null || $password === null))) {
                 throw new OperationRejected('entry_token_invalid', 'runa.auth', 'entry.complete', 422);
             }

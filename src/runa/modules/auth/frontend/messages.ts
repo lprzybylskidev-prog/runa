@@ -92,6 +92,8 @@ const pl = {
   symbolsHint: 'Co najmniej jeden symbol.',
   unavailable: 'Nie można teraz połączyć się z usługą. Spróbuj ponownie.',
   invalid_credentials: 'Nie można zalogować się przy użyciu tych danych.',
+  account_inactive:
+    'Konto jest nieaktywne. Logowanie będzie możliwe po jego aktywacji.',
   security_proof_invalid:
     'Nie udało się potwierdzić danych bezpieczeństwa. Sprawdź hasło i aktualny kod.',
   password_reused: 'Wybierz hasło inne niż ostatnio używane.',
@@ -204,6 +206,8 @@ const en: Copy = {
   symbolsHint: 'At least one symbol.',
   unavailable: 'The service cannot be reached right now. Try again.',
   invalid_credentials: 'Unable to sign in with these credentials.',
+  account_inactive:
+    'This account is inactive. You can sign in after it is activated.',
   security_proof_invalid:
     'Unable to verify your security details. Check your password and a current code.',
   password_reused: 'Choose a password you have not used recently.',

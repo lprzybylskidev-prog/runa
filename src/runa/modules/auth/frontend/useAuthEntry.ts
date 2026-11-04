@@ -516,6 +516,7 @@ export function useAuthEntry(
     [
       'unavailable',
       'invalid_credentials',
+      'account_inactive',
       'security_proof_invalid',
       'password_reused',
       'validation_failed',

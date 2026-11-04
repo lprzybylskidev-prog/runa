@@ -3,6 +3,7 @@ import { useAdminLocale } from '@/runa/admin';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import AdminAvatar from '../AuthAdminAvatar.vue';
 import AuthAdminBulkAction from '../AuthAdminBulkAction.vue';
+import AuthAdminCreation from '../AuthAdminCreation.vue';
 import { computed, watch } from 'vue';
 import {
   formatApplicationInstant,
@@ -139,8 +140,9 @@ function select(row: Record<string, AdminJson>) {
 }
 </script>
 <template>
+  <AuthAdminCreation v-if="section.key === 'creation'" v-bind="props" />
   <AuthAdminBulkAction
-    v-if="['bulk_sessions', 'bulk_users'].includes(section.key)"
+    v-else-if="['bulk_sessions', 'bulk_users'].includes(section.key)"
     v-bind="props"
   />
   <Card v-else>

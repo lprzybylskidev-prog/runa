@@ -880,6 +880,21 @@ reassessment before resuming point 3; completed point history remains evidence.
     unrelated configuration preservation and unsafe private-file rejection.
     Synchronize current environment/seeding guidance and assess both instruction
     products. Only focused diagnostics here; broad verification remains point 12.
+- [x] 11a63. Deliver comprehensive Auth account creation and pre-activation invitations.
+  - Owner decision, 2026-11-04: send invitations immediately, including inactive and
+    future-activation accounts. Acceptance sets the first password and verifies the
+    email without activating the account or issuing a session. Refuse inactive login
+    with a localized account-inactive message only after correct credentials.
+  - Owner decision, 2026-11-04: skipping email verification means deliberate
+    administrative verification, retaining the owning opt-in, grant, proof and Audit.
+  - Deliver an atomic owning creation contract for initial credentials/delivery,
+    activation/deactivation schedules, security/attempt locks and forced password
+    change; validate dates, password policy and incompatible choices server-side.
+  - Supply a responsive PL/EN creation presentation with conditional fields, shared
+    controls, explicit naming mode and a truthful access/delivery summary. Preserve
+    the public replacement/controller seams and secret-safe reads and failures.
+  - Update current contracts/changelog, author focused regressions and prepare current
+    assets/runtime for owner acceptance. Broad verification remains point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6012,3 +6027,102 @@ No database reset, seeding or credential rotation occurred. Existing development
 containers were started and preserved; no disposable test container/network/volume
 was introduced or removed. Development/test data, Qdrant/model caches, backups and
 verification reports remain preserved.
+
+### Point 11a63 — Configurable account creation and pre-activation invitations
+
+Owner decisions, 2026-11-04: invitations are delivered immediately and permit first
+password setup/email confirmation before activation. Login remains refused until
+activation, with an account-inactive message after correct credentials. Skipping
+email verification means deliberate administrative verification, retaining Auth's
+existing opt-in, grant, stronger proof and Audit. These decisions resolve the
+creation review's behavioral questions within this roadmap; release metadata is
+unchanged and no separate roadmap is activated.
+
+AuthLifecycle advances additively to API 2.1.0. Its create method accepts optional
+IdentitySetup for initial password/invitation/no-delivery, independent future
+activation/deactivation, administrative email verification, security/attempt locks
+and forced first-login password change. Identity-only creation remains the useful
+minimal form of that same entrypoint. There is no duplicate create API or execution
+adapter. All current exact-version consumers/bindings are updated. Auth remains
+its unpublished 3.0.0 candidate and Admin its creation-roadmap 0.1.0 candidate;
+these changes do not introduce storage, migrations, dependencies or another module
+version-only forward edge.
+
+Configured creation holds the work-compatible registry/authority locks and commits
+identity, native hash, safe Audit, optional invitation token/durable delivery and
+proof consumption together. It uses current password policy; setting an initial
+password sends no invitation/reset/password-change email. Password proof protects
+configured creation, escalating to both factors for administrative verification.
+A bounded proof-selection preview contains neither secrets nor a password-derived
+fingerprint; execution independently checks the actual options. The secret-bearing
+DTO has public readonly boundary values, explicit JSON omission and debug redaction.
+Administration reads expose password set-state only. Reversed/past schedules,
+active-now plus future activation, credentials in another mode and invitation with
+initial security locks refuse without partial creation. Initial forced change stays
+available when periodic password expiry is disabled; otherwise the shared feature
+filter would remove an input and hide the whole creation command.
+
+Invitation issuance, SMTP delivery, acceptance and bulk classification share the
+owning pre-activation eligibility rule. Inactive/before-activation blockers alone
+permit invitations; deletion, reached deactivation, security/attempt locks,
+operator recovery and token recipient/generation/expiry/replay checks remain.
+Acceptance never activates or authenticates the user. Login reports account_inactive
+only for correct credentials and exclusively lifecycle-inactive blockers; incorrect,
+unknown and other blocked accounts keep invalid_credentials. Existing source/
+identifier abuse counters, safe refusal Audit and session admission guards remain.
+
+AuthAdminCreation is the public default creation presentation, using shared Form,
+FormSection, RadioGroup, typed datetime inputs, notifications and owning Admin form/
+proof controllers. It replaces the generic creation grid with explicit naming,
+activity, password/invitation, email verification, optional security sections and
+an access/delivery summary. It owns its Form outside the record/bulk AdminForm,
+handles Enter, initial read failure/retry, local errors, explicit proof/resubmission,
+secret clearing on execution outcome and proof cleanup on disposal. The public
+Auth section/page replacement seams remain. Roles/grants, policy exceptions,
+secondary addresses and avatar management retain their existing separate protocols
+after creation; enrollment, sessions/trust and historical facts cannot be invented
+as initial editable state.
+
+Current Auth API/administration/transport/entry UI guides and both changelogs are
+synchronized, including safe account-history labels/events and the invitation
+refusal copy used by Admin. This also removes obsolete expiry-command wording and
+clarifies the existing StepUp 1.1.0 version in the affected Auth guide. Root AGENTS,
+owner skills and the separately authored customer instructions were assessed:
+the existing security, public-composition and canonical-guide references already
+cover these capabilities. No reusable operating rule or new generic UI primitive
+requires duplicated instructions or customer authority over protected source.
+
+Focused evidence is under .runtime/auth-creation. Six selected backend creation,
+pre-activation invitation and login cases passed (114 assertions); five current
+creation/naming/invitation/bulk consumers passed (107 assertions). A subsequent
+focused no-periodic-expiry regression passed (16 assertions). These cover actual
+mail handoff, manual/scheduled activation, session absence before activation,
+verified/password/scheduled/locked initial state, grant/validation refusal and
+creation/token/proof rollback on Audit failure. Initial fixture issues (Mail fake
+returning no SMTP result, unverified administrator under global verification,
+expected Audit HTTP status and missing work-column name) were corrected without
+weakening production behavior. Native failed reports remain preserved.
+
+Twelve selected frontend cases passed: five creation cases cover conditional
+controls, Enter/local validation, explicit proof/submission, successful reset,
+failed-write secret clearing/nonsecret preservation, no replay and initial
+read-error recovery; seven existing cases retain safe business-refusal feedback.
+An initial success fixture omitted the mandatory operation_id result field; a
+read-error assertion then needed to inspect the shared notification contract
+because its toast is rendered outside the wrapper. Both were corrected. One
+concurrent test launch was refused by the shared suite lock; subsequent supported
+execution respected that lock. No runner or hook was bypassed.
+
+The supported frontend build passed after formatting. Native Nginx/browser checks
+confirm the actual creation read/form, naming, password/invitation and activation
+mode switches at 1440px/390px in light/dark themes, with no modal horizontal
+overflow, page exception or creation write. Screenshots remain under
+.runtime/artifacts/playwright/auth-creation. A first diagnostic used an exact label
+selector that excluded the required marker; the corrected accessible textbox
+selector passed. This is targeted readiness, not owner manual acceptance or the
+final quality graph. Manual point 11b and final verification/release 12 remain open.
+
+Supported runners removed only their disposable runa_test_test_1 workers. The base
+runa_test, development accounts/data, active services, model/Qdrant caches, backups
+and all reports/screenshots were preserved. No Docker container, network, image,
+volume, database reset or credential rotation was created/performed for this point.

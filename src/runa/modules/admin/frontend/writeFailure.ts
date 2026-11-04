@@ -17,7 +17,7 @@ export function writeFailure(
     identity_deleted:
       'This operation cannot be applied to deleted accounts. Change the selection or restore them first.',
     invitation_unavailable:
-      'An invitation cannot be sent to an account that already has a password or cannot sign in.',
+      'An invitation requires a passwordless account without security locks, deletion or reached deactivation.',
     password_reset_unavailable:
       'A password reset requires an account with a password that can sign in.',
     user_change_refused:

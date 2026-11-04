@@ -211,8 +211,9 @@ final readonly class BulkUsers implements AuthBulkUsers
         }
         $now = CarbonImmutable::now('UTC');
 
-        return $users->filter(fn (User $user): bool => ($change->operation === 'invite' ? $user->password !== null : $user->password === null)
-            || ! app(LookupIdentity::class)->evaluate($user, $now)->mayAuthenticate())->pluck('public_id')->all();
+        return $users->filter(fn (User $user): bool => $change->operation === 'invite'
+            ? ! app(LookupIdentity::class)->mayAcceptInvitation($user, $now)
+            : ($user->password === null || ! app(LookupIdentity::class)->evaluate($user, $now)->mayAuthenticate()))->pluck('public_id')->all();
     }
 
     private function refusal(IdentityConflict $error, string $operation): OperationRejected

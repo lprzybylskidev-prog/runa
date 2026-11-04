@@ -4,7 +4,7 @@ namespace Runa\Modules\Auth\Contracts;
 
 use Runa\Modules\Auth\Support\Identifiers;
 
-/** Credentials deliberately stay outside module API values. */
+/** Identity data is separate from the optional secret-bearing initial setup. */
 final readonly class NewIdentity
 {
     public string $email;

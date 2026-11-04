@@ -208,7 +208,7 @@ it('keeps Auth lifecycle and revocation atomic when Audit fails even inside a ca
 it('denies Auth public reads and writes before Permissions and denies lifecycle without a trusted invariant participant', function (): void {
     $apis = app(ModuleApis::class);
     $identities = $apis->resolve('runa.auth', AuthIdentities::class, '1.0.0');
-    $lifecycle = $apis->resolve('runa.auth', AuthLifecycle::class, '2.0.0');
+    $lifecycle = $apis->resolve('runa.auth', AuthLifecycle::class, '2.1.0');
     $identity = app(ChangeIdentity::class)->create(new NewIdentity('private@example.test', name: 'Private'));
     expect(fn () => $identities->identity($identity->publicId))->toThrow(OperationRejected::class)
         ->and(fn () => $identities->eligibility($identity->publicId))->toThrow(OperationRejected::class)

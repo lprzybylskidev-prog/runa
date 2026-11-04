@@ -31,8 +31,8 @@ stable; private module implementation is not an application extension seam.
 ## Public values and access
 
 Resolve the declared contract version through `ModuleApis`: AuthProfiles uses
-`2.0.0`; AuthLifecycle, AuthAdministration, AuthBulkUsers and AuthBulkSessions use `2.0.0`;
-other current Auth interfaces, including
+`2.0.0`; AuthLifecycle uses `2.1.0`; AuthAdministration, AuthBulkUsers and AuthBulkSessions use `2.0.0`;
+AuthStepUp uses `1.1.0`; other current Auth interfaces, including
 AuthIdentities below, use `1.0.0`.
 Administrative profile composition follows the [native phase contract](../../architecture/module-transactions.md).
 
@@ -54,14 +54,18 @@ No bigint ID, address, login, model, credential, session or proof is exposed.
 Eligibility reasons are authorized server information, never anonymous responses.
 Permission checks use the current Permissions grants; missing readiness or grants deny these operations.
 
-`AuthLifecycle` version `2.0.0` offers `create(NewIdentity): Identity`, requiring
+`AuthLifecycle` version `2.1.0` offers `create(NewIdentity, ?IdentitySetup = null): Identity`, requiring
 `runa.auth.users.create`, and `change(publicId, expectedVersion, LifecycleChange)`
 requiring `runa.auth.users.manage`. These are administrative backend contracts.
 The Auth-owned public creation DTO has the complete signature
 `NewIdentity::__construct(string $email, ?string $name = null, ?string $firstName = null,
 ?string $surname = null, ?string $login = null, bool $active = false)`. It lives under
 `backend/Contracts` and is consumed through the guarded lifecycle API at runtime.
-It contains no credentials or independent approval state. Auth-owned [administration declarations and guarded reads](administration.md) expose them through the existing Admin command transport without changing these signatures. A permission does not substitute for the separate authority
+NewIdentity contains no credentials or independent approval state. Optional IdentitySetup
+configures initial credentials, verification, schedules and locks through the
+[creation contract](administration.md#pages-and-independent-actions). That guide
+owns its complete signature, permissions, proof and secret-handling requirements.
+A permission does not substitute for the separate authority
 invariant participant; `AuthorityGuard` lazily resolves the trusted Permissions
 participant and refuses missing/stale integration. Deactivate/delete exclude the
 target from usable administrators; non-removing work uses an empty exclusion set.

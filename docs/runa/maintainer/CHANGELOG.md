@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Deliver comprehensive atomic account creation through AuthLifecycle 2.1.0 with initial password/invitation choices, independent activation/deactivation schedules, administrative email verification, initial locks and forced password change. Supply a conditional PL/EN form and access/delivery summary. Send and accept invitations before activation without issuing a session; show account_inactive only after correct login credentials. Preserve owning policy/grants/proofs, Audit and token security guards.
+
 - Repair editor reopen with private development seed settings: accept and preserve the documented overlay across profile/device changes, materialize explicit entries into Laravel's local environment and keep credentials out of profile output and generated Compose overrides. Reopen still never seeds or migrates data.
 
 - Skip ineligible accounts in Auth bulk invitations/password resets, report their counts separately from protected superadministrators and fingerprint eligibility through execution. Preserve specific business refusal messages instead of presenting every refusal as a stale write; review all bulk operation previews and owning execution regressions.

@@ -94,7 +94,8 @@ Current configuration filters both declarations and account-state projection.
 Disabled email verification removes status/date/require-verification; verified
 replacement also requires admin bypass opt-in. Zero password_expiry_days removes
 expiry/password-change-required display and its lifecycle command, while ordinary
-password reset remains available. Registration activation policy applies to public
+password reset remains available. The initial password-change choice in creation
+remains independent of periodic password expiry. Registration activation policy applies to public
 registration; administrator-controlled registration creates inactive accounts.
 The ordinary activation action admits these accounts. There are no separate
 approval facts, filters or commands; NewIdentity exposes only the active flag. Disabled secondary emails, trust,
@@ -121,28 +122,84 @@ availability, page/section/field grants and native operation checks. The Users p
 requires `runa.auth.identities.read`. Selecting an account uses its UUID and the
 shared form controller's dirty-navigation confirmation, never a foreign model.
 
-| Section / action                | Native API and grants beyond page entry                                          | Revision, proof and behavior                                                                                                             |
-| ------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| directory / lifecycle           | AuthAdministration; `users.read`, extra `users.deleted.read` as above            | Bounded cursors / current account version                                                                                                |
-| eligibility                     | AuthIdentities; `eligibility.read`                                               | Current blockers/restrictions; no credential projection                                                                                  |
-| profile / access                | AuthProfiles 2.0.0 / Permissions contribution                                    | Existing native atomic Save; [composition](../admin/composition.md)                                                                      |
-| creation                        | AuthLifecycle.create; `users.create`                                             | No subject, revision 0, names or first/surname, normalized email/login; no credentials                                                   |
-| lifecycle change                | AuthLifecycle.change; `users.manage`                                             | Exact account version; explicit confirmation, last-eligible administrator and identifier reuse/restore checks                            |
-| invitation / invalidate         | AuthInvitations; `invitations.manage`                                            | Exact version, resend rotates private token; invalidate confirms; no secret result                                                       |
-| primary email / change          | AuthProfiles.changeEmail; `profiles.read`, `emails.manage`                       | Version, both-factor action `runa.auth.email.admin_change`, native recipient confirmations                                               |
-| verified replacement            | AuthProfiles.replaceVerifiedEmail; `profiles.read`, `emails.verify_bypass`       | Version, policy opt-in, confirmation, both-factor `runa.auth.email.admin_bypass`                                                         |
-| require verification            | AuthProfiles.requireVerification; `profiles.read`, `emails.reverify`             | Version, confirmation, both-factor `runa.auth.email.require_verification`                                                                |
-| secondary add/change/remove     | AuthProfiles; `profiles.read`, `secondary.read`, `secondary.manage`              | Version, address UUID, native policy/limits/verification; remove confirms                                                                |
-| sessions list/revoke/revoke-all | AuthSessions; `sessions.manage`                                                  | Target UUID and session UUID; native bounded before-cursor, explicit revoke confirmation                                                 |
-| trusted devices list/revoke     | AuthSecurity; `trust.manage`                                                     | Bounded before-cursor; device UUID, confirmation; no token/factor metadata                                                               |
-| password reset                  | AuthSecurity.requestPasswordReset; `passwords.reset`                             | Version, confirmation, both-factor `runa.auth.password.admin_reset`; private reset delivery                                              |
-| factor reset                    | AuthSecurity.resetFactors; `two_factor.reset`                                    | Version, confirmation, both-factor `runa.auth.two_factor.reset`; native authority/revocation                                             |
-| preferences reset               | AuthPreferences.resetAccount; `profiles.read`, `preferences.reset`               | Account preference revision, confirmation; no foreign preference editor                                                                  |
-| exceptions                      | AuthPolicies; `policy.exceptions`                                                | Policy and per-key exception revisions, bounded reason/expiry, both-factor `runa.auth.policy.exception`; null value revokes              |
-| policy / history / restore      | AuthPolicies + owning ModuleSettings; `policy.read`, `policy.write`              | Exact settings revision/generation, reviewed differences and consequences, both-factor `runa.auth.policy.publish`; restore also confirms |
-| bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation; no additional operation proof                 |
+| Section / action                | Native API and grants beyond page entry                                                                                                 | Revision, proof and behavior                                                                                                                                                            |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| directory / lifecycle           | AuthAdministration; `users.read`, extra `users.deleted.read` as above                                                                   | Bounded cursors / current account version                                                                                                                                               |
+| eligibility                     | AuthIdentities; `eligibility.read`                                                                                                      | Current blockers/restrictions; no credential projection                                                                                                                                 |
+| profile / access                | AuthProfiles 2.0.0 / Permissions contribution                                                                                           | Existing native atomic Save; [composition](../admin/composition.md)                                                                                                                     |
+| creation                        | AuthLifecycle 2.1.0 create; `users.create`, `invitations.manage` for invitation, `emails.verify_bypass` for administrative verification | No subject, revision 0; configured creation uses single-use `runa.auth.users.create` (password, both factors for administrative verification), current password policy and atomic Audit |
+| lifecycle change                | AuthLifecycle.change; `users.manage`                                                                                                    | Exact account version; explicit confirmation, last-eligible administrator and identifier reuse/restore checks                                                                           |
+| invitation / invalidate         | AuthInvitations; `invitations.manage`                                                                                                   | Exact version, resend rotates private token; invalidate confirms; no secret result                                                                                                      |
+| primary email / change          | AuthProfiles.changeEmail; `profiles.read`, `emails.manage`                                                                              | Version, both-factor action `runa.auth.email.admin_change`, native recipient confirmations                                                                                              |
+| verified replacement            | AuthProfiles.replaceVerifiedEmail; `profiles.read`, `emails.verify_bypass`                                                              | Version, policy opt-in, confirmation, both-factor `runa.auth.email.admin_bypass`                                                                                                        |
+| require verification            | AuthProfiles.requireVerification; `profiles.read`, `emails.reverify`                                                                    | Version, confirmation, both-factor `runa.auth.email.require_verification`                                                                                                               |
+| secondary add/change/remove     | AuthProfiles; `profiles.read`, `secondary.read`, `secondary.manage`                                                                     | Version, address UUID, native policy/limits/verification; remove confirms                                                                                                               |
+| sessions list/revoke/revoke-all | AuthSessions; `sessions.manage`                                                                                                         | Target UUID and session UUID; native bounded before-cursor, explicit revoke confirmation                                                                                                |
+| trusted devices list/revoke     | AuthSecurity; `trust.manage`                                                                                                            | Bounded before-cursor; device UUID, confirmation; no token/factor metadata                                                                                                              |
+| password reset                  | AuthSecurity.requestPasswordReset; `passwords.reset`                                                                                    | Version, confirmation, both-factor `runa.auth.password.admin_reset`; private reset delivery                                                                                             |
+| factor reset                    | AuthSecurity.resetFactors; `two_factor.reset`                                                                                           | Version, confirmation, both-factor `runa.auth.two_factor.reset`; native authority/revocation                                                                                            |
+| preferences reset               | AuthPreferences.resetAccount; `profiles.read`, `preferences.reset`                                                                      | Account preference revision, confirmation; no foreign preference editor                                                                                                                 |
+| exceptions                      | AuthPolicies; `policy.exceptions`                                                                                                       | Policy and per-key exception revisions, bounded reason/expiry, both-factor `runa.auth.policy.exception`; null value revokes                                                             |
+| policy / history / restore      | AuthPolicies + owning ModuleSettings; `policy.read`, `policy.write`                                                                     | Exact settings revision/generation, reviewed differences and consequences, both-factor `runa.auth.policy.publish`; restore also confirms                                                |
+| bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants                                                        | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation; no additional operation proof                                                                |
 
 Account creation is in the directory Card header's right actions area. All
+creation options are owned by Auth. `AuthLifecycle::create(NewIdentity $input,
+?IdentitySetup $setup = null): Identity` is the guarded runtime entrypoint. Both
+DTOs live in Auth's public `backend/Contracts`; private persistence/orchestration
+stays in `Actions/ChangeIdentity`. The optional setup describes initial Auth state;
+omitting it creates only the identity. Its complete signature is:
+
+```php
+IdentitySetup::__construct(string $credentials = 'none', ?string $password = null,
+    bool $emailVerified = false, ?string $activateAt = null,
+    ?string $deactivateAt = null, bool $securityLocked = false,
+    ?string $attemptLockedUntil = null, bool $passwordChangeRequired = false)
+```
+
+`credentials` is `none|invitation|password`; only password mode accepts a secret
+or forced first-login password change. The password parameter/property is a
+write-only secret at ingress: default JSON/debug serialization omits or redacts
+it; no read/response contains it. Configured creation consumes password proof,
+escalated to both factors for administrative verification. The bounded creation
+preview selects that requirement without echoing or fingerprinting secrets; the
+writer independently repeats it against the submitted options. Dates use canonical UTC seconds and must
+be future moments; activation precedes deactivation. Active-now and scheduled
+activation are exclusive. Initial password hashing uses current owning policy and
+does not send invitation/reset/password-change mail. Invitation mode issues its
+token and durable delivery work immediately in the creation transaction, including
+inactive/future-activation accounts; explicit initial security/attempt locks are
+incompatible with invitation mode. Normal transport, expiry, single-use, recipient,
+generation, deletion and other security guards remain. Invitation acceptance verifies
+the email and sets the first password without activating or authenticating the
+account. Administrative verification also requires the existing bypass policy
+opt-in and emits an explicit safe `email.admin_verified` event. Initial credentials
+emit `password.initial_set` without secret values. Failure rolls back the entire
+creation, token/work, success Audit and proof consumption.
+
+Management `creation` uses `CreationSection::INPUTS`, plus read-only identifier and
+password-policy metadata. Password/confirmation reads expose only `{set:false}`;
+they never return a draft or hash. Capability fields use their own invitation/
+verification grants, while the native writer always repeats authorization.
+The default creation presentation groups identity, account activity, first password,
+verification and optional security controls with an access/delivery summary. Roles,
+direct grants, policy exceptions, secondary addresses and avatar changes retain
+their separate existing owning workflows after creation; enrolled factors, recovery
+codes, sessions/trust and historical timestamps are not editable initial facts.
+
+Public frontend `AuthAdminCreation` from `@/runa/auth` accepts
+`AdminSectionPresentationProps & {components?: AdminComponentRegistry}` (types from
+`@/runa/admin`), owns its Form and has no emitted events or slots. Its implementation
+lives in `frontend/AuthAdminCreation.vue`; the default Auth section delegates creation
+to it outside the record/bulk AdminForm. It uses the supplied AdminFormController
+for drafts, guarded reads, proof selection, writes, safe errors and reconciliation.
+The default section replacement remains `AuthAdminSection`, and customers may
+replace that section/page through Admin's public composition contract. Mount the
+creation presentation outside another Form. A full replacement retains explicit
+creation preview/proof/submission, temporal validity, secret cleanup and current
+identity/access-loss handling; no custom security backend is needed.
+
+All
 available directory fields are filterable. The filter presentation orders identity/profile
 search first, then account state, credentials/security and sessions/trust, with all
 date ranges last in lifecycle, verification/invitation, credential and activity
@@ -171,7 +228,7 @@ are exposed by the metadata read.
 
 All named stronger proofs are single use. Lifecycle accepts every supported intent:
 activate/deactivate/delete/restore, schedule activation/deactivation,
-set/clear expiry and attempt lock, set/clear security lock and password-change
+set/clear attempt lock, set/clear security lock and password-change
 requirement. Auth declaration adapters map cleared optional name/login text to null before
 constructing NewIdentity/ProfileChange, so switching naming modes and clearing a
 login preserves the native nullable contract. The form submits an operation, deadline and flag; only the relevant
@@ -271,8 +328,10 @@ Standalone and bulk use the same owning locked validation/apply phases. Native
 password reset validates that a password exists and the account may authenticate
 before revoking credentials; an unavailable reset cannot partially revoke state.
 Invitation and password-reset batches skip ineligible ordinary accounts before
-planning: invitation requires no existing password; reset requires a password;
-both require current sign-in eligibility, including schedule/lock/deletion checks.
+planning: invitation requires no existing password and allows inactive/future-
+activation identities; reset requires a password and current sign-in eligibility.
+Other security blockers, reached deactivation, deletion and token guards remain
+required for invitations as for standalone invitation issue/delivery/acceptance.
 `skipped_accounts` is the total of protected and ineligible accounts;
 `ineligible_accounts` reports only the latter, without double counting. Preview
 fingerprints include that classification and execution refuses changed eligibility,

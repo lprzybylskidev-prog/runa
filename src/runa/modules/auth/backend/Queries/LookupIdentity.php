@@ -50,6 +50,13 @@ final readonly class LookupIdentity implements AuthIdentities
         throw new \RuntimeException('Auth identifier policy unavailable.');
     }
 
+    /** Password setup is independent of activation; other security blockers still apply. */
+    public function mayAcceptInvitation(User $user, CarbonImmutable $now): bool
+    {
+        return $user->password === null
+            && array_diff($this->evaluate($user, $now)->blockers, ['inactive', 'before_activation']) === [];
+    }
+
     public function evaluate(User $user, CarbonImmutable $now): Eligibility
     {
         $blockers = [];

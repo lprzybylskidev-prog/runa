@@ -3,6 +3,9 @@ import { defineAsyncComponent } from 'vue';
 export const AuthEntry = defineAsyncComponent(
   () => import('../../../../modules/auth/frontend/AuthEntry.vue'),
 );
+export const AuthAdminCreation = defineAsyncComponent(
+  () => import('../../../../modules/auth/frontend/AuthAdminCreation.vue'),
+);
 export {
   entryPage,
   safeReturnPath,

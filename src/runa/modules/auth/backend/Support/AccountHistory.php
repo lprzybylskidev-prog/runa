@@ -19,6 +19,7 @@ final class AccountHistory
             'email.changed' => ['email', 'verified'], 'email.admin_changed' => ['email', 'verified'],
             'email.requested' => ['email'], 'email.admin_requested' => ['email'],
             'email.reverification_required' => ['email', 'verified', 'verification_required'],
+            'email.admin_verified' => ['verified'],
             'verification.completed' => ['email', 'verified'], 'invitation.completed' => ['email', 'verified'],
             'secondary.added' => ['email'], 'secondary.changed' => ['email'], 'secondary.removed' => ['email'],
             'secondary.verified' => ['email', 'verified'],
@@ -28,7 +29,7 @@ final class AccountHistory
             'preferences.changed' => ['setting', 'value'], 'preferences.reset' => ['setting', 'value'],
             'preferences.reset_all' => ['notification_overrides', 'presentation_overrides'],
             'preferences.admin_reset' => ['presentation_overrides'],
-            'password.changed' => [], 'password.reset' => [], 'password.admin_reset' => [],
+            'password.changed' => [], 'password.reset' => [], 'password.admin_reset' => [], 'password.initial_set' => [],
             'policy.exception_set' => ['policy_setting', 'policy_value', 'valid_until', 'reason'],
             'policy.exception_revoked' => ['policy_setting', 'policy_value', 'valid_until', 'reason'],
         ];

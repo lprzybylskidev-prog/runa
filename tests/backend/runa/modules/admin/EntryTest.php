@@ -826,7 +826,7 @@ it('Auth administration directory bounds cursors searches and private profile di
     ($this->adminGrant)('runa.auth.emails.read');
     expect(authAdministrationRead($this, 'primary_email', $target->publicId)['values']['current_email'])->toBe('private-directory@example.test');
     ($this->adminGrant)('runa.auth.users.manage');
-    app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), fn () => app(ModuleApis::class)->resolve('runa.auth', AuthLifecycle::class, '2.0.0')->change($target->publicId, 1, new LifecycleChange('delete')));
+    app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), fn () => app(ModuleApis::class)->resolve('runa.auth', AuthLifecycle::class, '2.1.0')->change($target->publicId, 1, new LifecycleChange('delete')));
     $this->getJson('/api/admin/runa.auth/users/sections/primary_email?public_id='.$target->publicId)->assertNotFound();
     ($this->adminGrant)('runa.auth.users.deleted.read');
     $deleted = authAdministrationRead($this, 'directory', query: ['kind' => 'page', 'filters' => json_encode(['state' => 'deleted'])]);
@@ -859,8 +859,9 @@ it('Auth administration dispatches every lifecycle intent with native revisions 
 
 it('Auth administration keeps creations invitations secondary addresses and preference resets in owning protocols', function (): void {
     authAdministrationLogin($this, ['runa.auth.users.create', 'runa.auth.profiles.read', 'runa.auth.secondary.read', 'runa.auth.secondary.manage', 'runa.auth.invitations.manage', 'runa.auth.preferences.reset']);
+    ($this->adminProof)('runa.auth.users.create');
     $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', ['command' => 'create', 'revision' => '0', 'public_id' => null,
-        'values' => ['email' => 'created-admin@example.test', 'name' => 'Created account', 'first_name' => null, 'surname' => null, 'login' => null, 'active' => true]])->assertOk();
+        'values' => authCreationValues(['email' => 'created-admin@example.test', 'name' => 'Created account', 'active' => true])])->assertOk();
     $user = User::where('email', 'created-admin@example.test')->firstOrFail();
     $invite = ['command' => 'invite', 'public_id' => $user->public_id, 'revision' => (string) $user->version, 'values' => []];
     foreach ([1, 2] as $attempt) {
@@ -1059,9 +1060,90 @@ it('Auth administration maps cleared optional naming fields to the native nullab
     authAdministrationLogin($this, ['runa.auth.profiles.manage', 'runa.auth.users.create']);
     $outcome = app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), fn () => app(ProfileEditor::class)->execute(new ManagementWrite('save', $target->publicId, '1', ['name' => '', 'first_name' => 'New', 'surname' => 'Name', 'login' => ''])));
     expect($outcome->status)->toBe('committed')->and($outcome->record->values)->toBe(['name' => null, 'first_name' => 'New', 'surname' => 'Name', 'login' => null]);
+    ($this->adminProof)('runa.auth.users.create');
     $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', ['command' => 'create', 'public_id' => null, 'revision' => '0',
-        'values' => ['email' => 'nullable-create@example.test', 'name' => 'Created name', 'first_name' => '', 'surname' => '', 'login' => '', 'active' => false]])->assertOk();
+        'values' => authCreationValues(['email' => 'nullable-create@example.test', 'name' => 'Created name', 'first_name' => '', 'surname' => '', 'login' => ''])])->assertOk();
     expect(User::where('email', 'nullable-create@example.test')->value('login'))->toBeNull();
+});
+
+function authCreationValues(array $patch = []): array
+{
+    return array_replace(['email' => 'configured-create@example.test', 'name' => 'Configured user',
+        'first_name' => null, 'surname' => null, 'login' => null, 'active' => false,
+        'credential_mode' => 'none', 'email_verified' => false, 'activate_at' => null, 'deactivate_at' => null,
+        'security_locked' => false, 'attempt_locked_until' => null, 'password_change_required' => false], $patch);
+}
+
+it('Auth creation atomically configures credentials schedules verification and locks without delivery', function (): void {
+    authAdministrationLogin($this, ['runa.auth.users.create', 'runa.auth.emails.verify_bypass']);
+    DB::transaction(function (): void {
+        $this->adminUser->email_verified_at = now();
+        $this->adminUser->save();
+    });
+    $settings = app(ModuleSettings::class)->read('runa.auth');
+    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'all', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['generation']);
+    authAdministrationStrongProof($this, 'runa.auth.users.create');
+    $password = 'initial-user-password';
+    $input = ['command' => 'create', 'public_id' => null, 'revision' => '0', 'values' => authCreationValues([
+        'credential_mode' => 'password', 'password' => $password, 'password_confirmation' => $password,
+        'email_verified' => true, 'activate_at' => now()->addDay()->utc()->format('Y-m-d\TH:i:s\Z'),
+        'deactivate_at' => now()->addDays(2)->utc()->format('Y-m-d\TH:i:s\Z'),
+        'security_locked' => true, 'attempt_locked_until' => now()->addHour()->utc()->format('Y-m-d\TH:i:s\Z'),
+        'password_change_required' => true,
+    ])];
+    $preview = $this->postJson('/api/admin/runa.auth/users/sections/creation/preview', $input)->assertOk()->assertJsonPath('data.requirement', 'both');
+    expect($preview->getContent())->not->toContain($password);
+    $response = $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', $input)->assertOk()
+        ->assertJsonPath('data.record.values.password', ['set' => false]);
+    $user = User::where('email', 'configured-create@example.test')->firstOrFail();
+    expect(Hash::check($password, $user->password))->toBeTrue()
+        ->and($user->active)->toBeFalse()->and($user->email_verified_at)->not->toBeNull()
+        ->and($user->activate_at)->not->toBeNull()->and($user->deactivate_at)->not->toBeNull()
+        ->and($user->security_locked)->toBeTrue()->and($user->password_change_required)->toBeTrue()
+        ->and(DB::table('runa_auth.entry_tokens')->where('user_id', $user->id)->count())->toBe(0)
+        ->and(DB::table('runa_auth.security_notices')->where('user_id', $user->id)->count())->toBe(0)
+        ->and($response->getContent())->not->toContain($password, $user->password);
+    $history = DB::table('runa_audit.events')->whereIn('action', ['identity.created', 'email.admin_verified', 'password.initial_set'])->get()->toJson();
+    expect($history)->toContain('email.admin_verified', 'password.initial_set')->not->toContain($password, $user->password);
+    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.users.create')->whereNotNull('consumed_at')->exists())->toBeTrue();
+});
+
+it('Auth creation queues inactive invitations atomically and rolls back proof and account on Audit refusal', function (): void {
+    authAdministrationLogin($this, ['runa.auth.users.create', 'runa.auth.invitations.manage']);
+    ($this->adminProof)('runa.auth.users.create');
+    $input = ['command' => 'create', 'public_id' => null, 'revision' => '0',
+        'values' => authCreationValues(['credential_mode' => 'invitation'])];
+    DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT creation_fixture_refusal CHECK (false) NOT VALID');
+    $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', $input)->assertServiceUnavailable();
+    expect(User::where('email', 'configured-create@example.test')->exists())->toBeFalse()
+        ->and(DB::table('runa_auth.entry_tokens')->where('purpose', 'invitation')->exists())->toBeFalse()
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.users.create')->whereNull('consumed_at')->exists())->toBeTrue();
+    DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT creation_fixture_refusal');
+    $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', $input)->assertOk();
+    $user = User::where('email', 'configured-create@example.test')->firstOrFail();
+    expect($user->active)->toBeFalse()->and($user->password)->toBeNull()
+        ->and(DB::table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('purpose', 'invitation')->count())->toBe(1)
+        ->and(DB::table('shared.module_work')->where('operation', 'entry.deliver')->exists())->toBeTrue();
+});
+
+it('Auth creation refuses unsupported credentials schedules and verification without partial accounts', function (): void {
+    authAdministrationLogin($this, ['runa.auth.users.create']);
+    $settings = app(ModuleSettings::class)->read('runa.auth');
+    app(ModuleSettings::class)->update('runa.auth', ['password_expiry_days' => 0], $settings['revision'], $settings['generation']);
+    $page = $this->getJson('/api/admin/runa.auth/users')->assertOk()->json('data');
+    $creation = array_values(array_filter($page['sections'], fn ($section) => $section['key'] === 'creation'))[0];
+    expect(array_column($creation['commands'], 'key'))->toContain('create')
+        ->and(array_column($creation['fields'], 'key'))->toContain('password_change_required');
+    ($this->adminProof)('runa.auth.users.create');
+    $input = ['command' => 'create', 'public_id' => null, 'revision' => '0', 'values' => authCreationValues()];
+    $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', array_replace($input, ['values' => authCreationValues(['email_verified' => true])]))->assertForbidden();
+    $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', array_replace($input, ['values' => authCreationValues(['credential_mode' => 'invitation'])]))->assertForbidden();
+    $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', array_replace($input, ['values' => authCreationValues(['credential_mode' => 'password', 'password' => 'short', 'password_confirmation' => 'short'])]))->assertUnprocessable();
+    $this->postJson('/api/admin/runa.auth/users/sections/creation/commands', array_replace($input, ['values' => authCreationValues([
+        'activate_at' => now()->addDays(2)->utc()->format('Y-m-d\TH:i:s\Z'), 'deactivate_at' => now()->addDay()->utc()->format('Y-m-d\TH:i:s\Z'),
+    ])]))->assertConflict()->assertJsonPath('error.code', 'invalid_schedule_order');
+    expect(User::where('email', 'configured-create@example.test')->exists())->toBeFalse()
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.users.create')->whereNull('consumed_at')->exists())->toBeTrue();
 });
 
 function permissionAdministrationRead(object $test, string $page, string $section, ?string $id = null, array $query = []): array
@@ -2103,20 +2185,21 @@ it('Auth bulk delivery skips ineligible accounts without mutating their credenti
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.permissions.users.select', 'runa.auth.'.$access['permission']]);
     $input = ['command' => $operation, 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => $ids], 'confirmed' => true];
     $input['review'] = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data');
-    expect($input['review']['changes']['summary'])->toMatchArray(['accounts' => 6, 'affected_accounts' => 1, 'skipped_accounts' => 5, 'ineligible_accounts' => 4]);
-    $before = User::withTrashed()->whereIn('public_id', array_diff($ids, [$ids[1]]))->get()->map(fn (User $user) => [$user->public_id, $user->version, $user->security_version])->all();
+    $eligible = $operation === 'invite' ? [$ids[1], $ids[3]] : [$ids[1]];
+    expect($input['review']['changes']['summary'])->toMatchArray(['accounts' => 6, 'affected_accounts' => count($eligible), 'skipped_accounts' => 6 - count($eligible), 'ineligible_accounts' => 5 - count($eligible)]);
+    $before = User::withTrashed()->whereIn('public_id', array_diff($ids, $eligible))->get()->map(fn (User $user) => [$user->public_id, $user->version, $user->security_version])->all();
     if ($operation === 'password_reset') {
         $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.users.bulk.password_reset', 'requirement' => 'password', 'current_password' => 'admin-entry-password'])->assertOk();
     }
     $history = DB::table('runa_audit.events')->count();
     $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertOk();
-    expect(User::withTrashed()->whereIn('public_id', array_diff($ids, [$ids[1]]))->get()->map(fn (User $user) => [$user->public_id, $user->version, $user->security_version])->all())->toBe($before);
-    $eligibleId = User::where('public_id', $ids[1])->value('id');
-    expect(DB::table('runa_auth.entry_tokens')->where('purpose', $operation === 'invite' ? 'invitation' : 'reset')->pluck('user_id')->all())->toBe([$eligibleId])
-        ->and(DB::table('runa_audit.events')->count())->toBe($history + ($operation === 'invite' ? 1 : 3));
-    $input['values']['public_ids'] = array_values(array_diff($ids, [$ids[1]]));
+    expect(User::withTrashed()->whereIn('public_id', array_diff($ids, $eligible))->get()->map(fn (User $user) => [$user->public_id, $user->version, $user->security_version])->all())->toBe($before);
+    $eligibleIds = User::whereIn('public_id', $eligible)->pluck('id')->all();
+    expect(DB::table('runa_auth.entry_tokens')->where('purpose', $operation === 'invite' ? 'invitation' : 'reset')->pluck('user_id')->all())->toEqualCanonicalizing($eligibleIds)
+        ->and(DB::table('runa_audit.events')->count())->toBe($history + ($operation === 'invite' ? 2 : 3));
+    $input['values']['public_ids'] = array_values(array_diff($ids, $eligible));
     $empty = $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/preview', $input)->assertOk()->json('data.changes.summary');
-    expect($empty)->toMatchArray(['affected_accounts' => 0, 'skipped_accounts' => 5, 'ineligible_accounts' => 4]);
+    expect($empty)->toMatchArray(['affected_accounts' => 0, 'skipped_accounts' => 6 - count($eligible), 'ineligible_accounts' => 5 - count($eligible)]);
 })->with(['invite', 'password_reset']);
 
 it('Auth bulk delivery rejects eligibility changes caused by a scheduled deactivation after review', function (): void {

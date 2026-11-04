@@ -23,7 +23,6 @@ use Runa\Modules\Auth\Contracts\AuthSecurity;
 use Runa\Modules\Auth\Contracts\AuthSessions;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
-use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Support\AdministrationFeatures;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
@@ -38,9 +37,6 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
 
     public function read(ManagementRead $input): ManagementRecord
     {
-        if (static::KEY === 'creation') {
-            return new ManagementRecord(null, '0', ['email' => null, 'name' => null, 'first_name' => null, 'surname' => null, 'login' => null, 'active' => false]);
-        }
         $id = $input->publicId ?? $this->principals->current()?->publicId ?? throw new OperationRejected('authentication_required', 'runa.auth', 'administration.read', 401);
         if ($input->cursor !== null) {
             if (! in_array(static::KEY, ['sessions', 'trust'], true)) {
@@ -113,8 +109,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             }
             $version = (int) $input->revision;
             $result = match (static::KEY.'.'.$input->command) {
-                'creation.create' => $this->api(AuthLifecycle::class, '2.0.0')->create(new NewIdentity($v['email'], $v['name'], $v['first_name'], $v['surname'], $v['login'], $v['active'])),
-                'lifecycle.change' => $this->api(AuthLifecycle::class, '2.0.0')->change($id, $version, new LifecycleChange($v['operation'], in_array($v['operation'], ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'], true) ? Moment::seconds($v['at']) : null, in_array($v['operation'], ['set_security_lock', 'require_password_change'], true) ? $v['enabled'] : null)),
+                'lifecycle.change' => $this->api(AuthLifecycle::class, '2.1.0')->change($id, $version, new LifecycleChange($v['operation'], in_array($v['operation'], ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'], true) ? Moment::seconds($v['at']) : null, in_array($v['operation'], ['set_security_lock', 'require_password_change'], true) ? $v['enabled'] : null)),
                 'invitations.invite' => $this->api(AuthInvitations::class)->invite($id, $version),
                 'invitations.invalidate' => $this->api(AuthInvitations::class)->invalidate($id, $version),
                 'primary_email.change' => $this->api(AuthProfiles::class, '2.0.0')->changeEmail($id, $version, $v['email']),
@@ -173,7 +168,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
         $expected = $spec['inputs'];
         sort($expected);
         if ($keys !== $expected || preg_match('/\A[0-9]{1,9}\z/D', $input->revision) !== 1
-            || (static::KEY === 'creation' ? $input->publicId !== null : ($input->publicId === null || (int) $input->revision < 1))
+            || $input->publicId === null || (int) $input->revision < 1
             || ($spec['destructive'] && ! $input->confirmed)) {
             throw new \InvalidArgumentException('Invalid administration input.');
         }

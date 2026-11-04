@@ -92,7 +92,10 @@ Local validation handles required fields, exclusive naming, identifiers, passwor
 complexity/UTF-8 byte bounds, confirmation and code shape. Forms use novalidate,
 password-manager autocomplete, linked field errors and focus recovery. Safe fixed
 PL/EN messages handle validation, generic credentials/proof refusal, reused
-passwords, token expiry/replay, disabled registration, 401, 409, 419, 429 and service
+passwords and the post-credential `account_inactive` refusal. Inactive/future-
+activation accounts can complete invitation password setup and email confirmation
+before activation, without receiving an authenticated session. Other messages cover
+token expiry/replay, disabled registration, 401, 409, 419, 429 and service
 failure; raw backend strings are never rendered. A 419 refreshes CSRF only on
 request and requires explicit resubmission. Conflicts preserve nonsecret values
 and offer an account refresh when relevant. Background reads never extend activity.

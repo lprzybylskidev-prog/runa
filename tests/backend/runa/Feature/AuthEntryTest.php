@@ -296,10 +296,11 @@ it('consumes invitation and verification tokens exactly once and fails closed wh
     $this->postJson('/api/runa/auth/verification/complete', ['token' => $secret])->assertUnprocessable();
 });
 
-it('rechecks activation locks token invalidation and expiry without revealing them to anonymous login', function (): void {
+it('reports inactive accounts only after valid credentials and rechecks token invalidation and expiry', function (): void {
     $user = entryUser('scheduled@example.test');
     app(ChangeIdentity::class)->change($user->public_id, 1, new LifecycleChange('schedule_activation', now()->addHour()->utc()->format('Y-m-d\TH:i:s\Z')));
-    $bad = entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertUnprocessable()->json();
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertUnprocessable()->assertJsonPath('error.code', 'account_inactive');
+    $bad = entryLogin($this, ['identifier' => $user->email, 'password' => 'incorrect-password'])->assertUnprocessable()->assertJsonPath('error.code', 'invalid_credentials')->json();
     entryLogin($this, ['identifier' => 'absent@example.test', 'password' => 'a-long-test-password'])->assertUnprocessable()->assertExactJson($bad);
     $user = entryUser('rotate@example.test', false);
     $tokens = app(EntryTokens::class);
@@ -313,6 +314,40 @@ it('rechecks activation locks token invalidation and expiry without revealing th
     CarbonImmutable::setTestNow(CarbonImmutable::parse($two->expires_at));
     expect(fn () => $tokens->consume($secret, 'invitation', 'new-long-password'))->toThrow(OperationRejected::class);
 });
+
+it('delivers and accepts invitations before activation without granting account access', function (bool $scheduled): void {
+    $sent = 0;
+    app('events')->listen(MessageSending::class, function () use (&$sent): void {
+        $sent++;
+    });
+    $identity = app(ChangeIdentity::class)->create(new NewIdentity('waiting-invitation@example.test', name: 'Waiting user'));
+    if ($scheduled) {
+        $identity = app(ChangeIdentity::class)->change($identity->publicId, $identity->version,
+            new LifecycleChange('schedule_activation', now()->addHour()->utc()->format('Y-m-d\TH:i:s\Z')));
+    }
+    $tokens = app(EntryTokens::class);
+    expect($tokens->invite($identity->publicId, $identity->version))->toBeTrue();
+    $row = DB::table('runa_auth.entry_tokens')->where('purpose', 'invitation')->first();
+    $secret = Crypt::decryptString($row->delivery_secret);
+    app(DeliverEntryMail::class)->deliver($row->public_id);
+    expect($sent)->toBe(1)->and(DB::table('runa_auth.entry_tokens')->where('id', $row->id)->value('sent_at'))->not->toBeNull();
+    $this->postJson('/api/runa/auth/invitations/accept', ['token' => $secret,
+        'password' => 'waiting-user-password', 'password_confirmation' => 'waiting-user-password'])->assertOk();
+    $user = User::where('public_id', $identity->publicId)->firstOrFail();
+    expect($user->active)->toBeFalse()->and($user->email_verified_at)->not->toBeNull()
+        ->and(Hash::check('waiting-user-password', $user->password))->toBeTrue()
+        ->and(DB::table('runa_auth.sessions')->count())->toBe(0);
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'waiting-user-password'])
+        ->assertUnprocessable()->assertJsonPath('error.code', 'account_inactive');
+    expect(DB::table('runa_auth.sessions')->count())->toBe(0);
+    if ($scheduled) {
+        CarbonImmutable::setTestNow($user->activate_at->addSecond());
+    } else {
+        app(ChangeIdentity::class)->change($user->public_id, $user->version, new LifecycleChange('activate'));
+    }
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'waiting-user-password'])->assertOk();
+    expect(fn () => $tokens->consume($secret, 'invitation', 'waiting-user-password'))->toThrow(OperationRejected::class);
+})->with([false, true]);
 
 it('delivers each token once and suppresses actionable stale account mail and bounded reminders', function (): void {
     $user = entryUser('mail@example.test', false);
