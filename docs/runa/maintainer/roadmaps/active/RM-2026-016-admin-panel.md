@@ -1005,6 +1005,13 @@ reassessment before resuming point 3; completed point history remains evidence.
     retaining independent drafts, reconciliation, accessibility and recipient rules.
   - Synchronize public contracts/guidance and focused regression evidence; prepare
     current assets for owner review. Final broad verification remains point 12.
+- [x] 11a77. Rebuild local review data at the owner's explicit request.
+  - Inspect database identity, exact table ownership, fixture provenance and active
+    jobs; announce the complete local reset scope before destruction.
+  - Rebuild platform/Core/application ledgers and ordinary development seed data,
+    restoring optional 2FA and the privately configured administrator credentials.
+  - Preserve other databases, files, services, volumes, caches and reports; verify
+    login/Admin readiness with current assets and record the operational result.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7066,3 +7073,51 @@ inactive runa_test_test_1 worker after successful cleanup; base runa_test,
 development data, active services, caches, backups and reports are preserved.
 No disposable Docker resources were created. Owner acceptance and final verification
 remain open.
+
+### Point 11a77 — Owner-requested local review database rebuild
+
+2026-11-05: the owner confirms accidentally enabling required two-factor
+confirmation and explicitly requests a database reset. Relevant PostgreSQL,
+database ownership/reset, seeding and supported command guidance were reviewed;
+knowledge was current and queried before this operational point. Inspection
+confirmed local PostgreSQL database runa, runtime role runa, port 5432, exactly
+45 runa-owned tables across shared/runa_auth/runa_audit/runa_permissions, all
+15 accounts carrying development-fixture provenance and zero reserved jobs.
+The exact reset scope and loss of settings/sessions/Audit were announced before
+execution. No unknown application storage or foreign-owned table was present.
+
+Under native maintenance, the reviewed one-off development reset from 11a70
+rechecked the exact inspected inventory, ownership, environment, database and
+reserved jobs before dropping those 45 tables together with RESTRICT. It removed
+platform/application/module migration and initialization histories with their
+rebuildable domain data, preserving schema ownership. Native destructive owner
+commands retain their isolated-testing guard; no guard was weakened or replaced.
+The existing explicitly reviewed local-reset procedure was reused because ordinary
+application migrate:fresh cannot rebuild platform/module storage and ledgers.
+
+Forward platform/Core preparation used exact current source commit
+985235c9ef0b1436721b54bfae1ef9da764452a1, followed by native application migrate.
+After leaving maintenance, ordinary configured db:seed ran AuthDevelopmentSeeder,
+DevelopmentAdministratorSeeder and PermissionsDevelopmentSeeder, then queue restart
+was signaled. The private local administrator configuration was preserved and
+reused without printing credentials. The resulting database again has 45 tables,
+15 fixture accounts, Auth 3.1.0, Permissions 2.1.0, Audit 1.1.0 and Admin 0.2.0.
+The explicit development review preset restores optional two-factor policy.
+
+Native Nginx/API readiness PASS: existing private administrator credentials log in
+with no restrictions, Admin opens, and primary confirmation displays its session/
+trust revocation explanation before post-submit proof. No management write was
+submitted; the browser logged out. This also verifies the final notice from 11a76
+after the accidental mandatory-two-factor setting was removed by the requested
+reset. Current assets already include all 11a76 repairs. Evidence is under
+.runtime/user-details/reset-review-20261105/ and
+.runtime/artifacts/playwright/account-refinements-reset/.
+
+The reset intentionally replaced only local development runa table data. Base
+runa_test and all other databases, files, schema ownership, active services,
+Docker resources/volumes, backups, caches and previous reports remain preserved.
+No disposable Docker resource was created or removed. This owner-requested
+operational preparation changes no runtime capability or reusable instruction;
+current public documentation and both instruction products need no further edit.
+Mandatory staged hooks/knowledge freshness accompany this point commit. Owner
+acceptance 11b and final affected-area verification/release 12 remain open.
