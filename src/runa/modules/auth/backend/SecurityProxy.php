@@ -25,7 +25,7 @@ final class SecurityProxy extends GuardedApi implements AuthSecurity
 
     public function trustedDevices(string $publicId, ?string $before = null): array
     {
-        /** @var list<array{public_id: string, created_at: string, expires_at: string}> $result */
+        /** @var list<array{public_id: string, browser: ?string, platform: ?string, current: bool, created_at: ?string, last_used_at: ?string, expires_at: string}> $result */
         $result = $this->invoke(__FUNCTION__, [$publicId, $before]);
 
         return $result;

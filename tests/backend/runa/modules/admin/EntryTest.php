@@ -1017,7 +1017,7 @@ it('Auth administration preserves native session and trust scoping without discl
         app(SessionStore::class)->admit(DB::connection(), $user, 'auth-admin-session-two', false),
     ]);
     $deviceId = (string) Str::uuid7();
-    DB::table('runa_auth.trusted_devices')->insert(['public_id' => $deviceId, 'user_id' => $user->id, 'token_hash' => hash('sha256', 'auth-admin-disposable-device'), 'security_version' => $user->security_version, 'factor_method' => 'totp', 'created_at' => now(), 'expires_at' => now()->addDay()]);
+    DB::table('runa_auth.trusted_devices')->insert(['public_id' => $deviceId, 'user_id' => $user->id, 'browser' => 'Firefox', 'platform' => 'Linux', 'last_used_at' => now(), 'token_hash' => hash('sha256', 'auth-admin-disposable-device'), 'security_version' => $user->security_version, 'factor_method' => 'totp', 'created_at' => now(), 'expires_at' => now()->addDay()]);
     authAdministrationLogin($this, ['runa.auth.sessions.manage', 'runa.auth.trust.manage']);
     $record = authAdministrationRead($this, 'sessions', $target->publicId);
     expect(json_decode($record['values']['sessions'], true))->toHaveCount(2)
@@ -1028,7 +1028,7 @@ it('Auth administration preserves native session and trust scoping without discl
     $this->postJson('/api/admin/runa.auth/users/sections/sessions/commands', ['command' => 'revoke_all', 'public_id' => $target->publicId, 'revision' => $remaining['revision'], 'values' => [], 'confirmed' => true])->assertOk();
     expect(json_decode(authAdministrationRead($this, 'sessions', $target->publicId)['values']['sessions'], true))->toBe([]);
     $trust = authAdministrationRead($this, 'trust', $target->publicId);
-    expect(json_decode($trust['values']['devices'], true)[0]['public_id'])->toBe($deviceId)->and(json_encode($trust))->not->toContain('token_hash', 'factor_method');
+    expect(json_decode($trust['values']['devices'], true)[0]['public_id'])->toBe($deviceId)->and(json_decode($trust['values']['devices'], true)[0]['browser'])->toBe('Firefox')->and(json_decode($trust['values']['devices'], true)[0]['platform'])->toBe('Linux')->and(json_decode($trust['values']['devices'], true)[0]['current'])->toBeFalse()->and(json_encode($trust))->not->toContain('token_hash', 'factor_method');
     $this->postJson('/api/admin/runa.auth/users/sections/trust/commands', ['command' => 'revoke_device', 'public_id' => $target->publicId, 'revision' => $trust['revision'], 'values' => ['device_id' => $deviceId], 'confirmed' => true])->assertOk();
     expect(json_decode(authAdministrationRead($this, 'trust', $target->publicId)['values']['devices'], true))->toBe([]);
 });

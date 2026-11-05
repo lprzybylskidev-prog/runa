@@ -80,6 +80,7 @@ use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\AccountHistory;
+use Runa\Modules\Auth\Support\BrowserDescription;
 use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\PolicyExceptions;
@@ -750,6 +751,54 @@ it('never uses trusted device bypass for mandatory step up and revokes trust on 
     expect(DB::table('runa_auth.trusted_devices')->value('revoked_at'))->not->toBeNull();
 });
 
+it('projects trusted browser metadata without secrets and tracks only successful use', function (): void {
+    entryPolicy(['trusted_devices_enabled' => true]);
+    $user = entryUser('device-metadata@example.test');
+    $foreign = entryUser('foreign-device@example.test');
+    DB::transaction(function () use ($user): void {
+        $user->email_verified_at = now();
+        $user->save();
+    });
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    [, $codes] = credentialEnroll($this, $user);
+    $this->withHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0) Chrome/130.0 Safari/537.36 Edg/130.0');
+    $issued = $this->postJson('/api/runa/auth/trusted-devices', ['method' => 'recovery', 'code' => $codes[0]])->assertOk();
+    $cookie = collect($issued->headers->getCookies())->first(fn ($cookie) => $cookie->getName() === 'runa_trust');
+    $this->withUnencryptedCookie('runa_trust', $cookie->getValue());
+    $device = DB::table('runa_auth.trusted_devices')->where('user_id', $user->id)->first();
+    expect($device->browser)->toBe('Edge')->and($device->platform)->toBe('Windows');
+    $this->getJson('/api/runa/auth/trusted-devices')->assertOk()
+        ->assertJsonPath('data.0.browser', 'Edge')->assertJsonPath('data.0.platform', 'Windows')
+        ->assertJsonPath('data.0.current', true)->assertJsonPath('meta.next_cursor', null);
+    expect(DB::table('runa_auth.trusted_devices')->where('id', $device->id)->value('last_used_at'))->toBe($device->last_used_at);
+    expect(json_encode($this->getJson('/api/runa/auth/trusted-devices')->json()))->not->toContain('token_hash', 'factor_method', $device->token_hash, 'User-Agent');
+    $foreignId = (string) Str::uuid7();
+    DB::table('runa_auth.trusted_devices')->insert(['public_id' => $foreignId, 'user_id' => $foreign->id,
+        'token_hash' => hash('sha256', 'foreign-metadata-cookie'), 'security_version' => $foreign->security_version,
+        'factor_method' => 'totp', 'created_at' => now(), 'expires_at' => now()->addDay()]);
+    $this->postJson('/api/runa/auth/trusted-devices/revoke', ['public_id' => $foreignId])->assertOk();
+    expect(DB::table('runa_auth.trusted_devices')->where('public_id', $foreignId)->value('revoked_at'))->toBeNull();
+    CarbonImmutable::setTestNow(CarbonImmutable::now()->addMinutes(2));
+    $this->withHeader('User-Agent', 'unrecognized-client');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk()->assertJsonPath('data.restrictions', []);
+    expect(CarbonImmutable::parse(DB::table('runa_auth.trusted_devices')->where('id', $device->id)->value('last_used_at'))->greaterThan(CarbonImmutable::parse($device->last_used_at)))->toBeTrue();
+    $this->getJson('/api/runa/auth/trusted-devices')->assertOk()->assertJsonPath('data.0.browser', 'Edge');
+    $this->postJson('/api/runa/auth/trusted-devices/revoke', ['public_id' => $device->public_id])->assertOk();
+    $this->getJson('/api/runa/auth/trusted-devices')->assertOk()->assertJsonPath('data', []);
+    expect(DB::table('runa_audit.events')->where('action', 'trusted_device.revoked')->exists())->toBeTrue();
+});
+
+it('normalizes trusted browser hints to bounded labels', function (string $agent, ?string $browser, ?string $platform): void {
+    expect(BrowserDescription::fromUserAgent($agent))->toBe(['browser' => $browser, 'platform' => $platform]);
+})->with([
+    ['Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Version/18.0 Mobile Safari/604.1', 'Safari', 'iOS'],
+    ['Mozilla/5.0 (X11; Linux x86_64) Firefox/130.0', 'Firefox', 'Linux'],
+    ['Mozilla/5.0 (Linux; Android 14) Chrome/130.0 SamsungBrowser/25.0', 'Samsung Internet', 'Android'],
+    ['Mozilla/5.0 (Windows NT 10.0) Chrome/130.0 OPR/115.0', 'Opera', 'Windows'],
+    ['<script>alert(1)</script>', null, null],
+    [str_repeat('x', 2048).' Chrome/130.0', null, null],
+]);
+
 it('bounds email OTP attempts and enforces session binding expiry and one time use', function (): void {
     CarbonImmutable::setTestNow('2026-10-23 12:00:00 UTC');
     entryPolicy(['email_otp_enabled' => true]);
@@ -871,7 +920,7 @@ it('keeps privileged factor recovery denied without authority and requires fresh
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
     [$secret, $codes] = credentialEnroll($this, $actor);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthSecurity::class, '1.1.0');
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthSecurity::class, '1.2.0');
     expect(fn () => $api->resetFactors($target->public_id, 1))->toThrow(OperationRejected::class);
     $scope = app(PrincipalScope::class);
     $reset = fn () => $scope->run(new TrustedPrincipal($actor->public_id), fn () => app(ManageSecurity::class)->resetFactors($target->public_id, 1));

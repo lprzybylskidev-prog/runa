@@ -2,6 +2,8 @@
 
 ## 3.0.0 — 2026-11-03
 
+- Auth 3.1.0: identify trusted browsers with allowlisted browser/system labels, cookie-bound current-device state and last successful use. Share columns in Admin and the inline own-account table, including empty results. Extend AuthSecurity to 1.2.0 and correct the original pre-1.0 development migration.
+
 - Present selected-user sessions and trusted devices with the shared account Table, authorized dates, remembered sign-in and native revocation; rename Trust to Trusted devices and retain bounded cursor navigation.
 
 - Hide single/bulk action separators at wrapped row starts while preserving same-row separators and unclipped keyboard focus.

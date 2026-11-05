@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { identityDrafts } from './identityDrafts';
+import { trustedDeviceColumns } from './trustedDeviceColumns';
 import { computed, reactive, ref, watch } from 'vue';
 import {
   AdminField,
@@ -569,16 +570,21 @@ watch(rows, () => {
   tableQuery.value = { ...tableQuery.value, page: 1 };
 });
 const tableColumns = computed<TableColumn<Record<string, AdminJson>>[]>(() =>
-  (kind.value === 'sessions'
-    ? ['authenticated_at', 'activity_at', 'expires_at', 'remembered']
-    : ['created_at', 'expires_at']
-  ).map((key) => ({
-    key,
-    label: fieldTitle(key),
-    value: (row) => display(row[key] ?? null, key),
-    sortable: false,
-  })),
+  kind.value === 'trust'
+    ? trustedDeviceColumns<Record<string, AdminJson>>(
+        locale.value,
+        (row, key) => row[key],
+      )
+    : ['authenticated_at', 'activity_at', 'expires_at', 'remembered'].map(
+        (key) => ({
+          key,
+          label: fieldTitle(key),
+          value: (row) => display(row[key] ?? null, key),
+          sortable: false,
+        }),
+      ),
 );
+
 const rowCommands = computed(() =>
   props.section.readonly
     ? []

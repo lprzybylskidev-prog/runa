@@ -57,7 +57,7 @@ def test_current_core_methods_declare_versions_permissions_and_audiences() -> No
         # include the additive and pre-1.0 revisions delivered by this roadmap.
         expected_version = {
             "AuthLifecycle": "2.1.0",
-            "AuthSecurity": "1.1.0",
+            "AuthSecurity": "1.2.0",
             "AuthStepUp": "1.1.0",
             "AuthProfiles": "2.1.0",
             "AuthPreferences": "1.1.0",

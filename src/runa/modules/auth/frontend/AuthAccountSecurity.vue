@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatApplicationInstant, instantTimestamp } from '@/runa/ui';
+import { trustedDeviceColumns } from './trustedDeviceColumns';
 import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
   Button,
@@ -39,6 +39,7 @@ const {
   canTrustDevice,
   trustedRows,
   trustedLoading,
+  trustedLoaded,
   trustedCursor,
   loadTrustedDevices,
   revokeTrustedDevice,
@@ -47,7 +48,7 @@ async function exportRows(signal: AbortSignal) {
   await props.account.authorizeTableExport(signal);
   return trustedRows.value;
 }
-const modal = ref<'factor' | 'devices' | null>(null);
+const modal = ref<'factor' | null>(null);
 const removing = ref<string>();
 const attempt = ref(0);
 const securityForm = ref<{ focusInvalid: () => void }>();
@@ -177,13 +178,10 @@ const operationLabel = computed(() =>
 );
 watch([actions, methods, () => security.value?.trusted_devices_enabled], () => {
   if (
-    (modal.value === 'devices' && !security.value?.trusted_devices_enabled) ||
-    (overviewAction.value !== 'none' &&
-      (!actions.value.some((action) => action.value === overviewAction.value) ||
-        (overviewAction.value === 'disable' &&
-          !methods.value.some(
-            (candidate) => candidate.value === target.value,
-          ))))
+    overviewAction.value !== 'none' &&
+    (!actions.value.some((action) => action.value === overviewAction.value) ||
+      (overviewAction.value === 'disable' &&
+        !methods.value.some((candidate) => candidate.value === target.value)))
   ) {
     modal.value = null;
     clearDraft();
@@ -238,40 +236,20 @@ async function save() {
     clearDraft();
   }
 }
-async function openDevices() {
-  if (busy.value) return;
-  clearDraft();
-  attempt.value = 0;
-  query.value = { ...query.value, page: 1 };
-  modal.value = 'devices';
-  await loadTrustedDevices();
-}
 async function removeDevice() {
   if (!removing.value || busy.value) return;
   attempt.value++;
   if (await revokeTrustedDevice(removing.value)) removing.value = undefined;
 }
-function date(value?: string) {
-  return value ? formatApplicationInstant(value, locale.value) : '—';
-}
-function time(value?: string) {
-  const result = value ? instantTimestamp(value) : NaN;
-  return Number.isNaN(result) ? 0 : result;
-}
-const columns = computed<TableColumn<AccountRow>[]>(() => [
-  {
-    key: 'created',
-    label: text('Utworzono', 'Created'),
-    value: (row) => date(row.created_at),
-    compare: (a, b) => time(a.created_at) - time(b.created_at),
+const columns = computed<TableColumn<AccountRow>[]>(() =>
+  trustedDeviceColumns<AccountRow>(locale.value, (row, key) => row[key]),
+);
+watch(
+  () => security.value?.trusted_devices_enabled,
+  (enabled) => {
+    if (!enabled) removing.value = undefined;
   },
-  {
-    key: 'expires',
-    label: text('Wygasa', 'Expires'),
-    value: (row) => date(row.expires_at),
-    compare: (a, b) => time(a.expires_at) - time(b.expires_at),
-  },
-]);
+);
 </script>
 <template>
   <Card
@@ -331,6 +309,9 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
         :class="methods.length ? 'border-t border-line pt-4' : ''"
         data-trusted-devices
       >
+        <h3 class="text-sm font-semibold">
+          {{ text('Zaufane urządzenia', 'Trusted devices') }}
+        </h3>
         <p v-if="!canTrustDevice" class="text-xs text-muted">
           {{
             text(
@@ -346,26 +327,57 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
             @click="setAction('trustIssue')"
             >{{ text('Zaufaj tej przeglądarce', 'Trust this browser') }}</Button
           >
-          <Button
-            v-if="trustedRows.length"
-            variant="outline"
-            :disabled="busy"
-            @click="openDevices"
-            >{{ text('Zarządzaj urządzeniami', 'Manage devices') }}</Button
-          >
         </div>
+        <Table
+          v-model:query="query"
+          :export-allowed="account.tableExportAllowed?.value === true"
+          :export-rows="exportRows"
+          :refresh="
+            async () => {
+              await loadTrustedDevices();
+            }
+          "
+          :refresh-disabled="busy"
+          mode="client"
+          :rows="trustedRows"
+          :loading="trustedLoading && !trustedLoaded"
+          :refreshing="trustedLoading"
+          :retain-empty-frame="true"
+          :columns="columns"
+          :row-key="(row) => row.public_id"
+          :caption="text('Zaufane urządzenia', 'Trusted devices')"
+          :english="locale === 'en'"
+          :searchable="false"
+        >
+          <template #actions="{ row }"
+            ><Button
+              size="sm"
+              variant="outline"
+              tone="danger"
+              :disabled="busy"
+              @click="
+                removing = row.public_id;
+                attempt = 0;
+              "
+              >{{ text('Unieważnij', 'Revoke') }}</Button
+            ></template
+          >
+        </Table>
+        <Button
+          :busy="trustedLoading"
+          v-if="trustedCursor"
+          :disabled="busy"
+          @click="loadTrustedDevices(true)"
+          >{{ text('Wczytaj starsze', 'Load older') }}</Button
+        >
       </section>
     </div>
   </Card>
   <Dialog
     :model-value="modal !== null && !codes.length"
-    :title="
-      modal === 'devices'
-        ? text('Zaufane urządzenia', 'Trusted devices')
-        : operationLabel
-    "
+    :title="operationLabel"
     :locale="locale"
-    :size="modal === 'devices' ? 'lg' : 'md'"
+    size="md"
     :busy="busy"
     initial-focus="input"
     @update:model-value="close"
@@ -418,48 +430,6 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
         }}</Button>
       </template>
     </Form>
-    <template v-else-if="modal === 'devices'">
-      <Table
-        v-model:query="query"
-        :export-allowed="account.tableExportAllowed?.value === true"
-        :export-rows="exportRows"
-        :refresh="
-          async () => {
-            await loadTrustedDevices();
-          }
-        "
-        :refresh-disabled="busy"
-        mode="client"
-        :rows="trustedRows"
-        :loading="trustedLoading"
-        :columns="columns"
-        :row-key="(row) => row.public_id"
-        :caption="text('Zaufane urządzenia', 'Trusted devices')"
-        :english="locale === 'en'"
-        :searchable="false"
-      >
-        <template #actions="{ row }"
-          ><Button
-            size="sm"
-            variant="outline"
-            tone="danger"
-            :disabled="busy"
-            @click="
-              removing = row.public_id;
-              attempt = 0;
-            "
-            >{{ text('Unieważnij', 'Revoke') }}</Button
-          ></template
-        >
-      </Table>
-      <Button
-        :busy="trustedLoading"
-        v-if="trustedCursor"
-        :disabled="busy"
-        @click="loadTrustedDevices(true)"
-        >{{ text('Wczytaj starsze', 'Load older') }}</Button
-      >
-    </template>
     <FormNotifications
       v-if="modal && !removing"
       :attempt="attempt"

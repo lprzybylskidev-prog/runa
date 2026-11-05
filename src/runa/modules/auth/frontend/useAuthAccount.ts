@@ -161,6 +161,7 @@ export function useAuthAccount(accountId: string) {
   const {
     pageLoading,
     trustedLoading,
+    trustedLoaded,
     rows,
     cursor,
     trustedRows,
@@ -1060,6 +1061,7 @@ export function useAuthAccount(accountId: string) {
     refreshing,
     pageLoading,
     trustedLoading,
+    trustedLoaded,
     ready,
     failure,
     failureText,

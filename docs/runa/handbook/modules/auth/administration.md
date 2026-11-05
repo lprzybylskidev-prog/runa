@@ -256,11 +256,12 @@ cancels obsolete collection lanes. Reconciliation preserves unrelated dirty draf
 
 Selected-user Security renders Sessions and Trusted devices through the same public
 `Table` used by the account panel. Sessions show sign-in, latest activity, expiry
-and remembered sign-in; devices show creation and expiry. Each table paginates its
+and remembered sign-in; devices share the account column definitions for
+browser/platform, current browser, creation, last use and expiry. Each table paginates its
 current authorized batch (at most 100 rows), with separate Latest/Older controls
 for the owning before-cursor batches. Older is offered only for a full batch;
-counts describe the loaded batch, never an account-wide inventory. No local sort,
-search or export is offered. Empty results retain table headers, refresh returns
+counts describe the loaded batch, never an account-wide inventory. Device sorting
+covers only that loaded batch; session sorting, search and export are not offered. Empty results retain table headers, refresh returns
 to the latest batch, and row revocation keeps native confirmation/proof and grants.
 The Admin session projection does not identify the administrator's current session
 within another account's list, so no misleading current-session column is shown.
@@ -478,7 +479,7 @@ and Actions under Auth `backend`, are runtime capabilities for authorized server
 consumers through `ModuleApis`; management adapters are private:
 
 ```php
-// AuthSecurity API 1.1.0, permission runa.auth.trust.manage
+// AuthSecurity API 1.2.0, permission runa.auth.trust.manage
 public function revokeDevices(string $publicId, int $expectedVersion): bool;
 // AuthPolicies API 1.1.0, permission runa.auth.policy.exceptions
 // Fresh both-factor runa.auth.policy.exception proof, consumed once in transaction.

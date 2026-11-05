@@ -153,6 +153,12 @@ Existing standard table exports remain supported within owning read permissions.
   verification/release stays last. Apply the rule to owner and customer instruction
   products and this roadmap; ordinary non-frontend roadmaps need no extra point.
 
+- 2026-11-05 — **Trusted-device identification — APPROVED:** the owner accepts
+  browser/system labels, cookie-derived current-browser state, last successful use
+  and inline own-account management, then explicitly requests implementation and
+  a development database rebuild using corrected original pre-1.0 migrations.
+  Point 11a81 records the implementation and exact scoped reset.
+
 Record subsequent significant owner decisions individually with dates and update
 the review/roadmap.
 Before platform 1.0.0, necessary incompatible Runa/Core refactoring has standing
@@ -1028,6 +1034,16 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Preserve native row commands, confirmation/proof, bounded cursor reads and
     replacement seams. Prepare current assets, synchronize guidance and commit
     before returning to owner manual acceptance; broad gates remain point 12.
+- [x] 11a81. Identify trusted browsers in own and Admin security tables.
+  - Owner-approved 2026-11-05: persist bounded browser/platform labels and last use,
+    derive the current-browser marker from the private trust cookie, and expose the
+    same metadata in both guarded read surfaces. Keep metadata out of authorization.
+  - Render own trusted devices inline, including empty results; retain fresh-factor
+    issuance, confirmed own/Admin revocation and configuration visibility.
+  - Correct the original development migration, author regression coverage,
+    synchronize current contracts and rebuild the identified local development
+    database/seeds at the owner's explicit request. Preserve other databases/data.
+  - Prepare current assets/readiness and commit; broad gates remain point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7246,3 +7262,87 @@ Mandatory staged hooks and knowledge freshness accompany the commit. No disposab
 Docker/database resources were created or removed. Active services, development/
 test data, volumes, caches, backups and prior reports are preserved. Owner manual
 acceptance 11b and final verification/release 12 remain open.
+
+### Point 11a81 — Identify trusted browsers and expose inline own management
+
+The owner confirms the proposed browser/system, current-browser and last-use
+metadata in both panels, inline own-account management and the explicit local
+reset. The original Auth trusted_devices CREATE now contains nullable allowlisted
+browser/platform labels and last_used_at. Issuance stores bounded known labels
+parsed from at most 2048 User-Agent bytes; raw headers, IP addresses and hardware
+fingerprints are not retained. Unknown labels remain null. Successful issuance or
+login use records last use in the existing transaction; list reads never update it.
+Labels never authorize or identify a trust proof.
+
+AuthSecurity advances additively to 1.2.0. Its complete documented row includes
+browser/platform/current/created_at/last_used_at/expires_at and public_id. Own HTTP
+and guarded Admin reads share the owning projection, with an explicit safe-field
+allowlist and current-browser comparison against the private cookie hash within
+the authorized target's records. No secret/hash/factor metadata crosses the read
+boundary. Native scope, revocation, factor proof, generation, expiry and Audit
+remain authoritative. Auth remains the accumulated unreleased 3.1.0 feature
+candidate; no extra historical module edge or compatibility machinery is needed.
+
+Own management now renders its shared Table inline even when empty, under the
+configuration-gated Trusted devices heading. A single private typed column helper
+supplies own/Admin and custom trust-tab defaults, including localized unknown
+labels. The public controller exposes trustedLoaded for initial-only placeholders;
+subsequent reads retain the table frame. Explicit refresh returns to the latest
+batch, older reads stay isolated and row revocation retains confirmation. The
+removed management-only modal/button have no remaining default path.
+
+Knowledge was current and queried before source loading. Relevant backend,
+Laravel, security, PostgreSQL and frontend/Vue/Tailwind guidance, public API/data
+ownership, current account/security/table/loading contracts and Laravel 13 Boost
+request/cookie/migration references grounded the change. Current Auth security,
+account and administration guides plus module/central changelogs are synchronized.
+Owner/customer instruction products already cover guarded public APIs, shared
+presentation, capability visibility, metadata safety and pre-1.0 migration policy;
+no reusable rule changes, new public component or skill-reference additions are
+needed. No dependency was added.
+
+Focused verification resolves actual cookie/current-marker and presentation
+questions rather than running broad implementation suites. The initial serial
+backend diagnostic refused the stale base runa_test migration ledger without
+changing it. Supported parallel mode with one disposable worker completed the
+metadata/issuance/login/revocation/Audit case and six bounded parser cases. The
+only final execution failure was worker SIGSEGV/exit 139 entering the selected
+Admin session/trust case; guarded cleanup succeeded and removed runa_test_test_1.
+Assess this focused run as PASS (owner SIGSEGV exception), retaining the native
+failed report and disclosing interrupted Admin assertions. No retry or fault-fix
+claim is made. Earlier diagnostic assertion naming was corrected before this run.
+Evidence: .runtime/user-details/trusted-devices-backend*.log and native reports.
+
+Two focused browser-based frontend cases PASS: independent cursor/row ownership,
+shared device/current labels, confirmed revocation, explicit latest refresh, CSRF
+renewal without write replay, and an empty table retained after the last device
+disappears. Current strict frontend/native/static asset build PASS. Native Nginx
+readiness after reset confirms unrestricted private fixture-admin login, account
+and Admin access and the actual empty own table. Read-only response projections
+exercise populated metadata/current/last-use columns, refresh and confirmation/
+cancel in both views for PL/EN, light/dark, 390/1440px with no region overflow.
+Screenshots were inspected; no domain write was submitted and browser sessions
+logged out. Evidence: .runtime/user-details/trusted-devices-{frontend,build,readiness}.log
+and .runtime/artifacts/playwright/trusted-devices/.
+
+Before the owner-requested reset, fresh inspection verified local PostgreSQL runa,
+role runa, server 172.27.0.8:5432, exactly 45 runa-owned tables across shared,
+runa_auth, runa_permissions and runa_audit, 15 accounts all carrying fixture
+provenance and zero reserved jobs. The exact table inventory and loss of local
+settings/sessions/Audit were announced. Under native maintenance, the previously
+reviewed scoped reset rechecked that inventory and dropped only those 45 tables
+with RESTRICT, preserving schema ownership. Forward platform/Core preparation
+used source reference 228876569eafb4d90c1c71c3bc974e7bf716f190 with this point's
+working source, then native application migrate, maintenance exit, configured
+ordinary db:seed and queue restart. The rebuilt database has the new trust columns,
+45 tables, 15 fixture accounts and current Core versions. Optional 2FA and the
+privately configured administrator were restored without printing credentials.
+Exact before/after inventories and operation evidence:
+.runtime/user-details/trusted-devices-reset/.
+
+The reset replaced only identified rebuildable local development table data and
+ledgers. Base runa_test and all other databases, files, services, Docker resources/
+volumes, caches, backups and prior reports were preserved. The supported runner
+cleaned its disposable worker; no task-created Docker resource remains. Mandatory
+staged hooks/current knowledge accompany the commit. Owner acceptance 11b and
+final affected-area verification/release 12 remain open.

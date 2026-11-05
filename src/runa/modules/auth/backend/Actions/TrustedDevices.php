@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Auth\Models\User;
+use Runa\Modules\Auth\Support\BrowserDescription;
 use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
@@ -24,18 +25,19 @@ final readonly class TrustedDevices
         if (! $this->policy->value('trusted_devices_enabled')) {
             return;
         }
-        $token = $request->cookie('runa_trust');
-        if (! is_string($token) || ! preg_match('/\A[0-9a-f]{64}\z/D', $token)) {
+        $hash = $this->cookieHash($request);
+        if ($hash === null) {
             return;
         }
-        /** @var (\stdClass&object{factor_method: string|null, created_at: string|null})|null $row */
-        $row = $connection->table('runa_auth.trusted_devices')->where('user_id', $user->id)->where('token_hash', hash('sha256', $token))
+        /** @var (\stdClass&object{id: int, factor_method: string|null, created_at: string|null})|null $row */
+        $row = $connection->table('runa_auth.trusted_devices')->where('user_id', $user->id)->where('token_hash', $hash)
             ->where('security_version', $user->security_version)->whereNull('revoked_at')->where('expires_at', '>', now())->first();
         if ($row === null || ! in_array($row->factor_method === 'recovery' ? 'totp' : $row->factor_method, $this->policy->enrolled($user), true) || $row->created_at === null || ! $this->policy->accepts($row->factor_method ?? '')
             || CarbonImmutable::parse($row->created_at)->addDays($this->policy->integer('trusted_device_days'))->lte(CarbonImmutable::now('UTC'))) {
             return;
         }
         $connection->table('runa_auth.sessions')->where('public_id', $sessionId)->update(['factor_method' => $row->factor_method, 'factor_verified_at' => now()]);
+        $connection->table('runa_auth.trusted_devices')->where('id', $row->id)->update(['last_used_at' => now()]);
     }
 
     /**
@@ -56,7 +58,8 @@ final readonly class TrustedDevices
             $connection->table('runa_auth.trusted_devices')->whereIn('id', $active->slice(19))->update(['revoked_at' => now()]);
             $connection->table('runa_auth.trusted_devices')->insert(['public_id' => (string) Str::uuid7(), 'user_id' => $user->id,
                 'token_hash' => hash('sha256', $secret), 'security_version' => $user->security_version,
-                'factor_method' => $method, 'created_at' => now(), 'expires_at' => now()->addDays($days)]);
+                'factor_method' => $method, 'created_at' => now(), 'last_used_at' => now(), 'expires_at' => now()->addDays($days),
+                ...BrowserDescription::fromUserAgent($request->userAgent())]);
             $this->transactions->record('trusted_device.issued', $user);
 
             return ['secret' => $secret, 'minutes' => $days * 1440];
@@ -68,7 +71,7 @@ final readonly class TrustedDevices
     }
 
     /**
-     * @return list<array{public_id: string, created_at: string, expires_at: string}>
+     * @return list<array{public_id: string, browser: ?string, platform: ?string, current: bool, created_at: ?string, last_used_at: ?string, expires_at: string}>
      */
     public function listFor(string $publicId, ?string $before = null): array
     {
@@ -81,13 +84,28 @@ final readonly class TrustedDevices
             return [];
         }
 
-        /** @var list<array{public_id: string, created_at: string, expires_at: string}> $rows */
+        $hash = $this->cookieHash(app(Request::class));
+        /** @var list<array{public_id: string, browser: ?string, platform: ?string, current: bool, created_at: ?string, last_used_at: ?string, expires_at: string}> $rows */
         $rows = app('db')->connection()->table('runa_auth.trusted_devices')->where('user_id', $user->id)->whereNull('revoked_at')
             ->where('expires_at', '>', now())->where('security_version', $user->security_version)
             ->when($before !== null, fn ($query) => $query->where('public_id', '<', $before))
-            ->orderByDesc('public_id')->limit(100)->get(['public_id', 'created_at', 'expires_at'])->map(fn ($row) => (array) $row)->values()->all();
+            ->orderByDesc('public_id')->limit(100)->get(['public_id', 'browser', 'platform', 'token_hash', 'created_at', 'last_used_at', 'expires_at'])
+            ->map(function (object $row) use ($hash): array {
+                /** @var \stdClass&object{public_id: string, browser: ?string, platform: ?string, token_hash: string, created_at: ?string, last_used_at: ?string, expires_at: string} $row */
+                return ['public_id' => $row->public_id, 'browser' => $row->browser, 'platform' => $row->platform,
+                    'current' => $hash !== null && hash_equals($row->token_hash, $hash),
+                    'created_at' => $row->created_at, 'last_used_at' => $row->last_used_at, 'expires_at' => $row->expires_at];
+            })->values()->all();
 
         return $rows;
+    }
+
+    private function cookieHash(Request $request): ?string
+    {
+        $token = $request->cookie('runa_trust');
+
+        return is_string($token) && preg_match('/\A[0-9a-f]{64}\z/D', $token)
+            ? hash('sha256', $token) : null;
     }
 
     /** Private owning all-device revocation used by reviewed user batches. */

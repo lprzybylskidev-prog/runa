@@ -1757,6 +1757,10 @@ it('trusted device management keeps isolated cursor rows and confirms revocation
             : [
                 {
                   public_id: url.searchParams.has('before') ? other : id,
+                  browser: 'Firefox',
+                  platform: 'Linux',
+                  current: true,
+                  last_used_at: '2026-10-02T12:00:00Z',
                   created_at: '2026-10-01T12:00:00Z',
                   expires_at: '2026-11-01T12:00:00Z',
                 },
@@ -1777,36 +1781,35 @@ it('trusted device management keeps isolated cursor rows and confirms revocation
   await loaded(w);
   const state = w.getComponent(AuthAccountEditor).props('account');
   state.rows.value = [{ public_id: other, current: true }];
-  await w
-    .get('[data-trusted-devices]')
-    .findAll('button')
-    .find((button) => button.text() === 'Zarządzaj urządzeniami')!
-    .trigger('click');
   await vi.waitFor(() =>
-    expect(document.querySelectorAll('[role=dialog] tbody tr')).toHaveLength(1),
+    expect(w.findAll('[data-trusted-devices] tbody tr')).toHaveLength(1),
   );
   await vi.waitFor(() => expect(state.busy.value).toBe(false));
+  expect(w.get('[data-trusted-devices]').text()).toContain('Firefox · Linux');
+  expect(w.get('[data-trusted-devices]').text()).toContain('Ta przeglądarka');
   const body = new DOMWrapper(document.body);
-  await body
-    .findAll('[role=dialog] button')
+  await w
+    .findAll('[data-trusted-devices] button')
     .find((button) => button.text() === 'Wczytaj starsze')!
     .trigger('click');
   await vi.waitFor(() => expect(state.trustedRows.value).toHaveLength(2));
   expect(state.rows.value).toEqual([{ public_id: other, current: true }]);
-  await body.get('[role=dialog] tbody button').trigger('click');
+  await state.loadTrustedDevices();
+  await vi.waitFor(() => expect(state.trustedRows.value).toHaveLength(1));
+  await w.get('[data-trusted-devices] tbody button').trigger('click');
   await vi.waitFor(() =>
-    expect(document.querySelectorAll('[role=dialog]')).toHaveLength(2),
+    expect(document.querySelectorAll('[role=dialog]')).toHaveLength(1),
   );
   expect(writes).toHaveLength(0);
   write = () => json('csrf_token_mismatch', 419);
-  const confirmation = body.findAll('[role=dialog]')[1]!;
+  const confirmation = body.findAll('[role=dialog]')[0]!;
   await confirmation
     .findAll('button')
     .find((button) => button.text() === 'Unieważnij')!
     .trigger('click');
   await vi.waitFor(() => expect(writes).toHaveLength(1));
   await vi.waitFor(() => expect(state.failure.value).toBe('csrf'));
-  expect(state.trustedRows.value).toHaveLength(2);
+  expect(state.trustedRows.value).toHaveLength(1);
   await vi.waitFor(() =>
     expect(
       body
@@ -1833,11 +1836,7 @@ it('trusted device management keeps isolated cursor rows and confirms revocation
     path: '/api/runa/auth/trusted-devices/revoke',
     body: { public_id: id },
   });
-  await vi.waitFor(() =>
-    expect(state.trustedRows.value.map((row) => row.public_id)).toEqual([
-      other,
-    ]),
-  );
+  await vi.waitFor(() => expect(state.trustedRows.value).toEqual([]));
 });
 
 it('factor dialogs keep failures inside their focus boundary and never replay after CSRF renewal', async () => {
@@ -2460,7 +2459,7 @@ it('account refresh retains a trailing focus invalidation while an earlier read 
   expect(writes).toHaveLength(0);
 });
 
-it('trusted management appears only while an active device exists and disappears after refresh', async () => {
+it('trusted management keeps its inline table when the last device disappears after refresh', async () => {
   currentSecurity = { ...security, trusted_devices_enabled: true };
   let active = true;
   const original = vi.mocked(window.fetch).getMockImplementation()!;
@@ -2488,12 +2487,14 @@ it('trusted management appears only while an active device exists and disappears
   const w = mount(AuthAccount, { props: { accountId: id } });
   await loaded(w);
   const card = w.get('[data-account-security]');
-  expect(card.text()).toContain('Zarządzaj urządzeniami');
+  expect(card.find('[data-trusted-devices] table').exists()).toBe(true);
+  expect(card.text()).toContain('Nieznana przeglądarka');
   expect(card.text()).not.toContain('Zaufana przeglądarka pomija kod');
   active = false;
   await w.getComponent(AuthAccountEditor).props('account').refresh();
   await flushPromises();
-  expect(card.text()).not.toContain('Zarządzaj urządzeniami');
+  expect(card.find('[data-trusted-devices] table').exists()).toBe(true);
+  expect(card.text()).toContain('Brak wyników');
 });
 
 it('shell renders immediately and synchronizes content with profile readiness while retaining background drafts', async () => {

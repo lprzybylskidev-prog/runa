@@ -165,10 +165,13 @@ Trusted devices appear within the two-factor card when policy enables the featur
 there is no separate default navigation tab. Trust this browser is disabled until a
 usable factor is enrolled. Its Dialog accepts a fresh factor code through the
 existing backend boundary, without inventing an additional password requirement.
-Manage devices opens a bounded, sortable Table in a Dialog, with explicit older-page
-loading and refresh. Each revoke action requires modal confirmation. List errors
-retain the dialog and provide refresh; CSRF errors provide explicit renewal without
-write replay. Disabling/losing a factor never weakens the server's trust checks.
+The inline Trusted devices subsection contains a bounded, sortable shared Table,
+including an empty table when no active device exists. Own and Admin defaults use
+one column definition for browser/platform, current browser, creation, last use and
+expiry. Unknown metadata has localized fallback text. Older-page loading and refresh
+retain the existing read owner; each revoke action requires modal confirmation.
+List errors use ordinary account feedback; CSRF errors provide explicit renewal
+without write replay. Disabling/losing a factor never weakens the server's trust checks.
 Legacy trust tab/choose/submit seams remain for custom presentations; new independent
 trusted-device state/actions are documented in the public presentation contract.
 
@@ -333,13 +336,14 @@ redundant verified-email, secondary-address introduction, avatar instructions,
 enrolled-method summaries/status lines, trust explanation and delivery-editor
 introduction. Keep actionable verification errors and enrollment prerequisites.
 The avatar preview is centered within its Card. Trust actions appear directly
-inside the two-factor Card without a redundant subsection heading.
+inside the two-factor Card. Its Trusted devices heading identifies the inline table.
 
-Trusted-device management is visible only when trustedRows contains an active
-record from the existing guarded current-device endpoint. Load that list at
-initialization, visible refresh and after security changes; preserve its independent
-cursor and busy state when opening its dialog. Expired/revoked/missing devices do
-not keep the action visible. This is presentation availability only; server trust,
+Trusted-device management is visible whenever the feature is configured, even
+with no active records. Load its authorized list at initialization, visible refresh
+and after security changes; preserve its independent cursor, rows and busy state
+through in-place refresh (an explicit fresh read returns to the latest batch). The public controller adds `trustedLoaded: Ref<boolean>` alongside
+`trustedRows`, `trustedLoading` and `trustedCursor`; it becomes true after a successful
+read, allowing initial skeletons while later reads retain the empty/table frame. This is presentation availability only; server trust,
 factor proof, validation and authorization rules remain unchanged.
 
 ## Shared session composition

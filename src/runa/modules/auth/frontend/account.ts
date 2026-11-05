@@ -81,9 +81,12 @@ export async function accountRequest(
 export interface AccountRow {
   public_id: string;
   current?: boolean;
+  browser?: string | null;
+  platform?: string | null;
+  last_used_at?: string | null;
   authenticated_at?: string;
   activity_at?: string;
-  created_at?: string;
+  created_at?: string | null;
   expires_at?: string;
   occurred_at?: string;
   action?: string;

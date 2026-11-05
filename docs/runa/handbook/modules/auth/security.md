@@ -123,8 +123,24 @@ actions use the shared dialog/focus/ephemeral-draft contract in [account UI](acc
 (range 1–90). Issuance requires a fresh permitted second-factor proof. The native
 encrypted `runa_trust` cookie is host-only, HttpOnly, SameSite=Lax and Secure in
 production. Only a SHA-256 equality hash, UUIDv7, user FK, security generation,
-verified method, creation/expiry and revocation timestamps persist. Responses
-never return its secret/hash. At most 20 unrevoked devices remain per account;
+verified method, creation/expiry/revocation and last-use timestamps, plus nullable
+allowlisted browser/platform labels persist. No raw User-Agent, IP address or
+hardware fingerprint is stored for this presentation. Labels describe the browser
+at issuance, may be unavailable or inaccurate and never establish trust identity.
+Last use records successful issuance or login use, never list reads. The original
+CREATE migration owns this unpublished schema; development rebuilds apply it.
+
+Responses never return its secret/hash. The Auth-owned guarded `AuthSecurity` API 1.2.0
+`trustedDevices(string $publicId, ?string $before = null): array` and own
+`GET trusted-devices` return bounded rows with the complete shape
+`{public_id:string, browser:?string, platform:?string, current:bool,
+created_at:?string, last_used_at:?string, expires_at:string}`. The implementation
+lives in Auth Actions/TrustedDevices and its public contract in Contracts/AuthSecurity;
+Admin consumes the guarded API, while authenticated self-service uses the owning
+HTTP entrypoint. `current` compares the request's private cookie hash only within
+the authorized target's records; it never exposes a token or selects authority.
+
+At most 20 unrevoked devices remain per account;
 issuance revokes the oldest excess rows.
 
 Trust may satisfy ordinary login 2FA when its method remains enrolled and permitted
@@ -161,7 +177,7 @@ the proof atomically with the business change and Audit; rollback restores both.
 It cannot authorize a second committed action. The next action must reconfirm.
 Cleanup bounds expired proof storage. Jobs/CLI cannot inherit browser proof state.
 
-`AuthSecurity` API `1.1.0` provides `requestPasswordReset(publicId, expectedVersion)`,
+`AuthSecurity` API `1.2.0` provides `requestPasswordReset(publicId, expectedVersion)`,
 `resetFactors(publicId, expectedVersion)`, `trustedDevices(publicId, before)` and
 `revokeDevice(publicId, deviceId)`. Versioned all-device revocation is
 `revokeDevices(publicId, expectedVersion)`, with the same trust grant and owning
