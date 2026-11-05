@@ -43,7 +43,7 @@ final readonly class CleanupSessions
                     if ($table === 'sessions') {
                         // The correlated owned exception retains valid extended sessions; all inputs are bound.
                         $revision = app('db')->connection()->table('shared.modules')->where('module_id', 'runa.auth')->value('settings_revision');
-                        $query->orWhereRaw("activity_at <= ?::timestamptz - make_interval(mins => COALESCE((SELECT value FROM runa_auth.policy_exceptions e WHERE e.user_id = runa_auth.sessions.user_id AND e.key = 'session_idle_minutes' AND e.revoked_at IS NULL AND e.expires_at > ?::timestamptz AND e.policy_revision = ?), ?))", [$now, $now, $revision, $this->settings->integer('runa.auth', 'session_idle_minutes')]);
+                        $query->orWhereRaw("activity_at <= ?::timestamptz - make_interval(mins => COALESCE((SELECT value FROM runa_auth.policy_exceptions e WHERE e.user_id = runa_auth.sessions.user_id AND e.key = 'session_idle_minutes' AND e.revoked_at IS NULL AND (e.expires_at IS NULL OR e.expires_at > ?::timestamptz) AND e.policy_revision = ?), ?))", [$now, $now, $revision, $this->settings->integer('runa.auth', 'session_idle_minutes')]);
                     }
                 });
                 $ids = $query->orderBy('id')->limit(500)->pluck('id');

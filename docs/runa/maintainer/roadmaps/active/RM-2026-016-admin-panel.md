@@ -1075,6 +1075,16 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Preserve native proof, revisions, configuration visibility and replacements;
     synchronize contracts/tests/docs, prepare assets/native readiness and commit.
     Broad verification stays in point 12; owner acceptance remains 11b.
+- [x] 11a86. Allow indefinite account rules and space operation fields.
+  - Owner-requested 2026-11-05: expiry is optional for both rule keys; null means
+    indefinite and a supplied deadline must be future with no 30-day cap.
+  - Apply nullable expiry through storage, guarded API/Admin adapter, effective
+    policy/session cleanup, active/history/status presentation and Audit reads.
+    Retain current policy-publication invalidation, proof, versions and bounds.
+  - Record incompatible Auth/API versions and current consumers, correct original
+    development CREATE, prepare the inspected rebuildable local schema/fixtures,
+    synchronize coverage/docs/assets and commit. Fix operation-field spacing.
+    Owner acceptance/final verification remain 11b/12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7610,3 +7620,80 @@ development/other databases, all Docker resources, caches, backups and reports a
 preserved. No Docker resources were created. Mandatory staged hooks/current
 knowledge accompany the commit. Owner manual acceptance 11b and final affected-area
 verification/release 12 remain open; these focused results do not complete them.
+
+### Point 11a86 — Optional indefinite rule expiry and separated operation fields
+
+Owner decision, 2026-11-05: either account rule may omit its end date and apply
+indefinitely. Supplied dates must be future but have no 30-day cap. This explicitly
+supersedes the earlier temporary-only/30-day premise for these overrides; value
+bounds, existing global-policy-publication invalidation, native both-factor proof,
+per-key versions, reason validation, transaction and Audit remain authoritative.
+An indefinite password lifetime override still limits the password by its chosen
+number of days; an indefinite idle override cannot extend captured absolute session
+expiry. No other security/lifecycle policy is relaxed.
+
+The original policy_exceptions CREATE now makes expires_at nullable. AuthPolicies
+advances incompatibly to 2.0.0 because read rows now allow a null expiry; its write
+accepts ?string expiresAt. Auth source advances to 4.0.0, current Admin/Permissions
+constraints require ^4.0.0 and the unpublished user_details upgrade target is
+reconciled from 3.1.0 to 4.0.0. This uses standing pre-1.0 owner authorization;
+published history/tags remain unchanged and there is no intermediate-schema adapter
+or corrective migration. Current dependent module candidates remain Admin 0.2.0
+and Permissions 2.1.0: their public interfaces are unchanged.
+
+All current API consumers/bindings and row signatures are synchronized. Effective
+single/batch/correlated policy reads, active-rule projection, session cleanup and
+revocation Audit treat null as unbounded. The Admin adapter explicitly admits null
+expiry rather than refusing it in native field validation; the full HTTP regression
+found and resolved that missing admission after the initial direct-engine checks.
+The UI no longer fabricates an expiry for revocation. Active/status/history views
+render Indefinitely/Bezterminowo, and local expiry timers consider only dated rows.
+Fields clearly label the optional date and describe leaving it empty. Real wrappers
+and a flex gap separate operation fields despite display-contents boundaries.
+
+Public Auth/Admin/Permissions contract/status guides, the canonical forms guide and
+module/central changelogs are synchronized. The Auth candidate changelog heading
+now matches 4.0.0; the current Admin dependency/version table also has the correct
+three-column shape. Owner/customer instruction products already route to these
+owning guides and cover guarded API/version/data/presentation decisions. Neither
+requires duplicated procedures or a new skill/public frontend component.
+
+Knowledge was current and queried before focused source work; relevant existing
+frontend/Vue/Tailwind/backend/Laravel/security guidance, PostgreSQL skill/data
+policy and version-aware Laravel nullable-column references grounded implementation.
+Six focused backend cases PASS (118 assertions) for both keys with indefinite and
+90-day overrides, correlated/effective reads, versions, individual revocation,
+finite/indefinite session cleanup and captured absolute deadlines. The additional
+native Admin HTTP case PASS (30 assertions) covers optional metadata, null/90-day
+writes and null revocation with fresh consumed proof and current active reads.
+Two focused frontend cases and the current Core API contract PASS. Supported
+frontend build PASS, including strict types and native/static error assets.
+Evidence remains in .runtime/user-details/optional-policy-expiry/{backend,
+admin-backend,frontend,contract,build}.log. Broad suites remain final point 12.
+
+Readiness used the standing owner-authorized development rebuild. Current inspection
+verified local PostgreSQL database runa, role runa, server 172.27.0.8:5432, exactly
+45 owned tables across shared/runa_auth/runa_audit/runa_permissions, all 15 users
+with fixture provenance and no reserved jobs. The exact scope was announced and
+recorded in .runtime/user-details/optional-policy-expiry/scope.json. The scoped
+maintenance script rechecked inventory, dropped only those 45 tables with RESTRICT
+and preserved schemas. The supported forward preparation primitive used source
+reference df58bf9f with this point's working source, followed by application migrate,
+maintenance exit, configured db:seed and queue restart. The rebuilt local database
+again has 45 tables, 15 fixtures and Auth 4.0.0 with the other current Core versions;
+information_schema confirms rule expiry is nullable. This is source/runtime
+preparation for owner acceptance, not release or installation acceptance.
+
+Native browser reads confirm actual page/API readiness; read-only populated
+projections additionally inspect indefinite status/history/editors in PL/EN,
+light/dark and 1440/390px. Geometry confirms at least 16px between operation fields;
+inspected screenshots remain in .runtime/artifacts/playwright/optional-policy-expiry/.
+No domain write was submitted in the browser; its session logged out. The initial
+Admin HTTP regression's 422 was repaired before its passing focused rerun.
+
+Only the announced local fixture database was rebuilt. Backend runners removed
+their disposable runa_test_test_1 workers and preserved base runa_test; all other
+databases, Docker resources/volumes, model/Qdrant caches, backups and reports remain
+preserved. No Docker resource was created or removed. Mandatory staged hooks and
+current knowledge accompany the commit. Owner acceptance 11b and final affected-area
+verification/release 12 remain open.

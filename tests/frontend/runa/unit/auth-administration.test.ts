@@ -974,7 +974,7 @@ it('named account rules open focused editors and status uses authoritative activ
     key: 'session_idle_minutes',
     value: 240,
     reason: 'Approved extended session',
-    expires_at: new Date(Date.now() + 3600000).toISOString(),
+    expires_at: null,
     revoked_at: null,
     policy_revision: 8,
     version: 2,
@@ -1036,6 +1036,10 @@ it('named account rules open focused editors and status uses authoritative activ
   ]);
   const rules = wrapper.find('[data-user-section=exceptions]');
   expect(rules.find('select').exists()).toBe(false);
+  expect(rules.text()).toContain('Indefinitely');
+  expect(wrapper.find('[data-status-group=custom_rules]').text()).toContain(
+    'Indefinitely',
+  );
   expect(rules.text()).not.toContain('password_expiry_days');
   await rules
     .findAll('button')
@@ -1047,6 +1051,14 @@ it('named account rules open focused editors and status uses authoritative activ
     ).not.toBeNull(),
   );
   expect(document.querySelector('[role=dialog] select')).toBeNull();
+  expect(
+    document.querySelector('[data-operation-field=expires_at]')?.textContent,
+  ).toContain('Leave empty for an indefinite rule.');
+  expect(
+    document
+      .querySelector('[data-operation-field=expires_at] input')
+      ?.hasAttribute('required'),
+  ).toBe(false);
   expect(
     form.values.value[form.fieldPath('exceptions', 'exception_version')],
   ).toBe(2);

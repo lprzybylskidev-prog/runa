@@ -14,7 +14,10 @@ Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, 
 ## Container and field composition
 
 When several Cards have independent forms, keep their drafts, validation and submit
-boundaries separate. Keep submit actions visually attached to their fields: use
+boundaries separate. Repeated controls behind presentation/failure boundaries need
+real layout wrappers or a gap-based container: display-contents wrappers do not
+provide sibling margins. Keep labels spaced from the preceding control in
+operation dialogs as well as ordinary forms. Keep submit actions visually attached to their fields: use
 spacing without a horizontal separator above the actions. Reserve separators for
 independent sections or operations. The shared Form actions slot supplies this
 default for account, Preferences and other forms. For two columns with uneven card heights, use independent

@@ -66,9 +66,7 @@ function operation(key: string, revoke = false) {
     revoke,
     value: revoke ? null : (current?.value ?? null),
     reason: revoke ? '' : (current?.reason ?? ''),
-    expires_at: revoke
-      ? new Date(Date.now() + 3600000).toISOString()
-      : (current?.expires_at ?? null),
+    expires_at: revoke ? null : (current?.expires_at ?? null),
   });
 }
 </script>
@@ -95,8 +93,8 @@ function operation(key: string, revoke = false) {
         <p class="mb-4 text-sm text-muted">
           {{
             t({
-              pl: 'Ustaw tymczasową wartość dla tego użytkownika. Po jej wygaśnięciu ponownie obowiązuje zasada ogólna.',
-              en: 'Set a temporary value for this user. The global rule applies again after it expires.',
+              pl: 'Ustaw własną wartość dla tego użytkownika. Data końcowa jest opcjonalna — bez niej zasada obowiązuje bezterminowo.',
+              en: 'Set a custom value for this user. The end date is optional — leave it empty for an indefinite rule.',
             })
           }}
         </p>

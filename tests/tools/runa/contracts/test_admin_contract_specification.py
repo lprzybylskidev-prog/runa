@@ -61,7 +61,7 @@ def test_current_core_methods_declare_versions_permissions_and_audiences() -> No
             "AuthStepUp": "1.1.0",
             "AuthProfiles": "2.1.0",
             "AuthPreferences": "1.1.0",
-            "AuthPolicies": "1.2.0",
+            "AuthPolicies": "2.0.0",
             "AuthBulkSessions": "2.0.0",
             "PermissionsAccess": "2.2.0",
             "AuthAdministration": "2.1.0",

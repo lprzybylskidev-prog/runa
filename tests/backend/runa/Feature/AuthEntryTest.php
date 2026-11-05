@@ -1507,8 +1507,8 @@ it('keeps settings history effects and Audit atomic and restores as a new versio
         ->and($settings->read('runa.auth')['revision'])->toBe($revision + 2)
         ->and(User::find($user->id)->password_change_required)->toBeTrue()
         ->and(DB::table('runa_auth.policy_versions')->count())->toBe(3);
-    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '1.2.0')->history())->toThrow(OperationRejected::class);
-    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '1.2.0')->activeExceptions('01900000-0000-7000-8000-000000000001'))->toThrow(OperationRejected::class);
+    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '2.0.0')->history())->toThrow(OperationRejected::class);
+    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '2.0.0')->activeExceptions('01900000-0000-7000-8000-000000000001'))->toThrow(OperationRejected::class);
 })->group('auth-policy-operators');
 
 function operatorAuthorityFixture(): object
@@ -1631,6 +1631,38 @@ it('expires and revalidates only allowlisted account exceptions with monotonic v
         ->and(DB::table('runa_auth.policy_exceptions')->whereNull('revoked_at')->count())->toBe(0);
 })->group('auth-policy-operators');
 
+it('supports indefinite and long dated rule overrides with native versions and revocation', function (string $key, bool $indefinite): void {
+    $actor = profileVerified('indefinite-actor@example.test');
+    $target = entryUser('indefinite-target@example.test');
+    entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
+    [$secret, $codes] = credentialEnroll($this, $actor);
+    $policies = app(Policies::class);
+    $revision = app(ModuleSettings::class)->read('runa.auth')['revision'];
+    $scope = app(PrincipalScope::class);
+    $expiry = $indefinite ? null : now()->addDays(90)->toIso8601String();
+    $set = fn ($value, $version, $until) => $scope->run(new TrustedPrincipal($actor->public_id), fn () => $policies->exception($target->public_id, $key, $value, 'Approved rule override', $until, $version, $revision));
+    policyStepUpProof($this, $actor, 'runa.auth.policy.exception', $codes[0]);
+    expect($set(240, 0, $expiry)['version'])->toBe(1);
+    $record = $policies->activeExceptions($target->public_id)[0];
+    expect($record['expires_at'] === null)->toBe($indefinite)
+        ->and(app(PolicyExceptions::class)->value($target, $key))->toBe(240)
+        ->and(User::query()->whereKey($target->id)->selectSub(app(PolicyExceptions::class)->queryFor($key, 'runa_auth.users.id'), 'effective')->first()->effective)->toBe(240);
+    // A date in the past remains invalid; null and dates beyond 30 days are valid.
+    expect(fn () => $set(240, 1, now()->subDay()->toIso8601String()))->toThrow(InvalidArgumentException::class);
+    policyStepUpProof($this, $actor, 'runa.auth.policy.exception', $codes[1]);
+    expect($set(300, 1, null)['version'])->toBe(2)
+        ->and($policies->activeExceptions($target->public_id)[0]['expires_at'])->toBeNull();
+    policyStepUpProof($this, $actor, 'runa.auth.policy.exception', $codes[2]);
+    expect($set(null, 2, null)['version'])->toBe(3)
+        ->and($policies->activeExceptions($target->public_id))->toBe([])
+        ->and(app(PolicyExceptions::class)->value($target, $key))->toBe(app(ModuleSettings::class)->integer('runa.auth', $key));
+})->with([
+    'indefinite password' => ['password_expiry_days', true],
+    'dated password' => ['password_expiry_days', false],
+    'indefinite session' => ['session_idle_minutes', true],
+    'dated session' => ['session_idle_minutes', false],
+])->group('auth-policy-operators');
+
 it('reads active account exceptions independently of bounded history and excludes invalidated rows', function (): void {
     $target = entryUser('active-rule-target@example.test');
     $other = entryUser('active-rule-other@example.test');
@@ -1724,7 +1756,7 @@ it('consumes policy publication proof only with history and preserves scheduled 
     expect(User::find($target->id)->active)->toBeFalse();
 })->group('auth-policy-operators');
 
-it('session cleanup and deadline projection respect unexpired account lifetime exceptions', function (): void {
+it('session cleanup and deadline projection respect dated and indefinite account rules', function (bool $indefinite): void {
     entryPolicy(['session_idle_minutes' => 1]);
     $actor = profileVerified('cleanup-actor@example.test');
     $target = profileVerified('cleanup-target@example.test');
@@ -1735,16 +1767,21 @@ it('session cleanup and deadline projection respect unexpired account lifetime e
     $revision = app(ModuleSettings::class)->read('runa.auth')['revision'];
     policyStepUpProof($this, $actor, 'runa.auth.policy.exception', $codes[0]);
     app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => app(Policies::class)
-        ->exception($target->public_id, 'session_idle_minutes', 30, 'Temporary extension', now()->addMinutes(10)->toIso8601String(), 0, $revision));
+        ->exception($target->public_id, 'session_idle_minutes', 30, 'Session rule extension', $indefinite ? null : now()->addMinutes(10)->toIso8601String(), 0, $revision));
     CarbonImmutable::setTestNow(CarbonImmutable::now('UTC')->addMinutes(2));
     expect(app(SessionStore::class)->live($session))->toBeTrue();
     app(CleanupSessions::class)->run();
     expect(DB::table('runa_auth.sessions')->where('id', $session->id)->exists())->toBeTrue();
     CarbonImmutable::setTestNow(CarbonImmutable::now('UTC')->addMinutes(9));
+    expect(app(SessionStore::class)->live($session))->toBe($indefinite);
+    app(CleanupSessions::class)->run();
+    expect(DB::table('runa_auth.sessions')->where('id', $session->id)->exists())->toBe($indefinite);
+    // An indefinite override still cannot extend the session's captured absolute deadline.
+    CarbonImmutable::setTestNow(CarbonImmutable::parse($session->expires_at)->addSecond());
     expect(app(SessionStore::class)->live($session))->toBeFalse();
     app(CleanupSessions::class)->run();
     expect(DB::table('runa_auth.sessions')->where('id', $session->id)->exists())->toBeFalse();
-})->group('auth-policy-operators');
+})->with([true, false])->group('auth-policy-operators');
 
 it('persists welcome policy defaults and redirects only the public root through named sign-in', function (): void {
     $settings = app(ModuleSettings::class);

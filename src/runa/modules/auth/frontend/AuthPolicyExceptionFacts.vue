@@ -25,7 +25,11 @@ const { locale, t } = useAdminLocale();
         {{ t({ pl: 'Obowiązuje do', en: 'Applies until' }) }}
       </dt>
       <dd class="mt-1">
-        {{ formatApplicationInstant(exception.expires_at, locale) }}
+        {{
+          exception.expires_at === null
+            ? t({ pl: 'Bezterminowo', en: 'Indefinitely' })
+            : formatApplicationInstant(exception.expires_at, locale)
+        }}
       </dd>
     </div>
     <div class="min-w-0 sm:col-span-2">

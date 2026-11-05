@@ -4,6 +4,7 @@ namespace Runa\Modules\Auth\Actions;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\SettingsActor;
@@ -44,7 +45,7 @@ final readonly class Policies implements AuthPolicies
         new TrustedPrincipal($publicId);
         $user = User::withTrashed()->where('public_id', $publicId)->firstOrFail();
 
-        /** @var Collection<int, \stdClass&object{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string, revoked_at: string|null}> $rows */
+        /** @var Collection<int, \stdClass&object{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string|null, revoked_at: string|null}> $rows */
         $rows = app('db')->connection()->table('runa_auth.policy_exceptions')->where('user_id', $user->id)
             ->orderByDesc('id')->limit(50)->get(['public_id', 'key', 'value', 'reason', 'actor', 'version', 'policy_revision', 'expires_at', 'revoked_at']);
 
@@ -60,9 +61,9 @@ final readonly class Policies implements AuthPolicies
         new TrustedPrincipal($publicId);
         $user = User::withTrashed()->where('public_id', $publicId)->firstOrFail();
 
-        /** @var Collection<int, \stdClass&object{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string, revoked_at: string|null}> $rows */
+        /** @var Collection<int, \stdClass&object{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string|null, revoked_at: string|null}> $rows */
         $rows = app('db')->connection()->table('runa_auth.policy_exceptions')->where('user_id', $user->id)
-            ->whereIn('key', PolicyExceptions::KEYS)->whereNull('revoked_at')->where('expires_at', '>', now())
+            ->whereIn('key', PolicyExceptions::KEYS)->whereNull('revoked_at')->where(fn (Builder $query) => $query->whereNull('expires_at')->orWhere('expires_at', '>', now()))
             ->where('policy_revision', $this->settings->read('runa.auth')['revision'])->orderBy('key')->limit(count(PolicyExceptions::KEYS))->get(['public_id', 'key', 'value', 'reason', 'actor', 'version', 'policy_revision', 'expires_at', 'revoked_at']);
 
         return array_values($rows->map(fn ($row) => [
@@ -144,7 +145,7 @@ final readonly class Policies implements AuthPolicies
         $rows = $connection->table('runa_auth.policy_exceptions')->where('user_id', $user->id)->whereNull('revoked_at')->orderBy('id')->lockForUpdate()->get(['id', 'key', 'value', 'expires_at', 'reason']);
         foreach ($rows as $row) {
             $connection->table('runa_auth.policy_exceptions')->where('id', $row->id)->update(['revoked_at' => now(), 'version' => $connection->raw('version + 1'), 'updated_at' => now()]);
-            $active = CarbonImmutable::parse($row->expires_at)->isFuture();
+            $active = $row->expires_at === null || CarbonImmutable::parse($row->expires_at)->isFuture();
             $this->transactions->record('policy.exception_revoked', $user, [
                 'policy_setting' => ['old' => $row->key, 'new' => $row->key],
                 'policy_value' => ['old' => $active ? $row->value : null, 'new' => null],
@@ -184,16 +185,16 @@ final readonly class Policies implements AuthPolicies
         });
     }
 
-    public function exception(string $publicId, string $key, ?int $value, string $reason, string $expiresAt, int $version, int $policyRevision): array
+    public function exception(string $publicId, string $key, ?int $value, string $reason, ?string $expiresAt, int $version, int $policyRevision): array
     {
         new TrustedPrincipal($publicId);
-        if (! preg_match('/\A[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:Z|\+00:00)\z/D', $expiresAt)) {
+        if ($expiresAt !== null && ! preg_match('/\A[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:Z|\+00:00)\z/D', $expiresAt)) {
             throw new \InvalidArgumentException('Expected a UTC exception deadline.');
         }
-        $expires = CarbonImmutable::parse($expiresAt)->utc();
+        $expires = $expiresAt === null ? null : CarbonImmutable::parse($expiresAt)->utc();
         if (! in_array($key, PolicyExceptions::KEYS, true) || $version < 0 || $policyRevision < 0
             || trim($reason) === '' || strlen($reason) > 1000 || preg_match('/[\x00-\x1f]/', $reason)
-            || ! $expires->isFuture() || $expires->gt(CarbonImmutable::now('UTC')->addDays(30))
+            || ($expires !== null && ! $expires->isFuture())
             || ($value !== null && ($value < 1 || $value > ($key === 'password_expiry_days' ? 3650 : 43200)))) {
             throw new \InvalidArgumentException('Invalid bounded policy exception.');
         }
@@ -205,7 +206,7 @@ final readonly class Policies implements AuthPolicies
                 throw new OperationRejected('policy_stale', 'runa.auth', 'policy.exception', 409);
             }
             $user = User::where('public_id', $publicId)->lockForUpdate()->firstOrFail();
-            /** @var (\stdClass&object{id: int, version: int, revoked_at: string|null, expires_at: string, value: int, reason: string})|null $row */
+            /** @var (\stdClass&object{id: int, version: int, revoked_at: string|null, expires_at: string|null, value: int, reason: string})|null $row */
             $row = $connection->table('runa_auth.policy_exceptions')->where('user_id', $user->id)->where('key', $key)->orderByDesc('id')->first();
             if (($row->version ?? 0) !== $version) {
                 throw new OperationRejected('exception_stale', 'runa.auth', 'policy.exception', 409);
@@ -222,11 +223,11 @@ final readonly class Policies implements AuthPolicies
                     'policy_revision' => $policyRevision, 'expires_at' => $expires, 'created_at' => now(), 'updated_at' => now(),
                 ]);
             }
-            $previous = $row !== null && $row->revoked_at === null && CarbonImmutable::parse($row->expires_at)->isFuture() ? $row : null;
+            $previous = $row !== null && $row->revoked_at === null && ($row->expires_at === null || CarbonImmutable::parse($row->expires_at)->isFuture()) ? $row : null;
             $this->transactions->record($value === null ? 'policy.exception_revoked' : 'policy.exception_set', $user, [
                 'policy_setting' => ['old' => $key, 'new' => $key],
                 'policy_value' => ['old' => $previous?->value, 'new' => $value],
-                'valid_until' => ['old' => $previous?->expires_at, 'new' => $value === null ? null : $expires->toIso8601String()],
+                'valid_until' => ['old' => $previous?->expires_at, 'new' => $value === null ? null : $expires?->toIso8601String()],
                 'reason' => ['old' => $previous?->reason, 'new' => $value === null ? null : $reason],
             ]);
 

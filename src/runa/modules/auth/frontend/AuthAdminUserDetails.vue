@@ -457,10 +457,10 @@ function operationField(field: AdminFieldData): AdminFieldData {
     if (field.key === 'expires_at')
       return {
         ...field,
-        required: true,
+        required: false,
         label: {
-          pl: 'Obowiązuje do (maks. 30 dni)',
-          en: 'Applies until (max. 30 days)',
+          pl: 'Obowiązuje do (opcjonalnie)',
+          en: 'Applies until (optional)',
         },
       };
     if (field.key === 'reason') return { ...field, required: true };
@@ -510,17 +510,13 @@ function valid() {
             ),
           );
       }
-      if (key === 'expires_at' && typeof value === 'string') {
+      if (key === 'expires_at' && typeof value === 'string' && value !== '') {
         const at = Date.parse(value);
-        if (
-          !Number.isFinite(at) ||
-          at <= Date.now() ||
-          at > Date.now() + 30 * 86400000
-        )
+        if (!Number.isFinite(at) || at <= Date.now())
           errors.push(
             text(
-              'Wybierz przyszły termin w ciągu 30 dni.',
-              'Choose a future date within 30 days.',
+              'Wybierz przyszły termin albo pozostaw pole puste.',
+              'Choose a future date or leave the field empty.',
             ),
           );
       }
@@ -863,7 +859,7 @@ function supplied(section: AdminSectionData) {
             "
           />
         </div>
-        <div v-else class="space-y-4">
+        <div v-else class="flex min-w-0 flex-col gap-4">
           <p
             v-if="
               pending?.section === 'primary_email' &&
@@ -904,16 +900,34 @@ function supplied(section: AdminSectionData) {
               )
             }}
           </p>
-          <AdminField
+          <div
             v-for="field in fields"
             :key="field.key"
-            :field="operationField(field)"
-            :model-value="form.values.value[path(field.key)] ?? null"
-            :errors="form.errors.value[path(field.key)] ?? []"
-            :busy="form.busy.value"
-            :readonly="field.readonly"
-            @update:model-value="form.set(path(field.key), $event)"
-          />
+            class="min-w-0 space-y-2"
+            :data-operation-field="field.key"
+          >
+            <AdminField
+              :field="operationField(field)"
+              :model-value="form.values.value[path(field.key)] ?? null"
+              :errors="form.errors.value[path(field.key)] ?? []"
+              :busy="form.busy.value"
+              :readonly="field.readonly"
+              @update:model-value="form.set(path(field.key), $event)"
+            />
+            <p
+              v-if="
+                pending.section === 'exceptions' && field.key === 'expires_at'
+              "
+              class="text-xs text-muted"
+            >
+              {{
+                text(
+                  'Pozostaw puste, aby zasada obowiązywała bezterminowo.',
+                  'Leave empty for an indefinite rule.',
+                )
+              }}
+            </p>
+          </div>
           <p
             v-if="
               fields.some((field) => field.key === 'at') &&

@@ -950,6 +950,34 @@ function authAdministrationStrongProof(object $test, string $action): void
     $test->postJson('/api/runa/auth/step-up', ['action' => $action, 'requirement' => 'both', 'current_password' => 'admin-entry-password', 'method' => 'recovery', 'code' => $code])->assertOk();
 }
 
+it('Auth administration writes indefinite rules and future dates beyond thirty days through native proof', function (): void {
+    authAdministrationLogin($this, ['runa.auth.policy.exceptions']);
+    $page = $this->getJson('/api/admin/runa.auth/users')->assertOk()->json('data');
+    $section = collect($page['sections'])->firstWhere('key', 'exceptions');
+    expect(collect($section['fields'])->firstWhere('key', 'expires_at')['required'])->toBeFalse();
+    foreach ([null, now()->addDays(90)->utc()->format('Y-m-d\TH:i:s\Z'), null] as $index => $expiry) {
+        authAdministrationStrongProof($this, 'runa.auth.policy.exception');
+        $record = authAdministrationRead($this, 'exceptions', $this->adminUser->public_id);
+        $values = [
+            'key' => 'session_idle_minutes', 'value' => $index === 2 ? null : 240,
+            'reason' => 'Reviewed account rule', 'expires_at' => $expiry,
+            'exception_version' => $index, 'policy_revision' => $record['values']['policy_revision'],
+        ];
+        $result = $this->postJson('/api/admin/runa.auth/users/sections/exceptions/commands', [
+            'command' => 'set', 'public_id' => $this->adminUser->public_id,
+            'revision' => $record['revision'], 'confirmed' => true, 'values' => $values,
+        ])->assertOk()->json('data');
+        expect($result['status'])->toBe('committed');
+        $fresh = authAdministrationRead($this, 'exceptions', $this->adminUser->public_id);
+        $active = json_decode($fresh['values']['active_exceptions'], true);
+        if ($index === 2) {
+            expect($active)->toBe([]);
+        } else {
+            expect($active)->toHaveCount(1)->and($active[0]['expires_at'] === null)->toBe($expiry === null);
+        }
+    }
+});
+
 it('Auth administration publishes and restores through the native policy runner with consumed proof and history', function (): void {
     authAdministrationLogin($this, ['runa.auth.policy.read', 'runa.auth.policy.write']);
     authAdministrationStrongProof($this, 'runa.auth.policy.publish');

@@ -13,7 +13,7 @@ export interface PolicyException {
   key: string;
   value: number;
   reason: string;
-  expires_at: string;
+  expires_at: string | null;
   revoked_at: string | null;
   policy_revision: number;
   version: number;
@@ -37,7 +37,7 @@ function rows(value: AdminJson): PolicyException[] {
       typeof row.key === 'string' &&
       typeof row.value === 'number' &&
       typeof row.reason === 'string' &&
-      typeof row.expires_at === 'string' &&
+      (row.expires_at === null || typeof row.expires_at === 'string') &&
       (row.revoked_at === null || typeof row.revoked_at === 'string') &&
       typeof row.policy_revision === 'number' &&
       typeof row.version === 'number',
@@ -57,7 +57,7 @@ export function usePolicyExceptions(
     projection.value.filter(
       (row) =>
         row.revoked_at === null &&
-        Date.parse(row.expires_at) > clock.value &&
+        (row.expires_at === null || Date.parse(row.expires_at) > clock.value) &&
         row.policy_revision === get('policy_revision'),
     ),
   );
@@ -73,7 +73,9 @@ export function usePolicyExceptions(
   );
   function schedule() {
     const next = Math.min(
-      ...active.value.map((row) => Date.parse(row.expires_at)),
+      ...active.value.flatMap((row) =>
+        row.expires_at === null ? [] : [Date.parse(row.expires_at)],
+      ),
     );
     if (!Number.isFinite(next)) return;
     timer = setTimeout(

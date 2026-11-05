@@ -10,12 +10,12 @@ interface AuthPolicies
     public function history(?int $before = null): array;
 
     /**
-     * @return list<array{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string, revoked_at: string|null}>
+     * @return list<array{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string|null, revoked_at: string|null}>
      */
     public function exceptions(string $publicId): array;
 
     /**
-     * @return list<array{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string, revoked_at: string|null}>
+     * @return list<array{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string|null, revoked_at: string|null}>
      */
     public function activeExceptions(string $publicId): array;
 
@@ -42,5 +42,5 @@ interface AuthPolicies
     public function revokeExceptions(string $publicId, int $expectedVersion): bool;
 
     /** @return array{public_id: string|null, version: int} */
-    public function exception(string $publicId, string $key, ?int $value, string $reason, string $expiresAt, int $version, int $policyRevision): array;
+    public function exception(string $publicId, string $key, ?int $value, string $reason, ?string $expiresAt, int $version, int $policyRevision): array;
 }

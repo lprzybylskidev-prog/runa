@@ -76,7 +76,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
                 'sessions' => ['sessions' => json_encode($this->api(AuthSessions::class)->listFor($id, $input->cursor), JSON_THROW_ON_ERROR), 'session_id' => null],
                 'security' => [],
                 'trust' => ['devices' => json_encode($this->api(AuthSecurity::class, '1.2.0')->trustedDevices($id, $input->cursor), JSON_THROW_ON_ERROR), 'device_id' => null],
-                'exceptions' => ['active_exceptions' => json_encode($this->api(AuthPolicies::class, '1.2.0')->activeExceptions($id), JSON_THROW_ON_ERROR), 'exception_versions' => json_encode($this->api(AuthPolicies::class, '1.2.0')->exceptionVersions($id), JSON_THROW_ON_ERROR), 'exceptions' => json_encode($this->api(AuthPolicies::class, '1.2.0')->exceptions($id), JSON_THROW_ON_ERROR), 'key' => 'session_idle_minutes', 'value' => null,
+                'exceptions' => ['active_exceptions' => json_encode($this->api(AuthPolicies::class, '2.0.0')->activeExceptions($id), JSON_THROW_ON_ERROR), 'exception_versions' => json_encode($this->api(AuthPolicies::class, '2.0.0')->exceptionVersions($id), JSON_THROW_ON_ERROR), 'exceptions' => json_encode($this->api(AuthPolicies::class, '2.0.0')->exceptions($id), JSON_THROW_ON_ERROR), 'key' => 'session_idle_minutes', 'value' => null,
                     'reason' => null, 'expires_at' => null, 'exception_version' => 0, 'policy_revision' => $this->settings->read('runa.auth')['revision']],
                 default => [],
             };
@@ -129,8 +129,8 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
                 'security.factor_reset' => $this->api(AuthSecurity::class, '1.2.0')->resetFactors($id, $version),
                 'trust.revoke_all' => $this->api(AuthSecurity::class, '1.2.0')->revokeDevices($id, $version),
                 'trust.revoke_device' => $this->api(AuthSecurity::class, '1.2.0')->revokeDevice($id, $v['device_id']),
-                'exceptions.revoke_all' => $this->api(AuthPolicies::class, '1.2.0')->revokeExceptions($id, $version),
-                'exceptions.set' => $this->api(AuthPolicies::class, '1.2.0')->exception($id, $v['key'], $v['value'], $v['reason'], Moment::seconds($v['expires_at']) ?? throw new \InvalidArgumentException('Missing exception deadline.'), $v['exception_version'], $v['policy_revision']),
+                'exceptions.revoke_all' => $this->api(AuthPolicies::class, '2.0.0')->revokeExceptions($id, $version),
+                'exceptions.set' => $this->api(AuthPolicies::class, '2.0.0')->exception($id, $v['key'], $v['value'], $v['reason'], Moment::seconds($v['expires_at']), $v['exception_version'], $v['policy_revision']),
                 default => throw new \InvalidArgumentException('Unknown administration command.'),
             };
             if ($result === false) {
@@ -185,7 +185,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
         }
         foreach ($input->values as $key => $value) {
             $field = $fields[$key];
-            if ($value === null && in_array($key, ['name', 'first_name', 'surname', 'login', 'at', 'value'], true)) {
+            if ($value === null && in_array($key, ['name', 'first_name', 'surname', 'login', 'at', 'value', 'expires_at'], true)) {
                 continue;
             }
             $valid = match ($field->type) {

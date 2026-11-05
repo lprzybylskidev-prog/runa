@@ -2,7 +2,7 @@
 
 # Auth administration
 
-Auth 3.1.0 supplies source-owned administration declarations and adapters, consumed
+Auth 4.0.0 supplies source-owned administration declarations and adapters, consumed
 by Admin without a reverse backend dependency. Business behavior remains available
 through the owning guarded APIs without Admin. This is unreleased source for
 platform 0.7.0; complete browser/security/release verification belongs to
@@ -458,7 +458,7 @@ individual-action presentation remains outside this bulk-protection change.
 
 ## Task-based user details
 
-Auth 3.1.0 replaces the default per-section tabs with at most two nonempty
+Auth 4.0.0 replaces the default per-section tabs with at most two nonempty
 areas: User and Security. User starts with individual action
 buttons, then editable identity/avatar, one complete account-status grid, primary/secondary emails,
 searchable assignments, preferences and user rules. Status consolidates authorized verification
@@ -466,9 +466,8 @@ and invitation dates, lifecycle, activity and credential/factor facts; separate
 access-condition and invitation cards are omitted. Security groups sessions and
 trusted devices. User rules presents each configuration-enabled allowlisted rule
 by name, with an explicit Set custom/Edit action and Restore global action for a
-live exception. Focused dialogs show the bounded value with days/minutes, expiry
-within 30 days and required reason; the key and revision tokens are never operator
-inputs. Restore global uses null value and requires its own reason/proof. Cancel
+live exception. Focused dialogs show the bounded value with days/minutes, optional future expiry without a maximum horizon and required reason; the key and revision tokens are never operator
+inputs. Restore global uses null value, no artificial expiry and requires its own reason/proof. Null expiry makes either key indefinite; native proof, policy-publication invalidation and per-key versions remain authoritative. Cancel
 restores the prior parameters. Current rules show value, expiry and reason here
 and in Account status; expired/revoked/prior-policy rows are excluded immediately
 from the live summary, independently of the latest-50 collapsed history. Active
@@ -500,7 +499,7 @@ consumers through `ModuleApis`; management adapters are private:
 ```php
 // AuthSecurity API 1.2.0, permission runa.auth.trust.manage
 public function revokeDevices(string $publicId, int $expectedVersion): bool;
-// AuthPolicies API 1.2.0, permission runa.auth.policy.exceptions
+// AuthPolicies API 2.0.0, permission runa.auth.policy.exceptions
 // Fresh both-factor runa.auth.policy.exception proof, consumed once in transaction.
 public function revokeExceptions(string $publicId, int $expectedVersion): bool;
 ```
@@ -519,7 +518,7 @@ their existing resolution and authority boundaries; customers never copy private
 Auth controllers or access foreign models. The new default detail components are
 private presentation implementations, not additional customer imports.
 
-`AuthPolicies` 1.2.0 additionally exposes
+`AuthPolicies` 2.0.0 additionally exposes
 `exceptionVersions(string $publicId): array<string, int>` under
 `runa.auth.policy.exceptions`. It projects each key's current monotonic version
 independently of the bounded history page, so editing another rule remains correct

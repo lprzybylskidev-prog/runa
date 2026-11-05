@@ -17,7 +17,7 @@ final class PoliciesProxy extends GuardedApi implements AuthPolicies
 
     public function exceptions(string $publicId): array
     {
-        /** @var list<array{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string, revoked_at: string|null}> $result */
+        /** @var list<array{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string|null, revoked_at: string|null}> $result */
         $result = $this->invoke(__FUNCTION__, [$publicId]);
 
         return $result;
@@ -25,7 +25,7 @@ final class PoliciesProxy extends GuardedApi implements AuthPolicies
 
     public function activeExceptions(string $publicId): array
     {
-        /** @var list<array{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string, revoked_at: string|null}> $result */
+        /** @var list<array{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string|null, revoked_at: string|null}> $result */
         $result = $this->invoke(__FUNCTION__, [$publicId]);
 
         return $result;
@@ -71,7 +71,7 @@ final class PoliciesProxy extends GuardedApi implements AuthPolicies
         return $result;
     }
 
-    public function exception(string $publicId, string $key, ?int $value, string $reason, string $expiresAt, int $version, int $policyRevision): array
+    public function exception(string $publicId, string $key, ?int $value, string $reason, ?string $expiresAt, int $version, int $policyRevision): array
     {
         /** @var array{public_id: string|null, version: int} $result */
         $result = $this->invoke(__FUNCTION__, [$publicId, $key, $value, $reason, $expiresAt, $version, $policyRevision]);

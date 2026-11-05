@@ -21,7 +21,7 @@ return new class extends Migration
             $table->uuid('actor');
             $table->bigInteger('policy_revision');
             $table->bigInteger('version');
-            $table->timestampTz('expires_at', 6);
+            $table->timestampTz('expires_at', 6)->nullable();
             $table->timestampTz('revoked_at', 6)->nullable();
             $table->timestampsTz(6);
         });

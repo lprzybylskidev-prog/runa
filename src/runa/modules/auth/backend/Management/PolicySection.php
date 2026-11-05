@@ -40,7 +40,7 @@ abstract readonly class PolicySection implements ManagementResourceReader, Manag
             if ($input->cursor !== null && preg_match('/\A[1-9][0-9]{0,8}\z/D', $input->cursor) !== 1) {
                 throw new OperationRejected('admin_input_invalid', 'runa.auth', 'policy.history', 422);
             }
-            $history = $this->apis->resolve('runa.auth', AuthPolicies::class, '1.2.0')->history($input->cursor === null ? null : (int) $input->cursor);
+            $history = $this->apis->resolve('runa.auth', AuthPolicies::class, '2.0.0')->history($input->cursor === null ? null : (int) $input->cursor);
             $values = ['history' => json_encode($history, JSON_THROW_ON_ERROR), 'source_revision' => null, 'summary' => null];
         } else {
             foreach (self::keys(static::GROUP) as $key) {
@@ -80,7 +80,7 @@ abstract readonly class PolicySection implements ManagementResourceReader, Manag
                 }
                 $patch = $input->values;
             }
-            $preview = $this->apis->resolve('runa.auth', AuthPolicies::class, '1.2.0')->preview($patch, (int) $parts[1], (int) $parts[2]);
+            $preview = $this->apis->resolve('runa.auth', AuthPolicies::class, '2.0.0')->preview($patch, (int) $parts[1], (int) $parts[2]);
             $changes = static::GROUP === -1 ? ['summary' => $preview] : $preview['changes'] + ['summary' => $preview['consequences']];
 
             return new ManagementReview(hash('sha256', serialize([$input->command, $input->values, $preview])), $changes, 'both', true);
@@ -96,7 +96,7 @@ abstract readonly class PolicySection implements ManagementResourceReader, Manag
             throw new OperationRejected('policy_stale', 'runa.auth', 'policy.publish', 409);
         }
         [$revision, $generation] = array_map('intval', explode(':', $input->revision));
-        $api = $this->apis->resolve('runa.auth', AuthPolicies::class, '1.2.0');
+        $api = $this->apis->resolve('runa.auth', AuthPolicies::class, '2.0.0');
         $result = static::GROUP === -1 ? $api->restore($input->values['source_revision'], $revision, $generation) : $api->publish($input->values, $revision, $generation);
         $status = match ($result['status']) {
             'succeeded' => 'committed', 'pending', 'running' => 'pending', 'recovery_required' => 'recovery_required',

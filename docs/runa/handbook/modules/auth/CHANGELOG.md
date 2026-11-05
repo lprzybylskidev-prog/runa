@@ -1,8 +1,10 @@
 # Auth module changelog
 
-## 3.0.0 — 2026-11-03
+## 4.0.0 — Unreleased
 
-- Move selected-user rules into User with named bounded editors, separate active/history presentation and live custom rules in Account status. Add guarded AuthPolicies 1.2.0 active exception reads independent of the latest-50 history cap; preserve native proof, revisions and Audit.
+- Auth 4.0.0 / AuthPolicies 2.0.0: allow optional account-rule expiry, with null meaning indefinite and no maximum horizon for a future date. Update effective policy reads, session cleanup, status/history and Audit handling; correct the original pre-1.0 schema and current Auth consumer constraints. Space operation fields and show explicit optional/indefinite copy.
+
+- Move selected-user rules into User with named bounded editors, separate active/history presentation and live custom rules in Account status. Add guarded AuthPolicies 2.0.0 active exception reads independent of the latest-50 history cap; preserve native proof, revisions and Audit.
 
 - Keep directory filter controls aligned within each responsive row when field labels wrap.
 
@@ -10,7 +12,7 @@
 
 - Enrich new-browser sign-in notices in Polish/English with captured safe browser/system labels, event time and guidance for unrecognized activity, preserving native multipart mail and reference-only delivery.
 
-- Auth 3.1.0: identify trusted browsers with allowlisted browser/system labels, cookie-bound current-device state and last successful use. Share columns in Admin and the inline own-account table, including empty results. Extend AuthSecurity to 1.2.0 and correct the original pre-1.0 development migration.
+- Auth 4.0.0: identify trusted browsers with allowlisted browser/system labels, cookie-bound current-device state and last successful use. Share columns in Admin and the inline own-account table, including empty results. Extend AuthSecurity to 1.2.0 and correct the original pre-1.0 development migration.
 
 - Present selected-user sessions and trusted devices with the shared account Table, authorized dates, remembered sign-in and native revocation; rename Trust to Trusted devices and retain bounded cursor navigation.
 
@@ -18,16 +20,16 @@
 
 - Refine single/bulk action grouping into inline buttons with vertical separators, accessible category names and no visible group headings.
 
-- Auth 3.1.0: share thematic single/bulk action grouping, ordered account-status groups and compact own/Admin preference defaults. Add AuthProfiles 2.1.0 existing-address confirmation with native bypass configuration/grants, both-factor proof, ownership/version checks and atomic Audit.
+- Auth 4.0.0: share thematic single/bulk action grouping, ordered account-status groups and compact own/Admin preference defaults. Add AuthProfiles 2.1.0 existing-address confirmation with native bypass configuration/grants, both-factor proof, ownership/version checks and atomic Audit.
 
-- Auth 3.1.0: share secondary-email list/inline editing through public AuthSecondaryEmailFields. Preserve occupied identifier and password-reset refusal codes, distinguish business refusals from stale revisions, and give actionable account/preference/proof feedback while retaining anonymous non-enumeration.
+- Auth 4.0.0: share secondary-email list/inline editing through public AuthSecondaryEmailFields. Preserve occupied identifier and password-reset refusal codes, distinguish business refusals from stale revisions, and give actionable account/preference/proof feedback while retaining anonymous non-enumeration.
 
 - Remove generic operation-scope filler, show factor-discovery skeletons and explicit action progress, and expose account refreshing for retained read feedback.
 
 - Preserve inactive name drafts, show selected-avatar bytes/initials, consolidate account facts and rebuild email management. Hide recipient selectors with disabled secondary addresses and apply the complete review preset during explicit development seeding.
 
-- Auth 3.1.0: align selected-user details with creation, bulk action tones and own-account identity/preferences/avatar cropping; export shared presentation fields with independent controller ownership.
-- Auth 3.1.0: rebuild user details around User and Security with named user rules; add permissioned target preference reads/atomic edits and individual all-device/exception revocation. Preferences API advances additively to 1.1.0, Security/Policies to 1.2.0; preserve self-service binding, native proofs, delivery constraints and Audit.
+- Auth 4.0.0: align selected-user details with creation, bulk action tones and own-account identity/preferences/avatar cropping; export shared presentation fields with independent controller ownership.
+- Auth 4.0.0: rebuild user details around User and Security with named user rules; add permissioned target preference reads/atomic edits and individual all-device/exception revocation. Preferences API advances additively to 1.1.0, Security to 1.2.0 and Policies to 2.0.0; preserve self-service binding, native proofs, delivery constraints and Audit.
 
 - Omit operational editors for configuration-disabled capabilities. Keep authorized account facts read-only, hide disabled verification/factor/avatar editors and notification recipients, and dismiss withdrawn editors without losing unrelated drafts. Document the shared visibility rule in owner/customer frontend guidance. Preserve native backend enforcement.
 

@@ -1,6 +1,6 @@
 # Auth identities, lifecycle and entry transport
 
-Current Core `runa.auth` source develops at independent version `3.0.0` for
+Current Core `runa.auth` source develops at independent version `4.0.0` for
 platform >=0.7.0 <0.8.0, requiring
 `runa.audit ^1.0.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
@@ -20,7 +20,7 @@ are delivered. [Permissions action grants and introspection](../permissions/READ
 ordinary assignment/preset/copy and [protected authority](../permissions/authority.md)
 are delivered. First-administrator bootstrap grants the actual Permissions system role through the trusted operator adapter; installer invitations and private no-mail CLI setup are delivered.
 The explicit [development corpus](../../data/seeding.md#explicit-module-development-contributors) supplies local scenarios, safe account discovery and private initial setup, independently of production initialization.
-The unreleased 3.1.0 administration source supplies Users and policy views through
+The unreleased 4.0.0 administration source supplies Users and policy views through
 Admin; see [administration](administration.md). Owner browser acceptance and final
 release verification remain open. Administrative operations require current native grants.
 
@@ -32,7 +32,7 @@ stable; private module implementation is not an application extension seam.
 
 Resolve the declared contract version through `ModuleApis`: AuthProfiles uses
 `2.1.0`; AuthLifecycle uses `2.1.0`; AuthAdministration uses `2.1.0`; AuthBulkUsers and AuthBulkSessions use `2.0.0`;
-AuthStepUp and AuthPreferences use `1.1.0`; AuthPolicies uses `1.2.0`;
+AuthStepUp and AuthPreferences use `1.1.0`; AuthPolicies uses `2.0.0`;
 AuthSecurity uses `1.2.0`; other current Auth interfaces, including
 AuthIdentities below, use `1.0.0`.
 Administrative profile composition follows the [native phase contract](../../architecture/module-transactions.md).
