@@ -71,9 +71,11 @@ The grouped action offers grant and revoke without a separate checkbox section.
 `runa.permissions.user_authority_bulk.bulk_authority` supplies the same grant/revoke
 choice for up to 100 explicitly selected directory accounts through the guarded
 [PermissionsAuthorityBatch 1.0.0](authority.md#explicit-selected-account-authority-changes)
-API. Bulk additionally requires `runa.permissions.users.select`, shows every selected
-account and applies the entire reviewed set atomically, including existing protected
-members. Ordinary Auth bulk actions retain their protected-member exclusion. It requires
+API. Bulk additionally requires `runa.permissions.users.select` and applies the
+entire reviewed set atomically, including existing protected members. The supplied
+UI uses the existing aggregate impact and omitted-account warning/count pattern,
+without listing individual changes. Superadministrator appears last in both action
+toolbars. Ordinary Auth bulk actions retain their protected-member exclusion. It requires
 `runa.permissions.authority.manage`, native eligibility/revision review, explicit
 confirmation and password proof. Self-escalation and last-eligible-administrator
 protection remain authoritative. It never joins ordinary profile/access atomic Save.

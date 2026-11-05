@@ -50,7 +50,6 @@ final readonly class AuthorityBulkEditor implements ManagementResourceReader, Ma
         return new ManagementReview($review->fingerprint, ['summary' => [
             'accounts' => count($review->targets), 'affected_accounts' => $changed, 'unchanged_accounts' => count($review->targets) - $changed,
             'skipped_accounts' => 0, 'ineligible_accounts' => 0,
-            'authority_targets' => array_map(fn ($target): array => ['public_id' => $target->userPublicId, 'current' => $target->current, 'grant' => $target->grant, 'eligible' => $target->eligible], $review->targets),
         ]], 'password', true);
     }
 

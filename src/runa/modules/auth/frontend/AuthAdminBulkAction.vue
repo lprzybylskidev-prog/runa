@@ -7,7 +7,7 @@ import type {
   AdminSectionPresentationProps,
 } from '@/runa/admin';
 import { authBulkGroup, authActionIntent } from './bulkGroups';
-import { Alert, BooleanBadge, Button, ContentLoading, Select } from '@/runa/ui';
+import { Alert, Button, ContentLoading, Select } from '@/runa/ui';
 
 const props = defineProps<
   AdminSectionPresentationProps & {
@@ -108,26 +108,6 @@ const summary = computed(() => {
     ? value
     : {};
 });
-const authorityTargets = computed(() => {
-  const targets = summary.value.authority_targets;
-  if (!Array.isArray(targets)) return [];
-  return targets.flatMap((target) =>
-    target &&
-    typeof target === 'object' &&
-    !Array.isArray(target) &&
-    typeof target.public_id === 'string' &&
-    typeof target.current === 'boolean' &&
-    typeof target.grant === 'boolean'
-      ? [
-          {
-            publicId: target.public_id,
-            current: target.current,
-            grant: target.grant,
-          },
-        ]
-      : [],
-  );
-});
 const selectedCount = computed(() => {
   const ids =
     props.controller.values.value[
@@ -141,6 +121,7 @@ const ineligible = computed(() =>
 const skipped = computed(
   () => Number(summary.value.skipped_accounts ?? 0) - ineligible.value,
 );
+const unchanged = computed(() => Number(summary.value.unchanged_accounts ?? 0));
 const proofStep = ref(false);
 const fields = computed(() =>
   props.section.fields
@@ -277,10 +258,6 @@ async function submit() {
           <div
             v-for="item in [
               {
-                key: 'unchanged_accounts',
-                label: { pl: 'Konta bez zmian', en: 'Unchanged accounts' },
-              },
-              {
                 key: 'sessions',
                 label: { pl: 'Unieważniane sesje', en: 'Sessions to revoke' },
               },
@@ -304,38 +281,6 @@ async function submit() {
           </div>
         </dl>
       </div>
-      <ul
-        v-if="authorityTargets.length"
-        class="divide-y divide-line rounded-lg border border-line"
-        data-authority-targets
-        :aria-label="
-          tr({ pl: 'Superadministrator', en: 'Super administrator' })
-        "
-      >
-        <li
-          v-for="target in authorityTargets"
-          :key="target.publicId"
-          class="flex flex-wrap items-center justify-between gap-2 p-3 text-sm"
-        >
-          <span class="min-w-0 break-all font-mono text-xs">{{
-            target.publicId
-          }}</span>
-          <dl class="grid grid-cols-2 gap-x-6 gap-y-2">
-            <div>
-              <dt class="mb-1 text-xs text-muted">
-                {{ tr({ pl: 'Obecnie', en: 'Current' }) }}
-              </dt>
-              <dd><BooleanBadge :value="target.current" :locale="locale" /></dd>
-            </div>
-            <div>
-              <dt class="mb-1 text-xs text-muted">
-                {{ tr({ pl: 'Po zmianie', en: 'After change' }) }}
-              </dt>
-              <dd><BooleanBadge :value="target.grant" :locale="locale" /></dd>
-            </div>
-          </dl>
-        </li>
-      </ul>
       <Alert v-if="skipped > 0" tone="warning" data-bulk-skipped>
         {{
           tr({
@@ -348,23 +293,37 @@ async function submit() {
           {{ skipped }}</span
         >
       </Alert>
-      <Alert v-if="ineligible > 0" tone="warning" data-bulk-ineligible>
+      <Alert
+        v-if="ineligible > 0 || unchanged > 0"
+        tone="warning"
+        data-bulk-ineligible
+      >
         {{
           tr(
-            command?.key === 'invite'
-              ? {
-                  pl: 'Pominięte zostaną konta, które mają już hasło lub nie mogą się logować.',
-                  en: 'Accounts that already have a password or cannot sign in will be skipped.',
-                }
-              : {
-                  pl: 'Pominięte zostaną konta bez hasła lub bez możliwości logowania.',
-                  en: 'Accounts without a password or unable to sign in will be skipped.',
-                },
+            unchanged > 0
+              ? command?.key === 'grant_superadmin'
+                ? {
+                    pl: 'Pominięte zostaną konta, które są już superadministratorami.',
+                    en: 'Accounts that are already superadministrators will be skipped.',
+                  }
+                : {
+                    pl: 'Pominięte zostaną konta, które nie są superadministratorami.',
+                    en: 'Accounts that are not superadministrators will be skipped.',
+                  }
+              : command?.key === 'invite'
+                ? {
+                    pl: 'Pominięte zostaną konta, które mają już hasło lub nie mogą się logować.',
+                    en: 'Accounts that already have a password or cannot sign in will be skipped.',
+                  }
+                : {
+                    pl: 'Pominięte zostaną konta bez hasła lub bez możliwości logowania.',
+                    en: 'Accounts without a password or unable to sign in will be skipped.',
+                  },
           )
         }}
         <span class="mt-1 block font-semibold">
           {{ tr({ pl: 'Pominięte konta', en: 'Skipped accounts' }) }}:
-          {{ ineligible }}
+          {{ ineligible + unchanged }}
         </span>
       </Alert>
       <p v-if="summary.affected_accounts === 0" class="text-sm text-muted">

@@ -1318,8 +1318,7 @@ it('Permissions Admin authority batch grants and revokes the complete selected s
     $b = app(ChangeIdentity::class)->create(new NewIdentity('batch-authority-b@example.test', name: 'Second target', active: true));
     $path = '/api/admin/runa.auth/users/sections/runa.permissions.user_authority_bulk.bulk_authority';
     $input = permissionAdministrationReview($this, $path, ['command' => 'grant_superadmin', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$b->publicId, $a->publicId]]]);
-    expect($input['review']['changes']['summary']['affected_accounts'])->toBe(2)
-        ->and($input['review']['changes']['summary']['authority_targets'])->toHaveCount(2);
+    expect($input['review']['changes']['summary']['affected_accounts'])->toBe(2);
     $this->postJson($path.'/commands', $input)->assertUnprocessable();
     $input['confirmed'] = true;
     $this->postJson($path.'/commands', $input)->assertForbidden();

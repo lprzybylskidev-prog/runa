@@ -2025,6 +2025,8 @@ it('groups account actions consistently regardless of input order and preserves 
     'activate',
     'schedule_activation',
     'custom',
+    'grant_superadmin',
+    'revoke_superadmin',
   ];
   const single = groupAuthActions(commands, (command) => command);
   const bulk = groupAuthActions([...commands].reverse(), (command) => command);
@@ -2037,6 +2039,7 @@ it('groups account actions consistently regardless of input order and preserves 
     'sessions',
     'deletion',
     'other',
+    'authority',
   ]);
 });
 
@@ -2564,7 +2567,7 @@ it('protected authority uses a grouped individual action without rendering its c
   ).toBeNull();
 });
 
-it('protected authority bulk reviews every selected account and refreshes grant versus revoke impact', async () => {
+it('protected authority bulk reuses omitted-account warnings and refreshes grant versus revoke impact', async () => {
   const bulk = section('runa.permissions.user_authority_bulk.bulk_authority', [
     { ...field('public_ids', false), type: 'uuid', multiple: true },
     field('summary'),
@@ -2601,18 +2604,6 @@ it('protected authority bulk reviews every selected account and refreshes grant 
             unchanged_accounts: 1,
             skipped_accounts: 0,
             ineligible_accounts: 0,
-            authority_targets: [
-              {
-                public_id: actor,
-                current: true,
-                grant: body.command === 'grant_superadmin',
-              },
-              {
-                public_id: target,
-                current: false,
-                grant: body.command === 'grant_superadmin',
-              },
-            ],
           },
         },
         requirement: 'none',
@@ -2646,10 +2637,15 @@ it('protected authority bulk reviews every selected account and refreshes grant 
     }),
   );
   await vi.waitFor(() =>
-    expect(wrapper.get('[data-authority-targets]').findAll('li')).toHaveLength(
-      2,
+    expect(wrapper.get('[data-bulk-ineligible]').text()).toContain(
+      'Accounts that are already superadministrators will be skipped.',
     ),
   );
+  expect(wrapper.get('[data-bulk-ineligible]').text()).toContain(
+    'Skipped accounts: 1',
+  );
+  expect(wrapper.text()).not.toContain(actor);
+  expect(wrapper.text()).not.toContain(target);
   expect(wrapper.find('[data-bulk-skipped]').exists()).toBe(false);
   wrapper
     .getComponent(Select)
@@ -2658,11 +2654,8 @@ it('protected authority bulk reviews every selected account and refreshes grant 
     expect(previews).toEqual(['grant_superadmin', 'revoke_superadmin']),
   );
   await vi.waitFor(() =>
-    expect(
-      wrapper
-        .get('[data-authority-targets]')
-        .findAll('dd')
-        .map((cell) => cell.text()),
-    ).toEqual(['Yes', 'No', 'No', 'No']),
+    expect(wrapper.get('[data-bulk-ineligible]').text()).toContain(
+      'Accounts that are not superadministrators will be skipped.',
+    ),
   );
 });

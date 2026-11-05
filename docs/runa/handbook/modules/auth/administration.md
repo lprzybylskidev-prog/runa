@@ -645,8 +645,10 @@ Auth owns public runtime presentation `AuthAdminBulkAction` from `@/runa/auth`,
 implemented in `frontend/AuthAdminBulkAction.vue`. It accepts
 `AdminSectionPresentationProps & { components?: AdminComponentRegistry }`, has no
 slots/events and is supported for trusted module/App Admin section composition.
-It renders projected grouped operations, complete selected-authority target review,
-counts and controlled fields through the supplied Admin controller. Native reads,
+It renders projected grouped operations, aggregate counts, the shared omitted-account
+warning/count pattern and controlled fields through the supplied Admin controller.
+Protected-authority tools appear last in individual and selected-account action
+groups, with no per-account change list or separate unchanged-account statistic. Native reads,
 review, selection, grants, proof and transactions stay with their owning module.
 Permissions composes this default for its dedicated selected-account authority
 workflow, without copying session/security orchestration or using private Auth code.

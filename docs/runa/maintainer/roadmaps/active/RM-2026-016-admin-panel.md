@@ -1206,6 +1206,12 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Add the guarded native batch API, reuse the existing reviewed bulk presentation,
     synchronize current public contracts/tests/docs and prepare usable assets/data.
     Commit before owner acceptance; broad verification remains point 12.
+- [x] 11a100. Align protected-authority actions with existing bulk presentation.
+  - Remove the per-account change list and its Admin review projection. Reuse the
+    existing omitted-account warning/count pattern instead of a separate statistic.
+  - Put Superadministrator last in individual and bulk action groups; synchronize
+    current guidance/tests and prepare final formatted assets before owner review.
+    Native batch authorization, fingerprints, proof and Audit remain unchanged.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -8405,3 +8411,34 @@ services, base test database, caches, backups and reports remain preserved; supp
 backend runners removed only their disposable worker database. Mandatory staged
 hooks and current knowledge accompany this commit. Owner manual acceptance 11b and
 broad final affected-area verification/release 12 remain open.
+
+### Point 11a100 — Reuse existing bulk impact presentation and move authority last
+
+Owner rejected the per-account authority change listing and separate unchanged
+statistic added in 11a99. Removed the list, its decoding/import and the unused Admin
+review target projection. The native guarded batch snapshot still validates every
+selected account; only its Admin presentation projection is reduced to aggregates.
+Unchanged accounts use the same warning and omitted-account count presentation as
+existing bulk eligibility exclusions, with operation-specific grant/revoke wording.
+The existing selected/affected counts and zero-impact message remain shared.
+Superadministrator is now last in both single-user and bulk action groups, including
+after unknown extension actions. Updated the grouping and bulk presentation cases;
+removed the obsolete target-list expectation from the native batch case.
+
+Current Auth/Permissions guides and changelogs replace the rejected presentation
+claims. Existing owner/customer component and frontend guidance already requires
+established patterns and links these canonical guides; no additional rule or
+instruction-product duplication is needed. Existing unreleased versions remain
+appropriate. Native authorization, complete-set lockout protection, stale review,
+password proof, atomic Audit and public batch API signatures are unchanged.
+
+Focused frontend diagnostics PASS: six cases covering shared grouping order,
+omitted-account wording on grant/revoke and existing ordinary bulk exclusion
+behavior. Strict build and native browser readiness PASS. Current assets are
+prepared only after staged formatting, with strict TypeScript/Vite/native error
+build and native browser review of the final order, aggregate-only review and shared
+warning in light/dark and mobile. Evidence: .runtime/superadmin-bulk-refinement/ and
+.runtime/artifacts/playwright/superadmin-bulk-refinement/. No membership writes,
+reset, migration, dependencies or task-created Docker resources. Existing data,
+services, caches, backups and prior reports remain preserved. Owner acceptance 11b
+and final broad verification/release 12 remain open.

@@ -2,11 +2,6 @@ import type { ButtonIntent } from '@/runa/ui';
 /** Private presentation grouping; native projected commands retain all admission/proof authority. */
 export const authBulkGroups = [
   {
-    key: 'authority',
-    title: { pl: 'Superadministrator', en: 'Super administrator' },
-    commands: ['grant_superadmin', 'revoke_superadmin'],
-  },
-  {
     key: 'activity',
     title: { pl: 'Aktywność kont', en: 'Account activity' },
     commands: ['activate', 'deactivate', 'toggle_activation'],
@@ -35,6 +30,11 @@ export const authBulkGroups = [
     key: 'security_lock',
     title: { pl: 'Blokada bezpieczeństwa', en: 'Security lock' },
     commands: ['set_security_lock', 'toggle_security_lock'],
+  },
+  {
+    key: 'authority',
+    title: { pl: 'Superadministrator', en: 'Super administrator' },
+    commands: ['grant_superadmin', 'revoke_superadmin'],
   },
 ] as const;
 
@@ -117,11 +117,6 @@ export function authBulkActionIntent(
 /** One thematic order for single-account and selected-account commands. */
 export const authActionSections = [
   {
-    key: 'authority',
-    title: { pl: 'Superadministrator', en: 'Super administrator' },
-    commands: ['grant_superadmin', 'revoke_superadmin'],
-  },
-  {
     key: 'activity',
     title: { pl: 'Aktywność i terminy', en: 'Activity and schedules' },
     commands: [
@@ -170,6 +165,11 @@ export const authActionSections = [
     title: { pl: 'Usuwanie i przywracanie', en: 'Deletion and restoration' },
     commands: ['delete', 'restore', 'toggle_deletion'],
   },
+  {
+    key: 'authority',
+    title: { pl: 'Superadministrator', en: 'Super administrator' },
+    commands: ['grant_superadmin', 'revoke_superadmin'],
+  },
 ];
 
 export function groupAuthActions<T>(
@@ -194,10 +194,14 @@ export function groupAuthActions<T>(
       ),
   );
   if (other.length)
-    groups.push({
-      key: 'other',
-      title: { pl: 'Pozostałe akcje', en: 'Other actions' },
-      items: other,
-    });
+    groups.splice(
+      groups.findIndex((group) => group.key === 'authority'),
+      0,
+      {
+        key: 'other',
+        title: { pl: 'Pozostałe akcje', en: 'Other actions' },
+        items: other,
+      },
+    );
   return groups.filter((group) => group.items.length);
 }
