@@ -6,6 +6,21 @@ import type {
   TableQuery,
 } from '../runa/ui/tables';
 
+/** Text filters over a bounded local dataset; explicit domain filters take precedence. */
+export function withTableFilters<Row>(
+  columns: readonly TableColumn<Row>[],
+): TableColumn<Row>[] {
+  return columns.map((column) => ({
+    ...column,
+    filter:
+      column.filter ??
+      ((row, value) =>
+        String(column.value(row) ?? '')
+          .toLocaleLowerCase()
+          .includes(value.trim().toLocaleLowerCase())),
+  }));
+}
+
 export function normalizeTableQuery(
   query: TableQuery,
   sort: readonly string[],

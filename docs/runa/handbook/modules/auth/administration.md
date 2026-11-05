@@ -10,9 +10,9 @@ RM-2026-016 point 12.
 
 ## Guarded administrative reads
 
-Auth owns public consumption contract `AuthAdministration` API `2.0.0` and its final
+Auth owns public consumption contract `AuthAdministration` API `2.1.0` and its final
 readonly DTOs under `Runa\Modules\Auth\Contracts`. Resolve through
-`ModuleApis::resolve('runa.auth', AuthAdministration::class, '2.0.0')`.
+`ModuleApis::resolve('runa.auth', AuthAdministration::class, '2.1.0')`.
 Private implementation is `backend/Queries/Administration`, with a guarded proxy
 and `Definitions/AdministrationApi`; all are runtime source. Customer code never
 imports the private query, models or management adapters.
@@ -26,7 +26,8 @@ interface AuthAdministration
     public function facts(string $publicId): array;
 }
 UserDirectoryQuery::__construct(?string $after = null, int $limit = 25,
-    ?string $search = null, string $state = 'current', array $filters = [])
+    ?string $search = null, string $state = 'current', array $filters = [],
+    ?string $sort = null, string $direction = 'asc')
 UserDirectoryPage::__construct(array $items, ?string $next, ?int $total = null)
 AdministrativeUser::__construct(string $publicId, string $displayName,
     string $state, int $version, array $details = [])
@@ -36,8 +37,13 @@ AdministrativeProfile::__construct(string $publicId, int $version,
 ```
 
 Directory requires `runa.auth.users.read`; `deleted`/`all` additionally require
-`runa.auth.users.deleted.read`. Results contain up to 100 users in UUID ascending
-order and state `current|deleted`. `details` contains safe account metadata:
+`runa.auth.users.deleted.read`. Results contain up to 100 users with state
+`current|deleted`. Default order is UUID ascending. Optional sort names one
+currently authorized/enabled directory field; direction is `asc|desc`. SQL orders
+the filtered dataset before limiting, with nulls last and UUID ascending ties.
+Unavailable sort fields refuse, just like unavailable filters. Opaque cursors bind
+state, search, filters and ordering; changing any requires a fresh cursor. If a
+sorted cursor's subject no longer matches, restart the read. `details` contains safe account metadata:
 active/security-lock flags, activation/deactivation/attempt-lock
 moments and created/updated dates. Login additionally requires `profiles.read`;
 email and verification/date require `emails.read`; live-session presence/count,
@@ -250,8 +256,8 @@ The default collection presentations carry bounded authorized lists as JSON text
 in declared readonly text fields (`addresses`, `sessions`, `devices`, `exceptions`,
 `history`), decoded only for display. No nested list bypasses field authorization.
 Use-entry controls copy public IDs or exact source revisions into controlled
-inputs. Sessions/trust/history support older/latest results without totals or
-export adapters. Failed reads remain unavailable; changing subjects clears and
+inputs. Sessions/trust/history support older/latest results without global totals.
+Sessions/trust additionally connect the shared bounded export/print adapter. Failed reads remain unavailable; changing subjects clears and
 cancels obsolete collection lanes. Reconciliation preserves unrelated dirty drafts.
 
 Selected-user Security renders Sessions and Trusted devices through the same public
@@ -260,8 +266,12 @@ and remembered sign-in; devices share the account column definitions for
 browser/platform, current browser, creation, last use and expiry. Each table paginates its
 current authorized batch (at most 100 rows), with separate Latest/Older controls
 for the owning before-cursor batches. Older is offered only for a full batch;
-counts describe the loaded batch, never an account-wide inventory. Device sorting
-covers only that loaded batch; session sorting, search and export are not offered. Empty results retain table headers, refresh returns
+counts describe the loaded batch, never an account-wide inventory. Both tables
+offer local sorting, search, column filters, page size, columns/named views and
+refresh. CSV/XLSX/PDF/print additionally require tables.export and a fresh owning
+export read of the selected subject/cursor; exporting never traverses older batches.
+Sessions compare original instants rather than formatted date strings.
+Empty results retain table headers, refresh returns
 to the latest batch, and row revocation keeps native confirmation/proof and grants.
 The Admin session projection does not identify the administrator's current session
 within another account's list, so no misleading current-session column is shown.

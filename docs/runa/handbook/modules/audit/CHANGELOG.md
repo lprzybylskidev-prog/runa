@@ -2,6 +2,8 @@
 
 ## 1.1.0 — 2026-10-30
 
+- Extend AuditReads to 1.1.0 with optional SQL summary ordering before cursor paging, nulls last and stable append-identity ties; expose implemented sort keys in the Admin history table without changing immutable events or read authority.
+
 - Combine history From/Until filters into one compact shared DateTimeRangeInput. Preserve exact URL/query keys, authorized filtering, UTC transport and application-timezone display.
 
 - Make truncated JSON explicit with a separate continuation-marker line.

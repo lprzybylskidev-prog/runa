@@ -47,7 +47,7 @@ public table above records their disposition rather than exposing private classe
 
 ## Administrative Auth reads
 
-The delivered `AuthAdministration` API 2.0.0, DTO signatures, bounded queries,
+The delivered `AuthAdministration` API 2.1.0, DTO signatures, bounded queries,
 field projection and lifecycle read are owned by the
 [Auth administration guide](../auth/administration.md#guarded-administrative-reads).
 The implementation stays in Auth; Admin never queries foreign users, addresses or
@@ -290,7 +290,7 @@ platform version, application ID, compatibility, APP_URL/KEY, debug, credentials
 drivers, knowledge endpoints or infrastructure editable.
 
 The native transaction redesign is retained by independent Auth 3.1.0 and
-Permissions 2.1.0, with guarded AuthProfiles 2.1.0 / PermissionsAccess 2.1.0. Other current guarded
+Permissions 2.1.0, with guarded AuthProfiles 2.1.0 / PermissionsAccess 2.2.0. Other current guarded
 interfaces remain at their declared versions. The
 [native transaction contract](../../architecture/module-transactions.md) and
 [current composition guide](composition.md) supersede the original unchanged-API

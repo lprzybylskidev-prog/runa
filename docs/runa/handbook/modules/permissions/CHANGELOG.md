@@ -2,6 +2,8 @@
 
 ## 2.1.0 — 2026-10-31
 
+- Extend PermissionsAccess to 2.2.0 with allowlisted definition ordering and literal code/name filters before cursor paging. Show both localized names and full catalogue table controls; enable local search/filters in the bounded effective-permissions table.
+
 - Complete access-editor interaction states: pointer/hover/pressed/focus on custom buttons, inherited checkbox cursors and truthful disabled row/page affordances.
 
 - Polish assignment-editor visuals with the shared small search field, bounded desktop width, natural category widths and quiet aligned filters, counts and page controls.

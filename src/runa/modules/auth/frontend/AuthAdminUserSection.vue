@@ -29,6 +29,8 @@ import {
   Table,
   formValuesEqual,
   formatApplicationInstant,
+  instantTimestamp,
+  withTableFilters,
 } from '@/runa/ui';
 import {
   AuthIdentityFields,
@@ -56,9 +58,14 @@ const { locale, t } = useAdminLocale();
 const text = (pl: string, en: string) => t({ pl, en });
 const presentation = useAdminPresentation();
 const resource = useAdminResource(props.page, props.section.key);
+const exports = useAdminResource(props.page, props.section.key);
+const currentCursor = ref<string>();
 watch(
   () => props.controller.records.value[props.section.key],
-  () => resource.clear(),
+  () => {
+    currentCursor.value = undefined;
+    resource.clear();
+  },
 );
 const settled = ref(false);
 async function retry() {
@@ -515,8 +522,43 @@ watch(
 );
 async function older() {
   const id = props.controller.records.value[props.section.key]?.public_id;
-  if (id && typeof next.value === 'string')
-    await resource.read({ kind: 'record', public_id: id, cursor: next.value });
+  if (id && typeof next.value === 'string') {
+    const cursor = next.value;
+    await resource.read({ kind: 'record', public_id: id, cursor });
+    if (!resource.error.value) currentCursor.value = cursor;
+  }
+}
+async function exportRows(signal: AbortSignal) {
+  const id = record.value?.public_id;
+  if (!id || !props.section.export_allowed)
+    throw new Error('permission_denied');
+  await exports.read(
+    {
+      kind: 'record',
+      public_id: id,
+      export: true,
+      ...(currentCursor.value ? { cursor: currentCursor.value } : {}),
+    },
+    { signal },
+  );
+  signal.throwIfAborted();
+  const result = exports.result.value;
+  if (
+    exports.error.value ||
+    !result ||
+    !('values' in result) ||
+    result.public_id !== id
+  )
+    throw new Error('permission_denied');
+  const raw = result.values[collectionKey.value!];
+  if (typeof raw !== 'string') throw new Error('permission_denied');
+  const parsed: unknown = JSON.parse(raw);
+  if (
+    !Array.isArray(parsed) ||
+    parsed.some((row) => !row || typeof row !== 'object' || Array.isArray(row))
+  )
+    throw new Error('permission_denied');
+  return parsed as Record<string, AdminJson>[];
 }
 const next = computed(() =>
   rows.value.length === 100 ? rows.value.at(-1)?.public_id : undefined,
@@ -570,19 +612,32 @@ watch(rows, () => {
   tableQuery.value = { ...tableQuery.value, page: 1 };
 });
 const tableColumns = computed<TableColumn<Record<string, AdminJson>>[]>(() =>
-  kind.value === 'trust'
-    ? trustedDeviceColumns<Record<string, AdminJson>>(
-        locale.value,
-        (row, key) => row[key],
-      )
-    : ['authenticated_at', 'activity_at', 'expires_at', 'remembered'].map(
-        (key) => ({
-          key,
-          label: fieldTitle(key),
-          value: (row) => display(row[key] ?? null, key),
-          sortable: false,
-        }),
-      ),
+  withTableFilters(
+    kind.value === 'trust'
+      ? trustedDeviceColumns<Record<string, AdminJson>>(
+          locale.value,
+          (row, key) => row[key],
+        )
+      : ['authenticated_at', 'activity_at', 'expires_at', 'remembered'].map(
+          (key) => ({
+            key,
+            label: fieldTitle(key),
+            value: (row) => display(row[key] ?? null, key),
+            ...(key === 'remembered'
+              ? {}
+              : {
+                  compare: (
+                    a: Record<string, AdminJson>,
+                    b: Record<string, AdminJson>,
+                  ) =>
+                    (typeof a[key] === 'string'
+                      ? instantTimestamp(a[key])
+                      : 0) -
+                    (typeof b[key] === 'string' ? instantTimestamp(b[key]) : 0),
+                }),
+          }),
+        ),
+  ),
 );
 
 const rowCommands = computed(() =>
@@ -668,7 +723,8 @@ async function refreshTable() {
               :row-key="(row) => String(row.public_id)"
               :caption="labels[kind] ?? t(section.title)"
               :english="locale === 'en'"
-              :searchable="false"
+              :export-allowed="section.export_allowed === true"
+              :export-rows="exportRows"
               :retain-empty-frame="true"
               :refresh="refreshTable"
               :refreshing="resource.busy.value || tableRefreshing"

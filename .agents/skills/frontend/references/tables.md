@@ -13,3 +13,7 @@ shared table defect is reported; follow the canonical Admin frontend contract.
 Customer implementations consume public fixes and never edit protected platform
 sources. Custom table export/print requires separate server-enforced export
 permission in addition to owning read authority; UI visibility alone is insufficient.
+
+Review each supplied consumer against the public guide’s shared-capability contract,
+including actual server sort/filter support and local withTableFilters composition.
+Keep query/export scope explicit; a rendered Table alone does not complete integration.

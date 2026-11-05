@@ -121,6 +121,7 @@ export { useTable } from '../../composables/useTable';
 export {
   clientTablePage,
   normalizeTableQuery,
+  withTableFilters,
   createApiTableProvider,
 } from '../../lib/table';
 

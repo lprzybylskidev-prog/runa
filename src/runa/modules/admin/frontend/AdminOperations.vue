@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { withTableFilters } from '@/runa/ui';
 import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import AdminOperationResult from './AdminOperationResult.vue';
@@ -505,27 +506,29 @@ const workColumnState = [
   { key: 'status', visible: true, width: 200 },
   { key: 'progress', visible: true, width: 120 },
 ];
-const workColumns = computed<TableColumn<AdminOperationData>[]>(() => [
-  {
-    key: 'operation',
-    label: tr('Operation'),
-    value: (row) =>
-      typeof row.operation === 'string' ? tr(row.operation) : '—',
-  },
-  {
-    key: 'status',
-    label: tr('Status'),
-    value: (row) => (typeof row.status === 'string' ? tr(row.status) : '—'),
-  },
-  {
-    key: 'progress',
-    label: tr('Progress'),
-    value: (row) =>
-      typeof row.progress === 'string' || typeof row.progress === 'number'
-        ? String(row.progress)
-        : '—',
-  },
-]);
+const workColumns = computed<TableColumn<AdminOperationData>[]>(() =>
+  withTableFilters([
+    {
+      key: 'operation',
+      label: tr('Operation'),
+      value: (row) =>
+        typeof row.operation === 'string' ? tr(row.operation) : '—',
+    },
+    {
+      key: 'status',
+      label: tr('Status'),
+      value: (row) => (typeof row.status === 'string' ? tr(row.status) : '—'),
+    },
+    {
+      key: 'progress',
+      label: tr('Progress'),
+      value: (row) =>
+        typeof row.progress === 'string' || typeof row.progress === 'number'
+          ? String(row.progress)
+          : '—',
+    },
+  ]),
+);
 
 watch(
   () => [controller.contextRevision.value, props.admin.state.value],
@@ -827,7 +830,6 @@ defineExpose({ controller });
             :loading="workLoading && !workLoaded"
             retain-empty-frame
             :english="adminLocale === 'en'"
-            :searchable="false"
             :caption="tr('Task history')"
           >
             <template #cell-status="{ row }"

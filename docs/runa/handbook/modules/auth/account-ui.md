@@ -448,3 +448,8 @@ retains its existing non-enumeration rules.
 A rejected proof with HTTP 419 renews CSRF through the existing guarded read while
 busy, clears credentials and requests a new explicit confirmation. It never
 replays proof submission or the protected business write.
+
+Own-account session/history and inline trusted-device tables expose local search,
+column filters, sorting, page size, columns/named views, refresh and authorized
+CSV/XLSX/PDF/print. Processing covers loaded rows only; Load older remains explicit.
+The shared [table contract](../../development/frontend/tables.md) owns these controls.

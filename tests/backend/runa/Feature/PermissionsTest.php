@@ -319,7 +319,7 @@ function permissionAccessManager($test): array
     $begin = $test->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'permission-access-password'])->assertOk()->json('data');
     $code = app(Google2FA::class)->oathTotp($begin['secret'], intdiv(now()->getTimestamp(), 30));
     $codes = $test->postJson('/api/runa/auth/security/totp-confirm', ['current_password' => 'permission-access-password', 'enrollment_code' => $code])->assertOk()->json('data.recovery_codes');
-    $test->permissionAccess = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
+    $test->permissionAccess = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
 
     return $codes;
 }
@@ -514,7 +514,7 @@ it('rolls back custom role and preset member writes after their aggregate Audit 
 })->group('permissions-access');
 
 it('denies access writers without native grants and bounds public assignment inputs', function (): void {
-    $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
+    $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
     expect(fn () => $api->definitions('role'))->toThrow(OperationRejected::class);
     ($this->asPermissionUser)(function () use ($api): void {
         expect(fn () => $api->previewAssignments($this->permissionUser->publicId, new AssignmentSet))->toThrow(OperationRejected::class);
@@ -564,7 +564,7 @@ it('preserves last eligible authority across lifecycle changes without blocking 
     $changes->change($this->permissionUser->publicId, 2, new LifecycleChange('activate'));
     expect(User::where('public_id', $this->permissionUser->publicId)->value('active'))->toBeTrue();
     ($this->asPermissionUser)(function (): void {
-        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
         expect($api->assignments($this->permissionUser->publicId)['super_admin'])->toBeTrue();
     });
 })->group('permissions-authority');

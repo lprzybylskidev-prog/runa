@@ -41,16 +41,39 @@ final readonly class ReadEvents implements AuditReads
         }
         // Count the authorized filtered dataset before applying a page cursor.
         $total = (clone $builder)->count();
-        if ($query->before !== null) {
-            $cursor = $this->events()->where('public_id', $query->before)->value('id');
-            if ($cursor === null) {
-                throw new \InvalidArgumentException('Unknown Audit page cursor.');
+        if ($query->sort === null) {
+            if ($query->before !== null) {
+                $cursor = $this->events()->where('public_id', $query->before)->value('id');
+                if ($cursor === null) {
+                    throw new \InvalidArgumentException('Unknown Audit page cursor.');
+                }
+                $builder->where('id', '<', $cursor);
             }
-            $builder->where('id', '<', $cursor);
+            $builder->orderByDesc('id');
+        } else {
+            $column = $query->sort;
+            if ($query->before !== null) {
+                $pivot = (clone $builder)->where('public_id', $query->before)->first(['id', $column]);
+                if ($pivot === null) {
+                    throw new \InvalidArgumentException('Unknown Audit page cursor.');
+                }
+                $value = $pivot->{$column};
+                $builder->where(function ($where) use ($column, $value, $pivot, $query): void {
+                    if ($value === null) {
+                        $where->whereNull($column)->where('id', '>', $pivot->id);
+                    } else {
+                        $where->where($column, $query->direction === 'asc' ? '>' : '<', $value)
+                            ->orWhereNull($column)
+                            ->orWhere(fn ($tie) => $tie->where($column, $value)->where('id', '>', $pivot->id));
+                    }
+                });
+            }
+            // AuditQuery validates both identifiers before SQL composition.
+            $builder->orderByRaw('"'.$column.'" '.$query->direction.' NULLS LAST')->orderBy('id');
         }
         // Summary selection never fetches potentially large change/context/execution trees.
         /** @var list<EventRow> $rows */
-        $rows = $builder->orderByDesc('id')->limit($query->limit + 1)->get([
+        $rows = $builder->limit($query->limit + 1)->get([
             'id', 'public_id', 'occurred_at', 'module', 'action', 'outcome', 'actor_kind', 'actor_public_id', 'actor_label', 'correlation_id',
         ])->all();
         $more = count($rows) > $query->limit;
@@ -83,7 +106,7 @@ final readonly class ReadEvents implements AuditReads
 
     public function metadata(): array
     {
-        return ['version' => 1, 'order' => 'append_desc', 'max_page_size' => 100, 'max_page_bytes' => 524288, 'payloads' => 'detail_only',
+        return ['version' => 1, 'order' => 'append_desc', 'sort' => ['occurred_at', 'module', 'action', 'outcome', 'actor_kind', 'actor_public_id', 'actor_label', 'correlation_id'], 'max_page_size' => 100, 'max_page_bytes' => 524288, 'payloads' => 'detail_only',
             'filters' => ['module', 'action', 'actorPublicId', 'actorKind', 'entity', 'outcome', 'correlationId', 'from', 'until', 'before']];
     }
 

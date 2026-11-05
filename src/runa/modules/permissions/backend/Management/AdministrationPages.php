@@ -102,12 +102,12 @@ final class AdministrationPages implements ManagementPageProvider
         return [];
     }
 
-    public static function field(string $key, string $title, string $type = 'text', ?string $write = null, bool $multiple = false, array $choices = []): ManagementFieldAccess
+    public static function field(string $key, string $title, string $type = 'text', ?string $write = null, bool $multiple = false, array $choices = [], bool $table = false): ManagementFieldAccess
     {
         $text = ['pl' => self::FIELD_NAMES[$title] ?? $title, 'en' => $title];
         $reference = in_array($key, ['roles', 'permissions'], true);
 
-        return new ManagementFieldAccess(new ManagementField($key, $type, $text, $text, writable: $write !== null,
+        return new ManagementFieldAccess(new ManagementField($key, $type, $text, $text, filterable: $table, sortable: $table, writable: $write !== null,
             required: $write !== null && $type === 'text',
             maxLength: $type === 'text' && $write !== null ? ($key === 'code' ? 71 : (str_starts_with($key, 'description_') ? 1000 : 160)) : null,
             choices: $choices, referenceModule: $reference ? 'runa.permissions' : null,
@@ -150,7 +150,7 @@ final class AdministrationPages implements ManagementPageProvider
             ];
             $pages[] = new ManagementPage($kind.'s', ucfirst($kind).'s', 'runa.permissions.introspection.read', [
                 new ManagementSection('catalogue', 'Definitions', 'runa.permissions.introspection.read', null, $binding,
-                    [self::field('code', 'Code'), self::field('name_en', 'Name')], view: 'table'),
+                    [self::field('code', 'Code', table: true), self::field('name_pl', 'Name Pl', table: true), self::field('name_en', 'Name En', table: true)], view: 'table'),
                 new ManagementSection('editor', ucfirst($kind).' details', 'runa.permissions.introspection.read', $kind === 'permission' ? null : 'runa.permissions.access.manage', $binding,
                     $fields, $commands, component: 'runa.permissions.admin_definition'),
                 ...($kind === 'role' ? [new ManagementSection('force', 'Force deletion', 'runa.permissions.introspection.read', 'runa.permissions.roles.force_delete', $binding, [self::field('module', 'Source owner'), self::field('system', 'Protected definition', 'boolean'), self::field('review_summary', 'Affected accounts, presets and effective losses')], [self::command('force_delete', 'Force delete referenced custom role', 'role.force_delete', [], $binding, 'roles.force_delete', true)], required: false, component: 'runa.permissions.admin_definition')] : []),
@@ -180,7 +180,7 @@ final class AdministrationPages implements ManagementPageProvider
 
     public function bindings(): array
     {
-        $access = new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.1.0', ['assignments', 'previewAssignments', 'previewCopy', 'previewPreset', 'applyAssignments', 'definitions', 'definition', 'previewDefinition', 'saveDefinition', 'deleteDefinition']);
+        $access = new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.2.0', ['assignments', 'previewAssignments', 'previewCopy', 'previewPreset', 'applyAssignments', 'definitions', 'definition', 'previewDefinition', 'saveDefinition', 'deleteDefinition']);
         $authority = new ManagementApiTarget('runa.permissions', PermissionsAuthority::class, '1.0.0', ['previewAuthority', 'applyAuthority', 'previewRoleDeletion', 'forceDeleteRole']);
 
         return [new ManagementBinding('role_editor', RoleEditor::class, [$access, $authority]),

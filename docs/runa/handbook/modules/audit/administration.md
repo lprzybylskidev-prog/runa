@@ -11,15 +11,19 @@ headers and a below-header horizontal scrollbar with other module views.
 Audit 1.1.0 supplies `runa.audit/history` Admin declarations, the private HistoryReader
 adapter and usable Polish/English defaults. Audit still has no backend dependency on Admin,
 Auth or Permissions. Admin requires current entry/password proof; every read also
-resolves AuditReads 1.0.0 under current `runa.audit.read` and owning availability.
+resolves AuditReads 1.1.0 under current `runa.audit.read` and owning availability.
 The source-only `admin_history` forward edge from 1.0.5 to 1.1.0 transforms no data
-and preserves immutable events. AuditReads method signatures remain unchanged; the page DTO adds an optional total.
+and preserves immutable events. AuditReads 1.1.0 adds optional ordering through
+AuditQuery; the page DTO retains its optional total.
 
-`catalogue` accepts the owning opaque append cursor and limit 1–100, fixed append
+`catalogue` accepts the owning opaque event cursor and limit 1–100, default append
 order and filters `module`, `action`, `actor_public_id`, `actor_kind`, `outcome`,
 `correlation_id`, UTC ISO-8601 `from`/`until`, and the complete three-field entity
 reference `entity_module`, `entity_type`, `entity_public_id`. Partial entity filters,
-unknown keys, malformed cursors and client sort requests refuse. The adapter forwards
+unknown keys and malformed cursors refuse. One optional `asc|desc` sort on
+occurred_at, module, action, actor_public_id, actor_kind, actor_label, outcome or
+correlation_id orders in SQL before paging, with nulls last and append-ID ascending
+ties. Filter-only entity/date endpoints are not sort keys. The adapter forwards
 the exact filtered `AuditPage.total` from the owning guarded reader, counted before
 cursor/limit. Cursor navigation remains previous/next. There is no offset search
 or assumed historical snapshot. Summary rows contain occurrence time,

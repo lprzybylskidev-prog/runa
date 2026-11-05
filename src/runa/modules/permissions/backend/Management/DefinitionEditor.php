@@ -48,7 +48,7 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
 
     public function page(ManagementRead $input): ManagementPageResult
     {
-        if ($input->filters !== [] || $input->sort !== []) {
+        if (count($input->sort) > 1) {
             throw $this->invalid();
         }
         try {
@@ -58,11 +58,11 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
         } catch (\InvalidArgumentException) {
             throw $this->invalid();
         }
-        $result = $this->api()->definitions(static::KIND, $input->cursor);
+        $result = $this->api()->definitions(static::KIND, $input->cursor, $input->filters, $input->sort[0]['key'] ?? null, $input->sort[0]['direction'] ?? 'asc');
         $items = array_slice($result['items'], 0, $input->limit);
         $next = count($items) < count($result['items']) ? $items[array_key_last($items)]['public_id'] : $result['next'];
 
-        return new ManagementPageResult(array_map(fn ($row) => new ManagementRecord($row['public_id'], (string) $row['version'], ['code' => $row['code'], 'name_en' => $row['name_en']]), $items), $next, $result['total']);
+        return new ManagementPageResult(array_map(fn ($row) => new ManagementRecord($row['public_id'], (string) $row['version'], ['code' => $row['code'], 'name_pl' => $row['name_pl'], 'name_en' => $row['name_en']]), $items), $next, $result['total']);
     }
 
     public function options(ManagementOptionsRead $input): ManagementOptions
@@ -157,7 +157,7 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
 
     protected function api(): PermissionsAccess
     {
-        return $this->apis->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
+        return $this->apis->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
     }
 
     private function authority(): PermissionsAuthority

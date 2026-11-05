@@ -63,7 +63,9 @@ def test_current_core_methods_declare_versions_permissions_and_audiences() -> No
             "AuthPreferences": "1.1.0",
             "AuthPolicies": "1.1.0",
             "AuthBulkSessions": "2.0.0",
-            "PermissionsAccess": "2.1.0",
+            "PermissionsAccess": "2.2.0",
+            "AuthAdministration": "2.1.0",
+            "AuditReads": "1.1.0",
         }.get(api["contract"].rsplit("\\", 1)[1], api["api_version"])
         assert declaration[2] == expected_version
         assert f"use {api['contract']};" in definition

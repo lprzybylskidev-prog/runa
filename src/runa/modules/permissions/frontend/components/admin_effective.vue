@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { withTableFilters } from '@/runa/ui';
 import { useAdminLocale } from '@/runa/admin';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
@@ -52,8 +53,15 @@ const rows = computed<Record<string, AdminJson>[]>(() => {
   }
 });
 const columns = computed<TableColumn<Record<string, AdminJson>>[]>(() =>
-  ['code', 'direct', 'roles', 'roles_truncated', 'available', 'effective'].map(
-    (key) => ({
+  withTableFilters(
+    [
+      'code',
+      'direct',
+      'roles',
+      'roles_truncated',
+      'available',
+      'effective',
+    ].map((key) => ({
       key,
       label: tr(key.replaceAll('_', ' ')),
       value: (row) =>
@@ -62,7 +70,7 @@ const columns = computed<TableColumn<Record<string, AdminJson>>[]>(() =>
             ? tr('Yes')
             : tr('No')
           : String(row[key] ?? ''),
-    }),
+    })),
   ),
 );
 async function exportRows(signal: AbortSignal) {
@@ -111,7 +119,6 @@ async function next() {
       "
       :loading="resource.busy.value || !record"
       :english="adminLocale === 'en'"
-      :searchable="false"
       :rows="rows"
       :query="query"
       @update:query="query = $event"

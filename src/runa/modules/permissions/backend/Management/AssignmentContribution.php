@@ -64,7 +64,7 @@ final class AssignmentContribution implements ManagementPageProvider
     public function bindings(): array
     {
         return [new ManagementBinding('assignments', AssignmentEditor::class, [
-            new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.1.0', ['assignments', 'previewAssignments', 'applyAssignments', 'definitions']),
+            new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.2.0', ['assignments', 'previewAssignments', 'applyAssignments', 'definitions']),
         ], AssignmentEditor::class)];
     }
 }

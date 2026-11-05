@@ -49,7 +49,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
         }
         $values = [];
         if (in_array(static::KEY, ['lifecycle', 'avatar', 'security', 'invitations'], true)) {
-            $values = static::KEY === 'lifecycle' ? $this->api(AuthAdministration::class, '2.0.0')->lifecycle($id) : $this->api(AuthAdministration::class, '2.0.0')->facts($id);
+            $values = static::KEY === 'lifecycle' ? $this->api(AuthAdministration::class, '2.1.0')->lifecycle($id) : $this->api(AuthAdministration::class, '2.1.0')->facts($id);
             if (static::KEY === 'avatar') {
                 $values['avatar_upload_pending'] = false;
             }
@@ -59,7 +59,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
                 $values += ['operation' => ($values['deleted'] ? 'restore' : ($values['active'] ? 'deactivate' : 'activate')), 'at' => null, 'enabled' => false];
             }
         } elseif (in_array(static::KEY, ['primary_email', 'secondary', 'preferences'], true)) {
-            $profile = $this->api(AuthAdministration::class, '2.0.0')->profile($id);
+            $profile = $this->api(AuthAdministration::class, '2.1.0')->profile($id);
             $version = $profile->version;
             $values = match (static::KEY) {
                 'primary_email' => ['current_email' => $profile->primaryEmail['email'] ?? null, 'verified' => $profile->primaryEmail['verified'] ?? null,

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { withTableFilters } from '@/runa/ui';
 import { formatApplicationInstant, instantTimestamp } from '@/runa/ui';
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { FormNotifications, Badge, Button, Table } from '@/runa/ui';
@@ -48,38 +49,40 @@ let epoch = 0,
 function date(value: string) {
   return formatApplicationInstant(value, locale.value);
 }
-const columns = computed<TableColumn<HistoryRow>[]>(() => [
-  {
-    key: 'created_at',
-    label: tr('Started'),
-    value: (row) => date(row.created_at),
-    compare: (a, b) =>
-      instantTimestamp(a.created_at) - instantTimestamp(b.created_at),
-  },
-  {
-    key: 'intent',
-    label: tr('Operation'),
-    value: (row) =>
-      tr(
-        (
-          {
-            enable: 'Module enabled',
-            disable: 'Module disabled',
-            unregister: 'Module unregistered',
-            settings: 'Settings change',
-          } as Record<string, string>
-        )[row.intent] ?? row.intent,
-      ),
-  },
-  { key: 'status', label: tr('Status'), value: (row) => tr(row.status) },
-  {
-    key: 'updated_at',
-    label: tr('Last change'),
-    value: (row) => date(row.updated_at),
-    compare: (a, b) =>
-      instantTimestamp(a.updated_at) - instantTimestamp(b.updated_at),
-  },
-]);
+const columns = computed<TableColumn<HistoryRow>[]>(() =>
+  withTableFilters([
+    {
+      key: 'created_at',
+      label: tr('Started'),
+      value: (row) => date(row.created_at),
+      compare: (a, b) =>
+        instantTimestamp(a.created_at) - instantTimestamp(b.created_at),
+    },
+    {
+      key: 'intent',
+      label: tr('Operation'),
+      value: (row) =>
+        tr(
+          (
+            {
+              enable: 'Module enabled',
+              disable: 'Module disabled',
+              unregister: 'Module unregistered',
+              settings: 'Settings change',
+            } as Record<string, string>
+          )[row.intent] ?? row.intent,
+        ),
+    },
+    { key: 'status', label: tr('Status'), value: (row) => tr(row.status) },
+    {
+      key: 'updated_at',
+      label: tr('Last change'),
+      value: (row) => date(row.updated_at),
+      compare: (a, b) =>
+        instantTimestamp(a.updated_at) - instantTimestamp(b.updated_at),
+    },
+  ]),
+);
 const columnState = [
   { key: 'created_at', visible: true, width: 200 },
   { key: 'intent', visible: true, width: 180 },
@@ -291,7 +294,6 @@ async function exportRows() {
       retain-empty-frame
       :english="locale === 'en'"
       :caption="tr('Operation history')"
-      :searchable="false"
     >
       <template #cell-status="{ row }"
         ><Badge :tone="tone(row.status)">{{ tr(row.status) }}</Badge></template

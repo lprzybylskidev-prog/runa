@@ -53,7 +53,7 @@ final readonly class HistoryReader implements ManagementResourceReader
     {
         try {
             $f = $input->filters;
-            if ($input->publicId !== null || $input->sort !== [] || array_diff(array_keys($f), ['module', 'action', 'actor_public_id', 'actor_kind', 'outcome', 'correlation_id', 'entity_module', 'entity_type', 'entity_public_id', 'from', 'until']) !== []) {
+            if ($input->publicId !== null || count($input->sort) > 1 || array_diff(array_keys($f), ['module', 'action', 'actor_public_id', 'actor_kind', 'outcome', 'correlation_id', 'entity_module', 'entity_type', 'entity_public_id', 'from', 'until']) !== []) {
                 throw new \InvalidArgumentException('Invalid history filters.');
             }
             $entity = array_intersect_key($f, array_flip(['entity_module', 'entity_type', 'entity_public_id']));
@@ -62,7 +62,7 @@ final readonly class HistoryReader implements ManagementResourceReader
             }
             $query = new AuditQuery($f['module'] ?? null, $input->limit, $f['action'] ?? null, $f['actor_public_id'] ?? null, $f['actor_kind'] ?? null,
                 $entity === [] ? null : new AuditEntity($f['entity_module'], $f['entity_type'], $f['entity_public_id']),
-                $f['outcome'] ?? null, $f['correlation_id'] ?? null, $f['from'] ?? null, $f['until'] ?? null, $input->cursor);
+                $f['outcome'] ?? null, $f['correlation_id'] ?? null, $f['from'] ?? null, $f['until'] ?? null, $input->cursor, $input->sort[0]['key'] ?? null, $input->sort[0]['direction'] ?? 'asc');
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.audit', 'history.page', 422);
         }
@@ -81,6 +81,6 @@ final readonly class HistoryReader implements ManagementResourceReader
 
     private function api(): AuditReads
     {
-        return $this->apis->resolve('runa.audit', AuditReads::class, '1.0.0');
+        return $this->apis->resolve('runa.audit', AuditReads::class, '1.1.0');
     }
 }

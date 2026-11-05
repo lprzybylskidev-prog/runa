@@ -325,7 +325,7 @@ and MutationProof plus the container-owned ModuleTransactions adapter under
 Runa\Support\Modules\Data. Follow [owning module transactions](module-transactions.md)
 for complete source-only signatures, owner phases and admission; objects are never
 HTTP callbacks or ModuleApis values. TransactionSecurity is a reserved fixed
-framework/Core bridge. AuthProfiles 2.1.0 and PermissionsAccess 2.1.0 are guarded APIs; callers use their owning current contracts, not a v1 compatibility alias.
+framework/Core bridge. AuthProfiles 2.1.0 and PermissionsAccess 2.2.0 are guarded APIs; callers use their owning current contracts, not a v1 compatibility alias.
 
 The public ManagementParticipant source contract supplies
 prepare(ManagementWrite): TransactionalMutation and project(array): ManagementOutcome.
@@ -334,7 +334,7 @@ not HTTP/ModuleApis values or direct access to foreign private mutation factorie
 See [Admin composition](../modules/admin/composition.md) for full phase, signature,
 source-placement, bounds and compatibility requirements.
 
-Auth-owned public `AuthAdministration` API `2.0.0` and its readonly DTOs are
+Auth-owned public `AuthAdministration` API `2.1.0` and its readonly DTOs are
 administrative consumption, implemented by private owning Queries/proxy/definition
 at runtime. [Auth administration](../modules/auth/administration.md) owns exact
 signatures, field grants, safe errors and frontend composition. Ordinary customers
@@ -350,7 +350,7 @@ Their page/section presentations are public through `@/runa/permissions` and
 `@/runa/audit`, with AdminPageProps / AdminSectionPresentationProps. Customer App
 presentation may compose or replace those defaults through `@/runa/admin` public
 controllers/providers, including AdminRecordBrowser; owning backend APIs remain
-PermissionsAccess 2.1.0, PermissionsAuthority/Permissions and AuditReads 1.0.0.
+PermissionsAccess 2.2.0, PermissionsAuthority/Permissions and AuditReads 1.1.0.
 See [Permissions administration](../modules/permissions/administration.md) and
 [Audit administration](../modules/audit/administration.md). PermissionsAccess adds optional bounded definition filters; see its owning guide.
 AuditPage/UserDirectoryPage add an optional nullable total and

@@ -1,6 +1,6 @@
 # Ordinary access management
 
-Permissions supplies guarded `PermissionsAccess` API 2.1.0. Resolve it through
+Permissions supplies guarded `PermissionsAccess` API 2.2.0. Resolve it through
 ModuleApis; never resolve its implementation or write assignment tables directly.
 The current module requires Auth ^2.0.0 || ^3.0.0 and Audit ^1.0.0; framework API remains 1.0.0.
 The explicit 0.1.0 → 0.2.0 edge validates new storage; the transactional updater
@@ -35,7 +35,7 @@ use Runa\Modules\Permissions\Contracts\AssignmentSet;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
 use Runa\Support\Modules\Api\ModuleApis;
 
-$access = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
+$access = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
 $review = $access->previewAssignments($userPublicId, new AssignmentSet(
     roles: [$rolePublicId], permissions: [$permissionPublicId],
 ));
@@ -152,7 +152,7 @@ final verification point.
 
 Administrative profile/assignment standalone writes now use the framework's
 [native phased transaction protocol](../../architecture/module-transactions.md).
-Call AuthProfiles 2.1.0 / PermissionsAccess 2.1.0 without an ambient transaction;
+Call AuthProfiles 2.1.0 / PermissionsAccess 2.2.0 without an ambient transaction;
 aggregate callers use source-owned participants. This intentionally replaces
 nested whole-write composition, preserving current grants, reviewed differences,
 stronger action proof and atomic owning Audit. Source/global settings and external

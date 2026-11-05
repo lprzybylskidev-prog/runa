@@ -185,13 +185,15 @@ and supported for platform/App Admin-section composition, taking `AdminSectionPr
 `submit(section: string, command: string, fields?: string[])`. It has no slots and ships in frontend
 assets, uses the existing Admin controller/resource lane and leaves native review,
 proof, grants, protected membership and transactions with Permissions. Public
-PermissionsAccess 2.1.0 extends `definitions(string $kind, ?string $after = null,
-array $filters = []): array` with optional `search: string` (at most 160 characters)
+PermissionsAccess 2.2.0 extends `definitions(string $kind, ?string $after = null,
+array $filters = [], ?string $sort = null, string $direction = 'asc'): array`
+with optional `search: string` (at most 160 characters)
 and `public_ids: list<string>` (at most 100 UUIDv7 references). The return shape
 remains `{items: list<{public_id,code,name_pl,name_en,version}>,next: ?string,total:int}`.
 Kinds remain role/permission/preset. Filters run in the owning bounded PostgreSQL
 read; pagination preserves the public-ID cursor and totals describe the filtered
-set. Proxies, exact-version consumers and native declarations use 2.1.0. This
+set. Proxies, exact-version consumers and native declarations use 2.2.0.
+Literal code/name filters and ordering follow the [administration contract](administration.md). This
 additive runtime server-consumption API remains guarded through ModuleApis; no
 foreign query or grant resolver becomes a presentation API.
 

@@ -49,6 +49,21 @@ not sortable. Displayed dates need a `compare` adapter over their original insta
 never sort localized date text. History loaded in bounded cursor batches sorts only
 the loaded rows; this does not claim global ordering of unloaded history.
 
+Supplied tables expose their applicable shared capabilities: sorting, filters,
+search over local rows, page size/pagination, columns/named views, refresh and
+separately authorized CSV/XLSX/PDF/print. Selection and bulk actions require an
+actual owning operation; server tables advertise only implemented query keys.
+Do not omit a supported capability merely because the view uses a custom renderer.
+
+UI owns public `withTableFilters<Row>(columns: readonly TableColumn<Row>[]):
+TableColumn<Row>[]`, exported by `@/runa/ui` and implemented in runtime
+`resources/js/lib/table.ts`. Application/module presentations may use it for
+bounded, already-loaded rows. It returns copied descriptors with case-insensitive,
+trimmed substring filters over displayed values and preserves explicit domain
+filters, options, comparators and labels. It performs no read or authorization.
+Server readers supply their own filtering; never use this helper to imply matching
+or ordering over unloaded server pages. Exports reuse the same descriptors/query.
+
 The public UI Table `filters` slot provides `{query: TableQuery, update(value:
 TableQuery): void, resetKey: number, setValidity(key: string, valid: boolean): void}`.
 Custom filter controls report local invalid drafts through setValidity and key

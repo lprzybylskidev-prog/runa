@@ -2,7 +2,7 @@
 
 namespace Runa\Modules\Auth\Contracts;
 
-/** Bounded administrative reads. Resolve through ModuleApis at 1.1.0. */
+/** Bounded administrative reads. Resolve through ModuleApis at 2.1.0. */
 interface AuthAdministration
 {
     public function users(UserDirectoryQuery $query): UserDirectoryPage;

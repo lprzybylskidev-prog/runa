@@ -32,7 +32,10 @@ final readonly class UserDirectory
             }
             $this->validate($fields[$key][1], $value);
         }
-        $signature = hash('sha256', serialize([$input->state, $input->search, $filters]));
+        if ($input->sort !== null && ! isset($fields[$input->sort])) {
+            throw new OperationRejected('directory_sort_unavailable', 'runa.auth', 'administration.users', 422);
+        }
+        $signature = hash('sha256', serialize([$input->state, $input->search, $filters, $input->sort, $input->direction]));
         $after = $this->cursor($input->after, $signature);
         $inner = User::query()->select('runa_auth.users.*');
         if ($input->state === 'deleted') {
@@ -104,7 +107,30 @@ final readonly class UserDirectory
             $query->where('public_id', $publicId);
         }
         $total = (clone $query)->count();
-        $rows = $query->when($after !== null, fn ($q) => $q->where('public_id', '>', $after))->orderBy('public_id')->limit($input->limit + 1)->get();
+        if ($input->sort === null) {
+            $query->when($after !== null, fn ($q) => $q->where('public_id', '>', $after))->orderBy('public_id');
+        } else {
+            $column = $input->sort === 'verification_required' ? 'effective_verification_required' : $input->sort;
+            if ($after !== null) {
+                $pivot = (clone $query)->where('public_id', $after)->first();
+                if ($pivot === null) {
+                    throw new OperationRejected('directory_cursor_invalid', 'runa.auth', 'administration.users', 422);
+                }
+                $value = $pivot->getAttribute($column);
+                $query->where(function ($where) use ($column, $value, $after, $input): void {
+                    if ($value === null) {
+                        $where->whereNull($column)->where('public_id', '>', $after);
+                    } else {
+                        $where->where($column, $input->direction === 'asc' ? '>' : '<', $value)
+                            ->orWhereNull($column)
+                            ->orWhere(fn ($tie) => $tie->where($column, $value)->where('public_id', '>', $after));
+                    }
+                });
+            }
+            // Identifiers and direction come exclusively from the authorized allowlist above.
+            $query->orderByRaw('"'.$column.'" '.$input->direction.' NULLS LAST')->orderBy('public_id');
+        }
+        $rows = $query->limit($input->limit + 1)->get();
         $items = [];
         foreach ($rows->take($input->limit) as $user) {
             $details = [];

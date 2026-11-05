@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { withTableFilters } from '@/runa/ui';
 import { formatApplicationInstant, instantTimestamp } from '@/runa/ui';
 import { computed, ref, watch } from 'vue';
 import {
@@ -265,62 +266,64 @@ function compareDates(
   return first - second;
 }
 const columns = computed<TableColumn<AccountRow>[]>(() =>
-  tab.value === 'trust'
-    ? trustedDeviceColumns<AccountRow>(locale.value, (row, key) => row[key])
-    : history.value
-      ? [
-          {
-            key: 'date',
-            label: text('Data', 'Date'),
-            value: (r) => date(r.occurred_at),
-            compare: (a, b) => compareDates(a.occurred_at, b.occurred_at),
-          },
-          {
-            key: 'action',
-            label: text('Zdarzenie', 'Event'),
-            value: (r) => eventLabel(r.action),
-          },
-          {
-            key: 'outcome',
-            label: text('Wynik', 'Outcome'),
-            value: (r) =>
-              r.outcome === 'success'
-                ? text('Powodzenie', 'Success')
-                : r.outcome === 'refused'
-                  ? text('Odmowa', 'Refused')
-                  : text('Zarejestrowano', 'Recorded'),
-          },
-        ]
-      : [
-          {
-            key: 'created',
-            label: text('Utworzono', 'Created'),
-            value: (r) => date(r.authenticated_at ?? r.created_at),
-            compare: (a, b) =>
-              compareDates(
-                a.authenticated_at ?? a.created_at,
-                b.authenticated_at ?? b.created_at,
-              ),
-          },
-          {
-            key: 'expires',
-            label: text('Wygasa', 'Expires'),
-            value: (r) => date(r.expires_at),
-            compare: (a, b) => compareDates(a.expires_at, b.expires_at),
-          },
-          ...(tab.value === 'sessions'
-            ? [
-                {
-                  key: 'current',
-                  label: text('Sesja', 'Session'),
-                  value: (r: AccountRow) =>
-                    r.current
-                      ? text('Bieżąca', 'Current')
-                      : text('Inna', 'Other'),
-                },
-              ]
-            : []),
-        ],
+  withTableFilters(
+    tab.value === 'trust'
+      ? trustedDeviceColumns<AccountRow>(locale.value, (row, key) => row[key])
+      : history.value
+        ? [
+            {
+              key: 'date',
+              label: text('Data', 'Date'),
+              value: (r) => date(r.occurred_at),
+              compare: (a, b) => compareDates(a.occurred_at, b.occurred_at),
+            },
+            {
+              key: 'action',
+              label: text('Zdarzenie', 'Event'),
+              value: (r) => eventLabel(r.action),
+            },
+            {
+              key: 'outcome',
+              label: text('Wynik', 'Outcome'),
+              value: (r) =>
+                r.outcome === 'success'
+                  ? text('Powodzenie', 'Success')
+                  : r.outcome === 'refused'
+                    ? text('Odmowa', 'Refused')
+                    : text('Zarejestrowano', 'Recorded'),
+            },
+          ]
+        : [
+            {
+              key: 'created',
+              label: text('Utworzono', 'Created'),
+              value: (r) => date(r.authenticated_at ?? r.created_at),
+              compare: (a, b) =>
+                compareDates(
+                  a.authenticated_at ?? a.created_at,
+                  b.authenticated_at ?? b.created_at,
+                ),
+            },
+            {
+              key: 'expires',
+              label: text('Wygasa', 'Expires'),
+              value: (r) => date(r.expires_at),
+              compare: (a, b) => compareDates(a.expires_at, b.expires_at),
+            },
+            ...(tab.value === 'sessions'
+              ? [
+                  {
+                    key: 'current',
+                    label: text('Sesja', 'Session'),
+                    value: (r: AccountRow) =>
+                      r.current
+                        ? text('Bieżąca', 'Current')
+                        : text('Inna', 'Other'),
+                  },
+                ]
+              : []),
+          ],
+  ),
 );
 function eventLabel(action?: string) {
   const exact = historyEventNames[action ?? ''];
@@ -646,7 +649,6 @@ const passwordHint = computed(() =>
           :row-key="(row) => row.public_id"
           :caption="titles[tab]"
           :english="locale === 'en'"
-          :searchable="false"
         >
           <template v-if="history" #cell-outcome="{ row }">{{
             row.outcome === 'success'

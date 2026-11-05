@@ -466,7 +466,7 @@ final class AdministrationPages implements ManagementPageProvider
     {
         $text = is_array($label) ? $label : ['pl' => self::FIELD_NAMES[$label] ?? $label, 'en' => $label];
 
-        return new ManagementFieldAccess(new ManagementField($key, $type, $text, $text, filterable: $filter, writable: $write !== null, required: $write !== null && in_array($key, ['email', 'replacement_email', 'reason', 'expires_at'], true), maxLength: $type === 'text' && $write !== null ? match ($key) {
+        return new ManagementFieldAccess(new ManagementField($key, $type, $text, $text, filterable: $filter, sortable: $filter, writable: $write !== null, required: $write !== null && in_array($key, ['email', 'replacement_email', 'reason', 'expires_at'], true), maxLength: $type === 'text' && $write !== null ? match ($key) {
             'delivery' => 65536, 'name', 'first_name', 'surname' => 160, 'login' => 64, 'email', 'replacement_email' => 254, default => 1000
         } : null, choices: $choices), 'runa.auth.'.$read, $write === null ? null : 'runa.auth.'.$write);
     }
@@ -492,16 +492,16 @@ final class AdministrationPages implements ManagementPageProvider
         $identity = $target(AuthIdentities::class, ['identity']);
 
         return [
-            new ManagementBinding('avatar', AvatarSection::class, [$target(AuthAdministration::class, ['facts'], '2.0.0')]),
-            new ManagementBinding('directory', Directory::class, [$target(AuthAdministration::class, ['users'], '2.0.0')]),
+            new ManagementBinding('avatar', AvatarSection::class, [$target(AuthAdministration::class, ['facts'], '2.1.0')]),
+            new ManagementBinding('directory', Directory::class, [$target(AuthAdministration::class, ['users'], '2.1.0')]),
             new ManagementBinding('eligibility', EligibilitySection::class, [$target(AuthIdentities::class, ['identity', 'eligibility'])]),
             new ManagementBinding('creation', CreationSection::class, [$target(AuthLifecycle::class, ['create'], '2.1.0')]),
-            new ManagementBinding('lifecycle', LifecycleSection::class, [$target(AuthAdministration::class, ['lifecycle'], '2.0.0'), $target(AuthLifecycle::class, ['change'], '2.1.0')]),
-            new ManagementBinding('invitations', InvitationSection::class, [$target(AuthAdministration::class, ['facts'], '2.0.0'), $identity, $target(AuthInvitations::class, ['invite', 'invalidate'])]),
-            new ManagementBinding('primary_email', EmailSection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthProfiles::class, ['changeEmail', 'replaceVerifiedEmail', 'verifyEmail', 'requireVerification'], '2.1.0')]),
-            new ManagementBinding('secondary', SecondarySection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthProfiles::class, ['addSecondary', 'changeSecondary', 'verifySecondary', 'removeSecondary'], '2.1.0')]),
+            new ManagementBinding('lifecycle', LifecycleSection::class, [$target(AuthAdministration::class, ['lifecycle'], '2.1.0'), $target(AuthLifecycle::class, ['change'], '2.1.0')]),
+            new ManagementBinding('invitations', InvitationSection::class, [$target(AuthAdministration::class, ['facts'], '2.1.0'), $identity, $target(AuthInvitations::class, ['invite', 'invalidate'])]),
+            new ManagementBinding('primary_email', EmailSection::class, [$target(AuthAdministration::class, ['profile'], '2.1.0'), $target(AuthProfiles::class, ['changeEmail', 'replaceVerifiedEmail', 'verifyEmail', 'requireVerification'], '2.1.0')]),
+            new ManagementBinding('secondary', SecondarySection::class, [$target(AuthAdministration::class, ['profile'], '2.1.0'), $target(AuthProfiles::class, ['addSecondary', 'changeSecondary', 'verifySecondary', 'removeSecondary'], '2.1.0')]),
             new ManagementBinding('sessions', SessionSection::class, [$identity, $target(AuthSessions::class, ['listFor', 'revoke', 'revokeAll'])]),
-            new ManagementBinding('security', SecuritySection::class, [$target(AuthAdministration::class, ['facts'], '2.0.0'), $identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'], '1.2.0')]),
+            new ManagementBinding('security', SecuritySection::class, [$target(AuthAdministration::class, ['facts'], '2.1.0'), $identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'], '1.2.0')]),
             new ManagementBinding('trust', DeviceSection::class, [$identity, $target(AuthSecurity::class, ['trustedDevices', 'revokeDevice', 'revokeDevices'], '1.2.0')]),
             new ManagementBinding('preferences', PreferenceSection::class, [$target(AuthPreferences::class, ['account', 'updateAccount', 'resetAccount'], '1.1.0')]),
             new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'exceptionVersions', 'exception', 'revokeExceptions'], '1.1.0')]),

@@ -390,7 +390,7 @@ it('validates both owners before Auth first apply and commits profile assignment
     $target = app(ChangeIdentity::class)->create(new NewIdentity('native-mutation@example.test', name: 'Before', active: true));
     nativeMutationProof($this);
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
-        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
         $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
         $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
         $assignment = app(ChangeAssignments::class)->mutation($review);
@@ -414,7 +414,7 @@ it('rolls back Auth first apply assignments and consumed proof before independen
     $target = app(ChangeIdentity::class)->create(new NewIdentity('native-rollback@example.test', name: 'Before', active: true));
     nativeMutationProof($this);
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
-        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
         $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
         $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
         $assignment = app(ChangeAssignments::class)->mutation($review);
@@ -445,7 +445,7 @@ it('rejects stale prewrite review and duplicate native writers or single use dem
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target, $other): void {
         $apis = app(ModuleApis::class);
         expect(fn () => $apis->resolve('runa.auth', AuthProfiles::class, '1.0.0'))->toThrow(OperationRejected::class);
-        $api = $apis->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
+        $api = $apis->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
         $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
         $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
         $second = $api->previewAssignments($other->publicId, new AssignmentSet(permissions: [$read]));
@@ -475,7 +475,7 @@ it('fails closed when independent refusal Audit also fails and invalidates rolle
     $target = app(ChangeIdentity::class)->create(new NewIdentity('native-refusal@example.test', name: 'Before', active: true));
     nativeMutationProof($this);
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
-        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
+        $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
         $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
         $review = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
         $assignment = app(ChangeAssignments::class)->mutation($review);
@@ -1919,7 +1919,7 @@ it('Auth user administration reports native live sessions and authorized account
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.profiles.read', 'runa.auth.emails.read', 'runa.auth.sessions.manage', 'runa.auth.avatars.manage']);
     $avatar = authAdministrationRead($this, 'avatar', $target->public_id);
     expect($avatar['values']['has_avatar'])->toBeFalse()->and($avatar['values']['avatar_max_kib'])->toBe(2048)->and($avatar['values']['avatar_upload_pending'])->toBeFalse();
-    $native = app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), fn () => app(ModuleApis::class)->resolve('runa.auth', AuthAdministration::class, '2.0.0')->users(new UserDirectoryQuery(search: 'Status target')));
+    $native = app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), fn () => app(ModuleApis::class)->resolve('runa.auth', AuthAdministration::class, '2.1.0')->users(new UserDirectoryQuery(search: 'Status target')));
     expect($native->items[0]->details['session_count'])->toBe(1);
     $read = fn () => authAdministrationRead($this, 'directory', query: ['kind' => 'page', 'filters' => json_encode(['display_name' => 'Status target'])])['items'][0]['values'];
     $values = $read();
@@ -2423,3 +2423,70 @@ it('confirms existing addresses through native Admin commands and refreshes reci
     expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.email.admin_bypass')->whereNotNull('consumed_at')->exists())->toBeTrue()
         ->and(DB::table('runa_audit.events')->where('action', $address === null ? 'email.admin_verified' : 'secondary.admin_verified')->count())->toBe(1);
 })->with(['primary', 'secondary']);
+
+it('supplied tables order authorized server datasets before cursor paging and guard security exports', function (): void {
+    $settings = app(ModuleSettings::class)->read('runa.auth');
+    app(ModuleSettings::class)->update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    $ids = [];
+    foreach (['Zulu', 'Alpha', 'Alpha', 'Middle'] as $index => $name) {
+        $identity = app(ChangeIdentity::class)->create(new NewIdentity('table-order-'.$index.'@example.test', name: 'Table order '.$name, active: true));
+        $ids[] = $identity->publicId;
+        DB::table('runa_auth.users')->where('public_id', $identity->publicId)->update(['login' => $index === 3 ? null : strtolower($name).$index, 'login_claim' => $index === 3 ? null : strtolower($name).$index]);
+    }
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.profiles.read', 'runa.auth.sessions.manage', 'runa.auth.trust.manage', 'runa.permissions.introspection.read', 'runa.audit.read']);
+    foreach (['display_name', 'login', 'created_at', 'active'] as $key) {
+        foreach (['asc', 'desc'] as $direction) {
+            $cursor = null;
+            $found = [];
+            do {
+                $read = authAdministrationRead($this, 'directory', query: ['kind' => 'page', 'limit' => 1, 'cursor' => $cursor, 'filters' => json_encode(['display_name' => 'Table order']), 'sort' => [['key' => $key, 'direction' => $direction]]]);
+                $found = [...$found, ...array_column($read['items'], 'public_id')];
+                $cursor = $read['next'];
+                expect(count($found))->toBeLessThanOrEqual(4);
+            } while ($cursor !== null);
+            $column = $key === 'display_name' ? 'name' : $key;
+            $expected = DB::table('runa_auth.users')->whereIn('public_id', $ids)->orderByRaw('"'.$column.'" '.$direction.' NULLS LAST')->orderBy('public_id')->pluck('public_id')->all();
+            expect($found)->toBe($expected)->and($read['total'])->toBe(4);
+        }
+    }
+    $base = ['kind' => 'page', 'limit' => 1, 'filters' => json_encode(['display_name' => 'Table order']), 'sort' => [['key' => 'display_name', 'direction' => 'asc']]];
+    $first = authAdministrationRead($this, 'directory', query: $base);
+    $this->getJson('/api/admin/runa.auth/users/sections/directory?'.http_build_query(array_replace($base, ['cursor' => $first['next'], 'sort' => [['key' => 'display_name', 'direction' => 'desc']]])))->assertUnprocessable();
+    $this->getJson('/api/admin/runa.auth/users/sections/directory?'.http_build_query(['kind' => 'page', 'sort' => [['key' => 'email', 'direction' => 'asc']]]))->assertUnprocessable();
+    foreach (['sessions', 'trust'] as $section) {
+        $path = '/api/admin/runa.auth/users/sections/'.$section.'?'.http_build_query(['kind' => 'record', 'public_id' => $ids[0], 'export' => 1]);
+        $this->getJson($path)->assertForbidden();
+    }
+    ($this->adminGrant)('runa.permissions.tables.export');
+    foreach (['sessions', 'trust'] as $section) {
+        $this->getJson('/api/admin/runa.auth/users/sections/'.$section.'?'.http_build_query(['kind' => 'record', 'public_id' => $ids[0], 'export' => 1]))->assertOk();
+    }
+    foreach (['asc', 'desc'] as $direction) {
+        $path = '/api/admin/runa.permissions/permissions/sections/catalogue';
+        $base = ['kind' => 'page', 'limit' => 1, 'filters' => json_encode(['code' => 'runa.auth']), 'sort' => [['key' => 'code', 'direction' => $direction]]];
+        $first = $this->getJson($path.'?'.http_build_query($base))->assertOk()->json('data');
+        $second = $this->getJson($path.'?'.http_build_query($base + ['cursor' => $first['next']]))->assertOk()->json('data');
+        $expected = DB::table('runa_permissions.permissions')->whereNull('deleted_at')->where('code', 'like', '%runa.auth%')->orderBy('code', $direction)->limit(2)->pluck('public_id')->all();
+        expect([$first['items'][0]['public_id'], $second['items'][0]['public_id']])->toBe($expected);
+    }
+    $scope = app(PrincipalScope::class);
+    $scope->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($ids): void {
+        foreach (['zulu', 'alpha', 'alpha', 'middle'] as $name) {
+            DB::transaction(fn () => app(ModuleApis::class)->resolve('runa.audit', AuditRecords::class, '1.0.0')->record(new AuditEvent('runa.auth', 'table.'.$name, entities: [new AuditEntity('runa.auth', 'table_fixture', $ids[0])])));
+        }
+    });
+    foreach (['action', 'actor_label', 'occurred_at', 'correlation_id'] as $key) {
+        foreach (['asc', 'desc'] as $direction) {
+            $cursor = null;
+            $found = [];
+            do {
+                $read = $this->getJson('/api/admin/runa.audit/history/sections/catalogue?'.http_build_query(['kind' => 'page', 'limit' => 1, 'cursor' => $cursor, 'filters' => json_encode(['module' => 'runa.auth', 'entity_module' => 'runa.auth', 'entity_type' => 'table_fixture', 'entity_public_id' => $ids[0]]), 'sort' => [['key' => $key, 'direction' => $direction]]]))->assertOk()->json('data');
+                $found = [...$found, ...array_column($read['items'], 'public_id')];
+                $cursor = $read['next'];
+                expect(count($found))->toBeLessThanOrEqual(4);
+            } while ($cursor !== null);
+            $expected = DB::table('runa_audit.events')->where('module', 'runa.auth')->where('action', 'like', 'table.%')->orderByRaw('"'.$key.'" '.$direction.' NULLS LAST')->orderBy('id')->pluck('public_id')->all();
+            expect($found)->toBe($expected);
+        }
+    }
+});

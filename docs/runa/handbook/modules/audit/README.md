@@ -220,7 +220,7 @@ Never infer bulk capture from use of the trait elsewhere on the model.
 
 ## Authorized reads
 
-Resolve `Contracts\AuditReads` for `runa.audit`, version `1.0.0`, through ModuleApis.
+Resolve `Contracts\AuditReads` for `runa.audit`, version `1.1.0`, through ModuleApis.
 All page/detail/metadata operations require trusted `runa.audit.read` authority and
 normal module availability. Installed Permissions supplies current native grants; the fallback authorizer denies protected reads when the integration is unavailable. There is no unauthenticated read, edit/delete operation,
 public mutation endpoint. The Admin viewer uses only this guarded read contract; consumers must not call the private Query directly.
@@ -234,6 +234,13 @@ the next call; concurrent appends do not move existing page boundaries. This is
 append order, not a transaction-wide historical snapshot across concurrent commits.
 Unknown cursors are rejected. The owning reader supplies `AuditPage.total`, the
 exact filtered count before the cursor/limit, including entity and date filters.
+`AuditQuery` additionally accepts trailing `?string $sort = null, string $direction
+= 'asc'`. Sort accepts occurred_at, module, action, outcome, actor_kind,
+actor_public_id, actor_label or correlation_id; direction is asc/desc. Default
+append order remains unchanged. Explicit ordering runs in SQL before paging,
+places nulls last and breaks ties by internal append identity ascending without
+exposing that identity. Continue `before` with identical filters/order; changing
+them restarts paging. A sorted cursor outside the current filtered set refuses.
 `AuditPage::__construct(array $entries, ?string $nextBefore, ?int $total = null)`
 is an Audit-owned public result DTO under `backend/Contracts`, returned at runtime
 through guarded `AuditReads`; nullable totals represent unavailable source-authored

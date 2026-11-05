@@ -14,6 +14,7 @@ final readonly class AuditQuery
         public ?string $actorKind = null, public ?AuditEntity $entity = null,
         public ?string $outcome = null, public ?string $correlationId = null,
         public ?string $from = null, public ?string $until = null, public ?string $before = null,
+        public ?string $sort = null, public string $direction = 'asc',
     ) {
         if ($module !== null) {
             new ModuleIdentity($module);
@@ -26,7 +27,7 @@ final readonly class AuditQuery
                 new TrustedPrincipal($id);
             }
         }
-        if ($limit < 1 || $limit > 100
+        if (($sort !== null && ! in_array($sort, ['occurred_at', 'module', 'action', 'outcome', 'actor_kind', 'actor_public_id', 'actor_label', 'correlation_id'], true)) || ! in_array($direction, ['asc', 'desc'], true) || $limit < 1 || $limit > 100
             || ($actorKind !== null && ! in_array($actorKind, ['human', 'anonymous', 'system', 'scheduler', 'queue', 'cli', 'machine'], true))
             || ($outcome !== null && ! in_array($outcome, ['success', 'attempt', 'refused', 'failure'], true))
             || ($correlationId !== null && preg_match('/\A[a-zA-Z0-9_-]{1,128}\z/D', $correlationId) !== 1)) {

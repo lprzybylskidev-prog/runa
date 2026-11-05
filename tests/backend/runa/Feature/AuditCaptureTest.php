@@ -164,7 +164,7 @@ it('unwinds nested suppression on exceptions while explicit relationship events 
 
 it('denies every Audit read by default and admits bounded immutable filtered cursor reads only through authority', function (): void {
     $apis = app(ModuleApis::class);
-    $reads = $apis->resolve('runa.audit', AuditReads::class, '1.0.0');
+    $reads = $apis->resolve('runa.audit', AuditReads::class, '1.1.0');
     foreach ([fn () => $reads->page(new AuditQuery), fn () => $reads->metadata(), fn () => $reads->detail((string) Str::uuid7())] as $read) {
         expect($read)->toThrow(OperationRejected::class);
     }
@@ -178,7 +178,7 @@ it('denies every Audit read by default and admits bounded immutable filtered cur
     });
     app()->forgetInstance(OperationGuard::class);
     app()->forgetInstance(ModuleApis::class);
-    $reads = app(ModuleApis::class)->resolve('runa.audit', AuditReads::class, '1.0.0');
+    $reads = app(ModuleApis::class)->resolve('runa.audit', AuditReads::class, '1.1.0');
     $actor = (string) Str::uuid7();
     $entity = new AuditEntity('app.audit_fixture', 'record', (string) Str::uuid7());
     app(PrincipalScope::class)->run(new TrustedPrincipal($actor), function () use ($entity, $reads, $actor): void {

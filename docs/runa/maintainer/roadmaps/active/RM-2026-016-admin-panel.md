@@ -1052,6 +1052,15 @@ reassessment before resuming point 3; completed point history remains evidence.
     attempt unchanged; synchronize guidance, author focused multipart regression
     coverage and prepare the corrected original development schema/runtime.
   - Commit before returning to owner acceptance; broad gates remain point 12.
+- [x] 11a83. Complete supplied table capabilities across account and Admin views.
+  - Owner-requested 2026-11-05: correct the reviewed missing sorting, exports,
+    print, search and filters across security and analogous supplied tables.
+  - Keep local processing/export bounded to loaded rows; implement authorized
+    server ordering before cursor pagination for users, definitions and Audit.
+    Retain deterministic ties, null handling, existing grants and guarded APIs.
+  - Synchronize public contracts, assessed module/API candidate versions, both
+    instruction products and regression coverage. Prepare current assets/native
+    readiness and commit; broad final gates stay in point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7424,3 +7433,82 @@ databases, base runa_test, files, active services, Docker resources/volumes, cac
 backups and prior reports were preserved. No disposable Docker resources were
 created. Mandatory staged hooks/current knowledge accompany the commit; manual
 acceptance and final verification/release remain open.
+
+### Point 11a83 — Complete table capabilities across supplied views
+
+The owner requests correction of the preceding source review. Both own-account
+and Admin trusted-device views already share the browser/system/current/last-use
+metadata. The actual gaps were omitted table integration: Admin sessions explicitly
+disabled sorting, both Admin security tables omitted export callbacks, and bounded
+account/effective-permission/operation/work consumers disabled search and omitted
+column filters. Users, definition catalogues and Audit additionally refused server
+ordering. These consumers are now corrected through the existing Table/provider
+contracts, without fetching whole server datasets into the browser.
+
+UI-owned public withTableFilters composes default local substring filters while
+preserving domain comparators and filters. Supplied local tables now expose
+search/filter/reset, sorting, page size, columns/named views and refresh. Admin
+sessions compare original instants. Both Admin security tables reauthorize the
+selected subject/cursor through a separate resource lane before CSV/XLSX/PDF/print;
+exports reuse the controlled query and visible columns. Local processing/export
+remains explicitly limited to loaded rows. Selection/bulk controls retain actual
+owning operations and grants rather than introducing meaningless selections.
+
+Server owners apply allowlisted sorting before limit/cursor navigation. Directory
+sort availability uses the same current field grants/features as projection;
+its opaque cursor additionally binds ordering. Directory/Audit place nulls last
+and resolve ties with their native unique identity. Definitions expose literal
+code/PL-name/EN-name filters and ordering, with UUID ties and both names rendered.
+Default native ordering remains unchanged. Sorted missing/nonmatching cursor
+subjects refuse and require a fresh read; there is no cross-request snapshot claim.
+Nullable keys preclude blindly substituting Laravel's native cursor paginator;
+Boost's Laravel 13 pagination/query documentation grounded the owning SQL changes.
+
+AuthAdministration advances additively to 2.1.0, PermissionsAccess to 2.2.0 and
+AuditReads to 1.1.0. Current guarded definitions, exact-version consumers, fixtures
+and source-contract expectations are synchronized. Module candidates remain the
+existing unreleased Auth 3.1.0, Permissions 2.1.0, Audit 1.1.0 and Admin 0.2.0:
+these features ship together at this roadmap's verified closure, not as another
+intermediate release. No migration, reset, compatibility adapter or dependency
+was introduced. Native development reads resolve the current declarations without
+additional storage preparation.
+
+Knowledge was current and queried before implementation. Relevant backend,
+Laravel, security, frontend/Vue and table references grounded the point. Current
+Auth account/administration, Permissions access/catalogue, Audit reads/viewer,
+Admin/frontend, public API/transaction references and central/module changelogs
+are synchronized. The public tables guide owns the complete capability/helper
+contract. Owner and customer frontend references now route authors to that same
+contract; root constitutions need no duplicate table procedure or authority change.
+Published tags, closed roadmaps and historical changelog entries are preserved.
+
+Focused supported checks resolve the actual integration/cursor questions: two
+browser-based frontend security cases PASS, including real CSV initiation; one
+backend integration case PASS with 240 assertions, covering both sort directions,
+nullable/tied cursors, pre-limit ordering, directory cursor/query mismatch and
+forbidden-field refusal, permission catalogue filtering/order, Audit summary order
+and separate security-export permission. Fixture mistakes were corrected before
+that passing run. The initial simultaneous backend invocation correctly refused
+the shared suite lock; all executed suites then ran serially. The backend runner
+removed its disposable runa_test_test_1 and preserved runa_test. No SIGSEGV
+exception was needed. The focused current-Core API declaration contract also PASS.
+Logs: .runtime/user-details/table-capabilities-{frontend,backend,contract}.log.
+
+The supported frontend build PASS, including strict types and native/static error
+assets. A focused native Nginx browser diagnostic confirms unrestricted login,
+account/Admin readiness, chronological Admin session sorting and downloaded CSV.
+Read-only populated device response projections exercise sorting, column filters,
+search/reset and downloaded filtered CSV in both panels. PL/EN, light/dark and
+390/1440px screenshots are retained and inspected under
+.runtime/artifacts/playwright/table-capabilities/. These populated device checks
+are presentation evidence, distinct from the native backend authorization test;
+no domain management write was submitted and browser sessions logged out.
+Build/browser/native readiness evidence remains in the corresponding
+.runtime/user-details/table-capabilities-*.log files. Assets are rebuilt after
+formatting to keep source-bound presentation identities current.
+
+No Docker resources were created or removed. Active development, base test data,
+all other databases, volumes, Qdrant/model caches, backups and previous reports
+remain preserved. Mandatory staged hooks and current knowledge accompany the
+commit. Owner manual acceptance 11b and final affected-area verification/release
+12 remain open; these focused checks do not claim either result.

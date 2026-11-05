@@ -1296,3 +1296,9 @@ Auth's default secondary-email section composes the public
 [shared address fields](../auth/account-ui.md#shared-secondary-email-presentation),
 including the configured count/limit, verified/pending badges and inline editing.
 Native command grants and post-submit operation proof remain with useAdminForm.
+
+Supplied resource tables advertise owning server sort/filter keys and apply them
+before cursor paging. Supplied local security/effective-permission/operation/work
+tables expose sorting, search, column filters and shared view controls; exports
+and print require separate current authority and remain bounded to loaded rows.
+See the [shared capability contract](../../development/frontend/tables.md).

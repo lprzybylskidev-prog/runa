@@ -18,7 +18,7 @@ interface PermissionsAccess
     public function applyAssignments(AssignmentPreview $reviewed): array;
 
     /** @return array{items: list<array{public_id: string, code: string, name_pl: string, name_en: string, version: int}>, next: string|null, total: int} */
-    public function definitions(string $kind, ?string $after = null, array $filters = []): array;
+    public function definitions(string $kind, ?string $after = null, array $filters = [], ?string $sort = null, string $direction = 'asc'): array;
 
     /** @return array{public_id: string, version: int, dictionary: array<string, string>, module: string|null, system: bool, assigned: array{roles: list<string>, permissions: list<string>}} */
     public function definition(string $kind, string $publicId): array;

@@ -234,7 +234,7 @@ its existing four fields; it is not expanded with arbitrary Audit payloads.
 
 Administrative profile/assignment standalone writes now use the framework's
 [native phased transaction protocol](../../architecture/module-transactions.md).
-Call AuthProfiles 2.1.0 / PermissionsAccess 2.1.0 without an ambient transaction;
+Call AuthProfiles 2.1.0 / PermissionsAccess 2.2.0 without an ambient transaction;
 aggregate callers use source-owned participants. This intentionally replaces
 nested whole-write composition, preserving current grants, reviewed differences,
 stronger action proof and atomic owning Audit. Source/global settings and external

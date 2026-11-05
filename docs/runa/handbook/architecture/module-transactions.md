@@ -120,7 +120,7 @@ acceptance belongs to the roadmap's final verification, not per-point execution.
 
 Auth 3.1.0 and Permissions 2.1.0 retain the intentional replacement
 of arbitrary ambient transaction nesting on AuthProfiles.edit and
-PermissionsAccess.applyAssignments. Their guarded API versions are AuthProfiles 2.1.0 and PermissionsAccess 2.1.0; other
+PermissionsAccess.applyAssignments. Their guarded API versions are AuthProfiles 2.1.0 and PermissionsAccess 2.2.0; other
 Core guarded APIs remain at their declared versions. Call standalone writes with
 no ambient transaction. Source-owned composition uses the documented phases;
 there is no v1 alias or nested whole-write compatibility path. Current native

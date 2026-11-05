@@ -42,7 +42,9 @@ Preserve the owning controller's guards and history; keep operation controls in 
 When a supplied module table defect is reported, assess Auth/Permissions/Audit
 for the same issue and consume the supported public correction without editing
 protected Runa. See the Admin frontend and public table guides for shared dialog,
-refresh/filter/reset and separately authorized export/print behavior.
+refresh/filter/reset and separately authorized export/print behavior. Apply the
+public table capability contract to application-owned consumers, including bounded
+withTableFilters composition and actual server sort/filter support.
 
 For renewable password-protected sections, use public `useProtectedActivity`
 and guarded AuthStepUp section APIs from

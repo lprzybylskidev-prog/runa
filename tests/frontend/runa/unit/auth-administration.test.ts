@@ -2011,3 +2011,98 @@ it('explains session and device revocation before confirming an existing primary
   );
   expect(document.querySelector('input[type=password]')).toBeNull();
 });
+
+it.each(['sessions', 'trust'])(
+  'security table %s supports sorting, local filters and separately authorized export',
+  async (kind) => {
+    const { default: UserSection } =
+      await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserSection.vue');
+    const { TextInput } = await import('@/runa/ui');
+    const key = kind === 'sessions' ? 'sessions' : 'devices';
+    const spec = section(kind, [field(key)]);
+    spec.export_allowed = true;
+    const controller = page([spec]);
+    const entries = [
+      {
+        public_id: target,
+        authenticated_at: '2026-01-02T10:00:00Z',
+        activity_at: '2026-01-02T10:00:00Z',
+        created_at: '2026-01-02T10:00:00Z',
+        expires_at: '2027-01-02T10:00:00Z',
+        remembered: false,
+        browser: 'Zulu',
+        platform: 'Linux',
+        current: false,
+      },
+      {
+        public_id: '01900000-0000-7000-8000-000000000003',
+        authenticated_at: '2025-12-20T10:00:00Z',
+        activity_at: '2025-12-20T10:00:00Z',
+        created_at: '2025-12-20T10:00:00Z',
+        expires_at: '2027-01-01T10:00:00Z',
+        remembered: true,
+        browser: 'Alpha',
+        platform: 'Linux',
+        current: true,
+      },
+    ];
+    const reads: URL[] = [];
+    vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+      reads.push(new URL(String(input), window.location.origin));
+      return response({
+        public_id: target,
+        revision: '1',
+        values: { [key]: JSON.stringify(entries) },
+      });
+    });
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          const form = useAdminForm(controller, {
+            publicId: ref(target),
+            autoRead: false,
+          });
+          return () =>
+            h(UserSection, {
+              page: controller,
+              section: spec,
+              controller: form,
+            });
+        },
+      }),
+      { attachTo: document.body },
+    );
+    await vi.waitFor(() => expect(wrapper.findAll('tbody tr')).toHaveLength(2));
+    const sortKey = kind === 'sessions' ? 'authenticated_at' : 'device';
+    const header = wrapper.get(`th[data-column-key=${sortKey}] button`);
+    await header.trigger('click');
+    await vi.waitFor(() =>
+      expect(
+        wrapper.get(`th[data-column-key=${sortKey}]`).attributes('aria-sort'),
+      ).toBe('ascending'),
+    );
+    const firstText = wrapper.findAll('tbody tr')[0]!.text();
+    expect(firstText).toContain(kind === 'sessions' ? '20' : 'Alpha');
+    const filter = wrapper
+      .findAllComponents(TextInput)
+      .find(
+        (input) =>
+          input.props('label') ===
+          (kind === 'sessions' ? 'Signed in' : 'Device'),
+      )!;
+    expect(filter).toBeTruthy();
+    await filter.get('input').setValue(kind === 'sessions' ? '2025' : 'alpha');
+    await vi.waitFor(() => expect(wrapper.findAll('tbody tr')).toHaveLength(1));
+    expect(
+      wrapper
+        .findAllComponents(TextInput)
+        .some((input) => input.props('label') === 'Search'),
+    ).toBe(true);
+    await wrapper.get('button[aria-label=CSV]').trigger('click');
+    await vi.waitFor(() =>
+      expect(reads.some((url) => url.searchParams.get('export') === '1')).toBe(
+        true,
+      ),
+    );
+  },
+);

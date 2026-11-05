@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { withTableFilters } from '@/runa/ui';
 import { trustedDeviceColumns } from './trustedDeviceColumns';
 import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
@@ -242,7 +243,9 @@ async function removeDevice() {
   if (await revokeTrustedDevice(removing.value)) removing.value = undefined;
 }
 const columns = computed<TableColumn<AccountRow>[]>(() =>
-  trustedDeviceColumns<AccountRow>(locale.value, (row, key) => row[key]),
+  withTableFilters(
+    trustedDeviceColumns<AccountRow>(locale.value, (row, key) => row[key]),
+  ),
 );
 watch(
   () => security.value?.trusted_devices_enabled,
@@ -347,7 +350,6 @@ watch(
           :row-key="(row) => row.public_id"
           :caption="text('Zaufane urządzenia', 'Trusted devices')"
           :english="locale === 'en'"
-          :searchable="false"
         >
           <template #actions="{ row }"
             ><Button

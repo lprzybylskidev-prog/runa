@@ -132,6 +132,6 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
 
     private function api(): PermissionsAccess
     {
-        return $this->apis->resolve('runa.permissions', PermissionsAccess::class, '2.1.0');
+        return $this->apis->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
     }
 }
