@@ -8,6 +8,8 @@ const props = withDefaults(
   defineProps<{
     modelValue: readonly string[];
     label: string;
+    id?: string | undefined;
+    hideLabel?: boolean | undefined;
     helper?: string;
     error?: string | readonly string[];
     disabled?: boolean;
@@ -19,6 +21,8 @@ const props = withDefaults(
     duplicateMessage?: string;
   }>(),
   {
+    id: '',
+    hideLabel: false,
     helper: '',
     error: '',
     disabled: false,
@@ -98,6 +102,8 @@ const duplicateMessage = computed(
 </script>
 <template>
   <AppFormField
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :label="label"
     :helper="helper"
     :required="required"
@@ -105,7 +111,7 @@ const duplicateMessage = computed(
       ...(typeof error === 'string' ? (error ? [error] : []) : error),
       ...(translatedMessage ? [translatedMessage] : []),
     ]"
-    ><template #default="{ id, describedBy, invalid }"
+    ><template #default="{ id: controlId, describedBy, invalid }"
       ><TransitionGroup
         tag="ul"
         name="runa-list"
@@ -131,7 +137,7 @@ const duplicateMessage = computed(
         </li>
       </TransitionGroup>
       <input
-        :id="id"
+        :id="controlId"
         ref="control"
         v-model="draft"
         type="text"

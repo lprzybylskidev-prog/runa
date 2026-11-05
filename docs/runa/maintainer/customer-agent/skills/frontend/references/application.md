@@ -93,3 +93,8 @@ For module settings presentation, compose the public named-snapshot editor and
 controller described in `docs/runa/handbook/modules/admin/settings-snapshots.md`.
 Loading changes only a draft; publication remains with its owning module and Audit
 has a separate viewer. Application composition never authorizes platform edits.
+
+Setting metadata retains the stable technical key and separate human names and
+explanations in Polish/English. Preserve the owning descriptions through declared
+Admin fields; use the public settings help/external-label contract in the linked
+snapshot guide rather than deriving labels or maintaining a second text registry.

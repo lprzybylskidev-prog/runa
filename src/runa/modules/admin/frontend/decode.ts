@@ -183,6 +183,9 @@ function field(value: unknown): AdminFieldData {
     key: operation(v.key),
     type: key(v.type),
     label: localizedText(v.label, 1024),
+    ...(v.description === undefined
+      ? {}
+      : { description: localizedText(v.description, 4096) }),
     readonly: boolean(v.readonly),
     sensitive: boolean(v.sensitive),
     filterable: boolean(v.filterable),

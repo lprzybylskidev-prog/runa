@@ -304,7 +304,7 @@ Page = {schema_version:1, owner:string, key:string, title:AdminText,
 Section = {key:string,title:AdminText,view:'record'|'table',readonly:boolean,required:boolean,
   component:Component|null,fields:[Field],commands:[Command],record:Record|null,
   diagnostic:string|null}
-Field = {key:string,type:string,label:AdminText,readonly:boolean,sensitive:boolean,
+Field = {key:string,type:string,label:AdminText,description?:AdminText,readonly:boolean,sensitive:boolean,
   filterable:boolean,sortable:boolean,lookup:boolean,
   required:boolean,max_length:int|null,choices:[string],multiple:boolean,
   component:Component|null}

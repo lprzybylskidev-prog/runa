@@ -10,6 +10,7 @@ defineOptions({ inheritAttrs: false });
 const props = withDefaults(
   defineProps<{
     label: string;
+    hideLabel?: boolean | undefined;
     size?: 'sm' | 'md';
     modelValue: Multiple extends true ? string[] : string;
     multiple?: Multiple | undefined;
@@ -32,6 +33,7 @@ const props = withDefaults(
   }>(),
   {
     size: 'md',
+    hideLabel: false,
     multiple: undefined,
     provider: undefined,
     options: () => [],
@@ -287,6 +289,7 @@ onScopeDispose(cancel);
   <AppFormField
     :id="id"
     :label="label"
+    :hide-label="hideLabel"
     :helper="helper"
     :warning="warning"
     :error="error"

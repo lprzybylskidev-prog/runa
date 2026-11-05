@@ -29,3 +29,8 @@ For module settings editors, use the public named-snapshot composition in
 `docs/runa/handbook/modules/admin/settings-snapshots.md`. Keep Audit in its own
 viewer; loading a snapshot edits a draft and applying it uses the module's native
 publication. Use the shared AdminSettingsPage/controller rather than copied proof logic.
+
+Setting metadata retains the stable technical key and separate human names and
+explanations in Polish/English. Preserve the owning descriptions through declared
+Admin fields; use the public settings help/external-label contract in the linked
+snapshot guide rather than deriving labels or maintaining a second text registry.

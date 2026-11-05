@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch, useId } from 'vue';
 import {
   Alert,
   Button,
@@ -42,6 +42,15 @@ const snapshots = useAdminSettingsSnapshots(
   props.settingsSection,
   props.snapshotsSection,
 );
+const fieldPrefix = useId();
+const expandedHelp = ref(new Set<string>());
+const fieldId = (key: string) => `${fieldPrefix}-${key}`;
+function toggleHelp(key: string) {
+  const next = new Set(expandedHelp.value);
+  if (next.has(key)) next.delete(key);
+  else next.add(key);
+  expandedHelp.value = next;
+}
 const ready = ref(false);
 useAdminInitialReadiness(() => ready.value);
 void Promise.all([
@@ -148,26 +157,27 @@ const summary = computed(() => {
 </script>
 <template>
   <AdminForm :controller="form">
-    <div class="space-y-6">
+    <div class="max-w-7xl space-y-4">
       <h1 class="text-xl font-semibold">
         {{ t(controller.page.value?.title ?? '') }}
       </h1>
       <Card>
         <div class="flex flex-wrap items-end gap-3">
-          <Select
-            v-model="snapshots.selected.value"
-            class="min-w-0 flex-1 sm:min-w-64"
-            :label="label('Migawka ustawień', 'Settings snapshot')"
-            :locale="locale"
-            :options="
-              snapshots.catalog.value.map((s) => ({
-                value: s.public_id,
-                label: s.name,
-              }))
-            "
-            :disabled="form.busy.value || !!snapshots.previous.value"
-            clearable
-          />
+          <div class="w-full min-w-0 sm:max-w-2xl sm:flex-[1_1_30rem]">
+            <Select
+              v-model="snapshots.selected.value"
+              :label="label('Migawka ustawień', 'Settings snapshot')"
+              :locale="locale"
+              :options="
+                snapshots.catalog.value.map((s) => ({
+                  value: s.public_id,
+                  label: s.name,
+                }))
+              "
+              :disabled="form.busy.value || !!snapshots.previous.value"
+              clearable
+            />
+          </div>
           <Button
             :disabled="
               blocked ||
@@ -231,25 +241,61 @@ const summary = computed(() => {
         }}
         <Button @click="form.refresh">{{ t('Retry') }}</Button></Alert
       >
-      <template v-else>
+      <div v-else class="grid items-start gap-4 xl:grid-cols-2">
         <Card v-for="group in groups" :key="group.key">
           <template #header
             ><h2 class="font-semibold">
               {{ adminText(group.title, locale) }}
             </h2></template
           >
-          <div class="grid min-w-0 items-start gap-5 lg:grid-cols-2">
+          <div class="min-w-0 divide-y divide-line">
             <div
               v-for="field in group.fields"
               :key="field.key"
-              class="min-w-0 rounded border p-3"
+              class="grid min-w-0 items-center gap-x-4 gap-y-2 py-2.5 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,1fr)_minmax(10rem,0.9fr)]"
+              :data-setting-key="field.key"
               :class="
                 snapshots.changes.value.includes(field.key)
-                  ? 'border-primary bg-primary/5'
-                  : 'border-transparent'
+                  ? 'bg-primary/5 ring-1 ring-inset ring-primary/40'
+                  : ''
               "
             >
+              <div class="flex min-w-0 items-center gap-2">
+                <label
+                  :for="fieldId(field.key)"
+                  class="text-xs font-semibold leading-relaxed"
+                  >{{ t(field.label) }}</label
+                >
+                <Tooltip v-if="field.description" :text="t(field.description)">
+                  <template #default="{ descriptionId }">
+                    <button
+                      type="button"
+                      class="flex size-6 shrink-0 items-center justify-center rounded-full border border-line text-xs text-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-primary"
+                      :aria-label="
+                        label('Opis opcji: ', 'Setting description: ') +
+                        t(field.label)
+                      "
+                      :aria-describedby="
+                        expandedHelp.has(field.key)
+                          ? fieldId(field.key) + '-help'
+                          : descriptionId
+                      "
+                      :aria-expanded="expandedHelp.has(field.key)"
+                      :aria-controls="
+                        expandedHelp.has(field.key)
+                          ? fieldId(field.key) + '-help'
+                          : undefined
+                      "
+                      @click="toggleHelp(field.key)"
+                    >
+                      ?
+                    </button>
+                  </template>
+                </Tooltip>
+              </div>
               <AdminField
+                :id="fieldId(field.key)"
+                hide-label
                 :field="field"
                 :model-value="
                   form.values.value[
@@ -273,6 +319,13 @@ const summary = computed(() => {
                   )
                 "
               />
+              <p
+                v-if="field.description && expandedHelp.has(field.key)"
+                :id="fieldId(field.key) + '-help'"
+                class="text-xs leading-relaxed text-muted sm:col-span-2"
+              >
+                {{ t(field.description) }}
+              </p>
               <Tooltip
                 v-if="snapshots.changes.value.includes(field.key)"
                 :text="oldValue(field.key)"
@@ -280,7 +333,7 @@ const summary = computed(() => {
                 <template #default="{ descriptionId }"
                   ><button
                     type="button"
-                    class="mt-2 text-xs font-semibold text-primary underline decoration-dotted underline-offset-4"
+                    class="text-xs font-semibold text-primary underline decoration-dotted underline-offset-4"
                     :aria-describedby="descriptionId"
                     :aria-label="oldValue(field.key)"
                   >
@@ -291,21 +344,21 @@ const summary = computed(() => {
             </div>
           </div>
         </Card>
-        <FormConflict
-          v-for="conflict in form.conflicts.value"
-          :key="conflict.path"
-          :locale="locale"
-          :current="display(conflict.remote)"
-          :busy="form.busy.value"
-          @accept="form.resolve(conflict.path, 'remote')"
-          @keep="form.resolve(conflict.path, 'local')"
-        />
-        <Alert v-if="form.operations.value[settingsSection]" tone="warning">{{
-          t(
-            'The owning operation has not committed. Check its status before submitting again.',
-          )
-        }}</Alert>
-      </template>
+      </div>
+      <FormConflict
+        v-for="conflict in form.conflicts.value"
+        :key="conflict.path"
+        :locale="locale"
+        :current="display(conflict.remote)"
+        :busy="form.busy.value"
+        @accept="form.resolve(conflict.path, 'remote')"
+        @keep="form.resolve(conflict.path, 'local')"
+      />
+      <Alert v-if="form.operations.value[settingsSection]" tone="warning">{{
+        t(
+          'The owning operation has not committed. Check its status before submitting again.',
+        )
+      }}</Alert>
     </div>
     <template #review />
     <template #actions>

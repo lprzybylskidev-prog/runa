@@ -55,3 +55,29 @@ remove(): Promise<void> and clear(): void. The settings section declares a revie
 `publish` command over all scoped writable fields. The snapshots section declares
 `capture` and destructive password-protected `delete` commands as above. Snapshots
 only persist values and never own business publication or effect reversal.
+
+## Localized setting identity and compact presentation
+
+Every SettingDefinition has a stable technical `key`, human `names: {pl,en}` and
+separate human `descriptions: {pl,en}`. Both languages are required and validated
+by the existing declaration constructor. Never derive the human name from the key
+or replace the description with the name. Descriptions explain behavior, units and
+special values where applicable. Module settings adapters preserve this source
+metadata in ManagementField; authorized field projection carries `label` and
+`description` as AdminText. Technical keys remain unchanged across language switches.
+
+AdminSettingsPage bounds its content width, uses compact label/control rows and
+places groups side by side on sufficiently wide screens. The snapshot selector has
+its own responsive width container, so control attribute forwarding cannot collapse
+it to the placeholder width. A help button beside each described option uses the
+shared Tooltip on hover/keyboard focus and toggles inline help on click for touch.
+The configured locale selects both names and descriptions; no second text registry
+or frontend-only setting definitions are introduced.
+
+AdminFieldProps additionally supports `id?: string` and `hideLabel?: boolean` for
+externally labelled composition. Defaults keep their existing presentation. The
+native renderer forwards the explicit control ID and visual label visibility to
+its primitives; replacements must preserve the same accessible association.
+Shared Select supports hideLabel; BooleanInputProps and TemporalInputProps support
+id, and temporal inputs/TagsInput support hideLabel. Hidden labels retain accessible
+names; visible external labels target the explicit native control ID.

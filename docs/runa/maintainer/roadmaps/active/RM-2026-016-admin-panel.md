@@ -1130,6 +1130,15 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Synchronize source/API/module versions, tests, handbook and instruction products.
     Prepare assets and rebuild only the identified local development database as
     requested. Commit implementation before owner acceptance; broad gates stay 12.
+- [x] 11a90. Compact module settings and expose source descriptions.
+  - Owner feedback 2026-11-05: widen the snapshot selector for long names, reduce
+    excessive spacing/control widths and display each option's source description.
+  - Use bounded compact label/control rows and responsive side-by-side groups.
+    Project existing localized descriptions with authorized fields; source Auth
+    settings descriptions must survive the management adapter. Reuse accessible
+    Tooltip help and expose presentation props for external labels through AdminField.
+  - Synchronize public contracts/docs/instruction references, prepare current assets
+    and commit. No database reset is needed; owner acceptance/final gates stay last.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7921,3 +7930,44 @@ created/deleted. The backend runner removed only runa_test_test_1; base runa_tes
 other databases, all volumes, Qdrant/model caches, backups and reports are preserved.
 
 Manual acceptance 11b and final affected-area verification/release 12 remain open.
+
+### Point 11a90 — Compact settings and localized source explanations
+
+Owner feedback 2026-11-05 requests a wide snapshot selector, denser settings and
+source description help, then explicitly reiterates each option's technical key,
+human name PL/EN and separate human explanation PL/EN. The existing SettingDefinition
+already requires all five metadata values and rejects missing/empty localizations;
+no new declaration format, duplicate metadata source or database change is needed.
+
+Corrected the Auth adapter's discarded descriptions: ManagementField receives
+SettingDefinition descriptions, authorized projection emits optional description
+AdminText, and the decoder/types retain it. Names and stable keys remain separate.
+Improved repetitive Auth descriptions to explain behavior, units and special values
+without changing enforcement. Metadata-only changes preserve snapshot fingerprints.
+The shared settings editor shows help beside labels via Tooltip on hover/focus and
+inline disclosure on click for touch. Native IDs and hideLabel presentation keep
+external labels connected to existing inputs, Select and boolean controls; temporal
+and tag primitives support the same composition. Public replacement contracts and
+component guidance document these additive presentation props.
+
+The snapshot select now has a real responsive wrapper (up to 42rem), rather than
+layout classes accidentally forwarded to its inner button. Bounded content width,
+compact divided label/control rows and two group columns at wide breakpoints replace
+stretched controls and excessive field padding. Default source settings and saved
+policy remain unchanged. Root AGENTS needs no added always-loaded invariant; both
+owner/customer frontend references now point to the canonical metadata/help contract.
+Admin 0.2.0 and Auth 5.0.0 remain existing unreleased candidates; no business/public
+method signature break, dependency addition or new upgrade edge is introduced.
+
+Focused label-target diagnostic: three frontend cases (boolean/dictionary/integer)
+PASS. Supported strict TypeScript/assets/native error build PASS. Real Nginx page
+and section APIs expose the current metadata; keyboard tooltip and click disclosure
+show the exact source explanation. Rendered desktop/mobile readiness checked at
+1440/390px with no stable overflow or page errors. The first immediate post-resize
+geometry read preceded layout settlement; capturing the settled viewport confirmed
+the actual responsive layout without a product workaround. Screenshots are under
+.runtime/artifacts/playwright/settings-snapshots/compact-_.png; preparation logs are
+.runtime/settings-snapshots/compact-_. No broad suite or final gate is claimed.
+No database reset, migration or Docker resources were needed; existing databases,
+volumes, caches and evidence remain preserved. Manual acceptance 11b and final
+verification/release 12 stay open. Commit includes mandatory hooks and fresh knowledge.

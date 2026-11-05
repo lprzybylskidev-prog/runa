@@ -117,12 +117,16 @@ function integer(value: string | null) {
   <FormField
     v-if="readonly || field.readonly"
     :label="tr(field.label)"
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :error="errors.map(tr)"
   >
     <template #label="{ id }"
       ><span
         :id="`${id}-label`"
-        class="block text-xs font-semibold text-muted"
+        :class="
+          hideLabel ? 'sr-only' : 'block text-xs font-semibold text-muted'
+        "
         >{{ tr(field.label) }}</span
       ></template
     >
@@ -143,6 +147,8 @@ function integer(value: string | null) {
   <TextInput
     v-else-if="field.sensitive"
     :label="tr(field.label)"
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :model-value="text"
     type="password"
     autocomplete="new-password"
@@ -161,6 +167,8 @@ function integer(value: string | null) {
   <FormField
     v-else-if="field.lookup && !lookup"
     :label="tr(field.label)"
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :error="errors.map(tr)"
   >
     <p class="text-sm text-muted">
@@ -171,6 +179,8 @@ function integer(value: string | null) {
     v-else-if="field.lookup && field.multiple"
     :multiple="true"
     :label="tr(field.label)"
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :model-value="items"
     :provider="lookup?.provider"
     :provider-search="lookup?.searchable ?? true"
@@ -185,6 +195,8 @@ function integer(value: string | null) {
   <Select
     v-else-if="field.lookup || field.choices.length"
     :label="tr(field.label)"
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :model-value="text ?? ''"
     :options="options"
     :provider="field.lookup ? lookup?.provider : undefined"
@@ -200,6 +212,8 @@ function integer(value: string | null) {
   <Checkbox
     v-else-if="field.type === 'boolean'"
     :label="tr(field.label)"
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :model-value="typeof modelValue === 'boolean' ? modelValue : null"
     :error="messages"
     :disabled="busy"
@@ -209,6 +223,8 @@ function integer(value: string | null) {
   <NumberInput
     v-else-if="field.type === 'integer'"
     :label="tr(field.label)"
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :model-value="typeof modelValue === 'number' ? String(modelValue) : text"
     kind="integer"
     :locale="adminLocale"
@@ -220,6 +236,8 @@ function integer(value: string | null) {
   <TagsInput
     v-else-if="field.type === 'uuid' && field.multiple"
     :label="tr(field.label)"
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :model-value="items"
     :max-tags="100"
     :helper="tr('Enter public UUIDs.')"
@@ -231,6 +249,8 @@ function integer(value: string | null) {
   <DateTimeInput
     v-else-if="field.type === 'datetime'"
     :label="tr(field.label)"
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :model-value="temporalValue"
     :locale="adminLocale"
     :invalid-message="tr('Enter a valid date and time.')"
@@ -244,6 +264,8 @@ function integer(value: string | null) {
   <TextInput
     v-else-if="['text', 'dictionary', 'uuid'].includes(field.type)"
     :label="tr(field.label)"
+    :id="id ?? ''"
+    :hide-label="hideLabel ?? false"
     :model-value="text"
     :error="messages"
     :disabled="busy"

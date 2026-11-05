@@ -42,6 +42,8 @@ function update(value: AdminFieldValue) {
     <component
       :is="replacement"
       :field="field"
+      :id="id"
+      :hide-label="hideLabel"
       :model-value="modelValue"
       :errors="errors"
       :readonly="locked"

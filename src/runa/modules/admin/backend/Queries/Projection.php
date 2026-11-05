@@ -403,7 +403,7 @@ final readonly class Projection
         $views = $commands = [];
         foreach ($fields as $field) {
             $definition = $field->field;
-            $views[] = ['key' => $definition->key, 'type' => $definition->type, 'label' => $definition->names,
+            $views[] = ['key' => $definition->key, 'type' => $definition->type, 'label' => $definition->names, 'description' => $definition->descriptions,
                 'readonly' => $readonly || ! $definition->writable || ! $allowed($field->writePermission),
                 'sensitive' => $definition->sensitive, 'filterable' => $definition->filterable, 'sortable' => $definition->sortable,
                 'lookup' => $definition->referenceModule !== null, 'required' => $definition->required, 'max_length' => $definition->maxLength,

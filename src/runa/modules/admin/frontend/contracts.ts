@@ -27,6 +27,7 @@ export interface AdminFieldData {
   key: string;
   type: string;
   label: AdminText;
+  description?: AdminText;
   readonly: boolean;
   sensitive: boolean;
   filterable: boolean;
@@ -415,6 +416,8 @@ export interface AdminFieldLookup {
   searchable?: boolean;
 }
 export interface AdminFieldProps {
+  id?: string | undefined;
+  hideLabel?: boolean | undefined;
   field: AdminFieldData;
   modelValue: AdminFieldValue;
   errors: readonly string[];

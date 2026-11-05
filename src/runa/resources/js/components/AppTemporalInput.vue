@@ -241,6 +241,8 @@ defineExpose({ reset, focus: () => control.value?.focus() });
 </script>
 <template>
   <AppFormField
+    :id="props.id ?? ''"
+    :hide-label="props.hideLabel ?? false"
     :label="label"
     :helper="helper"
     :error="messages"

@@ -52,6 +52,7 @@ use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
 use Runa\Modules\Auth\Contracts\ProfileChange;
 use Runa\Modules\Auth\Contracts\UserDirectoryQuery;
+use Runa\Modules\Auth\Definitions\IdentitySettings;
 use Runa\Modules\Auth\Management\AdministrationPages;
 use Runa\Modules\Auth\Management\ProfileEditor;
 use Runa\Modules\Auth\Models\User;
@@ -910,6 +911,10 @@ it('Auth administration exposes bounded policy reads history reviews and stale p
     authAdministrationLogin($this, ['runa.auth.policy.read', 'runa.auth.policy.write']);
     $page = $this->getJson('/api/admin/runa.auth/policy')->assertOk()->json('data');
     expect($page['sections'])->toHaveCount(2);
+    $welcome = collect($page['sections'][0]['fields'])->firstWhere('key', 'public_welcome_enabled');
+    $definition = (new IdentitySettings)->settings()[0];
+    expect($welcome['label'])->toBe($definition->names)
+        ->and($welcome['description'])->toBe($definition->descriptions);
     $record = $this->getJson('/api/admin/runa.auth/policy/sections/policy')->assertOk()->json('data');
     $values = $record['values'];
     unset($values['summary']);

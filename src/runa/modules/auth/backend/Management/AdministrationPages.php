@@ -418,7 +418,7 @@ final class AdministrationPages implements ManagementPageProvider
             }
             $fields[] = self::field($setting->key, $setting->names, $choices !== [] ? 'dictionary' : match ($setting->type) {
                 'boolean' => 'boolean', 'integer' => 'integer', default => 'text'
-            }, 'policy.write', 'policy.read', choices: $choices);
+            }, 'policy.write', 'policy.read', choices: $choices, description: $setting->descriptions);
         }
         $inputs = array_map(fn ($field) => $field->field->key, $fields);
         $fields[] = self::field('summary', 'Policy consequences', read: 'policy.read');
@@ -468,12 +468,14 @@ final class AdministrationPages implements ManagementPageProvider
         return array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), write: $grant, read: $grant), ['name', 'first_name', 'surname', 'login']);
     }
 
-    /** @param string|array{pl:string,en:string} $label */
-    public static function field(string $key, string|array $label, string $type = 'text', ?string $write = null, string $read = 'profiles.read', array $choices = [], bool $filter = false): ManagementFieldAccess
+    /** @param string|array{pl:string,en:string} $label
+     * @param  array{pl:string,en:string}|null  $description
+     */
+    public static function field(string $key, string|array $label, string $type = 'text', ?string $write = null, string $read = 'profiles.read', array $choices = [], bool $filter = false, ?array $description = null): ManagementFieldAccess
     {
         $text = is_array($label) ? $label : ['pl' => self::FIELD_NAMES[$label] ?? $label, 'en' => $label];
 
-        return new ManagementFieldAccess(new ManagementField($key, $type, $text, $text, filterable: $filter, sortable: $filter, writable: $write !== null, required: $write !== null && in_array($key, ['email', 'replacement_email', 'reason'], true), maxLength: $type === 'text' && $write !== null ? match ($key) {
+        return new ManagementFieldAccess(new ManagementField($key, $type, $text, $description ?? $text, filterable: $filter, sortable: $filter, writable: $write !== null, required: $write !== null && in_array($key, ['email', 'replacement_email', 'reason'], true), maxLength: $type === 'text' && $write !== null ? match ($key) {
             'delivery' => 65536, 'name', 'first_name', 'surname' => 160, 'login' => 64, 'email', 'replacement_email' => 254, default => 1000
         } : null, choices: $choices), 'runa.auth.'.$read, $write === null ? null : 'runa.auth.'.$write);
     }

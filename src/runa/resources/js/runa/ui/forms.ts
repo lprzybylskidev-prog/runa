@@ -44,6 +44,8 @@ export type ZonedDateTimeResult =
       candidates: readonly string[];
     };
 export interface TemporalInputProps {
+  id?: string | undefined;
+  hideLabel?: boolean | undefined;
   modelValue: string | null;
   label: string;
   size?: 'sm' | 'md';
@@ -56,6 +58,7 @@ export interface TemporalInputProps {
   required?: boolean;
 }
 export interface BooleanInputProps {
+  id?: string | undefined;
   compact?: boolean;
   hideLabel?: boolean;
   modelValue: boolean | null;

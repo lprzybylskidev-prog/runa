@@ -386,3 +386,43 @@ it('readonly account booleans share localized semantic badges and retain null fa
   expect(wrapper.text()).toContain('—');
   expect(wrapper.find('[data-tone]').exists()).toBe(false);
 });
+
+it.each(['boolean', 'dictionary', 'integer'])(
+  'compact settings %s controls retain external label targets',
+  (type) => {
+    const wrapper = mount(
+      defineComponent({
+        setup() {
+          return () =>
+            h('div', [
+              h('label', { for: 'compact-control' }, 'External setting label'),
+              h(AdminField, {
+                id: 'compact-control',
+                hideLabel: true,
+                field: field({
+                  type,
+                  readonly: false,
+                  choices: type === 'dictionary' ? ['human'] : [],
+                }),
+                modelValue:
+                  type === 'boolean'
+                    ? false
+                    : type === 'integer'
+                      ? 12
+                      : 'human',
+                errors: [],
+                readonly: false,
+                busy: false,
+              }),
+            ]);
+        },
+      }),
+    );
+    const control = wrapper.get('#compact-control');
+    expect(['INPUT', 'BUTTON']).toContain(control.element.tagName);
+    expect(wrapper.get('label[for="compact-control"]').attributes('for')).toBe(
+      control.attributes('id'),
+    );
+    expect(wrapper.find('.sr-only').exists()).toBe(true);
+  },
+);

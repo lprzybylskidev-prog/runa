@@ -584,3 +584,13 @@ success and false as neutral unless tone overrides it. Reuse it for readonly fac
 and table boolean cells; filters and editable booleans retain their controls.
 Admin exports `adminBooleanTone(key: string, value: boolean): BadgeTone` from
 `@/runa/admin` for its shared account-risk mapping; see the Admin frontend guide.
+
+### External control labels
+
+Select accepts `hideLabel?: boolean`. Checkbox/Switch (BooleanInputProps), temporal
+inputs (TemporalInputProps) and TagsInput accept `id?: string`; temporal inputs and
+TagsInput also accept `hideLabel?: boolean`. These compose the existing TextInput,
+NumberInput and FormField label presentation. Use an explicit stable ID for a
+visible external label; hideLabel keeps the built-in label visually hidden.
+The Admin module settings editor uses this contract for its compact rows; see
+[named settings](../../modules/admin/settings-snapshots.md#localized-setting-identity-and-compact-presentation).
