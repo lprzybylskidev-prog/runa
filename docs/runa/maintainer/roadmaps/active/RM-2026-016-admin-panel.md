@@ -1012,6 +1012,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     restoring optional 2FA and the privately configured administrator credentials.
   - Preserve other databases, files, services, volumes, caches and reports; verify
     login/Admin readiness with current assets and record the operational result.
+- [x] 11a78. Refine action-group presentation after owner review.
+  - Remove visible category headings and horizontal rules from both action panels;
+    retain shared order, accessible names and wrapping vertical separators.
+  - Prepare current assets and rendered readiness, synchronize current guidance
+    and commit before returning to owner manual acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7121,3 +7126,37 @@ operational preparation changes no runtime capability or reusable instruction;
 current public documentation and both instruction products need no further edit.
 Mandatory staged hooks/knowledge freshness accompany this point commit. Owner
 acceptance 11b and final affected-area verification/release 12 remain open.
+
+### Point 11a78 — Inline action groups with vertical separators
+
+The owner clarifies that thematic groups should have vertical separators and no
+visible category headings. Updated the shared private AuthAdminActionGroups used
+by selected-user details and bulk actions: one wrapping inline row, subtle logical
+start borders between groups, compact spacing and accessible group names without
+visible headings. The established shared ordering, native Buttons, operation
+selection, command admission and proof remain unchanged.
+
+Knowledge was current and queried; relevant Auth source/current administration,
+frontend/Tailwind accessibility/theme guidance and the installed Tailwind 4.3.3
+contract grounded this style-only refinement. The current administration guide and
+module/central changelogs are synchronized. Existing Auth 3.1.0 remains the
+unreleased candidate. Public signatures/replacement seams and owner/customer
+instruction rules are unchanged; existing shared-component and accessibility
+references already cover the change, so neither instruction product needs an edit.
+
+Current strict frontend asset build PASS. Focused native compiled Nginx/API
+readiness PASS in Polish/English, light/dark and 390/1440px for both panels:
+no category heading elements, retained accessible names/shared order, flex wrapping,
+actual one-pixel vertical borders, zero horizontal borders and no region overflow.
+Enabled/disabled Button cursors retain their established interaction states.
+Screenshots were inspected. The initial diagnostic assumed disabled Buttons use
+the default cursor; it now correctly accepts the existing not-allowed affordance.
+Evidence: .runtime/user-details/action-separators-*.log and
+.runtime/artifacts/playwright/action-separators/. Browser sessions were logged out
+and no management write was submitted. No new implementation-mirroring tests or
+backend/broad checks are needed for this reversible shared-style correction.
+
+Mandatory staged hooks and current knowledge accompany the commit. No disposable
+Docker/database resources were created; active services, development/test data,
+volumes, caches, backups and earlier reports remain preserved. Owner acceptance
+11b and final affected-area verification/release 12 remain open.

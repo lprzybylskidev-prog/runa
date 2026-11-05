@@ -555,8 +555,9 @@ skipped-target reasons and persistent failures remain actionable feedback.
 Default single-user and bulk action panels share one private Auth presentation
 order: activity/schedules, locks, email/invitations, password/authentication,
 sessions/devices, preferences/exceptions, deletion/restoration. Each nonempty
-category has a small heading and subtle separator; unavailable categories are
-omitted. Existing grouped operation selectors retain their native reviewed commands.
+category keeps its accessible name without a visible heading. Groups flow inline
+with subtle vertical separators and wrap on narrow screens; unavailable categories
+are omitted. Existing grouped operation selectors retain their native reviewed commands.
 Account status groups project authorized facts in a fixed sequence: activity,
 locks, email, password/authentication, sessions/devices and invitation. Additional
 authorized facts retain a final section rather than disappearing. Field grants,

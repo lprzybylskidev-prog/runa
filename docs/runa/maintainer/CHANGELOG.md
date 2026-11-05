@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Present Auth single/bulk action groups inline without visible category headings, using subtle vertical separators and responsive wrapping.
+
 - Organize Auth single/bulk actions with one thematic order and subtle separators, group account facts and compact own/Admin preferences. Add explicit primary/secondary administrative confirmation through AuthProfiles 2.1.0 with native grants, fresh proof, concurrency and atomic Audit.
 
 - Complete access-editor interaction states: pointer/hover/pressed/focus on custom buttons, inherited checkbox cursors and truthful disabled row/page affordances.
