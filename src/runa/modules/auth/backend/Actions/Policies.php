@@ -109,11 +109,6 @@ final readonly class Policies implements AuthPolicies
         return ['operation' => $result->operationId, 'status' => $result->status];
     }
 
-    public function restore(int $sourceRevision, int $revision, int $generation): array
-    {
-        return $this->publish($this->restoreValues($sourceRevision), $revision, $generation);
-    }
-
     /** Trusted operator recovery may use this same immutable source without web authorization.
      *
      * @return array<string, mixed>

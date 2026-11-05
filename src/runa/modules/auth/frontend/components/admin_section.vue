@@ -16,13 +16,7 @@ import {
 import { AdminSection, useAdminResource } from '@/runa/admin';
 import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
 const props = defineProps<AdminSectionPresentationProps>();
-const collectionKeys = [
-  'addresses',
-  'sessions',
-  'devices',
-  'exceptions',
-  'history',
-];
+const collectionKeys = ['addresses', 'sessions', 'devices', 'exceptions'];
 const resource = useAdminResource(props.page, props.section.key);
 const record = computed(
   () => props.controller.records.value[props.section.key],
@@ -81,12 +75,11 @@ const rows = computed<Record<string, AdminJson>[]>(() => {
 });
 const paged = computed(
   () =>
-    collection.value &&
-    ['sessions', 'devices', 'history'].includes(collection.value.key),
+    collection.value && ['sessions', 'devices'].includes(collection.value.key),
 );
 const next = computed(() => {
   const last = rows.value.at(-1);
-  return collection.value?.key === 'history' ? last?.revision : last?.public_id;
+  return last?.public_id;
 });
 const instantKeys = new Set([
   'created_at',
@@ -118,15 +111,12 @@ function select(row: Record<string, AdminJson>) {
     addresses: 'address_id',
     sessions: 'session_id',
     devices: 'device_id',
-    history: 'source_revision',
   };
   const target = targets[collection.value?.key ?? ''];
   if (target)
     props.controller.set(
       props.controller.fieldPath(props.section.key, target),
-      target === 'source_revision'
-        ? (row.revision ?? null)
-        : (row.public_id ?? null),
+      row.public_id ?? null,
     );
   if (collection.value?.key === 'exceptions') {
     for (const [field, source] of [

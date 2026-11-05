@@ -6,6 +6,7 @@ import {
   AdminForm,
   AdminSection,
   useAdminForm,
+  useAdminSettingsSnapshots,
   useAdminTable,
 } from '@/runa/admin';
 import { providePasswordConfirmation } from '@/runa/auth';
@@ -1065,4 +1066,68 @@ it('sensitive aggregate Save uses the shared password host and refuses cancelled
   host.complete();
   expect((await confirmed)?.status).toBe('committed');
   expect(saved).toBe(1);
+});
+
+it('settings snapshot preview preserves a dirty draft and cancellation never publishes', async () => {
+  const data = descriptor();
+  const catalog = [{ public_id: otherId, name: 'Approved defaults' }];
+  data.sections.push({
+    ...data.sections[0]!,
+    key: 'snapshots',
+    fields: ['snapshots', 'name', 'snapshot_id', 'values'].map((key) => ({
+      ...data.sections[0]!.fields[0]!,
+      key,
+      required: false,
+      max_length: null,
+      readonly: key === 'snapshots' || key === 'values',
+    })),
+  });
+  vi.mocked(window.fetch).mockImplementation(async (url) => {
+    const snapshot = String(url).includes('/sections/snapshots');
+    return respond({
+      data: snapshot
+        ? record({
+            public_id: String(url).includes('public_id=') ? otherId : null,
+            values: {
+              snapshots: JSON.stringify(catalog),
+              name: null,
+              snapshot_id: null,
+              values: JSON.stringify({
+                name: 'Snapshot value',
+                enabled: false,
+              }),
+            },
+          })
+        : server,
+    });
+  });
+  const page: AdminPageController = {
+    page: shallowRef(data),
+    state: computed(() => 'ready'),
+    error: ref(),
+    refresh: async () => {},
+  };
+  let form!: AdminFormController;
+  let snapshots!: ReturnType<typeof useAdminSettingsSnapshots>;
+  mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(page);
+        snapshots = useAdminSettingsSnapshots(page, form, 'profile');
+        return () => h('div');
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(form.records.value.snapshots).toBeDefined());
+  form.set('profile.name', 'Unsaved local name');
+  snapshots.selected.value = otherId;
+  await snapshots.load();
+  expect(form.values.value['profile.name']).toBe('Snapshot value');
+  expect(snapshots.changes.value).toEqual(['name', 'enabled']);
+  expect(snapshots.previous.value?.['profile.name']).toBe('Unsaved local name');
+  snapshots.cancel();
+  expect(form.values.value['profile.name']).toBe('Unsaved local name');
+  expect(form.values.value['profile.enabled']).toBe(true);
+  expect(form.dirty.value).toBe(true);
+  expect(writes).toHaveLength(0);
 });

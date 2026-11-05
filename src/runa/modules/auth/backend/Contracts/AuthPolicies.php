@@ -31,11 +31,6 @@ interface AuthPolicies
      */
     public function publish(array $patch, int $revision, int $generation): array;
 
-    /**
-     * @return array{operation: string, status: string}
-     */
-    public function restore(int $sourceRevision, int $revision, int $generation): array;
-
     /** @return array<string, int> */
     public function exceptionVersions(string $publicId): array;
 

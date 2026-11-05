@@ -1302,3 +1302,6 @@ before cursor paging. Supplied local security/effective-permission/operation/wor
 tables expose sorting, search, column filters and shared view controls; exports
 and print require separate current authority and remain bounded to loaded rows.
 See the [shared capability contract](../../development/frontend/tables.md).
+
+Named module settings snapshots and the public AdminSettingsPage/controller are
+documented in [settings snapshots](settings-snapshots.md).

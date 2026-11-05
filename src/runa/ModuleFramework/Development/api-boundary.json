@@ -180,6 +180,8 @@
     "Runa\\Support\\Modules\\ModuleRecord",
     "Runa\\Support\\Modules\\RegistrySnapshot",
     "Runa\\Support\\Modules\\Settings\\ModuleSettings",
+    "Runa\\Support\\Modules\\Settings\\SettingsSnapshotSection",
+    "Runa\\Support\\Modules\\Settings\\SettingsSnapshots",
     "Runa\\Support\\Modules\\Storage\\ModuleDisk",
     "Runa\\Support\\Modules\\Storage\\ModuleStorage",
     "Runa\\Support\\Modules\\Work\\ModuleWork",

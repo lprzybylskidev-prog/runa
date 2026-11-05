@@ -1,5 +1,16 @@
 /** Source-owned, reviewed copy only. Never display server messages or unknown reasons. */
 export const refusalMessages: Record<string, string> = {
+  settings_snapshot_name_invalid:
+    'Enter a snapshot name of 1–80 characters without control characters.',
+  settings_snapshot_name_or_limit:
+    'This snapshot name is already used or the limit of 100 snapshots has been reached.',
+  settings_snapshot_stale:
+    'Settings changed. Refresh the form before saving a snapshot.',
+  settings_snapshot_missing:
+    'This snapshot was deleted or is unavailable. Choose another.',
+  settings_snapshot_incompatible:
+    'This snapshot does not match the current settings definitions. Create a new snapshot.',
+
   audit_event_missing: 'This audit event is no longer available.',
   history_event_not_found: 'This history event is no longer available.',
   history_cursor_invalid:

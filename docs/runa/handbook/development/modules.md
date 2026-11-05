@@ -153,7 +153,7 @@ its public source contracts for owned mutations; do not wrap a whole guarded wri
 inside another transaction or import a foreign module's private mutation class.
 
 Administrator-editable module settings must have a dedicated module-owned Admin
-page, change history and the owning validation/publication/recovery workflow.
+page, named snapshots and the owning validation/publication/recovery workflow.
 Reuse native settings and Audit contracts; declaring a SettingsProvider alone does
 not create an administrative editor. The module operations dialog has no generic
 settings tab or read/update endpoint. Source/CLI-only technical demonstrations
@@ -164,3 +164,5 @@ Optional integrations declare enabled state and non-sensitive configuration in s
 through IntegrationProvider and schema-2 IntegrationDefinition; Admin supplies no
 runtime integration editor. Follow [optional integrations](../architecture/module-framework.md#delivered-public-events-and-optional-integrations)
 for the complete source contract and availability rules.
+
+Administrator-editable module settings use the reusable [named snapshot contract](../modules/admin/settings-snapshots.md)

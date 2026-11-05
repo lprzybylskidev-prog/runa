@@ -1,6 +1,6 @@
 # Auth policies and trusted operator recovery
 
-Auth 4.0.0 supplies AuthPolicies 2.0.0 and AuthBulkSessions 2.0.0 with
+Auth 5.0.0 supplies AuthPolicies 3.0.0 and AuthBulkSessions 2.0.0 with
 Audit ^1.0.0 and framework API ^1.0.0. Install the current per-table storage and
 technical initialization through the fenced ModuleUpdates workflow; ordinary
 startup does not migrate or initialize an administrator.
@@ -22,14 +22,15 @@ transaction. Auth consumes an actor's every-action password proof for
 the actual stored write. A refused publication also restores the proof's unused
 state. Compensation does not require the user's proof a second time.
 
-AuthPolicies provides bounded history (50 revisions per page), old/new comparison
-through `preview`, revision/generation-checked `publish`, historical `restore` and
-account exception reads/writes. Restore republishes a snapshot as a NEW revision;
-it never clears forced-password flags, restores revoked sessions/trust or reverses
-previous effects. ModuleSettings validates restored values against current source
-rules. Trusted operator settings writes retain the existing CLI trust boundary;
-web/API consumers require `runa.auth.policy.read`, `runa.auth.policy.write` or
-`runa.auth.policy.exceptions` as declared. Administrative gateways require current Permissions grants and their independent security predicates. There is no settings administration UI.
+AuthPolicies 3.0.0 provides bounded internal history (50 revisions per page),
+old/new comparison through `preview`, revision/generation-checked `publish` and
+account exception reads/writes. The guarded historical `restore` operation was
+removed; trusted operator recovery remains a separate CLI-only capability.
+The Admin policy page uses [named settings snapshots](../admin/settings-snapshots.md)
+and never displays Audit or revision-history payloads. Loading a snapshot changes
+only the form. Explicit application uses the native reviewed publication, current
+rules, grants and password proof. A new publication never clears forced-password
+flags, restores revoked sessions/trust or reverses previous effects.
 
 `password_policy_effect` defaults to `future_only`. When `force_change` accompanies
 an actual complexity change, all non-deleted password-bearing accounts must choose
@@ -63,7 +64,7 @@ current effective values. Expired exceptions stop applying immediately without
 waiting for cron. Cleanup preserves sessions covered by a live extension; an
 extension never moves the session's captured absolute deadline.
 
-Auth-owned public write signature in `AuthPolicies` 2.0.0:
+Auth-owned public write signature in `AuthPolicies` 3.0.0:
 
 ```php
 public function exception(string $publicId, string $key, ?int $value,
@@ -73,13 +74,13 @@ public function exception(string $publicId, string $key, ?int $value,
 
 The guarded entrypoint, permission, password proof and transactional Audit
 remain unchanged. The `expires_at` member returned by both exception reads is now
-`string|null`, an incompatible row-contract change from 1.x. Auth 4.0.0 and current
+`string|null`, an incompatible row-contract change from 1.x. Auth 5.0.0 and current
 consumer constraints reflect it under the standing pre-1.0 owner authorization.
 
 ### Active account exception projection
 
-Auth owns `AuthPolicies` 2.0.0, consumed through guarded
-`ModuleApis::resolve('runa.auth', AuthPolicies::class, '2.0.0')` by authorized
+Auth owns `AuthPolicies` 3.0.0, consumed through guarded
+`ModuleApis::resolve('runa.auth', AuthPolicies::class, '3.0.0')` by authorized
 application/module integrations and the Admin management adapter. The added
 `public function activeExceptions(string $publicId): array` returns the same
 `list<array{public_id:string,key:string,value:int,reason:string,actor:string,

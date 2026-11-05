@@ -1,0 +1,425 @@
+<script setup lang="ts">
+import { computed, ref, watch } from 'vue';
+import {
+  Alert,
+  Button,
+  Card,
+  ContentLoading,
+  Dialog,
+  Form,
+  FormConflict,
+  FormNotifications,
+  Select,
+  TextInput,
+  Tooltip,
+} from '@/runa/ui';
+import AdminField from './AdminField.vue';
+import AdminForm from './AdminForm.vue';
+import { useAdminLocale, adminText } from './localization';
+import { useAdminInitialReadiness } from './initialReadiness';
+import { useAdminSettingsSnapshots } from './useAdminSettingsSnapshots';
+import type { AdminSettingsGroup } from './useAdminSettingsSnapshots';
+import type {
+  AdminFormController,
+  AdminJson,
+  AdminPageController,
+} from './contracts';
+const props = withDefaults(
+  defineProps<{
+    controller: AdminPageController;
+    form: AdminFormController;
+    groups: AdminSettingsGroup[];
+    settingsSection?: string;
+    snapshotsSection?: string;
+  }>(),
+  { settingsSection: 'policy', snapshotsSection: 'snapshots' },
+);
+const { locale, t } = useAdminLocale();
+const label = (pl: string, en: string) => (locale.value === 'pl' ? pl : en);
+const snapshots = useAdminSettingsSnapshots(
+  props.controller,
+  props.form,
+  props.settingsSection,
+  props.snapshotsSection,
+);
+const ready = ref(false);
+useAdminInitialReadiness(() => ready.value);
+void Promise.all([
+  props.form.activateSection(props.settingsSection),
+  props.form.activateSection(props.snapshotsSection),
+]).finally(() => {
+  ready.value = true;
+});
+const section = computed(() =>
+  props.controller.page.value?.sections.find(
+    (s) => s.key === props.settingsSection,
+  ),
+);
+const snapshotSection = computed(() =>
+  props.controller.page.value?.sections.find(
+    (s) => s.key === props.snapshotsSection,
+  ),
+);
+const record = computed(() => props.form.records.value[props.settingsSection]);
+const writable = computed(
+  () =>
+    section.value &&
+    !section.value.readonly &&
+    section.value.commands.some((c) => c.key === 'publish' && c.available),
+);
+const snapshotWritable = computed(
+  () => snapshotSection.value && !snapshotSection.value.readonly,
+);
+const loading = computed(() => !ready.value && !record.value);
+const groups = computed(() =>
+  props.groups
+    .map((group) => ({
+      ...group,
+      fields: group.fields
+        .map((key) => section.value?.fields.find((f) => f.key === key))
+        .filter((f) => f !== undefined),
+    }))
+    .filter((g) => g.fields.length),
+);
+const blocked = computed(
+  () =>
+    props.form.busy.value ||
+    !record.value ||
+    !!props.form.conflicts.value.length ||
+    !!props.form.operations.value[props.settingsSection],
+);
+const saveOpen = ref(false);
+const reviewOpen = ref(false);
+const name = ref('');
+const captureAttempt = ref(0);
+watch(saveOpen, (open) => {
+  const path = props.form.fieldPath(props.snapshotsSection, 'name');
+  if (!open && props.form.values.value[path] !== null)
+    props.form.set(path, null);
+});
+function display(value: AdminJson | undefined) {
+  if (value === null || value === undefined || value === '') return '—';
+  if (typeof value === 'boolean') return t(value ? 'Yes' : 'No');
+  return t(String(value));
+}
+function oldValue(key: string) {
+  return (
+    label('Poprzednio: ', 'Previously: ') +
+    display(
+      snapshots.previous.value?.[
+        props.form.fieldPath(props.settingsSection, key)
+      ],
+    )
+  );
+}
+async function capture() {
+  captureAttempt.value++;
+  if (await snapshots.capture(name.value)) {
+    saveOpen.value = false;
+    name.value = '';
+  }
+}
+async function review() {
+  if (await props.form.reviewCommand(props.settingsSection, 'publish'))
+    reviewOpen.value = true;
+}
+async function apply() {
+  reviewOpen.value = false;
+  const result = await props.form.execute(props.settingsSection, 'publish');
+  if (result?.status === 'committed') {
+    snapshots.clear();
+    await props.form.refresh();
+  }
+}
+const reviewed = computed(
+  () => props.form.commandReviews.value[`${props.settingsSection}:publish`],
+);
+const reviewedFields = computed(() =>
+  Object.entries(reviewed.value?.changes ?? {}).filter(
+    ([key]) => key !== 'summary',
+  ),
+);
+const summary = computed(() => {
+  const value = reviewed.value?.changes.summary;
+  return value && typeof value === 'object' && !Array.isArray(value)
+    ? value
+    : {};
+});
+</script>
+<template>
+  <AdminForm :controller="form">
+    <div class="space-y-6">
+      <h1 class="text-xl font-semibold">
+        {{ t(controller.page.value?.title ?? '') }}
+      </h1>
+      <Card>
+        <div class="flex flex-wrap items-end gap-3">
+          <Select
+            v-model="snapshots.selected.value"
+            class="min-w-0 flex-1 sm:min-w-64"
+            :label="label('Migawka ustawień', 'Settings snapshot')"
+            :locale="locale"
+            :options="
+              snapshots.catalog.value.map((s) => ({
+                value: s.public_id,
+                label: s.name,
+              }))
+            "
+            :disabled="form.busy.value || !!snapshots.previous.value"
+            clearable
+          />
+          <Button
+            :disabled="
+              blocked ||
+              !snapshots.selected.value ||
+              !!snapshots.previous.value ||
+              !writable
+            "
+            :busy="snapshots.resource.busy.value"
+            @click="snapshots.load"
+            >{{ label('Wczytaj', 'Load') }}</Button
+          >
+          <Button
+            v-if="snapshotWritable"
+            variant="outline"
+            :disabled="
+              form.busy.value ||
+              !snapshots.selected.value ||
+              !!snapshots.previous.value
+            "
+            @click="snapshots.remove"
+            >{{ label('Usuń migawkę', 'Delete snapshot') }}</Button
+          >
+          <Button
+            v-if="snapshotWritable"
+            variant="outline"
+            :disabled="blocked || !form.records.value[snapshotsSection]"
+            @click="
+              name = '';
+              saveOpen = true;
+            "
+            >{{ label('Zapisz migawkę', 'Save snapshot') }}</Button
+          >
+        </div>
+        <FormNotifications
+          :locale="locale"
+          :error="
+            snapshots.resource.error.value
+              ? t(snapshots.resource.error.value.message)
+              : ''
+          "
+        />
+        <p v-if="snapshots.previous.value" class="mt-3 text-sm text-muted">
+          {{ label('Podgląd migawki: ', 'Snapshot preview: ')
+          }}{{ snapshots.loadedName.value }}.
+          {{
+            label(
+              'Wyróżnione pola różnią się od formularza sprzed wczytania.',
+              'Highlighted fields differ from the form before loading.',
+            )
+          }}
+        </p>
+      </Card>
+      <ContentLoading
+        v-if="loading"
+        shape="form"
+        :label="label('Wczytywanie ustawień', 'Loading settings')"
+      />
+      <Alert v-else-if="!record" tone="warning"
+        >{{
+          label('Nie udało się wczytać ustawień.', 'Unable to load settings.')
+        }}
+        <Button @click="form.refresh">{{ t('Retry') }}</Button></Alert
+      >
+      <template v-else>
+        <Card v-for="group in groups" :key="group.key">
+          <template #header
+            ><h2 class="font-semibold">
+              {{ adminText(group.title, locale) }}
+            </h2></template
+          >
+          <div class="grid min-w-0 items-start gap-5 lg:grid-cols-2">
+            <div
+              v-for="field in group.fields"
+              :key="field.key"
+              class="min-w-0 rounded border p-3"
+              :class="
+                snapshots.changes.value.includes(field.key)
+                  ? 'border-primary bg-primary/5'
+                  : 'border-transparent'
+              "
+            >
+              <AdminField
+                :field="field"
+                :model-value="
+                  form.values.value[
+                    form.fieldPath(settingsSection, field.key)
+                  ] ?? null
+                "
+                :errors="
+                  form.errors.value[
+                    form.fieldPath(settingsSection, field.key)
+                  ] ?? []
+                "
+                :readonly="section?.readonly ?? true"
+                :busy="form.busy.value"
+                @update:model-value="
+                  form.set(form.fieldPath(settingsSection, field.key), $event)
+                "
+                @availability="
+                  form.setAvailable(
+                    form.fieldPath(settingsSection, field.key),
+                    $event,
+                  )
+                "
+              />
+              <Tooltip
+                v-if="snapshots.changes.value.includes(field.key)"
+                :text="oldValue(field.key)"
+              >
+                <template #default="{ descriptionId }"
+                  ><button
+                    type="button"
+                    class="mt-2 text-xs font-semibold text-primary underline decoration-dotted underline-offset-4"
+                    :aria-describedby="descriptionId"
+                    :aria-label="oldValue(field.key)"
+                  >
+                    {{ label('Zmieniono', 'Changed') }}
+                  </button></template
+                >
+              </Tooltip>
+            </div>
+          </div>
+        </Card>
+        <FormConflict
+          v-for="conflict in form.conflicts.value"
+          :key="conflict.path"
+          :locale="locale"
+          :current="display(conflict.remote)"
+          :busy="form.busy.value"
+          @accept="form.resolve(conflict.path, 'remote')"
+          @keep="form.resolve(conflict.path, 'local')"
+        />
+        <Alert v-if="form.operations.value[settingsSection]" tone="warning">{{
+          t(
+            'The owning operation has not committed. Check its status before submitting again.',
+          )
+        }}</Alert>
+      </template>
+    </div>
+    <template #review />
+    <template #actions>
+      <Button
+        v-if="writable"
+        :disabled="
+          blocked || !form.dirty.value || !!snapshots.resource.busy.value
+        "
+        @click="review"
+        >{{
+          snapshots.previous.value
+            ? label('Zastosuj migawkę', 'Apply snapshot')
+            : label('Zapisz ustawienia', 'Save settings')
+        }}</Button
+      >
+      <Button
+        v-if="snapshots.previous.value"
+        variant="outline"
+        :disabled="form.busy.value"
+        @click="snapshots.cancel"
+        >{{ label('Anuluj', 'Cancel') }}</Button
+      >
+      <Button
+        v-else-if="form.dirty.value"
+        variant="outline"
+        :disabled="form.busy.value"
+        @click="form.reset"
+        >{{ t('Discard changes') }}</Button
+      >
+    </template>
+  </AdminForm>
+  <Dialog
+    v-model="saveOpen"
+    :locale="locale"
+    :title="label('Zapisz migawkę', 'Save snapshot')"
+    :description="
+      label(
+        'Migawka zapisze obecnie zatwierdzone ustawienia. Niezapisane zmiany formularza nie zostaną uwzględnione.',
+        'The snapshot saves the currently committed settings. Unsaved form changes are excluded.',
+      )
+    "
+    :busy="form.busy.value"
+  >
+    <Form :busy="form.busy.value" @submit="capture">
+      <TextInput
+        v-model="name"
+        :label="label('Nazwa migawki', 'Snapshot name')"
+        :maxlength="80"
+        :disabled="form.busy.value"
+        :error="
+          form.errors.value[form.fieldPath(snapshotsSection, 'name')] ?? []
+        "
+      />
+      <FormNotifications
+        :locale="locale"
+        :attempt="captureAttempt"
+        :error="form.error.value ? t(form.error.value.message) : ''"
+      />
+      <template #actions
+        ><Button
+          type="submit"
+          :busy="form.busy.value"
+          :disabled="!name.trim() || name.trim().length > 80"
+          >{{ label('Zapisz', 'Save') }}</Button
+        ></template
+      >
+    </Form>
+  </Dialog>
+  <Dialog
+    v-model="reviewOpen"
+    :locale="locale"
+    :title="label('Potwierdź zmianę ustawień', 'Confirm settings changes')"
+  >
+    <dl class="space-y-3 text-sm">
+      <div v-for="[key, change] in reviewedFields" :key="key">
+        <dt class="font-semibold">
+          {{ t(section?.fields.find((f) => f.key === key)?.label ?? key) }}
+        </dt>
+        <dd
+          v-if="change && typeof change === 'object' && !Array.isArray(change)"
+        >
+          {{ display(change.old) }} → {{ display(change.new) }}
+        </dd>
+      </div>
+    </dl>
+    <Alert
+      v-if="summary.force_password_change === true"
+      tone="warning"
+      class="mt-4"
+      >{{
+        label(
+          'Zmiana wymusi ustawienie nowych haseł dla kont: ',
+          'This change requires new passwords for accounts: ',
+        )
+      }}{{ summary.password_accounts }}</Alert
+    >
+    <p
+      v-if="summary.exceptions_revalidated === true"
+      class="mt-4 text-sm text-muted"
+    >
+      {{
+        label(
+          'Indywidualne wyjątki polityki zostaną unieważnione. Cofnięte sesje i uprawnienia nie zostaną przywrócone.',
+          'Individual policy exceptions will be invalidated. Revoked sessions and access will not be restored.',
+        )
+      }}
+    </p>
+    <template #footer
+      ><Button :disabled="blocked || !reviewed" @click="apply">{{
+        label('Zatwierdź', 'Confirm')
+      }}</Button
+      ><Button variant="outline" @click="reviewOpen = false">{{
+        label('Anuluj', 'Cancel')
+      }}</Button></template
+    >
+  </Dialog>
+</template>

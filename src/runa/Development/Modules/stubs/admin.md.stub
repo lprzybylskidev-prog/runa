@@ -21,8 +21,11 @@ observation freshness: reading a setting is not a health observation. The statel
 table row has no public ID and cannot be selected as a durable entity.
 
 Module settings expose `{{key}}_text` as an immediate default, separately from
-calculation results. Use the existing guarded Admin module-settings workflow and
-its operation grants/revisions/Audit; settings do not join aggregate Save.
+calculation results. This example does not expose settings editing. For an administrator editor, declare
+a dedicated module-owned page using the named snapshot adapter and public
+AdminSettingsPage from docs/runa/handbook/modules/admin/settings-snapshots.md.
+Retain owning grants, validation, publication revisions and Audit; settings do not
+join aggregate Save.
 The source-owned settings provider is singular. Existing provider owners must
 merge definitions deliberately instead of generating a second provider.
 

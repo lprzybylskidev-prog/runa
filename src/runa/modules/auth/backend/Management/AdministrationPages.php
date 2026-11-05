@@ -12,6 +12,7 @@ use Runa\Contracts\Modules\ManagementOperation;
 use Runa\Contracts\Modules\ManagementPage;
 use Runa\Contracts\Modules\ManagementPageProvider;
 use Runa\Contracts\Modules\ManagementSection;
+use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Auth\Contracts\AuthAdministration;
 use Runa\Modules\Auth\Contracts\AuthBulkSessions;
 use Runa\Modules\Auth\Contracts\AuthBulkUsers;
@@ -23,6 +24,7 @@ use Runa\Modules\Auth\Contracts\AuthPreferences;
 use Runa\Modules\Auth\Contracts\AuthProfiles;
 use Runa\Modules\Auth\Contracts\AuthSecurity;
 use Runa\Modules\Auth\Contracts\AuthSessions;
+use Runa\Modules\Auth\Contracts\AuthStepUp;
 use Runa\Modules\Auth\Contracts\BulkUserChange;
 use Runa\Modules\Auth\Definitions\IdentitySettings;
 use Runa\Modules\Auth\Support\AdministrationFeatures;
@@ -406,31 +408,35 @@ final class AdministrationPages implements ManagementPageProvider
     {
         $sections = [];
         $settings = array_values(array_filter((new IdentitySettings)->settings(), fn ($setting) => ! $setting->sensitive));
-        foreach (array_chunk($settings, 30) as $group => $definitions) {
-            $fields = [];
-            foreach ($definitions as $setting) {
-                $choices = [];
-                foreach ($setting->rules as $rule) {
-                    if (is_string($rule) && str_starts_with($rule, 'in:')) {
-                        $choices = explode(',', substr($rule, 3));
-                    }
+        $fields = [];
+        foreach ($settings as $setting) {
+            $choices = [];
+            foreach ($setting->rules as $rule) {
+                if (is_string($rule) && str_starts_with($rule, 'in:')) {
+                    $choices = explode(',', substr($rule, 3));
                 }
-                $fields[] = self::field($setting->key, $setting->names, $choices !== [] ? 'dictionary' : match ($setting->type) {
-                    'boolean' => 'boolean', 'integer' => 'integer', default => 'text'
-                }, 'policy.write', 'policy.read', choices: $choices);
             }
-            $inputs = array_map(fn ($field) => $field->field->key, $fields);
-            $fields[] = self::field('summary', 'Policy consequences', read: 'policy.read');
-            $binding = 'policy'.$group;
-            $sections[] = new ManagementSection($binding, ['Presentation and delivery', 'Credentials and sessions', 'Entry and lifecycle'][$group], 'runa.auth.policy.read', 'runa.auth.policy.write', $binding, $fields, [
-                new ManagementCommandDefinition('publish', 'Review and publish policy', new ManagementOperation(new ApiOperation('policy.publish', 'runa.auth.policy.write'), $inputs, 'password', previewRequired: true), $binding, proofAction: 'runa.auth.policy.publish'),
-            ]);
+            $fields[] = self::field($setting->key, $setting->names, $choices !== [] ? 'dictionary' : match ($setting->type) {
+                'boolean' => 'boolean', 'integer' => 'integer', default => 'text'
+            }, 'policy.write', 'policy.read', choices: $choices);
         }
-        $sections[] = new ManagementSection('history', 'Policy history and restore', 'runa.auth.policy.read', 'runa.auth.policy.write', 'policy_history', [
-            self::field('source_revision', 'Restore source revision', 'integer', 'policy.write', 'policy.read'), self::field('history', 'Policy history (latest 50)', read: 'policy.read'), self::field('summary', 'Restore consequences', read: 'policy.read'),
-        ], [new ManagementCommandDefinition('restore', 'Review and restore policy', new ManagementOperation(new ApiOperation('policy.restore', 'runa.auth.policy.write'), ['source_revision'], 'password', previewRequired: true), 'policy_history', destructive: true, proofAction: 'runa.auth.policy.publish')], component: 'runa.auth.admin_section');
+        $inputs = array_map(fn ($field) => $field->field->key, $fields);
+        $fields[] = self::field('summary', 'Policy consequences', read: 'policy.read');
+        $binding = 'policy';
+        $sections[] = new ManagementSection($binding, ['pl' => 'Ustawienia uwierzytelniania', 'en' => 'Authentication settings'], 'runa.auth.policy.read', 'runa.auth.policy.write', $binding, $fields, [
+            new ManagementCommandDefinition('publish', 'Review and publish policy', new ManagementOperation(new ApiOperation('policy.publish', 'runa.auth.policy.write'), $inputs, 'password', previewRequired: true), $binding, proofAction: 'runa.auth.policy.publish'),
+        ]);
+        $sections[] = new ManagementSection('snapshots', ['pl' => 'Migawki', 'en' => 'Snapshots'], 'runa.auth.policy.read', 'runa.auth.policy.write', 'policy_snapshots', [
+            self::field('snapshots', ['pl' => 'Migawki', 'en' => 'Snapshots'], read: 'policy.read'),
+            self::field('values', ['pl' => 'Wartości', 'en' => 'Values'], read: 'policy.read'),
+            self::field('name', ['pl' => 'Nazwa', 'en' => 'Name'], write: 'policy.write', read: 'policy.read'),
+            self::field('snapshot_id', ['pl' => 'Migawka', 'en' => 'Snapshot'], 'uuid', 'policy.write', 'policy.read'),
+        ], [
+            new ManagementCommandDefinition('capture', ['pl' => 'Zapisz migawkę', 'en' => 'Save snapshot'], new ManagementOperation(new ApiOperation('settings.snapshot_capture', 'runa.auth.policy.write'), ['name']), 'policy_snapshots'),
+            new ManagementCommandDefinition('delete', ['pl' => 'Usuń migawkę', 'en' => 'Delete snapshot'], new ManagementOperation(new ApiOperation('settings.snapshot_delete', 'runa.auth.policy.write'), ['snapshot_id'], 'password'), 'policy_snapshots', destructive: true, proofAction: 'runa.auth.policy.snapshot_delete'),
+        ]);
 
-        return [new ManagementPage('policy', 'Authentication policy', 'runa.auth.policy.read', $sections, order: 20)];
+        return [new ManagementPage('policy', 'Authentication policy', 'runa.auth.policy.read', $sections, order: 20, component: 'runa.auth.admin_policy')];
     }
 
     private static function creationFields(): array
@@ -505,11 +511,12 @@ final class AdministrationPages implements ManagementPageProvider
             new ManagementBinding('security', SecuritySection::class, [$target(AuthAdministration::class, ['facts'], '2.1.0'), $identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'], '1.2.0')]),
             new ManagementBinding('trust', DeviceSection::class, [$identity, $target(AuthSecurity::class, ['trustedDevices', 'revokeDevice', 'revokeDevices'], '1.2.0')]),
             new ManagementBinding('preferences', PreferenceSection::class, [$target(AuthPreferences::class, ['account', 'updateAccount', 'resetAccount'], '1.1.0')]),
-            new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'activeExceptions', 'exceptionVersions', 'exception', 'revokeExceptions'], '2.0.0')]),
-            new ManagementBinding('policy0', EntryPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '2.0.0')]),
-            new ManagementBinding('policy1', SecurityPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '2.0.0')]),
-            new ManagementBinding('policy2', LifecyclePolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '2.0.0')]),
-            new ManagementBinding('policy_history', PolicyHistorySection::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '2.0.0')]),
+            new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'activeExceptions', 'exceptionVersions', 'exception', 'revokeExceptions'], '3.0.0')]),
+            new ManagementBinding('policy', PolicySection::class, [$target(AuthPolicies::class, ['preview', 'publish'], '3.0.0')]),
+            new ManagementBinding('policy_snapshots', PolicySnapshots::class, [
+                $target(AuthStepUp::class, ['assertVerified'], '2.0.0'),
+                new ManagementApiTarget('runa.audit', AuditRecords::class, '1.0.0', ['record']),
+            ]),
             new ManagementBinding('bulk_users', BulkUserSection::class, [$target(AuthBulkUsers::class, ['preview', 'execute'], '2.0.0')]),
             new ManagementBinding('bulk_sessions', BulkSessionSection::class, [$target(AuthBulkSessions::class, ['preview', 'revoke'], '2.0.0')]),
         ];

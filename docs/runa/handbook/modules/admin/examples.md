@@ -38,7 +38,7 @@ dashboard widget and an owned summary contribution to its own page. The table
 contains one configuration value with no durable public ID. Calculation results
 are temporary; rereading restores the configured default. This generated tool does not expose settings editing. Its configured default is
 consumed through native settings. To make settings administrator-editable, author
-a dedicated owning module page with change history, typed validation, grants,
+a dedicated owning module page with named snapshots, typed validation, grants,
 revisions and transactional Audit; use Auth policy as the supplied workflow
 reference. The module dialog never supplies a generic settings editor. The widget intentionally has unknown observation
 freshness. It must not advertise a newly invented health timestamp.
@@ -355,3 +355,5 @@ Custom Admin views import useAdminLocale from `@/runa/admin`; render metadata wi
 Supply localized title/group maps in source declarations and/or a Polish message
 catalogue through AdminApplication.messages for App-owned English source strings.
 Do not key/remount an editor on locale or translate stored business values.
+
+Administrator-editable module settings use the reusable [named snapshot contract](settings-snapshots.md).

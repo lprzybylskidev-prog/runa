@@ -52,3 +52,7 @@ export { default as AdminModuleCard } from '../../../../modules/admin/frontend/A
 export { default as AdminOperationHistory } from '../../../../modules/admin/frontend/AdminOperationHistory.vue';
 
 export { adminBooleanTone } from '../../../../modules/admin/frontend/booleanTone';
+
+export { default as AdminSettingsPage } from '../../../../modules/admin/frontend/AdminSettingsPage.vue';
+export { useAdminSettingsSnapshots } from '../../../../modules/admin/frontend/useAdminSettingsSnapshots';
+export type { AdminSettingsGroup } from '../../../../modules/admin/frontend/useAdminSettingsSnapshots';

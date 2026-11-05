@@ -28,7 +28,7 @@ final class AggregateRequest extends FormRequest
             'participants.*.input.command' => ['required', 'string', 'max:128'],
             'participants.*.input.public_id' => ['present', 'nullable', 'uuid:7'],
             'participants.*.input.revision' => ['required', 'string', 'max:256'],
-            'participants.*.input.values' => ['present', 'array', 'max:64'],
+            'participants.*.input.values' => ['present', 'array', 'max:128'],
             'participants.*.input.review' => ['sometimes', 'nullable', 'array'],
             'participants.*.input.confirmed' => ['sometimes', 'boolean']];
     }

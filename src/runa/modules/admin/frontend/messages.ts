@@ -2,6 +2,17 @@ import type { AdminMessages } from './contracts';
 
 /** Reviewed Polish presentation for source-owned Admin/Core labels; never business values. */
 export const adminMessages: AdminMessages = {
+  'Enter a snapshot name of 1–80 characters without control characters.':
+    'Podaj nazwę migawki od 1 do 80 znaków, bez znaków sterujących.',
+  'This snapshot name is already used or the limit of 100 snapshots has been reached.':
+    'Ta nazwa migawki jest już zajęta lub osiągnięto limit 100 migawek.',
+  'Settings changed. Refresh the form before saving a snapshot.':
+    'Ustawienia zmieniły się. Odśwież formularz przed zapisaniem migawki.',
+  'This snapshot was deleted or is unavailable. Choose another.':
+    'Ta migawka została usunięta lub jest niedostępna. Wybierz inną.',
+  'This snapshot does not match the current settings definitions. Create a new snapshot.':
+    'Ta migawka nie pasuje do obecnej definicji ustawień. Utwórz nową migawkę.',
+
   'This login is already in use. Choose another.':
     'Ten login jest już zajęty. Wybierz inny.',
   'This email address is already in use. Choose another.':

@@ -24,7 +24,7 @@ final class CommandRequest extends FormRequest
     {
         return ['command' => ['required', 'string', 'max:128'],
             'public_id' => ['present', 'nullable', 'uuid:7'],
-            'revision' => ['required', 'string', 'max:256'], 'values' => ['present', 'array', 'max:64'],
+            'revision' => ['required', 'string', 'max:256'], 'values' => ['present', 'array', 'max:128'],
             'review' => ['sometimes', 'nullable', 'array'], 'confirmed' => ['sometimes', 'boolean']];
     }
 }

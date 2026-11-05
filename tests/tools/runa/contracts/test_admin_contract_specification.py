@@ -61,7 +61,7 @@ def test_current_core_methods_declare_versions_permissions_and_audiences() -> No
             "AuthStepUp": "2.0.0",
             "AuthProfiles": "2.1.0",
             "AuthPreferences": "1.1.0",
-            "AuthPolicies": "2.0.0",
+            "AuthPolicies": "3.0.0",
             "AuthBulkSessions": "2.0.0",
             "PermissionsAccess": "2.2.0",
             "AuthAdministration": "2.1.0",
@@ -149,6 +149,19 @@ def test_application_settings_container_adapters_do_not_export_internal_construc
 $check = new Runa\Development\ApiSourceCheck;
 foreach (['ApplicationSettings', 'ApplicationPresentation'] as $adapter) {
     $path = 'src/runa/Support/Settings/'.$adapter.'.php';
+    if ($check->signatures(file_get_contents($argv[1].'/'.$path), $path) !== []) exit(1);
+}
+"""
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_named_settings_snapshot_adapters_hide_container_only_constructor_types() -> None:
+    result = php(
+        r"""
+$check = new Runa\Development\ApiSourceCheck;
+foreach (['SettingsSnapshots', 'SettingsSnapshotSection'] as $adapter) {
+    $path = 'src/runa/Support/Modules/Settings/'.$adapter.'.php';
     if ($check->signatures(file_get_contents($argv[1].'/'.$path), $path) !== []) exit(1);
 }
 """

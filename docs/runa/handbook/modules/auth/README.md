@@ -32,7 +32,7 @@ stable; private module implementation is not an application extension seam.
 
 Resolve the declared contract version through `ModuleApis`: AuthProfiles uses
 `2.1.0`; AuthLifecycle uses `2.1.0`; AuthAdministration uses `2.1.0`; AuthBulkUsers and AuthBulkSessions use `2.0.0`;
-AuthStepUp uses `2.0.0`; AuthPreferences uses `1.1.0`; AuthPolicies uses `2.0.0`;
+AuthStepUp uses `2.0.0`; AuthPreferences uses `1.1.0`; AuthPolicies uses `3.0.0`;
 AuthSecurity uses `1.2.0`; other current Auth interfaces, including
 AuthIdentities below, use `1.0.0`.
 Administrative profile composition follows the [native phase contract](../../architecture/module-transactions.md).
@@ -175,7 +175,7 @@ Entry/restricted screens use the [Auth entry UI contract](entry-ui.md); own-acco
 ## Administrative directory and pages
 
 AuthAdministration 2.1.0 supplies bounded user directory, field-authorized profile
-and lifecycle reads. Auth declares the Users, policy/history/restore and bulk
+and lifecycle reads. Auth declares the Users, policy/named snapshots and bulk
 session pages, with native independent actions and the existing profile/access
 Save host. See [administration](administration.md) for complete public signatures,
 grants, versions, proof actions, revisions and presentation composition. Auth remains

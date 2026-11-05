@@ -1116,6 +1116,20 @@ reassessment before resuming point 3; completed point history remains evidence.
     in Polish/English; Audit remains the history presentation. Keep named editors,
     authoritative active rules and Account status. Synchronize docs/assets and commit.
     Owner acceptance and final verification remain 11b/12.
+- [x] 11a89. Replace policy history recovery with reusable named settings snapshots.
+  - Owner-approved 2026-11-05: keep settings Audit, remove its local history UI and
+    revision-based restore. Capture committed non-sensitive settings under a name;
+    select/load into a draft, highlight changed fields with previous-value tooltips,
+    then explicitly apply or cancel back to the pre-load draft. Delete through
+    native full-page password confirmation. Use a select with adjacent delete.
+  - Deliver framework-owned snapshot persistence and reusable guarded management
+    adapter plus public Admin settings editor; Auth supplies semantic groups and its
+    existing validated publication. No module depends on Admin for settings writes.
+    Reject stale/incompatible snapshots and preserve concurrency, grants and Audit.
+    Align management field/input bounds with the settings provider's 128-key bound.
+  - Synchronize source/API/module versions, tests, handbook and instruction products.
+    Prepare assets and rebuild only the identified local development database as
+    requested. Commit implementation before owner acceptance; broad gates stay 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7852,3 +7866,58 @@ needed for this simple content removal; broad suites remain final point 12.
 No database, Docker resource, dependency or domain write changed; the temporary
 browser session logged out. Mandatory hooks and refreshed knowledge accompany the
 commit. Owner acceptance 11b and final verification/release 12 remain open.
+
+### Point 11a89 — Named module settings snapshots
+
+Owner decision, 2026-11-05: implement the agreed shared snapshot workflow and rebuild
+the local development database at the end. Audit remains authoritative and absent
+from the settings editor. Existing feature/0.7.0 release metadata remains unchanged.
+Delivered framework-owned encrypted snapshot storage and a reusable source-owned
+adapter with read/write grants, explicit Auth/Audit targets, immutable scoped
+values and definition fingerprints. Capture stores committed non-sensitive values;
+loading never publishes; deletion soft-deletes with single-use password proof and
+Audit in the same default transaction. Removed guarded history restore; private
+CLI operator recovery and internal publication history remain available.
+
+Auth now uses one reviewed publication over all 71 policy fields and nine semantic
+groups. Public AdminSettingsPage/useAdminSettingsSnapshots supply selection/capture,
+previous-value markers/tooltips, draft preservation/cancel and readable review.
+Scope fields/input bounds are 128, matching the existing provider limit. API-boundary
+catalogue and container-constructor checks cover the new trusted adapters.
+Auth advances to 5.0.0 / AuthPolicies 3.0.0 for removal of guarded restore; the
+forward 4.0.0 -> 5.0.0 edge has no domain data transformation. Admin 0.2.0 and
+Permissions 2.1.0 remain their existing unreleased candidates, with Auth ^5.0.0
+consumer constraints; their own API signatures do not change. Platform remains
+prepared 0.7.0. Published history remains untouched.
+
+Current docs, generator guidance and both frontend instruction products now route
+to the canonical snapshot contract. Root AGENTS and customer AGENTS require no
+new always-loaded rule: their existing security/public API/Audit and presentation
+boundaries already apply. The generated text tool still does not claim to ship a
+settings editor; its guidance now describes the real module-owned adoption seam.
+
+Focused uncertainty checks: 3 backend cases / 58 assertions PASS in one disposable
+parallel worker (catalog/load/native publish/history refusal, delete proof and
+Audit-failure rollback including proof reuse); one frontend draft/cancel regression
+PASS; one tool contract for public adapter constructor boundaries PASS. The first
+serial backend attempt was blocked before assertions by pre-existing unknown
+migration history in base runa_test; that database was preserved and the supported
+parallel runner supplied a fresh disposable worker. These are bounded diagnostics,
+not complete area/final gate claims. Supported assets/type build PASS; actual local
+Nginx policy page, both section APIs, all 71 fields and grouped rendered headings
+were confirmed with current assets. Evidence: .runtime/settings-snapshots and
+.runtime/artifacts/playwright/settings-snapshots/ready.png.
+
+Owner-requested reset: inspected local database runa, role runa at PostgreSQL
+172.27.0.8:5432, 45 owner tables across shared/runa_auth/runa_audit/runa_permissions,
+15/15 fixture accounts and no reserved jobs. Announced the exact scope.json list;
+maintenance-mode reset rechecked identities and removed exactly those tables with
+RESTRICT, preserving schemas. Supported forward platform prepare, application
+migrate, maintenance exit, configured development seeds and queue restart completed.
+After state: 46 tables including snapshots, 15 fixture accounts, current Core
+versions and no reserved jobs. Credentials/configuration are preserved; no snapshot
+or policy mutation was left by the readiness browser. No Docker resources were
+created/deleted. The backend runner removed only runa_test_test_1; base runa_test,
+other databases, all volumes, Qdrant/model caches, backups and reports are preserved.
+
+Manual acceptance 11b and final affected-area verification/release 12 remain open.

@@ -24,3 +24,8 @@ fallback is for unknown failures, never a substitute for a known refusal.
 Compose Auth secondary addresses through
 `docs/runa/handbook/modules/auth/account-ui.md#shared-secondary-email-presentation`;
 the shared fields retain controller-owned grants, proof and reconciliation.
+
+For module settings editors, use the public named-snapshot composition in
+`docs/runa/handbook/modules/admin/settings-snapshots.md`. Keep Audit in its own
+viewer; loading a snapshot edits a draft and applying it uses the module's native
+publication. Use the shared AdminSettingsPage/controller rather than copied proof logic.

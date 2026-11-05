@@ -120,7 +120,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('admin_platform', '1.1.4', '1.1.5', UpgradePlatformDelivery::class),
             new UpgradeDefinition('native_transactions', '1.1.5', '2.0.0', UpgradePlatformDelivery::class),
             new UpgradeDefinition('section_activity', '2.0.0', '3.0.0', UpgradeSectionActivity::class),
-            new UpgradeDefinition('user_details', '3.0.0', '4.0.0', UpgradeSectionActivity::class)];
+            new UpgradeDefinition('user_details', '3.0.0', '4.0.0', UpgradeSectionActivity::class),
+            new UpgradeDefinition('settings_snapshots', '4.0.0', '5.0.0', UpgradeFrontendContracts::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

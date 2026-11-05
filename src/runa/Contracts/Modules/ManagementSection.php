@@ -26,7 +26,7 @@ final readonly class ManagementSection
             Rules::permission($writePermission);
         }
         Rules::key($binding);
-        Rules::collection($fields, ManagementFieldAccess::class, 64, 'field');
+        Rules::collection($fields, ManagementFieldAccess::class, 128, 'field');
         Rules::collection($commands, ManagementCommandDefinition::class, 32);
         Rules::presentation($order, $component, $schemaVersion);
         $writable = [];

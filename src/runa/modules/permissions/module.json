@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "required": {
-      "runa.auth": "^4.0.0",
+      "runa.auth": "^5.0.0",
       "runa.audit": "^1.0.0"
     },
     "optional": {}

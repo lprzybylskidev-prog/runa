@@ -142,6 +142,7 @@ afterEach(function (): void {
         DB::statement('DROP TABLE admin_fixture.notes RESTRICT');
         DB::statement('DROP SCHEMA admin_fixture RESTRICT');
     }
+    DB::table('shared.module_settings_snapshots')->where('module_id', 'runa.auth')->delete();
     $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
     foreach (DB::table('shared.module_work')->where('module_id', $authId)->pluck('public_id') as $workId) {
         DB::table('shared.jobs')->whereRaw("payload::jsonb ->> 'runa_work' = ?", [$workId])->delete();
@@ -908,22 +909,19 @@ it('Auth administration refuses stronger operations without native password proo
 it('Auth administration exposes bounded policy reads history reviews and stale publication refusal', function (): void {
     authAdministrationLogin($this, ['runa.auth.policy.read', 'runa.auth.policy.write']);
     $page = $this->getJson('/api/admin/runa.auth/policy')->assertOk()->json('data');
-    expect($page['sections'])->toHaveCount(4);
-    $record = $this->getJson('/api/admin/runa.auth/policy/sections/policy0')->assertOk()->json('data');
+    expect($page['sections'])->toHaveCount(2);
+    $record = $this->getJson('/api/admin/runa.auth/policy/sections/policy')->assertOk()->json('data');
     $values = $record['values'];
     unset($values['summary']);
     $values['public_welcome_enabled'] = ! $values['public_welcome_enabled'];
     $input = ['command' => 'publish', 'public_id' => null, 'revision' => $record['revision'], 'values' => $values];
-    $review = $this->postJson('/api/admin/runa.auth/policy/sections/policy0/preview', $input)->assertOk()->json('data');
-    expect($review['changes'])->toHaveKey('summary')->and($review['requirement'])->toBe('both');
+    $review = $this->postJson('/api/admin/runa.auth/policy/sections/policy/preview', $input)->assertOk()->json('data');
+    expect($review['changes'])->toHaveKey('summary')->and($review['requirement'])->toBe('password');
     $input['review'] = $review;
-    $this->postJson('/api/admin/runa.auth/policy/sections/policy0/commands', $input)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
+    $this->postJson('/api/admin/runa.auth/policy/sections/policy/commands', $input)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
     $input['revision'] = '0:0';
-    $this->postJson('/api/admin/runa.auth/policy/sections/policy0/preview', $input)->assertConflict();
-    $history = $this->getJson('/api/admin/runa.auth/policy/sections/history')->assertOk()->json('data');
-    expect(json_decode($history['values']['history'], true))->not->toBeEmpty();
-    $restore = ['command' => 'restore', 'public_id' => null, 'revision' => $history['revision'], 'values' => ['source_revision' => 1]];
-    $this->postJson('/api/admin/runa.auth/policy/sections/history/preview', $restore)->assertOk()->assertJsonStructure(['data' => ['changes' => ['summary']]]);
+    $this->postJson('/api/admin/runa.auth/policy/sections/policy/preview', $input)->assertConflict();
+    $this->getJson('/api/admin/runa.auth/policy/sections/history')->assertNotFound();
 });
 
 function authAdministrationStrongProof(object $test, string $action): void
@@ -961,25 +959,20 @@ it('Auth administration writes indefinite rules and future dates beyond thirty d
     }
 });
 
-it('Auth administration publishes and restores through the native policy runner with consumed proof and history', function (): void {
+it('Auth administration publishes through the native policy runner and refuses history restoration', function (): void {
     authAdministrationLogin($this, ['runa.auth.policy.read', 'runa.auth.policy.write']);
     authAdministrationStrongProof($this, 'runa.auth.policy.publish');
-    $record = $this->getJson('/api/admin/runa.auth/policy/sections/policy0')->assertOk()->json('data');
+    $record = $this->getJson('/api/admin/runa.auth/policy/sections/policy')->assertOk()->json('data');
     $values = $record['values'];
     unset($values['summary']);
     $values['public_welcome_enabled'] = ! $values['public_welcome_enabled'];
     $input = ['command' => 'publish', 'public_id' => null, 'revision' => $record['revision'], 'values' => $values];
-    $input['review'] = $this->postJson('/api/admin/runa.auth/policy/sections/policy0/preview', $input)->assertOk()->json('data');
-    $this->postJson('/api/admin/runa.auth/policy/sections/policy0/commands', $input)->assertOk()->assertJsonPath('data.status', 'committed');
+    $input['review'] = $this->postJson('/api/admin/runa.auth/policy/sections/policy/preview', $input)->assertOk()->json('data');
+    $this->postJson('/api/admin/runa.auth/policy/sections/policy/commands', $input)->assertOk()->assertJsonPath('data.status', 'committed');
     expect(app(ModuleSettings::class)->value('runa.auth', 'public_welcome_enabled'))->toBe($values['public_welcome_enabled'])
         ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.policy.publish')->whereNotNull('consumed_at')->exists())->toBeTrue();
-    $this->postJson('/api/admin/runa.auth/policy/sections/policy0/commands', $input)->assertConflict();
-    $history = $this->getJson('/api/admin/runa.auth/policy/sections/history')->assertOk()->json('data');
-    $restore = ['command' => 'restore', 'public_id' => null, 'revision' => $history['revision'], 'values' => ['source_revision' => 1], 'confirmed' => true];
-    $restore['review'] = $this->postJson('/api/admin/runa.auth/policy/sections/history/preview', $restore)->assertOk()->json('data');
-    authAdministrationStrongProof($this, 'runa.auth.policy.publish');
-    $this->postJson('/api/admin/runa.auth/policy/sections/history/commands', $restore)->assertOk()->assertJsonPath('data.status', 'committed');
-    expect(app(ModuleSettings::class)->value('runa.auth', 'public_welcome_enabled'))->toBeTrue();
+    $this->postJson('/api/admin/runa.auth/policy/sections/policy/commands', $input)->assertConflict();
+    $this->getJson('/api/admin/runa.auth/policy/sections/history')->assertNotFound();
 });
 
 it('Auth administration confirms selected bulk revocation without another identity proof', function (): void {
@@ -2499,4 +2492,38 @@ it('supplied tables order authorized server datasets before cursor paging and gu
             expect($found)->toBe($expected);
         }
     }
+});
+
+it('named settings snapshots load without publishing and require transactional password proof for deletion', function (): void {
+    authAdministrationLogin($this, ['runa.auth.policy.read', 'runa.auth.policy.write']);
+    $url = '/api/admin/runa.auth/policy/sections/snapshots';
+    $state = $this->getJson($url)->assertOk()->json('data');
+    $before = app(ModuleSettings::class)->read('runa.auth');
+    $capture = ['command' => 'capture', 'public_id' => null, 'revision' => $state['revision'], 'values' => ['name' => 'Before security review']];
+    $created = $this->postJson($url.'/commands', $capture)->assertOk()->json('data.record');
+    $catalog = json_decode($created['values']['snapshots'], true, flags: JSON_THROW_ON_ERROR);
+    expect($catalog)->toHaveCount(1)->and($catalog[0]['name'])->toBe('Before security review');
+    $id = $catalog[0]['public_id'];
+    expect(DB::table('shared.module_settings_snapshots')->where('public_id', $id)->value('settings_values'))->not->toContain('public_welcome_enabled');
+    $loaded = $this->getJson($url.'?public_id='.$id)->assertOk()->json('data');
+    $values = json_decode($loaded['values']['values'], true, flags: JSON_THROW_ON_ERROR);
+    expect($values['public_welcome_enabled'])->toBe($before['settings']['public_welcome_enabled']['value'])
+        ->and(app(ModuleSettings::class)->read('runa.auth')['revision'])->toBe($before['revision']);
+    $this->postJson($url.'/commands', $capture)->assertConflict();
+    $delete = ['command' => 'delete', 'public_id' => null, 'revision' => $state['revision'], 'values' => ['snapshot_id' => $id], 'confirmed' => true];
+    $this->postJson($url.'/commands', $delete)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
+    expect(DB::table('shared.module_settings_snapshots')->where('public_id', $id)->value('deleted_at'))->toBeNull();
+    authAdministrationStrongProof($this, 'runa.auth.policy.snapshot_delete');
+    DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT snapshot_audit_refusal CHECK (action <> 'settings.snapshot_deleted') NOT VALID");
+    try {
+        expect($this->postJson($url.'/commands', $delete)->status())->toBeGreaterThanOrEqual(500);
+        expect(DB::table('shared.module_settings_snapshots')->where('public_id', $id)->value('deleted_at'))->toBeNull()
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.policy.snapshot_delete')->value('consumed_at'))->toBeNull();
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT snapshot_audit_refusal');
+    }
+    $this->postJson($url.'/commands', $delete)->assertOk();
+    $this->getJson($url.'?public_id='.$id)->assertNotFound();
+    expect(DB::table('runa_audit.events')->whereIn('action', ['settings.snapshot_created', 'settings.snapshot_deleted'])->count())->toBe(2)
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.policy.snapshot_delete')->whereNotNull('consumed_at')->exists())->toBeTrue();
 });

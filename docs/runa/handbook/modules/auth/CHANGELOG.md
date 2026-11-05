@@ -1,6 +1,8 @@
 # Auth module changelog
 
-## 4.0.0 — Unreleased
+## 5.0.0 — Unreleased
+
+- Remove guarded revision-history restore (AuthPolicies 3.0.0) and the local policy history viewer. Use framework-owned named settings snapshots with committed-value capture, draft preview/cancel, password-confirmed deletion and transactional Audit. Group Auth settings semantically and publish the full policy once.
 
 - Remove redundant selected-user rule instructions and the local change-history panel; retain active rules and Account status, with history available through Audit.
 

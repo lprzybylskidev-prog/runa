@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Auth 5.0.0 / AuthPolicies 3.0.0: remove guarded revision-history restore and the local history viewer. Deliver reusable named module snapshots, committed-value capture, draft-only loading with previous-value markers/cancel, password-confirmed deletion and atomic Audit. Reorganize Auth settings into semantic groups with one native reviewed Save.
+
 - Remove redundant selected-user rule instructions and the local change-history panel; retain active rules and Account status, with history available through Audit.
 
 - Restrict second factors to login and use the existing full-page Auth password confirmation for all sensitive Admin/account operations and protected places. Remove factor-based operation modes, inline credential forms and the password-change factor setting. Deliver AuthStepUp 2.0.0 with password-only proofs, retained drafts on cancel and unchanged transactional authorization/Audit.

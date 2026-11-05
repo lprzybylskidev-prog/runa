@@ -30,8 +30,12 @@ export function writeFailure(
         ? refusals[failure.reason]
         : undefined);
   if (message) {
-    const names =
-      failure.reason === 'identifier_conflict'
+    const names = [
+      'settings_snapshot_name_invalid',
+      'settings_snapshot_name_or_limit',
+    ].includes(failure.reason)
+      ? ['name']
+      : failure.reason === 'identifier_conflict'
         ? ['email', 'replacement_email', 'login']
         : failure.reason === 'access_definition_conflict'
           ? ['code']

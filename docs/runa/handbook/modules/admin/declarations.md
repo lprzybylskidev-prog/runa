@@ -91,7 +91,7 @@ independent page does not require inventing a module or permission engine.
 Page keys additionally use `[a-z][a-z0-9_]{0,63}`. Title/group accept English source text or explicit `{pl:string,en:string}` maps, 1–160 characters, no control characters; group may be null. Order is within
 ±1,000,000. Each provider has at most 32 pages, 128 bindings, 64 contributions and
 32 widgets; pages have at most 32 sections; each section retains the current
-64-field/32-command limits. Keys are unique within owner/type; at most one default
+128-field/32-command limits. Keys are unique within owner/type; at most one default
 page per owner. Default selection is the first authorized default, otherwise the
 first authorized page; an empty owner is absent. Sort by order, then owned ID.
 Invalid/conflicting declarations have safe diagnostic codes; they cannot shadow

@@ -69,10 +69,9 @@ final class AuthPermissions implements ManagementEntityProvider
                     $field('all', 'boolean', true), $field('trust', 'boolean', true),
                 ], [new ManagementOperation(new ApiOperation('sessions.bulk_revoke', 'sessions.bulk_revoke'), ['user_public_id', 'all', 'trust'], previewRequired: true, bulk: true)]),
             new ManagementEntity('policy', 'policy.read', ['pl' => 'Polityka', 'en' => 'Policy'],
-                ['pl' => 'Bieżące ustawienia modułu i niezmienna historia; podgląd przed publikacją.', 'en' => 'Current ModuleSettings and immutable history; preview before publication.'], [
+                ['pl' => 'Bieżące ustawienia modułu i nazwane migawki; podgląd przed publikacją.', 'en' => 'Current module settings and named snapshots; preview before publication.'], [
                     $field('revision', 'integer', true), $field('generation', 'integer', true),
-                ], [new ManagementOperation(new ApiOperation('policy.publish', 'policy.write'), ['revision', 'generation'], 'password', previewRequired: true),
-                    new ManagementOperation(new ApiOperation('policy.restore', 'policy.write'), ['revision', 'generation'], 'password', previewRequired: true)]),
+                ], [new ManagementOperation(new ApiOperation('policy.publish', 'policy.write'), ['revision', 'generation'], 'password', previewRequired: true)]),
         ];
     }
 

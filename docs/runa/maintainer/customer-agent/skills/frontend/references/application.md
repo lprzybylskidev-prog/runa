@@ -88,3 +88,8 @@ stacking unrelated generic inputs or duplicating the selected catalogue.
 Custom native controls require rendered pointer/hover/pressed/focus and disabled
 checks, including checkbox hit areas; composing shared paint alone does not supply
 interaction states. The Permissions catalogue guide documents the supplied default.
+
+For module settings presentation, compose the public named-snapshot editor and
+controller described in `docs/runa/handbook/modules/admin/settings-snapshots.md`.
+Loading changes only a draft; publication remains with its owning module and Audit
+has a separate viewer. Application composition never authorizes platform edits.

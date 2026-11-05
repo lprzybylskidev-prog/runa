@@ -47,14 +47,6 @@ final class PoliciesProxy extends GuardedApi implements AuthPolicies
         return $result;
     }
 
-    public function restore(int $sourceRevision, int $revision, int $generation): array
-    {
-        /** @var array{operation: string, status: string} $result */
-        $result = $this->invoke(__FUNCTION__, [$sourceRevision, $revision, $generation]);
-
-        return $result;
-    }
-
     public function exceptionVersions(string $publicId): array
     {
         /** @var array<string, int> $result */
