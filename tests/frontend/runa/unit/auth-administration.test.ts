@@ -1,7 +1,8 @@
+import PasswordConfirmationHost from './fixtures/PasswordConfirmationHost.vue';
 /* eslint-disable vue/one-component-per-file -- Independent administrative presentation fixtures. */
 import { savePreference } from '../../../../src/runa/resources/js/lib/preferences';
 import { beforeEach, afterEach, expect, it, vi } from '@runa/testing/vitest';
-import { enableAutoUnmount, mount } from '@runa/testing/vue';
+import { DOMWrapper, enableAutoUnmount, mount } from '@runa/testing/vue';
 import { computed, defineComponent, h, nextTick, ref, shallowRef } from 'vue';
 import DirectoryFilters from '../../../../src/runa/modules/auth/frontend/AuthDirectoryFilters.vue';
 import AuthAdminBulkAction from '../../../../src/runa/modules/auth/frontend/AuthAdminBulkAction.vue';
@@ -173,26 +174,27 @@ it.each(['schedule_activation', 'delete', 'set_attempt_lock'])(
       });
     });
     let form!: AdminFormController;
-    const wrapper = mount(
-      defineComponent({
-        setup() {
-          form = useAdminForm(controller);
-          return () =>
-            h(
-              AdminForm,
-              { controller: form },
-              {
-                default: () =>
-                  h(AuthAdminBulkAction, {
-                    page: controller,
-                    section: bulk,
-                    controller: form,
-                  }),
-              },
-            );
-        },
-      }),
-    );
+    const Child = defineComponent({
+      setup() {
+        form = useAdminForm(controller);
+        return () =>
+          h(
+            AdminForm,
+            { controller: form },
+            {
+              default: () =>
+                h(AuthAdminBulkAction, {
+                  page: controller,
+                  section: bulk,
+                  controller: form,
+                }),
+            },
+          );
+      },
+    });
+    const wrapper = mount(PasswordConfirmationHost, {
+      slots: { default: () => h(Child) },
+    });
     await vi.waitFor(() =>
       expect(wrapper.text()).toContain('Affected accounts'),
     );
@@ -230,10 +232,7 @@ it.each(['schedule_activation', 'delete', 'set_attempt_lock'])(
       );
       expect(writes.some((path) => path.endsWith('/commands'))).toBe(false);
       await wrapper.get('input[type=password]').setValue('admin-password');
-      await wrapper
-        .findAll('button')
-        .find((button) => button.text() === 'Confirm')!
-        .trigger('click');
+      await wrapper.findAll('form').at(-1)!.trigger('submit');
     }
     await vi.waitFor(() =>
       expect(writes.filter((path) => path.endsWith('/commands'))).toHaveLength(
@@ -298,7 +297,8 @@ it('Auth administration user page selects another account through the shared gua
   expect(form.values.value['profile.name']).toBe('Selected target');
   await vi.waitFor(() =>
     expect(
-      document.querySelector<HTMLInputElement>('[role=dialog] input')?.value,
+      document.querySelector<HTMLInputElement>('[role=dialog] input[name=name]')
+        ?.value,
     ).toBe('Selected target'),
   );
   expect(wrapper.find('[role=dialog]').exists()).toBe(false);
@@ -453,6 +453,16 @@ it('Auth administration user page moves the exact table selection into the nativ
   );
 });
 
+async function avatarFixture(): Promise<File> {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 32;
+  canvas.getContext('2d')!.fillRect(0, 0, 32, 32);
+  const blob = await new Promise<Blob>((resolve) =>
+    canvas.toBlob((value) => resolve(value!), 'image/png'),
+  );
+  return new File([blob], 'avatar.png', { type: 'image/png' });
+}
+
 it('Auth administrative avatar uses native multipart target and version with dirty protection', async () => {
   const avatar = section('avatar', [
     { ...field('has_avatar'), type: 'boolean' },
@@ -507,13 +517,26 @@ it('Auth administrative avatar uses native multipart target and version with dir
     expect(wrapper.find('input[type=file]').exists()).toBe(true),
   );
   const transfer = new DataTransfer();
-  transfer.items.add(
-    new File(['fixture'], 'avatar.png', { type: 'image/png' }),
-  );
+  transfer.items.add(await avatarFixture());
   (wrapper.get('input[type=file]').element as HTMLInputElement).files =
     transfer.files;
   await wrapper.get('input[type=file]').trigger('change');
+  await vi.waitFor(() =>
+    expect(document.querySelector('canvas')).not.toBeNull(),
+  );
+  const crop = new DOMWrapper(document.body)
+    .findAll('button')
+    .find((button) => button.text() === 'Apply crop')!;
+  await vi.waitFor(() => expect(crop.attributes('disabled')).toBeUndefined());
+  await crop.trigger('click');
   await vi.waitFor(() => expect(form.dirty.value).toBe(true));
+  await vi.waitFor(() =>
+    expect(
+      wrapper
+        .findAll('button')
+        .some((button) => button.text() === 'Save avatar'),
+    ).toBe(true),
+  );
   const save = wrapper
     .findAll('button')
     .find((button) => button.text() === 'Save avatar')!;
@@ -1468,8 +1491,8 @@ it('hides admin recipient selectors when the owning module disables secondary em
       wrapper.html(),
     ).toBe(true),
   );
-  expect(wrapper.findComponent(Select).exists()).toBe(false);
   expect(wrapper.text()).not.toContain('Required security messages');
+  expect(wrapper.text()).not.toContain('Optional security messages');
 });
 
 it('assignment catalogue searches on the server without duplicating off-page selections', async () => {

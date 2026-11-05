@@ -18,8 +18,8 @@ const presentation = useAdminPresentation();
 <template>
   <div class="space-y-6">
     <component
-      v-if="admin"
       :is="presentation.operations ?? AdminOperations"
+      v-if="admin"
       :admin="admin"
     />
     <div
@@ -32,11 +32,11 @@ const presentation = useAdminPresentation();
         :identity="bootstrap.revision + ':' + widget.id"
       >
         <component
-          v-if="widget.component || presentation.widget"
           :is="
             resolveAdminComponent(widget.component, components).component ??
             presentation.widget
           "
+          v-if="widget.component || presentation.widget"
           :widget="widget"
         />
         <Card v-else>

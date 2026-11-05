@@ -61,7 +61,10 @@ export function useAdminApplicationSettings(
         typeof value === 'string' &&
         value.trim().length > 0 &&
         [...value].length <= (field.maxLength ?? 4096) &&
-        !/[\u0000-\u001f\u007f]/u.test(value)
+        !Array.from(value).some(
+          (character) =>
+            character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127,
+        )
       );
     if (field.type === 'integer')
       return typeof value === 'number' && Number.isSafeInteger(value);

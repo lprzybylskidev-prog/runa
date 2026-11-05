@@ -1,4 +1,5 @@
-import { afterEach, expect, it } from '@runa/testing/vitest';
+import { savePreference } from '../../../../src/runa/resources/js/lib/preferences';
+import { afterEach, beforeEach, expect, it } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { h } from 'vue';
 import {
@@ -10,6 +11,8 @@ import {
 } from '@/runa/ui';
 
 enableAutoUnmount(afterEach);
+beforeEach(() => savePreference('runa.locale', 'pl'));
+afterEach(() => localStorage.removeItem('runa.locale'));
 
 it('renders independently with optional regions and a translator-compatible default', () => {
   const layout = mount(MinimalLayout, {
@@ -127,7 +130,7 @@ it('configures each footer element, links and complete visibility', async () => 
     },
   });
   expect(footer.text()).toBe(
-    `Powered by Runa v${defaultIdentity.platformVersion}`,
+    `Oparte na Runa v${defaultIdentity.platformVersion}`,
   );
   await footer.setProps({
     options: {

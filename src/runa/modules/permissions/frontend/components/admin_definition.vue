@@ -146,7 +146,8 @@ async function submit(command = 'store') {
           props.controller.values.value[path(field.key)] ?? null,
         ),
       ];
-      props.controller.errors.value[path(field.key)] = errors;
+      const formErrors = props.controller.errors;
+      formErrors.value[path(field.key)] = errors;
       if (errors.length) valid = false;
     }
     if (!valid) {
@@ -179,7 +180,8 @@ async function confirm() {
   cancelReview();
   if (outcome?.status === 'committed') {
     await props.controller.selectSubject(outcome.record?.public_id ?? null);
-    props.controller.notice.value = 'Changes saved.';
+    const notice = props.controller.notice;
+    notice.value = 'Changes saved.';
   }
 }
 watch([() => props.page.state.value, () => record.value?.public_id], () =>

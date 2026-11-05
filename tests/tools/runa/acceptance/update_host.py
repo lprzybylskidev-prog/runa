@@ -117,8 +117,17 @@ def exercise(
         )
     )
     seed = repository / "src/runa/database/seeders/DatabaseSeeder.php"
+    seed_source = seed.read_text()
+    seed_entry = "public function run(): void\n    {"
+    if seed_source.count(seed_entry) != 1:
+        raise ValueError("Expected the native platform seeder entrypoint.")
     seed.write_text(
-        "<?php namespace Runa\\Database\\Seeders; final class DatabaseSeeder extends \\Illuminate\\Database\\Seeder { public function run(): void { \\Illuminate\\Support\\Facades\\DB::table('shared.update_reference')->upsert([['code'=>'baseline','label'=>'updated-reference']], ['code'], ['label']); } }\n"
+        seed_source.replace(
+            seed_entry,
+            seed_entry
+            + "\n        \\Illuminate\\Support\\Facades\\DB::table('shared.update_reference')->upsert([['code'=>'baseline','label'=>'updated-reference']], ['code'], ['label']);",
+            1,
+        )
     )
     (repository / "release-note.txt").write_text("target release guide\n")
     (repository / "retired-guide.txt").unlink()

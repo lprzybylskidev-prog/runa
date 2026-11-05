@@ -5,6 +5,9 @@ use Illuminate\Support\Str;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\SettingsObserver;
 use Runa\Integration\Core\DenyProtectedOperations;
+use Runa\Settings\SettingRegistry;
+use Runa\Settings\SettingStore;
+use Runa\Support\Images\RasterImageContent;
 
 require '/workspace/src/vendor/autoload.php';
 
@@ -26,6 +29,10 @@ foreach ([OperationAuthorizer::class, SettingsObserver::class] as $contract) {
     $expect(interface_exists($contract), 'Missing public module runtime contract: '.$contract);
 }
 $expect(class_exists(DenyProtectedOperations::class), 'Module authorization adapter cannot load.');
+foreach ([SettingRegistry::class, SettingStore::class] as $service) {
+    $expect(class_exists($service), 'Missing application settings runtime service: '.$service);
+}
+$expect(! RasterImageContent::safe('invalid image', 'image/png'), 'Raster validation runtime cannot reject invalid images.');
 $expect(mb_strtolower('ZAŻÓŁĆ GĘŚLĄ JAŹŃ', 'UTF-8') === 'zażółć gęślą jaźń', 'Polish multibyte conversion failed.');
 $text = 'Zażółć gęślą jaźń';
 $encoded = iconv('UTF-8', 'UTF-16LE', $text);

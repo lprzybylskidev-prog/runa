@@ -91,7 +91,7 @@ implied by these candidate module versions.
 
 ## Delivery status and acceptance ownership
 
-Admin 0.1.0 is Core and requires Audit `^1.0.0`, Auth/Permissions `^2.0.0`. Its platform
+Admin 0.2.0 is Core and requires Audit `^1.0.0`, Auth `^5.0.0` and Permissions `^2.0.0`. Its platform
 range is `>=0.7.0 <0.8.0`: source checkout at released 0.6.2 does not authorize
 installing it there. Explicit platform installation/update at the target version
 registers it and records `upgrade:initialize:install:0.1.0` after its prerequisites.
@@ -123,7 +123,7 @@ ApplicationSessionShell places the advertised entry beside User panel in the
 account dropdown, retaining one session controller. Admin supplies localized PL/EN
 ApplicationLayout, owner-left/page-top navigation, password confirmation and
 nested replacement providers. Bootstrap returns authorized owners/pages/widgets
-and current source-default presentation (revision 0). Auth declares Users, Authentication policy and Bulk session revocation pages; the catalogue includes only currently authorized pages. App providers can supply
+and current DB-backed application presentation with source defaults. Auth declares Users and Authentication policy pages; selected-user session revocation belongs to User details; the catalogue includes only currently authorized pages. App providers can supply
 independent pages and matching compiled/static components. Section reads,
 independent command/preview and bounded aggregate HTTP transports are delivered;
 Auth/Permissions administration, the read-only Audit viewer and native profile/ordinary assignment composition are delivered. Framework operations and settings operation recovery are delivered in point 9; point 10 delivers application global settings and DB-backed presentation. Source/component

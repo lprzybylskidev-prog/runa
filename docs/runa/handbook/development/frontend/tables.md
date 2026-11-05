@@ -14,8 +14,9 @@ scrolling, as does wheel input over body rows. Tables that fit their container
 need no horizontal scrollbar. Directional dotted edge cues follow the shared
 [horizontal scrolling contract](components.md#horizontal-scrolling), also used by
 Tabs and ApplicationLayout top navigation. The private viewport
-composable applies compositor-layer transforms to the header and rail in the same
-passive scroll event, without waiting for another animation frame or Vue render;
+composable coalesces vertical scrolling into one animation-frame callback and applies
+compositor-layer transforms directly to the header and rail before paint, without
+a Vue render or synchronous layout mutation inside the scroll event;
 column/overflow measurements run on resize rather than each scroll. The composable
 stays in Runa; customer presentations compose public Table or replace
 its presentation through application-owned components.
@@ -97,7 +98,7 @@ Table defaults use compact vertical spacing with middle-aligned body cells and s
 
 ## Column personalization and named views
 
-`TablePreferences` and `useTableViews` are optional, shell-independent exports. Table accepts controlled `columnState` (`key`, `visible`, optional pixel `width`); processing still uses every declared column so hiding a field does not silently remove its active sort/filter. Never put unauthorized fields in descriptors or API responses: hiding columns is presentation only.
+`TablePreferences` and `useTableViews` are optional, shell-independent exports. Table accepts controlled `columnState` (`key`, `visible`, optional pixel `width`) and reconciles subsequent changes into its presentation without fetching data or changing the current page; reapplying identical columns is a no-op; processing still uses every declared column so hiding a field does not silently remove its active sort/filter. Never put unauthorized fields in descriptors or API responses: hiding columns is presentation only.
 
 ```ts
 const tableViews = useTableViews({
@@ -114,7 +115,7 @@ The preference control is `table-views`, scoped by application/module/view, usin
 
 Column controls offer visibility, drag-before reordering plus keyboard move buttons, a compact width text field with px suffix and automatic-width reset. Widths are layout hints with a fixed table layout when configured; spare desktop space can expand columns and narrow screens retain horizontal scrolling. Width values initially use the measured rendered column width (160px fallback for unmeasured/hidden columns), while explicit values show the configured width. Pass Table's column-widths event into TablePreferences measuredWidths. Custom controls can call setColumns/move/reorder/resetColumns directly. Width reset removes manual sizing and restores descriptor order/visibility.
 
-Named views save global search, filters, sort, page size, column order/visibility/width, never the transient page number (applying a view starts at page 1). Controller methods: create(name), select(id), update(), rename(name), remove(), setDefault(id|null), reset(), resetColumns(), selectDefault(). Names are trimmed, unique case-insensitively, 1–80 characters, with at most 50 views. The default view is applied on re-entry; without one the last current snapshot is restored. Dirty is exposed relative to the selected saved snapshot; create/update are explicit and unsaved edits do not mutate saved views. Deleting a default clears its default designation and retains the current presentation. Reset current restores the initial query and columns, preserving named views/default; clear the default separately to change next-entry behavior. Full account/shared synchronization remains deferred.
+Named views save global search, filters, sort, page size, column order/visibility/width, never the transient page number (explicitly applying a view starts at page 1). Identical preference notifications, including a controller’s own write and changes to unrelated preferences, preserve transient pagination. Controller methods: create(name), select(id), update(), rename(name), remove(), setDefault(id|null), reset(), resetColumns(), selectDefault(). Names are trimmed, unique case-insensitively, 1–80 characters, with at most 50 views. The default view is applied on re-entry; without one the last current snapshot is restored. Dirty is exposed relative to the selected saved snapshot; create/update are explicit and unsaved edits do not mutate saved views. Deleting a default clears its default designation and retains the current presentation. Reset current restores the initial query and columns, preserving named views/default; clear the default separately to change next-entry behavior. Full account/shared synchronization remains deferred.
 
 The default Table toolbar uses sm TextInput/Select controls for **Search** and page size. Search splits trimmed text into terms and requires each term to match at least one declared searchable column value before pagination; `TableColumn.searchable=false` excludes a column. Hidden columns remain searchable unless explicitly excluded. Search is independent of per-column filters, which applications may implement through the existing filter slot. `TableQuery.search` is optional and included in saved snapshots. Server providers receive the normalized term string; createApiTableProvider encodes it as `filter[search]` (disable with searchable=false and disable the Table search control for unsupported endpoints). Backend implementations must validate this filter, search only permitted fields/records and count the same matching query, without downloading datasets into the browser.
 

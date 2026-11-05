@@ -91,12 +91,14 @@ export function useTableViews<Row>(options: {
   apply(state.value.current);
   let syncing = false;
   const unsubscribe = store.subscribe?.(() => {
-    syncing = true;
-    state.value = normalizeTableViews(
+    const next = normalizeTableViews(
       store.read(options.scope, 'table-views', readDefinition),
       options.columns(),
       baseline,
     );
+    if (JSON.stringify(next) === JSON.stringify(state.value)) return;
+    syncing = true;
+    state.value = next;
     apply(state.value.current);
     syncing = false;
   });

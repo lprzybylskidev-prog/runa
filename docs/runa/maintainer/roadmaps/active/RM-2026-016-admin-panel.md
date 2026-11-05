@@ -12,7 +12,7 @@ prepared_version: 0.7.0
 prepared_version_approved_at: 2026-10-31
 prepared_version_reason: Owner-authorized runnable frontend acceptance; Core targets 0.7.0 while released 0.6.2 runtime and stale local module installation caused HTTP 503.
 quality_groups: docs,backend,frontend,e2e,database,delivery,installation,updates,security-source,tooling
-quality_rationale: Final affected-area scope for the new mandatory Core, public declarations and adapters, transactional storage, rendered UI and protected customer extension/generator contracts. Native installation/updates verify actual Core forward history and preservation. Security-source covers new authenticated operations and composition. Tooling covers prepared-candidate release validation added for owner manual acceptance. Mandatory baseline/hooks and real prerequisites remain required. No infrastructure/image or knowledge-runtime change is included and no all-group milestone is due at 0.7.0. Excluded groups are not verified by this selection.
+quality_rationale: Final affected-area scope for the new mandatory Core, public declarations and adapters, transactional storage, rendered UI and protected customer extension/generator contracts. Native installation/updates verify actual Core forward history and preservation. Security-source covers new authenticated operations and composition. Tooling covers prepared-candidate release validation added for owner manual acceptance. Mandatory baseline/hooks and real prerequisites remain required. The runtime Settings COPY repair is verified by native installation image build, isolation and actual cold boot; no service topology/base-image or knowledge-runtime change is included and no all-group milestone is due at 0.7.0. Excluded groups are not verified by this selection.
 impact_areas:
   - backend
   - frontend
@@ -1219,7 +1219,24 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Revalidate and fingerprint the retained set, preserve native single-write
     protection, proof, revisions and atomic Audit; cover mixed/no-op/stale plans.
     Synchronize the preview contract/docs and prepare current owner acceptance.
-- [x] 11b. Owner manual frontend acceptance.
+- [ ] 11a102. Repair failures from the first final affected-area verification.
+  - Preserve native failed evidence; repair database test lifecycle/isolation,
+    current API audience and consumer contracts, frontend lint/test expectations,
+    installation presentation assertions, documentation ownership and Python types.
+  - Deliberately update affected locked dependencies for reported security advisories;
+    preserve security policy and complete a content-bound source review.
+  - Run complete affected checks in their original modes, including the full parallel
+    backend suite, before completing this repair. Repeat affected owner UI acceptance
+    if rendered behavior changes, then restart all ten selected final groups.
+- [x] 11a102a. Complete installation/update, tooling/docs and dependency repair verification.
+  - Preserve the owner's backend/database deferral and all native evidence.
+  - Receive complete native installation/update and tooling results, then commit this independent repair scope.
+  - Keep frontend repair 11a102b, backend repair 11a102 and final verification open.
+- [x] 11a102b. Complete frontend unit/browser repair verification.
+  - Receive complete frontend and E2E results after table/TOTP and fixture repairs.
+  - Apply the owner's decision to repair header scrolling itself; preserve strict browser warning checks.
+  - Commit after complete affected-area PASS, then repeat affected owner manual frontend acceptance.
+- [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
   - The owner tests Admin and affected application frontend and reports defects.
@@ -1232,6 +1249,8 @@ reassessment before resuming point 3; completed point history remains evidence.
     This records owner acceptance of the prepared native Nginx development
     application and current assets/data at source commit
     f5494f67e9f5f236d0326d757d140d70f959f244; automated verification remains pending.
+  - Reopened during 11a102 for affected table presentation and TOTP enrollment
+    repairs; prior acceptance remains historical and affected acceptance must repeat.
 - [ ] 12. Complete affected-area verification, release finalization and closure.
   - Prerequisites: all implementation points complete and committed, explicit owner
     manual acceptance in 11b; no unresolved
@@ -8538,3 +8557,238 @@ resources were introduced. Only runner-owned disposable worker databases were
 removed; base test/development data, services, caches, backups and reports remain.
 Mandatory staged hooks/current knowledge accompany the commit. Owner acceptance
 11b and final broad verification/release 12 remain open.
+
+## Point 11a102 — final-verification repair record (2026-11-05)
+
+The first selected final run failed; its native reports/logs are preserved under
+`.runtime/artifacts/RM-2026-016-first-final-failure/`. Repair scope keeps the existing
+feature/0.7.0 decision and all ten selected quality groups. No second roadmap,
+new dependency, production deployment or milestone all-group run is introduced.
+
+Repairs cover failed-bootstrap connection release, required seed restoration after
+owner fixture resets, migrated/uninitialized registry admission for HTTP/console
+registration, precise PHP payload contracts and structural decoders, existing named
+integration audiences, current password-confirmation frontend fixtures, controlled
+table columns, TOTP enrollment continuity, real avatar cropping tests, customer
+Vitest module-component registry composition, public/owner documentation links and
+Python contract/type expectations. Historical migration evidence uses its immutable
+baseline; current native upgrade tests use the actual consolidated pre-1.0 graph.
+Tests retain current password-only post-login policy and real guarded operations.
+The native updater fixture now extends the existing required platform seeder instead
+of replacing it: fresh teammate test preparation must retain registry/settings
+initialization while adding the synthetic upgrade reference. Cold console admission
+also requires the registry singleton, matching the existing HTTP cold-start repair.
+
+The dependency audit specifically required updating already locked Symfony
+http-foundation, http-kernel, routing and yaml from 8.1.9 to 8.1.11. Existing
+constraints admit these corrections; no package was added. Supported audit passes
+with no Composer advisories. Two pnpm moderate findings remain below the existing
+HIGH threshold; no policy or lock unrelated to the findings was changed.
+
+### Current-state documentation and instruction review
+
+Reviewed root README, docs/README, maintainer README/current-state metadata,
+public commands/testing, architecture/public-api and frontend language/adoption,
+Admin README/declarations/composition/frontend/operations/examples, Auth public
+contracts/security/administration, settings snapshots and shared table contracts.
+Root README incorrectly denied an administration UI and described it as
+English-only; both claims are replaced with the delivered Core Admin/PL-default
+contract. Admin delivery prose now names current candidate requirements, DB-backed
+presentation and session revocation in User details. Test support documents failed
+bootstrap cleanup and the customer-owned Vitest plugin seam. Snapshot subclass
+constants and controlled table updates match current source. Prepared 0.7.0 remains
+unreleased, and Admin remains development 0.2.0 pending verified creation closure.
+Published baseline remains 0.6.2; closed records/tags are untouched.
+
+Root AGENTS, relevant owner skills/references and the separately authored customer
+instruction product were assessed. Existing rules already require guarded APIs,
+central test ownership, canonical frontend contracts and owner-only repairs; no
+new reusable operating rule or customer platform-edit authority is introduced.
+Their linked canonical guides carry the changed consumer details, so neither
+instruction product needs duplicated new rules. Platform, Auth and Admin changelogs
+record these corrective candidate changes; current module/API versions already
+cover their scope and no additional semantic version is claimed before closure.
+
+Repair checks and owner acceptance remain pending until results are recorded below.
+
+### Owner steering — defer backend verification
+
+2026-11-05: the owner explicitly requests deferring backend work entirely and
+finishing the remaining failures first. Do not start further owner backend runs,
+backend repairs or database suites that depend on those runs. Preserve all failed
+native evidence, current backend edits and the open backend repair scope. This is
+not backend acceptance or roadmap closure; point 11a102 and final point 12 remain
+open. Continue frontend, tooling, documentation, dependency/source-security and
+native installation/update repair checks. Installation's own isolated customer
+smoke tests remain prerequisites of that acceptance, not an owner backend rerun.
+
+### Nonbackend repair continuation
+
+The owner backend suite remains deferred. Nonbackend follow-up repairs include
+explicit browser database environment selection before provider boot and nonzero
+failure propagation; current Admin password/locale fixtures and Auth advertisement
+isolation; current avatar readiness/branding expectations; and the production
+runtime Settings source directory missing from the PHP image COPY allowlist.
+Native installation/update acceptance is repeated from the beginning after each
+identified fixture/runtime-delivery repair; complete E2E remains required.
+
+The base isolated runa_test contained fourteen retired 2026-10 migration identities
+and old Core versions. Actual database/session owner, all table names and Core
+schema comments were inspected; only Runa platform/Core tables were present plus
+the application migration repository. The native reset initially refused unknown
+history without mutation. Under the standing pre-1.0 owner reset authorization,
+archived the exact retired history at
+`.runtime/artifacts/RM-2026-016-first-final-failure/e2e-retired-migration-history.txt`,
+removed shared.migrations RESTRICT in runa_test only, then ran the guarded owner
+migrate:fresh and required seeds. Native scope rebuilt platform and claimed Core
+storage/ledgers while preserving shared.application_migrations and all development
+storage. No test suite backend execution was started after the owner's deferral.
+
+The installation 704aaf9b60 failed at the missing Settings runtime class after
+successful teammate update/data preparation. Its automatic scoped cleanup removed
+only task-owned resources, including its three exact-SHA image tags; reports and
+shared caches remain. The subsequent full installation attempt includes the
+corrected runtime image and retains the original acceptance assertions.
+
+Further E2E repairs reconcile only private test transport/presentation assumptions:
+Admin preferences now have a valid account-bound versioned snapshot, password
+confirmation uses the native request and Confirm label, bootstrap advertises its
+actual mocked pages, tests await destination content instead of an immediately
+mounted layout frame, and native Details dialogs own dirty-close confirmation.
+Module work is shown directly in Task history; Application settings is top-bar
+navigation, Audit exposes related-event/actor history links, and the account tab
+breadcrumb is Account and security. Avatar diagnostics inspect the loading trigger
+before interaction, then release bounded image preparation before opening the
+account menu. Full suites still establish acceptance; filtered diagnostics do not.
+
+The first Settings packaging repair covered dependency classmap generation only;
+the subsequent runtime failure exposed the missing final-image COPY. Both stages
+now carry the same required Settings implementation. No broad source COPY, extra
+service, development tool or AI runtime is added. Native installation is repeated
+with its updater/team/customer-knowledge flags and original SMTP/resume assertions.
+
+Full browser verification exposed a pagination regression in controlled column
+synchronization: an external view snapshot reapplication caused the inner view
+store to emit page 1. AppTable now skips identical column state and suppresses
+query publication only during external presentation synchronization. Normal named
+view selection retains its documented first-page behavior. The existing server
+column regression now starts at page 2 and asserts no query event or provider
+refetch. The native selection/pagination/export browser scenario verifies the real
+controlled parent/view interaction. Complete frontend/E2E reruns are required for
+this repair; backend remains deferred.
+
+Browser preparation diagnosis clarification: inherited development credentials were
+rejected by the existing TestDatabaseGuard before ModuleUpdates could execute.
+Laravel's console exception renderer nevertheless let that private script exit 0,
+so the harness started against stale runa_test storage. No development database
+reset or Core mutation was performed by the failed preparation. The repaired
+script selects testing inputs before boot and explicitly exits nonzero on failure.
+
+Nonbackend repair also adds the existing Images implementation to both production
+image stages after auditing all runtime namespace roots. The immutable native
+image probe now resolves Settings registry/store and calls the public raster
+adapter on invalid PNG input, exercising its internal implementation without
+starting application data. This is runtime delivery verification, not an owner
+backend test run. The interrupted bd4a9de2dd acceptance run cleaned its exact
+owned resources; its reports and shared model/build caches remain. Full subsequent
+acceptance uses updater-preflight, team-propagation and customer-knowledge again.
+
+Complete browser rerun isolated a second pagination reset in useTableViews:
+guest preference writes synchronously notify subscribers, including their own
+controller. That callback reapplied unchanged persisted state, whose page is
+intentionally normalized to 1. The subscription now compares normalized incoming
+state before applying it. New behavior coverage uses a notifying PreferenceStore
+and verifies page 2 survives self/unrelated notifications while explicit named-view
+selection still resets page 1. This does not change account/session authority or
+persist transient pagination. Full frontend/E2E must pass before completing 11a102a.
+
+### Nonbackend verification evidence
+
+Supported complete native installation/update acceptance with all original flags
+`--updater-preflight --team-propagation --customer-knowledge` passed (79 assertions):
+`.runtime/acceptance/installation/installation-host-37466de563.json`. Preparation
+includes development/customer frontend, knowledge initialization/evaluation, actual
+SMTP refusal and recovery, teammate update/data propagation, production build and
+exact-revision deployment, runtime image probes, readiness and AI isolation. This
+fixture captured the packaging candidate before the later local table-notification
+repair; complete frontend/browser checks separately cover that final UI change.
+The native cleanup passed: 30 owned containers, 2 networks, 10 disposable fixture
+volumes and 7 image tags removed across preparation and final cleanup. Active
+development/base test data, shared Qdrant/model/build caches, backups and all
+verification reports were preserved. Exact resource identities are in the report
+and native log `installation-repair-6.log` under the repair evidence directory.
+
+Final nonbackend source checks passed: frontend TypeScript, ESLint without warnings,
+production frontend build, Pint/Prettier format checks, complete documentation link
+validation, maintenance consistency, debug residue and Gitleaks (history/worktree).
+The actual source security review was refreshed and content-bound to this candidate;
+it does not accept the deferred backend tests. Full frontend unit tests passed
+539/539 before the final test-host deduplication; a complete repeat follows browser
+verification. Full E2E and final tooling checks remain pending below. Native failed
+reports from earlier attempts remain preserved and are not rewritten as passing.
+
+Firefox complete browser verification reached all bounded export, pagination,
+selection and recovery assertions successfully, but its final strict console check
+failed on Gecko's native scroll-linked-positioning advisory. The intentional
+synchronous table-header transform is documented in useTableViewport as preventing
+visible lag; changing its scheduling is not an unreviewed acceptance workaround.
+Native trace/context are preserved in the repair evidence `firefox-scroll-advisory/`.
+At that execution, the owner decision on classification versus repairing scrolling
+was pending; the later decision below requires repairing scrolling itself. No
+warning filter or browser preference was changed.
+The full E2E run continues to discover other failures, and cannot be recorded PASS
+with this native test failure. Owner backend/database suites remain deferred.
+
+Owner decision: reject filtering the Firefox advisory; repair the scrolling mechanism. Backend remains deferred until all other checks pass. First repair coalesces vertical header transforms into one requestAnimationFrame callback and writes directly before paint, avoiding synchronous scroll-event layout mutation and a Vue render. Native diagnostics and complete affected suites must establish behavior before completion.
+
+### Header scrolling repair — owner decision implemented
+
+The owner rejected excluding the Firefox native scrolling advisory. The private
+viewport now coalesces vertical scroll notifications into one animation-frame
+callback, applying the header/rail transform directly before paint. It introduces
+no Vue-render delay and cancels pending callbacks on disposal. Horizontal table/rail
+scrolling retains its independent synchronization. No console warning exception or
+Firefox preference is added. The focused Firefox bounded-export scenario passes
+with the original strict diagnostics. A new rendered browser regression verifies
+the original semantic header stays pinned, remains bounded by the table end and
+returns to its original position; it passes on Chromium, Firefox and mobile Chromium.
+Complete frontend/browser/tooling verification follows; backend stays deferred.
+
+The canonical table guide is synchronized. Existing owner/customer instructions
+already delegate UI behavior and replacement contracts to that guide, so this
+private scheduling correction requires no duplicate instruction-product rules.
+
+Complete tooling repetition passed: 524 tests, 3 policy-selected deselections; Ruff
+format/lint and Python typecheck pass. The first frontend repetition found the
+existing viewport unit test required synchronous in-scroll publication explicitly.
+Its geometry and header/rail synchronization assertions now run after the scheduled
+animation frame, matching the owner-requested mechanism; no tolerance was relaxed.
+The full suite is repeated before complete E2E. Final TypeScript and production
+frontend build pass after making the new browser geometry query DOM-type safe.
+
+### Nonbackend repair completion
+
+Both 11a102a and 11a102b are complete in the accompanying nonbackend repair commit.
+Received native results for the final candidate:
+
+- Complete E2E: 407 passed, 139 matrix skips, zero failures; native exit 0 and
+  cleanup 0. Evidence: `e2e-frame-complete.log` in the repair directory. It includes
+  Chromium, Firefox and mobile Chromium, unchanged strict console diagnostics,
+  bounded exports and the three new original-header geometry regressions.
+- Complete frontend: 539 passed in 44 files; native exit 0, cleanup 0. Evidence:
+  `frontend-frame-repeat.log`. Complete tooling: 524 passed, 3 documented policy
+  deselections; exit 0, cleanup 0, with Ruff formatting/lint and Python types PASS.
+- TypeScript, ESLint, production frontend build, Pint/Prettier checks, source-bound
+  security review, documentation, repository and maintenance checks PASS. Earlier
+  dependency/secret evidence and complete native installation/update PASS above
+  remain applicable; excluded backend/database checks are not accepted by this record.
+- Final E2E removed only its two owned endpoint containers after printing their
+  exact identities; logs retain the inventory. Native installation cleanup and
+  preserved resources are recorded above. All earlier failed evidence is retained.
+
+Owner backend repair 11a102 remains open with its edits preserved outside this
+commit. Manual frontend reacceptance 11b remains open for table/TOTP repairs, and
+final verification/release point 12 remains open. No backend execution, roadmap
+closure, merge, tag or release is claimed. Current development assets are built
+for owner reacceptance. The owner request to finish the remaining E2E failure is
+satisfied without suppressing warnings.

@@ -571,7 +571,7 @@ function valid() {
         typeof value === 'string' &&
         (!value.trim() ||
           new TextEncoder().encode(value).length > 1000 ||
-          /[\x00-\x1f]/.test(value))
+          Array.from(value).some((character) => character.charCodeAt(0) < 32))
       )
         errors.push(
           text(
@@ -580,7 +580,8 @@ function valid() {
           ),
         );
     }
-    props.form.errors.value[path(key)] = errors;
+    const formErrors = props.form.errors;
+    formErrors.value = { ...formErrors.value, [path(key)]: errors };
     if (errors.length) valid = false;
   }
   return valid;
@@ -688,7 +689,8 @@ async function submitForm(key: string, name: string, fields: string[] = []) {
   await open([{ section: key, command: name, title: target.title, fields }]);
   if (!valid()) {
     close();
-    props.form.error.value = {
+    const formError = props.form.error;
+    formError.value = {
       reason: 'validation_failed',
       message: 'Check the highlighted fields.',
     };

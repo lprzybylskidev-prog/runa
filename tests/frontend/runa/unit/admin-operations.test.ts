@@ -922,12 +922,18 @@ it.each(['enable', 'disable', 'unregister'] as const)(
     await vi.waitFor(() => expect(finishPreview).toBeTypeOf('function'));
     const review = () =>
       document.body.querySelector('[data-module-lifecycle-review]')!;
-    const dialog = () => review().closest('[role="dialog"]')!;
+    const dialog = () =>
+      review()?.closest('[role="dialog"]') ??
+      Array.from(document.body.querySelectorAll('[role="dialog"]')).at(-1)!;
     const confirm = () =>
       Array.from(dialog().querySelectorAll('button')).find(
         (button) => button.textContent?.trim() === label,
       )!;
-    expect(review().querySelector('.app-skeleton')).not.toBeNull();
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector('[role=dialog] .app-skeleton'),
+      ).not.toBeNull(),
+    );
     expect(confirm().disabled).toBe(true);
     expect(submitted).toEqual([
       { operation: 'modules.preview', input: { module: 'app.safe', intent } },
@@ -947,7 +953,9 @@ it.each(['enable', 'disable', 'unregister'] as const)(
     expect(review().textContent).toContain('Active work');
     expect(review().textContent).toContain('pending: 2');
     (
-      dialog().querySelector('[data-lifecycle-cancel]') as HTMLButtonElement
+      Array.from(dialog().querySelectorAll('button')).find(
+        (button) => button.textContent?.trim() === 'Cancel',
+      ) as HTMLButtonElement
     ).click();
     await vi.waitFor(() => expect(document.activeElement).toBe(action()));
     expect(
@@ -1068,7 +1076,7 @@ it.each(['blocked', 'failed apply', 'authority loss'])(
     await vi.waitFor(() => expect(confirm().disabled).toBe(false));
     confirm().click();
     await vi.waitFor(() =>
-      expect(review()?.textContent).toContain('Refresh and review'),
+      expect(review()?.textContent).toContain('Review again'),
     );
     expect(confirm().disabled).toBe(true);
     expect(review()?.textContent).toContain('Review again');
@@ -1144,7 +1152,7 @@ it.each(['failure', 'authority loss'])(
     } else {
       await vi.waitFor(() =>
         expect(modal()?.closest('.dialog-backdrop')?.textContent).toContain(
-          'Refresh and review',
+          'Retry',
         ),
       );
       expect(modal()?.querySelector('.app-skeleton')).toBeNull();

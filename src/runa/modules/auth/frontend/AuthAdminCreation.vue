@@ -95,10 +95,10 @@ const policy = computed<EntryOptions['password'] | undefined>(() => {
       typeof value.min_length !== 'number' ||
       value.max_bytes !== 72
     )
-      return;
+      return undefined;
     return value as EntryOptions['password'];
   } catch {
-    return;
+    return undefined;
   }
 });
 const passwordHint = computed(() => {

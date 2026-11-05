@@ -368,7 +368,9 @@ def main() -> None:
                     presentation = json.load(response)["data"]
                     check(
                         presentation["revision"] == 1
-                        and set(presentation) == {"name", "logo", "revision"},
+                        and set(presentation) == {"name", "logo", "favicon", "defaults", "revision"}
+                        and presentation["defaults"]
+                        == {"locale": "pl", "theme": "system", "timezone": "Europe/Warsaw"},
                         "fresh installation creates protected application settings before HTTP without exposing configuration",
                     )
                 bootstrap_providers = (dev / "src/bootstrap/providers.php").read_bytes()

@@ -392,3 +392,5 @@ exact floating-point equality. Avatar loading coverage requires both dimensions
 near 40 px to two decimal places; retain visibility, animation, reduced-motion and
 image-loading assertions. This tolerance addresses browser arithmetic, not layout
 regressions or permission to skip failed cases.
+
+Private owner browser preparation clears inherited development environment keys before booting the isolated testing identity, using the existing test environment selector. Preparation errors return nonzero and prevent browser startup; a rendered 503 is never accepted as a prepared application.

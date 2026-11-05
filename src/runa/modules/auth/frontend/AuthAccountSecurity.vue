@@ -176,7 +176,13 @@ const operationLabel = computed(() =>
 watch([actions, methods, () => security.value?.trusted_devices_enabled], () => {
   if (
     overviewAction.value !== 'none' &&
-    (!actions.value.some((action) => action.value === overviewAction.value) ||
+    ((!(
+      (overviewAction.value === 'totpBegin' ||
+        overviewAction.value === 'totpConfirm') &&
+      secret.value &&
+      security.value?.totp_enabled
+    ) &&
+      !actions.value.some((action) => action.value === overviewAction.value)) ||
       (overviewAction.value === 'disable' &&
         !methods.value.some((candidate) => candidate.value === target.value)))
   ) {

@@ -32,22 +32,16 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
     (element, _previous, cleanup) => {
       if (!element) return;
       let frame = 0;
+      let pinFrame = 0;
       let scrollParent: HTMLElement | undefined;
       let shell: Element | null | undefined;
       let previousOffset = Number.NaN;
-      function pin(event?: Event) {
+      function pin() {
         const content = region.value;
         const head = element?.tHead;
         const rail = scrollbar.value;
         // Horizontal scrolling already moves the original header with its table.
-        if (
-          !content ||
-          !head ||
-          !rail ||
-          event?.target === content ||
-          event?.target === rail
-        )
-          return;
+        if (!content || !head || !rail) return;
         const bounds = content.getBoundingClientRect();
         const top = Math.max(
           0,
@@ -62,8 +56,8 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
         );
         if (offset === previousOffset) return;
         previousOffset = offset;
-        // Apply in the scroll event itself: an extra animation frame followed by
-        // a Vue render leaves the header visibly behind compositor scrolling.
+        // Publish directly before paint without a Vue render or synchronous
+        // layout mutation inside the browser's asynchronous scroll event.
         const transform = `translate3d(0, ${offset}px, 0)`;
         head.style.transform = transform;
         rail.style.transform = transform;
@@ -100,17 +94,30 @@ export function useTableViewport(table: Ref<HTMLTableElement | undefined>) {
       function schedule() {
         if (!frame) frame = requestAnimationFrame(measure);
       }
+      function schedulePin(event: Event) {
+        if (event.target === region.value || event.target === scrollbar.value)
+          return;
+        if (!pinFrame)
+          pinFrame = requestAnimationFrame(() => {
+            pinFrame = 0;
+            pin();
+          });
+      }
       const observer = new ResizeObserver(schedule);
       observer.observe(element);
       if (element.tHead) observer.observe(element.tHead);
       if (region.value) observer.observe(region.value);
-      window.addEventListener('scroll', pin, { capture: true, passive: true });
+      window.addEventListener('scroll', schedulePin, {
+        capture: true,
+        passive: true,
+      });
       window.addEventListener('resize', schedule);
       schedule();
       cleanup(() => {
         observer.disconnect();
         cancelAnimationFrame(frame);
-        window.removeEventListener('scroll', pin, true);
+        cancelAnimationFrame(pinFrame);
+        window.removeEventListener('scroll', schedulePin, true);
         element.tHead?.style.removeProperty('transform');
         scrollbar.value?.style.removeProperty('transform');
         window.removeEventListener('resize', schedule);

@@ -77,7 +77,7 @@ Run `php artisan runa:test --scope=backend --parallel`; TEST_WORKERS defaults to
 
 ## Frontend
 
-`php artisan runa:test:frontend` uses src/vitest.config.mjs and tests/frontend/app/unit. Vitest/Vue Test Utils run in real headless Chromium. Test rendered states, events, validation, focus/accessibility and asynchronous failure/race behavior. The example welcome test consumes the public UI facade. Keep TypeScript strict; no known-payload any.
+`php artisan runa:test:frontend` uses src/vitest.config.mjs and tests/frontend/app/unit. Vitest/Vue Test Utils run in real headless Chromium. Test rendered states, events, validation, focus/accessibility and asynchronous failure/race behavior. The example welcome test consumes the public UI facade. The supplied Vitest configuration registers moduleComponentsPlugin from src/runa/frontend/module-components.mjs with the src directory as its root, matching the application Vite registry. Existing application-owned Vitest configurations importing Runa UI/Auth/Admin must compose this plugin as well; updating Runa does not overwrite customer configuration. Keep TypeScript strict; no known-payload any.
 
 ## Browser endpoint and startup
 

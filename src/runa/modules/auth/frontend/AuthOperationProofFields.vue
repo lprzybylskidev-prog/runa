@@ -10,8 +10,14 @@ const props = defineProps<{
   submit?: boolean;
 }>();
 const emit = defineEmits<{ confirm: []; cancel: [] }>();
-const { locale } = useLocale();
-const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
+const { locale: applicationLocale } = useLocale();
+function setPassword(value: string | null) {
+  const password = props.controller.password;
+  password.value = value ?? '';
+}
+const copy = computed(() =>
+  operationProofCopy(props.locale ?? applicationLocale.value),
+);
 </script>
 <template>
   <div class="space-y-4">
@@ -22,7 +28,7 @@ const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
       autocomplete="current-password"
       :label="copy.password"
       :disabled="controller.busy.value"
-      @update:model-value="controller.password.value = $event ?? ''"
+      @update:model-value="setPassword"
     />
     <div class="flex flex-wrap gap-2">
       <Button

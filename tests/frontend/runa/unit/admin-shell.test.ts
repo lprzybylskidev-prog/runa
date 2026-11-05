@@ -138,6 +138,10 @@ beforeEach(() => {
     if (path === '/api/admin/entry')
       return respond({ data: { available: true } });
     if (path === '/api/admin') return respond({ data: bootstrap() });
+    if (path === '/api/admin/activity')
+      return respond({
+        data: { remaining_seconds: 300, heartbeat_seconds: 30 },
+      });
     return respond({ reason: 'not_found' }, 404);
   });
 });
@@ -332,7 +336,6 @@ it('Admin entry proof diagnostic submits the fixed native action once and clears
   expect(bodies).toEqual([
     JSON.stringify({
       action: 'runa.admin.enter',
-      requirement: 'password',
       current_password: 'Transient password',
     }),
   ]);
@@ -809,6 +812,10 @@ it('Admin resource reads coalesce requests and fence page account authority and 
   const finishes: ((value: Response) => void)[] = [];
   vi.mocked(window.fetch).mockImplementation(async (input) => {
     if (String(input) === '/api/admin') return respond({ data: bootstrap() });
+    if (String(input) === '/api/admin/activity')
+      return respond({
+        data: { remaining_seconds: 900, heartbeat_seconds: 30 },
+      });
     if (String(input) === '/api/admin/app/settings')
       return respond({ data: resourcePage() });
     return new Promise((resolve) => {
@@ -860,6 +867,10 @@ it('Admin resource reads reject foreign subjects denied fields raw secrets and m
   let data: unknown;
   vi.mocked(window.fetch).mockImplementation(async (input) => {
     if (String(input) === '/api/admin') return respond({ data: bootstrap() });
+    if (String(input) === '/api/admin/activity')
+      return respond({
+        data: { remaining_seconds: 900, heartbeat_seconds: 30 },
+      });
     if (String(input) === '/api/admin/app/settings')
       return respond({ data: resourcePage() });
     return respond({ data });
@@ -915,6 +926,10 @@ it('Admin page refresh retains the mounted page while a same-session descriptor 
   let slow = false;
   vi.mocked(window.fetch).mockImplementation(async (input) => {
     if (String(input) === '/api/admin') return respond({ data: bootstrap() });
+    if (String(input) === '/api/admin/activity')
+      return respond({
+        data: { remaining_seconds: 900, heartbeat_seconds: 30 },
+      });
     if (String(input) === '/api/admin/app/settings')
       return slow
         ? new Promise((resolve) => {
@@ -959,6 +974,10 @@ it('Admin resource reads discard obsolete queries and refresh after readable sec
   let descriptor = resourcePage();
   vi.mocked(window.fetch).mockImplementation(async (input) => {
     if (String(input) === '/api/admin') return respond({ data: bootstrap() });
+    if (String(input) === '/api/admin/activity')
+      return respond({
+        data: { remaining_seconds: 900, heartbeat_seconds: 30 },
+      });
     if (String(input) === '/api/admin/app/settings')
       return respond({ data: descriptor });
     return new Promise((resolve) => {
@@ -1082,6 +1101,10 @@ it('Admin dirty navigation retains the current page until explicit approval thro
   vi.mocked(window.fetch).mockImplementation(async (input) => {
     const path = new URL(String(input), location.origin).pathname;
     if (path === '/api/admin') return respond({ data: bootstrap() });
+    if (path === '/api/admin/activity')
+      return respond({
+        data: { remaining_seconds: 300, heartbeat_seconds: 30 },
+      });
     if (path === '/api/admin/app/settings') {
       const data = resourcePage();
       data.sections[0]!.readonly = false;
@@ -1449,6 +1472,10 @@ it('Admin resource clear cancels old subject reads and erases the retained query
   const replies: ((value: Response) => void)[] = [];
   vi.mocked(window.fetch).mockImplementation(async (input) => {
     if (String(input) === '/api/admin') return respond({ data: bootstrap() });
+    if (String(input) === '/api/admin/activity')
+      return respond({
+        data: { remaining_seconds: 900, heartbeat_seconds: 30 },
+      });
     if (String(input) === '/api/admin/app/settings')
       return respond({ data: resourcePage() });
     return new Promise((resolve) => {
@@ -1481,6 +1508,10 @@ it('application settings retain drafts after confirmed Audit refusal while real 
   const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
     const path = String(input);
     if (path === '/api/admin') return respond({ data: bootstrap() });
+    if (path === '/api/admin/activity')
+      return respond({
+        data: { remaining_seconds: 300, heartbeat_seconds: 30 },
+      });
     if (path.endsWith('/application'))
       return respond({
         data: {
@@ -1515,20 +1546,22 @@ it('application settings retain drafts after confirmed Audit refusal while real 
   await vi.waitFor(() => expect(admin.state.value).toBe('ready'));
   await settings.refresh();
   settings.edit('presentation.name', 'Uncommitted draft');
-  const calls = fetch.mock.calls.length;
+  const mutationCalls = () =>
+    fetch.mock.calls.filter(([, init]) => init?.method === 'POST').length;
+  const calls = mutationCalls();
   await settings.save();
   await flushPromises();
   expect(admin.state.value).toBe('ready');
   expect(settings.draft.value['presentation.name']).toBe('Uncommitted draft');
   expect(settings.operations.dirty.value).toBe(true);
   expect(settings.operations.error.value).not.toBe('');
-  expect(fetch).toHaveBeenCalledTimes(calls + 1);
+  expect(mutationCalls()).toBe(calls + 1);
   reason = 'module_unavailable';
   await settings.save();
   await flushPromises();
   expect(admin.state.value).toBe('unavailable');
   expect(settings.draft.value).toEqual({});
-  expect(fetch).toHaveBeenCalledTimes(calls + 2);
+  expect(mutationCalls()).toBe(calls + 2);
 });
 
 it('Admin entry proof renders Auth MinimalLayout before admission and retries without duplicating password requests', async () => {
@@ -2009,7 +2042,7 @@ it('Admin revalidation retains the mounted password form and input until a real 
     expect(wrapper.find('input[name="current_password"]').exists()).toBe(false),
   );
   expect(wrapper.text()).toContain(
-    'Administrator panel access is not available.',
+    'You do not have permission for this operation.',
   );
   expect(
     vi

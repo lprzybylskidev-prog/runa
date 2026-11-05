@@ -187,10 +187,13 @@ it('table viewport pins the original header inside a scrolling region and synchr
     expect(
       wheel(wrapper.get('tbody').element, { deltaY: 20 }).defaultPrevented,
     ).toBe(false);
-    // A scroll event must update both layers before a Vue tick / next frame.
+    // Coalesced scroll events publish both layers together before paint.
     for (const distance of [40, 95, 180, 70]) {
       host.scrollTop = viewport.offsetTop + distance;
       host.dispatchEvent(new Event('scroll'));
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      );
       expect(
         Math.abs(
           originalHead.getBoundingClientRect().top -
@@ -380,7 +383,7 @@ it('applies column presentation without fetching or losing hidden-column sorting
       provider,
       columns,
       rowKey: (row) => row.public_id,
-      query: { ...query(), sort: { key: 'name', direction: 'asc' } },
+      query: { ...query(), page: 2, sort: { key: 'name', direction: 'asc' } },
       caption: 'Projects',
     },
   });
@@ -391,10 +394,17 @@ it('applies column presentation without fetching or losing hidden-column sorting
       { key: 'name', visible: false },
     ],
   });
-  expect(wrapper.findAll('thead th')).toHaveLength(1);
+  expect(wrapper.findAll('thead th[data-column-key]')).toHaveLength(1);
   expect(wrapper.find('thead').text()).toContain('Count');
-  expect(wrapper.find('col').attributes('style')).toContain('220px');
+  expect(
+    wrapper
+      .findAll('col')
+      .find((column) => column.attributes('style')?.includes('220px'))!
+      .attributes('style'),
+  ).toContain('220px');
   expect(provider).toHaveBeenCalledTimes(1);
+  expect(wrapper.props('query').page).toBe(2);
+  expect(wrapper.emitted('update:query')).toBeUndefined();
   expect(wrapper.props('query').sort?.key).toBe('name');
   wrapper.unmount();
 });

@@ -255,7 +255,7 @@ it('Dialog loading defaults to placeholders, keeps dismissal usable and never co
   ).not.toBeNull();
   expect(document.querySelector('[data-loaded]')).toBeNull();
   const confirm = document.querySelector<HTMLButtonElement>(
-    'button[data-variant="solid"]',
+    'button[data-intent="commit"]',
   )!;
   expect(confirm.disabled).toBe(true);
   document

@@ -180,3 +180,51 @@ test('uses compact controls, searches across columns and lists the default first
     'Orion 3',
   );
 });
+
+test('keeps the original table header pinned and bounded during page scrolling', async ({
+  page,
+}) => {
+  const errors = recordBrowserProblems(page, { anonymousSession: true });
+  await page.goto('/__fixtures/ui?category=data');
+  const table = page.locator('table').first();
+  await expect(table.locator('tbody tr')).toHaveCount(5);
+  await table.evaluate((element) => {
+    window.scrollTo(
+      0,
+      element.getBoundingClientRect().top + window.scrollY + 40,
+    );
+  });
+  await expect
+    .poll(() =>
+      table
+        .locator('thead')
+        .evaluate((head) => Math.abs(head.getBoundingClientRect().top)),
+    )
+    .toBeLessThan(2);
+  await expect(table.locator('thead')).toHaveCount(1);
+  await table.evaluate((element) => {
+    window.scrollTo(
+      0,
+      element.getBoundingClientRect().bottom + window.scrollY - 20,
+    );
+  });
+  await expect
+    .poll(() =>
+      table.evaluate((element) =>
+        Math.abs(
+          element.querySelector('thead')!.getBoundingClientRect().bottom -
+            element.getBoundingClientRect().bottom,
+        ),
+      ),
+    )
+    .toBeLessThan(2);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect
+    .poll(() =>
+      table
+        .locator('thead')
+        .evaluate((head) => getComputedStyle(head).transform),
+    )
+    .toBe('matrix(1, 0, 0, 1, 0, 0)');
+  expect(errors).toEqual([]);
+});

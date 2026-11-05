@@ -77,12 +77,17 @@ async function submitAccount(form: {
 }) {
   await form.trigger('submit');
   await flushPromises();
-  const input = (
-    form.element.getRootNode() as Document | Element
-  ).querySelector<HTMLInputElement>('input[name=current_password]');
-  if (input) {
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await flushPromises();
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const input = document.querySelector<HTMLInputElement>(
+      'input[name=current_password]',
+    );
+    if (!input) break;
     await new DOMWrapper(input).setValue('a-long-test-password');
     await new DOMWrapper(input.closest('form')!).trigger('submit');
+    await flushPromises();
+    await new Promise((resolve) => setTimeout(resolve, 0));
     await flushPromises();
   }
 }
@@ -450,7 +455,7 @@ it('account boundary diagnostic: saves with the current revision and refuses sta
   await submitAccount(w.get('form'));
   await vi.waitFor(() =>
     expect(w.text() + document.body.textContent).toContain(
-      'Aktualne dane pobrano automatycznie',
+      'Dane zmieniły się w międzyczasie.',
     ),
   );
   expect(writes).toHaveLength(1);
@@ -866,7 +871,7 @@ it('account cards validate their changes before writing and stops after a partia
     ),
   );
   expect(w.text() + document.body.textContent).toContain(
-    'Aktualne dane pobrano automatycznie',
+    'Dane zmieniły się w międzyczasie.',
   );
   expect(
     document.querySelector(
@@ -1123,6 +1128,15 @@ it('shell avatar follows guarded profile reads immediately on replacement/remova
   );
   const shell = w.getComponent(ApplicationLayout);
   await vi.waitFor(() => expect(shell.props('userAvatar')).toContain('v=5'));
+  await vi.waitFor(
+    () =>
+      expect(
+        w.get('button[aria-label^="Menu użytkownika"]').attributes('disabled'),
+      ).toBeUndefined(),
+    {
+      timeout: 4000,
+    },
+  );
   await w.get('button[aria-label^="Menu użytkownika"]').trigger('click');
   await vi.waitFor(() => expect(w.findAllComponents(Avatar)).toHaveLength(2));
   expect(
@@ -1753,9 +1767,18 @@ it('trusted devices live inside two-factor settings and cannot be enabled withou
   expect(writes).toHaveLength(0);
   expect(state.failure.value).toBe('unavailable');
   state.overviewAction.value = 'none';
-  state.security.value = { ...state.security.value!, enrolled: ['email'] };
+  state.security.value = {
+    ...state.security.value!,
+    enrolled: ['email'],
+    trusted_device_eligible: true,
+  };
   await flushPromises();
-  expect(trigger.attributes('disabled')).toBeUndefined();
+  expect(
+    card
+      .findAll('button')
+      .find((button) => button.text() === 'Zaufaj tej przeglądarce')!
+      .attributes('disabled'),
+  ).toBeUndefined();
 });
 
 it('trust issuance uses the shared password page after a factor-verified login and leaves unrelated account drafts intact', async () => {

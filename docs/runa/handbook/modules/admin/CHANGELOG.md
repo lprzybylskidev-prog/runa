@@ -2,6 +2,8 @@
 
 ## 0.2.0 — Unreleased
 
+- Reconcile externally supplied table column state without refetching rows; preserve transient pagination when unchanged preferences notify their own view controller.
+
 - Expose optional AdminField.clearable, defaulting to true, for source-owned selection presentation such as non-clearable access import modes.
 
 - Use quiet outlined action buttons, including Save and confirmations. Preserve operation colors before modal admission and use purple for mixed-effect tools; final confirmation reflects the selected operation. Document the shared policy for future views.

@@ -121,9 +121,9 @@ function options(field: AdminFieldData) {
   >
     <template v-for="field in orderedFields" :key="field.key">
       <DateTimeRangeInput
-        size="sm"
         v-if="field.type === 'datetime'"
         :key="field.key + ':' + resetKey"
+        size="sm"
         :label="tr(field.label)"
         :model-value="{
           start: range(field.key).from ?? null,
@@ -134,8 +134,8 @@ function options(field: AdminFieldData) {
         @update:model-value="date(field.key, $event)"
       />
       <Select
-        size="sm"
         v-else-if="field.type === 'boolean' || field.type === 'dictionary'"
+        size="sm"
         :label="
           field.key === 'state'
             ? tr({ pl: 'Usunięte', en: 'Deleted' })
@@ -152,8 +152,8 @@ function options(field: AdminFieldData) {
         @update:model-value="set(field.key, $event)"
       />
       <NumberInput
-        size="sm"
         v-else-if="field.type === 'integer'"
+        size="sm"
         :label="tr(field.label)"
         :model-value="
           query.filters?.[field.key] == null
@@ -165,8 +165,8 @@ function options(field: AdminFieldData) {
         @update:model-value="set(field.key, $event)"
       />
       <TextInput
-        size="sm"
         v-else
+        size="sm"
         :label="tr(field.label)"
         :model-value="String(query.filters?.[field.key] ?? '')"
         @update:model-value="set(field.key, $event)"

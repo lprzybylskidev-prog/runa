@@ -1,3 +1,4 @@
+import PasswordConfirmationHost from './fixtures/PasswordConfirmationHost.vue';
 import { savePreference } from '../../../../src/runa/resources/js/lib/preferences';
 import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
@@ -120,14 +121,15 @@ function fixture() {
     }),
   };
   let form!: AdminFormController;
-  const wrapper = mount(
-    defineComponent({
-      setup() {
-        form = useAdminForm(page, { autoRead: false });
-        return () => h(AuthAdminCreation, { page, section, controller: form });
-      },
-    }),
-  );
+  const Child = defineComponent({
+    setup() {
+      form = useAdminForm(page, { autoRead: false });
+      return () => h(AuthAdminCreation, { page, section, controller: form });
+    },
+  });
+  const wrapper = mount(PasswordConfirmationHost, {
+    slots: { default: () => h(Child) },
+  });
   return {
     wrapper,
     get form() {
@@ -316,15 +318,13 @@ it.each([true, false])(
       await wrapper
         .get(`input[name="${key}"]`)
         .setValue('long-initial-password');
-    await wrapper.get('form').trigger('submit');
+    const submitting = wrapper.get('form').trigger('submit');
     const proof = form.proof('creation', 'create');
     await vi.waitFor(() => expect(proof.open.value).toBe(true));
     expect(writes).toBe(0);
     proof.password.value = 'admin-password';
-    await proof.confirm();
-    expect(proof.confirmed.value).toBe(true);
-    expect(writes).toBe(0);
-    await wrapper.get('form').trigger('submit');
+    await wrapper.findAll('form').at(-1)!.trigger('submit');
+    await submitting;
     await vi.waitFor(() => expect(writes).toBe(1));
     await vi.waitFor(() =>
       expect(form.values.value[form.fieldPath('creation', 'password')]).toEqual(

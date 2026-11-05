@@ -54,8 +54,8 @@ onScopeDispose(() => {
 </script>
 <template>
   <component
-    v-if="!readiness.ready.value"
     :is="presentation.loading ?? AdminLoading"
+    v-if="!readiness.ready.value"
   />
   <div
     v-show="readiness.ready.value"

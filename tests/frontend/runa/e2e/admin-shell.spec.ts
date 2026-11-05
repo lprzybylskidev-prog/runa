@@ -5,6 +5,26 @@ async function transport(page: Page) {
   await page.route('**/api/runa/auth/**', async (route) => {
     const path = new URL(route.request().url()).pathname;
     let data: unknown = { ready: true };
+    if (path.endsWith('/preferences'))
+      data = {
+        account: id,
+        revision: 1,
+        values: [
+          {
+            scope: 'runa:runa.auth:global:locale',
+            value: 'en',
+            version: 1,
+            stored: true,
+          },
+          {
+            scope: 'runa:runa.auth:global:theme',
+            value: 'system',
+            version: 1,
+            stored: true,
+          },
+        ],
+        legacy_claimed: true,
+      };
     if (path.endsWith('/session'))
       data = {
         public_id: id,
@@ -39,7 +59,6 @@ async function transport(page: Page) {
     if (path.endsWith('/step-up')) {
       expect(route.request().postDataJSON()).toEqual({
         action: 'runa.admin.enter',
-        requirement: 'password',
         current_password: 'Example test password',
       });
       proof = true;
@@ -74,7 +93,50 @@ async function transport(page: Page) {
                   activity: { remaining_seconds: 300, heartbeat_seconds: 30 },
                   generation: 1,
                   revision: 'bootstrap-1',
-                  owners: [],
+                  owners: [
+                    {
+                      id: 'runa.auth',
+                      title: 'Authentication',
+                      default_page: 'users',
+                      pages: [
+                        {
+                          key: 'users',
+                          title: 'Users',
+                          href: '/admin/runa.auth/users',
+                          group: null,
+                          order: 0,
+                        },
+                      ],
+                    },
+                    {
+                      id: 'runa.permissions',
+                      title: 'Permissions',
+                      default_page: 'roles',
+                      pages: [
+                        {
+                          key: 'roles',
+                          title: 'Roles',
+                          href: '/admin/runa.permissions/roles',
+                          group: null,
+                          order: 0,
+                        },
+                      ],
+                    },
+                    {
+                      id: 'runa.audit',
+                      title: 'Audit',
+                      default_page: 'history',
+                      pages: [
+                        {
+                          key: 'history',
+                          title: 'History',
+                          href: '/admin/runa.audit/history',
+                          group: null,
+                          order: 0,
+                        },
+                      ],
+                    },
+                  ],
                   dashboard: { widgets: [] },
                   presentation: { name: 'Runa', logo: null, revision: 0 },
                 },
@@ -98,7 +160,7 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
     await page.setViewportSize({ width, height });
     await page.addInitScript((theme) => {
       localStorage.clear();
-      localStorage.setItem('runa.locale', 'pl');
+      localStorage.setItem('runa.locale', 'en');
       localStorage.setItem('runa.theme', theme);
     }, theme);
     await page.goto('/admin');
@@ -110,9 +172,7 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
     ).toBeVisible();
     if (await password.count()) {
       await password.fill('Example test password');
-      await page
-        .getByRole('button', { name: 'Confirm password', exact: true })
-        .click();
+      await page.getByRole('button', { name: 'Confirm', exact: true }).click();
     }
     await expect(
       page.getByRole('heading', { name: /^(Modules|Moduły)$/, exact: true }),
@@ -136,7 +196,7 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
     await page.keyboard.press('Escape');
     await expect(page.locator('nav a[href="/account"]')).toHaveCount(0);
     expect(await page.evaluate(() => localStorage.getItem('runa.locale'))).toBe(
-      'pl',
+      'en',
     );
     expect(
       await page.evaluate(
@@ -291,10 +351,13 @@ test('Admin generated forms: draft reconciliation, safe validation and guarded n
     await page.addInitScript((theme) => {
       localStorage.clear();
       localStorage.setItem('runa.theme', theme);
-      localStorage.setItem('runa.locale', 'pl');
+      localStorage.setItem('runa.locale', 'en');
     }, theme);
     await page.goto('/admin/app/users');
-    const field = page.getByLabel('Display name', { exact: true });
+    const field = page.getByRole('textbox', {
+      name: 'Display name',
+      exact: true,
+    });
     await expect(field).toHaveValue('Before');
     await field.fill('');
     await page
@@ -457,27 +520,30 @@ test('Auth administration: owned Users presentation selects accounts and protect
     await page.setViewportSize({ width, height: 1000 });
     await page.addInitScript((theme) => {
       localStorage.setItem('runa.theme', theme);
-      localStorage.setItem('runa.locale', 'pl');
+      localStorage.setItem('runa.locale', 'en');
     }, theme);
     await page.goto('/admin/runa.auth/users');
     const password = page.getByLabel('Current password', { exact: true });
+    await expect(
+      password.or(page.getByRole('button', { name: 'Details', exact: true })),
+    ).toBeVisible();
     if (await password.count()) {
       await password.fill('Example test password');
-      await page
-        .getByRole('button', { name: 'Confirm password', exact: true })
-        .click();
+      await page.getByRole('button', { name: 'Confirm', exact: true }).click();
     }
-    const name = page.getByLabel('Display name', { exact: true });
-    await expect(name).toHaveValue('Current account');
-    await page
-      .getByRole('button', { name: 'Open account', exact: true })
-      .click();
+    await page.getByRole('button', { name: 'Details', exact: true }).click();
+    const name = page.getByRole('textbox', {
+      name: 'Display name',
+      exact: true,
+    });
     await expect(name).toHaveValue('Selected account');
     await name.fill('Unsaved account draft');
     await page
-      .getByRole('button', { name: 'Open account', exact: true })
+      .getByRole('button', { name: 'Close dialog', exact: true })
       .click();
-    await expect(page.getByRole('dialog')).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: 'Cancel', exact: true }),
+    ).toBeVisible();
     await page.getByRole('button', { name: 'Cancel', exact: true }).click();
     await expect(name).toHaveValue('Unsaved account draft');
     expect(
@@ -490,8 +556,14 @@ test('Auth administration: owned Users presentation selects accounts and protect
       fullPage: true,
     });
     await page
-      .getByRole('button', { name: 'Discard changes', exact: true })
+      .getByRole('button', { name: 'Close dialog', exact: true })
       .click();
+    await page
+      .getByRole('dialog')
+      .last()
+      .getByRole('button', { name: 'Confirm', exact: true })
+      .click();
+    await expect(name).toHaveCount(0);
   }
   expect(failures).toEqual([]);
 });
@@ -544,6 +616,7 @@ test('Permissions and Audit administration: built definition and immutable histo
         owner === 'runa.audit'
           ? {
               action: 'example.changed',
+              correlation_id: id,
               changes: 'Immutable safe detail',
               entities: JSON.stringify([
                 { module: 'runa.auth', type: 'user', public_id: id },
@@ -631,25 +704,29 @@ test('Permissions and Audit administration: built definition and immutable histo
       await page.setViewportSize({ width, height });
       await page.addInitScript((theme) => {
         localStorage.setItem('runa.theme', theme);
-        localStorage.setItem('runa.locale', 'pl');
+        localStorage.setItem('runa.locale', 'en');
       }, theme);
       await page.goto(`/admin/${owner}/${key}`);
       const password = page.getByLabel('Current password', { exact: true });
+      await expect(
+        password.or(page.getByRole('button', { name: 'Details', exact: true })),
+      ).toBeVisible();
       if (await password.count()) {
         await password.fill('Example test password');
         await page
-          .getByRole('button', { name: 'Confirm password', exact: true })
+          .getByRole('button', { name: 'Confirm', exact: true })
           .click();
       }
-      await page
-        .getByRole('button', { name: 'Open record', exact: true })
-        .click();
+      await page.getByRole('button', { name: 'Details', exact: true }).click();
       if (owner === 'runa.audit') {
         await expect(
           page.getByText('Immutable safe detail', { exact: true }),
         ).toBeVisible();
         await expect(
-          page.getByRole('link', { name: /History: runa.auth/ }),
+          page.getByRole('link', {
+            name: 'Show related events: ' + id,
+            exact: true,
+          }),
         ).toBeVisible();
       } else
         await expect(
@@ -742,7 +819,7 @@ test('Admin operations: persisted health, explicit cooperative cancellation and 
     await page.setViewportSize({ width, height });
     await page.addInitScript((theme) => {
       localStorage.setItem('runa.theme', theme);
-      localStorage.setItem('runa.locale', 'pl');
+      localStorage.setItem('runa.locale', 'en');
     }, theme);
     await page.goto('/admin');
     const password = page.getByLabel('Current password', { exact: true });
@@ -753,17 +830,15 @@ test('Admin operations: persisted health, explicit cooperative cancellation and 
     ).toBeVisible();
     if (await password.count()) {
       await password.fill('Example test password');
-      await page
-        .getByRole('button', { name: 'Confirm password', exact: true })
-        .click();
+      await page.getByRole('button', { name: 'Confirm', exact: true }).click();
     }
     await expect(
       page.getByText('Health observations have expired.', { exact: true }),
     ).toBeVisible();
     await page.getByRole('button', { name: 'app.safe', exact: true }).click();
-    await page
-      .getByRole('button', { name: 'Active work', exact: true })
-      .click();
+    await expect(
+      page.getByRole('heading', { name: 'Task history', exact: true }),
+    ).toBeVisible();
     await page
       .getByRole('button', { name: 'Request cancellation', exact: true })
       .click();
@@ -861,12 +936,10 @@ test('application global settings compose responsive light and dark defaults wit
     ).toBeVisible();
     if (await password.count()) {
       await password.fill('Example test password');
-      await page
-        .getByRole('button', { name: 'Confirm password', exact: true })
-        .click();
+      await page.getByRole('button', { name: 'Confirm', exact: true }).click();
     }
     await page
-      .getByRole('button', { name: 'Application settings', exact: true })
+      .getByRole('link', { name: 'Application settings', exact: true })
       .click();
     await page
       .getByLabel('Displayed application name', { exact: true })
@@ -875,7 +948,7 @@ test('application global settings compose responsive light and dark defaults wit
       .getByRole('button', { name: 'Save application settings', exact: true })
       .click();
     await expect(
-      page.getByText('Application settings saved.', { exact: true }),
+      page.getByText('Application settings saved.', { exact: true }).last(),
     ).toBeVisible();
     await expect(
       page.getByLabel('Displayed application name', { exact: true }),
@@ -899,7 +972,7 @@ test('application global settings compose responsive light and dark defaults wit
       .getByRole('button', { name: 'Save application settings', exact: true })
       .click();
     await expect(
-      page.getByText('Application settings saved.', { exact: true }),
+      page.getByText('Application settings saved.', { exact: true }).last(),
     ).toBeVisible();
     expect(name).toBeNull();
   }

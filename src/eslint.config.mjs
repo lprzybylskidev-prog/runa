@@ -54,6 +54,17 @@ export default ts.config(
       globals: Object.fromEntries(
         [
           'Event',
+          'HTMLElement',
+          'HTMLInputElement',
+          'MouseEvent',
+          'AbortSignal',
+          'FormData',
+          'TextEncoder',
+          'URLSearchParams',
+          'getComputedStyle',
+          'ResizeObserver',
+          'setTimeout',
+          'clearTimeout',
           'File',
           'Blob',
           'URL',
@@ -84,6 +95,8 @@ export default ts.config(
     files: ['**/*.mjs', 'tests/frontend/{app,runa}/e2e/**/*.ts'],
     languageOptions: {
       globals: {
+        Buffer: 'readonly',
+        clearTimeout: 'readonly',
         process: 'readonly',
         console: 'readonly',
         URL: 'readonly',

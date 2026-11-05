@@ -28,6 +28,7 @@ const settle = async () => {
 type Trigger = { toggle: () => void; open: boolean; panelId: string };
 function trigger({ toggle, open, panelId }: Trigger) {
   return h(
+    'button',
     { onClick: toggle, 'aria-expanded': open, 'aria-controls': panelId },
     'Details',
   );
@@ -226,6 +227,7 @@ it('keeps errors persistent and restores the invoking control when closing a foc
       return () =>
         h('div', [
           h(
+            'button',
             { onClick: () => show({ title: 'Failure', tone: 'danger' }) },
             'Notify',
           ),

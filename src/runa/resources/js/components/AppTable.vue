@@ -103,12 +103,13 @@ const emit = defineEmits<{
 const slots = useSlots();
 const memory = new Map<string, string>();
 let initializingViews = true;
+let syncingColumns = false;
 const views = useTableViews({
   scope: { applicationId: 'runa', moduleKey: 'table', viewKey: 'current' },
   query: computed({
     get: () => props.query,
     set: (value) => {
-      if (!initializingViews) emit('update:query', value);
+      if (!initializingViews && !syncingColumns) emit('update:query', value);
     },
   }),
   columns: () => props.columns,
@@ -123,7 +124,23 @@ const views = useTableViews({
   }),
 });
 initializingViews = false;
-if (props.columnState) views.setColumns([...props.columnState]);
+watch(
+  () => props.columnState,
+  (columns) => {
+    if (
+      !columns ||
+      JSON.stringify(columns) === JSON.stringify(views.columns.value)
+    )
+      return;
+    syncingColumns = true;
+    try {
+      views.setColumns([...columns]);
+    } finally {
+      syncingColumns = false;
+    }
+  },
+  { immediate: true, deep: true },
+);
 const exportColumns = computed(() =>
   visibleColumns.value.flatMap((column) => {
     if (props.exportColumns)

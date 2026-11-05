@@ -14,7 +14,7 @@ BASELINE = ROOT / "docs/runa/maintainer/architecture/admin-contract-baseline.jso
 
 def signatures(source: str) -> dict[str, str]:
     """Normalize existing simple declarations, including promoted DTO constructors."""
-    result = {}
+    result: dict[str, str] = {}
     for match in re.finditer(
         r"public function (\w+)\((.*?)\)\s*(?::\s*([^\n{;]+))?\s*[{;]", source, re.S
     ):

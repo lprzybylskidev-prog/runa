@@ -33,8 +33,8 @@ const replacement = computed(
     }}</Alert>
   </Card>
   <component
-    v-else-if="replacement"
     :is="replacement"
+    v-else-if="replacement"
     :section="section"
     :page="page"
     :controller="controller"

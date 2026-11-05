@@ -106,11 +106,13 @@ COPY --chown=runa:runa src/runa/Providers/ runa/Providers/
 COPY --chown=runa:runa src/runa/Support/ runa/Support/
 COPY --chown=runa:runa src/runa/Configuration/ runa/Configuration/
 COPY --chown=runa:runa src/runa/Identity/ runa/Identity/
+COPY --chown=runa:runa src/runa/Images/ runa/Images/
 COPY --chown=runa:runa src/runa/Integration/ runa/Integration/
 COPY --chown=runa:runa src/runa/Logging/ runa/Logging/
 COPY --chown=runa:runa src/runa/Mail/ runa/Mail/
 COPY --chown=runa:runa src/runa/ModuleFramework/ runa/ModuleFramework/
 COPY --chown=runa:runa src/runa/Runtime/ runa/Runtime/
+COPY --chown=runa:runa src/runa/Settings/ runa/Settings/
 COPY --chown=runa:runa src/runa/modules/ runa/modules/
 COPY --chown=runa:runa src/runa/database/ runa/database/
 # Keep runtime diagnostics and persisted upgrade handlers; remove executable developer support.
@@ -183,11 +185,13 @@ COPY --chown=runa:runa src/runa/Providers/ /workspace/src/runa/Providers/
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/runa/Support/ /workspace/src/runa/Support/
 COPY --chown=runa:runa src/runa/Configuration/ /workspace/src/runa/Configuration/
 COPY --chown=runa:runa src/runa/Identity/ /workspace/src/runa/Identity/
+COPY --chown=runa:runa src/runa/Images/ /workspace/src/runa/Images/
 COPY --chown=runa:runa src/runa/Integration/ /workspace/src/runa/Integration/
 COPY --chown=runa:runa src/runa/Logging/ /workspace/src/runa/Logging/
 COPY --chown=runa:runa src/runa/Mail/ /workspace/src/runa/Mail/
 COPY --chown=runa:runa src/runa/ModuleFramework/ /workspace/src/runa/ModuleFramework/
 COPY --chown=runa:runa src/runa/Runtime/ /workspace/src/runa/Runtime/
+COPY --chown=runa:runa src/runa/Settings/ /workspace/src/runa/Settings/
 COPY --chown=runa:runa --from=php-dependencies /tmp/runa-build/src/runa/modules/ /workspace/src/runa/modules/
 COPY --chown=runa:runa src/bootstrap/ /workspace/src/bootstrap/
 COPY --chown=runa:runa src/runa/config/ /workspace/src/runa/config/

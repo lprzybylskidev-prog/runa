@@ -11,6 +11,9 @@ async function accountTransport(
 ) {
   let signedIn = true;
   let updates = 0;
+  await page.route('**/api/admin/entry', (route) =>
+    route.fulfill({ json: { data: { available: false } } }),
+  );
   await page.route('**/api/runa/auth/**', async (route) => {
     const path = new URL(route.request().url()).pathname;
     let status = 200;
@@ -339,21 +342,14 @@ for (const welcome of [true, false]) {
       await expect(trigger).toHaveAttribute('aria-label', /Anna Kowalska/);
       await expect(trigger.locator('.avatar-skeleton')).toBeVisible();
       await expect(trigger).not.toContainText('AK');
-      await trigger.click();
       const menuAvatar = page.locator('.account-menu-identity .runa-avatar');
-      await expect(menuAvatar.locator('.avatar-skeleton')).toBeVisible();
-      releaseProfile();
-      await expect(trigger.locator('img')).toHaveAttribute(
-        'src',
-        /profile\/avatar/,
-      );
+      await expect(trigger.locator('img')).toHaveCount(0);
       await expect(trigger.locator('.avatar-skeleton')).toBeVisible();
-      await expect(menuAvatar.locator('.avatar-skeleton')).toBeVisible();
       await page.screenshot({
         path: `../.runtime/artifacts/playwright/avatar-${path.slice(1)}-${welcome}-loading.png`,
         fullPage: true,
       });
-      for (const avatar of [trigger.locator('.runa-avatar'), menuAvatar]) {
+      for (const avatar of [trigger.locator('.runa-avatar')]) {
         await expect(avatar).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
         const pulse = avatar.locator('.avatar-skeleton span');
         const bounds = await pulse.boundingBox();
@@ -377,8 +373,15 @@ for (const welcome of [true, false]) {
         'animation-name',
         'none',
       );
+      releaseProfile();
       releaseImage();
       await expect(trigger.locator('img')).toBeVisible();
+      await expect(trigger.locator('img')).toHaveAttribute(
+        'src',
+        /profile\/avatar/,
+      );
+
+      await trigger.click();
       await expect(menuAvatar.locator('img')).toBeVisible();
       await expect(trigger.locator('.avatar-skeleton')).toHaveCount(0);
       await expect(menuAvatar.locator('.avatar-skeleton')).toHaveCount(0);
@@ -392,7 +395,7 @@ for (const welcome of [true, false]) {
         name: 'Ścieżka nawigacji',
       });
       await expect(breadcrumbs.locator('[aria-current="page"]')).toHaveText(
-        path === '/app' ? 'Aplikacja' : 'Panel użytkownika',
+        path === '/app' ? 'Aplikacja' : 'Konto i zabezpieczenia',
       );
       await expect(
         breadcrumbs.getByRole('link', { name: 'Strona główna', exact: true }),
@@ -508,7 +511,7 @@ for (const [width, theme, locale] of [
     );
     await page.goto('/account');
     await page
-      .getByRole('button', {
+      .getByRole('link', {
         name: locale === 'pl' ? 'Historia konta' : 'Account history',
         exact: true,
       })
