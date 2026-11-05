@@ -2009,8 +2009,8 @@ it('preferences expose header reset and explicit language/theme options with inl
     'Przywróć domyślne',
   );
   expect(
-    w.get('[data-preferences-display]').findAll('input[type=radio]'),
-  ).toHaveLength(5);
+    w.get('[data-preferences-display]').findAll('button[aria-haspopup=dialog]'),
+  ).toHaveLength(2);
   expect(w.find('[data-required-delivery]').exists()).toBe(false);
   expect(w.find('[data-delivery-category=required]').exists()).toBe(false);
   expect(w.get('[data-account-preferences]').classes()).not.toContain(
@@ -2144,10 +2144,10 @@ it('inline delivery conflicts refresh automatically and preserve the draft witho
   });
   await openPreferences(w);
   const row = w.get('[data-delivery-category=optional]');
-  await row.get('input[role=switch]').setValue(false);
   row
     .getComponent<MultiSelectInstance>(Select)
     .vm.$emit('update:modelValue', ['primary', other]);
+  await row.get('input[role=switch]').setValue(false);
   await flushPromises();
   categories[0]!.recipients = [other];
   write = () => json('version_conflict', 409);

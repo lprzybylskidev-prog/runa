@@ -22,7 +22,7 @@ final class AccountHistory
             'email.admin_verified' => ['verified'],
             'verification.completed' => ['email', 'verified'], 'invitation.completed' => ['email', 'verified'],
             'secondary.added' => ['email'], 'secondary.changed' => ['email'], 'secondary.removed' => ['email'],
-            'secondary.verified' => ['email', 'verified'],
+            'secondary.verified' => ['email', 'verified'], 'secondary.admin_verified' => ['email', 'verified'],
             'avatar.changed' => ['has_avatar'], 'avatar.removed' => ['has_avatar'],
             'delivery.preferences_changed' => ['category', 'enabled', 'recipients'],
             'delivery.preferences_reset' => ['category', 'enabled', 'recipients'],

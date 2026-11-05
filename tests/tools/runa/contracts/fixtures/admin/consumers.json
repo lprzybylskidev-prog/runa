@@ -3,7 +3,7 @@
   "status": "existing-public-boundary-fixtures",
   "cases": [
     {
-      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthProfiles; use Runa\\Modules\\Auth\\Contracts\\ProfileChange; use Runa\\Support\\Modules\\Api\\ModuleApis; function profile(ModuleApis $apis, string $id, int $version): void { $apis->resolve('runa.auth', AuthProfiles::class, '2.0.0')->edit($id, $version, new ProfileChange(name: 'Example')); }",
+      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthProfiles; use Runa\\Modules\\Auth\\Contracts\\ProfileChange; use Runa\\Support\\Modules\\Api\\ModuleApis; function profile(ModuleApis $apis, string $id, int $version): void { $apis->resolve('runa.auth', AuthProfiles::class, '2.1.0')->edit($id, $version, new ProfileChange(name: 'Example')); }",
       "expected": []
     },
     {

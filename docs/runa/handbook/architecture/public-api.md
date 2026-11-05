@@ -325,7 +325,7 @@ and MutationProof plus the container-owned ModuleTransactions adapter under
 Runa\Support\Modules\Data. Follow [owning module transactions](module-transactions.md)
 for complete source-only signatures, owner phases and admission; objects are never
 HTTP callbacks or ModuleApis values. TransactionSecurity is a reserved fixed
-framework/Core bridge. AuthProfiles 2.0.0 and PermissionsAccess 2.1.0 are guarded APIs; callers use their owning current contracts, not a v1 compatibility alias.
+framework/Core bridge. AuthProfiles 2.1.0 and PermissionsAccess 2.1.0 are guarded APIs; callers use their owning current contracts, not a v1 compatibility alias.
 
 The public ManagementParticipant source contract supplies
 prepare(ManagementWrite): TransactionalMutation and project(array): ManagementOutcome.

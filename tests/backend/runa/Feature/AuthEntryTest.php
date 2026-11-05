@@ -1070,7 +1070,7 @@ it('requires dedicated permission fresh both factor proof and configured bypass 
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
     [$secret, $codes] = credentialEnroll($this, $actor);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.0.0');
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
     expect(fn () => $api->replaceVerifiedEmail($target->public_id, 1, 'bypass@example.test'))->toThrow(OperationRejected::class);
     app()->instance('request', credentialRequest('/'));
     $bypass = fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => app(ManageProfiles::class)->replaceVerifiedEmail($target->public_id, 1, 'bypass@example.test'));
@@ -2026,4 +2026,98 @@ it('counts filtered directory results before cursors and preserves deleted-read 
         expect(fn () => $api->users(new UserDirectoryQuery(state: 'deleted')))->toThrow(OperationRejected::class);
         expect(fn () => $api->users(new UserDirectoryQuery(state: 'all')))->toThrow(OperationRejected::class);
     });
+});
+
+it('administratively confirms existing primary email with guarded permission proof rollback and session revocation', function (): void {
+    entryPolicy(['admin_email_verification_bypass' => true]);
+    $target = profileVerified('existing-primary@example.test');
+    entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
+    $target->email_verified_at = null;
+    $target->verification_forced = true;
+    DB::transaction(fn () => $target->save());
+    $actor = profileVerified('existing-primary-admin@example.test');
+    entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
+    [, $codes] = credentialEnroll($this, $actor);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
+    $verify = fn (int $version = 1) => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $api->verifyEmail($target->public_id, $version));
+    app()->instance('request', credentialRequest('/'));
+    expect($verify)->toThrow(OperationRejected::class);
+    $verify = fn (int $version = 1) => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => app(ManageProfiles::class)->verifyEmail($target->public_id, $version));
+    app()->bind(OperationAuthorizer::class, fn () => new class implements OperationAuthorizer
+    {
+        public function allows(OperationContext $context, string $permission): bool
+        {
+            return $permission === 'runa.auth.emails.verify_bypass';
+        }
+    });
+    expect($verify)->toThrow(OperationRejected::class);
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.email.admin_bypass', 'requirement' => 'both', 'current_password' => 'a-long-test-password', 'method' => 'recovery', 'code' => $codes[0]])->assertOk();
+    app()->instance('request', credentialRequest('/'));
+    entryPolicy(['admin_email_verification_bypass' => false]);
+    expect($verify)->toThrow(OperationRejected::class);
+    entryPolicy(['admin_email_verification_bypass' => true]);
+    expect(fn () => $verify(99))->toThrow(IdentityConflict::class);
+    DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT verification_fixture_refusal CHECK (false) NOT VALID');
+    expect($verify)->toThrow(AuditUnavailable::class);
+    expect($target->fresh()->email_verified_at)->toBeNull()
+        ->and($target->fresh()->version)->toBe(1)
+        ->and(DB::table('runa_auth.sessions')->where('user_id', $target->id)->whereNull('revoked_at')->count())->toBe(1);
+    DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT verification_fixture_refusal');
+    app()->forgetInstance(OperationGuard::class);
+    app()->forgetInstance(ModuleApis::class);
+    $allowedApi = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
+    expect(app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $allowedApi->verifyEmail($target->public_id, 1)))->toBeTrue();
+    expect($target->fresh()->email)->toBe($target->email)
+        ->and($target->fresh()->email_verified_at)->not->toBeNull()
+        ->and($target->fresh()->verification_forced)->toBeFalse()
+        ->and($target->fresh()->version)->toBe(2)
+        ->and(DB::table('runa_auth.sessions')->where('user_id', $target->id)->whereNull('revoked_at')->count())->toBe(0)
+        ->and(DB::table('runa_audit.events')->where('action', 'email.admin_verified')->count())->toBe(1);
+    expect(fn () => $verify(2))->toThrow(OperationRejected::class);
+});
+
+it('administratively confirms only current owned secondary addresses and invalidates links with atomic Audit', function (): void {
+    entryPolicy(['secondary_emails_enabled' => true, 'admin_email_verification_bypass' => true]);
+    $target = profileVerified('existing-secondary@example.test');
+    $other = profileVerified('existing-secondary-other@example.test');
+    $manager = app(ManageProfiles::class);
+    $address = $manager->addSecondary($target->public_id, 1, 'existing-notification@example.test');
+    $secret = profileSecret('secondary');
+    $foreign = $manager->addSecondary($other->public_id, 1, 'foreign-notification@example.test');
+    $actor = profileVerified('existing-secondary-admin@example.test');
+    entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
+    [, $codes] = credentialEnroll($this, $actor);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
+    app()->bind(OperationAuthorizer::class, fn () => new class implements OperationAuthorizer
+    {
+        public function allows(OperationContext $context, string $permission): bool
+        {
+            return $permission === 'runa.auth.emails.verify_bypass';
+        }
+    });
+    expect(fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $api->verifySecondary($target->public_id, 2, $address)))->toThrow(OperationRejected::class);
+    $verify = fn (string $id) => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $manager->verifySecondary($target->public_id, 2, $id));
+    app()->instance('request', credentialRequest('/'));
+    expect(fn () => $verify($address))->toThrow(OperationRejected::class);
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.email.admin_bypass', 'requirement' => 'both', 'current_password' => 'a-long-test-password', 'method' => 'recovery', 'code' => $codes[0]])->assertOk();
+    app()->instance('request', credentialRequest('/'));
+    expect(fn () => $verify($foreign))->toThrow(OperationRejected::class);
+    entryPolicy(['secondary_emails_enabled' => false]);
+    expect(fn () => $verify($address))->toThrow(OperationRejected::class);
+    entryPolicy(['secondary_emails_enabled' => true]);
+    DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT secondary_verify_fixture_refusal CHECK (false) NOT VALID');
+    expect(fn () => $verify($address))->toThrow(AuditUnavailable::class);
+    expect(DB::table('runa_auth.secondary_emails')->where('public_id', $address)->value('verified_at'))->toBeNull()
+        ->and($target->fresh()->version)->toBe(2);
+    DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT secondary_verify_fixture_refusal');
+    app()->forgetInstance(OperationGuard::class);
+    app()->forgetInstance(ModuleApis::class);
+    $allowedApi = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
+    expect(app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $allowedApi->verifySecondary($target->public_id, 2, $address)))->toBeTrue();
+    expect($manager->notificationEmails($target->public_id))->toBe(['existing-notification@example.test'])
+        ->and($target->fresh()->version)->toBe(3)
+        ->and(DB::table('runa_auth.profile_mail')->where('token_hash', hash('sha256', $secret))->value('consumed_at'))->not->toBeNull()
+        ->and(DB::table('runa_audit.events')->where('action', 'secondary.admin_verified')->count())->toBe(1);
+    $this->postJson('/api/runa/auth/email/complete', ['token' => $secret])->assertUnprocessable();
+    expect(fn () => $verify($address))->toThrow(OperationRejected::class);
 });

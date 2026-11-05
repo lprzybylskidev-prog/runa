@@ -25,7 +25,6 @@ import {
   FormNotifications,
   RadioGroup,
   TextInput,
-  FormSection,
   formValuesEqual,
   formatApplicationInstant,
 } from '@/runa/ui';
@@ -838,9 +837,10 @@ const fieldTitle = (key: string) =>
               :busy="controller.busy.value"
             />
             <template v-if="kind === 'preferences'">
-              <FormSection
-                :title="text('Wygląd i język', 'Appearance and language')"
-              >
+              <section class="space-y-3">
+                <h3 class="text-sm font-semibold">
+                  {{ text('Wygląd i język', 'Appearance and language') }}
+                </h3>
                 <AuthDisplayPreferenceFields
                   :locale="locale"
                   :language="String(get('locale') ?? 'pl')"
@@ -849,16 +849,19 @@ const fieldTitle = (key: string) =>
                   @update:language="set('locale', $event)"
                   @update:theme="set('theme', $event)"
                 />
-              </FormSection>
-              <FormSection
+              </section>
+              <section
                 v-if="categories.length"
-                :title="text('Powiadomienia e-mail', 'Email notifications')"
+                class="space-y-3 border-t border-line pt-4"
               >
+                <h3 class="text-sm font-semibold">
+                  {{ text('Powiadomienia e-mail', 'Email notifications') }}
+                </h3>
                 <div v-if="categories.length" class="divide-y divide-line">
                   <AuthEmailPreferenceFields
                     v-for="category in categories"
                     :key="String(category.module) + ':' + String(category.key)"
-                    class="py-5 first:pt-0 last:pb-0"
+                    class="py-3 first:pt-0 last:pb-0"
                     :locale="locale"
                     :label="
                       category.names &&
@@ -891,7 +894,7 @@ const fieldTitle = (key: string) =>
                     "
                   />
                 </div>
-              </FormSection>
+              </section>
             </template>
             <AuthAdminAvatar
               v-if="kind === 'avatar'"

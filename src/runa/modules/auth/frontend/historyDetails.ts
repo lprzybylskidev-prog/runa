@@ -92,6 +92,10 @@ export const historyEventNames: Record<string, readonly [string, string]> = {
     'Usunięcie dodatkowego adresu e-mail',
     'Secondary email removed',
   ],
+  'secondary.admin_verified': [
+    'Administrator potwierdził dodatkowy adres e-mail',
+    'Secondary email verified by administrator',
+  ],
   'secondary.verified': [
     'Potwierdzenie dodatkowego adresu e-mail',
     'Secondary email verified',

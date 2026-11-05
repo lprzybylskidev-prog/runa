@@ -126,7 +126,7 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | directory / lifecycle           | AuthAdministration; `users.read`, extra `users.deleted.read` as above                                                                   | Bounded cursors / current account version                                                                                                                                               |
 | eligibility                     | AuthIdentities; `eligibility.read`                                                                                                      | Current blockers/restrictions; no credential projection                                                                                                                                 |
-| profile / access                | AuthProfiles 2.0.0 / Permissions contribution                                                                                           | Native standalone form or complete aggregate Save; [composition](../admin/composition.md)                                                                                               |
+| profile / access                | AuthProfiles 2.1.0 / Permissions contribution                                                                                           | Native standalone form or complete aggregate Save; [composition](../admin/composition.md)                                                                                               |
 | creation                        | AuthLifecycle 2.1.0 create; `users.create`, `invitations.manage` for invitation, `emails.verify_bypass` for administrative verification | No subject, revision 0; configured creation uses single-use `runa.auth.users.create` (password, both factors for administrative verification), current password policy and atomic Audit |
 | lifecycle change                | AuthLifecycle.change; `users.manage`                                                                                                    | Exact account version; explicit confirmation, last-eligible administrator and identifier reuse/restore checks                                                                           |
 | invitation / invalidate         | AuthInvitations; `invitations.manage`                                                                                                   | Exact version, resend rotates private token; invalidate confirms; no secret result                                                                                                      |
@@ -549,3 +549,34 @@ discovery uses ContentLoading. Independent bulk review/execute and retry control
 bind their own activity. Account status/email retries preserve revealed content
 with local refresh feedback. Meaningful reset scope, schedule-clear instructions,
 skipped-target reasons and persistent failures remain actionable feedback.
+
+### Ordered account operations and administrative confirmation
+
+Default single-user and bulk action panels share one private Auth presentation
+order: activity/schedules, locks, email/invitations, password/authentication,
+sessions/devices, preferences/exceptions, deletion/restoration. Each nonempty
+category has a small heading and subtle separator; unavailable categories are
+omitted. Existing grouped operation selectors retain their native reviewed commands.
+Account status groups project authorized facts in a fixed sequence: activity,
+locks, email, password/authentication, sessions/devices and invitation. Additional
+authorized facts retain a final section rather than disappearing. Field grants,
+configuration and current values remain backend-owned.
+
+An unverified primary address offers explicit administrative confirmation beside
+its change action. Each pending secondary address offers its own Verify action;
+verified rows omit it. These use AuthProfiles 2.1.0 `verifyEmail` and
+`verifySecondary`, with the exact [profile confirmation contract](profile.md#administrative-confirmation-of-existing-addresses).
+Admin secondary confirmation additionally requires `secondary.manage` for its
+selected-address input. The command dialog requests both-factor proof only after
+explicit submission. Row operations preserve unrelated address drafts. Neither
+administrative confirmation action is available in self-service.
+The primary confirmation dialog explains its session and trusted-device revocation.
+
+Preferences use the shared compact language/theme Selects and notification rows
+without nested bordered sections; wider rows align the category and recipient
+selector, while mobile stacks them. Admin retains one atomic Save/Revert and own
+account retains automatic display persistence and independent notification drafts.
+Public parent presentation replacement and value/event contracts are unchanged;
+`AuthSecondaryEmailFields` adds optional `canVerify` and `verify(publicId: string)`.
+The internal action-group component is composed by the supplied Auth defaults,
+not a separate public authorization or command API.

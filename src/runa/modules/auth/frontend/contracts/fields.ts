@@ -40,6 +40,7 @@ export interface AuthSecondaryEmailFieldsProps {
   canAdd?: boolean;
   canChange?: boolean;
   canRemove?: boolean;
+  canVerify?: boolean;
   error?: string | readonly string[];
   conflicted?: boolean;
 }

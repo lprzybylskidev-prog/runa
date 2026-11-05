@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Organize Auth single/bulk actions with one thematic order and subtle separators, group account facts and compact own/Admin preferences. Add explicit primary/secondary administrative confirmation through AuthProfiles 2.1.0 with native grants, fresh proof, concurrency and atomic Audit.
+
 - Complete access-editor interaction states: pointer/hover/pressed/focus on custom buttons, inherited checkbox cursors and truthful disabled row/page affordances.
 
 - Refine access-editor proportions with compact bounded search, label-sized category controls, quieter filters/counters and lighter row/pagination chrome across desktop/mobile themes.

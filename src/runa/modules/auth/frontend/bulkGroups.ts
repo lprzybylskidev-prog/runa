@@ -70,3 +70,86 @@ export function authActionTone(
     return 'warning';
   return 'primary';
 }
+
+/** One thematic order for single-account and selected-account commands. */
+export const authActionSections = [
+  {
+    key: 'activity',
+    title: { pl: 'Aktywność i terminy', en: 'Activity and schedules' },
+    commands: [
+      'activate',
+      'deactivate',
+      'toggle_activation',
+      'schedule_activation',
+      'schedule_deactivation',
+    ],
+  },
+  {
+    key: 'locks',
+    title: { pl: 'Blokady', en: 'Locks' },
+    commands: ['set_attempt_lock', 'set_security_lock', 'toggle_security_lock'],
+  },
+  {
+    key: 'email',
+    title: { pl: 'E-mail i zaproszenia', en: 'Email and invitations' },
+    commands: [
+      'verify_email',
+      'require_verification',
+      'invite',
+      'invalidate_invitation',
+    ],
+  },
+  {
+    key: 'credentials',
+    title: {
+      pl: 'Hasło i uwierzytelnianie',
+      en: 'Password and authentication',
+    },
+    commands: ['require_password_change', 'password_reset', 'factor_reset'],
+  },
+  {
+    key: 'sessions',
+    title: { pl: 'Sesje i urządzenia', en: 'Sessions and devices' },
+    commands: ['revoke', 'revoke_trust'],
+  },
+  {
+    key: 'preferences',
+    title: { pl: 'Preferencje i wyjątki', en: 'Preferences and exceptions' },
+    commands: ['reset_preferences', 'remove_avatar', 'revoke_exceptions'],
+  },
+  {
+    key: 'deletion',
+    title: { pl: 'Usuwanie i przywracanie', en: 'Deletion and restoration' },
+    commands: ['delete', 'restore', 'toggle_deletion'],
+  },
+];
+
+export function groupAuthActions<T>(
+  items: readonly T[],
+  command: (item: T) => string,
+) {
+  const groups = authActionSections.map((group) => ({
+    key: group.key,
+    title: group.title,
+    items: items
+      .filter((item) => group.commands.includes(command(item)))
+      .sort(
+        (a, b) =>
+          group.commands.indexOf(command(a)) -
+          group.commands.indexOf(command(b)),
+      ),
+  }));
+  const other = items.filter(
+    (item) =>
+      !authActionSections.some((group) =>
+        group.commands.includes(command(item)),
+      ),
+  );
+  if (other.length)
+    groups.push({
+      key: 'other',
+      title: { pl: 'Pozostałe akcje', en: 'Other actions' },
+      items: other,
+    });
+  return groups.filter((group) => group.items.length);
+}

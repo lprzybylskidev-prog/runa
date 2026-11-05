@@ -8,9 +8,13 @@ const emit = defineEmits<{
 }>();
 </script>
 <template>
-  <div class="min-w-0 space-y-3" data-auth-email-preference-fields>
-    <div class="min-w-0 font-semibold [overflow-wrap:anywhere]">
+  <div
+    class="grid min-w-0 items-center gap-x-5 gap-y-2 sm:grid-cols-[minmax(0,1fr)_minmax(12rem,20rem)]"
+    data-auth-email-preference-fields
+  >
+    <div class="min-w-0 [overflow-wrap:anywhere]">
       <Switch
+        compact
         :label="label"
         :model-value="enabled"
         :disabled="disabled"

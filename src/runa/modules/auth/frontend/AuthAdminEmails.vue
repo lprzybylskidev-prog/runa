@@ -252,16 +252,31 @@ function remove(publicId: string) {
             {{ get('primary_email', 'current_email') ?? '—' }}
           </p>
         </div>
-        <Button
-          v-if="available(primary, 'change') || available(primary, 'replace')"
-          size="sm"
-          variant="outline"
-          :disabled="
-            controller.busy.value || !controller.records.value.primary_email
-          "
-          @click="open()"
-          >{{ text('Zmień adres', 'Change email') }}</Button
-        >
+        <div class="flex flex-wrap gap-2">
+          <Button
+            v-if="
+              get('primary_email', 'verified') === false &&
+              available(primary, 'verify')
+            "
+            size="sm"
+            variant="outline"
+            :disabled="controller.busy.value"
+            @click="emit('operation', 'primary_email', 'verify', {})"
+            >{{
+              text('Potwierdź jako administrator', 'Verify as administrator')
+            }}</Button
+          >
+          <Button
+            v-if="available(primary, 'change') || available(primary, 'replace')"
+            size="sm"
+            variant="outline"
+            :disabled="
+              controller.busy.value || !controller.records.value.primary_email
+            "
+            @click="open()"
+            >{{ text('Zmień adres', 'Change email') }}</Button
+          >
+        </div>
       </div>
       <AuthSecondaryEmailFields
         v-if="secondary && controller.records.value.secondary"
@@ -275,6 +290,7 @@ function remove(publicId: string) {
         :can-add="available(secondary, 'add')"
         :can-change="available(secondary, 'change')"
         :can-remove="available(secondary, 'remove')"
+        :can-verify="available(secondary, 'verify')"
         :conflicted="!!secondaryConflicts.length"
         :error="
           (
@@ -286,6 +302,9 @@ function remove(publicId: string) {
         @update:email="secondaryEmail = $event"
         @edit="editSecondary"
         @resend="resendSecondary"
+        @verify="
+          emit('operation', 'secondary', 'verify', { address_id: $event })
+        "
         @remove="remove"
         @submit="submitSecondary"
         @cancel="cancelSecondary"

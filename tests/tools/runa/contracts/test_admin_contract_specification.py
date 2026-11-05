@@ -53,11 +53,18 @@ def test_current_core_methods_declare_versions_permissions_and_audiences() -> No
         )
         assert declaration is not None
         assert declaration[1] == api["contract"].rsplit("\\", 1)[1]
-        expected_version = (
-            "2.0.0"
-            if api["contract"].rsplit("\\", 1)[1] in {"AuthProfiles", "PermissionsAccess"}
-            else api["api_version"]
-        )
+        # The activation ledger is historical; current source-owned API versions
+        # include the additive and pre-1.0 revisions delivered by this roadmap.
+        expected_version = {
+            "AuthLifecycle": "2.1.0",
+            "AuthSecurity": "1.1.0",
+            "AuthStepUp": "1.1.0",
+            "AuthProfiles": "2.1.0",
+            "AuthPreferences": "1.1.0",
+            "AuthPolicies": "1.1.0",
+            "AuthBulkSessions": "2.0.0",
+            "PermissionsAccess": "2.1.0",
+        }.get(api["contract"].rsplit("\\", 1)[1], api["api_version"])
         assert declaration[2] == expected_version
         assert f"use {api['contract']};" in definition
         manifest = json.loads((ROOT / api["source"]).parents[2].joinpath("module.json").read_text())

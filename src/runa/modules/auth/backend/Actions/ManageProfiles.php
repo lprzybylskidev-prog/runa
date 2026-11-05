@@ -52,6 +52,38 @@ final readonly class ManageProfiles implements AuthProfiles
         }, 'runa.auth.email.admin_bypass');
     }
 
+    public function verifyEmail(string $publicId, int $expectedVersion): bool
+    {
+        return $this->target($publicId, $expectedVersion, function (Connection $connection, User $user): bool {
+            $this->assertAdministrativeVerification();
+            if ($this->profiles->value('email_verification') === 'disabled') {
+                throw new OperationRejected('email_bypass_disabled', 'runa.auth', 'email.admin_verify', 403);
+            }
+            $this->addresses->verifyPrimaryLocked($connection, $user);
+
+            return true;
+        }, 'runa.auth.email.admin_bypass');
+    }
+
+    public function verifySecondary(string $publicId, int $expectedVersion, string $addressId): bool
+    {
+        new TrustedPrincipal($addressId);
+
+        return $this->target($publicId, $expectedVersion, function (Connection $connection, User $user) use ($addressId): bool {
+            $this->assertAdministrativeVerification();
+            $this->addresses->verifySecondaryLocked($connection, $user, $addressId);
+
+            return true;
+        }, 'runa.auth.email.admin_bypass');
+    }
+
+    private function assertAdministrativeVerification(): void
+    {
+        if (! $this->profiles->value('admin_email_verification_bypass')) {
+            throw new OperationRejected('email_bypass_disabled', 'runa.auth', 'email.admin_verify', 403);
+        }
+    }
+
     public function requireVerification(string $publicId, int $expectedVersion): bool
     {
         return $this->target($publicId, $expectedVersion, function (Connection $connection, User $user): bool {

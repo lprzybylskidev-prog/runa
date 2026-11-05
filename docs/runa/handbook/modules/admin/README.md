@@ -170,7 +170,7 @@ the administrative behavior and boundaries.
 
 The owner approved direct native Auth/Permissions/framework refactoring on
 2026-10-30. The [phased transaction contract](../../architecture/module-transactions.md)
-supersedes the earlier unchanged-API composition proposal. AuthProfiles 2.0.0 and
+supersedes the earlier unchanged-API composition proposal. AuthProfiles 2.1.0 and
 PermissionsAccess 2.1.0 ship with independent Auth 3.1.0 and Permissions 2.1.0; standalone
 writes have a root boundary, while source composition joins native phases.
 Auth/Permissions require platform >=0.7.0 <0.8.0. Audit develops as independent 1.1.0 with unchanged guarded read/record signatures.

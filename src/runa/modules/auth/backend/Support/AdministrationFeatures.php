@@ -44,7 +44,8 @@ final readonly class AdministrationFeatures
     {
         return match ($section.'.'.$command) {
             'primary_email.require_verification' => $this->enabled('verification'),
-            'primary_email.replace' => $this->enabled('email_bypass'),
+            'primary_email.replace', 'primary_email.verify' => $this->enabled('email_bypass'),
+            'secondary.verify' => $this->enabled('secondary') && $this->settings->boolean('runa.auth', 'admin_email_verification_bypass'),
             'security.factor_reset' => $this->enabled('factors'),
             default => true,
         };

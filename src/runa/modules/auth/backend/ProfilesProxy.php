@@ -33,6 +33,22 @@ final class ProfilesProxy extends GuardedApi implements AuthProfiles
         return $result;
     }
 
+    public function verifyEmail(string $publicId, int $expectedVersion): bool
+    {
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion]);
+
+        return $result;
+    }
+
+    public function verifySecondary(string $publicId, int $expectedVersion, string $addressId): bool
+    {
+        /** @var bool $result */
+        $result = $this->invoke(__FUNCTION__, [$publicId, $expectedVersion, $addressId]);
+
+        return $result;
+    }
+
     public function requireVerification(string $publicId, int $expectedVersion): bool
     {
         /** @var bool $result */

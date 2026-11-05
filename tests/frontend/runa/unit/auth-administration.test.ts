@@ -1751,3 +1751,263 @@ it('compact access editor can remove unavailable assignments and bulk selection 
     id(61),
   ]);
 });
+
+it('groups account actions consistently regardless of input order and preserves unknown actions', async () => {
+  const { groupAuthActions } =
+    await import('../../../../src/runa/modules/auth/frontend/bulkGroups');
+  const commands = [
+    'delete',
+    'revoke',
+    'factor_reset',
+    'invite',
+    'set_security_lock',
+    'activate',
+    'schedule_activation',
+    'custom',
+  ];
+  const single = groupAuthActions(commands, (command) => command);
+  const bulk = groupAuthActions([...commands].reverse(), (command) => command);
+  expect(single).toEqual(bulk);
+  expect(single.map((group) => group.key)).toEqual([
+    'activity',
+    'locks',
+    'email',
+    'credentials',
+    'sessions',
+    'deletion',
+    'other',
+  ]);
+});
+
+it('places account status facts in thematic groups without dropping unknown projected facts', async () => {
+  const { default: Status } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserStatus.vue');
+  const lifecycle = section('lifecycle', [
+    { ...field('deleted'), type: 'boolean' },
+    { ...field('invitation_pending'), type: 'boolean' },
+    { ...field('password_set'), type: 'boolean' },
+    { ...field('active'), type: 'boolean' },
+    { ...field('verified'), type: 'boolean' },
+    { ...field('session_count'), type: 'integer' },
+    field('custom_fact'),
+  ]);
+  const controller = page([lifecycle]);
+  vi.spyOn(window, 'fetch').mockResolvedValue(
+    response({
+      public_id: target,
+      revision: '1',
+      values: {
+        active: true,
+        deleted: false,
+        verified: false,
+        password_set: true,
+        session_count: 1,
+        invitation_pending: false,
+        custom_fact: 'Extra',
+      },
+    }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () =>
+          h(Status, {
+            page: controller,
+            controller: form,
+            section: lifecycle,
+            sources: [lifecycle],
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Extra'));
+  expect(
+    wrapper
+      .findAll('[data-status-group]')
+      .map((group) => group.attributes('data-status-group')),
+  ).toEqual([
+    'lifecycle',
+    'email',
+    'credentials',
+    'sessions',
+    'invitations',
+    'other',
+  ]);
+  expect(
+    wrapper.get('[data-status-group=lifecycle]').text().indexOf('active'),
+  ).toBeLessThan(
+    wrapper.get('[data-status-group=lifecycle]').text().indexOf('deleted'),
+  );
+});
+
+it('offers explicit administrative verification for pending addresses without overwriting email drafts', async () => {
+  const { default: Emails } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminEmails.vue');
+  const primary = section('primary_email', [
+    field('current_email'),
+    { ...field('verified'), type: 'boolean' },
+  ]);
+  const secondary = section('secondary', [
+    field('addresses'),
+    { ...field('secondary_email_limit'), type: 'integer' },
+    field('address_id', false),
+    field('email', false),
+  ]);
+  for (const source of [primary, secondary])
+    source.commands = [
+      {
+        key: 'verify',
+        title: 'Verify',
+        mode: 'independent',
+        intent: 'action',
+        inputs: source === primary ? [] : ['address_id'],
+        requirement: 'both',
+        action: 'runa.auth.email.admin_bypass',
+        destructive: true,
+        bulk: false,
+        preview_required: false,
+        available: true,
+      },
+    ];
+  const controller = page([primary, secondary]);
+  const sources = ref([primary, secondary]);
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    response({
+      public_id: target,
+      revision: '1',
+      values: new URL(String(input), window.location.origin).pathname.endsWith(
+        '/primary_email',
+      )
+        ? { current_email: 'primary@example.test', verified: false }
+        : {
+            addresses: JSON.stringify([
+              {
+                public_id: target,
+                email: 'pending@example.test',
+                verified: false,
+              },
+              {
+                public_id: actor,
+                email: 'verified@example.test',
+                verified: true,
+              },
+            ]),
+            secondary_email_limit: 5,
+            address_id: null,
+            email: 'unsaved@example.test',
+          },
+    }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () =>
+          h(Emails, {
+            page: controller,
+            controller: form,
+            section: primary,
+            sources: sources.value,
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain('pending@example.test'),
+  );
+  const component = wrapper.findComponent(Emails);
+  await wrapper
+    .get('button[aria-label="Verify as administrator: pending@example.test"]')
+    .trigger('click');
+  expect(component.emitted('operation')?.[0]).toEqual([
+    'secondary',
+    'verify',
+    { address_id: target },
+  ]);
+  expect(
+    wrapper
+      .find(
+        'button[aria-label="Verify as administrator: verified@example.test"]',
+      )
+      .exists(),
+  ).toBe(false);
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Verify as administrator')!
+    .trigger('click');
+  expect(component.emitted('operation')?.[1]).toEqual([
+    'primary_email',
+    'verify',
+    {},
+  ]);
+  secondary.commands[0]!.available = false;
+  primary.commands[0]!.available = false;
+  sources.value = [{ ...primary }, { ...secondary }];
+  await nextTick();
+  expect(
+    wrapper.find('button[aria-label^="Verify as administrator:"]').exists(),
+  ).toBe(false);
+});
+
+it('explains session and device revocation before confirming an existing primary address', async () => {
+  const { default: Details } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserDetails.vue');
+  const primary = section('primary_email', [
+    field('current_email'),
+    { ...field('verified'), type: 'boolean' },
+  ]);
+  primary.commands = [
+    {
+      key: 'verify',
+      title: 'Verify primary email',
+      mode: 'independent',
+      intent: 'action',
+      inputs: [],
+      requirement: 'both',
+      action: 'runa.auth.email.admin_bypass',
+      destructive: true,
+      bulk: false,
+      preview_required: false,
+      available: true,
+    },
+  ];
+  const controller = page([primary]);
+  vi.spyOn(window, 'fetch').mockResolvedValue(
+    response({
+      public_id: target,
+      revision: '1',
+      values: { current_email: 'pending@example.test', verified: false },
+    }),
+  );
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () => h(Details, { controller, form });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain('Verify as administrator'),
+  );
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Verify as administrator')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(document.querySelector('[role=dialog]')?.textContent).toContain(
+      'signs the user out of all sessions and revokes trusted devices',
+    ),
+  );
+  expect(document.querySelector('input[type=password]')).toBeNull();
+});

@@ -173,8 +173,8 @@ Legacy trust tab/choose/submit seams remain for custom presentations; new indepe
 trusted-device state/actions are documented in the public presentation contract.
 
 Preferences stacks appearance/language and email Cards at every width, with the confirmed full-reset
-action at the right of its page heading. This view uses explicit language/theme
-RadioGroups rather than the shell's compact cycling buttons. It retains automatic
+action at the right of its page heading. This view uses two compact, bounded language/theme Selects, side by side on
+desktop and stacked on mobile. It retains automatic
 account persistence and the same cover/apply/focus sequence; choosing the current
 value does not save or animate. Shell controls retain their existing behavior.
 
@@ -386,14 +386,15 @@ the composing account/Admin controller retains those responsibilities.
 - `AuthDisplayPreferenceFields` takes `AuthDisplayPreferenceFieldsProps`:
   `locale: 'pl'|'en'`, `language: string`, `theme: string`, `disabled?: boolean`.
   Events: `update:language(value: string)`, `update:theme(value: string)`.
-  It renders the same Interface language and System/Light/Dark radio groups in
+  It renders the same compact Interface language and System/Light/Dark Selects in
   own-account and selected-account preferences.
 - `AuthEmailPreferenceFields` takes `AuthEmailPreferenceFieldsProps`:
   `locale: 'pl'|'en'`, `label: string`, `enabled: boolean`, `recipients: string[]`,
   `options: {value:string,label:string}[]`, `error?: string|readonly string[]`,
   `disabled?: boolean`, `recipientSelection?: boolean` (false). Events: `update:enabled(value: boolean)` and
   `update:recipients(value: string[])`. It shares the category Switch and compact
-  multiple Send to selector. Disabled optional categories retain their Switch
+  multiple Send to selector, aligned beside the category on desktop and stacked
+  on mobile with compact row spacing. Disabled optional categories retain their Switch
   and omit recipients. The recipient selector also requires explicit
   `recipientSelection=true` from the owning secondary-email capability and more
   than one address; stale recipient options never override a disabled capability.
@@ -418,10 +419,10 @@ drafts, capability admission, removal confirmation, security proof and writes.
 `AuthSecondaryEmailFieldsProps` takes `locale: 'pl'|'en'`,
 `addresses: readonly {public_id: string; email: string; verified: boolean}[]`,
 `limit: number`, `email: string`, `editing?: string|null`, `busy?: boolean`,
-`canAdd?: boolean`, `canChange?: boolean`, `canRemove?: boolean`,
+`canAdd?: boolean`, `canChange?: boolean`, `canRemove?: boolean`, `canVerify?: boolean`,
 `error?: string|readonly string[]`, `conflicted?: boolean`.
 Events: `update:email(value: string)`, `edit(publicId: string)`,
-`resend(publicId: string)`, `remove(publicId: string)`, `submit()`, `cancel()`.
+`resend(publicId: string)`, `verify(publicId: string)`, `remove(publicId: string)`, `submit()`, `cancel()`.
 The `before-field` slot hosts controller-owned conflict resolution. Exposed
 `focusInvalid()` and `focusEmail()` support asynchronous error/edit focus.
 Capabilities default false; busy defaults false. The editor performs immediate

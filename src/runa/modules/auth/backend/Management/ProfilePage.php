@@ -69,7 +69,7 @@ final class ProfilePage implements ManagementPageProvider
     {
         return [new ManagementBinding('profile', ProfileEditor::class, [
             new ManagementApiTarget('runa.auth', AuthIdentities::class, '1.0.0', ['identity']),
-            new ManagementApiTarget('runa.auth', AuthProfiles::class, '2.0.0', ['edit']),
+            new ManagementApiTarget('runa.auth', AuthProfiles::class, '2.1.0', ['edit']),
         ], ProfileEditor::class)];
     }
 }

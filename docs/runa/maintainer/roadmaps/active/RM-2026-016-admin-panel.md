@@ -995,6 +995,16 @@ reassessment before resuming point 3; completed point history remains evidence.
     hover/pressed/focus treatment and truthful disabled cursors.
   - Verify computed browser states with current assets, synchronize presentation
     guidance and commit before repeating owner acceptance.
+- [x] 11a76. Organize account actions/status, add administrative address confirmation and compact preferences.
+  - Share thematic action order/separators between user details and bulk actions;
+    group account facts by lifecycle, email, credentials, sessions and invitations.
+  - Confirm existing primary/secondary addresses through Auth-owned guarded APIs,
+    current administrative verification configuration/grants, fresh both-factor
+    proof, ownership/version checks and transactional Audit; never expose own bypass.
+  - Compact shared appearance and notification controls in Admin and own account,
+    retaining independent drafts, reconciliation, accessibility and recipient rules.
+  - Synchronize public contracts/guidance and focused regression evidence; prepare
+    current assets for owner review. Final broad verification remains point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -6979,3 +6989,80 @@ implementation-mirroring tests or backend/broad checks; final verification remai
 12 and owner acceptance remains 11b. Mandatory staged hooks and knowledge freshness
 accompany the commit. No disposable Docker/database resources were created; active
 services, development/base test data, caches and evidence are preserved.
+
+### Point 11a76 — Ordered account operations, administrative confirmation and compact preferences
+
+The owner requests consistent thematic ordering/separators in individual and bulk
+operations, logical account-status facts, explicit administrative confirmation of
+existing primary/secondary addresses, and tighter preferences in both account views.
+This continues the accepted Auth administration scope before owner acceptance.
+
+Both action panels now compose one private Auth grouping/order and renderer:
+activity/schedules, locks, email/invitations, password/authentication,
+sessions/devices, preferences/exceptions, deletion/restoration. Empty groups are
+omitted; native grouped operation dialogs and grants remain authoritative. Status
+facts have ordered thematic sections; unknown authorized fields retain a final
+section. Existing field admission and configuration filtering are preserved.
+
+AuthProfiles advances additively to 2.1.0 with verifyEmail and verifySecondary,
+through the owning proxy/definition/Actions and native Admin section bindings.
+All current exact-version consumers, source fixtures and current guides are updated.
+Administrative confirmation requires the existing bypass setting/grant and fresh
+every-action both-factor proof. Primary confirmation also requires enabled primary
+verification; secondary confirmation requires the enabled secondary feature and
+current owned address/sharing rules. Account locks/version checks and explicit
+Audit commit atomically. Primary confirmation clears forced verification, advances
+security generation and revokes sessions/trust/pending security and change proofs.
+Secondary confirmation invalidates only its own address links, retains account
+sessions and immediately becomes an eligible notification recipient. Admin requires
+secondary.manage for its selected-address input in addition to the bypass grant.
+Buttons appear beside unverified addresses; own-account presentation never enables
+the new administrative capability. Other address drafts remain untouched.
+The primary confirmation dialog explicitly describes session/trust revocation.
+
+Shared presentation uses small, bounded language/theme Selects and compact email
+rows with subscription/recipient alignment on desktop and stacking on mobile.
+Admin removes nested bordered preference sections and retains atomic Save/Revert;
+own account retains automatic display persistence, independent delivery drafts,
+local conflict decisions and the existing recipient visibility conditions.
+
+Knowledge was current and queried before source investigation. Relevant original
+Auth/Admin/profile/preference, public boundary/transaction, visual/forms/accessibility,
+workflow/quality sources and frontend/Vue/Tailwind/backend/Laravel/security skills
+were read; Laravel Boost supplied installed-version transaction/locking guidance.
+Canonical public contracts, account/Admin guides and central/module changelogs are
+synchronized. Existing owner/customer frontend guidance already links the shared
+Auth components and requires native controller/security/pattern ownership; root
+AGENTS and both instruction products need no new reusable rule or duplicated
+procedure. Auth remains its existing unreleased 3.1.0 candidate; this additive API
+and presentation scope is included there. No migration, dependency, reset or
+release/activation decision changes.
+
+Focused supported results: ten frontend cases PASS; seven backend cases PASS,
+189 assertions, using the one-worker parallel runner; one selected current API
+source-contract test PASS. Coverage includes action order/status grouping,
+capability-projected pending-only verification, post-submit proof, independent
+preference drafts/conflicts, permission/configuration refusals, stale versions,
+foreign address refusal, Audit/proof rollback, primary session revocation,
+secondary token invalidation, native Admin commands and refreshed recipients.
+The source-contract fixture still compared several already revised APIs with the
+activation ledger; current expected versions are synchronized without changing
+that historical ledger. Frontend fixture repairs use typed facts, path-only URL
+matching, reactive parent props and recipient edits before switching a category off.
+
+Current strict frontend build PASS. Native Nginx/API readiness PASS in PL/EN,
+light/dark and 390/1440px: shared action order, populated status groups, compact
+own/Admin preferences, no region overflow and primary/secondary confirmation
+through post-submit proof. Browser diagnostics stop before management writes,
+log out their sessions and preserve development accounts. Screenshots were inspected.
+Evidence: .runtime/user-details/refinements-*.log and
+.runtime/artifacts/playwright/account-refinements/. Native forward module metadata
+preparation had no pending migrations/upgrades and preserved local data.
+
+These focused results and rendered preparation do not replace owner acceptance
+11b or final affected-area verification/release 12. Mandatory staged hooks and
+knowledge freshness accompany the commit. The supported runner removed its
+inactive runa_test_test_1 worker after successful cleanup; base runa_test,
+development data, active services, caches, backups and reports are preserved.
+No disposable Docker resources were created. Owner acceptance and final verification
+remain open.

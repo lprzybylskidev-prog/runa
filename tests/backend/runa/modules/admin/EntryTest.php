@@ -42,6 +42,7 @@ use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
 use Runa\Modules\Auth\Actions\EntryTokens;
+use Runa\Modules\Auth\Actions\ManageProfiles;
 use Runa\Modules\Auth\Actions\ProfileMutation;
 use Runa\Modules\Auth\Actions\Profiles;
 use Runa\Modules\Auth\Actions\SessionStore;
@@ -457,7 +458,7 @@ it('rejects stale prewrite review and duplicate native writers or single use dem
             new ProfileMutation($profiles, $target->publicId, $target->version, $change),
             new ProfileMutation($profiles, $target->publicId, $target->version, $change),
         ]))->toThrow(OperationRejected::class);
-        $updated = $apis->resolve('runa.auth', AuthProfiles::class, '2.0.0')->edit($target->publicId, $target->version, new ProfileChange(name: 'Intervening'));
+        $updated = $apis->resolve('runa.auth', AuthProfiles::class, '2.1.0')->edit($target->publicId, $target->version, new ProfileChange(name: 'Intervening'));
         $profile = new ProfileMutation($profiles, $target->publicId, $updated->version, $change);
         expect(fn () => $runner->run([$profile, $assignments->mutation($review)]))->toThrow(OperationRejected::class);
         expect(User::where('public_id', $target->publicId)->value('name'))->toBe('Intervening')
@@ -716,7 +717,7 @@ it('rejects aggregate ABA and expired owning proof without regenerating reviewed
     $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate-aba@example.test', name: 'Before', active: true));
     $input = adminAggregateReview($this, adminAggregateInput($this, $target->publicId));
     app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($target): void {
-        $profiles = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.0.0');
+        $profiles = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
         $changed = $profiles->edit($target->publicId, $target->version, new ProfileChange(name: 'Intervening'));
         $profiles->edit($target->publicId, $changed->version, new ProfileChange(name: 'Before'));
     });
@@ -2397,3 +2398,28 @@ it('reports an ineligible administrative password reset without consuming proof 
     expect(User::where('public_id', $target->publicId)->value('version'))->toBe($target->version);
     expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.password.admin_reset')->value('consumed_at'))->toBeNull();
 });
+
+it('confirms existing addresses through native Admin commands and refreshes recipient choices', function (string $kind): void {
+    authAdministrationLogin($this, ['runa.auth.profiles.read', 'runa.auth.emails.read', 'runa.auth.secondary.read', 'runa.auth.secondary.manage', 'runa.auth.emails.verify_bypass', 'runa.auth.preferences.read', 'runa.auth.addresses.read']);
+    DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['email_verified_at' => now()]);
+    $settings = app(ModuleSettings::class)->read('runa.auth');
+    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'all', 'secondary_emails_enabled' => true, 'admin_email_verification_bypass' => true], $settings['revision'], $settings['generation']);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('verify-existing-admin@example.test', name: 'Verify existing', active: true));
+    $address = $kind === 'secondary' ? app(ManageProfiles::class)->addSecondary($target->publicId, 1, 'verify-existing-secondary@example.test') : null;
+    $section = $kind === 'secondary' ? 'secondary' : 'primary_email';
+    $record = authAdministrationRead($this, $section, $target->publicId);
+    $input = ['command' => 'verify', 'public_id' => $target->publicId, 'revision' => $record['revision'], 'values' => $address === null ? [] : ['address_id' => $address], 'confirmed' => true];
+    $path = '/api/admin/runa.auth/users/sections/'.$section.'/commands';
+    $this->postJson($path, $input)->assertForbidden();
+    authAdministrationStrongProof($this, 'runa.auth.email.admin_bypass');
+    $this->postJson($path, $input)->assertOk()->assertJsonPath('data.status', 'committed');
+    if ($address === null) {
+        expect(User::where('public_id', $target->publicId)->value('email_verified_at'))->not->toBeNull();
+    } else {
+        expect(DB::table('runa_auth.secondary_emails')->where('public_id', $address)->value('verified_at'))->not->toBeNull();
+        $preferences = authAdministrationRead($this, 'preferences', $target->publicId);
+        expect(array_column(json_decode($preferences['values']['recipients'], true, flags: JSON_THROW_ON_ERROR), 'value'))->toContain($address);
+    }
+    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.email.admin_bypass')->whereNotNull('consumed_at')->exists())->toBeTrue()
+        ->and(DB::table('runa_audit.events')->where('action', $address === null ? 'email.admin_verified' : 'secondary.admin_verified')->count())->toBe(1);
+})->with(['primary', 'secondary']);

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AuthAdminUserDetails from '../AuthAdminUserDetails.vue';
-import { authBulkGroup, authActionTone } from '../bulkGroups';
+import AuthAdminActionGroups from '../AuthAdminActionGroups.vue';
+import { groupAuthActions, authBulkGroup, authActionTone } from '../bulkGroups';
 import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
 import { Button, Card, ContentLoading, Dialog } from '@/runa/ui';
@@ -75,27 +76,6 @@ watch(
   { immediate: true },
 );
 const directory = computed(() => table.section.value);
-const bulkOrder = [
-  'activate',
-  'schedule_activation',
-  'deactivate',
-  'schedule_deactivation',
-  'restore',
-  'delete',
-  'invite',
-  'invalidate_invitation',
-  'require_verification',
-  'require_password_change',
-  'password_reset',
-  'factor_reset',
-  'set_attempt_lock',
-  'set_security_lock',
-  'revoke',
-  'revoke_trust',
-  'revoke_exceptions',
-  'reset_preferences',
-  'remove_avatar',
-];
 const bulkChoices = computed(() =>
   (props.controller.page.value?.sections ?? [])
     .filter((s) => ['bulk_sessions', 'bulk_users'].includes(s.key))
@@ -128,11 +108,10 @@ const bulkChoices = computed(() =>
           },
         ];
       });
-    })
-    .sort(
-      (a, b) =>
-        bulkOrder.indexOf(a.command.key) - bulkOrder.indexOf(b.command.key),
-    ),
+    }),
+);
+const bulkGroups = computed(() =>
+  groupAuthActions(bulkChoices.value, (choice) => choice.command.key),
 );
 const canBulk = computed(() => bulkChoices.value.length > 0);
 const activeBulk = ref('');
@@ -270,27 +249,23 @@ watch(
               {{ tr({ pl: 'Zaznaczone konta', en: 'Selected accounts' }) }}:
               {{ selection.length }}
             </p>
-            <div
-              class="flex min-w-0 flex-wrap gap-2"
-              role="group"
-              :aria-label="tr({ pl: 'Akcje zbiorcze', en: 'Bulk actions' })"
-            >
-              <Button
-                v-for="choice in bulkChoices"
-                :key="choice.value"
-                :data-bulk-command="choice.value"
-                size="sm"
-                variant="outline"
-                :tone="authActionTone(choice.command.key, true)"
-                :disabled="
-                  form.busy.value ||
-                  !selection.length ||
-                  selection.length > bulkLimit(choice.section)
-                "
-                @click="openBulk(choice)"
-                >{{ choice.label }}</Button
-              >
-            </div>
+            <AuthAdminActionGroups :groups="bulkGroups">
+              <template #default="{ item: choice }">
+                <Button
+                  :data-bulk-command="choice.value"
+                  size="sm"
+                  variant="outline"
+                  :tone="authActionTone(choice.command.key, true)"
+                  :disabled="
+                    form.busy.value ||
+                    !selection.length ||
+                    selection.length > bulkLimit(choice.section)
+                  "
+                  @click="openBulk(choice)"
+                  >{{ choice.label }}</Button
+                >
+              </template>
+            </AuthAdminActionGroups>
             <p
               v-if="
                 table.selection.value.mode !== 'explicit' ||

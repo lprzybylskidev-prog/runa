@@ -25,7 +25,8 @@ import {
   Select,
   Tabs,
 } from '@/runa/ui';
-import { authActionTone } from './bulkGroups';
+import AuthAdminActionGroups from './AuthAdminActionGroups.vue';
+import { groupAuthActions, authActionTone } from './bulkGroups';
 import AuthOperationProofFields from './AuthOperationProofFields.vue';
 import AuthAdminUserStatus from './AuthAdminUserStatus.vue';
 import AuthAdminEmails from './AuthAdminEmails.vue';
@@ -358,6 +359,9 @@ const toolbar = computed(() => {
     }))
     .filter((item) => item.actions.length);
 });
+const actionGroups = computed(() =>
+  groupAuthActions(toolbar.value, (item) => actionKey(item.actions[0]!)),
+);
 const actions = ref<Action[]>([]);
 const previous = new Map<string, AdminJson>();
 let restoreParameters = false;
@@ -636,27 +640,23 @@ function supplied(section: AdminSectionData) {
             <template #header
               ><h2>{{ text('Akcje', 'Actions') }}</h2></template
             >
-            <div
-              class="flex flex-wrap gap-2"
-              role="group"
-              :aria-label="text('Akcje użytkownika', 'User actions')"
-            >
-              <Button
-                v-for="item in toolbar"
-                :key="t(item.title)"
-                size="sm"
-                variant="outline"
-                :tone="
-                  authActionTone(
-                    actionKey(item.actions[0]!),
-                    item.actions.length > 1,
-                  )
-                "
-                :disabled="form.busy.value"
-                @click="open(item.actions, true)"
-                >{{ t(item.title) }}</Button
-              >
-            </div>
+            <AuthAdminActionGroups :groups="actionGroups">
+              <template #default="{ item }">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  :tone="
+                    authActionTone(
+                      actionKey(item.actions[0]!),
+                      item.actions.length > 1,
+                    )
+                  "
+                  :disabled="form.busy.value"
+                  @click="open(item.actions, true)"
+                  >{{ t(item.title) }}</Button
+                >
+              </template>
+            </AuthAdminActionGroups>
           </Card>
 
           <div
@@ -753,6 +753,20 @@ function supplied(section: AdminSectionData) {
           />
         </div>
         <div v-else class="space-y-4">
+          <p
+            v-if="
+              pending?.section === 'primary_email' &&
+              pending.command === 'verify'
+            "
+            class="text-sm text-muted"
+          >
+            {{
+              text(
+                'Potwierdzenie głównego adresu wyloguje użytkownika ze wszystkich sesji i cofnie zaufanie urządzeniom.',
+                'Verifying the primary address signs the user out of all sessions and revokes trusted devices.',
+              )
+            }}
+          </p>
           <Select
             v-if="actions.length > 1"
             :label="text('Operacja', 'Operation')"

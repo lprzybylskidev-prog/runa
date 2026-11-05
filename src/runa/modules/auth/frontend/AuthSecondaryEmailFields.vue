@@ -7,6 +7,7 @@ const emit = defineEmits<{
   'update:email': [value: string];
   edit: [publicId: string];
   resend: [publicId: string];
+  verify: [publicId: string];
   remove: [publicId: string];
   submit: [];
   cancel: [];
@@ -102,6 +103,20 @@ defineExpose({
             "
             @click="emit('resend', address.public_id)"
             >{{ text('Wyślij ponownie', 'Resend') }}</Button
+          >
+          <Button
+            v-if="!address.verified && canVerify"
+            variant="ghost"
+            size="sm"
+            :disabled="busy"
+            :aria-label="
+              text(
+                'Potwierdź jako administrator: ',
+                'Verify as administrator: ',
+              ) + address.email
+            "
+            @click="emit('verify', address.public_id)"
+            >{{ text('Potwierdź', 'Verify') }}</Button
           >
           <Button
             v-if="canRemove"

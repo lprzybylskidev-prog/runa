@@ -2,6 +2,8 @@
 
 ## 3.0.0 — 2026-11-03
 
+- Auth 3.1.0: share thematic single/bulk action grouping, ordered account-status groups and compact own/Admin preference defaults. Add AuthProfiles 2.1.0 existing-address confirmation with native bypass configuration/grants, both-factor proof, ownership/version checks and atomic Audit.
+
 - Auth 3.1.0: share secondary-email list/inline editing through public AuthSecondaryEmailFields. Preserve occupied identifier and password-reset refusal codes, distinguish business refusals from stale revisions, and give actionable account/preference/proof feedback while retaining anonymous non-enumeration.
 
 - Remove generic operation-scope filler, show factor-discovery skeletons and explicit action progress, and expose account refreshing for retained read feedback.

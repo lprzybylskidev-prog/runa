@@ -212,7 +212,7 @@ defineExpose({ beginReset, reload });
 <template>
   <div
     v-if="profile"
-    class="grid min-w-0 items-start gap-6"
+    class="grid min-w-0 items-start gap-4"
     data-account-preferences
   >
     <Card data-preferences-display>
@@ -280,7 +280,7 @@ defineExpose({ beginReset, reload });
             :label="choice.names[locale]"
             :dirty="dirty(choice)"
             :busy="busy"
-            class="py-5 first:pt-0 last:pb-0"
+            class="py-3 first:pt-0 last:pb-0"
             :data-delivery-category="choice.key"
             @submit="save(choice)"
           >

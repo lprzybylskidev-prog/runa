@@ -220,10 +220,10 @@ final class AdministrationPages implements ManagementPageProvider
         return [];
     }
 
-    /** @return array<string,array<string,array{title:string,operation:string,permission:string,inputs:list<string>,proof:?string,destructive:bool,preview:bool}>> */
+    /** @return array<string,array<string,array{title:string|array{pl:string,en:string},operation:string,permission:string,inputs:list<string>,proof:?string,destructive:bool,preview:bool}>> */
     public static function commands(): array
     {
-        $command = static fn (string $title, string $operation, string $permission, array $inputs = [], ?string $proof = null, bool $destructive = false, bool $preview = false): array => compact('title', 'operation', 'permission', 'inputs', 'proof', 'destructive', 'preview');
+        $command = static fn (string|array $title, string $operation, string $permission, array $inputs = [], ?string $proof = null, bool $destructive = false, bool $preview = false): array => compact('title', 'operation', 'permission', 'inputs', 'proof', 'destructive', 'preview');
 
         $commands = [
             'creation' => ['create' => $command('Create account', 'identity.create', 'users.create', CreationSection::INPUTS, 'runa.auth.users.create')],
@@ -231,10 +231,12 @@ final class AdministrationPages implements ManagementPageProvider
             'invitations' => ['invite' => $command('Send or resend invitation', 'invitation.issue', 'invitations.manage'),
                 'invalidate' => $command('Invalidate invitation', 'invitation.invalidate', 'invitations.manage', destructive: true)],
             'primary_email' => ['change' => $command('Request email change', 'email.admin_change', 'emails.manage', ['email'], 'runa.auth.email.admin_change'),
+                'verify' => $command(['pl' => 'Potwierdź główny adres e-mail', 'en' => 'Verify primary email'], 'email.admin_verify', 'emails.verify_bypass', proof: 'runa.auth.email.admin_bypass', destructive: true),
                 'replace' => $command('Replace verified email', 'email.admin_bypass', 'emails.verify_bypass', ['replacement_email'], 'runa.auth.email.admin_bypass', true),
                 'require_verification' => $command('Require verification', 'email.require_verification', 'emails.reverify', proof: 'runa.auth.email.require_verification', destructive: true)],
             'secondary' => ['add' => $command('Add secondary address', 'secondary.add', 'secondary.manage', ['email']),
                 'change' => $command('Change secondary address', 'secondary.change', 'secondary.manage', ['address_id', 'email']),
+                'verify' => $command(['pl' => 'Potwierdź dodatkowy adres e-mail', 'en' => 'Verify secondary email'], 'secondary.admin_verify', 'emails.verify_bypass', ['address_id'], 'runa.auth.email.admin_bypass', true),
                 'remove' => $command('Remove secondary address', 'secondary.remove', 'secondary.manage', ['address_id'], destructive: true)],
             'sessions' => ['revoke' => $command('Revoke session', 'sessions.revoke', 'sessions.manage', ['session_id'], destructive: true),
                 'revoke_all' => $command('Revoke all sessions', 'sessions.revoke_all', 'sessions.manage', destructive: true)],
@@ -496,8 +498,8 @@ final class AdministrationPages implements ManagementPageProvider
             new ManagementBinding('creation', CreationSection::class, [$target(AuthLifecycle::class, ['create'], '2.1.0')]),
             new ManagementBinding('lifecycle', LifecycleSection::class, [$target(AuthAdministration::class, ['lifecycle'], '2.0.0'), $target(AuthLifecycle::class, ['change'], '2.1.0')]),
             new ManagementBinding('invitations', InvitationSection::class, [$target(AuthAdministration::class, ['facts'], '2.0.0'), $identity, $target(AuthInvitations::class, ['invite', 'invalidate'])]),
-            new ManagementBinding('primary_email', EmailSection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthProfiles::class, ['changeEmail', 'replaceVerifiedEmail', 'requireVerification'], '2.0.0')]),
-            new ManagementBinding('secondary', SecondarySection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthProfiles::class, ['addSecondary', 'changeSecondary', 'removeSecondary'], '2.0.0')]),
+            new ManagementBinding('primary_email', EmailSection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthProfiles::class, ['changeEmail', 'replaceVerifiedEmail', 'verifyEmail', 'requireVerification'], '2.1.0')]),
+            new ManagementBinding('secondary', SecondarySection::class, [$target(AuthAdministration::class, ['profile'], '2.0.0'), $target(AuthProfiles::class, ['addSecondary', 'changeSecondary', 'verifySecondary', 'removeSecondary'], '2.1.0')]),
             new ManagementBinding('sessions', SessionSection::class, [$identity, $target(AuthSessions::class, ['listFor', 'revoke', 'revokeAll'])]),
             new ManagementBinding('security', SecuritySection::class, [$target(AuthAdministration::class, ['facts'], '2.0.0'), $identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'], '1.1.0')]),
             new ManagementBinding('trust', DeviceSection::class, [$identity, $target(AuthSecurity::class, ['trustedDevices', 'revokeDevice', 'revokeDevices'], '1.1.0')]),

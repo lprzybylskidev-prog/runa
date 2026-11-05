@@ -31,7 +31,7 @@ stable; private module implementation is not an application extension seam.
 ## Public values and access
 
 Resolve the declared contract version through `ModuleApis`: AuthProfiles uses
-`2.0.0`; AuthLifecycle uses `2.1.0`; AuthAdministration, AuthBulkUsers and AuthBulkSessions use `2.0.0`;
+`2.1.0`; AuthLifecycle uses `2.1.0`; AuthAdministration, AuthBulkUsers and AuthBulkSessions use `2.0.0`;
 AuthStepUp uses `1.1.0`; other current Auth interfaces, including
 AuthIdentities below, use `1.0.0`.
 Administrative profile composition follows the [native phase contract](../../architecture/module-transactions.md).
