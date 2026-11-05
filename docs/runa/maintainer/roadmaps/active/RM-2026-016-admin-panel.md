@@ -1017,6 +1017,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     retain shared order, accessible names and wrapping vertical separators.
   - Prepare current assets and rendered readiness, synchronize current guidance
     and commit before returning to owner manual acceptance.
+- [x] 11a79. Omit action separators at wrapped row starts.
+  - Show vertical separators only between same-row groups in both panels;
+    preserve wrapping, accessible names and unclipped button focus.
+  - Verify rendered resizing/locale states, synchronize guidance and current assets,
+    and commit before returning to owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7160,3 +7165,39 @@ Mandatory staged hooks and current knowledge accompany the commit. No disposable
 Docker/database resources were created; active services, development/test data,
 volumes, caches, backups and earlier reports remain preserved. Owner acceptance
 11b and final affected-area verification/release 12 remain open.
+
+### Point 11a79 — Omit separators at wrapped row starts
+
+The owner reports a redundant separator when an action group wraps onto a new
+row. The shared default now draws its separator in the inter-group gap only when
+the group is not at the rendered row's inline start. Row starts have no separator
+or extra leading indentation. A local ResizeObserver measures the root/groups,
+refreshes observation after Vue updates and disconnects on disposal. Decoration
+uses an absolutely positioned pseudo-element, so toggling it never changes group
+widths or creates a reflow loop. No overflow clipping is introduced; Button focus
+outlines remain visible. This applies identically to details and bulk actions.
+
+Knowledge was current and queried; the current Auth guide, frontend/Tailwind/Vue
+skills, accessibility/theme references and the existing local ResizeObserver
+lifecycle pattern grounded the repair. Current administration guidance and
+module/central changelogs are synchronized. Public props/events, ordering,
+commands/proof and the existing unreleased Auth 3.1.0 candidate are unchanged.
+Existing owner/customer instructions already require shared-component reuse,
+responsive rendering and keyboard focus; neither product needs a new rule.
+
+Current strict frontend build PASS. Focused compiled native Nginx/API checks PASS
+in PL/EN and light/dark for both action panels, repeatedly resizing through
+1440/800/600/390/1440px. Actual group geometry matches separator visibility at
+every width; row starts have zero leading padding, group names/order persist,
+regions do not overflow and enabled/disabled cursor and keyboard-focus states
+remain correct. Desktop/mobile screenshots were inspected. Evidence is under
+.runtime/user-details/action-row-start-*.log and
+.runtime/artifacts/playwright/action-row-starts/. No management writes were
+submitted and browser sessions logged out. No implementation-mirroring tests or
+backend/broad suites are required for this localized presentation repair; final
+affected-area verification remains point 12.
+
+Mandatory staged hooks and knowledge freshness accompany the commit. No disposable
+Docker/database resources were created; development/test data, services, volumes,
+caches, backups and previous reports are preserved. Owner manual acceptance 11b
+and final verification/release 12 remain open.

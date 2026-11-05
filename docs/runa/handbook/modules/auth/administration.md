@@ -557,7 +557,10 @@ order: activity/schedules, locks, email/invitations, password/authentication,
 sessions/devices, preferences/exceptions, deletion/restoration. Each nonempty
 category keeps its accessible name without a visible heading. Groups flow inline
 with subtle vertical separators and wrap on narrow screens; unavailable categories
-are omitted. Existing grouped operation selectors retain their native reviewed commands.
+are omitted. Separators appear only between groups on the same rendered row;
+the first group on every wrapped row has no separator or extra leading indent.
+Resize and translated label changes update that presentation without clipping
+button focus outlines. Existing grouped operation selectors retain their native reviewed commands.
 Account status groups project authorized facts in a fixed sequence: activity,
 locks, email, password/authentication, sessions/devices and invitation. Additional
 authorized facts retain a final section rather than disappearing. Field grants,

@@ -2,6 +2,8 @@
 
 ## 3.0.0 — 2026-11-03
 
+- Hide single/bulk action separators at wrapped row starts while preserving same-row separators and unclipped keyboard focus.
+
 - Refine single/bulk action grouping into inline buttons with vertical separators, accessible category names and no visible group headings.
 
 - Auth 3.1.0: share thematic single/bulk action grouping, ordered account-status groups and compact own/Admin preference defaults. Add AuthProfiles 2.1.0 existing-address confirmation with native bypass configuration/grants, both-factor proof, ownership/version checks and atomic Audit.
