@@ -45,7 +45,7 @@ const emit = defineEmits<{
         :intent="confirmIntent"
         :busy="busy"
         :disabled="loading"
-        variant="solid"
+        variant="outline"
         @click="!props.busy && !props.loading && emit('confirm')"
         >{{
           confirmLabel || (locale === 'pl' ? 'Potwierdź' : 'Confirm')

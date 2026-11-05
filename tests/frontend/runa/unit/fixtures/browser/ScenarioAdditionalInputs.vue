@@ -327,7 +327,7 @@ const fileLabels = computed(() => ({
       </div></Card
     >
     <template #actions
-      ><Button type="submit" variant="solid">{{
+      ><Button type="submit" variant="outline">{{
         text('Pokaż wartości', 'Show values')
       }}</Button></template
     ></Form

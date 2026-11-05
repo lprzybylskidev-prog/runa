@@ -223,7 +223,7 @@ async function mutate(remove = false) {
     <div class="flex flex-wrap gap-3">
       <Button
         v-if="files.length"
-        intent="inspect"
+        intent="commit"
         :disabled="controller.busy.value || cropping"
         @click="cropOpen = true"
         >{{ tr({ pl: 'Popraw kadr', en: 'Adjust crop' }) }}</Button

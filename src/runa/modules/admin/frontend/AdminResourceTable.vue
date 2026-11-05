@@ -121,7 +121,7 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
               (command) => command.intent === 'create' && command.available,
             )
           "
-          intent="inspect"
+          intent="commit"
           size="sm"
           @click="controller.select(null)"
           >{{ tr('New record') }}</Button

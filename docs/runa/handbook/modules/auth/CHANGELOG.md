@@ -2,7 +2,9 @@
 
 ## 5.0.0 — Unreleased
 
-- Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/tools and red destructive effects, independent of feedback context or password proof.
+- Use quiet outlined action buttons, including Save and confirmations. Preserve operation colors before modal admission and use purple for mixed-effect tools; final confirmation reflects the selected operation. Document the shared policy for future views.
+
+- Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/previews, purple mixed-effect tools and red destructive effects, independent of feedback context or password proof.
 
 - Simplify module settings Save to a confirmation question; omit the repeated differences and policy consequence messages while preserving native validation, password proof and Audit.
 

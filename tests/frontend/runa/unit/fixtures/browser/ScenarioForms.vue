@@ -277,7 +277,7 @@ const statuses = computed(() => [
             :helper="text('Pole opcjonalne.', 'Optional field.')"
         /></FormSection>
         <template #actions
-          ><Button type="submit" variant="solid" :busy="busy">{{
+          ><Button type="submit" variant="outline" :busy="busy">{{
             text('Zapisz przykład', 'Save example')
           }}</Button
           ><Button

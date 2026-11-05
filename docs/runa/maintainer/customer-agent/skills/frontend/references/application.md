@@ -103,3 +103,7 @@ For action colors and hierarchy follow
 `docs/runa/handbook/development/frontend/components.md#action-button-semantics`.
 Use the public explicit intent/confirmation contracts for application controls;
 feedback context and password requirements never determine action meaning.
+
+The canonical action policy requires quiet outlines, effect colors even before a
+modal opens, and purple mixed-effect tools with a concrete semantic final action.
+Blue denotes reads/refresh/preview; never use solid action fills in supplied views.

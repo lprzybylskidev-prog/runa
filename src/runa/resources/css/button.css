@@ -144,9 +144,8 @@
   border-color: transparent;
 }
 .app-button[data-variant='soft']:hover:not(:disabled) {
-  background: var(--button-solid);
-  color: var(--button-foreground);
-  border-color: var(--button-solid);
+  background: var(--button-subtle);
+  border-color: var(--button-text);
 }
 .app-button[data-variant='outline']:hover:not(:disabled),
 .app-button[data-variant='ghost']:hover:not(:disabled) {

@@ -235,7 +235,7 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
           intent="neutral"
           role="gridcell"
           size="sm"
-          :variant="modelValue === day.value ? 'solid' : 'ghost'"
+          :variant="modelValue === day.value ? 'soft' : 'ghost'"
           :disabled="!day.valid"
           :aria-label="fullLabel(day.value)"
           :aria-selected="modelValue === day.value"

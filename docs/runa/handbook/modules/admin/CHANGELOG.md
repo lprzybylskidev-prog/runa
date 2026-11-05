@@ -2,7 +2,9 @@
 
 ## 0.2.0 — Unreleased
 
-- Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/tools and red destructive effects, independent of feedback context or password proof.
+- Use quiet outlined action buttons, including Save and confirmations. Preserve operation colors before modal admission and use purple for mixed-effect tools; final confirmation reflects the selected operation. Document the shared policy for future views.
+
+- Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/previews, purple mixed-effect tools and red destructive effects, independent of feedback context or password proof.
 
 - Admin 0.2.0: send all declared sensitive independent/aggregate actions through the existing full-page Auth password confirmation. Remove inline proof editors and factor selection. Preserve submitted subject/review/revision, hide retained modal portals during confirmation, and cancel without mutation or draft loss.
 

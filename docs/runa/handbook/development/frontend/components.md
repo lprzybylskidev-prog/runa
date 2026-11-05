@@ -103,7 +103,7 @@ Viewport clamping and collision fallback remain active.
 - Source: `src/runa/resources/js/components/AppButton.vue`; public `Button`. Native attributes/listeners inherit; safe default `type="button"`. No shell dependency.
 - `variant`: neutral, solid, outline, soft, ghost. `tone`: neutral, primary, secondary, success, danger, warning, info, accent. Public `ButtonIntent` supplies action meaning; `ButtonTone` includes neutral. `size`: sm (36px), md (44px), lg (52px). Use md for usual touch actions.
 - `busy?: boolean` disables activation and exposes aria-busy plus a decorative spinner; slot text supplies context. When omitted, a `type="submit"` Button inherits the nearest public Form's busy state; other buttons and standalone submit buttons default to false. Explicit true/false overrides this local default. The private form-activity injection is UI implementation, not another public entrypoint. `disabled` uses native semantics. `aria-pressed` supports toggle feedback. `iconOnly` (or compatible `compact`) makes a square; provide an accessible name. Tooltip is separate.
-- Intent overrides a low-level tone. With no explicit variant, commit uses solid; other colored intents use outline; neutral uses neutral. Without intent/tone, the button is neutral. Busy preserves the action color and blocks activation; unavailable controls use disabled tokens.
+- Intent overrides a low-level tone. With no explicit variant, every colored intent uses outline; neutral uses neutral. Shipped views use no solid action fills, including main Save and confirmation actions. The low-level solid variant remains available for explicit custom presentation; it is not the default visual language. Without intent/tone, the button is neutral. Busy preserves the action color and blocks activation; unavailable controls use disabled tokens.
 - Colors use finite CSS token mappings, without inline styles so build-time native error rendering retains its CSP contract. Reduced motion preserves the static busy indicator.
 - Used by MinimalLayout preferences and ApplicationLayout preferences, sidebar/drawer controls and profile trigger. Shell disclosures/navigation and modal backdrop remain specialized internal compositions.
 
@@ -113,37 +113,47 @@ Owner-approved defaults apply across application and module views. Pass explicit
 `intent` from source-owned operation metadata; never infer it from translated text,
 HTTP verb, feedback ancestors or password confirmation requirements.
 
-| Intent  | Meaning and examples                                        | Token role       |
-| ------- | ----------------------------------------------------------- | ---------------- |
-| commit  | Save, apply, create, activate                               | success / green  |
-| cancel  | Safe Cancel, Close, Back                                    | neutral          |
-| discard | Discard unsaved work, restore defaults                      | warning / yellow |
-| inspect | Load, refresh, preview, open an editor or bulk tool, export | info / blue      |
-| caution | Deactivate, set a lock, cancel running work                 | warning / yellow |
-| danger  | Delete stored data, revoke sessions/devices/access          | danger / red     |
-| neutral | Navigation, selection, disclosure, acknowledgment           | neutral          |
+| Intent  | Meaning and examples                               | Token role       |
+| ------- | -------------------------------------------------- | ---------------- |
+| commit  | Save, apply, create, activate                      | success / green  |
+| cancel  | Safe Cancel, Close, Back                           | neutral          |
+| discard | Discard unsaved work, restore defaults             | warning / yellow |
+| inspect | Load, refresh, preview, export                     | info / blue      |
+| caution | Deactivate, set a lock, cancel running work        | warning / yellow |
+| danger  | Delete stored data, revoke sessions/devices/access | danger / red     |
+| mixed   | Tool combining operations with different effects   | primary / purple |
+| neutral | Navigation, selection, disclosure, acknowledgment  | neutral          |
 
-Meaning and importance are separate: use solid for the main action and outline,
-soft or ghost for secondary actions without changing its semantic role. Keep the
-same role on hover, pressed and busy states in both themes. Readable labels and
+Use quiet outlines with semantic text and borders for action buttons, including the
+main Save. Do not introduce solid fills for emphasis. Soft/ghost remain suitable
+for selection/navigation and compact controls; their hover stays subtle. Keep the
+same semantic role on hover, pressed and busy states in both themes. Labels and
 focus indicators remain required; color alone never identifies an action.
 
-A mixed bulk opener is inspect. Its final confirmation reflects the selected
-operation and parameters. Enabling and disabling a lock can therefore differ.
+Color describes the intended effect even when clicking first opens a modal or
+requests password proof. Create/edit/save tools are green, deletion/revocation red
+and deactivation/default-reset yellow. Blue is for actual reads, refresh and preview,
+not a general modal-opening color. A tool combining different effects (activation /
+deactivation, deletion / restoration, set / clear lock) uses mixed / purple until
+an option is selected. Its final confirmation uses that concrete effect's color.
+Several choices with the same effect retain that effect's color. Restrict mixed
+to the currently offered choices and source-owned parameter alternatives.
+
 Password proof does not turn a green save red. Safe cancellation remains neutral
 even inside a danger alert/dialog; discarding an edited draft is yellow.
 
 `ConfirmDialog.confirmIntent?: ButtonIntent` defaults to commit and its Cancel is
 neutral. Controllers that ask about destructive changes or discarded drafts must
 supply the corresponding intent in their confirmation projection. Public
-`BulkProvider.actions` may declare `intent?: ButtonIntent`; omission means inspect.
-A control opening a subsequent review uses inspect and that review owns the final
-effect's intent. These are presentation contracts and grant no backend authority.
+`BulkProvider.actions` may declare `intent?: ButtonIntent`; omission means neutral.
+Declare its effect or mixed intent explicitly; the Admin adapter can derive known
+destructive/save/create effects from its native command metadata. A mutation tool
+retains that meaning while opening its review. The separate Preview control is blue. These are presentation contracts and grant no backend authority.
 
 ## AppButtonGroup
 
 - Source: `src/runa/resources/js/components/AppButtonGroup.vue`; public `ButtonGroup`. Required `label` names the group; slotted native buttons retain Tab navigation and caller-owned pressed state.
-- Joined outer corners and overlapping borders create a single divider without gaps. Soft buttons now change to their semantic solid/foreground pair on hover.
+- Joined outer corners and overlapping borders create a single divider without gaps. Soft buttons retain a subtle semantic background on hover.
 - Action-list/split buttons remain absent until an actual application need appears. The current Auth profile requirement uses public Avatar for shared image/initials presentation; ApplicationLayout retains its dedicated profile disclosure control.
 
 ## AppFooter

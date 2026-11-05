@@ -16,6 +16,7 @@ export type ButtonIntent =
   | 'cancel'
   | 'discard'
   | 'inspect'
+  | 'mixed'
   | 'caution'
   | 'danger';
 export type ButtonTone = ControlTone | 'neutral';
@@ -25,6 +26,7 @@ export const buttonIntentTones: Readonly<Record<ButtonIntent, ButtonTone>> = {
   cancel: 'neutral',
   discard: 'warning',
   inspect: 'info',
+  mixed: 'primary',
   caution: 'warning',
   danger: 'danger',
 };

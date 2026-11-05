@@ -738,7 +738,7 @@ async function refreshTable() {
                 <div v-if="!section.readonly" class="mt-3 flex flex-wrap gap-2">
                   <Button
                     v-if="kind === 'secondary'"
-                    intent="inspect"
+                    intent="commit"
                     size="sm"
                     variant="outline"
                     :disabled="controller.busy.value"

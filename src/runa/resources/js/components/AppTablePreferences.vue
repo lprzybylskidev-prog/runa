@@ -134,7 +134,7 @@ function drop(key: string) {
     />
     <AppTooltip :text="text('Kolumny i widoki', 'Columns and views')">
       <AppButton
-        intent="inspect"
+        intent="mixed"
         size="sm"
         icon-only
         variant="ghost"

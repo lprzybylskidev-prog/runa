@@ -2,7 +2,7 @@
 
 ## 2.1.0 — Unreleased
 
-- Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/tools and red destructive effects, independent of feedback context or password proof.
+- Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/previews, purple mixed-effect tools and red destructive effects, independent of feedback context or password proof.
 
 - Use fresh password confirmation for all ordinary access, assignment, definition and protected-authority mutations. Consume AuthStepUp 2.0.0 with the existing grants, reviews, revisions, last-administrator checks and atomic Audit. The unreleased 2.1.0 candidate retains its public Permissions signatures.
 

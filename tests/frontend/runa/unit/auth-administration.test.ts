@@ -1191,7 +1191,7 @@ it('rebuilt user detail actions request identity proof only after operation subm
       .findAll('button')
       .find((button) => button.text() === 'Request password reset')!
       .attributes('data-tone'),
-  ).toBe('info');
+  ).toBe('warning');
   expect(document.querySelector('input[type=password]')).toBeNull();
   await wrapper
     .findAll('button')

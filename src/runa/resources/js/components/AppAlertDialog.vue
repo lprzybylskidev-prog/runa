@@ -43,7 +43,7 @@ function accept() {
       ><AppButton
         intent="neutral"
         data-dialog-accept
-        variant="solid"
+        variant="outline"
         :busy="busy"
         :disabled="loading"
         @click="accept"

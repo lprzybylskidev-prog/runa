@@ -524,7 +524,7 @@ it('Admin collection adapters retain native export limits and deny secret column
     exports.capabilities,
   );
   expect(table.adapters.value.bulk?.actions).toEqual([
-    { key: 'revoke', label: 'Revoke' },
+    { key: 'revoke', label: 'Revoke', intent: 'neutral' },
   ]);
   await expect(
     table.adapters.value.exports!.start(

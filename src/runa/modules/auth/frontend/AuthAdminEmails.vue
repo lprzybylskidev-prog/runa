@@ -273,7 +273,7 @@ function remove(publicId: string) {
           >
           <Button
             v-if="available(primary, 'change') || available(primary, 'replace')"
-            intent="inspect"
+            intent="commit"
             size="sm"
             variant="outline"
             :disabled="

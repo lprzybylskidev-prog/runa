@@ -284,7 +284,7 @@ async function bulk(action: string) {
           <AppButton
             v-for="action in bulkProvider?.actions ?? []"
             :key="action.key"
-            :intent="action.intent ?? 'inspect'"
+            :intent="action.intent ?? 'neutral'"
             size="sm"
             :disabled="operation.busy.value"
             @click="bulk(action.key)"

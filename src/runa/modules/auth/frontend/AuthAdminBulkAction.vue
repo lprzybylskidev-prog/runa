@@ -343,7 +343,7 @@ async function submit() {
             section.readonly ||
             !command?.available
           "
-          variant="solid"
+          variant="outline"
           @click="submit"
           >{{ tr({ pl: 'Zatwierdź', en: 'Confirm' }) }}</Button
         >

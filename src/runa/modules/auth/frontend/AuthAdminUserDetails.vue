@@ -26,7 +26,11 @@ import {
   Tabs,
 } from '@/runa/ui';
 import AuthAdminActionGroups from './AuthAdminActionGroups.vue';
-import { groupAuthActions, authActionIntent } from './bulkGroups';
+import {
+  groupAuthActions,
+  authActionIntent,
+  authActionGroupIntent,
+} from './bulkGroups';
 import AuthAdminUserStatus from './AuthAdminUserStatus.vue';
 import AuthAdminPolicyExceptions from './AuthAdminPolicyExceptions.vue';
 import { policyRuleNames, usePolicyExceptions } from './policyExceptions';
@@ -169,6 +173,19 @@ function actionKey(action: Action): string {
         'exceptions.revoke_all': 'revoke_exceptions',
       } as Record<string, string>
     )[`${action.section}.${action.command}`] ?? action.command
+  );
+}
+function actionGroupIntent(actions: readonly Action[]) {
+  return authActionGroupIntent(
+    actions.map((action) =>
+      authActionIntent(
+        actionKey(action),
+        typeof action.values?.enabled === 'boolean'
+          ? action.values.enabled
+          : null,
+        action.values?.at === null && !action.fields?.includes('at'),
+      ),
+    ),
   );
 }
 const definition = (action: Action) =>
@@ -722,7 +739,7 @@ function supplied(section: AdminSectionData) {
             <AuthAdminActionGroups :groups="actionGroups">
               <template #default="{ item }">
                 <Button
-                  intent="inspect"
+                  :intent="actionGroupIntent(item.actions)"
                   size="sm"
                   variant="outline"
                   :disabled="form.busy.value"
@@ -944,7 +961,7 @@ function supplied(section: AdminSectionData) {
                   : 'commit'
             "
             type="submit"
-            variant="solid"
+            variant="outline"
             >{{
               command?.preview_required && !review
                 ? text('Sprawdź zmiany', 'Review changes')

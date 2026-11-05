@@ -100,7 +100,7 @@ useContentMotion(content, () => props.modelValue);
       >
       <AppButton
         v-if="modelValue < steps.length - 1"
-        intent="inspect"
+        intent="neutral"
         :busy="busy"
         @click="emit('next')"
         >{{ text('Dalej', 'Next') }}</AppButton

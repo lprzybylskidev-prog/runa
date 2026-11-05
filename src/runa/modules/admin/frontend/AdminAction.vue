@@ -13,7 +13,7 @@ const emit = defineEmits<AdminActionEmits>();
         ? 'danger'
         : ['save', 'create'].includes(command.intent)
           ? 'commit'
-          : 'inspect'
+          : 'neutral'
     "
     :busy="busy"
     :disabled="disabled || !command.available"

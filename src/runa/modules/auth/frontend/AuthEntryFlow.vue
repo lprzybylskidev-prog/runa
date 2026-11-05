@@ -291,7 +291,7 @@ const readiness = useViewReadiness({
             />
             <Button
               v-if="method === 'email' && needsProof"
-              intent="inspect"
+              intent="commit"
               :busy="busy"
               variant="outline"
               @click="sendEmail"
@@ -299,7 +299,7 @@ const readiness = useViewReadiness({
             >
             <template v-if="screen === 'verify' && !isTokenPage">
               <Button
-                intent="inspect"
+                intent="commit"
                 :busy="busy"
                 variant="outline"
                 @click="sendEmail"

@@ -1166,6 +1166,14 @@ reassessment before resuming point 3; completed point history remains evidence.
     and actual users presentation without weakening the fail-closed resolver.
   - Record asset preparation order in existing frontend guidance and preserve data.
     Commit evidence; owner acceptance/final gates remain 11b/12.
+- [x] 11a95. Refine buttons to quiet outlines and outcome-based openers.
+  - Owner approved: shipped action buttons use outlines without solid fill;
+    opening a modal preserves its intended operation's semantic color. Blue is
+    reserved for reads/refresh/preview, while mixed-effect tools are purple.
+  - Final selected operation retains its effect color. Review sibling views,
+    synchronize canonical rules and both frontend instruction references, then
+    format before final asset build and native UI readiness. Commit before 11b.
+    Broad verification remains point 12; preserve data and proof authority.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -8134,3 +8142,55 @@ source hashing; broad verification remains final point 12. Mandatory hooks/curre
 knowledge accompany this documentation commit. No Docker resources were created;
 all databases, volumes, caches, backups and prior evidence remain preserved.
 Manual owner acceptance 11b remains open.
+
+### Point 11a95 — Quiet outlines and effect-colored modal tools
+
+Owner refinement on 2026-11-05 supersedes 11a93's solid main actions and blue modal
+openers: all supplied action buttons use quiet outlines. A modal opener retains
+the intended operation's effect color. Different offered effects use purple;
+selected concrete confirmation uses green/yellow/red. Owner explicitly requested
+that these rules be durable for later work.
+
+Added public mixed ButtonIntent mapped to existing primary/purple tokens. All
+colored intents now default outline, including commit. Removed explicit solid
+variants from shipped action/dialog consumers; navigation/picker selections use
+subtle states and soft hover never switches to a solid fill. The low-level solid
+variant remains an explicit custom-presentation capability, unused by supplied
+views. Source inspection found no remaining solid Button selection in src Vue.
+
+Auth directory and selected-user tools now derive colors from offered effects,
+including parameter alternatives for set/clear lock. Multiple same-effect choices
+keep their effect color, rather than automatically becoming purple. Single create,
+edit, policy, avatar, email and security tools retain their mutation meaning before
+modal admission. Actual Preview/reads/refresh remain blue. Shared table preferences
+use mixed; generic bulk projection preserves explicit source intents or derives
+known native destructive/save/create meanings. Unknown effects default neutral;
+no translated-label or password-based inference is introduced. Final operation
+admission, proof and Audit remain unchanged.
+
+Updated the canonical public component action table and examples, Auth guide,
+current changelogs and both owner/customer frontend references. Root/customer
+AGENTS already require shared patterns and canonical presentation contracts; no
+additional always-loaded policy is needed. The reusable rule lives in the public
+component guide, with skills linking to it. Existing unreleased module/platform
+versions remain appropriate; mixed is an additive presentation intent, with no
+new dependency, backend API or data/storage change.
+
+Five focused frontend intent/group/proof/adapter cases PASS; the generic bulk
+adapter case was rerun after its metadata mapping adjustment and PASS. Formatting
+and quick source lint completed before the final supported strict TypeScript /
+assets / native error build PASS. Native browser preparation PASS on users and
+policy pages in dark/light: source/build agreement, green Create opener, purple
+activity/schedule/deletion/invitation/lock tools, red factor reset, yellow preference
+reset, concrete green activation/yellow deactivation confirmation and blue Preview.
+Save and confirmation use outline; no rendered solid button remains. Real page
+inspection confirms quiet semantic hover/backgrounds. No business write was
+submitted; browser session logged out. Evidence: .runtime/button-outline/
+{focused,bulk-focused,build,readiness}.log and
+.runtime/artifacts/playwright/button-outline/. All declared module source hashes
+match final compiled evidence, preserving 11a94's preparation ordering.
+
+No migration/reset, Docker resources or business-data cleanup. Databases, volumes,
+model/Qdrant caches, backups and prior reports are preserved. Mandatory hooks and
+fresh knowledge accompany the commit. Owner manual acceptance 11b and final broad
+verification/release 12 remain open.

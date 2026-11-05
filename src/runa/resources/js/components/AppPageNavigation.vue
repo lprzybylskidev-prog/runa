@@ -68,7 +68,7 @@ const label = computed(() => props.label || t('pageNavigation'));
       :key="entry.key"
       intent="neutral"
       :variant="
-        entry.routeKey === publishedCurrent?.routeKey ? 'solid' : 'outline'
+        entry.routeKey === publishedCurrent?.routeKey ? 'soft' : 'outline'
       "
       :aria-current="
         entry.routeKey === publishedCurrent?.routeKey ? 'page' : undefined

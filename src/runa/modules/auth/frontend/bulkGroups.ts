@@ -39,7 +39,7 @@ export function authBulkGroup(command: string) {
   );
 }
 
-/** Source-owned effects; opening a tool is always inspect at the call site. */
+/** Source-owned effect; modal admission does not change action meaning. */
 export function authActionIntent(
   key: string,
   enabled?: boolean | null,
@@ -78,6 +78,34 @@ export function authActionIntent(
   )
     return 'caution';
   return 'commit';
+}
+
+/** Different effects are purple until the user chooses a concrete operation. */
+export function authActionGroupIntent(
+  intents: readonly ButtonIntent[],
+): ButtonIntent {
+  const effects = new Set(intents);
+  return effects.size > 1 ? 'mixed' : (intents[0] ?? 'neutral');
+}
+
+export function authBulkActionIntent(
+  commands: readonly string[],
+): ButtonIntent {
+  return authActionGroupIntent(
+    commands.flatMap((key) => {
+      if (
+        [
+          'set_attempt_lock',
+          'set_security_lock',
+          'toggle_security_lock',
+          'toggle_activation',
+        ].includes(key)
+      )
+        return ['commit', 'caution'] as const;
+      if (key === 'toggle_deletion') return ['commit', 'danger'] as const;
+      return [authActionIntent(key)];
+    }),
+  );
 }
 
 /** One thematic order for single-account and selected-account commands. */

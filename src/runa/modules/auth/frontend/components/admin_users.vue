@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import AuthAdminUserDetails from '../AuthAdminUserDetails.vue';
 import AuthAdminActionGroups from '../AuthAdminActionGroups.vue';
-import { groupAuthActions, authBulkGroup } from '../bulkGroups';
+import {
+  groupAuthActions,
+  authBulkGroup,
+  authBulkActionIntent,
+} from '../bulkGroups';
 import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
 import { Button, Card, ContentLoading, Dialog } from '@/runa/ui';
@@ -216,7 +220,7 @@ watch(
       <template #actions>
         <Button
           v-if="canCreate"
-          intent="inspect"
+          intent="commit"
           size="sm"
           :disabled="form.busy.value"
           @click="table.select(null)"
@@ -253,7 +257,11 @@ watch(
             <AuthAdminActionGroups :groups="bulkGroups">
               <template #default="{ item: choice }">
                 <Button
-                  intent="inspect"
+                  :intent="
+                    authBulkActionIntent(
+                      choice.commands.map((command) => command.key),
+                    )
+                  "
                   :data-bulk-command="choice.value"
                   size="sm"
                   variant="outline"

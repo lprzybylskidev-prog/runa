@@ -90,7 +90,7 @@ async function key(
             "
             :data-time="`${kind}-${n - 1}`"
             size="sm"
-            :variant="Number(parts[kind]) === n - 1 ? 'solid' : 'ghost'"
+            :variant="Number(parts[kind]) === n - 1 ? 'soft' : 'ghost'"
             class="w-full tabular-nums"
             @click="choose(kind, n - 1)"
             @keydown="key($event, kind, n - 1)"

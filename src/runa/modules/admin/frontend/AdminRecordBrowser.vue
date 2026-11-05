@@ -52,7 +52,7 @@ watch(
       <slot name="toolbar" :table="table" />
       <Button
         v-if="allowCreate"
-        intent="inspect"
+        intent="commit"
         class="mb-4"
         :disabled="form.busy.value"
         @click="table.select(null)"

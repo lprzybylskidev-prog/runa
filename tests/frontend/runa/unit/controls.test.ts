@@ -1,4 +1,8 @@
-import { authActionIntent } from '../../../../src/runa/modules/auth/frontend/bulkGroups';
+import {
+  authActionIntent,
+  authActionGroupIntent,
+  authBulkActionIntent,
+} from '../../../../src/runa/modules/auth/frontend/bulkGroups';
 import { afterEach, expect, it } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import {
@@ -42,7 +46,7 @@ it('keeps action meaning independent from feedback, labels, hierarchy and busy s
     slots: { default: 'Zapisz' },
   });
   expect(wrapper.attributes('data-tone')).toBe('success');
-  expect(wrapper.attributes('data-variant')).toBe('solid');
+  expect(wrapper.attributes('data-variant')).toBe('outline');
   await wrapper.setProps({ variant: 'outline', busy: true });
   expect(wrapper.attributes('data-tone')).toBe('success');
   expect(wrapper.attributes('data-variant')).toBe('outline');
@@ -66,4 +70,19 @@ it('colors selected Auth effects rather than password requirements or mixed tool
   expect(authActionIntent('set_attempt_lock', null, true)).toBe('commit');
   expect(authActionIntent('reset_preferences')).toBe('caution');
   expect(authActionIntent('revoke')).toBe('danger');
+});
+
+it('distinguishes mixed Auth tools from concrete operation effects', () => {
+  expect(authBulkActionIntent(['activate', 'deactivate'])).toBe('mixed');
+  expect(authBulkActionIntent(['delete', 'restore'])).toBe('mixed');
+  expect(authBulkActionIntent(['set_attempt_lock'])).toBe('mixed');
+  expect(authBulkActionIntent(['set_security_lock'])).toBe('mixed');
+  expect(authBulkActionIntent(['factor_reset'])).toBe('danger');
+  expect(authBulkActionIntent(['activate'])).toBe('commit');
+  expect(authActionGroupIntent(['commit', 'commit'])).toBe('commit');
+  expect(authActionGroupIntent(['commit', 'caution'])).toBe('mixed');
+  expect(authActionGroupIntent(['danger'])).toBe('danger');
+  expect(
+    mount(Button, { props: { intent: 'mixed' } }).attributes('data-tone'),
+  ).toBe('primary');
 });

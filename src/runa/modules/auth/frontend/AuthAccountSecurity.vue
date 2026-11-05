@@ -273,7 +273,7 @@ watch(
             <p class="text-xs text-muted">{{ securityMethod.description }}</p>
           </div>
           <Button
-            intent="inspect"
+            :intent="securityMethod.enrolled ? 'danger' : 'commit'"
             variant="outline"
             :disabled="busy || modal !== null || !securityMethod.available"
             @click="selectMethod(securityMethod.value, securityMethod.enrolled)"
@@ -291,7 +291,7 @@ watch(
           security.recovery_codes_enabled &&
           security.enrolled.includes('totp')
         "
-        intent="inspect"
+        intent="caution"
         variant="outline"
         :disabled="busy || modal !== null"
         @click="setAction('recoveryRotate')"
@@ -319,7 +319,7 @@ watch(
         </p>
         <div class="flex flex-wrap gap-2">
           <Button
-            intent="inspect"
+            intent="commit"
             variant="outline"
             :disabled="busy || !canTrustDevice"
             @click="setAction('trustIssue')"

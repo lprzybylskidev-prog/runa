@@ -110,7 +110,7 @@ function operation(key: string, revoke = false) {
               <div v-if="writable" class="flex flex-wrap gap-2">
                 <Button
                   v-if="choices.includes(key)"
-                  intent="inspect"
+                  intent="commit"
                   size="sm"
                   variant="outline"
                   :disabled="controller.busy.value"

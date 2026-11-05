@@ -334,15 +334,31 @@ export function useAdminTable(
       ...(source.bulk
         ? {
             bulk: {
-              actions: source.bulk.actions.filter((action) =>
-                section.value?.commands.some(
-                  (command) =>
-                    command.key === action.key &&
-                    command.bulk &&
-                    command.available &&
-                    command.mode === 'independent',
-                ),
-              ),
+              actions: source.bulk.actions
+                .filter((action) =>
+                  section.value?.commands.some(
+                    (command) =>
+                      command.key === action.key &&
+                      command.bulk &&
+                      command.available &&
+                      command.mode === 'independent',
+                  ),
+                )
+                .map((action) => {
+                  const command = section.value?.commands.find(
+                    (command) => command.key === action.key,
+                  );
+                  return {
+                    ...action,
+                    intent:
+                      action.intent ??
+                      ((command?.destructive
+                        ? 'danger'
+                        : command && ['save', 'create'].includes(command.intent)
+                          ? 'commit'
+                          : 'neutral') as ButtonIntent),
+                  };
+                }),
               cancellation: source.bulk.cancellation,
               start: async (input, signal) => {
                 assertCurrent(signal);
@@ -358,11 +374,15 @@ export function useAdminTable(
                 const snapshot = JSON.stringify([query.value, selection.value]);
                 confirmation.value = {
                   title: command.title,
-                  intent: command.destructive
-                    ? 'danger'
-                    : ['save', 'create'].includes(command.intent)
-                      ? 'commit'
-                      : 'caution',
+                  intent:
+                    source.bulk?.actions.find(
+                      (action) => action.key === command.key,
+                    )?.intent ??
+                    (command.destructive
+                      ? 'danger'
+                      : ['save', 'create'].includes(command.intent)
+                        ? 'commit'
+                        : 'neutral'),
                 };
                 const accepted = await new Promise<boolean>((resolve) => {
                   confirmResult = resolve;

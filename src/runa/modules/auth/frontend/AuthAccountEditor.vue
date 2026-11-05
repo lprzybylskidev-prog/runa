@@ -310,7 +310,7 @@ function closeCrop(value: boolean) {
         </dl>
         <Button
           v-if="has('email_verification_enabled') && !profile.email_verified"
-          intent="inspect"
+          intent="commit"
           class="mt-5"
           :busy="busy"
           @click="sendVerification"
@@ -443,7 +443,7 @@ function closeCrop(value: boolean) {
             />
             <Button
               v-if="originals[0] && files.length"
-              intent="inspect"
+              intent="commit"
               @click="cropOpen = true"
               >{{ text('Popraw kadr', 'Adjust crop') }}</Button
             >

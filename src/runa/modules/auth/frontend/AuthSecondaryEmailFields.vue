@@ -80,7 +80,7 @@ defineExpose({
         <div class="flex flex-wrap gap-1">
           <Button
             v-if="canChange"
-            intent="inspect"
+            intent="commit"
             variant="ghost"
             size="sm"
             :disabled="busy"
@@ -92,7 +92,7 @@ defineExpose({
           >
           <Button
             v-if="!address.verified && canChange"
-            intent="inspect"
+            intent="commit"
             :busy="busy"
             variant="ghost"
             size="sm"

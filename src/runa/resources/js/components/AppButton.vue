@@ -42,13 +42,7 @@ const tone = computed(() =>
   props.intent ? buttonIntentTones[props.intent] : (props.tone ?? 'neutral'),
 );
 const variant = computed(
-  () =>
-    props.variant ??
-    (props.intent === 'commit'
-      ? 'solid'
-      : tone.value === 'neutral'
-        ? 'neutral'
-        : 'outline'),
+  () => props.variant ?? (tone.value === 'neutral' ? 'neutral' : 'outline'),
 );
 </script>
 
