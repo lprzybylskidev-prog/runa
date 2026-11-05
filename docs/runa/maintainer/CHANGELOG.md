@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Present selected-user sessions and trusted devices with the shared account Table, authorized dates, remembered sign-in and native revocation; rename Trust to Trusted devices and retain bounded cursor navigation.
+
 - Omit Auth action-group separators and leading indentation at the beginning of each wrapped row; retain same-row separators during resizing and locale changes.
 
 - Present Auth single/bulk action groups inline without visible category headings, using subtle vertical separators and responsive wrapping.

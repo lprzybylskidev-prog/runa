@@ -254,6 +254,17 @@ inputs. Sessions/trust/history support older/latest results without totals or
 export adapters. Failed reads remain unavailable; changing subjects clears and
 cancels obsolete collection lanes. Reconciliation preserves unrelated dirty drafts.
 
+Selected-user Security renders Sessions and Trusted devices through the same public
+`Table` used by the account panel. Sessions show sign-in, latest activity, expiry
+and remembered sign-in; devices show creation and expiry. Each table paginates its
+current authorized batch (at most 100 rows), with separate Latest/Older controls
+for the owning before-cursor batches. Older is offered only for a full batch;
+counts describe the loaded batch, never an account-wide inventory. No local sort,
+search or export is offered. Empty results retain table headers, refresh returns
+to the latest batch, and row revocation keeps native confirmation/proof and grants.
+The Admin session projection does not identify the administrator's current session
+within another account's list, so no misleading current-session column is shown.
+
 Email, invitation, lifecycle, security, preferences, policy and bulk operations
 remain independent owning transactions/runners with their existing atomic Audit,
 proof consumption, outbox and refusal semantics. They cannot join profile/access

@@ -2,6 +2,8 @@
 
 ## 3.0.0 — 2026-11-03
 
+- Present selected-user sessions and trusted devices with the shared account Table, authorized dates, remembered sign-in and native revocation; rename Trust to Trusted devices and retain bounded cursor navigation.
+
 - Hide single/bulk action separators at wrapped row starts while preserving same-row separators and unclipped keyboard focus.
 
 - Refine single/bulk action grouping into inline buttons with vertical separators, accessible category names and no visible group headings.

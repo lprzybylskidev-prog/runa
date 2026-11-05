@@ -1022,6 +1022,12 @@ reassessment before resuming point 3; completed point history remains evidence.
     preserve wrapping, accessible names and unclipped button focus.
   - Verify rendered resizing/locale states, synchronize guidance and current assets,
     and commit before returning to owner acceptance.
+- [x] 11a80. Present selected-user sessions and trusted devices as tables.
+  - Reuse the shared account Table with authorized session timestamps and remembered
+    sign-in; rename Trust to Trusted devices and show creation/expiry in a table.
+  - Preserve native row commands, confirmation/proof, bounded cursor reads and
+    replacement seams. Prepare current assets, synchronize guidance and commit
+    before returning to owner manual acceptance; broad gates remain point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7201,3 +7207,42 @@ Mandatory staged hooks and knowledge freshness accompany the commit. No disposab
 Docker/database resources were created; development/test data, services, volumes,
 caches, backups and previous reports are preserved. Owner manual acceptance 11b
 and final verification/release 12 remain open.
+
+### Point 11a80 — Security session and trusted-device tables
+
+The owner requests tables in selected-user Security and the name Trusted devices
+instead of Trust. The default now composes the same public Table as the account
+panel. Sessions expose authorized sign-in/activity/expiry and remembered sign-in;
+trusted devices expose creation/expiry. Native row commands still enter the existing
+operation dialog and preserve confirmation, proof, grants and target identifiers.
+No current-session indicator is invented for the target-account projection.
+
+Each Table locally paginates only its current bounded native batch, with no search,
+sorting or export. Existing before-cursor navigation remains separate; a partial
+batch no longer offers an unnecessary older read. Refresh returns to latest through
+the owning form controller, preserving unrelated drafts. Empty results retain the
+headers. The initial mobile browser check exposed grid intrinsic-width overflow;
+setting min-w-0 on the owning content cell keeps horizontal scrolling in Table.
+
+Knowledge was current and queried. The original Auth administration/security,
+shared tables/loading/forms, frontend/Vue/Tailwind and installed Tailwind 4.3.3
+contracts grounded this presentation-only change. Current Auth guide and module/
+central changelogs are synchronized. Auth remains the existing unreleased 3.1.0
+candidate; no API, signature, storage, dependency or replacement seam changes.
+Owner/customer instruction products already require shared controls and responsive
+presentation, so neither needs an additional rule or reference.
+
+Current strict frontend/native/static asset build PASS. Focused compiled native
+Nginx/API readiness PASS for real populated own sessions and empty trusted-device
+tables in PL/EN, light/dark, 390/1440px; checked column labels, retained empty
+headers, responsive overflow, refresh and native session-revocation dialog/cancel.
+Screenshots were inspected. No management write was submitted; browser sessions
+logged out. Evidence: .runtime/user-details/security-tables-*.log and
+.runtime/artifacts/playwright/security-tables/. No new implementation-mirroring
+unit tests or broad suites are needed for this reversible default presentation
+change; final affected-area verification remains point 12.
+
+Mandatory staged hooks and knowledge freshness accompany the commit. No disposable
+Docker/database resources were created or removed. Active services, development/
+test data, volumes, caches, backups and prior reports are preserved. Owner manual
+acceptance 11b and final verification/release 12 remain open.

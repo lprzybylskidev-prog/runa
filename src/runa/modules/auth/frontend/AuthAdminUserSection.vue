@@ -25,6 +25,7 @@ import {
   FormNotifications,
   RadioGroup,
   TextInput,
+  Table,
   formValuesEqual,
   formatApplicationInstant,
 } from '@/runa/ui';
@@ -34,6 +35,7 @@ import {
   AuthEmailPreferenceFields,
 } from '@/runa/auth';
 import type { AuthIdentityField } from '@/runa/auth';
+import type { TableColumn, TableQuery } from '@/runa/ui';
 import { PermissionsAssignments } from '@/runa/permissions';
 import AuthAdminAvatar from './AuthAdminAvatar.vue';
 const props = defineProps<
@@ -399,6 +401,7 @@ const labels = computed<Record<string, string>>(() => ({
   lifecycle: text('Stan konta', 'Account status'),
   eligibility: text('Warunki dostępu', 'Access conditions'),
   assignments: text('Role i uprawnienia', 'Roles and permissions'),
+  trust: text('Zaufane urządzenia', 'Trusted devices'),
 }));
 function fieldValue(key: string): AdminJson {
   if (kind.value !== 'eligibility') return get(key);
@@ -514,7 +517,9 @@ async function older() {
   if (id && typeof next.value === 'string')
     await resource.read({ kind: 'record', public_id: id, cursor: next.value });
 }
-const next = computed(() => rows.value.at(-1)?.public_id);
+const next = computed(() =>
+  rows.value.length === 100 ? rows.value.at(-1)?.public_id : undefined,
+);
 const cursor = computed(() => ['sessions', 'trust'].includes(kind.value));
 const canSave = computed(() =>
   commands.value.some((command) => command.key === 'save'),
@@ -554,6 +559,45 @@ const fieldTitle = (key: string) =>
       } as Record<string, { pl: string; en: string }>
     )[key] ?? key,
   );
+const tableQuery = ref<TableQuery>({
+  page: 1,
+  perPage: 10,
+  sort: null,
+  filters: {},
+});
+watch(rows, () => {
+  tableQuery.value = { ...tableQuery.value, page: 1 };
+});
+const tableColumns = computed<TableColumn<Record<string, AdminJson>>[]>(() =>
+  (kind.value === 'sessions'
+    ? ['authenticated_at', 'activity_at', 'expires_at', 'remembered']
+    : ['created_at', 'expires_at']
+  ).map((key) => ({
+    key,
+    label: fieldTitle(key),
+    value: (row) => display(row[key] ?? null, key),
+    sortable: false,
+  })),
+);
+const rowCommands = computed(() =>
+  props.section.readonly
+    ? []
+    : commands.value.filter(
+        (command) =>
+          command.key ===
+          (kind.value === 'sessions' ? 'revoke' : 'revoke_device'),
+      ),
+);
+const tableRefreshing = ref(false);
+async function refreshTable() {
+  if (tableRefreshing.value || resource.busy.value) return;
+  tableRefreshing.value = true;
+  try {
+    await props.controller.refresh();
+  } finally {
+    tableRefreshing.value = false;
+  }
+}
 </script>
 <template>
   <PermissionsAssignments
@@ -602,14 +646,51 @@ const fieldTitle = (key: string) =>
               t('Retry loading')
             }}</Button></Alert
           >
-          <div v-else class="space-y-5 md:col-span-2">
+          <div v-else class="min-w-0 space-y-5 md:col-span-2">
             <FormNotifications
               :locale="locale"
               :error="
                 resource.error.value ? t(resource.error.value.message) : ''
               "
             />
-            <div v-if="rows.length" class="space-y-3">
+            <Table
+              v-if="cursor"
+              v-model:query="tableQuery"
+              mode="client"
+              :rows="rows"
+              :columns="tableColumns"
+              :row-key="(row) => String(row.public_id)"
+              :caption="labels[kind] ?? t(section.title)"
+              :english="locale === 'en'"
+              :searchable="false"
+              :retain-empty-frame="true"
+              :refresh="refreshTable"
+              :refreshing="resource.busy.value || tableRefreshing"
+              :refresh-disabled="controller.busy.value"
+            >
+              <template v-if="kind === 'sessions'" #cell-remembered="{ row }">
+                <BooleanBadge
+                  :value="row.remembered === true"
+                  :locale="locale"
+                  :tone="
+                    adminBooleanTone('remembered', row.remembered === true)
+                  "
+                />
+              </template>
+              <template v-if="rowCommands.length" #actions="{ row }">
+                <Button
+                  v-for="command in rowCommands"
+                  :key="command.key"
+                  size="sm"
+                  variant="outline"
+                  tone="danger"
+                  :disabled="controller.busy.value || resource.busy.value"
+                  @click="rowAction(row, command.key)"
+                  >{{ t(command.title) }}</Button
+                >
+              </template>
+            </Table>
+            <div v-else-if="rows.length" class="space-y-3">
               <div
                 v-for="(row, index) in rows"
                 :key="String(row.public_id ?? index)"
@@ -699,12 +780,24 @@ const fieldTitle = (key: string) =>
               v-if="cursor && (next || resource.result.value)"
               class="flex gap-2"
             >
-              <Button size="sm" @click="resource.clear()">{{
-                t('Latest entries')
-              }}</Button>
               <Button
                 size="sm"
-                :disabled="resource.busy.value || !next"
+                :disabled="
+                  resource.busy.value ||
+                  controller.busy.value ||
+                  tableRefreshing
+                "
+                @click="refreshTable"
+                >{{ t('Latest entries') }}</Button
+              >
+              <Button
+                size="sm"
+                :disabled="
+                  resource.busy.value ||
+                  controller.busy.value ||
+                  tableRefreshing ||
+                  !next
+                "
                 @click="older"
                 >{{ t('Older entries') }}</Button
               >
