@@ -20,9 +20,9 @@ code and optional app modules are supported; copied owner files or a Contracts
 namespace never authorize platform/internal APIs. Preserve installed local
 extensions during reviewed updates. This default contains no owner-only procedure.
 
-For password/2FA proof before entry or a sensitive operation, use the public Auth
+For password proof before entry or a sensitive operation, use the public Auth
 `docs/runa/handbook/modules/auth/entry-ui.md#operation-proof-composition`
-with its inline or MinimalLayout page default. Reuse the caller's session and
+with its shared full-page default. Reuse the caller's session and
 proof controller; presentation replacements do not duplicate credential requests.
 
 Admin follows the shared application language preference (Polish default, English
@@ -107,3 +107,7 @@ feedback context and password requirements never determine action meaning.
 The canonical action policy requires quiet outlines, effect colors even before a
 modal opens, and purple mixed-effect tools with a concrete semantic final action.
 Blue denotes reads/refresh/preview; never use solid action fills in supplied views.
+
+For Permissions presentation composition and selected-user copy/preset tools use
+`docs/runa/handbook/modules/permissions/administration.md`. Keep definition management
+separate from account access, and preserve the native reviewed source fingerprints.

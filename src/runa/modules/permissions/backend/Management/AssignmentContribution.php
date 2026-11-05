@@ -12,7 +12,9 @@ use Runa\Contracts\Modules\ManagementFieldAccess;
 use Runa\Contracts\Modules\ManagementOperation;
 use Runa\Contracts\Modules\ManagementPageProvider;
 use Runa\Contracts\Modules\ManagementSection;
+use Runa\Modules\Auth\Contracts\AuthAdministration;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
+use Runa\Modules\Permissions\Contracts\PermissionsAuthority;
 
 final class AssignmentContribution implements ManagementPageProvider
 {
@@ -48,23 +50,31 @@ final class AssignmentContribution implements ManagementPageProvider
             $fields[] = AdministrationPages::field($key, $label, 'uuid', 'access.manage', multiple: true);
         }
 
-        foreach (['search', 'language', 'selected'] as $filter) {
-            $text = ['pl' => $filter, 'en' => $filter];
-            $fields[] = new ManagementFieldAccess(new ManagementField($filter, 'text', $text, $text, filterable: true, maxLength: $filter === 'selected' ? 8192 : 160), 'runa.permissions.introspection.read');
-        }
+        $fields[] = new ManagementFieldAccess(new ManagementField('source_user', 'uuid', ['pl' => 'Użytkownik źródłowy', 'en' => 'Source user'], ['pl' => 'Kopiuj zwykłe role i uprawnienia.', 'en' => 'Copy ordinary roles and permissions.'], writable: true, referenceModule: 'runa.auth', referenceOperation: 'administration.users'), 'runa.auth.users.read', 'runa.permissions.access.manage');
+        $fields[] = new ManagementFieldAccess(new ManagementField('preset', 'uuid', ['pl' => 'Szablon', 'en' => 'Preset'], ['pl' => 'Zapisany szablon dostępu.', 'en' => 'Saved access preset.'], writable: true, referenceModule: 'runa.permissions', referenceOperation: 'access.definitions'), 'runa.permissions.introspection.read', 'runa.permissions.access.manage');
+        $fields[] = new ManagementFieldAccess(new ManagementField('mode', 'dictionary', ['pl' => 'Sposób zastosowania', 'en' => 'Application mode'], ['pl' => 'Dodaj albo zastąp zwykłe przypisania.', 'en' => 'Add or replace ordinary assignments.'], writable: true, choices: ['add', 'replace']), 'runa.permissions.introspection.read', 'runa.permissions.access.manage');
+
+        $fields = [...$fields, ...AdministrationPages::catalogueFilters()];
 
         return [new ManagementContribution('user_access', 'runa.auth.users.profile', new ManagementSection('assignments', 'Access',
             'runa.permissions.introspection.read', 'runa.permissions.access.manage', 'assignments', $fields, [
                 new ManagementCommandDefinition('save', 'Save access', new ManagementOperation(new ApiOperation('access.apply_assignments', 'runa.permissions.access.manage'),
                     ['roles', 'permissions'], 'password', previewRequired: true), 'assignments', 'atomic', AssignmentEditor::class,
                     intent: 'save', proofAction: 'runa.permissions.access.manage'),
-            ]))];
+                AdministrationPages::command('copy', 'Copy ordinary assignments', 'access.apply_assignments', ['source_user', 'mode'], 'assignments', participant: AssignmentEditor::class),
+                AdministrationPages::command('preset', 'Apply access preset', 'access.apply_assignments', ['preset', 'mode'], 'assignments', participant: AssignmentEditor::class),
+            ])), new ManagementContribution('user_authority', 'runa.auth.users.profile', new ManagementSection('authority', ['pl' => 'Superadministrator', 'en' => 'Super administrator'],
+                'runa.permissions.authority.manage', 'runa.permissions.authority.manage', 'authority', [
+                    new ManagementFieldAccess(new ManagementField('grant', 'boolean', ['pl' => 'Superadministrator', 'en' => 'Super administrator'], ['pl' => 'Chronione członkostwo systemowe.', 'en' => 'Protected system membership.'], writable: true), 'runa.permissions.authority.manage', 'runa.permissions.authority.manage'),
+                    new ManagementFieldAccess(new ManagementField('review_summary', 'text', ['pl' => 'Skutki zmiany', 'en' => 'Change impact'], ['pl' => 'Przegląd chronionego członkostwa.', 'en' => 'Protected membership review.']), 'runa.permissions.authority.manage'),
+                ], [AdministrationPages::command('change', 'Change protected authority', 'authority.apply', ['grant'], 'authority', 'authority.manage', true)], required: false))];
     }
 
     public function bindings(): array
     {
         return [new ManagementBinding('assignments', AssignmentEditor::class, [
-            new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.2.0', ['assignments', 'previewAssignments', 'applyAssignments', 'definitions']),
-        ], AssignmentEditor::class)];
+            new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.2.0', ['assignments', 'previewAssignments', 'previewCopy', 'previewPreset', 'applyAssignments', 'definitions']),
+            new ManagementApiTarget('runa.auth', AuthAdministration::class, '2.1.0', ['users']),
+        ], AssignmentEditor::class), new ManagementBinding('authority', AuthorityEditor::class, [new ManagementApiTarget('runa.permissions', PermissionsAuthority::class, '1.0.0', ['previewAuthority', 'applyAuthority'])])];
     }
 }

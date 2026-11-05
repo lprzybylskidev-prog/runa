@@ -7,6 +7,7 @@ const props = defineProps<
   AdminSectionPresentationProps & {
     field: 'roles' | 'permissions';
     active: boolean;
+    command?: 'save' | 'store';
   }
 >();
 const { locale, t } = useAdminLocale();
@@ -39,7 +40,8 @@ const readonly = computed(
     props.section.readonly ||
     props.section.fields.find((field) => field.key === props.field)?.readonly ||
     !props.section.commands.some(
-      (command) => command.key === 'save' && command.available,
+      (command) =>
+        command.key === (props.command ?? 'save') && command.available,
     ),
 );
 const result = computed(() =>
@@ -72,13 +74,14 @@ async function read(reset = false) {
     previous.value = [];
   }
   const id = record.value?.public_id;
-  if (!props.active || !id || props.page.state.value !== 'ready') return;
+  if (!props.active || !record.value || props.page.state.value !== 'ready')
+    return;
   const own = ++epoch;
   const focusedRow = rows.value?.contains(document.activeElement);
   const language = locale.value;
   await resource.read({
     kind: 'options',
-    public_id: id,
+    ...(id ? { public_id: id } : {}),
     field: props.field,
     limit: 25,
     ...(cursor.value ? { cursor: cursor.value } : {}),
@@ -116,11 +119,11 @@ async function hydrate() {
     (value) => !resolved.has(value) && !labels.has(value),
   );
   const language = locale.value;
-  if (!props.active || !id || !ids.length) return;
+  if (!props.active || !record.value || !ids.length) return;
   const own = ++hydrationEpoch;
   await selectedResource.read({
     kind: 'options',
-    public_id: id,
+    ...(id ? { public_id: id } : {}),
     field: props.field,
     limit: 100,
     filters: { selected: JSON.stringify(ids), language },

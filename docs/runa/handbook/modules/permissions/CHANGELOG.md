@@ -2,11 +2,13 @@
 
 ## 2.1.0 — Unreleased
 
+- Simplify Permissions to a readonly permission catalogue, roles and presets; combine details/editing in one dialog. Move account copy/preset and separately granted protected-authority workflows to Auth user details. Reuse guarded search, compact member selection, native source fingerprints, reviewed password-confirmed writes and atomic Audit; remove obsolete access/effective page adapters and exports.
+
 - Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/previews, purple mixed-effect tools and red destructive effects, independent of feedback context or password proof.
 
 - Use fresh password confirmation for all ordinary access, assignment, definition and protected-authority mutations. Consume AuthStepUp 2.0.0 with the existing grants, reviews, revisions, last-administrator checks and atomic Audit. The unreleased 2.1.0 candidate retains its public Permissions signatures.
 
-- Extend PermissionsAccess to 2.2.0 with allowlisted definition ordering and literal code/name filters before cursor paging. Show both localized names and full catalogue table controls; enable local search/filters in the bounded effective-permissions table.
+- Extend PermissionsAccess to 2.2.0 with allowlisted definition ordering and literal code/name filters before cursor paging. Show both localized names and full catalogue table controls.
 
 - Complete access-editor interaction states: pointer/hover/pressed/focus on custom buttons, inherited checkbox cursors and truthful disabled row/page affordances.
 
@@ -14,7 +16,7 @@
 
 - Replace the expanded assignment lists with a dedicated compact catalogue editor, integrated search/assigned scope, retained category queries/pages, dense rows and bounded pagination. Preserve readonly browsing, unavailable-assignment removal and native proof/review.
 
-- Omit generic access instructions and show account-selection, assignment-submit and retry progress through shared controls.
+- Show assignment-submit and retry progress through shared controls in Auth user details.
 
 - Add public searchable PermissionsAssignments presentation and bounded server definition search/selected-ID hydration through PermissionsAccess 2.1.0; preserve native grants, proof, revision and transactional Audit.
 
@@ -31,8 +33,8 @@
   pivots while preserving current eligibility, per-recipient limits, fingerprints,
   protected authority and mandatory aggregate Audit.
 
-- Keep the shared reset control beside filter fields; existing definition/effective
-  permission tables contain no timestamp columns requiring date formatting.
+- Keep the shared reset control beside filter fields; definition
+  tables contain no timestamp columns requiring date formatting.
 
 - Declare the shared `runa.permissions.tables.export` permission for authorized
   exports/printing across all Runa tables; retain owning reads and record Policies.

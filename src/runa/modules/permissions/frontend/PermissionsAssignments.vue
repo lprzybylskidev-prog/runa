@@ -11,6 +11,7 @@ import {
   formValuesEqual,
 } from '@/runa/ui';
 import PermissionsAssignmentList from './PermissionsAssignmentList.vue';
+import PermissionsAccessImport from './PermissionsAccessImport.vue';
 const props = defineProps<AdminSectionPresentationProps>();
 const emit = defineEmits<{
   submit: [section: string, command: string, fields?: string[]];
@@ -170,6 +171,16 @@ function revert() {
             :field="field"
           />
         </div>
+        <PermissionsAccessImport
+          :page="page"
+          :section="section"
+          :controller="controller"
+          :dirty="dirty"
+          @submit="
+            (section, command, fields) =>
+              emit('submit', section, command, fields)
+          "
+        />
         <template v-if="dirty && writable" #actions
           ><Button
             intent="inspect"

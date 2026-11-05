@@ -16,6 +16,8 @@ use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Contracts\Modules\TransactionalMutation;
 use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\Modules\Auth\Contracts\AuthAdministration;
+use Runa\Modules\Auth\Contracts\UserDirectoryQuery;
 use Runa\Modules\Permissions\Actions\ChangeAssignments;
 use Runa\Modules\Permissions\Contracts\AssignmentPreview;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
@@ -37,18 +39,26 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
         }
         $state = $this->api()->assignments($publicId);
 
-        return new ManagementRecord($publicId, hash('sha256', serialize($state)), $state['assigned']);
+        return new ManagementRecord($publicId, hash('sha256', serialize($state)), $state['assigned'] + ['source_user' => null, 'preset' => null, 'mode' => 'add']);
     }
 
     public function options(ManagementOptionsRead $input): ManagementOptions
     {
-        if (! in_array($input->field, ['roles', 'permissions'], true) || array_diff(array_keys($input->filters), ['search', 'language', 'selected']) !== []) {
+        if (! in_array($input->field, ['roles', 'permissions', 'preset', 'source_user'], true) || array_diff(array_keys($input->filters), ['search', 'language', 'selected']) !== []) {
             throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.definitions', 422);
         }
         $language = $input->filters['language'] ?? 'en';
         $search = $input->filters['search'] ?? '';
         if (! in_array($language, ['pl', 'en'], true) || ! is_string($search) || mb_strlen($search) > 160) {
             throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.definitions', 422);
+        }
+        if ($input->field === 'source_user') {
+            if (isset($input->filters['selected'])) {
+                throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.definitions', 422);
+            }
+            $page = $this->apis->resolve('runa.auth', AuthAdministration::class, '2.1.0')->users(new UserDirectoryQuery($input->cursor, $input->limit, $search ?: null));
+
+            return new ManagementOptions($input->field, array_map(fn ($user): array => ['value' => $user->publicId, 'label' => $user->displayName], $page->items), $page->next);
         }
         $filters = ['search' => $search];
         if (isset($input->filters['selected'])) {
@@ -62,7 +72,9 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
                 throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.definitions', 422);
             }
         }
-        $result = $this->api()->definitions($input->field === 'roles' ? 'role' : 'permission', $input->cursor, $filters);
+        $result = $this->api()->definitions(match ($input->field) {
+            'roles' => 'role', 'preset' => 'preset', default => 'permission'
+        }, $input->cursor, $filters);
         // The owning API pages at 100; respect the narrower consumer page without losing the cursor.
         $items = array_slice($result['items'], 0, $input->limit);
         $next = count($result['items']) > count($items) ? $items[array_key_last($items)]['public_id'] : $result['next'];
@@ -115,19 +127,28 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
 
     private function review(ManagementWrite $input): AssignmentPreview
     {
-        if ($input->command !== 'save' || $input->publicId === null || count($input->values) !== 2 || array_diff(array_keys($input->values), ['roles', 'permissions']) !== []) {
+        $expected = match ($input->command) {
+            'save' => ['roles', 'permissions'],
+            'copy' => ['source_user', 'mode'],
+            'preset' => ['preset', 'mode'],
+            default => throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.preview_assignments', 422),
+        };
+        if ($input->publicId === null || count($input->values) !== count($expected) || array_diff(array_keys($input->values), $expected) !== []) {
             throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.preview_assignments', 422);
         }
         if (! hash_equals($this->read(new ManagementRead($input->publicId))->revision, $input->revision)) {
             throw new OperationRejected('access_preview_stale', 'runa.permissions', 'access.preview_assignments', 409);
         }
         try {
-            $requested = new AssignmentSet($input->values['roles'], $input->values['permissions']);
+            return match ($input->command) {
+                'copy' => $this->api()->previewCopy($input->values['source_user'], $input->publicId, $input->values['mode']),
+                'preset' => $this->api()->previewPreset($input->values['preset'], $input->publicId, $input->values['mode']),
+                default => $this->api()->previewAssignments($input->publicId, new AssignmentSet($input->values['roles'], $input->values['permissions']), 'replace'),
+            };
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.preview_assignments', 422);
         }
 
-        return $this->api()->previewAssignments($input->publicId, $requested, 'replace');
     }
 
     private function api(): PermissionsAccess

@@ -54,3 +54,7 @@ feedback context and password requirements never determine action meaning.
 The canonical action policy requires quiet outlines, effect colors even before a
 modal opens, and purple mixed-effect tools with a concrete semantic final action.
 Blue denotes reads/refresh/preview; never use solid action fills in supplied views.
+
+For Permissions presentation composition and selected-user copy/preset tools use
+`docs/runa/handbook/modules/permissions/administration.md`. Keep definition management
+separate from account access, and preserve the native reviewed source fingerprints.

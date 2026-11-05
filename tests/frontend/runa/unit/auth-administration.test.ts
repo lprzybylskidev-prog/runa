@@ -6,7 +6,7 @@ import { computed, defineComponent, h, nextTick, ref, shallowRef } from 'vue';
 import DirectoryFilters from '../../../../src/runa/modules/auth/frontend/AuthDirectoryFilters.vue';
 import AuthAdminBulkAction from '../../../../src/runa/modules/auth/frontend/AuthAdminBulkAction.vue';
 import { DateTimeRangeInput, Select, NumberInput } from '@/runa/ui';
-import type { TableQuery } from '@/runa/ui';
+import type { TableQuery, SelectionProvider } from '@/runa/ui';
 import { AuthAdminUsers, AuthAdminSection } from '@/runa/auth';
 import {
   AuthOperationProofPage,
@@ -1746,7 +1746,7 @@ it('unknown refusals never echo payloads or claim nonexistent highlighted fields
   }
 });
 
-async function compactAssignmentFixture(readonly = false) {
+async function compactAssignmentFixture(readonly = false, imports = false) {
   const { PermissionsAssignments } = await import('@/runa/permissions');
   const id = (index: number) =>
     `01900000-0000-7000-8000-${String(index).padStart(12, '0')}`;
@@ -1783,6 +1783,38 @@ async function compactAssignmentFixture(readonly = false) {
       available: !readonly,
     },
   ];
+  if (imports) {
+    source.fields.push(
+      {
+        ...field('source_user', readonly),
+        label: 'Source user',
+        type: 'uuid',
+        lookup: true,
+      },
+      {
+        ...field('preset', readonly),
+        label: 'Preset',
+        type: 'uuid',
+        lookup: true,
+      },
+      {
+        ...field('mode', readonly),
+        label: 'Application mode',
+        type: 'dictionary',
+        choices: ['add', 'replace'],
+      },
+    );
+    source.commands.push(
+      ...(['copy', 'preset'] as const).map((key) => ({
+        ...source.commands[0]!,
+        key,
+        title: key,
+        mode: 'independent' as const,
+        intent: 'action' as const,
+        inputs: [key === 'copy' ? 'source_user' : 'preset', 'mode'],
+      })),
+    );
+  }
   const owner = page([source]);
   const requests: { field: string; search: string; limit: number }[] = [];
   vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
@@ -1793,7 +1825,11 @@ async function compactAssignmentFixture(readonly = false) {
       return response({
         public_id: target,
         revision: '1',
-        values: { roles: [id(61)], permissions: [] },
+        values: {
+          roles: [id(61)],
+          permissions: [],
+          ...(imports ? { source_user: null, preset: null, mode: 'add' } : {}),
+        },
       });
     const filters = JSON.parse(url.searchParams.get('filters') ?? '{}') as {
       search?: string;
@@ -1802,7 +1838,14 @@ async function compactAssignmentFixture(readonly = false) {
     const key = url.searchParams.get('field')!;
     const limit = Number(url.searchParams.get('limit'));
     requests.push({ field: key, search: filters.search ?? '', limit });
-    let items = key === 'roles' ? roles : permissions;
+    let items =
+      key === 'roles'
+        ? roles
+        : key === 'source_user'
+          ? [{ value: id(900), label: 'Source account' }]
+          : key === 'preset'
+            ? [{ value: id(901), label: 'Finance preset' }]
+            : permissions;
     if (filters.selected) {
       const selected = JSON.parse(filters.selected) as string[];
       items = items.filter((item) => selected.includes(item.value));
@@ -2324,3 +2367,81 @@ it.each(['sessions', 'trust'])(
     );
   },
 );
+
+it.each(['copy', 'preset'] as const)(
+  'selected-user access %s uses searchable guarded choices and the shared review flow',
+  async (method) => {
+    const { wrapper, form, source, id, requests, submitted } =
+      await compactAssignmentFixture(false, true);
+    const fieldKey = method === 'copy' ? 'source_user' : 'preset';
+    const tools = wrapper.get('[data-access-import]');
+    await tools
+      .findAll('button')
+      .find(
+        (button) =>
+          button.text() ===
+          (method === 'copy' ? 'Copy from user' : 'Use preset'),
+      )!
+      .trigger('click');
+    const select = tools
+      .findAllComponents(Select)
+      .find(
+        (select: { props(): { label: string } }) =>
+          select.props().label ===
+          (method === 'copy' ? 'Source user' : 'Preset'),
+      )!;
+    const provider = select.props('provider') as SelectionProvider;
+    const result = await provider({
+      cursor: null,
+      query: method === 'copy' ? 'Source' : 'Finance',
+      limit: 25,
+      signal: new AbortController().signal,
+    });
+    expect(result.options).toEqual([
+      {
+        value: id(method === 'copy' ? 900 : 901),
+        label: method === 'copy' ? 'Source account' : 'Finance preset',
+      },
+    ]);
+    expect(
+      requests.some(
+        (request) =>
+          request.field === fieldKey &&
+          request.search === (method === 'copy' ? 'Source' : 'Finance'),
+      ),
+    ).toBe(true);
+    select.vm.$emit('update:modelValue', id(method === 'copy' ? 900 : 901));
+    await nextTick();
+    expect(form.values.value[form.fieldPath(source.key, fieldKey)]).toBe(
+      id(method === 'copy' ? 900 : 901),
+    );
+    await tools
+      .findAll('button')
+      .find((button) => button.text() === 'Apply')!
+      .trigger('click');
+    expect(submitted).toHaveBeenCalledWith(source.key, method, []);
+    expect(form.values.value[form.fieldPath(source.key, 'roles')]).toEqual([
+      id(61),
+    ]);
+    expect(
+      form.values.value[form.fieldPath(source.key, 'permissions')],
+    ).toEqual([]);
+  },
+);
+
+it('selected-user copy and preset tools preserve dirty assignments and omit readonly capabilities', async () => {
+  const { wrapper, form, source, id } = await compactAssignmentFixture(
+    false,
+    true,
+  );
+  form.set(form.fieldPath(source.key, 'roles'), [id(1)]);
+  await nextTick();
+  expect(wrapper.get('[data-access-import]').text()).toContain(
+    'Save or revert',
+  );
+  for (const button of wrapper.get('[data-access-import]').findAll('button'))
+    expect(button.attributes('disabled')).toBeDefined();
+  wrapper.unmount();
+  const readonly = await compactAssignmentFixture(true, true);
+  expect(readonly.wrapper.find('[data-access-import]').exists()).toBe(false);
+});

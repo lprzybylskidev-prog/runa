@@ -121,6 +121,7 @@ const fields = computed(() =>
   props.section.fields.filter((field) => {
     if (
       [
+        'review_summary',
         'identifier_mode',
         'has_avatar',
         'avatar_initials',
@@ -319,15 +320,17 @@ const emailCommand = computed(() =>
     : emailCommands.value[0]?.key,
 );
 const submitCommand = computed(() =>
-  kind.value === 'primary_email'
-    ? emailCommand.value
-    : kind.value === 'secondary'
-      ? get('address_id')
-        ? 'change'
-        : 'add'
-      : canSave.value
-        ? 'save'
-        : undefined,
+  kind.value === 'runa.permissions.user_authority.authority'
+    ? commands.value.find((command) => command.key === 'change')?.key
+    : kind.value === 'primary_email'
+      ? emailCommand.value
+      : kind.value === 'secondary'
+        ? get('address_id')
+          ? 'change'
+          : 'add'
+        : canSave.value
+          ? 'save'
+          : undefined,
 );
 function submit() {
   attempted.value = true;
@@ -1034,7 +1037,13 @@ async function refreshTable() {
             !section.readonly &&
             (dirty || kind === 'secondary')
           "
-          intent="commit"
+          :intent="
+            kind === 'runa.permissions.user_authority.authority'
+              ? get('grant')
+                ? 'commit'
+                : 'danger'
+              : 'commit'
+          "
           type="submit"
           :busy="controller.busy.value"
           :disabled="!!conflicts.length"

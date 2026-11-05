@@ -33,8 +33,8 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
     public function read(ManagementRead $input): ManagementRecord
     {
         if ($input->publicId === null) {
-            return new ManagementRecord(null, '0', ['code' => null, 'name_pl' => null, 'name_en' => null, 'description_pl' => null, 'description_en' => null,
-                'roles' => [], 'permissions' => [], 'source_user' => null, 'module' => null, 'system' => false, 'review_summary' => null]);
+            return new ManagementRecord(null, '0', ['code' => static::KIND === 'permission' ? null : 'custom.', 'name_pl' => null, 'name_en' => null, 'description_pl' => null, 'description_en' => null,
+                'roles' => [], 'permissions' => [], 'module' => null, 'system' => false, 'review_summary' => null]);
         }
 
         return $this->record($this->api()->definition(static::KIND, $input->publicId));
@@ -43,7 +43,7 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
     protected function record(array $state): ManagementRecord
     {
         return new ManagementRecord($state['public_id'], (string) $state['version'], $state['dictionary'] + $state['assigned'] + [
-            'source_user' => null, 'module' => $state['module'], 'system' => $state['system'], 'review_summary' => null]);
+            'module' => $state['module'], 'system' => $state['system'], 'review_summary' => null]);
     }
 
     public function page(ManagementRead $input): ManagementPageResult
@@ -103,7 +103,7 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
             }
             $expected = ['code', 'name_pl', 'name_en', 'description_pl', 'description_en', 'permissions'];
             if (static::KIND === 'preset') {
-                $expected = [...$expected, 'roles', 'source_user'];
+                $expected = [...$expected, 'roles'];
             }
             $keys = array_keys($v);
             sort($keys);
@@ -114,7 +114,7 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
 
             return $this->api()->previewDefinition(new DefinitionInput(static::KIND,
                 new DictionaryEntry($v['code'], $v['name_pl'], $v['name_en'], $v['description_pl'], $v['description_en']),
-                new AssignmentSet($v['roles'] ?? [], $v['permissions']), $input->publicId, $input->publicId === null ? null : (int) $input->revision, ($v['source_user'] ?? null) ?: null));
+                new AssignmentSet($v['roles'] ?? [], $v['permissions']), $input->publicId, $input->publicId === null ? null : (int) $input->revision));
         } catch (\InvalidArgumentException|\TypeError) {
             throw $this->invalid();
         }

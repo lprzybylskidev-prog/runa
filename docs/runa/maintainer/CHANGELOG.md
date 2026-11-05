@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Simplify Permissions to a readonly permission catalogue, roles and presets; combine details/editing in one dialog. Move account copy/preset and separately granted protected-authority workflows to Auth user details. Reuse guarded search, compact member selection, native source fingerprints, reviewed password-confirmed writes and atomic Audit; remove obsolete access/effective page adapters and exports.
+
 - Use quiet outlined action buttons, including Save and confirmations. Preserve operation colors before modal admission and use purple for mixed-effect tools; final confirmation reflects the selected operation. Document the shared policy for future views.
 
 - Unify shared action buttons with explicit semantic intents across supplied views: green commit, neutral cancellation/navigation, yellow discard/caution, blue reads/previews, purple mixed-effect tools and red destructive effects. Separate hierarchy from meaning and preserve color while busy; align snapshot previous-value help below the padded Changed marker.

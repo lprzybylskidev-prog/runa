@@ -1174,6 +1174,17 @@ reassessment before resuming point 3; completed point history remains evidence.
     synchronize canonical rules and both frontend instruction references, then
     format before final asset build and native UI readiness. Commit before 11b.
     Broad verification remains point 12; preserve data and proof authority.
+- [x] 11a96. Simplify Permissions administration and extend selected-user access tools.
+  - Owner approved 2026-11-05: exactly three Permissions pages: read-only permission
+    catalogue, roles and presets. Each role/preset uses one combined details/editor
+    screen following Auth. Remove standalone assignment/effective/authority pages;
+    account access belongs in Auth user details, including copy and preset tools.
+  - Reuse shared tables, fields, compact assignment catalogue, feedback and native
+    review/password proof. Preserve source/system protection, dedicated authority
+    grants and referenced-role deletion safeguards. Remove obsolete components,
+    adapters/exports and current documentation/tests; synchronize guidance products.
+  - Prepare final formatted assets/runtime for owner acceptance, commit this point.
+    Broad verification remains point 12; feature/0.7.0 remains confirmed.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -8194,3 +8205,68 @@ No migration/reset, Docker resources or business-data cleanup. Databases, volume
 model/Qdrant caches, backups and prior reports are preserved. Mandatory hooks and
 fresh knowledge accompany the commit. Owner manual acceptance 11b and final broad
 verification/release 12 remain open.
+
+### Point 11a96 — Definition-only Permissions pages and selected-user access tools
+
+Owner approved on 2026-11-05: retain exactly the informational Permissions catalogue,
+Roles and Presets. Role/preset details and editing share one dialog like Auth user
+details. Account assignments, copying and preset application belong to Auth user
+details. Existing feature/0.7.0 release metadata remains confirmed.
+
+Delivered ordered Permissions/Roles/Presets navigation and removed the standalone
+access/effective page, page-only adapters/components and their public exports.
+Definitions reuse shared tables, dialogs, fields, feedback and the existing compact
+membership catalogue, including new-record lookups before a UUID exists. Source and
+system definitions stay readonly; existing codes are immutable. Presets compose
+explicit roles/direct permissions. Native backend source-account preset creation
+remains supported independently. Successful creation selects the saved record;
+subsequent edits use its identity/version. Role deletion retains its ordinary refusal
+and separately granted complete force-delete review in that same details dialog.
+
+Extended PermissionsAssignments with guarded searchable account/preset choices,
+add/replace modes and independent copy/preset commands. Auth owns the existing
+review/password-confirmation flow. Existing membership drafts must be saved/reverted
+first; choosing a source never writes. Native source/target fingerprints, revisions,
+protected membership, native mutation phases and atomic Audit remain authoritative.
+Command declarations retain the shared binding's participant identity, while only
+ordinary replacement Save is atomic. Protected authority moves to its independent
+Auth user-details contribution with dedicated authority read/write grants and its
+complete projected review; self-escalation/last-administrator safeguards remain.
+Field/page/section replacements and unavailable-renderer save blocking are preserved.
+
+Updated canonical Permissions/Auth guides and current changelogs, removing obsolete
+current delivery claims. Both frontend guidance products route to the canonical
+administration composition contract. Root/customer AGENTS need no added always-loaded
+rule: existing ownership, public presentation, native security/Audit and shared
+patterns already govern this capability. Permissions 2.1.0, Auth 5.0.0 and Admin
+0.2.0 remain unreleased candidates in this same roadmap; the removed presentation
+exports were introduced here, and the current guarded backend API signatures remain
+unchanged. No dependency, migration, database reset or new upgrade edge is needed.
+
+Focused diagnostics: native definition save/delete/proof/Audit rollback and
+copy/preset/stale-source tests PASS (2 cases, 89 assertions); relocated authority PASS
+(1 case, 26 assertions, without an introspection grant); force-delete case PASS; actual navigation/readonly rejection,
+new-record permission options and authorized source search PASS (1 case, 21
+assertions). Frontend source-lock/dirty-selection, new-record membership and import
+search/review/dirty/readonly scenarios PASS (six distinct cases across bounded runs).
+Initial diagnostics exposed a declaration participant mismatch and missing projected
+authority review; both are corrected. Native failed logs are preserved alongside the
+successful bounded runs. No complete backend/frontend or final-gate PASS is claimed.
+
+Supported strict TypeScript/assets/native-error build PASS. Real Nginx preparation
+confirms three ordered pages, readonly permissions, UI role creation through the
+shared full-page password confirmation, saved identity/immutable code, in-place edit
+and revert, preset details, guarded source/preset pickers, light/dark and settled
+390px layout without horizontal overflow or page errors. Readiness selector fixes
+accounted for required-label markers, readonly value presentation and the shared
+Close dialog label; no product workaround was introduced. Evidence lives under
+`.runtime/permissions-review/` and
+`.runtime/artifacts/playwright/permissions-review/`.
+
+Temporary readiness roles/presets are deleted in dependency order through reviewed
+native API operations; Audit evidence is retained and no account access mutation
+was submitted. Browser sessions log out. Supported backend runners removed only
+inactive owned `runa_test_test_1` workers. No Docker resources were created/deleted;
+base development/test databases, volumes, Qdrant/model caches, backups and all reports
+remain preserved. Mandatory hooks and refreshed knowledge accompany the commit.
+Owner manual acceptance 11b and broad final verification/release 12 remain open.

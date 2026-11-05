@@ -6,7 +6,6 @@ import { computed, defineComponent, h, ref, shallowRef } from 'vue';
 import {
   PermissionsAdminDefinition,
   PermissionsAdminDefinitions,
-  PermissionsAdminEffective,
 } from '@/runa/permissions';
 import { AuditAdminDetail, AuditAdminHistory } from '@/runa/audit';
 import { AdminSection, AdminRecordBrowser, useAdminForm } from '@/runa/admin';
@@ -279,7 +278,7 @@ it('Permissions Admin definition browser preserves dirty drafts during record se
   form.set(form.fieldPath('editor', 'name_en'), 'Unsaved role');
   await wrapper
     .findAll('button')
-    .find((button) => button.text() === 'Open record')!
+    .find((button) => button.text() === 'Details')!
     .trigger('click');
   expect(form.values.value[form.fieldPath('editor', 'name_en')]).toBe(
     'Unsaved role',
@@ -419,61 +418,6 @@ it('Audit Admin entity history links initialize the exact bounded filter query',
   );
   expect(wrapper.text()).not.toContain('2026-10-31T18:25:00Z');
 });
-it('Permissions Admin effective cursor preserves the selected account on older reads', async () => {
-  const descriptor = section('effective', [field('entries'), field('next')]);
-  const controller = page('runa.permissions', 'access', [descriptor]);
-  const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
-    const url = new URL(String(input), window.location.origin);
-    return response({
-      public_id: other,
-      revision: 'r1',
-      values: {
-        entries: JSON.stringify([
-          {
-            code: url.searchParams.has('cursor')
-              ? 'app.example.write'
-              : 'app.example.read',
-            direct: true,
-            roles: [],
-            roles_truncated: false,
-            available: true,
-            effective: true,
-          },
-        ]),
-        next: url.searchParams.has('cursor') ? null : 'app.example.read',
-      },
-    });
-  });
-  const wrapper = mount(
-    defineComponent({
-      setup() {
-        const form = useAdminForm(controller, {
-          autoRead: false,
-          publicId: ref(other),
-        });
-        return () =>
-          h(PermissionsAdminEffective, {
-            page: controller,
-            section: descriptor,
-            controller: form,
-          });
-      },
-    }),
-  );
-  await vi.waitFor(() => expect(wrapper.text()).toContain('app.example.read'));
-  await wrapper
-    .findAll('button')
-    .find((button) => button.text() === 'Next permissions')!
-    .trigger('click');
-  await vi.waitFor(() => expect(wrapper.text()).toContain('app.example.write'));
-  const last = new URL(
-    String(fetch.mock.calls.at(-1)![0]),
-    window.location.origin,
-  );
-  expect(last.searchParams.get('public_id')).toBe(other);
-  expect(last.searchParams.get('cursor')).toBe('app.example.read');
-});
-
 it('Audit Admin payload continuation keeps the immutable event and exposes every fragment', async () => {
   const descriptor = section(
     'detail',
@@ -841,4 +785,84 @@ it('shared Admin record section animates pending reads without showing an empty-
   );
   await vi.waitFor(() => expect(wrapper.text()).toContain('Loaded definition'));
   expect(wrapper.find('[role="status"]').exists()).toBe(false);
+});
+
+it('new role details reuse the compact permission catalogue before a record UUID exists', async () => {
+  const descriptor = section('editor', [
+    field('code', false),
+    field('name_en', false),
+    field('module'),
+    { ...field('system'), type: 'boolean' },
+    {
+      ...field('permissions', false),
+      type: 'uuid',
+      multiple: true,
+      lookup: true,
+    },
+  ]);
+  descriptor.commands = [
+    {
+      key: 'store',
+      title: 'Save',
+      mode: 'independent',
+      intent: 'action',
+      inputs: ['code', 'name_en', 'permissions'],
+      requirement: 'password',
+      action: 'runa.permissions.access.manage',
+      destructive: false,
+      bulk: false,
+      preview_required: true,
+      available: true,
+    },
+  ];
+  const controller = page('runa.permissions', 'roles', [descriptor]);
+  const options: URL[] = [];
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    if (url.searchParams.get('kind') === 'options') {
+      options.push(url);
+      return response({
+        field: 'permissions',
+        items: [{ value: other, label: 'Read audit history' }],
+        next: null,
+      });
+    }
+    return response({
+      public_id: null,
+      revision: '0',
+      values: {
+        code: 'custom.',
+        name_en: null,
+        permissions: [],
+        module: null,
+        system: false,
+      },
+    });
+  });
+  let form!: AdminFormController;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller, { autoRead: false });
+        return () =>
+          h(PermissionsAdminDefinition, {
+            page: controller,
+            section: descriptor,
+            controller: form,
+          });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain('Read audit history'),
+  );
+  expect(options[0]!.searchParams.has('public_id')).toBe(false);
+  await wrapper.get('[data-assignment-option] input').setValue(true);
+  expect(form.values.value[form.fieldPath('editor', 'permissions')]).toEqual([
+    other,
+  ]);
+  expect(wrapper.findAll('form')).toHaveLength(1);
+  expect(
+    wrapper.findAll('button').some((button) => button.text() === 'Save'),
+  ).toBe(true);
 });

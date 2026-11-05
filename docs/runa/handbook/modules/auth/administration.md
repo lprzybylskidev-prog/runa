@@ -634,3 +634,9 @@ local draft preview with previous-value markers and cancellation to the earlier 
 The former history section/revision restore is absent. Settings changes remain
 transactionally audited; Audit has its own viewer. AuthPolicies is 3.0.0 and Auth
 is 5.0.0 for removal of guarded history restore. Operator recovery remains CLI-only.
+
+Permissions contributes ordinary access copying/preset application and a separately
+granted protected-authority form to this same user-details screen. Account access
+has no separate Permissions page. The public PermissionsAssignments component emits
+its existing submit event for save/copy/preset and reuses this screen's native review
+and full-page password proof. See [Permissions administration](../permissions/administration.md).

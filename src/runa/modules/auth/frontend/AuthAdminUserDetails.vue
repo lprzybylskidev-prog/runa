@@ -131,7 +131,11 @@ const groups = computed(() =>
   ].filter((group) => group.sections.length),
 );
 function order(section: AdminSectionData) {
-  if (section.key.endsWith('.assignments')) return 8;
+  if (
+    section.key.endsWith('.assignments') ||
+    section.key === 'runa.permissions.user_authority.authority'
+  )
+    return 8;
   const index = [
     'profile',
     'avatar',
@@ -710,7 +714,9 @@ function supplied(section: AdminSectionData) {
     !section.diagnostic &&
     (section.component === null ||
       section.component?.key === 'runa.auth.admin_section') &&
-    (known.includes(section.key) || section.key.endsWith('.assignments'))
+    (known.includes(section.key) ||
+      section.key.endsWith('.assignments') ||
+      section.key === 'runa.permissions.user_authority.authority')
   );
 }
 </script>

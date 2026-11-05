@@ -224,3 +224,8 @@ language inside the dedicated editor. Keyboard navigation, readonly browsing,
 local loading, Polish/English and light/dark/mobile presentation remain supported.
 Review/Revert belongs to the complete roles/direct-permissions draft; the native
 controller owns dirty guards, optimistic conflicts, review and operation proof.
+
+The default assignment editor also offers searchable source-account copying and
+saved preset application in Auth user details. These independent reviewed commands
+preserve source fingerprints and require an explicit final submission; see
+[Permissions administration](administration.md#selected-user-access-in-auth).
