@@ -1260,6 +1260,44 @@ reassessment before resuming point 3; completed point history remains evidence.
     Close/move roadmap, merge with merge commit, run short main sanity, tag/push/publish
     release and delete roadmap branch. Report real results, limitations and resources.
 
+## Execution handoff
+
+2026-11-05 — Devcontainer to native Linux Docker host for point 12.
+Branch: `roadmap/RM-2026-016-admin-panel`; accepted implementation:
+`f5494f67e9f5f236d0326d757d140d70f959f244`; acceptance/scope commit:
+`4b4f7081`. Implementation and owner acceptance are complete; final verification
+and release remain open. The worktree was clean before this handoff update.
+
+Knowledge status is current (208 documents, 11,432 chunks). The exact ten-group
+graph was previewed successfully with `quality-plan`. Direct owner execution in
+the devcontainer refused because selected native acceptance needs the Docker
+host. Artisan transport refused private owner groups, which are intentionally
+outside its application catalogue. Neither attempt started a quality run or
+provides test PASS evidence. No runtime/configuration change is needed.
+
+The host checkout path and actual host Compose/resource identities have not been
+verified in this session; `/workspace` is only the container path. In the native
+host checkout, verify the branch and clean worktree with `git status --short --branch`.
+Use the existing running development stack; do not reset data, recreate services
+or change Compose identity. Run:
+
+```sh
+python3 tools/maintainer/quality-roadmap --group=docs --group=backend --group=frontend --group=e2e --group=database --group=delivery --group=installation --group=updates --group=security-source --group=tooling --background
+```
+
+Expect confirmation that the background coordinator started. End the agent turn
+after launch; inspect later with `python3 tools/maintainer/quality-status` from
+that same host checkout. Review complete selected results, source/security review
+requirements and scoped cleanup before release. Failed gates require the point-12
+repair procedure and a fresh complete final run. Existing `.runtime/quality/`
+evidence is not a PASS for this candidate.
+
+No task-created Docker resources were created or removed. Preserve development
+services/data, base test database, Qdrant/model caches, backups and all reports.
+No editor transition or host operation has been performed; returning to the
+devcontainer remains safe after host verification. Record actual host results here
+before resuming closure.
+
 ## Risks and unresolved scope
 
 The highest risks are unsupported composite operation ordering/proof reuse,
