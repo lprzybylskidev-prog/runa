@@ -1139,6 +1139,12 @@ reassessment before resuming point 3; completed point history remains evidence.
     Tooltip help and expose presentation props for external labels through AdminField.
   - Synchronize public contracts/docs/instruction references, prepare current assets
     and commit. No database reset is needed; owner acceptance/final gates stay last.
+- [x] 11a91. Use full workspace width and pack settings groups vertically.
+  - Owner feedback 2026-11-05: remove the settings page width cap and large blank
+    spaces below short cards. Use independent responsive CSS columns, keeping
+    complete cards together, existing source order and compact normal card spacing.
+  - Prepare current assets and synchronize the owning guide/changelogs; commit
+    before owner acceptance. No data/schema/security or public API change.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7971,3 +7977,29 @@ the actual responsive layout without a product workaround. Screenshots are under
 No database reset, migration or Docker resources were needed; existing databases,
 volumes, caches and evidence remain preserved. Manual acceptance 11b and final
 verification/release 12 stay open. Commit includes mandatory hooks and fresh knowledge.
+
+### Point 11a91 — Full-width independently packed settings groups
+
+Owner feedback 2026-11-05 removes the settings width cap and blank row-height gaps
+below shorter cards. AdminSettingsPage now uses the complete workspace width and
+responsive CSS columns with break-inside avoidance. Cards flow in source order;
+each column packs complete groups with the ordinary 16px separation. One-column
+mobile presentation, source descriptions, drafts and snapshot behavior are unchanged.
+
+Supported strict TypeScript/assets/native error build PASS. Focused real-page
+preparation at 1920px measured 1592px content and parent width, with all seven
+within-column gaps exactly 16px. Source help remains usable and settled 390px
+presentation has no overflow or page errors. Evidence:
+`.runtime/settings-snapshots/full-width-readiness.mjs`,
+`.runtime/settings-snapshots/full-width-build.log`,
+`.runtime/artifacts/playwright/settings-snapshots/full-width-ready.png` and
+`.runtime/artifacts/playwright/settings-snapshots/full-width-mobile.png`.
+No new test mirrors this simple CSS change; broad suites stay at final point 12.
+
+The canonical presentation guide and central/Auth changelogs are synchronized.
+Existing unreleased module/platform versions remain appropriate; no public signature,
+data, migration, dependency or security behavior changes. Root/customer instructions
+and skills already route to that canonical presentation contract, so no new rule is
+needed. No Docker resources or database data changed; existing resources/evidence
+remain preserved. Mandatory hooks/fresh knowledge accompany the commit. Owner manual
+acceptance 11b and final verification/release 12 remain open.

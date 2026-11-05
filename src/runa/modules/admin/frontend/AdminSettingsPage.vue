@@ -157,7 +157,7 @@ const summary = computed(() => {
 </script>
 <template>
   <AdminForm :controller="form">
-    <div class="max-w-7xl space-y-4">
+    <div class="space-y-4">
       <h1 class="text-xl font-semibold">
         {{ t(controller.page.value?.title ?? '') }}
       </h1>
@@ -241,8 +241,12 @@ const summary = computed(() => {
         }}
         <Button @click="form.refresh">{{ t('Retry') }}</Button></Alert
       >
-      <div v-else class="grid items-start gap-4 xl:grid-cols-2">
-        <Card v-for="group in groups" :key="group.key">
+      <div v-else class="columns-1 gap-4 xl:columns-2">
+        <Card
+          v-for="group in groups"
+          :key="group.key"
+          class="mb-4 break-inside-avoid"
+        >
           <template #header
             ><h2 class="font-semibold">
               {{ adminText(group.title, locale) }}

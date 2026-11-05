@@ -66,8 +66,9 @@ special values where applicable. Module settings adapters preserve this source
 metadata in ManagementField; authorized field projection carries `label` and
 `description` as AdminText. Technical keys remain unchanged across language switches.
 
-AdminSettingsPage bounds its content width, uses compact label/control rows and
-places groups side by side on sufficiently wide screens. The snapshot selector has
+AdminSettingsPage uses the full workspace width and compact label/control rows.
+Responsive CSS columns keep cards whole and pack each column independently,
+without row-height gaps below shorter groups. Narrow screens keep one column. The snapshot selector has
 its own responsive width container, so control attribute forwarding cannot collapse
 it to the placeholder width. A help button beside each described option uses the
 shared Tooltip on hover/keyboard focus and toggles inline help on click for touch.

@@ -2,6 +2,8 @@
 
 ## 5.0.0 — Unreleased
 
+- Use the full workspace width for module settings and pack group cards in independent responsive columns, removing large gaps below shorter groups.
+
 - Compact the shared module settings editor into bounded label/control rows and responsive group columns; widen the snapshot selector. Preserve source technical keys and separate PL/EN names/descriptions through authorized Admin projection, with keyboard/touch-accessible help. Clarify Auth descriptions and units without changing setting behavior.
 
 - Remove guarded revision-history restore (AuthPolicies 3.0.0) and the local policy history viewer. Use framework-owned named settings snapshots with committed-value capture, draft preview/cancel, password-confirmed deletion and transactional Audit. Group Auth settings semantically and publish the full policy once.

@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Use the full workspace width for module settings and pack group cards in independent responsive columns, removing large gaps below shorter groups.
+
 - Compact the shared module settings editor into bounded label/control rows and responsive group columns; widen the snapshot selector. Preserve source technical keys and separate PL/EN names/descriptions through authorized Admin projection, with keyboard/touch-accessible help. Clarify Auth descriptions and units without changing setting behavior.
 
 - Auth 5.0.0 / AuthPolicies 3.0.0: remove guarded revision-history restore and the local history viewer. Deliver reusable named module snapshots, committed-value capture, draft-only loading with previous-value markers/cancel, password-confirmed deletion and atomic Audit. Reorganize Auth settings into semantic groups with one native reviewed Save.
