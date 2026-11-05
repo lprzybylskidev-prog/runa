@@ -1061,6 +1061,12 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Synchronize public contracts, assessed module/API candidate versions, both
     instruction products and regression coverage. Prepare current assets/native
     readiness and commit; broad final gates stay in point 12.
+- [x] 11a84. Align table filter controls beneath wrapped labels.
+  - Owner-reported visual correction: bottom-align each row in the shared filter
+    grid and analogous custom Auth directory filters. Keep full labels and existing
+    responsive columns; prepare assets and inspect rendered control geometry.
+  - Synchronize the canonical table guide and changelog, assess both instruction
+    products and commit. Manual acceptance/final verification remain 11b/12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7512,3 +7518,32 @@ all other databases, volumes, Qdrant/model caches, backups and previous reports
 remain preserved. Mandatory staged hooks and current knowledge accompany the
 commit. Owner manual acceptance 11b and final affected-area verification/release
 12 remain open; these focused checks do not claim either result.
+
+### Point 11a84 — Align controls beneath multiline table filter labels
+
+The owner reports staggered session filter inputs when Remembered sign-in wraps
+onto two label lines. The shared Table filter grid and analogous custom Auth
+DirectoryFilters now use items-end, aligning controls within each responsive grid
+row while retaining full labels and the existing column breakpoints. No fixed
+label height, truncation, new CSS primitive or data/query behavior is introduced.
+The public tables guide owns this presentation rule; central/Auth changelogs are
+synchronized. Both instruction products already route table composition to that
+guide, so no duplicated skill/root rule or new public signature is needed. Existing
+unreleased module versions remain appropriate for this presentation correction.
+
+Knowledge was current and queried; relevant frontend/Vue/Tailwind guidance and
+existing FormField/filter composition grounded the change. Supported frontend
+build PASS, including strict types and native/static error assets. Focused native
+Nginx browser geometry PASS at 1440/1024/390px in light/dark: each grid row's input
+tops differ by less than one pixel. The diagnostic bounds the desktop grid to
+840px to reproduce a genuinely multiline label, and verifies the custom directory
+receives the same computed bottom alignment. Inspected screenshots and logs remain
+in .runtime/artifacts/playwright/table-filter-alignment/ and
+.runtime/user-details/table-filter-alignment-{build,browser}.log. No new test code
+or backend/broad checks are needed for this reversible layout correction.
+
+Browser sessions logged out; no domain management writes, database reset or Docker
+resource creation/removal occurred. Development/test data, caches, backups and
+prior reports remain preserved. Mandatory staged hooks/current knowledge accompany
+the commit. Manual owner acceptance 11b and final affected-area verification/release
+12 remain open.

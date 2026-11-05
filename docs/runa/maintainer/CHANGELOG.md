@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Align shared table and Auth directory filter controls within each row when labels wrap onto multiple lines.
+
 - Complete table sorting, filters/search and separately authorized exports/print across supplied account/Admin views. Add SQL ordering before cursor paging for users, permission catalogues and Audit through AuthAdministration 2.1.0, PermissionsAccess 2.2.0 and AuditReads 1.1.0; retain loaded-page export scope and native authority.
 
 - Enrich new-browser sign-in notices in Polish/English with captured safe browser/system labels, event time and guidance for unrecognized activity, preserving native multipart mail and reference-only delivery.

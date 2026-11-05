@@ -227,6 +227,10 @@ table toolbar. Reset clears search and filters, preserves
 page size/sort/column preferences and resets page 1. Bind custom controls to query
 rather than a separate unsynchronized draft.
 
+Filter grids align fields to the bottom of each grid row so wrapped labels do not
+stagger the controls. Apply the same alignment in custom filter presentations,
+including the Auth directory; keep labels fully visible without fixed heights.
+
 ### Bounded built-in exports
 
 Table accepts `exportAllowed?: boolean` and

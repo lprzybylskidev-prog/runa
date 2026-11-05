@@ -2,6 +2,8 @@
 
 ## 3.0.0 — 2026-11-03
 
+- Keep directory filter controls aligned within each responsive row when field labels wrap.
+
 - Complete own/Admin security table capabilities: chronological session sorting, local search/column filters, and separately authorized bounded Admin exports/print. Extend AuthAdministration to 2.1.0 with authorized directory ordering before cursor paging, nulls last, stable UUID ties and query-bound cursors.
 
 - Enrich new-browser sign-in notices in Polish/English with captured safe browser/system labels, event time and guidance for unrecognized activity, preserving native multipart mail and reference-only delivery.
