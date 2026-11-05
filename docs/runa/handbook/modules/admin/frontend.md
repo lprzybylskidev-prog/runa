@@ -690,7 +690,12 @@ or foreign module keys fail closed. App bootstrap imports these components
 statically and passes entries with their generated buildId, never resolves a request/database URL or private
 module source path. A projected non-null component whose build_id is null is unavailable; it never
 selects a default or loader. Module components continue through existing manifest-bound
-build discovery. The supplied dispatcher forwards an App registry only when the
+build discovery. Source formatting changes module build identity too: finish source
+edits and formatting/hooks before the final asset build. If a hook changes frontend
+sources after building, rebuild before handing over the running view. Confirm the
+native page projection has a non-null build_id and open the affected page through
+the running application; a successful earlier build alone does not establish current
+source/asset agreement. The supplied dispatcher forwards an App registry only when the
 application explicitly configures one; no sample screen is added to the scaffold.
 
 Page replacements receive `{controller: AdminPageController}`; section

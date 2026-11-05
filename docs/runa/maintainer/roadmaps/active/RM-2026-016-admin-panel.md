@@ -1160,6 +1160,12 @@ reassessment before resuming point 3; completed point history remains evidence.
     views and document the public explicit intent contract in both guidance products.
   - Add snapshot highlight spacing and anchor previous-value help below Changed.
   - Prepare current assets and focused evidence; broad verification remains point 12.
+- [x] 11a94. Repair stale component assets after final source formatting.
+  - Owner reports users unavailable after point 11a93. Confirm source/build mismatch,
+    rebuild from final formatted sources, then verify native component identities
+    and actual users presentation without weakening the fail-closed resolver.
+  - Record asset preparation order in existing frontend guidance and preserve data.
+    Commit evidence; owner acceptance/final gates remain 11b/12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -8096,3 +8102,35 @@ No migration/reset or task-created Docker resources; development/test data,
 volumes, Qdrant/model caches, backups and evidence remain preserved. Mandatory
 hooks and current knowledge accompany this commit. Owner manual acceptance 11b
 and broad final affected-area verification/release 12 remain open.
+
+### Point 11a94 — Rebuild final formatted module component assets
+
+Owner reported the users page unavailable after 11a93. Native projection returned
+runa.auth.admin_users with build_id=null. Compared the public build evidence with
+current source hashes: final ESLint formatting and the last Auth intent correction
+had changed 16 Auth and two Permissions frontend files after the preceding build.
+The resolver correctly failed closed; no binding, permission or database repair is
+needed. Point 11a93's earlier browser preparation was valid for that earlier source,
+but did not establish final post-format asset readiness.
+
+Rebuilt through the supported strict TypeScript/Vite/native error command from the
+final committed frontend source. All declared component owners now match their
+compiled source evidence. Actual Nginx users page readiness PASS: non-null native
+Auth component build identity, visible user table, blue create-tool opener and no
+unavailable-component message. Session logged out; no business writes. Evidence:
+.runtime/admin-users-repair/{build,readiness}.log and
+.runtime/artifacts/playwright/button-semantics/users-repaired.png.
+The browser diagnostic was corrected to assert the localized Polish heading rather
+than comparing it directly with the technical English descriptor title.
+
+The owning Admin frontend guide now explicitly requires final formatting/hooks
+before asset preparation and a rebuild after any later source-formatting change.
+This clarifies the existing current-assets acceptance invariant, without changing
+roadmap/quality/security policy. Owner/customer instruction products already route
+to this guide and require usable current assets; no duplicated rule is needed.
+Existing versions remain appropriate; this is operational repair with no code/API,
+dependency, migration/reset or module behavior change. No additional test duplicates
+source hashing; broad verification remains final point 12. Mandatory hooks/current
+knowledge accompany this documentation commit. No Docker resources were created;
+all databases, volumes, caches, backups and prior evidence remain preserved.
+Manual owner acceptance 11b remains open.
