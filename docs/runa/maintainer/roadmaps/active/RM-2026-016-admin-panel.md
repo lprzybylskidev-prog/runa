@@ -1212,6 +1212,13 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Put Superadministrator last in individual and bulk action groups; synchronize
     current guidance/tests and prepare final formatted assets before owner review.
     Native batch authorization, fingerprints, proof and Audit remain unchanged.
+- [x] 11a101. Skip protected last-administrator targets in authority batches.
+  - Owner requests the existing protected-account warning/count instead of refusing
+    the whole bulk operation. Retain the first eligible selected administrator when
+    no eligible administrator remains outside the selection; apply other changes.
+  - Revalidate and fingerprint the retained set, preserve native single-write
+    protection, proof, revisions and atomic Audit; cover mixed/no-op/stale plans.
+    Synchronize the preview contract/docs and prepare current owner acceptance.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -8442,3 +8449,49 @@ warning in light/dark and mobile. Evidence: .runtime/superadmin-bulk-refinement/
 reset, migration, dependencies or task-created Docker resources. Existing data,
 services, caches, backups and prior reports remain preserved. Owner acceptance 11b
 and final broad verification/release 12 remain open.
+
+### Point 11a101 — Retain required administrators instead of refusing the bulk action
+
+Owner requests that bulk authority removal use the same protected-account skip
+warning/count as deactivation rather than fail the entire batch for last-admin loss.
+The native Permissions retention plan now checks the complete selected removal set
+under the existing registry/authority locks. If an eligible administrator remains
+outside the set, every requested removal proceeds. Otherwise it retains the eligible
+selected administrator with the lowest UUIDv7 and applies the remaining removals.
+If no member is currently eligible, it retains the selected protected members rather
+than reducing an already unusable protected set. The ordinary native single-write
+and lifecycle guards retain their refusal behavior.
+
+AuthorityBatchPreview now includes required readonly skippedPublicIds after targets;
+the owning public guide records its complete signature/constraints. The guarded
+preview/execute method signatures and versions are unchanged. The native engine
+reconstructs and fingerprints the retained set before execution, rejects stale plans
+and still asserts the complete effective removal set. One proof and transactional
+Audit cover actual changes only; retained members keep their membership/revision
+and have no mutation event. Admin counts distinguish affected, protected skips and
+already-unchanged accounts. Existing AuthAdminBulkAction renders the existing warning
+without frontend changes, additional lists or bespoke controls.
+
+Focused native diagnostics PASS: four Admin authority cases, 137 assertions, cover
+partial removal, single-last-target skips, stale retention plans after an outside
+administrator appears, grants/selection, confirmation/proof, unchanged states,
+Audit rollback and original individual protection. Three additional focused native
+cases PASS, 69 assertions, exercise inactive-before-active target ordering and the
+existing native authority/lifecycle guards. Worker cleanup exit 0. Native Nginx
+browser readiness PASS: sole administrator revoke previews successfully and shows
+exact existing Polish protected-account warning/count, with no last-admin error;
+light/dark and 390px layouts checked without membership writes. Existing compiled
+frontend assets remain current because no frontend source changed. Evidence:
+.runtime/superadmin-retention/ and
+.runtime/artifacts/playwright/superadmin-retention/. Browser session logged out.
+
+Canonical Permissions authority/administration guides and platform/Permissions
+changelogs are synchronized. Existing owner/customer instructions already require
+owning guarded APIs, native invariants and public composition; no new instruction
+rule or duplicated customer procedure is needed. Existing unreleased Permissions
+2.1.0 and platform 0.7.0 cover this change; the preview value change is intentional
+under the standing pre-1.0 authorization. No schema, dependency, reset or Docker
+resources were introduced. Only runner-owned disposable worker databases were
+removed; base test/development data, services, caches, backups and reports remain.
+Mandatory staged hooks/current knowledge accompany the commit. Owner acceptance
+11b and final broad verification/release 12 remain open.

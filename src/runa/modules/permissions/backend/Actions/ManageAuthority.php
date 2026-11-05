@@ -110,11 +110,9 @@ final readonly class ManageAuthority implements PermissionsAuthority, Permission
         $members = $c->table('runa_permissions.user_roles')->where('role_id', $role->id)->whereIn('user_public_id', $selection->publicIds)->get()->keyBy('user_public_id');
         $revisions = $c->table('runa_permissions.user_access')->whereIn('user_public_id', $selection->publicIds)->pluck('version', 'user_public_id');
         $targets = array_map(fn (string $id): AuthorityPreview => $this->preview($c, $id, $grant, $role, ['membership' => $members->get($id), 'revision' => $revisions->get($id, 0)]), $selection->publicIds);
-        if (! $grant) {
-            $this->authority->assertMayRemove($c, array_values(array_map(fn (AuthorityPreview $target): string => $target->userPublicId, array_filter($targets, fn (AuthorityPreview $target): bool => $target->current))));
-        }
+        $skipped = $grant ? [] : $this->authority->retainedForRemoval($c, array_values(array_map(fn (AuthorityPreview $target): string => $target->userPublicId, array_filter($targets, fn (AuthorityPreview $target): bool => $target->current))));
 
-        return new AuthorityBatchPreview($selection->publicIds, $grant, $this->state->fingerprint(['authority_batch', $selection->publicIds, $grant, array_map(fn (AuthorityPreview $target): string => $target->fingerprint, $targets)]), $targets);
+        return new AuthorityBatchPreview($selection->publicIds, $grant, $this->state->fingerprint(['authority_batch', $selection->publicIds, $grant, array_map(fn (AuthorityPreview $target): string => $target->fingerprint, $targets), $skipped]), $targets, $skipped);
     }
 
     public function applyBatch(AuthorityBatchPreview $reviewed): array
@@ -126,7 +124,14 @@ final readonly class ManageAuthority implements PermissionsAuthority, Permission
             }
             $role = $this->role($c);
 
-            return array_map(fn (AuthorityPreview $target): array => $this->applyValidated($c, $target, $role), $current->targets);
+            $removals = array_values(array_diff(array_map(fn (AuthorityPreview $target): string => $target->userPublicId, array_filter($current->targets, fn (AuthorityPreview $target): bool => $target->current)), $current->skippedPublicIds));
+            if (! $current->grant) {
+                $this->authority->assertMayRemove($c, $removals);
+            }
+
+            return array_map(fn (AuthorityPreview $target): array => in_array($target->userPublicId, $current->skippedPublicIds, true)
+                ? ['user_public_id' => $target->userPublicId, 'super_admin' => $target->current, 'revision' => $target->revision]
+                : $this->applyValidated($c, $target, $role), $current->targets);
         }, write: true, permission: 'runa.permissions.authority.manage');
     }
 

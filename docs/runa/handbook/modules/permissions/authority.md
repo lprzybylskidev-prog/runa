@@ -127,8 +127,11 @@ Permissions owns guarded runtime server consumption API `PermissionsAuthorityBat
 `backend/Contracts/PermissionsAuthorityBatch.php`, `AuthorityBatchPreview.php`,
 `backend/Actions/ManageAuthority.php` and the guarded batch proxy/declaration.
 `AuthorityBatchPreview` has public readonly `publicIds: list<string>`, `grant: bool`,
-`fingerprint: string`, `targets: list<AuthorityPreview>` with those constructor
-arguments in that order. The selected IDs and target snapshots are complete,
+`fingerprint: string`, `targets: list<AuthorityPreview>`,
+`skippedPublicIds: list<string>` with those constructor arguments in that order.
+The skipped list is unique, belongs to the selected current members and is empty
+for grants; it identifies protected members retained during removal. The selected
+IDs and target snapshots are complete,
 unique, ordered and bounded to 100. All-selection intent is refused.
 
 Both methods require `runa.permissions.authority.manage` and the guarded
@@ -136,10 +139,19 @@ PermissionsSelections explicit selection capability (`runa.permissions.users.sel
 The preview and execution use one registry/authority lock and all target snapshots.
 Missing/deleted subjects and self-escalation refuse the entire batch. Removal checks
 the complete removal set against the existing last-eligible-administrator guard.
+When no eligible administrator remains outside the selection, bulk removal retains
+the eligible selected member with the lowest UUIDv7 and excludes it from writes.
+If none is eligible already, all selected protected members are retained. The
+complete effective removal set still passes the invariant guard. Individual native
+authority writes continue to refuse last-administrator removal. The retention plan
+is included in the fingerprint and recomputed under lock before execution; changes
+to that plan invalidate the review. Admin reports retained members through the
+existing protected-account warning and skipped count rather than refusing the batch.
 Execution revalidates every target before any membership write, consumes one fresh
 password proof for the batch and commits all memberships/revisions/per-target Audit
-records together. Unchanged targets remain unchanged, with no duplicate mutation
-history. A stale preview or Audit failure rolls back every target and proof.
+records together. Retained and unchanged targets keep their membership/revision
+and emit no mutation history. A stale preview or Audit failure rolls back every
+target and proof.
 This dedicated Permissions capability includes protected members by design; ordinary
 Auth bulk operations continue to exclude them.
 

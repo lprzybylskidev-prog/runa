@@ -74,7 +74,9 @@ choice for up to 100 explicitly selected directory accounts through the guarded
 API. Bulk additionally requires `runa.permissions.users.select` and applies the
 entire reviewed set atomically, including existing protected members. The supplied
 UI uses the existing aggregate impact and omitted-account warning/count pattern,
-without listing individual changes. Superadministrator appears last in both action
+without listing individual changes. Bulk removal retains a required eligible
+administrator and reports it through the existing protected-account warning/count;
+remaining selected removals proceed. Superadministrator appears last in both action
 toolbars. Ordinary Auth bulk actions retain their protected-member exclusion. It requires
 `runa.permissions.authority.manage`, native eligibility/revision review, explicit
 confirmation and password proof. Self-escalation and last-eligible-administrator

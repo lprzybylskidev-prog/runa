@@ -45,11 +45,11 @@ final readonly class AuthorityBulkEditor implements ManagementResourceReader, Ma
     public function preview(ManagementWrite $input): ManagementReview
     {
         $review = $this->native($input);
-        $changed = count(array_filter($review->targets, fn ($target): bool => $target->current !== $review->grant));
+        $changed = count(array_filter($review->targets, fn ($target): bool => $target->current !== $review->grant && ! in_array($target->userPublicId, $review->skippedPublicIds, true)));
 
         return new ManagementReview($review->fingerprint, ['summary' => [
-            'accounts' => count($review->targets), 'affected_accounts' => $changed, 'unchanged_accounts' => count($review->targets) - $changed,
-            'skipped_accounts' => 0, 'ineligible_accounts' => 0,
+            'accounts' => count($review->targets), 'affected_accounts' => $changed, 'unchanged_accounts' => count($review->targets) - $changed - count($review->skippedPublicIds),
+            'skipped_accounts' => count($review->skippedPublicIds), 'ineligible_accounts' => 0,
         ]], 'password', true);
     }
 

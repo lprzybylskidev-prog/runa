@@ -1345,11 +1345,17 @@ it('Permissions Admin authority batch grants and revokes the complete selected s
     $this->postJson($path.'/commands', $unchanged)->assertOk();
     expect(DB::table('runa_audit.events')->where('action', 'authority.granted')->count())->toBe(2)
         ->and(DB::table('runa_permissions.user_access')->whereIn('user_public_id', [$a->publicId, $b->publicId])->pluck('version')->all())->toBe([1, 1]);
-    // Both targets are now protected; neither may be silently excluded from this workflow.
+    // Retention is reviewed explicitly; an added outside administrator invalidates the plan.
     $remove = ['command' => 'revoke_superadmin', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$a->publicId, $b->publicId]], 'confirmed' => true];
-    $this->postJson($path.'/preview', $remove)->assertConflict();
+    $retained = permissionAdministrationReview($this, $path, $remove);
+    expect($retained['review']['changes']['summary']['skipped_accounts'])->toBe(1)
+        ->and($retained['review']['changes']['summary']['affected_accounts'])->toBe(1);
     $role = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('id');
     DB::table('runa_permissions.user_roles')->insert(['user_public_id' => $this->adminUser->public_id, 'role_id' => $role, 'created_at' => now(), 'updated_at' => now()]);
+    authAdministrationStrongProof($this, 'runa.permissions.authority.manage');
+    $this->postJson($path.'/commands', $retained)->assertConflict();
+    expect(DB::table('runa_permissions.user_roles')->where('role_id', $role)->whereIn('user_public_id', [$a->publicId, $b->publicId])->count())->toBe(2)
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.authority.manage')->whereNull('consumed_at')->exists())->toBeTrue();
     $remove = permissionAdministrationReview($this, $path, $remove);
     expect($remove['review']['changes']['summary']['affected_accounts'])->toBe(2)
         ->and($remove['review']['changes']['summary']['skipped_accounts'])->toBe(0);
@@ -1358,6 +1364,34 @@ it('Permissions Admin authority batch grants and revokes the complete selected s
     expect(DB::table('runa_permissions.user_roles')->where('role_id', $role)->whereIn('user_public_id', [$a->publicId, $b->publicId])->exists())->toBeFalse()
         ->and(DB::table('runa_permissions.user_roles')->where('role_id', $role)->where('user_public_id', $this->adminUser->public_id)->exists())->toBeTrue()
         ->and(DB::table('runa_audit.events')->where('action', 'authority.removed')->count())->toBe(2);
+});
+
+it('Permissions Admin authority batch retains one eligible administrator and applies the remaining removals', function (): void {
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.permissions.authority.manage', 'runa.permissions.users.select']);
+    $b = app(ChangeIdentity::class)->create(new NewIdentity('removed-inactive@example.test', name: 'Inactive administrator', active: false));
+    $a = app(ChangeIdentity::class)->create(new NewIdentity('retained-active@example.test', name: 'Eligible administrator', active: true));
+    $role = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('id');
+    foreach ([$a->publicId, $b->publicId] as $id) {
+        DB::table('runa_permissions.user_roles')->insert(['user_public_id' => $id, 'role_id' => $role, 'created_at' => now(), 'updated_at' => now()]);
+    }
+    $path = '/api/admin/runa.auth/users/sections/runa.permissions.user_authority_bulk.bulk_authority';
+    $input = ['command' => 'revoke_superadmin', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$b->publicId, $a->publicId]], 'confirmed' => true];
+    $input = permissionAdministrationReview($this, $path, $input);
+    expect($input['review']['changes']['summary'])->toMatchArray(['accounts' => 2, 'affected_accounts' => 1, 'skipped_accounts' => 1, 'unchanged_accounts' => 0]);
+    $this->postJson($path.'/commands', $input)->assertForbidden();
+    authAdministrationStrongProof($this, 'runa.permissions.authority.manage');
+    $this->postJson($path.'/commands', $input)->assertOk();
+    expect(DB::table('runa_permissions.user_roles')->where('role_id', $role)->pluck('user_public_id')->all())->toBe([$a->publicId])
+        ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $a->publicId)->exists())->toBeFalse()
+        ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $b->publicId)->value('version'))->toBe(1)
+        ->and(DB::table('runa_audit.events')->where('action', 'authority.removed')->count())->toBe(1);
+    // Selecting only the remaining administrator is a reviewed skip, not a failed operation.
+    $only = permissionAdministrationReview($this, $path, [...$input, 'values' => ['public_ids' => [$a->publicId]]]);
+    expect($only['review']['changes']['summary'])->toMatchArray(['accounts' => 1, 'affected_accounts' => 0, 'skipped_accounts' => 1, 'unchanged_accounts' => 0]);
+    authAdministrationStrongProof($this, 'runa.permissions.authority.manage');
+    $this->postJson($path.'/commands', $only)->assertOk();
+    expect(DB::table('runa_permissions.user_roles')->where('role_id', $role)->pluck('user_public_id')->all())->toBe([$a->publicId])
+        ->and(DB::table('runa_audit.events')->where('action', 'authority.removed')->count())->toBe(1);
 });
 
 it('Permissions Admin authority batch rejects missing selection grants invalid targets stale reviews and self escalation', function (): void {

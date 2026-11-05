@@ -2,6 +2,8 @@
 
 ## 2.1.0 — Unreleased
 
+- Retain the required eligible administrator during bulk superadministrator removal and apply the remaining reviewed changes. Reuse the existing protected-account warning/count, fingerprint the retained set and preserve native single-write lockout protection, password proof and atomic Audit.
+
 - Align protected-authority bulk tools with existing aggregate counts and omitted-account warnings; remove individual change listings and place Superadministrator last in both action toolbars.
 
 - Replace the Auth user superadministrator checkbox section with grouped grant/revoke actions for one account or up to 100 explicitly selected accounts. Add guarded PermissionsAuthorityBatch 1.0.0 with complete-set lockout protection, stale review refusal, one password proof and atomic per-target Audit; preserve ordinary Auth bulk exclusions.
