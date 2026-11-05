@@ -418,6 +418,7 @@ export interface AdminFieldLookup {
   searchable?: boolean;
 }
 export interface AdminFieldProps {
+  clearable?: boolean | undefined;
   id?: string | undefined;
   hideLabel?: boolean | undefined;
   field: AdminFieldData;

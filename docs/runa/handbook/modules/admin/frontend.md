@@ -632,6 +632,7 @@ interface AdminSectionSlots {
   default?(scope: AdminSectionProps): VNode[];
 }
 interface AdminFieldProps {
+  clearable?: boolean | undefined; // Select controls: defaults to true.
   field: AdminFieldData;
   modelValue: AdminFieldValue;
   errors: readonly string[];

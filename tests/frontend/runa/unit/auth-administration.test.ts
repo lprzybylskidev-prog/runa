@@ -2391,6 +2391,14 @@ it.each(['copy', 'preset'] as const)(
           select.props().label ===
           (method === 'copy' ? 'Source user' : 'Preset'),
       )!;
+    const modeSelect = tools
+      .findAllComponents(Select)
+      .find(
+        (entry: { props(): { label: string } }) =>
+          entry.props().label === 'Application mode',
+      )!;
+    expect(modeSelect.props('clearable')).toBe(false);
+    expect(select.props('clearable')).toBe(true);
     const provider = select.props('provider') as SelectionProvider;
     const result = await provider({
       cursor: null,

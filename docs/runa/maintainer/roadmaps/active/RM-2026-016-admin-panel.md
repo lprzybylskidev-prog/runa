@@ -1191,6 +1191,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     existing review/proof flow; cancel clears only import parameters.
   - Update current docs/tests, prepare final assets and commit. Owner acceptance
     11b and final broad verification 12 remain open.
+- [x] 11a98. Remove clearing from the access import mode selector.
+  - Owner requests omission of the mode clear button. Use the existing Select
+    capability through optional public AdminField.clearable; preserve other defaults.
+  - Prepare current assets, synchronize docs and commit before owner acceptance.
+    Broad verification/release remains point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -8306,3 +8311,29 @@ No database/reset/migration or Docker resource changes. Existing databases, volu
 caches, backups and reports remain preserved. Mandatory formatting/lint/secrets and
 fresh knowledge accompany this commit. Owner manual acceptance 11b and broad final
 verification/release 12 remain open.
+
+### Point 11a98 — Non-clearable access application mode
+
+Owner requested removal of the clear button beside Application mode. The import
+mode now sets optional public AdminField.clearable=false. AdminField and its default
+control forward this Select presentation option with an explicit true default;
+other source/definition choices retain their existing clear behavior. No backend,
+write, grant, proof or data contract changes.
+
+Canonical Admin field signatures and Admin/Permissions/platform changelogs are
+synchronized. Existing owner/customer frontend references already route to these
+public composition contracts; no additional rule or skill is needed. This additive
+presentation option fits existing unreleased versions without dependencies.
+
+Two focused copy/preset cases PASS, asserting non-clearable mode and the retained
+clearable source default. The first diagnostic caught Vue's absent Boolean-prop
+false coercion; explicit defaults correct that without changing existing fields.
+Supported strict TypeScript/assets/native-error build PASS. Native Nginx dialogs
+confirm zero clear controls before source selection and exactly one source clear
+afterward, with review/cancel, themes and 390px layout intact. No access mutation
+was submitted; session logged out. Evidence: `.runtime/permissions-mode/` and
+`.runtime/artifacts/playwright/permissions-mode/`.
+
+No database or Docker resources changed; existing data, volumes, caches, backups
+and reports remain preserved. Mandatory hooks and refreshed knowledge accompany
+this commit. Owner acceptance 11b and broad final verification/release 12 stay open.

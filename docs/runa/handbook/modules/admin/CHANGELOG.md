@@ -2,6 +2,8 @@
 
 ## 0.2.0 — Unreleased
 
+- Expose optional AdminField.clearable, defaulting to true, for source-owned selection presentation such as non-clearable access import modes.
+
 - Use quiet outlined action buttons, including Save and confirmations. Preserve operation colors before modal admission and use purple for mixed-effect tools; final confirmation reflects the selected operation. Document the shared policy for future views.
 
 - Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/previews, purple mixed-effect tools and red destructive effects, independent of feedback context or password proof.

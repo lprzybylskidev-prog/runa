@@ -23,7 +23,7 @@ import type {
   AdminFieldValue,
 } from './contracts';
 import { validateAdminField } from './fieldValidation';
-const props = defineProps<AdminFieldProps>();
+const props = withDefaults(defineProps<AdminFieldProps>(), { clearable: true });
 const emit = defineEmits<AdminFieldEmits>();
 const edited = ref(false);
 watch(
@@ -189,7 +189,7 @@ function integer(value: string | null) {
     :error="messages"
     :disabled="busy"
     :required="field.required"
-    clearable
+    :clearable="clearable ?? true"
     @update:model-value="update"
   />
   <Select
@@ -206,7 +206,7 @@ function integer(value: string | null) {
     :error="messages"
     :disabled="busy"
     :required="field.required"
-    clearable
+    :clearable="clearable ?? true"
     @update:model-value="update($event || null)"
   />
   <Checkbox

@@ -9,7 +9,7 @@ import { resolveAdminComponent } from './components';
 import { useAdminPresentation } from './presentation';
 import AdminFieldControl from './AdminFieldControl.vue';
 import AdminComponentBoundary from './AdminComponentBoundary.vue';
-const props = defineProps<AdminFieldProps>();
+const props = withDefaults(defineProps<AdminFieldProps>(), { clearable: true });
 const emit = defineEmits<AdminFieldEmits>();
 const presentation = useAdminPresentation();
 const resolved = computed(() =>
@@ -42,6 +42,7 @@ function update(value: AdminFieldValue) {
     <component
       :is="replacement"
       :field="field"
+      :clearable="clearable"
       :id="id"
       :hide-label="hideLabel"
       :model-value="modelValue"

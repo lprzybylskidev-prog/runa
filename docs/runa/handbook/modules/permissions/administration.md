@@ -53,7 +53,7 @@ and never copy protected authority. Source account/preset revisions and assignme
 are fingerprinted in the native preview and revalidated before apply. Changed
 sources, recipients or definitions refuse as stale, without automatic replay.
 Copy/preset tools open separate shared dialogs with a source picker and add/replace
-mode. Cancel closes the dialog and clears its source/mode draft; Apply closes it
+mode. The mode selector has no clear action; it retains add or replace. Cancel closes the dialog and clears its source/mode draft; Apply closes it
 before opening the existing Auth review. They require saving or reverting an existing membership draft first;
 selection alone never mutates access. The current Auth details review and shared
 full-page password confirmation own final submission and cancellation.

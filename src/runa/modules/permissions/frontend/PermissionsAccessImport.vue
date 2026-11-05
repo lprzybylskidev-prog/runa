@@ -167,6 +167,7 @@ watch(
           />
           <AdminField
             :field="mode"
+            :clearable="false"
             :readonly="section.readonly || mode.readonly"
             :model-value="controller.values.value[path('mode')] ?? 'add'"
             :busy="controller.busy.value"
