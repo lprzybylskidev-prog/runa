@@ -6,14 +6,18 @@ import type {
   AdminSectionPresentationProps,
   AdminComponentRegistry,
 } from '@/runa/admin';
+import AuthPolicyExceptionFacts from './AuthPolicyExceptionFacts.vue';
+import { policyRuleNames, usePolicyExceptions } from './policyExceptions';
 import { Alert, Button, Card, ContentLoading } from '@/runa/ui';
 const props = defineProps<
   AdminSectionPresentationProps & {
     sources: AdminSectionData[];
+    exceptionsSource?: AdminSectionData | undefined;
     components?: AdminComponentRegistry | undefined;
   }
 >();
 const { t } = useAdminLocale();
+const { active } = usePolicyExceptions(props.controller, 'exceptions');
 const settled = ref(false);
 const refreshing = ref(false);
 async function load(retry = false) {
@@ -22,9 +26,10 @@ async function load(retry = false) {
     if (retry) await props.controller.refresh();
     else
       await Promise.all(
-        props.sources.map((source) =>
-          props.controller.activateSection(source.key),
-        ),
+        [
+          ...props.sources,
+          ...(props.exceptionsSource ? [props.exceptionsSource] : []),
+        ].map((source) => props.controller.activateSection(source.key)),
       );
   } finally {
     settled.value = true;
@@ -167,7 +172,10 @@ const factGroups = computed(() => {
   return groups.filter((group) => group.facts.length);
 });
 const missing = computed(() =>
-  props.sources.some((source) => !props.controller.records.value[source.key]),
+  [
+    ...props.sources,
+    ...(props.exceptionsSource ? [props.exceptionsSource] : []),
+  ].some((source) => !props.controller.records.value[source.key]),
 );
 </script>
 <template>
@@ -215,6 +223,29 @@ const missing = computed(() =>
               :busy="controller.busy.value"
               :components="components"
             />
+          </div>
+        </section>
+        <section
+          v-if="exceptionsSource && active.length"
+          class="py-4 last:pb-0"
+          data-status-group="custom_rules"
+          :aria-label="t({ pl: 'Własne zasady', en: 'Custom rules' })"
+        >
+          <h3 class="mb-3 text-xs font-semibold text-muted">
+            {{ t({ pl: 'Własne zasady', en: 'Custom rules' }) }}
+          </h3>
+          <div class="grid min-w-0 gap-5 lg:grid-cols-2">
+            <div
+              v-for="exception in active"
+              :key="exception.public_id"
+              class="min-w-0 space-y-3"
+              :data-status-rule="exception.key"
+            >
+              <h4 class="text-sm font-semibold">
+                {{ t(policyRuleNames[exception.key] ?? exception.key) }}
+              </h4>
+              <AuthPolicyExceptionFacts :exception="exception" />
+            </div>
           </div>
         </section>
       </div>

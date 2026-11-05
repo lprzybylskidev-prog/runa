@@ -2,6 +2,8 @@
 
 ## 3.0.0 — 2026-11-03
 
+- Move selected-user rules into User with named bounded editors, separate active/history presentation and live custom rules in Account status. Add guarded AuthPolicies 1.2.0 active exception reads independent of the latest-50 history cap; preserve native proof, revisions and Audit.
+
 - Keep directory filter controls aligned within each responsive row when field labels wrap.
 
 - Complete own/Admin security table capabilities: chronological session sorting, local search/column filters, and separately authorized bounded Admin exports/print. Extend AuthAdministration to 2.1.0 with authorized directory ordering before cursor paging, nulls last, stable UUID ties and query-bound cursors.
@@ -25,7 +27,7 @@
 - Preserve inactive name drafts, show selected-avatar bytes/initials, consolidate account facts and rebuild email management. Hide recipient selectors with disabled secondary addresses and apply the complete review preset during explicit development seeding.
 
 - Auth 3.1.0: align selected-user details with creation, bulk action tones and own-account identity/preferences/avatar cropping; export shared presentation fields with independent controller ownership.
-- Auth 3.1.0: rebuild user details around User, Security and Rules/exceptions; add permissioned target preference reads/atomic edits and individual all-device/exception revocation. Preferences/Security/Policies APIs advance additively to 1.1.0; preserve self-service binding, native proofs, delivery constraints and Audit.
+- Auth 3.1.0: rebuild user details around User and Security with named user rules; add permissioned target preference reads/atomic edits and individual all-device/exception revocation. Preferences API advances additively to 1.1.0, Security/Policies to 1.2.0; preserve self-service binding, native proofs, delivery constraints and Audit.
 
 - Omit operational editors for configuration-disabled capabilities. Keep authorized account facts read-only, hide disabled verification/factor/avatar editors and notification recipients, and dismiss withdrawn editors without losing unrelated drafts. Document the shared visibility rule in owner/customer frontend guidance. Preserve native backend enforcement.
 

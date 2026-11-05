@@ -458,13 +458,22 @@ individual-action presentation remains outside this bulk-protection change.
 
 ## Task-based user details
 
-Auth 3.1.0 replaces the default per-section tabs with at most three nonempty
-areas: User, Security, Rules and exceptions. User starts with individual action
+Auth 3.1.0 replaces the default per-section tabs with at most two nonempty
+areas: User and Security. User starts with individual action
 buttons, then editable identity/avatar, one complete account-status grid, primary/secondary emails,
-searchable assignments and preferences. Status consolidates authorized verification
+searchable assignments, preferences and user rules. Status consolidates authorized verification
 and invitation dates, lifecycle, activity and credential/factor facts; separate
 access-condition and invitation cards are omitted. Security groups sessions and
-trusted devices. Rules and exceptions holds bounded exception history and editing.
+trusted devices. User rules presents each configuration-enabled allowlisted rule
+by name, with an explicit Set custom/Edit action and Restore global action for a
+live exception. Focused dialogs show the bounded value with days/minutes, expiry
+within 30 days and required reason; the key and revision tokens are never operator
+inputs. Restore global uses null value and requires its own reason/proof. Cancel
+restores the prior parameters. Current rules show value, expiry and reason here
+and in Account status; expired/revoked/prior-policy rows are excluded immediately
+from the live summary, independently of the latest-50 collapsed history. Active
+projection has its own guarded read and cannot disappear behind long history.
+Field/section presentation replacements retain the generic composition seam.
 Existing lifecycle schedules, invitation/verification/password/factor operations,
 reset, avatar management and all native read grants remain available. Individual
 operations use their native target APIs rather than the bulk API, whose protected
@@ -491,7 +500,7 @@ consumers through `ModuleApis`; management adapters are private:
 ```php
 // AuthSecurity API 1.2.0, permission runa.auth.trust.manage
 public function revokeDevices(string $publicId, int $expectedVersion): bool;
-// AuthPolicies API 1.1.0, permission runa.auth.policy.exceptions
+// AuthPolicies API 1.2.0, permission runa.auth.policy.exceptions
 // Fresh both-factor runa.auth.policy.exception proof, consumed once in transaction.
 public function revokeExceptions(string $publicId, int $expectedVersion): bool;
 ```
@@ -510,12 +519,16 @@ their existing resolution and authority boundaries; customers never copy private
 Auth controllers or access foreign models. The new default detail components are
 private presentation implementations, not additional customer imports.
 
-`AuthPolicies` 1.1.0 additionally exposes
+`AuthPolicies` 1.2.0 additionally exposes
 `exceptionVersions(string $publicId): array<string, int>` under
 `runa.auth.policy.exceptions`. It projects each key's current monotonic version
 independently of the bounded history page, so editing another rule remains correct
 even after more than 50 historical changes to a different rule. These values stay
-in the form controller; they are not operator inputs.
+in the form controller; they are not operator inputs. The separate
+`activeExceptions(string $publicId): array` projection and complete public shape
+are documented in [active account exceptions](policies-and-operators.md#active-account-exception-projection).
+The readonly `active_exceptions` field is authorized under the same exception grant;
+status does not fetch or reveal policy data without that declared section.
 
 ### Consistency with creation and account forms
 

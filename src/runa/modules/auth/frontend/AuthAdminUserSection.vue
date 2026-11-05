@@ -112,8 +112,7 @@ const collectionKey = computed(
       secondary: 'addresses',
       sessions: 'sessions',
       trust: 'devices',
-      exceptions: 'exceptions',
-    })[kind.value as 'secondary' | 'sessions' | 'trust' | 'exceptions'],
+    })[kind.value as 'secondary' | 'sessions' | 'trust'],
 );
 const rows = computed(() =>
   collectionKey.value ? array(collectionKey.value) : [],
@@ -326,11 +325,9 @@ const submitCommand = computed(() =>
       ? get('address_id')
         ? 'change'
         : 'add'
-      : kind.value === 'exceptions'
-        ? 'set'
-        : canSave.value
-          ? 'save'
-          : undefined,
+      : canSave.value
+        ? 'save'
+        : undefined,
 );
 function submit() {
   attempted.value = true;
@@ -465,10 +462,6 @@ function edit(row: Record<string, AdminJson>) {
   if (kind.value === 'secondary') {
     set('address_id', row.public_id ?? null);
     set('email', row.email ?? '');
-  } else if (kind.value === 'exceptions') {
-    for (const key of ['key', 'value', 'reason', 'expires_at'])
-      set(key, row[key] ?? null);
-    set('exception_version', row.version ?? 0);
   }
 }
 function rowAction(row: Record<string, AdminJson>, command: string) {
@@ -476,50 +469,8 @@ function rowAction(row: Record<string, AdminJson>, command: string) {
   if (kind.value === 'secondary') values.address_id = row.public_id ?? null;
   if (kind.value === 'sessions') values.session_id = row.public_id ?? null;
   if (kind.value === 'trust') values.device_id = row.public_id ?? null;
-  if (kind.value === 'exceptions') {
-    Object.assign(values, {
-      key: row.key ?? null,
-      value: null,
-      reason: row.reason ?? '',
-      expires_at: new Date(Date.now() + 3600000).toISOString(),
-      policy_revision: get('policy_revision'),
-    });
-    try {
-      const versions: unknown = JSON.parse(
-        String(get('exception_versions') ?? '{}'),
-      );
-      values.exception_version =
-        versions && typeof versions === 'object' && !Array.isArray(versions)
-          ? ((versions as Record<string, number>)[String(row.key)] ?? 0)
-          : 0;
-    } catch {
-      values.exception_version = 0;
-    }
-  }
   emit('operation', props.section.key, command, values);
 }
-watch(
-  () => get('key'),
-  (key) => {
-    if (kind.value !== 'exceptions') return;
-    try {
-      const versions: unknown = JSON.parse(
-        String(get('exception_versions') ?? '{}'),
-      );
-      set(
-        'exception_version',
-        versions &&
-          typeof versions === 'object' &&
-          !Array.isArray(versions) &&
-          typeof key === 'string'
-          ? ((versions as Record<string, number>)[key] ?? 0)
-          : 0,
-      );
-    } catch {
-      set('exception_version', 0);
-    }
-  },
-);
 async function older() {
   const id = props.controller.records.value[props.section.key]?.public_id;
   if (id && typeof next.value === 'string') {
@@ -570,18 +521,16 @@ const canSave = computed(() =>
 const rowKeys = computed(() =>
   kind.value === 'secondary'
     ? ['email', 'verified_at', 'created_at']
-    : kind.value === 'exceptions'
-      ? ['key', 'value', 'reason', 'expires_at', 'revoked_at']
-      : kind.value === 'sessions'
-        ? [
-            'created_at',
-            'authenticated_at',
-            'activity_at',
-            'expires_at',
-            'current',
-            'remembered',
-          ]
-        : ['created_at', 'expires_at'],
+    : kind.value === 'sessions'
+      ? [
+          'created_at',
+          'authenticated_at',
+          'activity_at',
+          'expires_at',
+          'current',
+          'remembered',
+        ]
+      : ['created_at', 'expires_at'],
 );
 const fieldTitle = (key: string) =>
   t(
@@ -784,7 +733,7 @@ async function refreshTable() {
                 </dl>
                 <div v-if="!section.readonly" class="mt-3 flex flex-wrap gap-2">
                   <Button
-                    v-if="['secondary', 'exceptions'].includes(kind)"
+                    v-if="kind === 'secondary'"
                     size="sm"
                     variant="outline"
                     :disabled="controller.busy.value"
@@ -798,21 +747,16 @@ async function refreshTable() {
                           secondary: ['remove'],
                           sessions: ['revoke'],
                           trust: ['revoke_device'],
-                          exceptions: ['set'],
                         }) as Record<string, string[]>
                       )[kind]?.includes(command.key),
                     )"
                     :key="command.key"
                     size="sm"
                     variant="outline"
-                    :tone="kind === 'exceptions' ? 'warning' : 'danger'"
+                    tone="danger"
                     :disabled="controller.busy.value"
                     @click="rowAction(row, command.key)"
-                    >{{
-                      kind === 'exceptions'
-                        ? text('Odwołaj wyjątek', 'Revoke exception')
-                        : t(command.title)
-                    }}</Button
+                    >{{ t(command.title) }}</Button
                   >
                 </div>
               </div>
@@ -827,14 +771,12 @@ async function refreshTable() {
                     secondary: 'Brak dodatkowych adresów.',
                     sessions: 'Brak aktywnych sesji.',
                     trust: 'Brak zaufanych urządzeń.',
-                    exceptions: 'Brak wyjątków.',
-                  }[kind as 'secondary' | 'sessions' | 'trust' | 'exceptions'],
+                  }[kind as 'secondary' | 'sessions' | 'trust'],
                   {
                     secondary: 'No secondary email addresses.',
                     sessions: 'No active sessions.',
                     trust: 'No trusted devices.',
-                    exceptions: 'No exceptions.',
-                  }[kind as 'secondary' | 'sessions' | 'trust' | 'exceptions'],
+                  }[kind as 'secondary' | 'sessions' | 'trust'],
                 )
               }}
             </p>
@@ -1073,8 +1015,7 @@ async function refreshTable() {
         v-if="
           record &&
           !section.readonly &&
-          ((submitCommand &&
-            (dirty || ['secondary', 'exceptions'].includes(kind))) ||
+          ((submitCommand && (dirty || kind === 'secondary')) ||
             (kind === 'secondary' && get('address_id')))
         "
         #actions
@@ -1084,7 +1025,7 @@ async function refreshTable() {
             record &&
             submitCommand &&
             !section.readonly &&
-            (dirty || ['secondary', 'exceptions'].includes(kind))
+            (dirty || kind === 'secondary')
           "
           type="submit"
           variant="outline"
@@ -1095,12 +1036,10 @@ async function refreshTable() {
               ? text('Zapisz dane', 'Save details')
               : kind === 'preferences'
                 ? text('Zapisz preferencje', 'Save preferences')
-                : kind === 'exceptions'
-                  ? text('Zapisz wyjątek', 'Save exception')
-                  : t(
-                      commands.find((command) => command.key === submitCommand)
-                        ?.title ?? 'Save',
-                    )
+                : t(
+                    commands.find((command) => command.key === submitCommand)
+                      ?.title ?? 'Save',
+                  )
           }}</Button
         >
         <Button

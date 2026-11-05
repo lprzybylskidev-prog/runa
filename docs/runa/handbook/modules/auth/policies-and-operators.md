@@ -1,6 +1,6 @@
 # Auth policies and trusted operator recovery
 
-Auth 3.1.0 supplies AuthPolicies 1.1.0 and AuthBulkSessions 2.0.0 with
+Auth 3.1.0 supplies AuthPolicies 1.2.0 and AuthBulkSessions 2.0.0 with
 Audit ^1.0.0 and framework API ^1.0.0. Install the current per-table storage and
 technical initialization through the fenced ModuleUpdates workflow; ordinary
 startup does not migrate or initialize an administrator.
@@ -59,6 +59,23 @@ Ingress, session projection/cleanup and password-expiry reminder calculation rea
 current effective values. Expired exceptions stop applying immediately without
 waiting for cron. Cleanup preserves sessions covered by a live extension; an
 extension never moves the session's captured absolute deadline.
+
+### Active account exception projection
+
+Auth owns `AuthPolicies` 1.2.0, consumed through guarded
+`ModuleApis::resolve('runa.auth', AuthPolicies::class, '1.2.0')` by authorized
+application/module integrations and the Admin management adapter. The added
+`public function activeExceptions(string $publicId): array` returns the same
+`list<array{public_id:string,key:string,value:int,reason:string,actor:string,
+version:int,policy_revision:int,expires_at:string,revoked_at:string|null}>` shape
+as `exceptions()`, limited to the two allowlisted keys, current policy revision,
+unrevoked rows and future expiry. Permission remains `runa.auth.policy.exceptions`.
+Implementation lives in Auth backend Contracts/PoliciesProxy/Actions/Definitions;
+it ships in the normal backend runtime, with no new HTTP endpoint. History retains
+its chronological latest-50 contract; active reads are independent of that cap.
+The Admin readonly `active_exceptions` field carries this projection for status
+and named rule editing. Browser expiry filtering is presentation only; native
+policy enforcement remains authoritative.
 
 ## Bulk session revocation
 

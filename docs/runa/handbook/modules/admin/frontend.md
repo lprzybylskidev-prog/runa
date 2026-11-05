@@ -1251,7 +1251,7 @@ callback; it grants no authority and does not change selection or payloads.
 
 The Auth Users page retains its public `AdminPageProps` replacement boundary and
 manifest-bound section/field overrides. Its default record editor groups sections
-into at most three nonempty tabs, preserves visited drafts, and uses explicit
+into at most two nonempty tabs (User and Security), preserves visited drafts, and uses explicit
 per-form submissions. Revision/UUID fields are controller metadata rather than
 operator inputs. Configuration/grant withdrawals remove the affected controls and
 clear proof state; unknown contributed sections remain in User. See the

@@ -911,20 +911,194 @@ it('rebuilt user details groups capabilities and keeps revision tokens out of op
       },
     }),
   );
-  await vi.waitFor(() => expect(wrapper.findAll('[role=tab]')).toHaveLength(3));
+  await vi.waitFor(() => expect(wrapper.findAll('[role=tab]')).toHaveLength(2));
   expect(wrapper.findAll('[role=tab]').map((tab) => tab.text())).toEqual([
     'User',
     'Security',
-    'Rules and exceptions',
   ]);
   expect(wrapper.find('input[name=preference_revision]').exists()).toBe(false);
   expect(wrapper.text()).not.toContain('preference_revision');
-  await wrapper.findAll('[role=tab]')[2]!.trigger('click');
   await vi.waitFor(() =>
     expect(wrapper.find('[data-user-section=exceptions]').exists()).toBe(true),
   );
   expect(wrapper.text()).not.toContain('exception_version');
   expect(wrapper.text()).not.toContain('policy_revision');
+});
+
+it('named account rules open focused editors and status uses authoritative active rules beyond history', async () => {
+  const { default: Details } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserDetails.vue');
+  const exceptions = section('exceptions', [
+    field('exceptions'),
+    field('active_exceptions'),
+    field('exception_versions'),
+    {
+      ...field('key', false),
+      type: 'dictionary',
+      choices: ['session_idle_minutes'],
+    },
+    { ...field('value', false), type: 'integer' },
+    field('reason', false),
+    { ...field('expires_at', false), type: 'datetime' },
+    { ...field('exception_version', false), type: 'integer' },
+    { ...field('policy_revision', false), type: 'integer' },
+  ]);
+  exceptions.commands = [
+    {
+      key: 'set',
+      title: 'Set or revoke exception',
+      mode: 'independent',
+      intent: 'action',
+      inputs: [
+        'key',
+        'value',
+        'reason',
+        'expires_at',
+        'exception_version',
+        'policy_revision',
+      ],
+      requirement: 'both',
+      action: 'runa.auth.policy.exception',
+      destructive: true,
+      bulk: false,
+      preview_required: false,
+      available: true,
+    },
+  ];
+  const controller = page([
+    section('lifecycle', [field('active')]),
+    exceptions,
+  ]);
+  const activeRule = {
+    public_id: target,
+    key: 'session_idle_minutes',
+    value: 240,
+    reason: 'Approved extended session',
+    expires_at: new Date(Date.now() + 3600000).toISOString(),
+    revoked_at: null,
+    policy_revision: 8,
+    version: 2,
+  };
+  let activeRules = [activeRule];
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    return response({
+      public_id: target,
+      revision: '1',
+      values: url.pathname.endsWith('/exceptions')
+        ? {
+            exceptions: JSON.stringify([
+              {
+                ...activeRule,
+                public_id: actor,
+                value: 120,
+                revoked_at: new Date().toISOString(),
+                reason: 'Old historical value',
+              },
+            ]),
+            active_exceptions: JSON.stringify(activeRules),
+            key: 'session_idle_minutes',
+            value: null,
+            reason: null,
+            expires_at: null,
+            exception_versions: '{"session_idle_minutes":2}',
+            exception_version: 0,
+            policy_revision: 8,
+          }
+        : { active: true },
+    });
+  });
+  let form!: AdminFormController;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () => h(Details, { controller, form });
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(
+      wrapper.find('[data-status-rule=session_idle_minutes]').text(),
+    ).toContain('240 min'),
+  );
+  expect(wrapper.find('[data-status-group=custom_rules]').text()).toContain(
+    'Approved extended session',
+  );
+  expect(wrapper.find('[data-status-group=custom_rules]').text()).not.toContain(
+    'Old historical value',
+  );
+  expect(wrapper.findAll('[role=tab]').map((tab) => tab.text())).toEqual([
+    'User',
+  ]);
+  const rules = wrapper.find('[data-user-section=exceptions]');
+  expect(rules.find('select').exists()).toBe(false);
+  expect(rules.text()).not.toContain('password_expiry_days');
+  await rules
+    .findAll('button')
+    .find((button) => button.text() === 'Edit')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(
+      document.querySelector('[role=dialog] input[inputmode=numeric]'),
+    ).not.toBeNull(),
+  );
+  expect(document.querySelector('[role=dialog] select')).toBeNull();
+  expect(
+    form.values.value[form.fieldPath('exceptions', 'exception_version')],
+  ).toBe(2);
+  expect(
+    document.querySelector('[role=dialog] input[type=password]'),
+  ).toBeNull();
+  // Bad bounds are rejected before proof acquisition or a native write.
+  form.set(form.fieldPath('exceptions', 'value'), 0);
+  document
+    .querySelector<HTMLButtonElement>('[role=dialog] button[type=submit]')!
+    .click();
+  await vi.waitFor(() =>
+    expect(document.body.textContent).toContain(
+      'Enter a value between 1 and 43200.',
+    ),
+  );
+  expect(
+    document.querySelector('[role=dialog] input[type=password]'),
+  ).toBeNull();
+  const cancel = [
+    ...document.querySelectorAll<HTMLButtonElement>('[role=dialog] button'),
+  ].find((button) => button.textContent?.trim() === 'Cancel');
+  cancel!.click();
+  await vi.waitFor(() =>
+    expect(document.querySelector('[role=dialog]')).toBeNull(),
+  );
+  expect(form.values.value[form.fieldPath('exceptions', 'value')]).toBeNull();
+  await rules
+    .findAll('button')
+    .find((button) => button.text() === 'Restore global')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(document.querySelector('[role=dialog]')).not.toBeNull(),
+  );
+  expect(
+    document.querySelector('[role=dialog] input[inputmode=numeric]'),
+  ).toBeNull();
+  expect(form.values.value[form.fieldPath('exceptions', 'reason')]).toBe('');
+  [...document.querySelectorAll<HTMLButtonElement>('[role=dialog] button')]
+    .find((button) => button.textContent?.trim() === 'Cancel')!
+    .click();
+  await vi.waitFor(() =>
+    expect(document.querySelector('[role=dialog]')).toBeNull(),
+  );
+  activeRules = [];
+  await form.refresh();
+  await vi.waitFor(() =>
+    expect(wrapper.find('[data-status-group=custom_rules]').exists()).toBe(
+      false,
+    ),
+  );
+  expect(rules.text()).toContain('Global rule');
 });
 
 it('rebuilt user detail actions request identity proof only after operation submission', async () => {

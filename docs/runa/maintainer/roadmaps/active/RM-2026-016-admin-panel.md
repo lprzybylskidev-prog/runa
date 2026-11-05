@@ -1067,6 +1067,14 @@ reassessment before resuming point 3; completed point history remains evidence.
     responsive columns; prepare assets and inspect rendered control geometry.
   - Synchronize the canonical table guide and changelog, assess both instruction
     products and commit. Manual acceptance/final verification remain 11b/12.
+- [x] 11a85. Move account policy exceptions into User and expose active rules in status.
+  - Owner-requested 2026-11-05: remove the separate Rules/exceptions tab and
+    replace key selection with named rule rows and focused bounded editors.
+  - Separate active rules from history; show authorized current overrides with
+    units, reason and expiry in Account status, including beyond 50 history rows.
+  - Preserve native proof, revisions, configuration visibility and replacements;
+    synchronize contracts/tests/docs, prepare assets/native readiness and commit.
+    Broad verification stays in point 12; owner acceptance remains 11b.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7547,3 +7555,58 @@ resource creation/removal occurred. Development/test data, caches, backups and
 prior reports remain preserved. Mandatory staged hooks/current knowledge accompany
 the commit. Manual owner acceptance 11b and final affected-area verification/release
 12 remain open.
+
+### Point 11a85 — Named user rules and current account-status overrides
+
+The owner requests removal of the separate Rules/exceptions tab, direct readable
+editing in User and additional display of custom rules in Account status. The
+supplied details now have at most User/Security tabs. Each configuration-enabled
+rule has a named row, explicit Set custom/Edit and Restore global actions, units,
+expiry and reason; latest-50 history is collapsed and labels active/revoked/expired
+entries separately. Focused dialogs hide keys/version tokens and validate bounded
+values, future deadlines within 30 days and nonempty single-line reason
+before native proof. Cancel restores operation parameters. Old generic exception
+editing branches are removed. Field/section replacements retain their generic
+composition boundary; the new components/helpers are private presentation.
+
+The status and editor consume the same authoritative active projection, with
+scheduled local expiry removal and no draft leakage. AuthPolicies advances
+additively to 1.2.0 with activeExceptions(string $publicId): array under the existing
+exception grant; native Auth owns filtering by account, allowlisted key, current
+policy revision, expiry and revocation. Its bounded two-row result is independent
+of the chronological latest-50 history. Current guarded consumers/bindings and the
+API source contract are synchronized. Native write, proof, revision, transaction
+and Audit behavior are unchanged. The existing unreleased Auth 3.1.0 candidate
+already covers this compatible addition; no platform/module release or migration
+is performed here.
+
+Knowledge was current and queried before focused source inspection. Public Auth
+administration/policy/API guidance, Admin presentation/operation map and both
+changelogs now describe current delivery. Root/owner skills and the customer
+instruction product were assessed: their existing Auth/Admin guide routing and
+presentation/security boundaries already cover this change; no new reusable rule,
+public frontend component or duplicated procedure is needed.
+
+Focused checks resolve the active/history-cap and operation-parameter questions:
+two backend cases PASS (24 assertions), including ungranted guarded-read refusal,
+more than 50 historical rows, expired/prior-revision/other-account exclusions and
+time expiry. Two frontend cases PASS cover two-tab composition, active status
+independent of revoked history, configuration visibility, pre-proof bounds,
+per-key versions, cancellation/restoration and authoritative read refresh. The
+current Core API declaration contract PASS. Logs remain in
+.runtime/user-details/policy-rules-{backend,frontend,contract}.log.
+
+Supported frontend build PASS, including strict types and native/static error
+assets, prepares the native Nginx application for owner acceptance. Native browser
+reads confirm the new authorized projection and page readiness; read-only populated
+projections additionally exercise active/status, focused editors and revoked
+history in PL/EN, light/dark and 1440/390px. Screenshots were inspected under
+.runtime/artifacts/playwright/policy-rules/; browser/build logs remain in
+.runtime/user-details/policy-rules-{browser,build}.log. No domain management writes
+are submitted by the browser diagnostic; its session logs out.
+
+The backend runner removed only its disposable runa_test_test_1; base runa_test,
+development/other databases, all Docker resources, caches, backups and reports are
+preserved. No Docker resources were created. Mandatory staged hooks/current
+knowledge accompany the commit. Owner manual acceptance 11b and final affected-area
+verification/release 12 remain open; these focused results do not complete them.

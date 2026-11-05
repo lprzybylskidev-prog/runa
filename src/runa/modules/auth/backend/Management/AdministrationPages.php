@@ -354,6 +354,7 @@ final class AdministrationPages implements ManagementPageProvider
         }
         $fields['exceptions'][2] = self::field('key', 'Policy key', 'dictionary', 'policy.exceptions', 'policy.exceptions',
             choices: $features->enabled('password_expiry') ? ['password_expiry_days', 'session_idle_minutes'] : ['session_idle_minutes']);
+        $fields['exceptions'][] = self::field('active_exceptions', 'Active account rules', read: 'policy.exceptions');
         $reads = ['eligibility' => 'eligibility.read', 'creation' => 'users.create', 'lifecycle' => 'users.read', 'invitations' => 'identities.read', 'primary_email' => 'profiles.read', 'secondary' => 'secondary.read', 'sessions' => 'sessions.manage', 'security' => 'identities.read', 'trust' => 'trust.manage', 'preferences' => 'preferences.read', 'exceptions' => 'policy.exceptions'];
         foreach ($fields as $key => $items) {
             $sections[] = new ManagementSection($key, ucwords(str_replace('_', ' ', $key)), 'runa.auth.'.$reads[$key], 'runa.auth.'.$reads[$key], $key, $items,
@@ -504,11 +505,11 @@ final class AdministrationPages implements ManagementPageProvider
             new ManagementBinding('security', SecuritySection::class, [$target(AuthAdministration::class, ['facts'], '2.1.0'), $identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'], '1.2.0')]),
             new ManagementBinding('trust', DeviceSection::class, [$identity, $target(AuthSecurity::class, ['trustedDevices', 'revokeDevice', 'revokeDevices'], '1.2.0')]),
             new ManagementBinding('preferences', PreferenceSection::class, [$target(AuthPreferences::class, ['account', 'updateAccount', 'resetAccount'], '1.1.0')]),
-            new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'exceptionVersions', 'exception', 'revokeExceptions'], '1.1.0')]),
-            new ManagementBinding('policy0', EntryPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '1.1.0')]),
-            new ManagementBinding('policy1', SecurityPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '1.1.0')]),
-            new ManagementBinding('policy2', LifecyclePolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '1.1.0')]),
-            new ManagementBinding('policy_history', PolicyHistorySection::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '1.1.0')]),
+            new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'activeExceptions', 'exceptionVersions', 'exception', 'revokeExceptions'], '1.2.0')]),
+            new ManagementBinding('policy0', EntryPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '1.2.0')]),
+            new ManagementBinding('policy1', SecurityPolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '1.2.0')]),
+            new ManagementBinding('policy2', LifecyclePolicy::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '1.2.0')]),
+            new ManagementBinding('policy_history', PolicyHistorySection::class, [$target(AuthPolicies::class, ['history', 'preview', 'publish', 'restore'], '1.2.0')]),
             new ManagementBinding('bulk_users', BulkUserSection::class, [$target(AuthBulkUsers::class, ['preview', 'execute'], '2.0.0')]),
             new ManagementBinding('bulk_sessions', BulkSessionSection::class, [$target(AuthBulkSessions::class, ['preview', 'revoke'], '2.0.0')]),
         ];

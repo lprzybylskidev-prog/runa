@@ -29,6 +29,8 @@ import AuthAdminActionGroups from './AuthAdminActionGroups.vue';
 import { groupAuthActions, authActionTone } from './bulkGroups';
 import AuthOperationProofFields from './AuthOperationProofFields.vue';
 import AuthAdminUserStatus from './AuthAdminUserStatus.vue';
+import AuthAdminPolicyExceptions from './AuthAdminPolicyExceptions.vue';
+import { policyRuleNames, usePolicyExceptions } from './policyExceptions';
 import AuthAdminEmails from './AuthAdminEmails.vue';
 import AuthAdminUserSection from './AuthAdminUserSection.vue';
 const props = defineProps<AdminPageProps>();
@@ -112,10 +114,7 @@ const groups = computed(() =>
       label: text('Użytkownik', 'User'),
       sections: presented.value
         .filter(
-          (section) =>
-            !['security', 'sessions', 'trust', 'exceptions'].includes(
-              section.key,
-            ),
+          (section) => !['security', 'sessions', 'trust'].includes(section.key),
         )
         .sort((a, b) => order(a) - order(b)),
     },
@@ -124,13 +123,6 @@ const groups = computed(() =>
       label: text('Bezpieczeństwo', 'Security'),
       sections: presented.value.filter((section) =>
         ['security', 'sessions', 'trust'].includes(section.key),
-      ),
-    },
-    {
-      id: 'rules',
-      label: text('Zasady i wyjątki', 'Rules and exceptions'),
-      sections: presented.value.filter(
-        (section) => section.key === 'exceptions',
       ),
     },
   ].filter((group) => group.sections.length),
@@ -143,6 +135,7 @@ function order(section: AdminSectionData) {
     'status',
     'emails',
     'preferences',
+    'exceptions',
   ].indexOf(section.key);
   return index < 0 ? 10 : section.key === 'preferences' ? 9 : index;
 }
@@ -393,9 +386,14 @@ const signature = () =>
   ]);
 const fields = computed(
   () =>
-    section.value?.fields.filter((field) =>
-      pending.value?.fields?.includes(field.key),
-    ) ?? [],
+    section.value?.fields
+      .filter((field) => pending.value?.fields?.includes(field.key))
+      .sort((a, b) =>
+        pending.value?.section === 'exceptions'
+          ? pending.value.fields!.indexOf(a.key) -
+            pending.value.fields!.indexOf(b.key)
+          : 0,
+      ) ?? [],
 );
 const review = computed(() =>
   pending.value
@@ -439,6 +437,34 @@ async function open(items: Action[], restore = false) {
   await select('0');
 }
 function operationField(field: AdminFieldData): AdminFieldData {
+  if (pending.value?.section === 'exceptions') {
+    const key = String(pending.value.values?.key);
+    if (field.key === 'value')
+      return {
+        ...field,
+        required: pending.value.fields?.includes('value') === true,
+        label:
+          key === 'password_expiry_days'
+            ? {
+                pl: 'Ważność hasła (dni, 1–3650)',
+                en: 'Password lifetime (days, 1–3650)',
+              }
+            : {
+                pl: 'Limit bezczynności (min, 1–43200)',
+                en: 'Idle limit (min, 1–43200)',
+              },
+      };
+    if (field.key === 'expires_at')
+      return {
+        ...field,
+        required: true,
+        label: {
+          pl: 'Obowiązuje do (maks. 30 dni)',
+          en: 'Applies until (max. 30 days)',
+        },
+      };
+    if (field.key === 'reason') return { ...field, required: true };
+  }
   if (pending.value?.section !== 'lifecycle' || field.key !== 'at')
     return field;
   const operation = pending.value?.values?.operation;
@@ -461,10 +487,57 @@ function valid() {
   for (const key of command.value.inputs) {
     const field = section.value.fields.find((field) => field.key === key);
     if (!field || field.readonly) return false;
-    const errors = validateAdminField(
-      operationField(field),
-      props.form.values.value[path(key)] ?? null,
-    );
+    const errors = [
+      ...validateAdminField(
+        operationField(field),
+        props.form.values.value[path(key)] ?? null,
+      ),
+    ];
+    if (pending.value?.section === 'exceptions') {
+      const value = props.form.values.value[path(key)];
+      if (
+        key === 'value' &&
+        pending.value.fields?.includes('value') &&
+        typeof value === 'number'
+      ) {
+        const max =
+          pending.value.values?.key === 'password_expiry_days' ? 3650 : 43200;
+        if (value < 1 || value > max)
+          errors.push(
+            text(
+              `Podaj wartość od 1 do ${max}.`,
+              `Enter a value between 1 and ${max}.`,
+            ),
+          );
+      }
+      if (key === 'expires_at' && typeof value === 'string') {
+        const at = Date.parse(value);
+        if (
+          !Number.isFinite(at) ||
+          at <= Date.now() ||
+          at > Date.now() + 30 * 86400000
+        )
+          errors.push(
+            text(
+              'Wybierz przyszły termin w ciągu 30 dni.',
+              'Choose a future date within 30 days.',
+            ),
+          );
+      }
+      if (
+        key === 'reason' &&
+        typeof value === 'string' &&
+        (!value.trim() ||
+          new TextEncoder().encode(value).length > 1000 ||
+          /[\x00-\x1f]/.test(value))
+      )
+        errors.push(
+          text(
+            'Podaj powód w jednym wierszu, do 1000 bajtów.',
+            'Enter a single-line reason, up to 1000 bytes.',
+          ),
+        );
+    }
     props.form.errors.value[path(key)] = errors;
     if (errors.length) valid = false;
   }
@@ -531,6 +604,7 @@ async function confirmProof() {
   await proof.value?.confirm();
   if (proof.value?.confirmed.value) await execute();
 }
+const exceptionState = usePolicyExceptions(props.form, 'exceptions');
 async function rowOperation(
   key: string,
   name: string,
@@ -539,15 +613,40 @@ async function rowOperation(
   const target = sections.value
     .find((section) => section.key === key)
     ?.commands.find((command) => command.key === name && command.available);
+  const exception = key === 'exceptions' && name === 'set';
+  const revoke = exception && values.revoke === true;
+  if (exception) {
+    values = { ...values };
+    delete values.revoke;
+  }
+  if (exception) {
+    values = {
+      ...values,
+      exception_version: exceptionState.version(String(values.key)),
+      policy_revision: exceptionState.get('policy_revision'),
+    };
+  }
+  const rule = policyRuleNames[String(values.key)] ?? String(values.key);
+  const ruleLabel = (language: 'pl' | 'en') =>
+    typeof rule === 'string' ? rule : rule[language];
   if (target)
     await open(
       [
         {
           section: key,
           command: name,
-          title: target.title,
+          title: exception
+            ? {
+                pl: `${revoke ? 'Przywróć zasadę ogólną' : 'Ustaw własną zasadę'}: ${ruleLabel('pl')}`,
+                en: `${revoke ? 'Restore global rule' : 'Set custom rule'}: ${ruleLabel('en')}`,
+              }
+            : target.title,
           values,
-          fields: [],
+          fields: exception
+            ? revoke
+              ? ['reason']
+              : ['value', 'expires_at', 'reason']
+            : [],
         },
       ],
       true,
@@ -608,7 +707,7 @@ function supplied(section: AdminSectionData) {
   ];
   return (
     !presentation.value.section &&
-    (!['primary_email', 'secondary'].includes(section.key) ||
+    (!['primary_email', 'secondary', 'exceptions'].includes(section.key) ||
       (!presentation.value.field &&
         !section.fields.some((field) => field.component))) &&
     !section.diagnostic &&
@@ -683,6 +782,11 @@ function supplied(section: AdminSectionData) {
                 :section="item"
                 :sources="statusSources"
                 :components="components"
+                :exceptions-source="
+                  sections.find(
+                    (source) => source.key === 'exceptions' && supplied(source),
+                  )
+                "
               />
               <AuthAdminEmails
                 v-else-if="item.key === 'emails'"
@@ -698,8 +802,15 @@ function supplied(section: AdminSectionData) {
                 :identity="controller.page.value!.revision + ':' + item.key"
                 :on-failure="(failed) => form.setAvailable(item.key, !failed)"
               >
+                <AuthAdminPolicyExceptions
+                  v-if="item.key === 'exceptions' && supplied(item)"
+                  :page="controller"
+                  :controller="form"
+                  :section="item"
+                  @operation="rowOperation"
+                />
                 <AuthAdminUserSection
-                  v-if="supplied(item)"
+                  v-else-if="supplied(item)"
                   :page="controller"
                   :controller="form"
                   :section="item"

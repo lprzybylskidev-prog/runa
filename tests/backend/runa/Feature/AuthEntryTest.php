@@ -1507,7 +1507,8 @@ it('keeps settings history effects and Audit atomic and restores as a new versio
         ->and($settings->read('runa.auth')['revision'])->toBe($revision + 2)
         ->and(User::find($user->id)->password_change_required)->toBeTrue()
         ->and(DB::table('runa_auth.policy_versions')->count())->toBe(3);
-    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '1.1.0')->history())->toThrow(OperationRejected::class);
+    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '1.2.0')->history())->toThrow(OperationRejected::class);
+    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '1.2.0')->activeExceptions('01900000-0000-7000-8000-000000000001'))->toThrow(OperationRejected::class);
 })->group('auth-policy-operators');
 
 function operatorAuthorityFixture(): object
@@ -1628,6 +1629,37 @@ it('expires and revalidates only allowlisted account exceptions with monotonic v
     entryPolicy(['notice_new_browser' => true]);
     expect(app(PolicyExceptions::class)->value($target, 'session_idle_minutes'))->toBe(120)
         ->and(DB::table('runa_auth.policy_exceptions')->whereNull('revoked_at')->count())->toBe(0);
+})->group('auth-policy-operators');
+
+it('reads active account exceptions independently of bounded history and excludes invalidated rows', function (): void {
+    $target = entryUser('active-rule-target@example.test');
+    $other = entryUser('active-rule-other@example.test');
+    $revision = app(ModuleSettings::class)->read('runa.auth')['revision'];
+    $insert = function (User $user, string $key, array $changes = []) use ($revision): string {
+        $id = (string) Str::uuid7();
+        DB::table('runa_auth.policy_exceptions')->insert(array_replace([
+            'public_id' => $id, 'user_id' => $user->id, 'key' => $key, 'value' => 240,
+            'reason' => 'Read projection fixture', 'actor' => $user->public_id,
+            'version' => 1, 'policy_revision' => $revision,
+            'expires_at' => now()->addHour(), 'revoked_at' => null,
+            'created_at' => now(), 'updated_at' => now(),
+        ], $changes));
+
+        return $id;
+    };
+    $active = $insert($target, 'session_idle_minutes');
+    for ($i = 0; $i < 55; $i++) {
+        $insert($target, 'password_expiry_days', ['revoked_at' => now(), 'version' => $i + 2]);
+    }
+    $expired = $insert($target, 'password_expiry_days', ['expires_at' => now()->subSecond()]);
+    $insert($other, 'password_expiry_days');
+    $policies = app(Policies::class);
+    expect(array_column($policies->exceptions($target->public_id), 'public_id'))->not->toContain($active)
+        ->and(array_column($policies->activeExceptions($target->public_id), 'public_id'))->toBe([$active]);
+    DB::table('runa_auth.policy_exceptions')->where('public_id', $expired)->update(['expires_at' => now()->addHour(), 'policy_revision' => $revision + 1]);
+    expect(array_column($policies->activeExceptions($target->public_id), 'public_id'))->toBe([$active]);
+    $this->travel(2)->hours();
+    expect($policies->activeExceptions($target->public_id))->toBe([]);
 })->group('auth-policy-operators');
 
 it('rejects stale bulk revocation previews and rolls back sessions with Audit without another proof', function (): void {

@@ -55,6 +55,23 @@ final readonly class Policies implements AuthPolicies
         ])->all());
     }
 
+    public function activeExceptions(string $publicId): array
+    {
+        new TrustedPrincipal($publicId);
+        $user = User::withTrashed()->where('public_id', $publicId)->firstOrFail();
+
+        /** @var Collection<int, \stdClass&object{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string, revoked_at: string|null}> $rows */
+        $rows = app('db')->connection()->table('runa_auth.policy_exceptions')->where('user_id', $user->id)
+            ->whereIn('key', PolicyExceptions::KEYS)->whereNull('revoked_at')->where('expires_at', '>', now())
+            ->where('policy_revision', $this->settings->read('runa.auth')['revision'])->orderBy('key')->limit(count(PolicyExceptions::KEYS))->get(['public_id', 'key', 'value', 'reason', 'actor', 'version', 'policy_revision', 'expires_at', 'revoked_at']);
+
+        return array_values($rows->map(fn ($row) => [
+            'public_id' => $row->public_id, 'key' => $row->key, 'value' => $row->value, 'reason' => $row->reason,
+            'actor' => $row->actor, 'version' => $row->version, 'policy_revision' => $row->policy_revision,
+            'expires_at' => $row->expires_at, 'revoked_at' => $row->revoked_at,
+        ])->all());
+    }
+
     public function preview(array $patch, int $revision, int $generation): array
     {
         return $this->transactions->run(function () use ($patch, $revision, $generation): array {

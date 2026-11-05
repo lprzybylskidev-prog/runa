@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Move selected-user rules into User with named bounded editors, separate active/history presentation and live custom rules in Account status. Add guarded AuthPolicies 1.2.0 active exception reads independent of the latest-50 history cap; preserve native proof, revisions and Audit.
+
 - Align shared table and Auth directory filter controls within each row when labels wrap onto multiple lines.
 
 - Complete table sorting, filters/search and separately authorized exports/print across supplied account/Admin views. Add SQL ordering before cursor paging for users, permission catalogues and Audit through AuthAdministration 2.1.0, PermissionsAccess 2.2.0 and AuditReads 1.1.0; retain loaded-page export scope and native authority.

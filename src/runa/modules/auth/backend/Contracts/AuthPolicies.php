@@ -15,6 +15,11 @@ interface AuthPolicies
     public function exceptions(string $publicId): array;
 
     /**
+     * @return list<array{public_id: string, key: string, value: int, reason: string, actor: string, version: int, policy_revision: int, expires_at: string, revoked_at: string|null}>
+     */
+    public function activeExceptions(string $publicId): array;
+
+    /**
      * @param  array<string, mixed>  $patch
      * @return array{revision: int, generation: int, changes: array<string, array{old: mixed, new: mixed}>, consequences: array<string, mixed>}
      */
