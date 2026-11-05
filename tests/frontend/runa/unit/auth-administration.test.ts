@@ -1877,7 +1877,7 @@ async function compactAssignmentFixture(readonly = false, imports = false) {
           });
       },
     }),
-    { attachTo: document.body },
+    { attachTo: document.body, global: { stubs: { Teleport: true } } },
   );
   await vi.waitFor(() =>
     expect(
@@ -2383,6 +2383,7 @@ it.each(['copy', 'preset'] as const)(
           (method === 'copy' ? 'Copy from user' : 'Use preset'),
       )!
       .trigger('click');
+    expect(tools.get('[role=dialog]').attributes('aria-modal')).toBe('true');
     const select = tools
       .findAllComponents(Select)
       .find(
@@ -2419,6 +2420,7 @@ it.each(['copy', 'preset'] as const)(
       .findAll('button')
       .find((button) => button.text() === 'Apply')!
       .trigger('click');
+    expect(tools.find('[role=dialog]').exists()).toBe(false);
     expect(submitted).toHaveBeenCalledWith(source.key, method, []);
     expect(form.values.value[form.fieldPath(source.key, 'roles')]).toEqual([
       id(61),
@@ -2444,4 +2446,32 @@ it('selected-user copy and preset tools preserve dirty assignments and omit read
   wrapper.unmount();
   const readonly = await compactAssignmentFixture(true, true);
   expect(readonly.wrapper.find('[data-access-import]').exists()).toBe(false);
+});
+
+it('selected-user import dialog cancellation clears only import parameters and keeps memberships', async () => {
+  const { wrapper, form, source, id, submitted } =
+    await compactAssignmentFixture(false, true);
+  const tools = wrapper.get('[data-access-import]');
+  await tools
+    .findAll('button')
+    .find((button) => button.text() === 'Copy from user')!
+    .trigger('click');
+  form.set(form.fieldPath(source.key, 'source_user'), id(900));
+  form.set(form.fieldPath(source.key, 'mode'), 'replace');
+  await nextTick();
+  await tools
+    .get('[role=dialog]')
+    .findAll('button')
+    .find((button) => button.text() === 'Cancel')!
+    .trigger('click');
+  expect(tools.find('[role=dialog]').exists()).toBe(false);
+  expect(
+    form.values.value[form.fieldPath(source.key, 'source_user')],
+  ).toBeNull();
+  expect(form.values.value[form.fieldPath(source.key, 'mode')]).toBe('add');
+  expect(form.values.value[form.fieldPath(source.key, 'roles')]).toEqual([
+    id(61),
+  ]);
+  expect(form.dirty.value).toBe(false);
+  expect(submitted).not.toHaveBeenCalled();
 });

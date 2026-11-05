@@ -8,7 +8,6 @@ import {
 } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
 import {
-  Alert,
   Button,
   Card,
   ConfirmDialog,
@@ -218,13 +217,6 @@ watch([() => props.page.state.value, () => record.value?.public_id], () =>
         :valid="canStore && (dirty || !record.public_id) && !conflicts.length"
         @submit="submit()"
       >
-        <Alert
-          v-if="
-            record.values.system || typeof record.values.module === 'string'
-          "
-          tone="info"
-          >{{ t('Source and system definitions are read-only.') }}</Alert
-        >
         <div v-if="!force" class="grid min-w-0 gap-5 md:grid-cols-2">
           <div
             v-for="field in fields"

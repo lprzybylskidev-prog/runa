@@ -1185,6 +1185,12 @@ reassessment before resuming point 3; completed point history remains evidence.
     adapters/exports and current documentation/tests; synchronize guidance products.
   - Prepare final formatted assets/runtime for owner acceptance, commit this point.
     Broad verification remains point 12; feature/0.7.0 remains confirmed.
+- [x] 11a97. Refine Permissions readonly copy and selected-user import dialogs.
+  - Owner requests removal of the redundant source/system readonly notice and
+    separate copy-from-user/apply-preset modals. Reuse shared Dialog, fields and
+    existing review/proof flow; cancel clears only import parameters.
+  - Update current docs/tests, prepare final assets and commit. Owner acceptance
+    11b and final broad verification 12 remain open.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -8270,3 +8276,33 @@ inactive owned `runa_test_test_1` workers. No Docker resources were created/dele
 base development/test databases, volumes, Qdrant/model caches, backups and all reports
 remain preserved. Mandatory hooks and refreshed knowledge accompany the commit.
 Owner manual acceptance 11b and broad final verification/release 12 remain open.
+
+### Point 11a97 — Quiet readonly details and separate access import dialogs
+
+Owner refinement on 2026-11-05 removes the redundant source/system readonly notice
+and places Copy from user / Use preset in separate modals. Removed the notice and
+its unused translation; native definition protection and readonly fields remain.
+PermissionsAccessImport now composes shared Dialog with source/mode fields and
+standard footer actions. Cancellation clears only import parameters; Apply closes
+the parameter dialog before the existing Auth review/password workflow. Native
+source snapshots, grants, transaction and Audit behavior are unchanged.
+
+Current Permissions guide and platform/module changelogs are synchronized. Existing
+owner/customer instruction references already point to that canonical composition
+guide; no new skill or always-loaded rule is needed. Existing unreleased versions,
+backend APIs and dependencies remain appropriate without changes.
+
+Focused uncertainty checks PASS: copy/preset modal and readonly protection cases
+(three cases), plus cancellation retaining memberships and clearing import drafts
+(one case). Updated the existing E2E readonly assertion; the full E2E suite remains
+for final verification. Supported strict TypeScript/assets/native-error build PASS.
+Native Nginx preparation confirms absent notice, nested source/preset dialogs,
+authorized choices, cancel, preset handoff into native review and light/dark/390px
+layout without overflow or page errors. No access write was submitted; browser
+session logged out. Evidence: `.runtime/permissions-modals/` and
+`.runtime/artifacts/playwright/permissions-modals/`.
+
+No database/reset/migration or Docker resource changes. Existing databases, volumes,
+caches, backups and reports remain preserved. Mandatory formatting/lint/secrets and
+fresh knowledge accompany this commit. Owner manual acceptance 11b and broad final
+verification/release 12 remain open.

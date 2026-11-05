@@ -5,7 +5,7 @@ import type {
   AdminFieldLookup,
   AdminSectionPresentationProps,
 } from '@/runa/admin';
-import { Button, FormNotifications } from '@/runa/ui';
+import { Button, Dialog, FormNotifications } from '@/runa/ui';
 const props = defineProps<AdminSectionPresentationProps & { dirty: boolean }>();
 const emit = defineEmits<{
   submit: [section: string, command: string, fields?: string[]];
@@ -137,37 +137,46 @@ watch(
         )
       }}
     </p>
-    <div
-      v-if="method && field && mode"
-      class="space-y-4 rounded border border-line p-4"
+    <Dialog
+      :model-value="!!method && !!field && !!mode"
+      :title="
+        method === 'copy'
+          ? text('Kopiuj od użytkownika', 'Copy from user')
+          : text('Użyj szablonu', 'Use preset')
+      "
+      :locale="locale"
+      :busy="controller.busy.value"
+      @update:model-value="!$event && close()"
     >
-      <FormNotifications
-        :locale="locale"
-        :error="t(resource.error.value?.message ?? '')"
-      />
-      <div class="grid min-w-0 gap-4 md:grid-cols-2">
-        <AdminField
-          :key="sourceKey + ':' + locale"
-          :field="field"
-          :readonly="section.readonly || field.readonly"
-          :model-value="controller.values.value[path(sourceKey)] ?? null"
-          :lookup="lookup"
-          :busy="controller.busy.value"
-          :errors="controller.errors.value[path(sourceKey)] ?? []"
-          @update:model-value="controller.set(path(sourceKey), $event)"
-          @availability="controller.setAvailable(path(sourceKey), $event)"
+      <div v-if="method && field && mode" class="space-y-4">
+        <FormNotifications
+          :locale="locale"
+          :error="t(resource.error.value?.message ?? '')"
         />
-        <AdminField
-          :field="mode"
-          :readonly="section.readonly || mode.readonly"
-          :model-value="controller.values.value[path('mode')] ?? 'add'"
-          :busy="controller.busy.value"
-          :errors="controller.errors.value[path('mode')] ?? []"
-          @update:model-value="controller.set(path('mode'), $event)"
-          @availability="controller.setAvailable(path('mode'), $event)"
-        />
+        <div class="grid min-w-0 gap-4">
+          <AdminField
+            :key="sourceKey + ':' + locale"
+            :field="field"
+            :readonly="section.readonly || field.readonly"
+            :model-value="controller.values.value[path(sourceKey)] ?? null"
+            :lookup="lookup"
+            :busy="controller.busy.value"
+            :errors="controller.errors.value[path(sourceKey)] ?? []"
+            @update:model-value="controller.set(path(sourceKey), $event)"
+            @availability="controller.setAvailable(path(sourceKey), $event)"
+          />
+          <AdminField
+            :field="mode"
+            :readonly="section.readonly || mode.readonly"
+            :model-value="controller.values.value[path('mode')] ?? 'add'"
+            :busy="controller.busy.value"
+            :errors="controller.errors.value[path('mode')] ?? []"
+            @update:model-value="controller.set(path('mode'), $event)"
+            @availability="controller.setAvailable(path('mode'), $event)"
+          />
+        </div>
       </div>
-      <div class="flex flex-wrap gap-2">
+      <template #footer>
         <Button
           :intent="
             controller.values.value[path('mode')] === 'replace'
@@ -184,7 +193,7 @@ watch(
           @click="close"
           >{{ text('Anuluj', 'Cancel') }}</Button
         >
-      </div>
-    </div>
+      </template>
+    </Dialog>
   </div>
 </template>

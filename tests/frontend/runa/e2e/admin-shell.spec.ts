@@ -653,7 +653,7 @@ test('Permissions and Audit administration: built definition and immutable histo
         ).toBeVisible();
       } else
         await expect(
-          page.getByText('Source and system definitions are read-only.', {
+          page.getByRole('dialog').getByText('runa.auth.reader', {
             exact: true,
           }),
         ).toBeVisible();

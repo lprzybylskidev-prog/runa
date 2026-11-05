@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Open selected-user copy/preset tools in separate shared dialogs and remove the redundant source/system readonly notice from Permissions details. Preserve native review, proof, drafts and definition protection.
+
 - Simplify Permissions to a readonly permission catalogue, roles and presets; combine details/editing in one dialog. Move account copy/preset and separately granted protected-authority workflows to Auth user details. Reuse guarded search, compact member selection, native source fingerprints, reviewed password-confirmed writes and atomic Audit; remove obsolete access/effective page adapters and exports.
 
 - Use quiet outlined action buttons, including Save and confirmations. Preserve operation colors before modal admission and use purple for mixed-effect tools; final confirmation reflects the selected operation. Document the shared policy for future views.

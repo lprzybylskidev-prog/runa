@@ -224,11 +224,7 @@ it('Permissions Admin source definitions stay read only and immutable codes cann
       },
     }),
   );
-  await vi.waitFor(() =>
-    expect(wrapper.text()).toContain(
-      'Source and system definitions are read-only.',
-    ),
-  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('runa.auth.reader'));
   expect(wrapper.find('input:not([readonly]):not([disabled])').exists()).toBe(
     false,
   );

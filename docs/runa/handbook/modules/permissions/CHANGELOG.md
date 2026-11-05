@@ -2,6 +2,8 @@
 
 ## 2.1.0 — Unreleased
 
+- Open selected-user copy/preset tools in separate shared dialogs and remove the redundant source/system readonly notice from Permissions details. Preserve native review, proof, drafts and definition protection.
+
 - Simplify Permissions to a readonly permission catalogue, roles and presets; combine details/editing in one dialog. Move account copy/preset and separately granted protected-authority workflows to Auth user details. Reuse guarded search, compact member selection, native source fingerprints, reviewed password-confirmed writes and atomic Audit; remove obsolete access/effective page adapters and exports.
 
 - Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/previews, purple mixed-effect tools and red destructive effects, independent of feedback context or password proof.

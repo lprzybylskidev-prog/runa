@@ -22,7 +22,8 @@ permission catalogue. The details dialog edits localized names/descriptions and
 members in place; there are no separate view/edit screens. Code is immutable after
 creation. Roles contain permissions; presets contain ordinary roles and direct
 permissions. Definitions supplied by module source and system definitions remain
-readonly and refuse mutation through native APIs. New presets are composed from
+readonly and refuse mutation through native APIs. Readonly fields and source facts
+convey this without a repeated explanatory banner. New presets are composed from
 explicit members in this UI; the guarded backend's source-account snapshot API
 remains supported independently.
 
@@ -51,7 +52,9 @@ Both support `add` (default) or `replace`, retain the target's protected members
 and never copy protected authority. Source account/preset revisions and assignments
 are fingerprinted in the native preview and revalidated before apply. Changed
 sources, recipients or definitions refuse as stale, without automatic replay.
-Copy/preset tools require saving or reverting an existing membership draft first;
+Copy/preset tools open separate shared dialogs with a source picker and add/replace
+mode. Cancel closes the dialog and clears its source/mode draft; Apply closes it
+before opening the existing Auth review. They require saving or reverting an existing membership draft first;
 selection alone never mutates access. The current Auth details review and shared
 full-page password confirmation own final submission and cancellation.
 
