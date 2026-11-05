@@ -12,7 +12,7 @@ prepared_version: 0.7.0
 prepared_version_approved_at: 2026-10-31
 prepared_version_reason: Owner-authorized runnable frontend acceptance; Core targets 0.7.0 while released 0.6.2 runtime and stale local module installation caused HTTP 503.
 quality_groups: docs,backend,frontend,e2e,database,delivery,installation,updates,security-source,tooling
-quality_rationale: Provisional affected-area scope for the new mandatory Core, public declarations and adapters, transactional storage, rendered UI and protected customer extension/generator contracts. Native installation/updates verify actual Core forward history and preservation. Security-source covers new authenticated operations and composition. Tooling covers prepared-candidate release validation added for owner manual acceptance. Mandatory baseline/hooks and real prerequisites remain required. No infrastructure/image or knowledge-runtime change is currently proposed and no all-group milestone is due at 0.7.0.
+quality_rationale: Final affected-area scope for the new mandatory Core, public declarations and adapters, transactional storage, rendered UI and protected customer extension/generator contracts. Native installation/updates verify actual Core forward history and preservation. Security-source covers new authenticated operations and composition. Tooling covers prepared-candidate release validation added for owner manual acceptance. Mandatory baseline/hooks and real prerequisites remain required. No infrastructure/image or knowledge-runtime change is included and no all-group milestone is due at 0.7.0. Excluded groups are not verified by this selection.
 impact_areas:
   - backend
   - frontend
@@ -1219,7 +1219,7 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Revalidate and fingerprint the retained set, preserve native single-write
     protection, proof, revisions and atomic Audit; cover mixed/no-op/stale plans.
     Synchronize the preview contract/docs and prepare current owner acceptance.
-- [ ] 11b. Owner manual frontend acceptance.
+- [x] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
   - The owner tests Admin and affected application frontend and reports defects.
@@ -1227,6 +1227,11 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Complete only after explicit owner acceptance; record tested source/environment.
     Agent checks and automated tests cannot supply that decision. This stays the
     penultimate point; final automated verification/release remains last.
+  - 2026-11-05: the owner declares the roadmap ready after the final 11a101
+    refinement and explicitly authorizes affected-area tests before closure.
+    This records owner acceptance of the prepared native Nginx development
+    application and current assets/data at source commit
+    f5494f67e9f5f236d0326d757d140d70f959f244; automated verification remains pending.
 - [ ] 12. Complete affected-area verification, release finalization and closure.
   - Prerequisites: all implementation points complete and committed, explicit owner
     manual acceptance in 11b; no unresolved
