@@ -49,9 +49,13 @@ watch(tab, (value) => {
 const sections = computed(() =>
   (props.controller.page.value?.sections ?? []).filter(
     (section) =>
-      !['directory', 'creation', 'bulk_sessions', 'bulk_users'].includes(
-        section.key,
-      ),
+      ![
+        'directory',
+        'creation',
+        'bulk_sessions',
+        'bulk_users',
+        'runa.permissions.user_authority_bulk.bulk_authority',
+      ].includes(section.key),
   ),
 );
 const statusSources = computed(() =>
@@ -81,14 +85,16 @@ const emailSources = computed(() =>
 const presented = computed(() => {
   const list = sections.value.filter(
     (section) =>
-      ![
+      section.key !== 'runa.permissions.user_authority.authority' &&
+      (![
         'lifecycle',
         'eligibility',
         'invitations',
         'security',
         'primary_email',
         'secondary',
-      ].includes(section.key) || !supplied(section),
+      ].includes(section.key) ||
+        !supplied(section)),
   );
   const source = statusSources.value[0];
   if (source)
@@ -131,11 +137,7 @@ const groups = computed(() =>
   ].filter((group) => group.sections.length),
 );
 function order(section: AdminSectionData) {
-  if (
-    section.key.endsWith('.assignments') ||
-    section.key === 'runa.permissions.user_authority.authority'
-  )
-    return 8;
+  if (section.key.endsWith('.assignments')) return 8;
   const index = [
     'profile',
     'avatar',
@@ -162,6 +164,8 @@ type Action = {
   fields?: string[];
 };
 function actionKey(action: Action): string {
+  if (action.section === 'runa.permissions.user_authority.authority')
+    return action.values?.grant ? 'grant_superadmin' : 'revoke_superadmin';
   if (typeof action.values?.operation === 'string')
     return action.values.operation;
   return (
@@ -215,6 +219,29 @@ function life(
 }
 const toolbar = computed(() => {
   const items: { title: AdminText; actions: Action[] }[] = [
+    {
+      title: { pl: 'Superadministrator', en: 'Super administrator' },
+      actions: [
+        {
+          section: 'runa.permissions.user_authority.authority',
+          command: 'change',
+          title: {
+            pl: 'Nadaj superadministratora',
+            en: 'Grant super administrator',
+          },
+          values: { grant: true },
+        },
+        {
+          section: 'runa.permissions.user_authority.authority',
+          command: 'change',
+          title: {
+            pl: 'Odbierz superadministratora',
+            en: 'Revoke super administrator',
+          },
+          values: { grant: false },
+        },
+      ],
+    },
     {
       title: { pl: 'Aktywność konta', en: 'Account activity' },
       actions: [
@@ -714,9 +741,7 @@ function supplied(section: AdminSectionData) {
     !section.diagnostic &&
     (section.component === null ||
       section.component?.key === 'runa.auth.admin_section') &&
-    (known.includes(section.key) ||
-      section.key.endsWith('.assignments') ||
-      section.key === 'runa.permissions.user_authority.authority')
+    (known.includes(section.key) || section.key.endsWith('.assignments'))
   );
 }
 </script>

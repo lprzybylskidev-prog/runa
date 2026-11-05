@@ -26,6 +26,7 @@
       "Runa\\Modules\\Permissions\\Definitions\\PermissionsApi",
       "Runa\\Modules\\Permissions\\Definitions\\AccessApi",
       "Runa\\Modules\\Permissions\\Definitions\\AuthorityApi",
+      "Runa\\Modules\\Permissions\\Definitions\\AuthorityBatchApi",
       "Runa\\Modules\\Permissions\\Definitions\\SelectionApi"
     ],
     "health": [],
@@ -45,6 +46,7 @@
     "slots": [],
     "management": [
       "Runa\\Modules\\Permissions\\Management\\AssignmentContribution",
+      "Runa\\Modules\\Permissions\\Management\\AuthorityContribution",
       "Runa\\Modules\\Permissions\\Definitions\\PermissionManagement",
       "Runa\\Modules\\Permissions\\Management\\AdministrationPages"
     ],

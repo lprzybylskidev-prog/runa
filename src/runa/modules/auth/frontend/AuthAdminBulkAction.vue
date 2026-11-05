@@ -7,7 +7,7 @@ import type {
   AdminSectionPresentationProps,
 } from '@/runa/admin';
 import { authBulkGroup, authActionIntent } from './bulkGroups';
-import { Alert, Button, ContentLoading, Select } from '@/runa/ui';
+import { Alert, BooleanBadge, Button, ContentLoading, Select } from '@/runa/ui';
 
 const props = defineProps<
   AdminSectionPresentationProps & {
@@ -107,6 +107,26 @@ const summary = computed(() => {
   return value && typeof value === 'object' && !Array.isArray(value)
     ? value
     : {};
+});
+const authorityTargets = computed(() => {
+  const targets = summary.value.authority_targets;
+  if (!Array.isArray(targets)) return [];
+  return targets.flatMap((target) =>
+    target &&
+    typeof target === 'object' &&
+    !Array.isArray(target) &&
+    typeof target.public_id === 'string' &&
+    typeof target.current === 'boolean' &&
+    typeof target.grant === 'boolean'
+      ? [
+          {
+            publicId: target.public_id,
+            current: target.current,
+            grant: target.grant,
+          },
+        ]
+      : [],
+  );
 });
 const selectedCount = computed(() => {
   const ids =
@@ -257,6 +277,10 @@ async function submit() {
           <div
             v-for="item in [
               {
+                key: 'unchanged_accounts',
+                label: { pl: 'Konta bez zmian', en: 'Unchanged accounts' },
+              },
+              {
                 key: 'sessions',
                 label: { pl: 'Unieważniane sesje', en: 'Sessions to revoke' },
               },
@@ -280,6 +304,38 @@ async function submit() {
           </div>
         </dl>
       </div>
+      <ul
+        v-if="authorityTargets.length"
+        class="divide-y divide-line rounded-lg border border-line"
+        data-authority-targets
+        :aria-label="
+          tr({ pl: 'Superadministrator', en: 'Super administrator' })
+        "
+      >
+        <li
+          v-for="target in authorityTargets"
+          :key="target.publicId"
+          class="flex flex-wrap items-center justify-between gap-2 p-3 text-sm"
+        >
+          <span class="min-w-0 break-all font-mono text-xs">{{
+            target.publicId
+          }}</span>
+          <dl class="grid grid-cols-2 gap-x-6 gap-y-2">
+            <div>
+              <dt class="mb-1 text-xs text-muted">
+                {{ tr({ pl: 'Obecnie', en: 'Current' }) }}
+              </dt>
+              <dd><BooleanBadge :value="target.current" :locale="locale" /></dd>
+            </div>
+            <div>
+              <dt class="mb-1 text-xs text-muted">
+                {{ tr({ pl: 'Po zmianie', en: 'After change' }) }}
+              </dt>
+              <dd><BooleanBadge :value="target.grant" :locale="locale" /></dd>
+            </div>
+          </dl>
+        </li>
+      </ul>
       <Alert v-if="skipped > 0" tone="warning" data-bulk-skipped>
         {{
           tr({

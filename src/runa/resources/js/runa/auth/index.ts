@@ -111,3 +111,5 @@ export {
   providePasswordConfirmation,
 } from '../../../../modules/auth/frontend/passwordConfirmation';
 export type { PasswordConfirmation } from '../../../../modules/auth/frontend/passwordConfirmation';
+
+export { default as AuthAdminBulkAction } from '../../../../modules/auth/frontend/AuthAdminBulkAction.vue';

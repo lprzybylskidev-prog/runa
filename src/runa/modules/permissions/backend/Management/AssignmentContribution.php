@@ -14,7 +14,6 @@ use Runa\Contracts\Modules\ManagementPageProvider;
 use Runa\Contracts\Modules\ManagementSection;
 use Runa\Modules\Auth\Contracts\AuthAdministration;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
-use Runa\Modules\Permissions\Contracts\PermissionsAuthority;
 
 final class AssignmentContribution implements ManagementPageProvider
 {
@@ -63,11 +62,7 @@ final class AssignmentContribution implements ManagementPageProvider
                     intent: 'save', proofAction: 'runa.permissions.access.manage'),
                 AdministrationPages::command('copy', 'Copy ordinary assignments', 'access.apply_assignments', ['source_user', 'mode'], 'assignments', participant: AssignmentEditor::class),
                 AdministrationPages::command('preset', 'Apply access preset', 'access.apply_assignments', ['preset', 'mode'], 'assignments', participant: AssignmentEditor::class),
-            ])), new ManagementContribution('user_authority', 'runa.auth.users.profile', new ManagementSection('authority', ['pl' => 'Superadministrator', 'en' => 'Super administrator'],
-                'runa.permissions.authority.manage', 'runa.permissions.authority.manage', 'authority', [
-                    new ManagementFieldAccess(new ManagementField('grant', 'boolean', ['pl' => 'Superadministrator', 'en' => 'Super administrator'], ['pl' => 'Chronione członkostwo systemowe.', 'en' => 'Protected system membership.'], writable: true), 'runa.permissions.authority.manage', 'runa.permissions.authority.manage'),
-                    new ManagementFieldAccess(new ManagementField('review_summary', 'text', ['pl' => 'Skutki zmiany', 'en' => 'Change impact'], ['pl' => 'Przegląd chronionego członkostwa.', 'en' => 'Protected membership review.']), 'runa.permissions.authority.manage'),
-                ], [AdministrationPages::command('change', 'Change protected authority', 'authority.apply', ['grant'], 'authority', 'authority.manage', true)], required: false))];
+            ]))];
     }
 
     public function bindings(): array
@@ -75,6 +70,6 @@ final class AssignmentContribution implements ManagementPageProvider
         return [new ManagementBinding('assignments', AssignmentEditor::class, [
             new ManagementApiTarget('runa.permissions', PermissionsAccess::class, '2.2.0', ['assignments', 'previewAssignments', 'previewCopy', 'previewPreset', 'applyAssignments', 'definitions']),
             new ManagementApiTarget('runa.auth', AuthAdministration::class, '2.1.0', ['users']),
-        ], AssignmentEditor::class), new ManagementBinding('authority', AuthorityEditor::class, [new ManagementApiTarget('runa.permissions', PermissionsAuthority::class, '1.0.0', ['previewAuthority', 'applyAuthority'])])];
+        ], AssignmentEditor::class)];
     }
 }

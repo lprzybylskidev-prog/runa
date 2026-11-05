@@ -2483,3 +2483,186 @@ it('selected-user import dialog cancellation clears only import parameters and k
   expect(form.dirty.value).toBe(false);
   expect(submitted).not.toHaveBeenCalled();
 });
+
+it('protected authority uses a grouped individual action without rendering its checkbox card', async () => {
+  const { default: Details } =
+    await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserDetails.vue');
+  const authority = section('runa.permissions.user_authority.authority', [
+    { ...field('grant', false), type: 'boolean' },
+  ]);
+  authority.commands = [
+    {
+      key: 'change',
+      title: 'Change authority',
+      inputs: ['grant'],
+      mode: 'independent',
+      intent: 'action',
+      requirement: 'password',
+      action: 'runa.permissions.authority.manage',
+      destructive: true,
+      bulk: false,
+      preview_required: true,
+      available: true,
+    },
+  ];
+  const controller = page([
+    section('profile', [field('name', false)]),
+    authority,
+  ]);
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    response({
+      public_id: target,
+      revision: '0',
+      values: String(input).includes('user_authority')
+        ? { grant: false }
+        : { name: 'Target' },
+    }),
+  );
+  let form!: AdminFormController;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller, {
+          publicId: ref(target),
+          autoRead: false,
+        });
+        return () => h(Details, { controller, form });
+      },
+    }),
+    { attachTo: document.body },
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.text()).toContain('Super administrator'),
+  );
+  expect(
+    wrapper
+      .find('[data-user-section="runa.permissions.user_authority.authority"]')
+      .exists(),
+  ).toBe(false);
+  expect(wrapper.find('input[type=checkbox]').exists()).toBe(false);
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Super administrator')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(form.values.value[authority.key + '.grant']).toBe(true),
+  );
+  const select = wrapper
+    .findAllComponents(Select)
+    .find((select) =>
+      (select.props() as { options: { label: string }[] }).options.some(
+        (option: { label: string }) =>
+          option.label === 'Revoke super administrator',
+      ),
+    )!;
+  select.vm.$emit('update:modelValue', '1');
+  await vi.waitFor(() =>
+    expect(form.values.value[authority.key + '.grant']).toBe(false),
+  );
+  expect(
+    document.querySelector('[role=dialog] input[type=checkbox]'),
+  ).toBeNull();
+});
+
+it('protected authority bulk reviews every selected account and refreshes grant versus revoke impact', async () => {
+  const bulk = section('runa.permissions.user_authority_bulk.bulk_authority', [
+    { ...field('public_ids', false), type: 'uuid', multiple: true },
+    field('summary'),
+  ]);
+  bulk.commands = ['grant_superadmin', 'revoke_superadmin'].map((key) => ({
+    key,
+    title: key,
+    inputs: ['public_ids'],
+    mode: 'independent',
+    intent: 'action',
+    requirement: 'none',
+    action: null,
+    destructive: true,
+    bulk: true,
+    preview_required: true,
+    available: true,
+  }));
+  const controller = page([bulk]);
+  const previews: string[] = [];
+  vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+    if (String(input).endsWith('/preview')) {
+      const body = JSON.parse(String(init?.body)) as {
+        command: string;
+        values: { public_ids: string[] };
+      };
+      previews.push(body.command);
+      expect(body.values.public_ids).toEqual([actor, target]);
+      return response({
+        fingerprint: 'a'.repeat(64),
+        changes: {
+          summary: {
+            accounts: 2,
+            affected_accounts: 1,
+            unchanged_accounts: 1,
+            skipped_accounts: 0,
+            ineligible_accounts: 0,
+            authority_targets: [
+              {
+                public_id: actor,
+                current: true,
+                grant: body.command === 'grant_superadmin',
+              },
+              {
+                public_id: target,
+                current: false,
+                grant: body.command === 'grant_superadmin',
+              },
+            ],
+          },
+        },
+        requirement: 'none',
+        every_action: true,
+      });
+    }
+    return response({
+      public_id: null,
+      revision: '0',
+      values: { public_ids: [actor, target], summary: null },
+    });
+  });
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const form = useAdminForm(controller);
+        return () =>
+          h(
+            AdminForm,
+            { controller: form },
+            {
+              default: () =>
+                h(AuthAdminBulkAction, {
+                  page: controller,
+                  section: bulk,
+                  controller: form,
+                }),
+            },
+          );
+      },
+    }),
+  );
+  await vi.waitFor(() =>
+    expect(wrapper.get('[data-authority-targets]').findAll('li')).toHaveLength(
+      2,
+    ),
+  );
+  expect(wrapper.find('[data-bulk-skipped]').exists()).toBe(false);
+  wrapper
+    .getComponent(Select)
+    .vm.$emit('update:modelValue', 'revoke_superadmin');
+  await vi.waitFor(() =>
+    expect(previews).toEqual(['grant_superadmin', 'revoke_superadmin']),
+  );
+  await vi.waitFor(() =>
+    expect(
+      wrapper
+        .get('[data-authority-targets]')
+        .findAll('dd')
+        .map((cell) => cell.text()),
+    ).toEqual(['Yes', 'No', 'No', 'No']),
+  );
+});

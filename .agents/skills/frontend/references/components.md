@@ -58,3 +58,8 @@ Blue denotes reads/refresh/preview; never use solid action fills in supplied vie
 For Permissions presentation composition and selected-user copy/preset tools use
 `docs/runa/handbook/modules/permissions/administration.md`. Keep definition management
 separate from account access, and preserve the native reviewed source fingerprints.
+
+For selected-account review composition reuse public `AuthAdminBulkAction` through
+`@/runa/auth`; its typed composition contract is in
+`docs/runa/handbook/modules/auth/administration.md`. The native owning module retains
+selection admission, reviewed writes, password proof and transactional Audit.

@@ -2,6 +2,11 @@ import type { ButtonIntent } from '@/runa/ui';
 /** Private presentation grouping; native projected commands retain all admission/proof authority. */
 export const authBulkGroups = [
   {
+    key: 'authority',
+    title: { pl: 'Superadministrator', en: 'Super administrator' },
+    commands: ['grant_superadmin', 'revoke_superadmin'],
+  },
+  {
     key: 'activity',
     title: { pl: 'Aktywność kont', en: 'Account activity' },
     commands: ['activate', 'deactivate', 'toggle_activation'],
@@ -61,6 +66,7 @@ export function authActionIntent(
       'revoke',
       'revoke_device',
       'revoke_trust',
+      'revoke_superadmin',
     ].includes(key)
   )
     return 'danger';
@@ -110,6 +116,11 @@ export function authBulkActionIntent(
 
 /** One thematic order for single-account and selected-account commands. */
 export const authActionSections = [
+  {
+    key: 'authority',
+    title: { pl: 'Superadministrator', en: 'Super administrator' },
+    commands: ['grant_superadmin', 'revoke_superadmin'],
+  },
   {
     key: 'activity',
     title: { pl: 'Aktywność i terminy', en: 'Activity and schedules' },

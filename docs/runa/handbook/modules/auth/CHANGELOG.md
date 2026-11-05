@@ -2,6 +2,8 @@
 
 ## 5.0.0 — Unreleased
 
+- Replace the Auth user superadministrator checkbox section with grouped grant/revoke actions for one account or up to 100 explicitly selected accounts. Add guarded PermissionsAuthorityBatch 1.0.0 with complete-set lockout protection, stale review refusal, one password proof and atomic per-target Audit; preserve ordinary Auth bulk exclusions.
+
 - Simplify Permissions to a readonly permission catalogue, roles and presets; combine details/editing in one dialog. Move account copy/preset and separately granted protected-authority workflows to Auth user details. Reuse guarded search, compact member selection, native source fingerprints, reviewed password-confirmed writes and atomic Audit; remove obsolete access/effective page adapters and exports.
 
 - Use quiet outlined action buttons, including Save and confirmations. Preserve operation colors before modal admission and use purple for mixed-effect tools; final confirmation reflects the selected operation. Document the shared policy for future views.

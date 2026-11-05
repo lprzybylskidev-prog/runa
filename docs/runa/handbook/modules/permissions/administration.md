@@ -66,7 +66,14 @@ Absent source-read authority omits the copy tool. Writes retain
 `runa.permissions.access.manage` and native Auth eligibility reads.
 
 The independent `runa.permissions.user_authority.authority` contribution places
-protected superadministrator assignment in the same Auth user details. It requires
+protected superadministrator assignment in the same Auth user details action toolbar.
+The grouped action offers grant and revoke without a separate checkbox section.
+`runa.permissions.user_authority_bulk.bulk_authority` supplies the same grant/revoke
+choice for up to 100 explicitly selected directory accounts through the guarded
+[PermissionsAuthorityBatch 1.0.0](authority.md#explicit-selected-account-authority-changes)
+API. Bulk additionally requires `runa.permissions.users.select`, shows every selected
+account and applies the entire reviewed set atomically, including existing protected
+members. Ordinary Auth bulk actions retain their protected-member exclusion. It requires
 `runa.permissions.authority.manage`, native eligibility/revision review, explicit
 confirmation and password proof. Self-escalation and last-eligible-administrator
 protection remain authoritative. It never joins ordinary profile/access atomic Save.

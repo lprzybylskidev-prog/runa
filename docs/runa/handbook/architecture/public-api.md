@@ -67,7 +67,7 @@ and operation rather than granting access to that whole directory:
 | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
 | Auth        | Guarded `Auth*` APIs and their immutable values, exceptions and selections; `PreferenceProvider`/`DeliveryProvider` declarations.                                                                                                       | `AuthorizationIdentity`, `BulkUserSelection`, `OperatorAuthority`, `SecurityMailDelivery`, `DevelopmentAccounts`. |
 | Audit       | Guarded `AuditRecords`, `AuditReads`, `OwnHistory`, `OwnHistoryDetails` and their values/exceptions; `Auditable` and `AuditModelPolicy` for opt-in capture; scoped `AuditSuppression::run` under the Audit transaction/redaction rules. | `AuditWriter`, `AuditActorResolver`; suppression's `active()` is capture plumbing.                                |
-| Permissions | Guarded `Permissions`, `PermissionsAccess`, `PermissionsAuthority`, `PermissionsSelections` and their preview/selection/declaration values.                                                                                             | `DevelopmentAccess`, only for explicit development contributors.                                                  |
+| Permissions | Guarded `Permissions`, `PermissionsAccess`, `PermissionsAuthority`, `PermissionsAuthorityBatch`, `PermissionsSelections` and their preview/selection/declaration values.                                                                | `DevelopmentAccess`, only for explicit development contributors.                                                  |
 
 Reserved contracts support the existing named Core integration, owning Actions,
 transaction participants and operator/development procedures in each module's
@@ -350,7 +350,9 @@ Their page/section presentations are public through `@/runa/permissions` and
 `@/runa/audit`, with AdminPageProps / AdminSectionPresentationProps. Customer App
 presentation may compose or replace those defaults through `@/runa/admin` public
 controllers/providers, including AdminRecordBrowser; owning backend APIs remain
-PermissionsAccess 2.2.0, PermissionsAuthority/Permissions and AuditReads 1.1.0.
+PermissionsAccess 2.2.0, PermissionsAuthority/PermissionsAuthorityBatch 1.0.0,
+Permissions and AuditReads 1.1.0. The dedicated batch authority contract is owned
+by [Permissions](../modules/permissions/authority.md#explicit-selected-account-authority-changes).
 See [Permissions administration](../modules/permissions/administration.md) and
 [Audit administration](../modules/audit/administration.md). PermissionsAccess adds optional bounded definition filters; see its owning guide.
 AuditPage/UserDirectoryPage add an optional nullable total and

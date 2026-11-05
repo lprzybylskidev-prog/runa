@@ -636,7 +636,17 @@ transactionally audited; Audit has its own viewer. AuthPolicies is 3.0.0 and Aut
 is 5.0.0 for removal of guarded history restore. Operator recovery remains CLI-only.
 
 Permissions contributes ordinary access copying/preset application and a separately
-granted protected-authority form to this same user-details screen. Account access
+granted protected-authority action to this same user-details screen. Account access
 has no separate Permissions page. The public PermissionsAssignments component emits
 its existing submit event for save/copy/preset and reuses this screen's native review
 and full-page password proof. See [Permissions administration](../permissions/administration.md).
+
+Auth owns public runtime presentation `AuthAdminBulkAction` from `@/runa/auth`,
+implemented in `frontend/AuthAdminBulkAction.vue`. It accepts
+`AdminSectionPresentationProps & { components?: AdminComponentRegistry }`, has no
+slots/events and is supported for trusted module/App Admin section composition.
+It renders projected grouped operations, complete selected-authority target review,
+counts and controlled fields through the supplied Admin controller. Native reads,
+review, selection, grants, proof and transactions stay with their owning module.
+Permissions composes this default for its dedicated selected-account authority
+workflow, without copying session/security orchestration or using private Auth code.

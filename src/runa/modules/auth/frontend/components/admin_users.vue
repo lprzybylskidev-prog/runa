@@ -82,13 +82,26 @@ watch(
 const directory = computed(() => table.section.value);
 const bulkChoices = computed(() =>
   (props.controller.page.value?.sections ?? [])
-    .filter((s) => ['bulk_sessions', 'bulk_users'].includes(s.key))
+    .filter((s) =>
+      [
+        'bulk_sessions',
+        'bulk_users',
+        'runa.permissions.user_authority_bulk.bulk_authority',
+      ].includes(s.key),
+    )
     .flatMap((section) => {
-      const commands = section.commands.filter((command) => command.available);
+      const commands = section.commands.filter(
+        (command) =>
+          command.available &&
+          command.inputs.every((key) =>
+            section.fields.some(
+              (field) => field.key === key && !field.readonly,
+            ),
+          ),
+      );
       const seen = new Set<string>();
       return commands.flatMap((command) => {
-        const group =
-          section.key === 'bulk_users' ? authBulkGroup(command.key) : undefined;
+        const group = authBulkGroup(command.key);
         const key = group?.key ?? command.key;
         if (seen.has(key)) return [];
         seen.add(key);
@@ -135,9 +148,13 @@ const sections = computed(() =>
     if (mode.value === 'bulk')
       return section.key === openedBulk.value?.section.key;
     if (mode.value === 'create') return section.key === 'creation';
-    return !['directory', 'creation', 'bulk_sessions', 'bulk_users'].includes(
-      section.key,
-    );
+    return ![
+      'directory',
+      'creation',
+      'bulk_sessions',
+      'bulk_users',
+      'runa.permissions.user_authority_bulk.bulk_authority',
+    ].includes(section.key);
   }),
 );
 const canCreate = computed(() =>
@@ -159,7 +176,14 @@ const title = computed(() => {
     : tr('Details');
 });
 function presentation(section: AdminSectionData): AdminSectionData {
-  if (!['bulk_sessions', 'bulk_users'].includes(section.key)) return section;
+  if (
+    ![
+      'bulk_sessions',
+      'bulk_users',
+      'runa.permissions.user_authority_bulk.bulk_authority',
+    ].includes(section.key)
+  )
+    return section;
   const commands = openedBulk.value?.commands ?? [];
   return {
     ...section,

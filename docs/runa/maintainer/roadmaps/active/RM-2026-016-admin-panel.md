@@ -1196,6 +1196,16 @@ reassessment before resuming point 3; completed point history remains evidence.
     capability through optional public AdminField.clearable; preserve other defaults.
   - Prepare current assets, synchronize docs and commit before owner acceptance.
     Broad verification/release remains point 12.
+- [x] 11a99. Make protected authority an individual and selected-account action.
+  - Owner requests removal of the standalone checkbox card and grouped grant/revoke
+    tools in user details and the directory bulk toolbar. The dedicated Permissions
+    batch operation accepts up to 100 explicit accounts atomically; it preserves
+    self-escalation refusal, complete-set last-admin protection, reviewed snapshots,
+    fresh password proof and per-target transactional Audit. Ordinary Auth bulk
+    operations retain their existing protected-account exclusions.
+  - Add the guarded native batch API, reuse the existing reviewed bulk presentation,
+    synchronize current public contracts/tests/docs and prepare usable assets/data.
+    Commit before owner acceptance; broad verification remains point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -8337,3 +8347,61 @@ was submitted; session logged out. Evidence: `.runtime/permissions-mode/` and
 No database or Docker resources changed; existing data, volumes, caches, backups
 and reports remain preserved. Mandatory hooks and refreshed knowledge accompany
 this commit. Owner acceptance 11b and broad final verification/release 12 stay open.
+
+### Point 11a99 — Protected authority as individual and selected-account actions
+
+Removed the standalone superadministrator checkbox card from Auth user details and
+its obsolete form-submit branches. The existing action toolbar now offers grouped
+Grant/Revoke choices using the original separately granted, reviewed native command.
+The directory offers the same group for up to 100 explicitly selected accounts.
+Missing selection capabilities omit unavailable bulk tools rather than presenting an
+unusable operation. Default action colors and shared dialogs/fields remain consistent
+with other Auth tools in Polish/English and both themes.
+
+Permissions owns the new guarded PermissionsAuthorityBatch 1.0.0 consumption API and
+AuthorityBatchPreview, leaving PermissionsAuthority 1.0.0 unchanged. Both batch
+methods require authority.manage and guarded users.select, reject all-selection,
+validate all subjects and snapshots under the shared registry/authority locks and
+check the complete removal set against last-eligible-administrator protection before
+writing. Self-escalation, missing/deleted subjects and stale review refuse the entire
+batch. One fresh password proof authorizes one transaction; all target memberships,
+access revisions and per-target Audit records commit or roll back together. No-op
+targets keep their revisions and emit no duplicate history. This dedicated Permissions
+operation includes existing protected members; ordinary Auth bulk exclusions are
+unchanged. The contribution stays Permissions-owned without a reverse Auth backend
+dependency or foreign Auth-table queries.
+
+Exposed the existing reviewed AuthAdminBulkAction presentation through @/runa/auth
+and composed it from Permissions. The bounded review lists every selected UUID and
+its current/resulting membership through shared BooleanBadge, plus affected and
+unchanged counts. Read/review/write/password orchestration remains native. Public
+API/composition guides, owner component references and platform/Auth/Permissions
+changelogs are synchronized. Root/customer instruction products already require
+public facade composition and link the canonical module/frontend guides; no new
+always-loaded or duplicated customer rule is needed. Existing unreleased Permissions
+2.1.0, Auth 5.0.0 and prepared platform 0.7.0 remain appropriate for this additive API
+and presentation work. No dependencies or schema changes were introduced.
+
+Focused diagnostics: three native backend cases PASS, 90 assertions, covering the
+retained single operation, explicit selection/grants, invalid/missing subjects,
+self-escalation, confirmation/proof, stale snapshots, second-target Audit failure
+rolling back the complete set/proof, unchanged revisions/history, complete-set
+last-admin refusal and successful selected protected-member removal. Worker cleanup
+succeeded. Frontend diagnostics cover individual action selection with no checkbox,
+complete bulk target review and grant/revoke refresh, consistent action grouping and
+the directory toolbar. Initial diagnostic fixture errors (Audit entity column and
+projected field payloads) were corrected; failed evidence remains preserved.
+Strict TypeScript/assets/native error build and native Nginx readiness are prepared
+from final formatted frontend sources. Native browser checks exercise both individual
+choices, the selected protected-account review, cancellation and light/dark/mobile
+layout without membership writes. Supported forward modules preparation used source
+reference e9cd7d68747b5d1e04942d355a6438ba02f31043 with current source declarations;
+no reset or migration was needed. The browser session logs out after each run.
+Evidence: .runtime/superadmin-actions/ and
+.runtime/artifacts/playwright/superadmin-actions/.
+
+No task-created Docker resources. Existing development/test data, development
+services, base test database, caches, backups and reports remain preserved; supported
+backend runners removed only their disposable worker database. Mandatory staged
+hooks and current knowledge accompany this commit. Owner manual acceptance 11b and
+broad final affected-area verification/release 12 remain open.

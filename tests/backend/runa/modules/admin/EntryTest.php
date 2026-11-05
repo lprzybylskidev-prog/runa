@@ -1312,6 +1312,75 @@ it('Permissions Admin separates protected authority and retains the last eligibl
         ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.authority.manage')->whereNull('consumed_at')->exists())->toBeTrue();
 });
 
+it('Permissions Admin authority batch grants and revokes the complete selected set with one proof and atomic Audit', function (): void {
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.permissions.authority.manage', 'runa.permissions.users.select']);
+    $a = app(ChangeIdentity::class)->create(new NewIdentity('batch-authority-a@example.test', name: 'First target', active: true));
+    $b = app(ChangeIdentity::class)->create(new NewIdentity('batch-authority-b@example.test', name: 'Second target', active: true));
+    $path = '/api/admin/runa.auth/users/sections/runa.permissions.user_authority_bulk.bulk_authority';
+    $input = permissionAdministrationReview($this, $path, ['command' => 'grant_superadmin', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$b->publicId, $a->publicId]]]);
+    expect($input['review']['changes']['summary']['affected_accounts'])->toBe(2)
+        ->and($input['review']['changes']['summary']['authority_targets'])->toHaveCount(2);
+    $this->postJson($path.'/commands', $input)->assertUnprocessable();
+    $input['confirmed'] = true;
+    $this->postJson($path.'/commands', $input)->assertForbidden();
+    authAdministrationStrongProof($this, 'runa.permissions.authority.manage');
+    // The second event fails, proving that the earlier target and its Audit also roll back.
+    DB::statement("ALTER TABLE runa_audit.entities ADD CONSTRAINT admin_authority_batch_audit_failure CHECK (entity_public_id <> '".$b->publicId."') NOT VALID");
+    try {
+        $this->postJson($path.'/commands', $input)->assertServiceUnavailable();
+        expect(DB::table('runa_permissions.user_roles')->whereIn('user_public_id', [$a->publicId, $b->publicId])->exists())->toBeFalse()
+            ->and(DB::table('runa_audit.events')->where('action', 'authority.granted')->count())->toBe(0)
+            ->and(DB::table('runa_permissions.user_access')->whereIn('user_public_id', [$a->publicId, $b->publicId])->exists())->toBeFalse()
+            ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.authority.manage')->whereNull('consumed_at')->exists())->toBeTrue();
+    } finally {
+        DB::statement('ALTER TABLE runa_audit.entities DROP CONSTRAINT admin_authority_batch_audit_failure');
+    }
+    $this->postJson($path.'/commands', $input)->assertOk();
+    expect(DB::table('runa_audit.events')->where('action', 'authority.granted')->count())->toBe(2)
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.authority.manage')->whereNull('consumed_at')->exists())->toBeFalse();
+    $this->postJson($path.'/commands', $input)->assertConflict();
+    $unchanged = permissionAdministrationReview($this, $path, $input);
+    expect($unchanged['review']['changes']['summary']['affected_accounts'])->toBe(0)
+        ->and($unchanged['review']['changes']['summary']['unchanged_accounts'])->toBe(2);
+    authAdministrationStrongProof($this, 'runa.permissions.authority.manage');
+    $this->postJson($path.'/commands', $unchanged)->assertOk();
+    expect(DB::table('runa_audit.events')->where('action', 'authority.granted')->count())->toBe(2)
+        ->and(DB::table('runa_permissions.user_access')->whereIn('user_public_id', [$a->publicId, $b->publicId])->pluck('version')->all())->toBe([1, 1]);
+    // Both targets are now protected; neither may be silently excluded from this workflow.
+    $remove = ['command' => 'revoke_superadmin', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$a->publicId, $b->publicId]], 'confirmed' => true];
+    $this->postJson($path.'/preview', $remove)->assertConflict();
+    $role = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('id');
+    DB::table('runa_permissions.user_roles')->insert(['user_public_id' => $this->adminUser->public_id, 'role_id' => $role, 'created_at' => now(), 'updated_at' => now()]);
+    $remove = permissionAdministrationReview($this, $path, $remove);
+    expect($remove['review']['changes']['summary']['affected_accounts'])->toBe(2)
+        ->and($remove['review']['changes']['summary']['skipped_accounts'])->toBe(0);
+    authAdministrationStrongProof($this, 'runa.permissions.authority.manage');
+    $this->postJson($path.'/commands', $remove)->assertOk();
+    expect(DB::table('runa_permissions.user_roles')->where('role_id', $role)->whereIn('user_public_id', [$a->publicId, $b->publicId])->exists())->toBeFalse()
+        ->and(DB::table('runa_permissions.user_roles')->where('role_id', $role)->where('user_public_id', $this->adminUser->public_id)->exists())->toBeTrue()
+        ->and(DB::table('runa_audit.events')->where('action', 'authority.removed')->count())->toBe(2);
+});
+
+it('Permissions Admin authority batch rejects missing selection grants invalid targets stale reviews and self escalation', function (): void {
+    authAdministrationLogin($this, ['runa.auth.users.read', 'runa.permissions.authority.manage']);
+    $target = app(ChangeIdentity::class)->create(new NewIdentity('batch-refusal@example.test', name: 'Batch refusal target', active: true));
+    $path = '/api/admin/runa.auth/users/sections/runa.permissions.user_authority_bulk.bulk_authority';
+    $input = ['command' => 'grant_superadmin', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$target->publicId]], 'confirmed' => true];
+    $this->postJson($path.'/preview', $input)->assertUnprocessable();
+    ($this->adminGrant)('runa.permissions.users.select');
+    foreach ([[], [$target->publicId, $target->publicId], array_map(fn () => (string) Str::uuid7(), range(1, 101))] as $ids) {
+        $this->postJson($path.'/preview', [...$input, 'values' => ['public_ids' => $ids]])->assertUnprocessable();
+    }
+    $this->postJson($path.'/preview', [...$input, 'values' => ['public_ids' => [$target->publicId, (string) Str::uuid7()]]])->assertNotFound();
+    $this->postJson($path.'/preview', [...$input, 'values' => ['public_ids' => [$this->adminUser->public_id, $target->publicId]]])->assertForbidden();
+    $input = permissionAdministrationReview($this, $path, $input);
+    DB::table('runa_permissions.user_access')->updateOrInsert(['user_public_id' => $target->publicId], ['version' => 1, 'updated_at' => now()]);
+    authAdministrationStrongProof($this, 'runa.permissions.authority.manage');
+    $this->postJson($path.'/commands', $input)->assertConflict();
+    expect(DB::table('runa_permissions.user_roles')->where('user_public_id', $target->publicId)->exists())->toBeFalse()
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.authority.manage')->whereNull('consumed_at')->exists())->toBeTrue();
+});
+
 it('Permissions Admin force deletion keeps its dedicated grant complete review confirmation and atomic Audit', function (): void {
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.permissions.introspection.read', 'runa.permissions.access.manage', 'runa.permissions.roles.force_delete', 'runa.auth.eligibility.read']);
     $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');

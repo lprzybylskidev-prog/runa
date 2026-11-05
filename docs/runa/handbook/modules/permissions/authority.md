@@ -116,3 +116,33 @@ mutation, regardless of activity or locks, through the trusted batch membership
 contract. Their preview warns about omitted targets and fingerprints current
 membership. Individual native operations continue to enforce the last eligible
 administrator invariant above. See [Auth bulk contracts](../auth/administration.md#native-bulk-user-operations).
+
+## Explicit selected-account authority changes
+
+Permissions owns guarded runtime server consumption API `PermissionsAuthorityBatch`
+1.0.0, resolved through `ModuleApis` for `runa.permissions`. Its complete methods are
+`previewBatch(UserSelection $selection, bool $grant): AuthorityBatchPreview` and
+`applyBatch(AuthorityBatchPreview $reviewed): array`, returning a list of
+`{user_public_id: string, super_admin: bool, revision: int}`. Source homes are
+`backend/Contracts/PermissionsAuthorityBatch.php`, `AuthorityBatchPreview.php`,
+`backend/Actions/ManageAuthority.php` and the guarded batch proxy/declaration.
+`AuthorityBatchPreview` has public readonly `publicIds: list<string>`, `grant: bool`,
+`fingerprint: string`, `targets: list<AuthorityPreview>` with those constructor
+arguments in that order. The selected IDs and target snapshots are complete,
+unique, ordered and bounded to 100. All-selection intent is refused.
+
+Both methods require `runa.permissions.authority.manage` and the guarded
+PermissionsSelections explicit selection capability (`runa.permissions.users.select`).
+The preview and execution use one registry/authority lock and all target snapshots.
+Missing/deleted subjects and self-escalation refuse the entire batch. Removal checks
+the complete removal set against the existing last-eligible-administrator guard.
+Execution revalidates every target before any membership write, consumes one fresh
+password proof for the batch and commits all memberships/revisions/per-target Audit
+records together. Unchanged targets remain unchanged, with no duplicate mutation
+history. A stale preview or Audit failure rolls back every target and proof.
+This dedicated Permissions capability includes protected members by design; ordinary
+Auth bulk operations continue to exclude them.
+
+The Admin contribution lives in Permissions and supplies grant/revoke commands to
+Auth's user-details action toolbar and explicit directory selection. Permissions
+supplies no ordinary-access or superadministrator checkbox editor for this action.
