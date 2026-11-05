@@ -67,7 +67,7 @@ final readonly class AuthenticateSession
                 if ($newBrowser) {
                     $browser = bin2hex(random_bytes(32));
                 }
-                app(SecurityNotices::class)->browserLocked($connection, $user, $browser);
+                app(SecurityNotices::class)->browserLocked($connection, $user, $browser, $request->userAgent());
                 Cookie::queue(cookie('runa_browser', $browser, 525600, '/', null,
                     app()->environment('production') || $request->isSecure(), true, false, 'lax'));
                 $row = $this->sessions->current($request, $user);

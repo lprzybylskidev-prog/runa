@@ -18,6 +18,8 @@ return new class extends Migration
             $table->text('category');
             $table->text('event');
             $table->text('primary_email');
+            $table->text('browser')->nullable();
+            $table->text('platform')->nullable();
             $table->timestampTz('deadline', 6)->nullable();
             $table->timestampTz('expires_at', 6);
             $table->timestampTz('claimed_at', 6)->nullable();
@@ -25,6 +27,7 @@ return new class extends Migration
             $table->timestampTz('created_at', 6);
             $table->unique(['user_id', 'category', 'event']);
         });
+        DB::statement("ALTER TABLE runa_auth.security_notices ADD CHECK (browser IS NULL OR browser IN ('Edge', 'Opera', 'Samsung Internet', 'Firefox', 'Chrome', 'Safari')), ADD CHECK (platform IS NULL OR platform IN ('iOS', 'iPadOS', 'Android', 'Windows', 'ChromeOS', 'macOS', 'Linux'))");
     }
 
     public function down(): void

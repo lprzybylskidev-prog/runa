@@ -201,7 +201,15 @@ recipient/deadline and state. One attempt may deliver to deduplicated recipients
 separately; an ambiguous/partial SMTP result is not retried automatically. Inspect
 failed managed work before an explicit operator action. No success/exactly-once
 SMTP guarantee is claimed. Notice bodies contain fixed localized copy and an
-optional UTC deadline, never credentials or submitted login/source data. A trusted
+optional UTC deadline. New-browser notices additionally snapshot the same nullable,
+allowlisted browser/system labels used by trusted-device presentation; raw User-Agent,
+IP addresses, submitted identifiers, credentials and cookies are never included.
+Their native HTML/plain-text bodies show those labels (localized unknown fallback),
+the captured event time explicitly in UTC, recognition reassurance and instructions
+to change the password/contact the application administrator for an unrecognized
+sign-in. Delivery uses the event snapshot, not the worker's browser or send time.
+Only notice UUIDs enter managed work; the private notice row owns the two safe
+labels under the original unpublished CREATE migration. A trusted
 optional `SecurityMailDelivery` binding can later adapt to Notifications; false
 means no send attempted and uses the direct Laravel Mail fallback. Throw after
 an ambiguous attempt; do not return false. Credential recovery remains direct.

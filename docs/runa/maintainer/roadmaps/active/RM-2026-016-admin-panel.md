@@ -1044,6 +1044,14 @@ reassessment before resuming point 3; completed point history remains evidence.
     synchronize current contracts and rebuild the identified local development
     database/seeds at the owner's explicit request. Preserve other databases/data.
   - Prepare current assets/readiness and commit; broad gates remain point 12.
+- [x] 11a82. Enrich new-browser security email with recognizable context.
+  - Capture the existing allowlisted browser/system labels with the notice and
+    render localized browser/system/event time, recognition reassurance and
+    password-change/administrator-contact guidance through the native mail layout.
+  - Keep jobs reference-only, private data minimized, routing/deduplication/single
+    attempt unchanged; synchronize guidance, author focused multipart regression
+    coverage and prepare the corrected original development schema/runtime.
+  - Commit before returning to owner acceptance; broad gates remain point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7346,3 +7354,73 @@ volumes, caches, backups and prior reports were preserved. The supported runner
 cleaned its disposable worker; no task-created Docker resource remains. Mandatory
 staged hooks/current knowledge accompany the commit. Owner acceptance 11b and
 final affected-area verification/release 12 remain open.
+
+### Point 11a82 — Recognizable new-browser email and actionable guidance
+
+The owner requests richer new-browser mail, including browser information and what
+to do when the activity is unrecognized. The login path now snapshots the existing
+bounded BrowserDescription labels into two nullable, constrained fields on the
+private notice row. It never retains the raw User-Agent/IP or sends it through
+managed work. The original unpublished security_notices CREATE owns these fields;
+no intermediate compatibility migration or generic notification payload is added.
+The private method signatures change only inside Auth; guarded APIs and native
+mail-adapter signatures remain unchanged. Auth remains the existing unreleased
+3.1.0 feature candidate.
+
+New-browser mail uses the native localized multipart layout with a real introductory
+paragraph, browser/system bullets, the captured event timestamp explicitly in UTC,
+reassurance for recognized activity and a clear request to change the password and
+contact the application administrator for unrecognized activity. Unknown labels
+have localized fallbacks. Queued delivery reads the event snapshot rather than
+request/worker metadata or send time. Existing cookie deduplication, category
+frequency, routing, current-recipient validation, claim/expiry and single-attempt
+SMTP semantics remain unchanged; other notice bodies retain their original copy.
+
+Knowledge was current and queried; relevant backend/Laravel/security/PostgreSQL
+skills, current delivery/transaction/schema contracts and Laravel 13 Boost Markdown
+mail/testing references grounded this correction. Current preference/delivery
+contract and module/central changelogs are synchronized. Both instruction products
+already require safe bounded metadata, secret-free reference jobs, native mail
+composition and owner-scoped pre-1.0 migration handling; no reusable guidance or
+public presentation component changes require instruction/skill-reference edits.
+No dependency, frontend asset or mail-template layout change was introduced.
+
+Focused backend checks PASS: four PL/EN known/unknown-agent scenarios with 116
+assertions cover native login capture, safe storage/reference jobs, delayed send
+with original event time, localized HTML/plain text, response guidance and one
+actual transport delivery after duplicate calls. The existing mandatory-routing/
+obsolete-reminder/single-SMTP case also PASS (17 assertions), checking the common
+body helper preserves other categories. Native reports and logs remain under
+.runtime/user-details/new-browser-mail-{backend,existing-notices}.log. The runner
+successfully cleaned its disposable runa_test_test_1 after each run; the base
+runa_test database is preserved. No SIGSEGV exception was needed for this point.
+
+Fictional, credential-free mail HTML/text and inspected screenshots are retained in
+.runtime/artifacts/mail/new-browser/. Chromium preview PASS for PL/EN known/unknown
+labels at 390/800px without overflow; the browser substitutes the original logo
+attachment asset for the CID URL only in this local preview. No external mail was
+sent by the checks. The existing layout/assets are sufficient; no frontend build
+or broad suite is appropriate for this backend/template-data correction. Final
+affected-area verification remains point 12 and owner acceptance remains 11b.
+
+To make the corrected original schema usable, the standing owner-authorized reset
+was scoped again from current data. Inspection confirmed local PostgreSQL runa,
+role runa, server 172.27.0.8:5432, exactly 45 owned tables in shared/runa_auth/
+runa_permissions/runa_audit, all 15 accounts carrying fixture provenance and no
+reserved jobs. The exact inventory and reset were announced before native
+maintenance. The scoped reset rechecked and dropped those tables with RESTRICT,
+preserving schemas; forward platform/Core preparation used source reference
+7132c5a210949839d66afc3dd5e1eb6558f6476e with this point's working source, followed
+by application migrate, maintenance exit, ordinary configured db:seed and queue
+restart. Afterward there are again 45 tables and 15 fixtures with current Core
+versions and private configured administrator credentials. Native unrestricted
+login/account/Admin readiness PASS; browser sessions logged out and no management
+writes were submitted. Reset/after-state evidence is under
+.runtime/user-details/new-browser-mail-reset/ and readiness under
+.runtime/user-details/new-browser-mail-readiness.log.
+
+Only identified rebuildable development table data/ledgers were replaced. Other
+databases, base runa_test, files, active services, Docker resources/volumes, caches,
+backups and prior reports were preserved. No disposable Docker resources were
+created. Mandatory staged hooks/current knowledge accompany the commit; manual
+acceptance and final verification/release remain open.

@@ -1387,6 +1387,50 @@ it('persists declared own preferences with revision conflicts adoption reset and
     });
 });
 
+it('delivers useful new browser notices from captured safe context in both mail parts', function (string $locale, bool $recognized): void {
+    CarbonImmutable::setTestNow('2026-11-05 10:00:00 UTC');
+    entryPolicy(['email_verification' => 'disabled', 'notice_new_browser' => true]);
+    $user = entryUser('browser-notice@example.test');
+    DB::transaction(function () use ($user, $locale): void {
+        $user->email_verified_at = now();
+        $user->save();
+        DB::table('runa_auth.preferences')->insert(['user_id' => $user->id, 'scope' => 'runa:runa.auth:global:locale',
+            'module' => 'runa.auth', 'value' => json_encode($locale), 'definition_version' => 1, 'created_at' => now(), 'updated_at' => now()]);
+    });
+    $agent = $recognized ? 'Mozilla/5.0 (X11; Linux x86_64) Firefox/130.0' : '<script>unrecognized-client</script>';
+    $this->withHeader('User-Agent', $agent);
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $notice = DB::table('runa_auth.security_notices')->where('category', 'new_browser')->first();
+    expect($notice)->not->toBeNull()
+        ->and($notice->browser)->toBe($recognized ? 'Firefox' : null)
+        ->and($notice->platform)->toBe($recognized ? 'Linux' : null);
+    expect(json_encode(DB::table('shared.module_work')->get()))->not->toContain('Firefox', 'Linux', $agent);
+    expect(json_encode($notice))->not->toContain($agent, 'User-Agent');
+    CarbonImmutable::setTestNow('2026-11-05 10:30:00 UTC');
+    app(Request::class)->headers->set('User-Agent', 'different-delivery-worker');
+    app(SecurityNotices::class)->deliver($notice->public_id);
+    app(SecurityNotices::class)->deliver($notice->public_id);
+    $messages = app('mailer')->getSymfonyTransport()->messages();
+    expect($messages)->toHaveCount(1);
+    $mail = $messages->last()->getOriginalMessage();
+    $browser = $recognized ? 'Firefox' : ($locale === 'pl' ? 'Nieznana przeglądarka' : 'Unknown browser');
+    $platform = $recognized ? 'Linux' : ($locale === 'pl' ? 'Nieznany system' : 'Unknown system');
+    foreach ([$mail->getHtmlBody(), $mail->getTextBody()] as $body) {
+        expect($body)->toContain($browser, $platform, '2026-11-05 10:00:00', 'UTC',
+            $locale === 'pl' ? 'nie musisz nic robić' : 'no action is needed',
+            $locale === 'pl' ? 'zmień hasło' : 'change your password',
+            $locale === 'pl' ? 'administratorem aplikacji' : "application's administrator")
+            ->not->toContain('2026-11-05 10:30:00', 'different-delivery-worker', $agent, 'token_hash');
+    }
+    expect($mail->getHtmlBody())->toContain('lang="'.$locale.'"', $locale === 'pl' ? 'Oparte na Runa' : 'Powered by Runa');
+    expect(DB::table('runa_auth.security_notices')->where('id', $notice->id)->value('sent_at'))->not->toBeNull();
+    // Retain only fictional, credential-free rendering evidence for visual inspection.
+    $directory = base_path('../.runtime/artifacts/mail/new-browser');
+    File::ensureDirectoryExists($directory);
+    File::put($directory.'/'.$locale.($recognized ? '-known' : '-unknown').'.html', $mail->getHtmlBody());
+    File::put($directory.'/'.$locale.($recognized ? '-known' : '-unknown').'.txt', $mail->getTextBody());
+})->with([['pl', true], ['en', true], ['pl', false], ['en', false]]);
+
 it('protects mandatory routing and revalidates obsolete reminders with single SMTP attempts', function (): void {
     entryPolicy(['email_verification' => 'disabled', 'notice_account_deactivation' => true, 'notice_interval_minutes' => 1]);
     $user = entryUser('notices@example.test');
