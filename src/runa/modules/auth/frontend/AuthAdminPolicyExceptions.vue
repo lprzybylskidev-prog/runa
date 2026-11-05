@@ -2,14 +2,7 @@
 import { computed, ref } from 'vue';
 import { useAdminLocale } from '@/runa/admin';
 import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
-import {
-  Alert,
-  Badge,
-  Button,
-  Card,
-  ContentLoading,
-  formatApplicationInstant,
-} from '@/runa/ui';
+import { Alert, Badge, Button, Card, ContentLoading } from '@/runa/ui';
 import AuthPolicyExceptionFacts from './AuthPolicyExceptionFacts.vue';
 import { policyRuleNames, usePolicyExceptions } from './policyExceptions';
 const props = defineProps<AdminSectionPresentationProps>();
@@ -20,11 +13,8 @@ const emit = defineEmits<{
     values: Record<string, AdminJson>,
   ];
 }>();
-const { locale, t } = useAdminLocale();
-const { active, history } = usePolicyExceptions(
-  props.controller,
-  props.section.key,
-);
+const { t } = useAdminLocale();
+const { active } = usePolicyExceptions(props.controller, props.section.key);
 const settled = ref(false);
 const refreshing = ref(false);
 async function load(retry = false) {
@@ -90,14 +80,6 @@ function operation(key: string, revoke = false) {
         }}</Button></Alert
       >
       <template v-else>
-        <p class="mb-4 text-sm text-muted">
-          {{
-            t({
-              pl: 'Ustaw własną wartość dla tego użytkownika. Data końcowa jest opcjonalna — bez niej zasada obowiązuje bezterminowo.',
-              en: 'Set a custom value for this user. The end date is optional — leave it empty for an indefinite rule.',
-            })
-          }}
-        </p>
         <div class="divide-y divide-line">
           <section
             v-for="key in keys"
@@ -158,48 +140,6 @@ function operation(key: string, revoke = false) {
             /></template>
           </section>
         </div>
-        <details v-if="history.length" class="mt-4 border-t border-line pt-4">
-          <summary class="cursor-pointer text-sm font-medium">
-            {{
-              t({
-                pl: 'Historia zmian (ostatnie 50)',
-                en: 'Change history (latest 50)',
-              })
-            }}
-          </summary>
-          <ol class="mt-4 divide-y divide-line">
-            <li
-              v-for="exception in history"
-              :key="exception.public_id"
-              class="space-y-3 py-4 first:pt-0"
-            >
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <h3 class="text-sm font-semibold">
-                  {{ t(policyRuleNames[exception.key] ?? exception.key) }}
-                </h3>
-                <Badge
-                  :tone="
-                    active.some((row) => row.public_id === exception.public_id)
-                      ? 'info'
-                      : 'neutral'
-                  "
-                  >{{
-                    active.some((row) => row.public_id === exception.public_id)
-                      ? t({ pl: 'Aktywna', en: 'Active' })
-                      : exception.revoked_at
-                        ? t({ pl: 'Odwołana', en: 'Revoked' })
-                        : t({ pl: 'Wygasła', en: 'Expired' })
-                  }}</Badge
-                >
-              </div>
-              <AuthPolicyExceptionFacts :exception="exception" />
-              <p v-if="exception.revoked_at" class="text-xs text-muted">
-                {{ t({ pl: 'Odwołano: ', en: 'Revoked: ' })
-                }}{{ formatApplicationInstant(exception.revoked_at, locale) }}
-              </p>
-            </li>
-          </ol>
-        </details>
       </template>
     </ContentLoading>
   </Card>

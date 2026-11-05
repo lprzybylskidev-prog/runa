@@ -52,7 +52,6 @@ export function usePolicyExceptions(
     controller.records.value[section]?.values[key] ?? null;
   const clock = ref(Date.now());
   const projection = computed(() => rows(get('active_exceptions')));
-  const history = computed(() => rows(get('exceptions')));
   const active = computed(() =>
     projection.value.filter(
       (row) =>
@@ -94,5 +93,5 @@ export function usePolicyExceptions(
     const value: unknown = (versions as Record<string, unknown>)[key];
     return typeof value === 'number' ? value : 0;
   }
-  return { active, history, version, get };
+  return { active, version, get };
 }

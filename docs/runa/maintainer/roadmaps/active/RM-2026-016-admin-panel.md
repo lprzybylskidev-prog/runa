@@ -1111,6 +1111,11 @@ reassessment before resuming point 3; completed point history remains evidence.
     session owner/page replacement seam. Synchronize APIs/versions, generators,
     tests, both instruction products and current guidance; prepare runtime/assets.
     Commit before owner manual acceptance; broad gates remain point 12.
+- [x] 11a88. Simplify selected-user rule presentation.
+  - Remove the redundant introductory explanation and local rule-history display
+    in Polish/English; Audit remains the history presentation. Keep named editors,
+    authoritative active rules and Account status. Synchronize docs/assets and commit.
+    Owner acceptance and final verification remain 11b/12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7821,3 +7826,29 @@ workers and preserved base runa_test; all other databases, Docker volumes, cache
 backups and verification reports remain preserved. Mandatory staged hooks and
 refreshed knowledge accompany this commit. Owner manual acceptance 11b and final
 affected-area verification/release 12 remain open.
+
+### Point 11a88 — Concise selected-user rules
+
+Owner feedback removes the redundant rule introduction and local change-history
+panel in both languages. The section keeps named current rules, value/expiry/reason,
+edit/restore actions and the independent Account status projection. Audit remains
+the history presentation. Remove the now-unused private history computation;
+no guarded history API or Audit storage is removed. This supersedes earlier local
+collapsed-history presentation claims in this active roadmap.
+
+The current Auth administration guide and central/module changelogs are synchronized.
+This presentation cleanup fits the unreleased Auth 4.0.0 candidate; public contracts
+and signatures do not change. Owner/customer instructions and skills already require
+concise UI and canonical shared presentation; neither product needs duplicated
+rules or a new skill. Existing frontend/Vue guidance and current local knowledge
+grounded the focused change.
+
+Supported strict TypeScript/frontend/error-asset build PASS. Native read-only browser
+inspection PASS at 1440/390px: no introductory filler or local history, both named
+rule controls retained, no overflow or JavaScript errors. Inspected screenshots are
+.runtime/artifacts/playwright/password-confirmation/rules-cleanup-*.png; logs are
+.runtime/user-details/rules-cleanup-{build,browser}.log. No new regression test is
+needed for this simple content removal; broad suites remain final point 12.
+No database, Docker resource, dependency or domain write changed; the temporary
+browser session logged out. Mandatory hooks and refreshed knowledge accompany the
+commit. Owner acceptance 11b and final verification/release 12 remain open.

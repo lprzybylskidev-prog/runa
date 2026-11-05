@@ -470,8 +470,9 @@ live exception. Focused dialogs show the bounded value with days/minutes, option
 inputs. Restore global uses null value, no artificial expiry and requires its own reason/proof. Null expiry makes either key indefinite; native proof, policy-publication invalidation and per-key versions remain authoritative. Cancel
 restores the prior parameters. Current rules show value, expiry and reason here
 and in Account status; expired/revoked/prior-policy rows are excluded immediately
-from the live summary, independently of the latest-50 collapsed history. Active
-projection has its own guarded read and cannot disappear behind long history.
+from the live summary. The section omits explanatory filler and local change history;
+Audit supplies history. Active projection has its own guarded read and does not
+depend on the bounded exception-history API.
 Field/section presentation replacements retain the generic composition seam.
 Existing lifecycle schedules, invitation/verification/password/factor operations,
 reset, avatar management and all native read grants remain available. Individual
