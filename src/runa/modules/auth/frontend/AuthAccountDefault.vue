@@ -57,7 +57,6 @@ const {
   fields,
   errors,
   naming,
-  method,
   target,
   secret,
   codes,
@@ -68,10 +67,8 @@ const {
   caps,
   has,
   canAvatar,
-  proofMethods,
   tabs,
   fieldNames,
-  needsProof,
   form,
   heading,
   choose,
@@ -83,7 +80,6 @@ const {
   readPage,
   perform,
   refreshCsrf,
-  sendCode,
 } = account;
 const display = useDisplayPreferences();
 const feedbackAttempt = ref(0);
@@ -145,17 +141,6 @@ const taskTitle = computed(
       delete: text('Usuń konto', 'Delete account'),
     })[task.value],
 );
-const methodOptions = computed(() =>
-  proofMethods.value.map((value) => ({
-    value,
-    label:
-      value === 'totp'
-        ? text('Aplikacja', 'Authenticator')
-        : value === 'email'
-          ? 'E-mail'
-          : text('Kod odzyskiwania', 'Recovery code'),
-  })),
-);
 const lifecycleTaskAvailable = computed(() =>
   task.value === 'deactivate'
     ? has('self_deactivate')
@@ -175,7 +160,7 @@ const formVisible = computed(
     lifecycleTaskAvailable.value &&
     (['details', 'security', 'addresses'].includes(tab.value) ||
       (tab.value === 'avatar' && canAvatar.value) ||
-      (tab.value === 'trust' && proofMethods.value.length > 0)),
+      (tab.value === 'trust' && account.canTrustDevice.value)),
 );
 const visibleTabs = computed(() => {
   const visible = tabs.value.filter(
@@ -502,12 +487,6 @@ const passwordHint = computed(() =>
             ]"
           />
           <RadioGroup
-            v-if="needsProof"
-            v-model="method"
-            :label="text('Metoda weryfikacji', 'Verification method')"
-            :options="methodOptions"
-          />
-          <RadioGroup
             v-if="task === 'disable'"
             v-model="target"
             :label="text('Metoda do wyłączenia', 'Method to disable')"
@@ -553,12 +532,6 @@ const passwordHint = computed(() =>
               delete errors[name];
             "
           />
-          <Button
-            :busy="busy"
-            v-if="needsProof && method === 'email'"
-            @click="sendCode"
-            >{{ text('Wyślij kod', 'Send code') }}</Button
-          >
           <div
             v-if="secret"
             class="space-y-3 border-l-2 border-[var(--runa-primary-solid)] pl-4"

@@ -61,7 +61,7 @@ async function accountTransport(
         totp_enabled: true,
         email_otp_enabled: true,
         recovery_codes_enabled: true,
-        password_change_factor: false,
+        trusted_device_eligible: false,
         trusted_devices_enabled: false,
       };
     else if (path.endsWith('/session/activity'))

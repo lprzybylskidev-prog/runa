@@ -305,11 +305,11 @@ and exact independent writes. Selection/views/exports/bulk compose existing owni
 providers through AdminCollectionAdapters. Bounded command/aggregate HTTP is
 delivered, including ManagementParticipant and native aggregate coordination.
 Initial Auth naming/login and ordinary Permissions assignment adapters are private
-source declarations; complete Core coverage and settings retain later points. Auth exposes useOperationProof/AuthOperationProof through its public
+source declarations; complete Core coverage and settings retain later points. Auth exposes useOperationProof/AuthOperationProofPage through its public
 facade, reusing native security/step-up without another session owner or write replay.
 Auth also owns public `useProtectedActivity`, `ProtectedActivityOptions` and
 `ProtectedActivityStatus` for reusable protected-section idle access. The guarded
-AuthStepUp 1.1.0 server and complete client signatures/endpoint preconditions are
+AuthStepUp 2.0.0 server and complete client signatures/endpoint preconditions are
 in [credential security](../modules/auth/security.md#protected-section-idle-access);
 source stays in Auth, delivered in the ordinary browser/server runtime.
 The source-owned `Runa\Integration\Core\Admin*` bridges are private trusted

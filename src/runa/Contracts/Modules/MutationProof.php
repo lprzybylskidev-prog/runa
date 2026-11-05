@@ -10,7 +10,7 @@ final readonly class MutationProof
     {
         if (preg_match('/\A[a-z][a-z0-9_.:-]{0,127}\z/D', $action) !== 1
             || ($idle && $everyAction)
-            || ! in_array($requirement, ['password', 'second_factor', 'both'], true) || $ttlSeconds < 1 || $ttlSeconds > 300) {
+            || ! in_array($requirement, ['password'], true) || $ttlSeconds < 1 || $ttlSeconds > 300) {
             throw new InvalidArgumentException('Invalid mutation proof.');
         }
     }

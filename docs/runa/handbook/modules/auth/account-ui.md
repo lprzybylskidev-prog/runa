@@ -150,21 +150,26 @@ selection must first be saved or discarded before removing the stored image.
 
 The two-factor card lists each policy-available method with its enabled/disabled
 state, explanation and explicit Set up/Disable action. Every factor action opens a
-shared Dialog containing its current-password/proof fields and named submission.
-Cancel, Escape and X clear the local proof, enrollment secret/QR and validation;
+shared parameter Dialog with named submission. Submitting requests the existing
+full-page Auth password confirmation; the dialog and its draft remain mounted
+and hidden while that page is active. No credential fields appear in the dialog.
+Cancel on password confirmation preserves the parameter draft and performs no write.
+Closing the parameter dialog clears enrollment secret/QR and validation;
 pending submissions cannot be dismissed or replayed. Feedback/recovery actions
 stay inside the dialog focus layer. Other card drafts remain untouched.
 Authenticator enrollment keeps the same dialog through begin/confirm, displays the
-private QR/manual key and requires fresh proof at each stage. Success hands
+private QR/manual key and requires fresh password confirmation at each stage.
+The new authenticator code verifies enrollment only. Success hands
 single-display recovery codes to the shared acknowledgement-only Dialog. Initial
 and replacement codes use the same modal; Escape/outside/X cannot discard them.
 Secrets/QR/codes remain memory-only and excluded from print. Email enrollment
 requires a verified primary address.
 
 Trusted devices appear within the two-factor card when policy enables the feature;
-there is no separate default navigation tab. Trust this browser is disabled until a
-usable factor is enrolled. Its Dialog accepts a fresh factor code through the
-existing backend boundary, without inventing an additional password requirement.
+there is no separate default navigation tab. Trust this browser requires the
+server-projected trusted_device_eligible login prerequisite. Its parameter dialog
+submits through the shared full-page password confirmation. The backend reuses
+the factor already verified during login; it never requests another factor code.
 The inline Trusted devices subsection contains a bounded, sortable shared Table,
 including an empty table when no active device exists. Own and Admin defaults use
 one column definition for browser/platform, current browser, creation, last use and
@@ -212,7 +217,7 @@ Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/FileInput/
   status, independent compact add/edit, explicit reissue and confirmed removal.
 - Private JPEG/PNG/WebP avatar, size constraints, removal and initials fallback.
 - Bounded own sessions and trusted devices, revocation, explicit trust issuance
-  using a fresh factor, and explicit older-page loading.
+  using password confirmation after a factor-verified login, and explicit older-page loading.
 - Immediate account theme/language preferences, explicit reset and enabled email
   categories with verified secondary recipients. Mandatory/sensitive security mail
   remains primary-only. Delivery writes use the account preference revision.
@@ -326,7 +331,7 @@ resolution changes local state only and requires an explicit subsequent save.
 The current profile has no separate avatar-content revision, so an external profile
 version change while an image draft exists conservatively requires local image
 review; it cannot safely prove that replacement bytes are unchanged. Submission,
-cancel, expiry and factor-proof cleanup retain their existing security contracts.
+cancel, expiry and password-proof cleanup retain their existing security contracts.
 
 ## Concise account presentation
 
@@ -344,7 +349,7 @@ and after security changes; preserve its independent cursor, rows and busy state
 through in-place refresh (an explicit fresh read returns to the latest batch). The public controller adds `trustedLoaded: Ref<boolean>` alongside
 `trustedRows`, `trustedLoading` and `trustedCursor`; it becomes true after a successful
 read, allowing initial skeletons while later reads retain the empty/table frame. This is presentation availability only; server trust,
-factor proof, validation and authorization rules remain unchanged.
+password confirmation, validation and authorization remain authoritative.
 
 ## Shared session composition
 

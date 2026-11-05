@@ -19,8 +19,8 @@ final class PasswordChangeRequest extends FormRequest
      */
     public function rules(): array
     {
-        return ['current_password' => ['required', 'string', 'max:1024'], 'password' => EntryPassword::rules(),
+        return ['current_password' => ['sometimes', 'string', 'max:1024'], 'password' => EntryPassword::rules(),
             'sessions' => ['sometimes', 'in:keep_all,revoke_others,revoke_all'],
-            'method' => ['sometimes', 'in:totp,recovery,email'], 'code' => ['sometimes', 'string', 'max:64']];
+            'method' => ['prohibited'], 'code' => ['prohibited']];
     }
 }

@@ -15,7 +15,6 @@ import type { AdminSectionProps, AdminSectionSlots } from './contracts';
 import { useAdminPresentation } from './presentation';
 import AdminField from './AdminField.vue';
 import AdminAction from './AdminAction.vue';
-import AdminCommandProof from './AdminCommandProof.vue';
 const props = defineProps<AdminSectionProps>();
 defineSlots<AdminSectionSlots>();
 const initialSettled = ref(false);
@@ -189,18 +188,7 @@ async function retry() {
             </dl>
           </slot>
         </template>
-        <AdminCommandProof
-          v-if="
-            command.requirement !== 'none' ||
-            (controller.commandReviews.value[`${section.key}:${command.key}`]
-              ?.requirement !== undefined &&
-              controller.commandReviews.value[`${section.key}:${command.key}`]
-                ?.requirement !== 'none')
-          "
-          :command="command"
-          :page="controller"
-          :section="section.key"
-        />
+
         <div class="flex flex-wrap gap-2">
           <Button
             v-if="command.preview_required"
@@ -226,23 +214,6 @@ async function retry() {
           />
         </div>
       </div>
-      <AdminCommandProof
-        v-for="command in section.commands.filter(
-          (command) =>
-            command.mode === 'atomic' &&
-            command.intent === 'save' &&
-            (command.requirement !== 'none' ||
-              controller.review.value?.participants.some(
-                (participant) =>
-                  participant.id === section.key &&
-                  participant.review.requirement !== 'none',
-              )),
-        )"
-        :key="`atomic-proof-${command.key}`"
-        :command="command"
-        :page="controller"
-        :section="section.key"
-      />
     </slot>
   </component>
 </template>

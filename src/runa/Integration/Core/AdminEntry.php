@@ -43,8 +43,8 @@ final readonly class AdminEntry
     /** @return array{remaining_seconds: float, heartbeat_seconds: float} */
     public function activity(bool $renew): array
     {
-        return $this->read(fn (): array => $this->apis->resolve('runa.auth', AuthStepUp::class, '1.1.0')
-            ->activity('runa.admin.enter', 'password', 300, $renew));
+        return $this->read(fn (): array => $this->apis->resolve('runa.auth', AuthStepUp::class, '2.0.0')
+            ->activity('runa.admin.enter', 300, $renew));
     }
 
     /** @template T
@@ -78,8 +78,8 @@ final readonly class AdminEntry
                 ?? throw new OperationRejected('module_unavailable', 'runa.admin', 'enter');
             $this->authority->acquire($connection);
             $context = $this->guard->enter('runa.admin', new ApiOperation('enter', 'runa.admin.enter'));
-            $this->apis->resolve('runa.auth', AuthStepUp::class, '1.1.0')
-                ->assertActive('runa.admin.enter', 'password', 300);
+            $this->apis->resolve('runa.auth', AuthStepUp::class, '2.0.0')
+                ->assertActive('runa.admin.enter', 300);
             $result = $read($context);
             if ($publishes) {
                 // Re-admit the resulting registry while authority/session locks remain held.

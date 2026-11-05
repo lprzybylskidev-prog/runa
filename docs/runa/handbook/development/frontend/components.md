@@ -330,12 +330,20 @@ and cancels the old flow. See [entry screens](../../modules/auth/entry-ui.md) fo
 exact routes, public form constraints, server restrictions, safe returns and
 in-memory one-time material. Account management/session-expiry UI uses AuthApplication below.
 
-`AuthOperationProof` and `AuthOperationProofPage` reuse one public useOperationProof
-controller for action-bound password, second-factor or combined proof. The inline
-component fits an existing form; the standalone page supplies replaceable MinimalLayout
-and PL/EN defaults. Neither submits a business mutation. See the
-[proof contracts](../../modules/auth/entry-ui.md#operation-proof-composition) for exact
-props, slots, events, locale and cancellation semantics.
+`AuthOperationProofPage` reuses the public password-only useOperationProof
+controller for action-bound confirmation. The shared Auth shell hosts its standalone
+MinimalLayout presentation and preserves operation drafts. Inline/modal credential
+forms are retired. See [proof contracts](../../modules/auth/entry-ui.md#operation-proof-composition).
+
+### Retained presentation visibility
+
+UI owns public providePresentationVisibility(visible:MaybeRefOrGetter<boolean>):void,
+implemented in resources/js/composables/usePresentationVisibility and exported from
+@/runa/ui. A child inherits its parent's visibility; Dialog portals hide and release
+focus/scroll ownership while false, retaining mounted content and controlled drafts.
+Auth uses it when the full password-confirmation page temporarily owns presentation.
+It grants no access and never clears protected data; the owning session/controller
+still handles identity loss. It ships with the ordinary frontend runtime.
 
 ## LinkButton and Auth application composition
 

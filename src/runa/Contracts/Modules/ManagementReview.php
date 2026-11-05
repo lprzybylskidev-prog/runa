@@ -12,7 +12,7 @@ final readonly class ManagementReview
     ) {
         Rules::revision($fingerprint);
         Rules::json($changes);
-        if (! in_array($requirement, ['none', 'password', 'second_factor', 'both'], true)) {
+        if (! in_array($requirement, ['none', 'password'], true)) {
             throw new \InvalidArgumentException('Invalid review requirement.');
         }
     }

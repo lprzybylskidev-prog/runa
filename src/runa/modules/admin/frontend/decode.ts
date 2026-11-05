@@ -20,11 +20,7 @@ export function decodeCommandReview(
   section?: AdminSectionData,
 ): AdminCommandReview {
   const v = object(object(value).data);
-  if (
-    !['none', 'password', 'second_factor', 'both'].includes(
-      String(v.requirement),
-    )
-  )
+  if (!['none', 'password'].includes(String(v.requirement)))
     throw new TypeError('Invalid command review.');
   const changes = values(v.changes);
   if (
@@ -204,9 +200,7 @@ function command(value: unknown): AdminCommandData {
   if (
     (v.mode !== 'independent' && v.mode !== 'atomic') ||
     !['action', 'save', 'create', 'delete'].includes(String(v.intent)) ||
-    !['none', 'password', 'second_factor', 'both'].includes(
-      String(v.requirement),
-    )
+    !['none', 'password'].includes(String(v.requirement))
   )
     throw new TypeError('Invalid Admin command.');
   return {

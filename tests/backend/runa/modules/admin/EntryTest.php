@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\ManagementRead;
 use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\Preparation;
@@ -126,7 +125,7 @@ beforeEach(function (): void {
         $this->withCredentials()->withCookie('runa_session', app('session')->getId());
     };
     $this->adminProof = function (string $action = 'runa.admin.enter'): void {
-        $this->postJson('/api/runa/auth/step-up', ['action' => $action, 'requirement' => 'password', 'current_password' => 'admin-entry-password'])->assertOk();
+        $this->postJson('/api/runa/auth/step-up', ['action' => $action, 'current_password' => 'admin-entry-password'])->assertOk();
     };
 });
 
@@ -372,15 +371,7 @@ it('dispatches independent Admin commands outside the entry root with bounded re
 
 function nativeMutationProof(object $test): void
 {
-    ($test->adminLogin)();
-    $begin = $test->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'admin-entry-password'])->assertOk()->json('data');
-    $code = app(Google2FA::class)->oathTotp($begin['secret'], intdiv(now()->getTimestamp(), 30));
-    $codes = $test->postJson('/api/runa/auth/security/totp-confirm', ['current_password' => 'admin-entry-password', 'enrollment_code' => $code])->assertOk()->json('data.recovery_codes');
-    $test->postJson('/api/runa/auth/step-up', ['action' => 'runa.permissions.access.manage', 'requirement' => 'both',
-        'current_password' => 'admin-entry-password', 'method' => 'recovery', 'code' => $codes[0]])->assertOk();
-    $request = Request::create('/', 'POST');
-    $request->setLaravelSession(app('session')->driver());
-    app()->instance('request', $request);
+    $test->postJson('/api/runa/auth/step-up', ['action' => 'runa.permissions.access.manage', 'current_password' => 'admin-entry-password'])->assertOk();
 }
 
 it('validates both owners before Auth first apply and commits profile assignments proof and Audit together', function (): void {
@@ -586,10 +577,7 @@ it('coordinates an Admin aggregate HTTP review and Auth first atomic Save with s
     CarbonImmutable::setTestNow('2026-10-31 12:05:01 UTC');
     // Native aggregate admission accepts idle access beyond the original fixed proof.
     // Its owning sensitive operation still needs an independently fresh proof.
-    $secret = app(Encrypter::class)->decryptString($this->adminUser->fresh()->totp_secret);
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.permissions.access.manage', 'requirement' => 'both',
-        'current_password' => 'admin-entry-password', 'method' => 'totp',
-        'code' => app(Google2FA::class)->oathTotp($secret, intdiv(now()->getTimestamp(), 30))])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.permissions.access.manage', 'current_password' => 'admin-entry-password'])->assertOk();
     $target = app(ChangeIdentity::class)->create(new NewIdentity('aggregate@example.test', name: 'Before', active: true));
     $permission = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     $input = adminAggregateInput($this, $target->publicId, [$permission]);
@@ -898,7 +886,7 @@ it('Auth administration keeps creations invitations secondary addresses and pref
     $this->postJson('/api/admin/runa.auth/users/sections/preferences/commands', $reset)->assertConflict();
 });
 
-it('Auth administration refuses stronger operations without native both factor proof', function (string $section, string $command, array $values, string $grant): void {
+it('Auth administration refuses stronger operations without native password proof', function (string $section, string $command, array $values, string $grant): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
     app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'new', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['generation']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('strong-admin@example.test', name: 'Strong target', active: true));
@@ -940,18 +928,13 @@ it('Auth administration exposes bounded policy reads history reviews and stale p
 
 function authAdministrationStrongProof(object $test, string $action): void
 {
-    if (! isset($test->authAdminRecoveryCodes)) {
-        $begin = $test->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'admin-entry-password'])->assertOk()->json('data');
-        $code = app(Google2FA::class)->oathTotp($begin['secret'], intdiv(now()->getTimestamp(), 30));
-        $test->authAdminRecoveryCodes = $test->postJson('/api/runa/auth/security/totp-confirm', ['current_password' => 'admin-entry-password', 'enrollment_code' => $code])->assertOk()->json('data.recovery_codes');
-        ($test->adminProof)();
-    }
-    $code = array_shift($test->authAdminRecoveryCodes);
-    $test->postJson('/api/runa/auth/step-up', ['action' => $action, 'requirement' => 'both', 'current_password' => 'admin-entry-password', 'method' => 'recovery', 'code' => $code])->assertOk();
+    $test->postJson('/api/runa/auth/step-up', ['action' => $action, 'current_password' => 'admin-entry-password'])->assertOk();
 }
 
 it('Auth administration writes indefinite rules and future dates beyond thirty days through native proof', function (): void {
     authAdministrationLogin($this, ['runa.auth.policy.exceptions']);
+    expect($this->adminUser->fresh()->totp_secret)->toBeNull();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.policy.exception', 'requirement' => 'both', 'method' => 'totp', 'code' => '123456', 'current_password' => 'admin-entry-password'])->assertUnprocessable();
     $page = $this->getJson('/api/admin/runa.auth/users')->assertOk()->json('data');
     $section = collect($page['sections'])->firstWhere('key', 'exceptions');
     expect(collect($section['fields'])->firstWhere('key', 'expires_at')['required'])->toBeFalse();
@@ -2055,7 +2038,7 @@ it('Auth user administration executes each native bulk operation with its declar
     expect($input['review']['requirement'])->toBe($protected ? 'password' : 'none');
     if ($protected) {
         $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
-        $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.users.bulk.'.$operation, 'requirement' => 'password', 'current_password' => 'admin-entry-password'])->assertOk();
+        $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.users.bulk.'.$operation, 'current_password' => 'admin-entry-password'])->assertOk();
     }
     $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertOk()->assertJsonPath('data.status', 'committed');
     expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.users.bulk.'.$operation)->whereNotNull('consumed_at')->count())->toBe($protected ? 1 : 0);
@@ -2236,7 +2219,7 @@ it('Auth bulk delivery skips ineligible accounts without mutating their credenti
     expect($input['review']['changes']['summary'])->toMatchArray(['accounts' => 6, 'affected_accounts' => count($eligible), 'skipped_accounts' => 6 - count($eligible), 'ineligible_accounts' => 5 - count($eligible)]);
     $before = User::withTrashed()->whereIn('public_id', array_diff($ids, $eligible))->get()->map(fn (User $user) => [$user->public_id, $user->version, $user->security_version])->all();
     if ($operation === 'password_reset') {
-        $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.users.bulk.password_reset', 'requirement' => 'password', 'current_password' => 'admin-entry-password'])->assertOk();
+        $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.users.bulk.password_reset', 'current_password' => 'admin-entry-password'])->assertOk();
     }
     $history = DB::table('runa_audit.events')->count();
     $this->postJson('/api/admin/runa.auth/users/sections/bulk_users/commands', $input)->assertOk();
@@ -2419,8 +2402,7 @@ it('reports an ineligible administrative password reset without consuming proof 
     nativeMutationProof($this);
     ($this->adminProof)();
     CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds(31));
-    $secret = app(Encrypter::class)->decryptString($this->adminUser->fresh()->totp_secret);
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.password.admin_reset', 'requirement' => 'both', 'current_password' => 'admin-entry-password', 'method' => 'totp', 'code' => app(Google2FA::class)->oathTotp($secret, intdiv(now()->getTimestamp(), 30))])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.password.admin_reset', 'current_password' => 'admin-entry-password'])->assertOk();
     $target = app(ChangeIdentity::class)->create(new NewIdentity('passwordless-refusal@example.test', name: 'Passwordless', active: true));
     $this->postJson('/api/admin/runa.auth/users/sections/security/commands', ['command' => 'password_reset', 'public_id' => $target->publicId, 'revision' => (string) $target->version, 'values' => [], 'confirmed' => true])->assertConflict()->assertJsonPath('error.code', 'password_reset_unavailable');
     expect(User::where('public_id', $target->publicId)->value('version'))->toBe($target->version);

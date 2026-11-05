@@ -28,7 +28,7 @@ preview and rejects stale state with `access_preview_stale` (409). Caller-provid
 projection fields are never execution authority. Newly reviewed no-ops emit no
 duplicate membership history or revision.
 
-Each mutation consumes a fresh session/action-bound `both` AuthStepUp proof for
+Each mutation consumes a fresh session/action-bound password AuthStepUp proof for
 `runa.permissions.authority.manage` with `everyAction: true`. Password/OTP inputs
 stay in Auth. A superadministrator still passes account/session eligibility,
 required factors, step-up, record/domain policies and module availability. The
@@ -86,7 +86,7 @@ for lockout and the delivered trusted OperatorAuthority bootstrap integration. N
 Ordinary `PermissionsAccess::deleteDefinition` still refuses user/preset references.
 `runa.permissions.roles.force_delete` separately authorizes
 `previewRoleDeletion(publicId, version)` and `forceDeleteRole(reviewed, confirmed)`.
-Every execution requires explicit `confirmed: true` plus a fresh `both` proof for
+Every execution requires explicit `confirmed: true` plus a fresh password proof for
 that exact capability. Module-owned, predefined and system roles always refuse.
 
 The bounded preview returns all impacted user UUIDv7s, assigned before/after sets,

@@ -18,8 +18,6 @@ return new class extends Migration
             $table->text('session_hash');
             $table->bigInteger('security_version');
             $table->text('action');
-            $table->text('requirement');
-            $table->text('factor_method')->nullable();
             $table->timestampTz('verified_at', 6);
             $table->timestampTz('expires_at', 6);
             $table->timestampTz('consumed_at', 6)->nullable();
@@ -28,7 +26,7 @@ return new class extends Migration
             $table->timestampTz('activity_at', 6)->nullable();
             $table->timestampTz('idle_expires_at', 6)->nullable();
         }, exposed: false);
-        DB::statement("ALTER TABLE runa_auth.step_up_proofs ADD CHECK (requirement IN ('password', 'second_factor', 'both')), ADD CHECK ((requirement = 'password' AND factor_method IS NULL) OR (requirement <> 'password' AND factor_method IS NOT NULL AND factor_method IN ('totp', 'recovery', 'email'))), ADD CHECK (security_version > 0), ADD CHECK (expires_at > verified_at), ADD CHECK (session_hash ~ '^[0-9a-f]{64}$')");
+        DB::statement("ALTER TABLE runa_auth.step_up_proofs ADD CHECK (security_version > 0), ADD CHECK (expires_at > verified_at), ADD CHECK (session_hash ~ '^[0-9a-f]{64}$')");
         DB::statement('ALTER TABLE runa_auth.step_up_proofs ADD CHECK ((activity_at IS NULL) = (idle_expires_at IS NULL)), ADD CHECK (activity_at IS NULL OR (activity_at >= verified_at AND idle_expires_at > activity_at))');
     }
 

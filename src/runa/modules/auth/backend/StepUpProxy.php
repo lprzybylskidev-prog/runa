@@ -7,26 +7,26 @@ use Runa\Support\Modules\Api\GuardedApi;
 
 final class StepUpProxy extends GuardedApi implements AuthStepUp
 {
-    public function assertActive(string $action, string $requirement, int $ttlSeconds = 300): bool
+    public function assertActive(string $action, int $ttlSeconds = 300): bool
     {
         /** @var bool $result */
-        $result = $this->invoke(__FUNCTION__, [$action, $requirement, $ttlSeconds]);
+        $result = $this->invoke(__FUNCTION__, [$action, $ttlSeconds]);
 
         return $result;
     }
 
-    public function activity(string $action, string $requirement, int $ttlSeconds = 300, bool $renew = false): array
+    public function activity(string $action, int $ttlSeconds = 300, bool $renew = false): array
     {
         /** @var array{remaining_seconds: float, heartbeat_seconds: float} $result */
-        $result = $this->invoke(__FUNCTION__, [$action, $requirement, $ttlSeconds, $renew]);
+        $result = $this->invoke(__FUNCTION__, [$action, $ttlSeconds, $renew]);
 
         return $result;
     }
 
-    public function assertVerified(string $action, string $requirement, int $ttlSeconds = 300, bool $everyAction = false): bool
+    public function assertVerified(string $action, int $ttlSeconds = 300, bool $everyAction = false): bool
     {
         /** @var bool $result */
-        $result = $this->invoke(__FUNCTION__, [$action, $requirement, $ttlSeconds, $everyAction]);
+        $result = $this->invoke(__FUNCTION__, [$action, $ttlSeconds, $everyAction]);
 
         return $result;
     }

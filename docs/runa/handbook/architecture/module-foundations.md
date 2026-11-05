@@ -98,5 +98,5 @@ health so a locked administrator can recover; exact Core source/data, the defaul
 transaction, registry/authority lock order, fences and Audit remain mandatory.
 Ordinary Auth bulk sessions instead use neutral BulkUserSelection -> guarded
 PermissionsSelections.users with current native selection and Auth bulk grants,
-preview and fresh both-factor proof. Never expose the operator participant as a
+preview and fresh password proof. Never expose the operator participant as a
 public API or reuse a selection DTO as a persistent authorization decision.

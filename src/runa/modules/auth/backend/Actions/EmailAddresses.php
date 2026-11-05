@@ -5,7 +5,6 @@ namespace Runa\Modules\Auth\Actions;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Models\User;
@@ -30,9 +29,7 @@ final readonly class EmailAddresses
             if (! $this->profiles->value('own_email_editable')) {
                 $this->refuse('email_edit_disabled');
             }
-            if (! Hash::check($request->string('current_password')->toString(), $user->password ?? '')) {
-                return null;
-            }
+            app(StepUp::class)->assertVerified('runa.auth.self.email', everyAction: true);
             $this->profiles->version($user, $request->integer('version'));
             $sessionHash = $session->session_hash;
             $this->startLocked($connection, $user, $request->string('email')->toString(), false, $sessionHash);

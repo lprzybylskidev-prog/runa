@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Restrict second factors to login and use the existing full-page Auth password confirmation for all sensitive Admin/account operations and protected places. Remove factor-based operation modes, inline credential forms and the password-change factor setting. Deliver AuthStepUp 2.0.0 with password-only proofs, retained drafts on cancel and unchanged transactional authorization/Audit.
+
 - Auth 4.0.0 / AuthPolicies 2.0.0: allow optional account-rule expiry, with null meaning indefinite and no maximum horizon for a future date. Update effective policy reads, session cleanup, status/history and Audit handling; correct the original pre-1.0 schema and current Auth consumer constraints. Space operation fields and show explicit optional/indefinite copy.
 
 - Move selected-user rules into User with named bounded editors, separate active/history presentation and live custom rules in Account status. Add guarded AuthPolicies 1.2.0 active exception reads independent of the latest-50 history cap; preserve native proof, revisions and Audit.

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Button, ContentLoading, RadioGroup, TextInput } from '@/runa/ui';
+import { Button, TextInput } from '@/runa/ui';
 import type { OperationProofController } from './useOperationProof';
 import { operationProofCopy } from './operationProofCopy';
 import { useLocale } from '../../../resources/js/composables/useLocale';
@@ -14,18 +14,8 @@ const { locale } = useLocale();
 const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
 </script>
 <template>
-  <ContentLoading
-    :loading="
-      controller.busy.value &&
-      ['second_factor', 'both'].includes(controller.requirement.value) &&
-      !controller.methods.value.length
-    "
-    shape="form"
-    :label="copy.title"
-    class="space-y-4"
-  >
+  <div class="space-y-4">
     <TextInput
-      v-if="['password', 'both'].includes(controller.requirement.value)"
       :model-value="controller.password.value"
       type="password"
       name="current_password"
@@ -34,40 +24,6 @@ const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
       :disabled="controller.busy.value"
       @update:model-value="controller.password.value = $event ?? ''"
     />
-    <template
-      v-if="['second_factor', 'both'].includes(controller.requirement.value)"
-    >
-      <RadioGroup
-        :model-value="controller.method.value"
-        :label="copy.method"
-        :disabled="controller.busy.value"
-        :options="
-          controller.methods.value.map((value) => ({
-            value,
-            label: copy[value],
-          }))
-        "
-        @update:model-value="
-          controller.method.value = $event as 'totp' | 'email' | 'recovery'
-        "
-      />
-      <TextInput
-        :model-value="controller.code.value"
-        :label="copy.code"
-        name="verification_code"
-        autocomplete="one-time-code"
-        :disabled="controller.busy.value"
-        @update:model-value="controller.code.value = $event ?? ''"
-      />
-      <Button
-        :busy="controller.busy.value"
-        type="button"
-        v-if="controller.method.value === 'email'"
-        :disabled="controller.busy.value"
-        @click="controller.sendEmail"
-        >{{ copy.send }}</Button
-      >
-    </template>
     <div class="flex flex-wrap gap-2">
       <Button
         :type="submit ? 'submit' : 'button'"
@@ -84,5 +40,5 @@ const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
         >{{ copy.cancel }}</Button
       >
     </div>
-  </ContentLoading>
+  </div>
 </template>

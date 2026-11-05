@@ -161,7 +161,7 @@ final readonly class ManageProfiles implements AuthProfiles
             $this->transactions->lockAuthority($connection);
             // Lock the current actor before the target, consistently with the credential APIs.
             if ($proofAction !== null) {
-                $this->stepUp->assertVerified($proofAction, 'both', everyAction: true);
+                $this->stepUp->assertVerified($proofAction, everyAction: true);
             }
             $user = User::where('public_id', $publicId)->lockForUpdate()->first() ?? throw new IdentityConflict('identity_missing');
             $this->profiles->version($user, $version);

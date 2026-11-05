@@ -59,7 +59,7 @@ final readonly class ChangeIdentity implements AuthLifecycle
             $this->lock->acquire($connection);
             $this->guard($connection, []);
             if ($setup !== null) {
-                app(StepUp::class)->assertVerified('runa.auth.users.create', $setup->emailVerified ? 'both' : 'password', everyAction: true);
+                app(StepUp::class)->assertVerified('runa.auth.users.create', everyAction: true);
                 if ($setup->emailVerified && ! $this->settings->boolean('runa.auth', 'admin_email_verification_bypass')) {
                     throw new OperationRejected('email_bypass_disabled', 'runa.auth', 'identity.create', 403);
                 }

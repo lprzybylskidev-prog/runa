@@ -44,7 +44,7 @@ customer's infrastructure boundary. Do not grant a temporary administrator flag 
 call guarded business gateways behind a settings/update fence.
 
 Consume the [Permissions ordinary access contract](../../../../docs/runa/handbook/modules/permissions/access.md)
-for reviewed assignment/custom-role/preset/copy mutations, fresh both-factor proof,
+for reviewed assignment/custom-role/preset/copy mutations, fresh password proof,
 source/target revision checks and complete aggregate Audit. Preserve assigned
 roles/directs, snapshot independence and protected system membership. Do not use
 private grant writers or flatten role-derived effective grants into direct grants.
@@ -52,7 +52,7 @@ private grant writers or flatten role-derived effective grants into direct grant
 Use the [protected authority contract](../../../../docs/runa/handbook/modules/permissions/authority.md)
 for dedicated superadministrator changes and confirmed custom-role force deletion.
 Preserve the shared last-eligible-administrator transaction invariant, dedicated
-capabilities, fresh both-factor proof and atomic aggregate Audit. Never emulate
+capabilities, fresh password proof and atomic aggregate Audit. Never emulate
 protected membership through ordinary assignment/copy/preset writers.
 
 Module email presentation uses the shared native Runa Markdown layout described in

@@ -30,9 +30,10 @@ required 2FA before changing it. Verification, factor enrollment/challenge, sess
 inspection/revocation, activity and password change are explicit supporting routes;
 no other module can opt out by marking its endpoint Restricted.
 
-Own change always requires `current_password`. `password_change_factor` defaults
-to false; enabling it additionally requires a fresh enrolled permitted factor in
-the same request. It never treats device trust as a fresh proof. The optional
+Own password change requires a fresh consumed password confirmation for
+`runa.auth.self.password`. Only the restricted Auth password-change screen
+completing login supplies current_password directly. No password-change-specific
+factor option remains. The optional
 `sessions` input is `keep_all`, `revoke_others` or `revoke_all`, defaulting to
 `password_session_policy` (`revoke_others`). All choices invalidate trusted devices,
 old step-up proofs and outstanding entry tokens. `revoke_all` requires login again.
@@ -65,26 +66,26 @@ email OTP. An account without a suitable method gets
 `two_factor_required`. The native session is restricted until completion. These
 restrictions supplement independent lifecycle/password/verification checks.
 
-Enrollment requires the current password and a fresh existing permitted factor
-when one is enrolled. Starting TOTP returns a secret, otpauth URI and `qr_code` SVG data URI only in
+Post-login enrollment requires a fresh password confirmation for the exact
+`runa.auth.self.security.<operation>` action. Required enrollment during login
+uses the current password on the Auth login-completion screen. Starting TOTP returns a secret, otpauth URI and `qr_code` SVG data URI only in
 the authorized no-store response. BaconQrCode, already installed through Fortify,
 renders the same URI locally with black/white contrast and a quiet margin. No
 external QR service, separate image request or persisted QR file is involved. The encrypted pending secret expires after ten
 minutes. Confirmation requires its six-digit `enrollment_code`; only then does it
 become active. The first eight random 128-bit recovery codes are returned once;
-only their SHA-256 hashes persist. Rotation requires the same current-password and
-factor proof, replaces all older codes and returns the new values once. Disabling
-a method requires these proofs and is refused while policy requires 2FA. Existing
+only their SHA-256 hashes persist. Rotation requires its own fresh password confirmation, replaces all older codes and returns the new values once. Disabling
+a method requires password confirmation and is refused while policy requires 2FA. Existing
 material remains retained when a policy disables a method; it cannot authenticate
 while disabled. There is no WebAuthn or separate QR image generation endpoint.
 
 TOTP permits a one-step clock window and persists the exact accepted counter under
 the user lock. Its next accepted counter must be newer, including across workers,
-login, enrollment and step-up. Database rollback also restores replay state. Recovery
+login and enrollment. Database rollback also restores replay state. Recovery
 consumption and Audit are in that same transaction. Codes never appear in models'
 public projection, module APIs, queue payloads, logs or Audit fields.
 
-Email enrollment requires the current password and an already verified primary
+Email enrollment requires password confirmation and an already verified primary
 address; enabling alone does not confirm the session. Email OTP is a six-digit
 random value, privately encrypted only while delivery is pending. Equality uses a
 keyed HMAC bound to its token UUID; it is never an offline-searchable plain numeric
@@ -120,7 +121,10 @@ before enrollment and the backend independently refuses it. Management and facto
 actions use the shared dialog/focus/ephemeral-draft contract in [account UI](account-ui.md).
 
 `trusted_devices_enabled` defaults false; `trusted_device_days` defaults to 30
-(range 1–90). Issuance requires a fresh permitted second-factor proof. The native
+(range 1–90). Issuance requires password confirmation for `runa.auth.self.trust_issue` and
+a permitted factor already verified in the current login session. It never asks
+for another code outside login. Security status exposes trusted_device_eligible
+so the account UI omits issuance before that login prerequisite is met. The native
 encrypted `runa_trust` cookie is host-only, HttpOnly, SameSite=Lax and Secure in
 production. Only a SHA-256 equality hash, UUIDv7, user FK, security generation,
 verified method, creation/expiry/revocation and last-use timestamps, plus nullable
@@ -154,28 +158,19 @@ cleanup deletes expired/revoked technical records, never Audit/password history.
 
 ## Shared step-up contract
 
-Resolve `AuthStepUp` API version `1.1.0` through ModuleApis. The consuming server
-chooses its action key, `password`, `second_factor` or `both`, TTL and reuse policy;
-never take these requirements from a client or assume a menu permission proves it.
-Confirmation checks actual credentials/factors again, even on a trusted device.
-It requires a fully unrestricted session. `step_up_seconds` defaults to 300, range
-1–900. The server proof binds identity, tracked native session hash, security
-generation, exact action, requirement, verified factor method and captured expiry.
-A `both` confirmation satisfies either single requirement; a password-only proof
-cannot satisfy `both`. Login/remember/trust timestamps are never step-up proofs.
+Resolve `AuthStepUp` API version `2.0.0` through ModuleApis. The consuming server
+chooses the action, bounded TTL and reuse policy. Confirmation accepts only action
+and current_password, rechecks an unrestricted session and stores no factor mode
+or credentials. It binds identity, session hash, security generation, action and
+captured expiry. Login, remember and trusted-device timestamps never replace it.
+`step_up_seconds` defaults to 300, range 1–900.
 
-Call `assertVerified(action, requirement, ttlSeconds: 300, everyAction: false)`
-inside the same default PostgreSQL business transaction, before mutation, using
-the common registry/authority lock order. It requires the current request session
-and trusted principal, rechecks account/session state and bounds age by both the
-captured expiry and stricter current/caller TTL. A previously accepted factor must
-still satisfy current method policy; changing to mandatory TOTP invalidates an
-email-based second-factor proof. Missing or mismatched proof yields
-403 `step_up_required`. No secret or opaque proof is exchanged across the API.
-TTL mode permits recent reuse for that action. `everyAction: true` locks and consumes
-the proof atomically with the business change and Audit; rollback restores both.
-It cannot authorize a second committed action. The next action must reconfirm.
-Cleanup bounds expired proof storage. Jobs/CLI cannot inherit browser proof state.
+Call assertVerified(action, ttlSeconds: 300, everyAction: false) inside the same
+owning default transaction before mutation. Missing/stale proof yields
+403 step_up_required. everyAction=true consumes proof atomically with the mutation
+and Audit; rollback restores it. Idle protected-place access remains independently
+renewable only by real foreground activity. Jobs/CLI do not inherit browser proof.
+See the exact public signatures and composition below.
 
 `AuthSecurity` API `1.2.0` provides `requestPasswordReset(publicId, expectedVersion)`,
 `resetFactors(publicId, expectedVersion)`, `trustedDevices(publicId, before)` and
@@ -184,7 +179,7 @@ Cleanup bounds expired proof storage. Jobs/CLI cannot inherit browser proof stat
 transactional Audit. Dedicated permissions are respectively
 `runa.auth.passwords.reset`, `runa.auth.two_factor.reset` and
 `runa.auth.trust.manage`. Reset mutations additionally require the neutral authority
-invariant and every-action `both` step-up, keyed `runa.auth.password.admin_reset`
+invariant and every-action password confirmation, keyed `runa.auth.password.admin_reset`
 or `runa.auth.two_factor.reset`, in the caller's transaction. The integrated Permissions participant enforces the last-eligible-superadministrator invariant; missing or unavailable integration denies the operation.
 Missing/stale reset targets return false. An ineligible password-reset target throws
 `IdentityConflict('password_reset_unavailable')`; Admin retains that safe reason,
@@ -197,23 +192,23 @@ Infrastructure emergency recovery uses its separate guarded workflow.
 All paths have prefix `/api/runa/auth/`, native CSRF and no-store responses. Route
 names have prefix `runa.auth.`. Public password recovery creates no session.
 
-| Method | Path                     | Route suffix             | Input/result                                                                |
-| ------ | ------------------------ | ------------------------ | --------------------------------------------------------------------------- |
-| POST   | password/forgot          | password.forgot          | identifier; generic accepted                                                |
-| POST   | password/reset           | password.reset           | token/password/confirmation; no login                                       |
-| POST   | password/change          | password.change          | current_password/password/confirmation, optional sessions/method/code       |
-| GET    | security                 | security.status          | own required/enrolled/enabled methods; no secrets                           |
-| POST   | security/totp-begin      | security.totp_begin      | current_password, existing method/code; secret/URI once                     |
-| POST   | security/totp-confirm    | security.totp_confirm    | current_password/enrollment_code, existing method/code; recovery codes once |
-| POST   | security/email-enable    | security.email_enable    | current_password, existing method/code                                      |
-| POST   | security/email-send      | security.email_send      | own session-bound OTP delivery                                              |
-| POST   | security/challenge       | security.challenge       | method and code; confirms current session                                   |
-| POST   | security/disable         | security.disable         | current_password/method/code/target                                         |
-| POST   | security/recovery-rotate | security.recovery_rotate | current_password/method/code; new codes once                                |
-| POST   | trusted-devices          | trust.issue              | method/code; private cookie issuance                                        |
-| GET    | trusted-devices          | trust.list               | optional before UUIDv7 cursor; own bounded rows                             |
-| POST   | trusted-devices/revoke   | trust.revoke             | public_id; own device only                                                  |
-| POST   | step-up                  | step_up.confirm          | action/requirement, current_password and/or method/code                     |
+| Method | Path                     | Route suffix             | Input/result                                                                                  |
+| ------ | ------------------------ | ------------------------ | --------------------------------------------------------------------------------------------- |
+| POST   | password/forgot          | password.forgot          | identifier; generic accepted                                                                  |
+| POST   | password/reset           | password.reset           | token/password/confirmation; no login                                                         |
+| POST   | password/change          | password.change          | password/confirmation, optional sessions; password proof (restricted login: current_password) |
+| GET    | security                 | security.status          | own required/enrolled/enabled methods; no secrets                                             |
+| POST   | security/totp-begin      | security.totp_begin      | password proof; restricted login: current_password; secret/URI once                           |
+| POST   | security/totp-confirm    | security.totp_confirm    | enrollment_code and password proof (restricted login: current_password); recovery codes once  |
+| POST   | security/email-enable    | security.email_enable    | password proof; restricted login: current_password                                            |
+| POST   | security/email-send      | security.email_send      | own session-bound OTP delivery                                                                |
+| POST   | security/challenge       | security.challenge       | method and code; confirms current session                                                     |
+| POST   | security/disable         | security.disable         | target and password proof                                                                     |
+| POST   | security/recovery-rotate | security.recovery_rotate | password proof; new codes once                                                                |
+| POST   | trusted-devices          | trust.issue              | password proof and previously factor-verified login; private cookie issuance                  |
+| GET    | trusted-devices          | trust.list               | optional before UUIDv7 cursor; own bounded rows                                               |
+| POST   | trusted-devices/revoke   | trust.revoke             | public_id; own device only                                                                    |
+| POST   | step-up                  | step_up.confirm          | action/current_password; legacy requirement/method/code prohibited                            |
 
 Private email changes, profile/avatar ownership and forced reverification use the
 [profile contract](profile.md). Password replacement also cancels pending address
@@ -224,26 +219,25 @@ reverification still prevents it until the address is verified.
 
 Auth owns renewable section access separately from fixed-age operation proofs.
 The delivered runtime implementation remains in Auth's Actions/StepUp, guarded by
-`AuthStepUp` API 1.1.0. Public server consumers resolve it through ModuleApis and call
-`assertActive(string $action, string $requirement, int $ttlSeconds = 300): bool`
-or `activity(string $action, string $requirement, int $ttlSeconds = 300,
+`AuthStepUp` API 2.0.0. Public server consumers resolve it through ModuleApis and call
+`assertActive(string $action, int $ttlSeconds = 300): bool`
+or `activity(string $action, int $ttlSeconds = 300,
 bool $renew = false): array{remaining_seconds: float, heartbeat_seconds: float}`
 inside their default-connection business transaction. These are browser-session
 APIs, not CLI proof inheritance. Owners choose unique section action keys,
-requirements and TTL (1–900 seconds) in trusted source; never accept them from HTTP
+and TTL (1–900 seconds) in trusted source; never accept them from HTTP
 input. Check owning grants, record policies and availability in that transaction.
 A named authenticated GET endpoint calls activity without renewal; its CSRF-protected
 POST counterpart passes renew true after the same owning authorization checks.
-The request body does not carry policy or client timestamps. Invalid action or
-requirement throws InvalidArgumentException; invalid TTL or missing owning
+The request body does not carry policy or client timestamps. Invalid action throws InvalidArgumentException; invalid TTL or missing owning
 transaction throws LogicException. Native guard failures propagate as
 OperationRejected; missing/expired proof is HTTP 403 step_up_required.
 
 Confirmation uses the existing credential endpoint and binds the same user/native
-session/security generation/action/factor. Idle deadlines start at confirmation;
+session/security generation/action. Idle deadlines start at confirmation;
 activity extends only still-valid access under the minimum captured, current policy
 and caller TTL. Reads and assertActive do not renew. Expiry, consumed proof, revoked
-session, restricted identity, principal mismatch or ineligible factor refuses access;
+session, restricted identity, or principal mismatch refuses access;
 activity cannot restore it. The original verified_at/expires_at remain unchanged,
 so fixed-age and every-action consumers never acquire freshness from section use.
 Idle activity is technical session metadata, without per-keystroke Audit; actual
@@ -285,10 +279,10 @@ Example for an application-owned reports section (inside its normal authenticate
 authorized default-connection transaction):
 
 ```php
-$access = $apis->resolve('runa.auth', AuthStepUp::class, '1.1.0');
-$access->assertActive('app.reports.enter', 'password', 300);
+$access = $apis->resolve('runa.auth', AuthStepUp::class, '2.0.0');
+$access->assertActive('app.reports.enter', 300);
 // In the named activity endpoint, after the same current reports permission check:
-return $access->activity('app.reports.enter', 'password', 300, $request->isMethod('POST'));
+return $access->activity('app.reports.enter', 300, $request->isMethod('POST'));
 ```
 
 ```ts
@@ -305,3 +299,26 @@ No section gains authority from the activity endpoint or its reported deadline.
 The server cannot prove a human gesture from HTTP; frontend trusted-event filtering
 prevents accidental/background renewal, while the server exclusively enforces
 current authorization and refuses renewal after expiry.
+
+## Password confirmation after login
+
+Auth owns password-only confirmation for sensitive operations and protected places.
+Second-factor challenges belong only to login, including restricted login completion;
+verifying a new authenticator's enrollment code remains setup validation. No
+post-login operation may request a second factor, even when login 2FA is enabled.
+Use the existing AuthOperationProofPage with the admitted session owner and keep
+operation parameters/drafts mounted while showing that full-page presentation.
+Inline/modal proof forms are retired. Cancel performs no domain mutation.
+
+Native AuthStepUp 2.0.0 is resolved through the guarded public Auth facade. Its
+password-only signature removes the obsolete requirement argument:
+`assertVerified(string $action, int $ttlSeconds = 300, bool $everyAction = false): bool`,
+`assertActive(string $action, int $ttlSeconds = 300): bool` and
+`activity(string $action, int $ttlSeconds = 300, bool $renew = false): array`.
+The activity result remains `{remaining_seconds: float, heartbeat_seconds: float}`.
+Implementation remains in Auth backend Contracts/Actions/Proxies/Definitions and
+ships in the normal backend runtime. Confirmation transport accepts action and
+current_password only. Proofs remain bound to user, session, security generation
+and action, with credentials absent from stored proof rows. Native writes consume
+fresh operation proof in the same transaction; protected-place access retains
+its separate bounded idle renewal. Frontend confirmation is never authorization.

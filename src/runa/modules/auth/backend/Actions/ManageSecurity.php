@@ -34,7 +34,7 @@ final readonly class ManageSecurity implements AuthSecurity
 
         return $this->transactions->run(function (Connection $connection) use ($publicId, $expectedVersion, $factors): bool {
             $this->transactions->lockAuthority($connection);
-            $this->stepUp->assertVerified($factors ? 'runa.auth.two_factor.reset' : 'runa.auth.password.admin_reset', 'both', everyAction: true);
+            $this->stepUp->assertVerified($factors ? 'runa.auth.two_factor.reset' : 'runa.auth.password.admin_reset', everyAction: true);
             $user = User::where('public_id', $publicId)->lockForUpdate()->first();
             if ($user === null || $user->version !== $expectedVersion) {
                 return false;

@@ -275,7 +275,7 @@ No write is retried. Safe errors preserve drafts; 409 triggers shared current re
 Entry-scope proof denial returns to native entry confirmation; operation-scope
 proof denial stays in the editor and uses the separate owning action proof.
 AdminCommandReview is `{fingerprint:string,changes:Record<string,AdminJson>,
-requirement:'none'|'password'|'second_factor'|'both',every_action:boolean}`.
+requirement:'none'|'password',every_action:boolean}`.
 An optional `read(query,{signal})` cancels that lane and erases its retained query
 when the caller cancels, for field-bound selection lifetimes.
 
@@ -429,7 +429,7 @@ preserving drafts, without replay. Failed reads can explicitly Retry loading.
 reviewCommand explicitly obtains a preview; changes to input/source/revision
 invalidate it, and execute never silently regenerates it. Destructive commands
 use ConfirmDialog and recheck exact input after approval. Native operation proof
-uses public Auth useOperationProof/AuthOperationProof with explicit proofAction;
+uses public Auth useOperationProof/AuthOperationProofPage with explicit proofAction;
 see the [Auth proof contract](../auth/entry-ui.md#operation-proof-composition).
 Proof confirmation never executes a write. Owning guards enforce proof, exact
 review, record Policies and transactional Audit. commandReviews exposes previews;

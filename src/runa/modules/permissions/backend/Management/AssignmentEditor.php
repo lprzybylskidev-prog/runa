@@ -84,7 +84,7 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
         return new ManagementReview($review->fingerprint, [
             'roles' => ['old' => $review->before['roles'], 'new' => $review->after['roles']],
             'permissions' => ['old' => $review->before['permissions'], 'new' => $review->after['permissions']],
-        ], 'both', true);
+        ], 'password', true);
     }
 
     public function prepare(ManagementWrite $input): TransactionalMutation

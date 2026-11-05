@@ -7,6 +7,7 @@ import { useAdminEntry } from './useAdminEntry';
 import { useAuthPresentation } from './presentation';
 import {
   Alert,
+  providePresentationVisibility,
   FormNotifications,
   Avatar,
   Breadcrumbs,
@@ -25,6 +26,10 @@ import type {
 } from '@/runa/ui';
 import { useLocale } from '../../../resources/js/composables/useLocale';
 import AuthEntry from './AuthEntry.vue';
+import AuthOperationProofPage from './AuthOperationProofPage.vue';
+import { providePasswordConfirmation } from './passwordConfirmation';
+const passwordConfirmation = providePasswordConfirmation();
+providePresentationVisibility(() => !passwordConfirmation.active.value);
 const presentation = useAuthPresentation();
 import type {
   ApplicationSessionShellProps,
@@ -34,6 +39,15 @@ defineSlots<ApplicationSessionShellSlots>();
 const props = defineProps<ApplicationSessionShellProps>();
 provideLocale(toRef(props, 'locale'));
 provide(applicationSessionOwner, true);
+watch(
+  () => [
+    props.session.session.value?.public_id,
+    props.session.session.value?.session.public_id,
+    props.session.paused.value,
+    props.session.session.value?.restrictions.join(','),
+  ],
+  () => passwordConfirmation.cancel(),
+);
 const previousLanguage = document.documentElement.lang;
 watch(
   () => props.locale,
@@ -177,149 +191,166 @@ const contentReadiness = useViewReadiness({
 });
 </script>
 <template>
-  <AuthEntry v-if="paused" page="login" :authenticated="authenticated" />
-  <component
-    v-else-if="!loading && !session"
-    :is="presentation.minimalLayout ?? MinimalLayout"
+  <AuthOperationProofPage
+    v-if="passwordConfirmation.active.value"
+    :controller="passwordConfirmation.active.value"
+    :locale="locale"
+    @confirmed="passwordConfirmation.complete()"
+    @cancel="passwordConfirmation.cancel()"
+  />
+  <div
+    v-show="!passwordConfirmation.active.value"
+    class="contents"
+    :inert="passwordConfirmation.active.value ? true : undefined"
   >
-    <Alert tone="danger">
-      {{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
-      <Button @click="refresh">{{ text('Ponów', 'Retry') }}</Button>
-    </Alert>
-  </component>
-  <slot v-else-if="$slots.admission" name="admission" />
-  <component
-    :is="presentation.applicationLayout ?? ApplicationLayout"
-    v-else
-    width="fluid"
-    :home-href="welcomeEnabled ? '/' : '/app'"
-    :navigation="navigation"
-    :navigation-loading="navigationLoading || !contentReadiness.ready.value"
-    :top-navigation="topNavigation ?? []"
-    :locale="props.locale"
-    :current="current"
-    :title="account ? text('Panel użytkownika', 'User panel') : ''"
-    :user-name="userName"
-    :user-avatar="avatar"
-    :user-avatar-image="avatarImage"
-    :user-loading="
-      !contentReadiness.ready.value || contentLoading || navigationLoading
-    "
-    :user-initials="initials"
-  >
-    <template #breadcrumbs="scope">
-      <Breadcrumbs
-        :label="text('Ścieżka nawigacji', 'Breadcrumbs')"
-        :items="breadcrumbs(scope)"
-        @navigate="(href, event) => scope.navigate?.(href, event)"
-      />
-    </template>
-    <template v-if="session && !loading" #user-menu>
-      <div class="account-menu">
-        <div class="account-menu-identity">
-          <Avatar
-            :src="avatar"
-            :image="avatarImage"
-            :initials="initials"
-            :size="40"
-            :loading="
-              !contentReadiness.ready.value ||
-              contentLoading ||
-              navigationLoading
-            "
-          />
-          <div class="min-w-0">
-            <p class="account-menu-name">{{ userName }}</p>
+    <AuthEntry v-if="paused" page="login" :authenticated="authenticated" />
+    <component
+      v-else-if="!loading && !session"
+      :is="presentation.minimalLayout ?? MinimalLayout"
+    >
+      <Alert tone="danger">
+        {{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
+        <Button @click="refresh">{{ text('Ponów', 'Retry') }}</Button>
+      </Alert>
+    </component>
+    <slot v-else-if="$slots.admission" name="admission" />
+    <component
+      :is="presentation.applicationLayout ?? ApplicationLayout"
+      v-else
+      width="fluid"
+      :home-href="welcomeEnabled ? '/' : '/app'"
+      :navigation="navigation"
+      :navigation-loading="navigationLoading || !contentReadiness.ready.value"
+      :top-navigation="topNavigation ?? []"
+      :locale="props.locale"
+      :current="current"
+      :title="account ? text('Panel użytkownika', 'User panel') : ''"
+      :user-name="userName"
+      :user-avatar="avatar"
+      :user-avatar-image="avatarImage"
+      :user-loading="
+        !contentReadiness.ready.value || contentLoading || navigationLoading
+      "
+      :user-initials="initials"
+    >
+      <template #breadcrumbs="scope">
+        <Breadcrumbs
+          :label="text('Ścieżka nawigacji', 'Breadcrumbs')"
+          :items="breadcrumbs(scope)"
+          @navigate="(href, event) => scope.navigate?.(href, event)"
+        />
+      </template>
+      <template v-if="session && !loading" #user-menu>
+        <div class="account-menu">
+          <div class="account-menu-identity">
+            <Avatar
+              :src="avatar"
+              :image="avatarImage"
+              :initials="initials"
+              :size="40"
+              :loading="
+                !contentReadiness.ready.value ||
+                contentLoading ||
+                navigationLoading
+              "
+            />
+            <div class="min-w-0">
+              <p class="account-menu-name">{{ userName }}</p>
+            </div>
+          </div>
+          <div class="account-menu-actions">
+            <a href="/account" class="account-menu-action">
+              <Icon name="adjustments-horizontal" :size="18" />
+              <span>{{ text('Panel użytkownika', 'User panel') }}</span>
+            </a>
+            <a
+              v-if="adminEntry.available.value"
+              href="/admin"
+              class="account-menu-action"
+              :aria-current="
+                current.moduleKey === 'runa.admin' ? 'page' : undefined
+              "
+            >
+              <Icon name="adjustments-horizontal" :size="18" />
+              <span>{{
+                text('Panel administratora', 'Administrator panel')
+              }}</span>
+            </a>
+            <slot name="account-menu" :session="session" :entries="entries">
+              <a
+                v-for="entry in entries"
+                :key="entry.key"
+                :href="entry.href"
+                class="account-menu-action"
+                :aria-current="entry.current ? 'page' : undefined"
+                >{{ entry.label }}</a
+              >
+            </slot>
+            <button
+              type="button"
+              class="account-menu-action account-menu-signout"
+              :disabled="pending"
+              :aria-busy="pending"
+              @click="logout"
+            >
+              <Icon name="logout" :size="18" />
+              <span>{{ text('Wyloguj się', 'Sign out') }}</span>
+            </button>
           </div>
         </div>
-        <div class="account-menu-actions">
-          <a href="/account" class="account-menu-action">
-            <Icon name="adjustments-horizontal" :size="18" />
-            <span>{{ text('Panel użytkownika', 'User panel') }}</span>
-          </a>
-          <a
-            v-if="adminEntry.available.value"
-            href="/admin"
-            class="account-menu-action"
-            :aria-current="
-              current.moduleKey === 'runa.admin' ? 'page' : undefined
-            "
-          >
-            <Icon name="adjustments-horizontal" :size="18" />
-            <span>{{
-              text('Panel administratora', 'Administrator panel')
-            }}</span>
-          </a>
-          <slot name="account-menu" :session="session" :entries="entries">
-            <a
-              v-for="entry in entries"
-              :key="entry.key"
-              :href="entry.href"
-              class="account-menu-action"
-              :aria-current="entry.current ? 'page' : undefined"
-              >{{ entry.label }}</a
-            >
-          </slot>
-          <button
-            type="button"
-            class="account-menu-action account-menu-signout"
-            :disabled="pending"
-            :aria-busy="pending"
-            @click="logout"
-          >
-            <Icon name="logout" :size="18" />
-            <span>{{ text('Wyloguj się', 'Sign out') }}</span>
-          </button>
-        </div>
-      </div>
-    </template>
-    <slot
-      v-if="!contentReadiness.ready.value || contentLoading"
-      name="loading"
-      :account="account"
-      ><div aria-busy="true" class="space-y-6">
-        <p role="status" class="sr-only">
-          {{ text('Wczytywanie aplikacji', 'Loading application') }}
-        </p>
-        <Skeleton :lines="3" /></div
-    ></slot>
-    <Alert v-else-if="!session" tone="danger">
-      {{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
-      <Button @click="refresh">{{ text('Ponów', 'Retry') }}</Button>
-    </Alert>
-    <div
-      v-else
-      :key="identity ?? undefined"
-      class="space-y-6"
-      :inert="pending || undefined"
-    >
-      <FormNotifications
-        :locale="locale"
-        :error="
-          failure
-            ? text(
-                'Operacja nie powiodła się. Odśwież sesję i spróbuj ponownie.',
-                'The operation failed. Refresh the session and try again.',
-              )
-            : ''
-        "
-      >
-        <template #actions
-          ><Button @click="refresh">{{
-            text('Odśwież sesję', 'Refresh session')
-          }}</Button></template
-        >
-      </FormNotifications>
-      <Alert v-if="warning" tone="warning" role="status">
-        {{ text('Sesja wkrótce wygaśnie.', 'Your session will expire soon.') }}
-        {{ Math.ceil(remaining / 1000) }} s.
-        <Button v-if="session.activity.extension" @click="activity('click')">{{
-          text('Kontynuuj pracę', 'Continue working')
-        }}</Button>
+      </template>
+      <slot
+        v-if="!contentReadiness.ready.value || contentLoading"
+        name="loading"
+        :account="account"
+        ><div aria-busy="true" class="space-y-6">
+          <p role="status" class="sr-only">
+            {{ text('Wczytywanie aplikacji', 'Loading application') }}
+          </p>
+          <Skeleton :lines="3" /></div
+      ></slot>
+      <Alert v-else-if="!session" tone="danger">
+        {{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
+        <Button @click="refresh">{{ text('Ponów', 'Retry') }}</Button>
       </Alert>
-      <slot :session="session" />
-    </div>
-  </component>
+      <div
+        v-else
+        :key="identity ?? undefined"
+        class="space-y-6"
+        :inert="pending || undefined"
+      >
+        <FormNotifications
+          :locale="locale"
+          :error="
+            failure
+              ? text(
+                  'Operacja nie powiodła się. Odśwież sesję i spróbuj ponownie.',
+                  'The operation failed. Refresh the session and try again.',
+                )
+              : ''
+          "
+        >
+          <template #actions
+            ><Button @click="refresh">{{
+              text('Odśwież sesję', 'Refresh session')
+            }}</Button></template
+          >
+        </FormNotifications>
+        <Alert v-if="warning" tone="warning" role="status">
+          {{
+            text('Sesja wkrótce wygaśnie.', 'Your session will expire soon.')
+          }}
+          {{ Math.ceil(remaining / 1000) }} s.
+          <Button
+            v-if="session.activity.extension"
+            @click="activity('click')"
+            >{{ text('Kontynuuj pracę', 'Continue working') }}</Button
+          >
+        </Alert>
+        <slot :session="session" />
+      </div>
+    </component>
+  </div>
 </template>
 
 <style scoped>

@@ -176,7 +176,7 @@ confirmation. Owner adapters reconstruct and validate the owning readonly DTO.
 
 `status` is `committed`, `pending` or `recovery_required`; only committed may carry
 refreshed record data. Independent operation IDs use their native public identity
-and status API. `requirement` is `none|password|second_factor|both`. No proof token
+and status API. `requirement` is `none|password`. No proof token
 is accepted in these DTOs; Auth owns proof in the current server session. Unsupported
 handler methods reject with `OperationRejected('admin_operation_unavailable',
 'runa.admin', <declared operation>, 404)` rather than empty success.
@@ -309,7 +309,7 @@ Field = {key:string,type:string,label:AdminText,readonly:boolean,sensitive:boole
   required:boolean,max_length:int|null,choices:[string],multiple:boolean,
   component:Component|null}
 Command = {key:string,title:AdminText,mode:'independent'|'atomic',destructive:boolean,
-  requirement:'none'|'password'|'second_factor'|'both',preview_required:boolean,
+  requirement:'none'|'password',preview_required:boolean,
   inputs:[string],bulk:boolean,action:string|null,available:boolean,
   intent:'action'|'save'|'create'|'delete'}
 Widget = {id:string,title:AdminText,component:Component|null,values:JsonMap,

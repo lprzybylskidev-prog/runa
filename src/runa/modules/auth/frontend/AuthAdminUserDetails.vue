@@ -27,7 +27,6 @@ import {
 } from '@/runa/ui';
 import AuthAdminActionGroups from './AuthAdminActionGroups.vue';
 import { groupAuthActions, authActionTone } from './bulkGroups';
-import AuthOperationProofFields from './AuthOperationProofFields.vue';
 import AuthAdminUserStatus from './AuthAdminUserStatus.vue';
 import AuthAdminPolicyExceptions from './AuthAdminPolicyExceptions.vue';
 import { policyRuleNames, usePolicyExceptions } from './policyExceptions';
@@ -371,8 +370,7 @@ const proof = computed(() =>
     ? props.form.proof(pending.value.section, pending.value.command)
     : undefined,
 );
-const stage = ref<'parameters' | 'review' | 'proof'>('parameters');
-const proofRegion = ref<HTMLElement>();
+const stage = ref<'parameters' | 'review'>('parameters');
 const pinned = ref('');
 const attempt = ref(0);
 const path = (key: string) =>
@@ -568,12 +566,7 @@ async function execute() {
 }
 async function authorize() {
   pinned.value = signature();
-  if (proof.value && proof.value.requirement.value !== 'none') {
-    stage.value = 'proof';
-    await proof.value.begin();
-    await nextTick();
-    proofRegion.value?.querySelector('input')?.focus();
-  } else await execute();
+  await execute();
 }
 async function submit() {
   attempt.value++;
@@ -590,15 +583,6 @@ async function submit() {
     return;
   }
   await authorize();
-}
-async function confirmProof() {
-  if (pinned.value !== signature()) {
-    stage.value = 'parameters';
-    proof.value?.reset();
-    return;
-  }
-  await proof.value?.confirm();
-  if (proof.value?.confirmed.value) await execute();
 }
 const exceptionState = usePolicyExceptions(props.form, 'exceptions');
 async function rowOperation(
@@ -839,27 +823,9 @@ function supplied(section: AdminSectionData) {
         v-if="pending"
         :label="t(pending.title)"
         :busy="form.busy.value || proof?.busy.value === true"
-        @submit="stage === 'proof' ? confirmProof() : submit()"
+        @submit="submit"
       >
-        <div
-          v-if="stage === 'proof' && proof"
-          ref="proofRegion"
-          class="space-y-4"
-        >
-          <h2 class="font-semibold">
-            {{ text('Potwierdź tożsamość', 'Confirm your identity') }}
-          </h2>
-          <AuthOperationProofFields
-            :controller="proof"
-            :locale="locale"
-            submit
-            @cancel="
-              proof.reset();
-              stage = 'parameters';
-            "
-          />
-        </div>
-        <div v-else class="flex min-w-0 flex-col gap-4">
+        <div class="flex min-w-0 flex-col gap-4">
           <p
             v-if="
               pending?.section === 'primary_email' &&
@@ -965,25 +931,19 @@ function supplied(section: AdminSectionData) {
           ><FormNotifications
             :locale="locale"
             :attempt="attempt"
-            :error="
-              stage === 'proof'
-                ? (proof?.error.value ?? '')
-                : t(form.error.value?.message ?? '')
-            "
+            :error="t(form.error.value?.message ?? '')"
         /></template>
         <template #actions>
-          <template v-if="stage !== 'proof'"
-            ><Button
-              type="submit"
-              variant="outline"
-              :tone="pending ? authActionTone(actionKey(pending)) : 'primary'"
-              >{{
-                command?.preview_required && !review
-                  ? text('Sprawdź zmiany', 'Review changes')
-                  : text('Zatwierdź', 'Confirm')
-              }}</Button
-            ><Button @click="close()">{{ t('Cancel') }}</Button></template
-          >
+          <Button
+            type="submit"
+            variant="outline"
+            :tone="pending ? authActionTone(actionKey(pending)) : 'primary'"
+            >{{
+              command?.preview_required && !review
+                ? text('Sprawdź zmiany', 'Review changes')
+                : text('Zatwierdź', 'Confirm')
+            }}</Button
+          ><Button @click="close()">{{ t('Cancel') }}</Button>
         </template>
       </Form>
     </Dialog>

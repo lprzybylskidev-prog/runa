@@ -6,6 +6,7 @@ import { createAccountProfile } from './account/profile';
 import { createAccountLists } from './account/lists';
 import { createAccountDelivery } from './account/delivery';
 import { createAccountValidation } from './account/validation';
+import { useOperationProof } from './useOperationProof';
 import { enrollmentQrCode } from './totpEnrollment';
 import { RequestCancelledError } from '../../../resources/js/lib/http';
 import {
@@ -27,7 +28,6 @@ import {
   data,
   decodeOptions,
   decodeSecurity,
-  factorMethods,
 } from './entry';
 import type { EntryOptions, SecurityOptions } from './entry';
 import {
@@ -55,11 +55,16 @@ export function useAuthAccount(accountId: string) {
   const form = ref<{ focusInvalid: () => void }>(),
     heading = ref<HTMLElement>(),
     feedback = ref<HTMLElement>();
+  const passwordAction = ref('runa.auth.self.password');
+  const operationPassword = useOperationProof({
+    identity: () => (ready.value ? accountId : undefined),
+    action: () => passwordAction.value,
+    requirement: () => 'password',
+  });
   const fields = reactive<Record<string, string>>({});
   const errors = reactive<Record<string, string>>({});
   const secondaryErrors = reactive<Record<string, string>>({});
   const naming = ref('single'),
-    method = ref('totp'),
     target = ref('totp');
   const secret = ref(''),
     qrCode = ref(''),
@@ -78,30 +83,21 @@ export function useAuthAccount(accountId: string) {
   const sectionFields = reactive<
     Record<AccountSection, Record<string, string>>
   >({
-    details: { current_password: '' },
+    details: {},
     avatar: {},
     password: {
-      current_password: '',
       password: '',
       password_confirmation: '',
-      code: '',
     },
-    security: { current_password: '', code: '', enrollment_code: '' },
+    security: { enrollment_code: '' },
   });
   const sectionErrors = reactive<
     Record<AccountSection, Record<string, string>>
   >({ details: {}, avatar: {}, password: {}, security: {} });
-  const overviewNeedsProof = computed(
-    () =>
-      proofMethods.value.length > 0 &&
-      (overviewAction.value !== 'none' ||
-        (Boolean(fields.password || fields.password_confirmation) &&
-          security.value?.password_change_factor === true)),
-  );
   const canTrustDevice = computed(
     () =>
       security.value?.trusted_devices_enabled === true &&
-      proofMethods.value.length > 0,
+      security.value?.trusted_device_eligible === true,
   );
   watch([security, secret, qrCode, codes], () => {
     const current = security.value;
@@ -192,23 +188,16 @@ export function useAuthAccount(accountId: string) {
       has('avatar_enabled') &&
       ['both', 'user'].includes(String(caps.value.avatar_editor)),
   );
-  const proofMethods = computed(() =>
-    security.value ? factorMethods(security.value) : [],
-  );
-  const { needsProof, fieldNames, validate, emailError } =
-    createAccountValidation({
-      task,
-      proofMethods,
-      security,
-      options,
-      naming,
-      method,
-      fields,
-      errors,
-      has,
-      cleanErrors,
-      text,
-    });
+  const { fieldNames, validate, emailError } = createAccountValidation({
+    task,
+    options,
+    naming,
+    fields,
+    errors,
+    has,
+    cleanErrors,
+    text,
+  });
   const tabs = computed<AccountTab[]>(() => [
     'details',
     'security',
@@ -221,13 +210,7 @@ export function useAuthAccount(accountId: string) {
     ...(has('own_account_history') ? ['accountHistory' as const] : []),
   ]);
   function cleanSecrets(clearFiles = true) {
-    for (const key of [
-      'current_password',
-      'password',
-      'password_confirmation',
-      'code',
-      'enrollment_code',
-    ])
+    for (const key of ['password', 'password_confirmation', 'enrollment_code'])
       fields[key] = '';
     if (clearFiles) files.value = [];
   }
@@ -262,7 +245,6 @@ export function useAuthAccount(accountId: string) {
         ? (profile.value?.email ?? '')
         : (address?.email ?? '');
     fields.address_id = address?.public_id ?? '';
-    method.value = proofMethods.value[0] ?? 'totp';
     target.value = security.value?.enrolled[0] ?? 'totp';
     if (next === 'details') fillDetails();
   }
@@ -413,7 +395,6 @@ export function useAuthAccount(accountId: string) {
         await accountPreferences.connect(accountId).catch(() => {});
       fields.email = profile.value?.email ?? '';
       draft.value = takeAccountDraft(accountId);
-      method.value = proofMethods.value[0] ?? 'totp';
       if (s.trusted_devices_enabled) {
         try {
           await readTrustedDevices();
@@ -464,7 +445,9 @@ export function useAuthAccount(accountId: string) {
     await nextTick();
     heading.value?.focus();
   }
+  let confirmationCancelled = false;
   async function submitTask(preserveSecrets = false, quiet = false) {
+    confirmationCancelled = false;
     if (!ready.value || busy.value || codes.value.length) return;
     if (!validate()) {
       await nextTick();
@@ -499,7 +482,51 @@ export function useAuthAccount(accountId: string) {
     const input: Record<string, unknown> = Object.fromEntries(
       fieldNames.value.map((k) => [k, fields[k] ?? '']),
     );
-    if (needsProof.value) input.method = method.value;
+
+    const sensitive = [
+      'password',
+      'email',
+      'totpBegin',
+      'totpConfirm',
+      'emailEnable',
+      'disable',
+      'recoveryRotate',
+      'trustIssue',
+      'deactivate',
+      'delete',
+    ].includes(op);
+    if (sensitive) {
+      const suffix: Record<string, string> = {
+        trustIssue: 'trust_issue',
+        totpBegin: 'security.totp_begin',
+        totpConfirm: 'security.totp_confirm',
+        emailEnable: 'security.email_enable',
+        disable: 'security.disable',
+        recoveryRotate: 'security.recovery_rotate',
+      };
+      passwordAction.value = 'runa.auth.self.' + (suffix[op] ?? op);
+      const signature = JSON.stringify([
+        task.value,
+        profile.value?.version,
+        input,
+        target.value,
+      ]);
+      if (
+        !(await operationPassword.request()) ||
+        signature !==
+          JSON.stringify([
+            task.value,
+            profile.value?.version,
+            Object.fromEntries(
+              fieldNames.value.map((k) => [k, fields[k] ?? '']),
+            ),
+            target.value,
+          ])
+      ) {
+        confirmationCancelled = true;
+        return;
+      }
+    }
     let reauthenticating = false;
     const saved = await performTask(async () => {
       let path: string,
@@ -541,15 +568,6 @@ export function useAuthAccount(accountId: string) {
       } else if (op === 'password') path = 'password/change';
       else if (op === 'trustIssue') path = 'trusted-devices';
       else if (op === 'deactivate' || op === 'delete') {
-        await authPost(
-          'step-up',
-          {
-            action: `runa.auth.self.${op}`,
-            requirement: 'password',
-            current_password: String(input.current_password),
-          },
-          abort.signal,
-        );
         path = 'profile/lifecycle';
         body = { operation: op, version: profile.value!.version };
       } else {
@@ -812,8 +830,9 @@ export function useAuthAccount(accountId: string) {
           'Changes saved. Check your email to confirm the new address.',
         );
     } finally {
-      cleanSecrets(!section || section === 'avatar');
-      if (section)
+      if (!confirmationCancelled)
+        cleanSecrets(!section || section === 'avatar');
+      if (section && !confirmationCancelled)
         for (const key of Object.keys(sectionFields[section]))
           sectionFields[section][key] = '';
       confirmed.value = false;
@@ -1070,7 +1089,6 @@ export function useAuthAccount(accountId: string) {
     fields,
     errors,
     naming,
-    method,
     target,
     secret,
     qrCode,
@@ -1083,10 +1101,8 @@ export function useAuthAccount(accountId: string) {
     caps,
     has,
     canAvatar,
-    proofMethods,
     tabs,
     fieldNames,
-    needsProof,
     form,
     heading,
     feedback,
@@ -1109,7 +1125,6 @@ export function useAuthAccount(accountId: string) {
     secondaryErrors,
     saveSecondary,
     overviewAction,
-    overviewNeedsProof,
     removeAvatar,
     revoke,
     saveDelivery,
@@ -1137,11 +1152,6 @@ export function useAuthAccount(accountId: string) {
           'Sprawdź pocztę, aby potwierdzić główny adres.',
           'Check your email to verify the primary address.',
         );
-      }),
-    sendCode: () =>
-      perform(async () => {
-        await authPost('security/email-send', {}, abort.signal);
-        notice.value = text('Kod został wysłany.', 'Code sent.');
       }),
   };
 }

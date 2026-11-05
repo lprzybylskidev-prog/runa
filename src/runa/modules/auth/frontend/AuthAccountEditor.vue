@@ -14,7 +14,6 @@ import {
 } from '@/runa/ui';
 import type { AccountSection, useAuthAccount } from './useAuthAccount';
 import { AuthIdentityFields } from '@/runa/auth';
-import AuthAccountProof from './AuthAccountProof.vue';
 import AuthAvatarCropper from './AuthAvatarCropper.vue';
 import AuthAccountSecurity from './AuthAccountSecurity.vue';
 import AuthSecondaryEmails from './AuthSecondaryEmails.vue';
@@ -283,11 +282,6 @@ function closeCrop(value: boolean) {
           <p v-else class="text-sm [overflow-wrap:anywhere]">
             {{ profile.email }}
           </p>
-          <AuthAccountProof
-            v-if="has('own_email_editable') && fields.email !== profile.email"
-            :account="account"
-            section="details"
-          />
           <template #actions
             ><Button type="submit" variant="outline" :busy="busy">{{
               text('Zapisz dane', 'Save details')
@@ -357,7 +351,6 @@ function closeCrop(value: boolean) {
               "
             />
           </div>
-          <AuthAccountProof :account="account" section="password" />
           <template #actions
             ><Button type="submit" variant="outline" :busy="busy">{{
               text('Zapisz hasło', 'Save password')

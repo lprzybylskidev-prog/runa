@@ -75,7 +75,7 @@ final readonly class CreationSection implements ManagementResourceReader, Manage
         }
 
         // This review selects the owning proof, never fingerprints or echoes secrets.
-        return new ManagementReview(hash('sha256', $verified ? 'verified' : 'unverified'), [], $verified ? 'both' : 'password', true);
+        return new ManagementReview(hash('sha256', $verified ? 'verified' : 'unverified'), [], 'password', true);
     }
 
     public function execute(#[\SensitiveParameter] ManagementWrite $input): ManagementOutcome

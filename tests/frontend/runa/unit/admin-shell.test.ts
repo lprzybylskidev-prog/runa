@@ -1626,7 +1626,7 @@ it('Auth operation proof uses Polish defaults, confirms only identity and cancel
     { attachTo: document.body },
   );
   await flushPromises();
-  expect(wrapper.text()).toContain('Potwierdź operację');
+  expect(wrapper.text()).toContain('Potwierdź hasłem');
   const heading = wrapper.get('h1').element;
   expect(document.activeElement).toBe(heading);
   expect(getComputedStyle(heading).outlineStyle).toBe('none');
@@ -1653,129 +1653,6 @@ it('Auth operation proof uses Polish defaults, confirms only identity and cancel
   expect(proof.password.value).toBe('');
   expect(proof.confirmed.value).toBe(false);
 });
-
-it('Auth operation proof ignores an aborted factor response after reset for the same identity', async () => {
-  let proof!: ReturnType<typeof useOperationProof>,
-    finish!: (response: Response) => void;
-  vi.mocked(window.fetch).mockImplementation(
-    () =>
-      new Promise((resolve) => {
-        finish = resolve;
-      }),
-  );
-  mount(
-    defineComponent({
-      setup() {
-        proof = useOperationProof({
-          identity: () => identity,
-          action: () => 'app.example',
-          requirement: () => 'both',
-        });
-        return () => h('div');
-      },
-    }),
-  );
-  const pending = proof.begin();
-  proof.reset();
-  finish(
-    respond({
-      data: {
-        required: 'optional',
-        enrolled: ['totp'],
-        email_verified: true,
-        totp_enabled: true,
-        email_otp_enabled: false,
-        recovery_codes_enabled: true,
-        password_change_factor: false,
-        trusted_devices_enabled: false,
-      },
-    }),
-  );
-  await pending;
-  expect(proof.methods.value).toEqual([]);
-  expect(proof.open.value).toBe(false);
-});
-
-it.each(['second_factor', 'both'] as const)(
-  'Auth operation proof supports %s through eligible native factor controls',
-  async (requirement) => {
-    let proof!: ReturnType<typeof useOperationProof>;
-    const writes: { url: string; body: unknown }[] = [];
-    vi.mocked(window.fetch).mockImplementation(async (input, init) => {
-      const url = String(input);
-      if (init?.method === 'POST') {
-        writes.push({ url, body: JSON.parse(String(init.body)) });
-        return respond({ data: { confirmed: true } });
-      }
-      if (url === '/api/runa/auth/security')
-        return respond({
-          data: {
-            required: 'optional',
-            enrolled: ['email'],
-            email_verified: true,
-            totp_enabled: false,
-            email_otp_enabled: true,
-            recovery_codes_enabled: false,
-            password_change_factor: false,
-            trusted_devices_enabled: false,
-          },
-        });
-      return respond({ reason: 'not_found' }, 404);
-    });
-    const confirmed = vi.fn();
-    const wrapper = mount(
-      defineComponent({
-        setup() {
-          proof = useOperationProof({
-            identity: () => identity,
-            action: () => 'app.example',
-            requirement: () => requirement,
-            locale: () => 'en',
-          });
-          return () =>
-            h(AuthOperationProofPage, {
-              controller: proof,
-              locale: 'en',
-              onConfirmed: confirmed,
-            });
-        },
-      }),
-    );
-    await vi.waitFor(() => expect(proof.methods.value).toEqual(['email']));
-    expect(wrapper.find('input[name="current_password"]').exists()).toBe(
-      requirement === 'both',
-    );
-    await wrapper
-      .findAll('button')
-      .find((button) => button.text() === 'Send code')!
-      .trigger('click');
-    await flushPromises();
-    if (requirement === 'both')
-      await wrapper
-        .get('input[name="current_password"]')
-        .setValue('Private password');
-    await wrapper.get('input[name="verification_code"]').setValue('123456');
-    await wrapper.get('form').trigger('submit');
-    await vi.waitFor(() => expect(confirmed).toHaveBeenCalledOnce());
-    expect(writes).toEqual([
-      { url: '/api/runa/auth/security/email-send', body: {} },
-      {
-        url: '/api/runa/auth/step-up',
-        body: {
-          action: 'app.example',
-          requirement,
-          ...(requirement === 'both'
-            ? { current_password: 'Private password' }
-            : {}),
-          method: 'email',
-          code: '123456',
-        },
-      },
-    ]);
-    expect(proof.password.value).toBe('');
-    expect(proof.code.value).toBe('');
-  },
-);
 
 it('Auth operation proof allows a full page replacement with the supplied controller and scoped content', async () => {
   let proof!: ReturnType<typeof useOperationProof>;

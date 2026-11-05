@@ -9,7 +9,7 @@ import {
 } from 'vue';
 import type { EffectScope, Ref } from 'vue';
 import { ApiError, request } from '@/runa/http';
-import { useOperationProof } from '@/runa/auth';
+import { usePasswordConfirmation, useOperationProof } from '@/runa/auth';
 import type { OperationProofController } from '@/runa/auth';
 import { formValuesEqual, useDirtyGuard, useForm } from '@/runa/ui';
 import type {
@@ -57,6 +57,7 @@ export function useAdminForm(
     autoRead?: boolean;
   } = {},
 ): AdminFormController {
+  const confirmationHost = usePasswordConfirmation();
   const existing = forms.get(page);
   if (existing) return existing;
   const draft = useForm<Record<string, AdminJson>>({});
@@ -472,12 +473,14 @@ export function useAdminForm(
     if (overlaps.value[path])
       overlaps.value[path] = { ...overlaps.value[path]!, local: copy(value) };
     clearReviews();
+    for (const { controller } of proofs.values()) controller.reset();
   }
   function reset() {
     draft.reset(base.value);
     overlaps.value = {};
     error.value = undefined;
     clearReviews();
+    for (const { controller } of proofs.values()) controller.reset();
     for (const key of incoming.keys()) acceptRevision(key);
   }
   function resolve(path: string, choice: 'local' | 'remote') {
@@ -486,6 +489,7 @@ export function useAdminForm(
     if (choice === 'remote') values.value[path] = copy(conflict.remote);
     delete overlaps.value[path];
     clearReviews();
+    for (const { controller } of proofs.values()) controller.reset();
     for (const key of incoming.keys()) acceptRevision(key);
   }
   async function selectSubject(id: string | null) {
@@ -683,10 +687,24 @@ export function useAdminForm(
       !current ||
       !formValuesEqual(input.values, current.values) ||
       input.revision !== current.revision ||
+      !formValuesEqual(input.review ?? null, current.review ?? null) ||
       page.state.value !== 'ready'
     )
       return;
     input = current;
+    const operationProof = proof(key, name);
+    if (
+      operationProof.requirement.value !== 'none' &&
+      !operationProof.confirmed.value
+    ) {
+      const signature = JSON.stringify(current);
+      if (
+        !(await operationProof.request()) ||
+        JSON.stringify(commandInput(section, command, true)) !== signature ||
+        page.state.value !== 'ready'
+      )
+        return;
+    }
     const submitted = copy(values.value),
       own = epoch;
     error.value = undefined;
@@ -854,6 +872,18 @@ export function useAdminForm(
       }
       for (const participant of input.participants)
         participant.input.confirmed = true;
+    }
+    if (!previewing) {
+      for (const participant of input.participants) {
+        const operationProof = proof(participant.id, participant.input.command);
+        if (
+          operationProof.requirement.value !== 'none' &&
+          !operationProof.confirmed.value &&
+          !(await operationProof.request())
+        )
+          return;
+        if (JSON.stringify(aggregate()) !== intent) return;
+      }
     }
     const own = epoch,
       context = stamp(),
@@ -1040,6 +1070,7 @@ export function useAdminForm(
           ?.commands.find((command) => command.key === name);
       const controller = scope.run(() =>
         useOperationProof({
+          confirmation: confirmationHost,
           identity: () =>
             page.state.value === 'ready' &&
             command()?.available &&
@@ -1055,21 +1086,9 @@ export function useAdminForm(
                   (participant) => participant.id === key,
                 )?.review.requirement ??
                 'none';
-            const password = [declared, reviewed].some(
-              (requirement) =>
-                requirement === 'password' || requirement === 'both',
-            );
-            const factor = [declared, reviewed].some(
-              (requirement) =>
-                requirement === 'second_factor' || requirement === 'both',
-            );
-            return password && factor
-              ? 'both'
-              : password
-                ? 'password'
-                : factor
-                  ? 'second_factor'
-                  : 'none';
+            return declared === 'password' || reviewed === 'password'
+              ? 'password'
+              : 'none';
           },
         }),
       )!;

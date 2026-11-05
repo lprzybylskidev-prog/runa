@@ -20,8 +20,7 @@ use Runa\Support\Modules\Api\OperationRejected;
  * @phpstan-import-type EntryTokenRow from EntryTokens */
 final readonly class Passwords
 {
-    public function __construct(private SecurityContext $context, private CredentialFactors $factors,
-        private CredentialPolicy $policy, private EntryTransaction $transactions, private EntryTokens $tokens,
+    public function __construct(private SecurityContext $context, private CredentialPolicy $policy, private EntryTransaction $transactions, private EntryTokens $tokens,
         private LookupIdentity $identities, private SessionStore $sessions) {}
 
     public function requestReset(#[\SensitiveParameter] string $identifier): void
@@ -42,16 +41,16 @@ final readonly class Passwords
     public function change(Request $request): array
     {
         $result = $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request): ?array {
-            if (! Hash::check($request->string('current_password')->toString(), $user->password ?? '')) {
-                return null;
-            }
-            // Mandatory login 2FA must be completed first. Optional change-specific 2FA is a fresh proof.
             if ($this->policy->restrictions($user, $session) !== []) {
                 return null;
             }
-            if ($this->policy->value('password_change_factor')
-                && ! $this->factors->verify($connection, $user, $session, $request->string('method')->toString(), $request->string('code')->toString())) {
-                return null;
+            if ($user->password_change_required || $this->policy->passwordExpired($user)) {
+                // The restricted password-change Auth screen completes login admission.
+                if (! Hash::check($request->string('current_password')->toString(), $user->password ?? '')) {
+                    return null;
+                }
+            } else {
+                app(StepUp::class)->assertVerified('runa.auth.self.password', everyAction: true);
             }
             $this->replaceLocked($connection, $user, $request->string('password')->toString());
             $choice = $request->input('sessions', $this->policy->value('password_session_policy'));

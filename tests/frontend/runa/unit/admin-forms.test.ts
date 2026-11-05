@@ -8,6 +8,7 @@ import {
   useAdminForm,
   useAdminTable,
 } from '@/runa/admin';
+import { providePasswordConfirmation } from '@/runa/auth';
 import CustomerAdminEditor from './fixtures/customization/CustomerAdminEditor.vue';
 import type {
   AdminCommandData,
@@ -977,4 +978,91 @@ it('native atomic participants review and save one section with visible activity
   expect(paths.every((path) => path.includes('/sections/profile/'))).toBe(true);
   expect(form.values.value['access.name']).toBe('Keep unrelated draft');
   expect(form.dirty.value).toBe(true);
+});
+
+it('sensitive aggregate Save uses the shared password host and refuses cancelled or changed intents', async () => {
+  const data = descriptor();
+  data.sections[0]!.commands = [
+    command({
+      mode: 'atomic',
+      requirement: 'password',
+      action: 'app.users.save',
+    }),
+  ];
+  const page: AdminPageController = {
+    page: shallowRef(data),
+    state: computed(() => 'ready'),
+    error: ref(),
+    refresh: vi.fn(async () => {}),
+  };
+  let form!: AdminFormController;
+  let host!: ReturnType<typeof providePasswordConfirmation>;
+  let saved = 0;
+  vi.mocked(window.fetch).mockImplementation(async (input, init) => {
+    if (String(input).endsWith('/step-up')) {
+      expect(JSON.parse(String(init?.body))).toEqual({
+        action: 'app.users.save',
+        current_password: 'private-confirmation',
+      });
+      return respond({ data: { confirmed: true } });
+    }
+    if (init?.method === 'POST') {
+      saved++;
+      const submitted = JSON.parse(String(init.body));
+      expect(submitted.participants[0].input.values.name).toBe(
+        'Reviewed draft',
+      );
+      return respond({
+        data: {
+          status: 'committed',
+          revision: 'aggregate-2',
+          participants: [
+            {
+              id: 'profile',
+              record: record({
+                revision: 'r2',
+                values: { ...server.values, name: 'Reviewed draft' },
+              }),
+            },
+          ],
+        },
+      });
+    }
+    return respond({ data: server });
+  });
+  const Child = defineComponent({
+    setup() {
+      form = useAdminForm(page);
+      return () => h('div');
+    },
+  });
+  mount(
+    defineComponent({
+      setup() {
+        host = providePasswordConfirmation();
+        return () => h(Child);
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(form.records.value.profile).toBeDefined());
+  form.set('profile.name', 'Draft');
+  const cancelled = form.save();
+  expect(host.active.value).toBeDefined();
+  host.cancel();
+  expect(await cancelled).toBeUndefined();
+  expect(form.values.value['profile.name']).toBe('Draft');
+  expect(saved).toBe(0);
+  const changed = form.save();
+  form.set('profile.name', 'Reviewed draft');
+  expect(await changed).toBeUndefined();
+  expect(host.active.value).toBeUndefined();
+  expect(saved).toBe(0);
+  const confirmed = form.save();
+  const proof = host.active.value!;
+  proof.password.value = 'private-confirmation';
+  await proof.confirm();
+  expect(proof.confirmed.value).toBe(true);
+  host.complete();
+  expect((await confirmed)?.status).toBe('committed');
+  expect(saved).toBe(1);
 });

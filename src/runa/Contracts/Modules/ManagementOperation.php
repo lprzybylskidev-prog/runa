@@ -14,7 +14,7 @@ final readonly class ManagementOperation
     ) {
         if ($operation->permission === null || ! array_is_list($inputs) || count($inputs) > 64
             || count(array_unique($inputs)) !== count($inputs)
-            || ! in_array($stepUp, ['none', 'password', 'second_factor', 'both'], true)) {
+            || ! in_array($stepUp, ['none', 'password'], true)) {
             throw new InvalidArgumentException('Invalid management operation.');
         }
         foreach ($inputs as $key) {

@@ -17,7 +17,7 @@ observer is not used for mandatory persistence.
 
 An optional framework SettingsAuthorization participant runs after candidate and
 revision validation, before the candidate write/reservation fence, in that same
-transaction. Auth consumes an actor's every-action both-factor proof for
+transaction. Auth consumes an actor's every-action password proof for
 `runa.auth.policy.publish` there, against the old policy. History persists after
 the actual stored write. A refused publication also restores the proof's unused
 state. Compensation does not require the user's proof a second time.
@@ -45,7 +45,7 @@ The explicit allowlist contains only `password_expiry_days` (1–3650) and
 zero, change absolute session deadlines, relax 2FA/step-up, reactivate accounts or
 bypass identity/permission rules. Global expiry may still be disabled with zero.
 
-A write requires an authorized actor, fresh both-factor every-action proof for
+A write requires an authorized actor, fresh password every-action proof for
 `runa.auth.policy.exception`, a reason without secrets, an optional future expiry without a maximum horizon, the current global policy revision and the last per-key mutation version
 (initially zero). Passing null revokes the exception. Versions continue across
 revocation/recreation; stale requests cannot overwrite a recreated exception.
@@ -71,7 +71,7 @@ public function exception(string $publicId, string $key, ?int $value,
 // Returns array{public_id:string|null, version:int}; null value revokes.
 ```
 
-The guarded entrypoint, permission, both-factor proof and transactional Audit
+The guarded entrypoint, permission, password proof and transactional Audit
 remain unchanged. The `expires_at` member returned by both exception reads is now
 `string|null`, an incompatible row-contract change from 1.x. Auth 4.0.0 and current
 consumer constraints reflect it under the standing pre-1.0 owner authorization.

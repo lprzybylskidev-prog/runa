@@ -174,7 +174,7 @@ final readonly class Policies implements AuthPolicies
 
         return $this->transactions->run(function (Connection $connection) use ($publicId, $expectedVersion): bool {
             $this->transactions->lockAuthority($connection);
-            $this->stepUp->assertVerified('runa.auth.policy.exception', 'both', everyAction: true);
+            $this->stepUp->assertVerified('runa.auth.policy.exception', everyAction: true);
             $user = User::withTrashed()->where('public_id', $publicId)->lockForUpdate()->first();
             if ($user === null || $user->version !== $expectedVersion) {
                 return false;
@@ -201,7 +201,7 @@ final readonly class Policies implements AuthPolicies
 
         return $this->transactions->run(function (Connection $connection) use ($publicId, $key, $value, $reason, $expires, $version, $policyRevision): array {
             $this->transactions->lockAuthority($connection);
-            $this->stepUp->assertVerified('runa.auth.policy.exception', 'both', everyAction: true);
+            $this->stepUp->assertVerified('runa.auth.policy.exception', everyAction: true);
             if ($this->settings->read('runa.auth')['revision'] !== $policyRevision) {
                 throw new OperationRejected('policy_stale', 'runa.auth', 'policy.exception', 409);
             }

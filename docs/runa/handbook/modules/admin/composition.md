@@ -118,7 +118,7 @@ Build participants using each record's public_id/revision. The profile input has
 command=save and all four naming/login values. The Permissions input has command=save,
 roles/permissions UUID lists and its own revision. POST that aggregate with the
 page revision to `/api/admin/runa.auth/users/preview`. Show the safe differences,
-confirm `runa.permissions.access.manage` with native both-factor proof, copy each
+confirm `runa.permissions.access.manage` with native password proof, copy each
 returned review to its participant input and the aggregate revision to the root,
 then POST explicitly to `/api/admin/runa.auth/users/save`. A conflict requires
 reconciliation and another explicit review; never replay the old write.

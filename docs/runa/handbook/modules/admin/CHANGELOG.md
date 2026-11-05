@@ -1,6 +1,8 @@
 # Admin module changelog
 
-## 0.1.0 — 2026-10-31
+## 0.2.0 — Unreleased
+
+- Admin 0.2.0: send all declared sensitive independent/aggregate actions through the existing full-page Auth password confirmation. Remove inline proof editors and factor selection. Preserve submitted subject/review/revision, hide retained modal portals during confirmation, and cancel without mutation or draft loss.
 
 - Admin 0.2.0: retain business reasons through aggregate Save and operational writes, localize known refusals and map identifiable fields. Compose the shared Auth secondary-email editor with native grants and proof.
 

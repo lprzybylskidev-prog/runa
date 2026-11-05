@@ -16,7 +16,7 @@ lookup and require `runa.auth.eligibility.read`. These grants never replace curr
 actor eligibility, source/module availability, record policies or session checks.
 
 Every mutation, including deletion and a no-op application, requires a fresh,
-session/action-bound `both` AuthStepUp proof for `runa.permissions.access.manage`.
+session/action-bound password AuthStepUp proof for `runa.permissions.access.manage`.
 It is consumed with `everyAction: true` inside the default PostgreSQL business
 transaction. Confirm through Auth's existing step-up endpoint; credentials and
 codes never enter Permissions APIs, Audit, metadata or presets. A trusted server
@@ -98,7 +98,7 @@ $draft = new DefinitionInput('preset', new DictionaryEntry(
     'custom.support', 'Wsparcie', 'Support', 'Dostęp wsparcia.', 'Support access.',
 ), new AssignmentSet(), sourceUser: $sourceUserPublicId);
 $review = $access->previewDefinition($draft);
-// After review and a fresh both-factor proof:
+// After review and a fresh password proof:
 $preset = $access->saveDefinition($review);
 ```
 
@@ -139,7 +139,7 @@ consumers must roll back their root before recording independent refusal history
 through AuditRecords::attempt; never escape an open transaction on another connection.
 
 The existing management provider declares bounded custom-role/preset/assignment
-entities, dictionary/reference fields and revision/preview/both-factor requirements.
+entities, dictionary/reference fields and revision/preview/password requirements.
 Metadata uses its provider-local permission keys and never grants permission or
 executes a write. Unknown management schema versions refuse through the shared
 adapter. The source-owned [Admin pages](administration.md) consume these same public backend contracts; the metadata itself executes no operation.
@@ -162,7 +162,7 @@ operations retain their separate owning workflows.
 
 The private source-declared AssignmentContribution/AssignmentEditor joins the
 Auth profile record with ordinary reviewed roles/permissions replacement and
-bounded guarded field lookups. Native both-factor proof, monotonic revisions,
+bounded guarded field lookups. Native password proof, monotonic revisions,
 protected-role exclusion and same-transaction Audit remain authoritative.
 See [Admin composition](../admin/composition.md) for supported inputs, exact review
 and the root protocol. Protected authority and bulk workflows stay independent.

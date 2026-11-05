@@ -13,7 +13,7 @@ final class StepUpApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(AuthStepUp::class, StepUpProxy::class, StepUp::class, '1.1.0', [
+        return new ApiDefinition(AuthStepUp::class, StepUpProxy::class, StepUp::class, '2.0.0', [
             'assertActive' => new ApiOperation('step_up.active'),
             'activity' => new ApiOperation('step_up.activity'),
             'assertVerified' => new ApiOperation('step_up.assert'),

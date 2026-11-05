@@ -1,48 +1,21 @@
 import { computed } from 'vue';
 import type { Ref } from 'vue';
-import type { SecurityOptions, EntryOptions } from '../entry';
+import type { EntryOptions } from '../entry';
 import type { AccountTask } from './types';
 import type { AccountText } from './context';
 
 export function createAccountValidation(state: {
   task: Ref<AccountTask>;
-  proofMethods: Ref<readonly string[]>;
-  security: Ref<SecurityOptions | undefined>;
   options: Ref<EntryOptions | undefined>;
   naming: Ref<string>;
-  method: Ref<string>;
   fields: Record<string, string>;
   errors: Record<string, string>;
   has: (key: string) => boolean;
   cleanErrors: () => void;
   text: AccountText;
 }) {
-  const {
-    task,
-    proofMethods,
-    security,
-    options,
-    naming,
-    method,
-    fields,
-    errors,
-    has,
-    cleanErrors,
-    text,
-  } = state;
-  const needsProof = computed(
-    () =>
-      proofMethods.value.length > 0 &&
-      ([
-        'totpBegin',
-        'totpConfirm',
-        'emailEnable',
-        'disable',
-        'recoveryRotate',
-        'trustIssue',
-      ].includes(task.value) ||
-        (task.value === 'password' && security.value?.password_change_factor)),
-  );
+  const { task, options, naming, fields, errors, has, cleanErrors, text } =
+    state;
   const fieldNames = computed(() => [
     ...(task.value === 'details'
       ? [
@@ -57,21 +30,7 @@ export function createAccountValidation(state: {
     ...(['email', 'secondaryAdd', 'secondaryChange'].includes(task.value)
       ? ['email']
       : []),
-    ...([
-      'password',
-      'email',
-      'totpBegin',
-      'totpConfirm',
-      'emailEnable',
-      'disable',
-      'recoveryRotate',
-      'deactivate',
-      'delete',
-    ].includes(task.value)
-      ? ['current_password']
-      : []),
     ...(task.value === 'password' ? ['password', 'password_confirmation'] : []),
-    ...(needsProof.value ? ['code'] : []),
     ...(task.value === 'totpConfirm' ? ['enrollment_code'] : []),
   ]);
   function emailError(value: string): string {
@@ -104,13 +63,6 @@ export function createAccountValidation(state: {
         !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$/.test(value)
       )
         errors[key] = text('Niepoprawny login.', 'Invalid login.');
-      if (
-        key === 'code' &&
-        !(method.value === 'recovery' ? /^[0-9a-f]{32}$/ : /^[0-9]{6}$/).test(
-          value,
-        )
-      )
-        errors[key] = text('Niepoprawny kod.', 'Invalid code.');
       if (key === 'enrollment_code' && !/^[0-9]{6}$/.test(value))
         errors[key] = text('Wpisz 6 cyfr.', 'Enter 6 digits.');
     }
@@ -137,5 +89,5 @@ export function createAccountValidation(state: {
     }
     return Object.keys(errors).length === 0;
   }
-  return { needsProof, fieldNames, validate, emailError };
+  return { fieldNames, validate, emailError };
 }

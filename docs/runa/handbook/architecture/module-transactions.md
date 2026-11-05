@@ -36,7 +36,7 @@ explicit restore. Locks grant no eligibility: every owner validates its supporte
 current/deleted target state, independently of actor authentication and grants.
 `resources` is a nonempty unique list of at most 32 owner-namespaced resource keys
 (up to 256 bytes), naming actual independently written revisions. `proofs` contains
-at most 8 MutationProof values; requirement is password|second_factor|both, TTL
+at most 8 MutationProof values; requirement is password, TTL
 1–300. `idle: true` requires `everyAction: false` and asserts Auth protected-section
 idle access without renewal in both native proof phases. Fixed-age and single-use
 operation proofs remain the defaults. See [Auth section access](../modules/auth/security.md#protected-section-idle-access).

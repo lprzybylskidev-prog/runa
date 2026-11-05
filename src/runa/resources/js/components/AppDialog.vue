@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
-import { computed, provide, ref, toRef, useId } from 'vue';
+import { computed, provide, ref, useId } from 'vue';
 import AppContentLoading from './AppContentLoading.vue';
 import AppFormNotifications from './AppFormNotifications.vue';
 import AppButton from './AppButton.vue';
+import { usePresentationVisibility } from '../composables/usePresentationVisibility';
+const presentationVisible = usePresentationVisibility();
 import { useModalLayer } from '../composables/useModalLayer';
 import { layerIndex, modalPortal } from '../lib/layers';
 import type { DialogProps, DialogCloseReason } from '../runa/ui/dialogs';
@@ -48,7 +50,7 @@ function close(reason: DialogCloseReason = 'close') {
 }
 const layer = useModalLayer({
   key,
-  open: toRef(props, 'modelValue'),
+  open: computed(() => props.modelValue && presentationVisible.value),
   root,
   panel,
   initialFocus: () => props.initialFocus,
@@ -79,7 +81,7 @@ defineExpose({ focus: layer.focus });
         v-if="modelValue"
         ref="root"
         class="dialog-backdrop"
-        :style="{ zIndex }"
+        :style="{ zIndex, display: presentationVisible ? undefined : 'none' }"
         @pointerdown="down"
         @pointerup="up"
         @pointercancel="pressedOutside = false"

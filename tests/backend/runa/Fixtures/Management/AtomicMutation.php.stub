@@ -22,7 +22,7 @@ final class AtomicMutation implements TransactionalMutation
     public function definition(): MutationDefinition
     {
         return new MutationDefinition('app', 'note.save', [new MutationAccess('runa.admin', new ApiOperation('note.save', 'runa.admin.enter'))],
-            [$this->input->publicId], ['app.note:'.$this->input->publicId], self::$duplicateProof ? [new MutationProof('runa.permissions.access.manage', 'both')] : []);
+            [$this->input->publicId], ['app.note:'.$this->input->publicId], self::$duplicateProof ? [new MutationProof('runa.permissions.access.manage', 'password')] : []);
     }
     public function preflight(): void {}
     public function lock(): void

@@ -423,12 +423,12 @@ final class AdministrationPages implements ManagementPageProvider
             $fields[] = self::field('summary', 'Policy consequences', read: 'policy.read');
             $binding = 'policy'.$group;
             $sections[] = new ManagementSection($binding, ['Presentation and delivery', 'Credentials and sessions', 'Entry and lifecycle'][$group], 'runa.auth.policy.read', 'runa.auth.policy.write', $binding, $fields, [
-                new ManagementCommandDefinition('publish', 'Review and publish policy', new ManagementOperation(new ApiOperation('policy.publish', 'runa.auth.policy.write'), $inputs, 'both', previewRequired: true), $binding, proofAction: 'runa.auth.policy.publish'),
+                new ManagementCommandDefinition('publish', 'Review and publish policy', new ManagementOperation(new ApiOperation('policy.publish', 'runa.auth.policy.write'), $inputs, 'password', previewRequired: true), $binding, proofAction: 'runa.auth.policy.publish'),
             ]);
         }
         $sections[] = new ManagementSection('history', 'Policy history and restore', 'runa.auth.policy.read', 'runa.auth.policy.write', 'policy_history', [
             self::field('source_revision', 'Restore source revision', 'integer', 'policy.write', 'policy.read'), self::field('history', 'Policy history (latest 50)', read: 'policy.read'), self::field('summary', 'Restore consequences', read: 'policy.read'),
-        ], [new ManagementCommandDefinition('restore', 'Review and restore policy', new ManagementOperation(new ApiOperation('policy.restore', 'runa.auth.policy.write'), ['source_revision'], 'both', previewRequired: true), 'policy_history', destructive: true, proofAction: 'runa.auth.policy.publish')], component: 'runa.auth.admin_section');
+        ], [new ManagementCommandDefinition('restore', 'Review and restore policy', new ManagementOperation(new ApiOperation('policy.restore', 'runa.auth.policy.write'), ['source_revision'], 'password', previewRequired: true), 'policy_history', destructive: true, proofAction: 'runa.auth.policy.publish')], component: 'runa.auth.admin_section');
 
         return [new ManagementPage('policy', 'Authentication policy', 'runa.auth.policy.read', $sections, order: 20)];
     }
@@ -479,7 +479,7 @@ final class AdministrationPages implements ManagementPageProvider
             if (! app(AdministrationFeatures::class)->command($key, $name)) {
                 continue;
             }
-            $requirement = $key === 'creation' ? 'password' : ($key === 'bulk_users' ? BulkUserOperations::proof($name) : ($spec['proof'] === null ? 'none' : 'both'));
+            $requirement = $key === 'creation' ? 'password' : ($key === 'bulk_users' ? BulkUserOperations::proof($name) : ($spec['proof'] === null ? 'none' : 'password'));
             $title = $key === 'bulk_sessions' ? ['pl' => 'Unieważnij sesje', 'en' => 'Revoke sessions'] : $spec['title'];
             $result[] = new ManagementCommandDefinition($name, $title, new ManagementOperation(new ApiOperation($spec['operation'], 'runa.auth.'.$spec['permission']), $spec['inputs'], $requirement, revisionRequired: $key !== 'creation', previewRequired: $spec['preview']), $key, destructive: $spec['destructive'], intent: $key === 'creation' ? 'create' : 'action', proofAction: $spec['proof']);
         }

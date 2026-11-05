@@ -56,7 +56,7 @@ final class AssignmentContribution implements ManagementPageProvider
         return [new ManagementContribution('user_access', 'runa.auth.users.profile', new ManagementSection('assignments', 'Access',
             'runa.permissions.introspection.read', 'runa.permissions.access.manage', 'assignments', $fields, [
                 new ManagementCommandDefinition('save', 'Save access', new ManagementOperation(new ApiOperation('access.apply_assignments', 'runa.permissions.access.manage'),
-                    ['roles', 'permissions'], 'both', previewRequired: true), 'assignments', 'atomic', AssignmentEditor::class,
+                    ['roles', 'permissions'], 'password', previewRequired: true), 'assignments', 'atomic', AssignmentEditor::class,
                     intent: 'save', proofAction: 'runa.permissions.access.manage'),
             ]))];
     }

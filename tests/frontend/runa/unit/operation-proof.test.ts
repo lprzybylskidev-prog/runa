@@ -2,31 +2,29 @@
 import { afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { defineComponent, h, ref } from 'vue';
-import { AuthOperationProof, useOperationProof } from '@/runa/auth';
+import {
+  AuthOperationProofPage,
+  useOperationProof,
+  providePasswordConfirmation,
+} from '@/runa/auth';
+import {
+  Dialog,
+  Button,
+  TextInput,
+  providePresentationVisibility,
+} from '@/runa/ui';
 import type { OperationProofController } from '@/runa/auth';
 enableAutoUnmount(afterEach);
 const reply = (data: unknown) =>
   new Response(JSON.stringify({ data }), {
     headers: { 'Content-Type': 'application/json' },
   });
-const security = {
-  email_verified: true,
-  required: 'optional',
-  enrolled: ['totp'],
-  totp_enabled: true,
-  email_otp_enabled: true,
-  recovery_codes_enabled: true,
-  password_change_factor: false,
-  trusted_devices_enabled: false,
-};
-it('Admin operation proof uses native factor admission and clears credentials without replaying a business write', async () => {
+it('Admin operation proof uses only native password confirmation and clears credentials without replaying a business write', async () => {
   const identity = ref<string | undefined>('account-session');
   const calls: string[] = [];
   vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
     calls.push(String(input));
-    return reply(
-      String(input).endsWith('/security') ? security : { confirmed: true },
-    );
+    return reply({ confirmed: true });
   });
   let proof!: OperationProofController;
   mount(
@@ -35,24 +33,23 @@ it('Admin operation proof uses native factor admission and clears credentials wi
         proof = useOperationProof({
           identity: () => identity.value,
           action: () => 'runa.auth.profile.manage',
-          requirement: () => 'both',
+          requirement: () => 'password',
         });
-        return () => h(AuthOperationProof, { controller: proof });
+        return () => h(AuthOperationProofPage, { controller: proof });
       },
     }),
   );
   await proof.begin();
-  expect(proof.methods.value).toEqual(['totp', 'recovery']);
   proof.password.value = 'transient-proof-password';
-  proof.code.value = '123456';
   await proof.confirm();
   expect(proof.confirmed.value).toBe(true);
   expect(proof.password.value).toBe('');
-  expect(proof.code.value).toBe('');
-  expect(calls).toEqual(['/api/runa/auth/security', '/api/runa/auth/step-up']);
+  expect(calls.filter((path) => path.endsWith('/step-up'))).toEqual([
+    '/api/runa/auth/step-up',
+  ]);
+  expect(calls.some((path) => path.endsWith('/security'))).toBe(false);
   identity.value = undefined;
   expect(proof.confirmed.value).toBe(false);
-  expect(proof.methods.value).toEqual([]);
 });
 it('Admin operation proof fences late confirmations after account invalidation', async () => {
   const identity = ref<string | undefined>('account-session');
@@ -87,41 +84,6 @@ it('Admin operation proof fences late confirmations after account invalidation',
   expect(proof.password.value).toBe('');
 });
 
-it('factor discovery shows local loading until native methods settle', async () => {
-  let finish!: (response: Response) => void;
-  vi.spyOn(window, 'fetch').mockImplementation(
-    async () =>
-      new Promise((resolve) => {
-        finish = resolve;
-      }),
-  );
-  let proof!: OperationProofController;
-  const w = mount(
-    defineComponent({
-      setup() {
-        proof = useOperationProof({
-          identity: () => 'session',
-          action: () => 'runa.permissions.access.manage',
-          requirement: () => 'both',
-        });
-        return () => h(AuthOperationProof, { controller: proof });
-      },
-    }),
-  );
-  const pending = proof.begin();
-  await vi.waitFor(() =>
-    expect(w.find('[data-content-loading=form]').exists()).toBe(true),
-  );
-  expect(w.find('input[name=current_password]').exists()).toBe(false);
-  finish(reply(security));
-  await pending;
-  await vi.waitFor(() =>
-    expect(w.find('[data-content-loading]').exists()).toBe(false),
-  );
-  expect(w.find('input[name=current_password]').exists()).toBe(true);
-  expect(proof.methods.value).toEqual(['totp', 'recovery']);
-});
-
 it('proof refusals explain invalid credentials and throttling while clearing secrets', async () => {
   let reason = 'security_proof_invalid';
   let status = 422;
@@ -142,14 +104,14 @@ it('proof refusals explain invalid credentials and throttling while clearing sec
           requirement: () => 'password',
           locale: () => 'pl',
         });
-        return () => h(AuthOperationProof, { controller: proof });
+        return () => h(AuthOperationProofPage, { controller: proof });
       },
     }),
   );
   await proof.begin();
   proof.password.value = 'transient';
   await proof.confirm();
-  expect(proof.error.value).toContain('Sprawdź hasło i aktualny kod');
+  expect(proof.error.value).toContain('Sprawdź hasło');
   expect(proof.password.value).toBe('');
   expect(proof.confirmed.value).toBe(false);
   reason = 'throttled';
@@ -182,7 +144,7 @@ it('expired proof security renews CSRF as a read and requires another explicit c
           requirement: () => 'password',
           locale: () => 'pl',
         });
-        return () => h(AuthOperationProof, { controller: proof });
+        return () => h(AuthOperationProofPage, { controller: proof });
       },
     }),
   );
@@ -193,4 +155,106 @@ it('expired proof security renews CSRF as a read and requires another explicit c
   expect(proof.error.value).toContain('Zabezpieczenie formularza odnowione');
   expect(proof.password.value).toBe('');
   expect(proof.confirmed.value).toBe(false);
+});
+
+it('shared password page suspends modal portals, retains drafts and never executes on cancel', async () => {
+  const writes = vi.fn();
+  const draft = ref('Retained draft');
+  let proof!: OperationProofController;
+  vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
+    if (String(input) !== '/api/runa/auth/step-up') return reply({});
+    expect(JSON.parse(String(init?.body))).toEqual({
+      action: 'app.fixture.save',
+      current_password: 'private-password',
+    });
+    return reply({ confirmed: true });
+  });
+  const Child = defineComponent({
+    setup() {
+      proof = useOperationProof({
+        identity: () => 'session',
+        action: () => 'app.fixture.save',
+        requirement: () => 'password',
+      });
+      return () =>
+        h(
+          Dialog,
+          { modelValue: true, title: 'Editor' },
+          {
+            default: () => [
+              h(TextInput, {
+                modelValue: draft.value,
+                label: 'Draft',
+                'onUpdate:modelValue': (value: string | null) =>
+                  (draft.value = value ?? ''),
+              }),
+              h(
+                Button,
+                {
+                  onClick: async () => {
+                    if (await proof.request()) writes();
+                  },
+                },
+                () => 'Save fixture',
+              ),
+            ],
+          },
+        );
+    },
+  });
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        const host = providePasswordConfirmation();
+        providePresentationVisibility(() => !host.active.value);
+        return () =>
+          h('div', [
+            h(Child),
+            host.active.value
+              ? h(AuthOperationProofPage, {
+                  controller: host.active.value,
+                  locale: 'en',
+                  onConfirmed: () => host.complete(),
+                  onCancel: () => host.cancel(),
+                })
+              : null,
+          ]);
+      },
+    }),
+    { attachTo: document.body },
+  );
+  const clickSave = () =>
+    [...document.querySelectorAll<HTMLButtonElement>('button')]
+      .find((button) => button.textContent?.trim() === 'Save fixture')!
+      .click();
+  clickSave();
+  await vi.waitFor(() =>
+    expect(wrapper.find('input[name=current_password]').exists()).toBe(true),
+  );
+  expect(
+    document.querySelector<HTMLElement>('.dialog-backdrop')!.style.display,
+  ).toBe('none');
+  expect(wrapper.find('input[name=verification_code]').exists()).toBe(false);
+  await wrapper
+    .get('input[name=current_password]')
+    .setValue('private-password');
+  await wrapper.get('form').trigger('submit');
+  await vi.waitFor(() => expect(writes).toHaveBeenCalledOnce());
+  expect(draft.value).toBe('Retained draft');
+  expect(
+    document.querySelector<HTMLElement>('.dialog-backdrop')!.style.display,
+  ).not.toBe('none');
+  clickSave();
+  await vi.waitFor(() =>
+    expect(wrapper.find('input[name=current_password]').exists()).toBe(true),
+  );
+  await wrapper
+    .findAll('button')
+    .find((button) => button.text() === 'Cancel')!
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(wrapper.find('input[name=current_password]').exists()).toBe(false),
+  );
+  expect(writes).toHaveBeenCalledOnce();
+  expect(draft.value).toBe('Retained draft');
 });

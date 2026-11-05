@@ -18,7 +18,7 @@ use Runa\Modules\Auth\Support\SecurityContext;
 final readonly class TrustedDevices
 {
     public function __construct(private SecurityContext $context, private CredentialPolicy $policy,
-        private CredentialFactors $factors, private EntryTransaction $transactions) {}
+        private EntryTransaction $transactions) {}
 
     public function apply(Connection $connection, User $user, string $sessionId, Request $request): void
     {
@@ -46,11 +46,12 @@ final readonly class TrustedDevices
     public function issue(Request $request): array
     {
         $result = $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request): ?array {
-            $method = $request->string('method')->toString();
+            $method = $session->factor_method;
             if (! $this->policy->value('trusted_devices_enabled')
-                || ! $this->factors->verify($connection, $user, $session, $method, $request->string('code')->toString())) {
+                || $method === null || ! $this->policy->accepts($method) || ! in_array($method === 'recovery' ? 'totp' : $method, $this->policy->enrolled($user), true)) {
                 return null;
             }
+            app(StepUp::class)->assertVerified('runa.auth.self.trust_issue', everyAction: true);
             $secret = bin2hex(random_bytes(32));
             $days = $this->policy->integer('trusted_device_days');
             // Bound accumulation per account; oldest trust is revoked before issuance.

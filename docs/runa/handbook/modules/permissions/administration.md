@@ -20,7 +20,7 @@ There is no reverse backend dependency on Admin or foreign persistence access.
 
 Grant names in the table are qualified with `runa.permissions.`. Account assignment
 reads/previews also require native `runa.auth.eligibility.read`. Each write consumes
-one fresh session/action-bound both-factor proof for its exact native capability.
+one fresh session/action-bound password proof for its exact native capability.
 Independent workflows never join atomic profile/access Save. The existing Auth
 profile contribution remains an ordinary replacement-only aggregate participant.
 

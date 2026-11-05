@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { AdminField, AdminSection, useAdminLocale } from '@/runa/admin';
 import type {
   AdminFieldValue,
@@ -7,14 +7,7 @@ import type {
   AdminSectionPresentationProps,
 } from '@/runa/admin';
 import { authBulkGroup } from './bulkGroups';
-import {
-  Alert,
-  Button,
-  ContentLoading,
-  FormNotifications,
-  Select,
-} from '@/runa/ui';
-import AuthOperationProofFields from './AuthOperationProofFields.vue';
+import { Alert, Button, ContentLoading, Select } from '@/runa/ui';
 
 const props = defineProps<
   AdminSectionPresentationProps & {
@@ -129,7 +122,6 @@ const skipped = computed(
   () => Number(summary.value.skipped_accounts ?? 0) - ineligible.value,
 );
 const proofStep = ref(false);
-const proofRegion = ref<HTMLElement>();
 const fields = computed(() =>
   props.section.fields
     .filter(
@@ -188,44 +180,12 @@ async function execute() {
   proofStep.value = false;
 }
 async function submit() {
-  if (!review.value || !command.value) return;
-  if (proof.value && proof.value.requirement.value !== 'none') {
-    proofStep.value = true;
-    await proof.value.begin();
-    await nextTick();
-    proofRegion.value?.querySelector('input')?.focus();
-  } else await execute();
-}
-async function confirm() {
-  await proof.value?.confirm();
-  if (proof.value?.confirmed.value) await execute();
-}
-function cancelProof() {
-  proof.value?.reset();
-  proofStep.value = false;
+  if (review.value && command.value) await execute();
 }
 </script>
 <template>
   <AdminSection :section="section" :controller="controller" embedded>
-    <div
-      v-if="proofStep && proof"
-      ref="proofRegion"
-      class="space-y-4 md:col-span-2"
-      data-bulk-proof
-      @keydown.enter.prevent="confirm"
-    >
-      <h2 class="font-semibold">
-        {{ tr({ pl: 'Potwierdź hasłem', en: 'Confirm with password' }) }}
-      </h2>
-      <AuthOperationProofFields
-        :controller="proof"
-        :locale="locale"
-        @confirm="confirm"
-        @cancel="cancelProof"
-      />
-      <FormNotifications :locale="locale" :error="proof.error.value" />
-    </div>
-    <div v-else class="space-y-5 md:col-span-2" data-bulk-review>
+    <div class="space-y-5 md:col-span-2" data-bulk-review>
       <Select
         v-if="grouped"
         :label="tr({ pl: 'Operacja', en: 'Operation' })"

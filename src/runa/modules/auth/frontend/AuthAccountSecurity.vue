@@ -15,7 +15,6 @@ import {
 import type { TableColumn, TableQuery } from '@/runa/ui';
 import type { AccountRow } from './account';
 import type { useAuthAccount } from './useAuthAccount';
-import AuthAccountProof from './AuthAccountProof.vue';
 import AuthTotpSetup from './AuthTotpSetup.vue';
 const props = defineProps<{ account: ReturnType<typeof useAuthAccount> }>();
 const emit = defineEmits<{ 'feedback-modal': [active: boolean] }>();
@@ -24,8 +23,6 @@ const {
   locale,
   security,
   busy,
-  method,
-  proofMethods,
   target,
   secret,
   qrCode,
@@ -67,8 +64,7 @@ function clearDraft() {
   for (const key of Object.keys(sectionErrors.security))
     delete sectionErrors.security[key];
   const errors = props.account.errors;
-  for (const key of ['current_password', 'code', 'enrollment_code'])
-    delete errors[key];
+  for (const key of ['enrollment_code']) delete errors[key];
 }
 onScopeDispose(() => {
   clearDraft();
@@ -203,11 +199,8 @@ function setAction(value: string) {
   failure.value = '';
   notice.value = '';
   qrCode.value = '';
-  method.value = proofMethods.value[0] ?? 'totp';
   target.value = security.value?.enrolled[0] ?? 'totp';
   if (value !== 'totpConfirm') secret.value = '';
-  sectionFields.security.current_password = '';
-  sectionFields.security.code = '';
   sectionFields.security.enrollment_code = '';
   Object.keys(sectionErrors.security).forEach(
     (key) => delete sectionErrors.security[key],
@@ -411,12 +404,6 @@ watch(
           "
         />
       </div>
-      <AuthAccountProof
-        v-if="overviewAction !== 'none'"
-        :password-required="overviewAction !== 'trustIssue'"
-        :account="account"
-        section="security"
-      />
 
       <template #actions>
         <Button

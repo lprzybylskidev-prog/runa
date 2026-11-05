@@ -83,7 +83,7 @@ abstract readonly class PolicySection implements ManagementResourceReader, Manag
             $preview = $this->apis->resolve('runa.auth', AuthPolicies::class, '2.0.0')->preview($patch, (int) $parts[1], (int) $parts[2]);
             $changes = static::GROUP === -1 ? ['summary' => $preview] : $preview['changes'] + ['summary' => $preview['consequences']];
 
-            return new ManagementReview(hash('sha256', serialize([$input->command, $input->values, $preview])), $changes, 'both', true);
+            return new ManagementReview(hash('sha256', serialize([$input->command, $input->values, $preview])), $changes, 'password', true);
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.auth', 'policy.preview', 422);
         }

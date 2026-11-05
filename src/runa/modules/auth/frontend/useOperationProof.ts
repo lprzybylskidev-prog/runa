@@ -1,38 +1,36 @@
-import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
-import {
-  authFailure,
-  authGet,
-  authPost,
-  data,
-  decodeSecurity,
-  factorMethods,
-} from './entry';
-import type { FactorMethod } from './entry';
+import { computed, getCurrentInstance, onScopeDispose, ref, watch } from 'vue';
+import { authFailure, authGet, authPost, data } from './entry';
 import { useLocale } from '../../../resources/js/composables/useLocale';
+import {
+  usePasswordConfirmation,
+  type PasswordConfirmation,
+} from './passwordConfirmation';
 import { operationProofCopy } from './operationProofCopy';
 
-export type ProofRequirement = 'none' | 'password' | 'second_factor' | 'both';
+export type ProofRequirement = 'none' | 'password';
 /** Uses the caller's admitted session identity; never owns a second session or retries a business write. */
 export function useOperationProof(options: {
   identity: () => string | undefined;
   action: () => string;
   requirement: () => ProofRequirement;
   locale?: () => 'pl' | 'en';
+  confirmation?: PasswordConfirmation | undefined;
 }) {
-  const { locale } = useLocale();
+  const { locale } = getCurrentInstance()
+    ? useLocale()
+    : { locale: ref<'pl' | 'en'>('pl') };
   const copy = computed(() =>
     operationProofCopy(options.locale?.() ?? locale.value),
   );
-  const password = ref(''),
-    code = ref(''),
-    method = ref<FactorMethod>('totp');
-  const methods = shallowRef<readonly FactorMethod[]>([]);
+  const host =
+    options.confirmation ??
+    (getCurrentInstance() ? usePasswordConfirmation() : undefined);
+  const password = ref('');
   const open = ref(false),
     busy = ref(false),
     confirmed = ref(false);
   const errorKey = ref<
     | 'failed'
-    | 'noMethod'
     | 'fields'
     | 'invalidProof'
     | 'throttled'
@@ -52,13 +50,12 @@ export function useOperationProof(options: {
       options.action(),
       options.requirement(),
     ]);
-  function reset() {
+  function reset(): void {
+    host?.cancel(controller);
     ++epoch;
     abort.abort();
     abort = new AbortController();
     password.value = '';
-    code.value = '';
-    methods.value = [];
     open.value = false;
     busy.value = false;
     confirmed.value = false;
@@ -99,33 +96,18 @@ export function useOperationProof(options: {
     } finally {
       if (own === epoch) {
         password.value = '';
-        code.value = '';
         busy.value = false;
       }
     }
   }
   async function begin() {
     reset();
-    open.value = true;
-    const stamp = identity();
-    await perform(async (signal) => {
-      if (['second_factor', 'both'].includes(options.requirement())) {
-        const security = decodeSecurity(await authGet('security', signal));
-        if (!alive || stamp !== identity() || signal.aborted) return;
-        methods.value = factorMethods(security);
-        method.value = methods.value[0] ?? 'totp';
-        if (!methods.value.length) errorKey.value = 'noMethod';
-      }
-    });
+    open.value = !!options.identity();
   }
+
   async function confirm() {
-    const requirement = options.requirement(),
-      stamp = identity();
-    if (
-      (['password', 'both'].includes(requirement) && !password.value) ||
-      (['second_factor', 'both'].includes(requirement) &&
-        (!code.value || !methods.value.includes(method.value)))
-    ) {
+    const stamp = identity();
+    if (!password.value) {
       errorKey.value = 'fields';
       return;
     }
@@ -135,13 +117,7 @@ export function useOperationProof(options: {
           'step-up',
           {
             action: options.action(),
-            requirement,
-            ...(['password', 'both'].includes(requirement)
-              ? { current_password: password.value }
-              : {}),
-            ...(['second_factor', 'both'].includes(requirement)
-              ? { method: method.value, code: code.value }
-              : {}),
+            current_password: password.value,
           },
           signal,
         ),
@@ -153,22 +129,13 @@ export function useOperationProof(options: {
       open.value = false;
     });
   }
-  async function sendEmail() {
-    if (method.value !== 'email' || !methods.value.includes('email')) return;
-    await perform(async (signal) => {
-      await authPost('security/email-send', {}, signal);
-    });
-  }
   watch(identity, reset, { flush: 'sync' });
   onScopeDispose(() => {
     alive = false;
     reset();
   });
-  return {
+  const controller = {
     password,
-    code,
-    method,
-    methods,
     open,
     busy,
     error,
@@ -176,8 +143,10 @@ export function useOperationProof(options: {
     requirement: computed(options.requirement),
     begin,
     confirm,
-    sendEmail,
     reset,
+    request: (): Promise<boolean> =>
+      host ? host.request(controller) : Promise.resolve(false),
   };
+  return controller;
 }
 export type OperationProofController = ReturnType<typeof useOperationProof>;

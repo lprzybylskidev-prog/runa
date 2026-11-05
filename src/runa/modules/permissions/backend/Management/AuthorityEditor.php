@@ -50,7 +50,7 @@ final readonly class AuthorityEditor implements ManagementResourceReader, Manage
     {
         $review = $this->native($input);
 
-        return new ManagementReview($review->fingerprint, ['review_summary' => ['current' => $review->current, 'grant' => $review->grant, 'eligible' => $review->eligible, 'revision' => $review->revision]], 'both', true);
+        return new ManagementReview($review->fingerprint, ['review_summary' => ['current' => $review->current, 'grant' => $review->grant, 'eligible' => $review->eligible, 'revision' => $review->revision]], 'password', true);
     }
 
     public function execute(ManagementWrite $input): ManagementOutcome

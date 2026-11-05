@@ -8,6 +8,11 @@ import AuthAdminBulkAction from '../../../../src/runa/modules/auth/frontend/Auth
 import { DateTimeRangeInput, Select, NumberInput } from '@/runa/ui';
 import type { TableQuery } from '@/runa/ui';
 import { AuthAdminUsers, AuthAdminSection } from '@/runa/auth';
+import {
+  AuthOperationProofPage,
+  providePasswordConfirmation,
+} from '@/runa/auth';
+import { providePresentationVisibility } from '@/runa/ui';
 import { AdminForm, useAdminForm } from '@/runa/admin';
 import { ApiError } from '@/runa/http';
 import { writeFailure } from '../../../../src/runa/modules/admin/frontend/writeFailure';
@@ -559,7 +564,7 @@ it('Auth administration keeps filters above bulk actions and creation in the dir
       title: key,
       inputs: ['public_ids'],
       mode: 'independent',
-      requirement: 'both',
+      requirement: 'password',
       destructive: true,
       preview_required: true,
       bulk: false,
@@ -957,7 +962,7 @@ it('named account rules open focused editors and status uses authoritative activ
         'exception_version',
         'policy_revision',
       ],
-      requirement: 'both',
+      requirement: 'password',
       action: 'runa.auth.policy.exception',
       destructive: true,
       bulk: false,
@@ -1146,16 +1151,37 @@ it('rebuilt user detail actions request identity proof only after operation subm
         : { name: 'Target account' },
     });
   });
+  let operationForm!: AdminFormController;
+  const Child = defineComponent({
+    setup() {
+      const form = useAdminForm(controller, {
+        publicId: ref(target),
+        autoRead: false,
+      });
+      operationForm = form;
+      return () => h(Details, { controller, form });
+    },
+  });
   const wrapper = mount(
     defineComponent({
       setup() {
-        const form = useAdminForm(controller, {
-          publicId: ref(target),
-          autoRead: false,
-        });
-        return () => h(Details, { controller, form });
+        const host = providePasswordConfirmation();
+        providePresentationVisibility(() => !host.active.value);
+        return () =>
+          h('div', [
+            h(Child),
+            host.active.value
+              ? h(AuthOperationProofPage, {
+                  controller: host.active.value,
+                  locale: 'en',
+                  onConfirmed: () => host.complete(),
+                  onCancel: () => host.cancel(),
+                })
+              : null,
+          ]);
       },
     }),
+    { attachTo: document.body },
   );
   await vi.waitFor(() =>
     expect(wrapper.text()).toContain('Request password reset'),
@@ -1181,11 +1207,17 @@ it('rebuilt user detail actions request identity proof only after operation subm
   const submit = document.querySelector<HTMLButtonElement>(
     '[role=dialog] button[type=submit]',
   );
+  await vi.waitFor(() =>
+    expect(operationForm.records.value.security?.revision).toBe('1'),
+  );
   submit!.click();
   await vi.waitFor(() =>
     expect(document.querySelector('input[type=password]')).not.toBeNull(),
   );
-  expect(document.body.textContent).toContain('Confirm your identity');
+  expect(wrapper.text()).toContain('Confirm your password');
+  expect(
+    document.querySelector<HTMLElement>('.dialog-backdrop')!.style.display,
+  ).toBe('none');
 });
 
 it('user detail identity uses creation fields and reverts only its own draft', async () => {
@@ -1458,7 +1490,7 @@ it('assignment catalogue searches on the server without duplicating off-page sel
       mode: 'atomic',
       intent: 'save',
       inputs: ['roles', 'permissions'],
-      requirement: 'both',
+      requirement: 'password',
       action: 'runa.permissions.access.manage',
       destructive: true,
       bulk: false,
@@ -1743,7 +1775,7 @@ async function compactAssignmentFixture(readonly = false) {
       mode: 'atomic',
       intent: 'save',
       inputs: ['roles', 'permissions'],
-      requirement: 'both',
+      requirement: 'password',
       action: 'runa.permissions.access.manage',
       destructive: true,
       bulk: false,
@@ -2051,7 +2083,7 @@ it('offers explicit administrative verification for pending addresses without ov
         mode: 'independent',
         intent: 'action',
         inputs: source === primary ? [] : ['address_id'],
-        requirement: 'both',
+        requirement: 'password',
         action: 'runa.auth.email.admin_bypass',
         destructive: true,
         bulk: false,
@@ -2156,7 +2188,7 @@ it('explains session and device revocation before confirming an existing primary
       mode: 'independent',
       intent: 'action',
       inputs: [],
-      requirement: 'both',
+      requirement: 'password',
       action: 'runa.auth.email.admin_bypass',
       destructive: true,
       bulk: false,

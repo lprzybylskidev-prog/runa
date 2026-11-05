@@ -30,7 +30,7 @@ final class AssignmentMutation implements TransactionalMutation
         return new MutationDefinition('runa.permissions', 'assignments.change.u'.str_replace('-', '', $this->reviewed->userPublicId), [
             new MutationAccess('runa.permissions', new ApiOperation('access.apply_assignments', 'runa.permissions.access.manage')),
             new MutationAccess('runa.auth', new ApiOperation('eligibility.read', 'runa.auth.eligibility.read')),
-        ], $subjects, ['runa.permissions.assignments:'.$this->reviewed->userPublicId], [new MutationProof('runa.permissions.access.manage', 'both')]);
+        ], $subjects, ['runa.permissions.assignments:'.$this->reviewed->userPublicId], [new MutationProof('runa.permissions.access.manage', 'password')]);
     }
 
     public function preflight(): void

@@ -82,12 +82,8 @@ export function useAuthEntry(
     'verify-email',
     'confirm-address',
   ].includes(page);
-  const enrollmentRequired = computed(
-    () =>
-      session.value?.restrictions.includes('two_factor_enrollment_required') ||
-      (session.value?.restrictions.includes('password_change_required') &&
-        security.value?.password_change_factor &&
-        factorMethods(security.value).length === 0),
+  const enrollmentRequired = computed(() =>
+    session.value?.restrictions.includes('two_factor_enrollment_required'),
   );
   const screen = computed(() => {
     if (recoveryCodes.value.length) return 'recoveryCodes';
@@ -151,9 +147,6 @@ export function useAuthEntry(
       ? factorMethods(security.value, !!enrollmentRequired.value)
       : [],
   );
-  const proofMethods = computed(() =>
-    security.value ? factorMethods(security.value) : [],
-  );
   const newPassword = computed(() =>
     ['register', 'invitation', 'reset', 'passwordChange'].includes(
       screen.value,
@@ -162,13 +155,7 @@ export function useAuthEntry(
   const currentPassword = computed(() =>
     ['enrollment', 'passwordChange'].includes(screen.value),
   );
-  const needsProof = computed(
-    () =>
-      screen.value === 'challenge' ||
-      (screen.value === 'passwordChange' &&
-        security.value?.password_change_factor) ||
-      (screen.value === 'enrollment' && proofMethods.value.length > 0),
-  );
+  const needsProof = computed(() => screen.value === 'challenge');
   const fieldNames = computed(() => [
     ...(screen.value === 'register'
       ? [

@@ -235,6 +235,11 @@ Load the frontend, Vue, and Tailwind skills as appropriate.
 
 Security decisions happen server-side. Frontend hiding/route guards are UX only.
 
+Second factors authenticate login only. Sensitive operations and protected places
+use Auth password confirmation through its shared full-page view; never collect
+operation passwords or 2FA codes in separate inline/modal forms. Authenticator
+enrollment still verifies its setup code. Follow the Auth security/entry UI guides.
+
 Never:
 
 - commit secrets,

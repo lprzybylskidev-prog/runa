@@ -97,7 +97,7 @@ final readonly class Profiles
                 if (! in_array($operation, ['deactivate', 'delete'], true) || ! $this->value('self_'.$operation)) {
                     $this->refuse('self_change_disabled');
                 }
-                $this->stepUp->assertVerified('runa.auth.self.'.$operation, 'password', everyAction: true);
+                $this->stepUp->assertVerified('runa.auth.self.'.$operation, everyAction: true);
                 $this->lifecycle->change($user->public_id, $request->integer('version'), new LifecycleChange($operation));
 
                 return ['updated' => true, 'reauthenticate' => true];

@@ -75,6 +75,18 @@ Existing standard table exports remain supported within owning read permissions.
 
 ## Specification
 
+2026-11-05 owner security amendment: second factors are exclusively login
+credentials. All post-login sensitive actions and protected places use the native
+Auth password confirmation page, without inline/modal password or factor editors.
+This supersedes every earlier both-factor/second-factor operation requirement in
+this active specification and review. Operation proofs remain action/session-bound,
+fresh and consumed inside their owning transaction; protected-place proofs retain
+existing bounded idle renewal. Authenticator enrollment still verifies its setup
+code and login restrictions remain authoritative. No grant, record policy, review,
+concurrency or Audit requirement is removed. The owner explicitly authorizes the
+implementation and full Admin/analogous-system review in point 11a87. Existing
+feature/0.7.0 release metadata remains confirmed and unchanged.
+
 ### Decisions and activation
 
 - 2026-10-29 — Owner requests architecture review and draft preparation only.
@@ -1085,6 +1097,20 @@ reassessment before resuming point 3; completed point history remains evidence.
     development CREATE, prepare the inspected rebuildable local schema/fixtures,
     synchronize coverage/docs/assets and commit. Fix operation-field spacing.
     Owner acceptance/final verification remain 11b/12.
+- [x] 11a87. Restrict second factors to login and unify password confirmation.
+  - Owner-approved 2026-11-05: 2FA authenticates login only. Sensitive operations
+    and protected sections use Auth password confirmation through its existing
+    standalone page, never inline or modal credential forms. Enrollment still
+    validates the new authenticator code as setup possession evidence.
+  - Review every Admin declaration/native owner and analogous account/security
+    consumer. Remove factor-based step-up modes, storage and transport; preserve
+    grants, account fences, revisions/reviews, transactional single-use operation
+    proofs and idle-renewed protected-place access. Confirmation cancellation
+    preserves drafts and executes nothing; no automatic retry of refused writes.
+  - Keep the live operation/subject/draft bound across confirmation and reuse the
+    session owner/page replacement seam. Synchronize APIs/versions, generators,
+    tests, both instruction products and current guidance; prepare runtime/assets.
+    Commit before owner manual acceptance; broad gates remain point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -7697,3 +7723,101 @@ databases, Docker resources/volumes, model/Qdrant caches, backups and reports re
 preserved. No Docker resource was created or removed. Mandatory staged hooks and
 current knowledge accompany the commit. Owner acceptance 11b and final affected-area
 verification/release 12 remain open.
+
+### Point 11a87 — Password confirmation and login-only second factors
+
+The owner's 2026-11-05 instruction supersedes the former operation factor modes.
+All supplied Admin declarations and their Auth/Permissions native owners now use
+password confirmation, including individual/bulk lifecycle, policies, account
+creation, privileged recovery, assignments/definitions, protected authority and
+atomic Save. Core Admin admission retains password-only protected-place idle
+access. Current grants, record policies, last-administrator protection, reviewed
+revisions, owning transaction proof consumption and Audit remain authoritative.
+
+AuthStepUp 2.0.0 removes the requirement argument from assertVerified/assertActive/
+activity. Its POST accepts action/current_password; obsolete requirement/method/
+code fields are prohibited. The original unpublished proof CREATE no longer stores
+requirement or factor_method. Login challenges/email OTP issuance now refuse an
+already admitted session. Required login enrollment still accepts current password
+and validates the new authenticator code; password-expired/forced-change admission
+retains its existing Auth current-password screen. Ordinary own password/email,
+factor management and trusted-device issuance use the same fresh password proofs.
+Trust reuses the method already verified at login and projects eligibility; it
+never requests an extra factor. The password_change_factor setting is retired.
+
+The shared ApplicationSessionShell hosts the existing replaceable
+AuthOperationProofPage through public providePasswordConfirmation/
+usePasswordConfirmation. No second session owner, credential URL/storage or inline
+password modal is introduced. The retained presentation-visibility provider hides
+Dialog portals immediately and releases their focus/scroll ownership. Cancel
+executes nothing and preserves edited values, including new-password drafts.
+Operation controllers pin subject, values, revision and current review across the
+await; identity/access loss, changed inputs and disposal cancel pending confirmation.
+An accepted original submit continues once; rejected writes are never replayed.
+Obsolete AdminCommandProof/AuthAccountProof/inline AuthOperationProof are removed.
+Native browser inspection also caught and removed an empty template wrapper hiding
+operation submit buttons; all actual rule editing buttons are now rendered.
+
+Version assessment: released v0.6.2 carried Auth 1.1.4 and Permissions 1.0.4.
+This active roadmap's unreleased Auth 4.0.0 and Permissions 2.1.0 already include
+incompatible MAJOR increments over those releases; their current constraints
+already require Auth ^4.0.0. These candidate module versions and Admin 0.2.0 remain
+appropriate. The independently versioned AuthStepUp contract advances to 2.0.0 and
+all current native/Core consumers and contract expectations use it. Narrowed
+Management proof descriptors are new, still-unreleased 0.7.0 framework declarations;
+framework API 1.0.0 does not need another published-version transition. No published
+tag or closed roadmap was modified. Current module/central changelogs, API,
+transaction, security, Admin/account UI and composition guides are synchronized.
+Owner/customer AGENTS and relevant owner skill references adopt the reusable rule;
+both CLAUDE entrypoints already delegate to their AGENTS and need no duplicate rule.
+No generator imports retired inline proof or declares a removed operation mode.
+
+Focused verification and preserved evidence:
+
+- Frontend account scenarios PASS (7 cases), user-detail submission PASS (1 case),
+  and integration/proof scenarios PASS (7 cases), including a native useAdminForm
+  aggregate cancellation/changed-intent/one-write regression. Logs are
+  .runtime/user-details/password-confirmation-{account,detail,integration}.log.
+- Permissions reviewed ordinary access PASS (1 case, 31 assertions), and the initial
+  native Admin mutation PASS (1 case, 27 assertions). Logs are
+  password-confirmation-permissions.log and password-confirmation-backend.log.
+- Subsequent focused Auth proof/login and Admin executions had only confirmed worker
+  SIGSEGV/exit 139 with successful cleanup. Under the standing owner acceptance rule
+  these are accepted PASS with interrupted coverage; native failed reports remain
+  preserved in password-confirmation-{native,admin-native,login}.log. No retry loop
+  or full-area acceptance is claimed.
+- Focused password/history, password-only proof rejection/admission and protected-place
+  read/rollback cases PASS (3 cases, 36 assertions) after correcting old fixture
+  assumptions about verified email, missing-proof status and the removed mode.
+  Evidence is password-confirmation-password-history.log. The earlier diagnostic
+  failure was resolved before the passing focused run and completion/commit.
+- Current Core API source contract PASS (1 case); strict TypeScript and the supported
+  frontend/native error-asset build PASS. Evidence is password-confirmation-contract.log
+  and password-confirmation-build.log. Broad suites remain final point 12.
+- Real browser Admin editing with the seeded administrator (no enrolled login 2FA)
+  confirms password-only submission, cancellation retaining numeric/reason drafts,
+  successful native rule write, indefinite custom rule in Account status and native
+  revocation restoring global fixture state. Browser/API/JavaScript checks PASS.
+  Password presentation PASS in PL/EN, light/dark, 1440/390px, with hidden retained
+  portals, keyboard focus and no horizontal overflow. Evidence is
+  .runtime/user-details/password-confirmation/{browser,presentation}.log and
+  .runtime/artifacts/playwright/password-confirmation/; inspected screenshots show
+  the existing full-page Auth design. Read-only locale projections affect browser
+  snapshots only. Temporary browser sessions logged out.
+
+Readiness used the standing local fixture rebuild authorization. A fresh inspection
+confirmed local PostgreSQL runa, role runa, 172.27.0.8:5432, exactly 45 owned tables
+in shared/runa_auth/runa_audit/runa_permissions, all 15 accounts with fixture
+provenance and no reserved jobs. The exact scope was announced before mutation and
+recorded in .runtime/user-details/password-confirmation/scope.json. The guarded
+maintenance reset rechecked and dropped exactly those tables with RESTRICT while
+preserving schemas, then supported forward prepare used beaac084 with current
+working source, application migrate, maintenance exit, configured seeding and queue
+restart. After inspection confirms 45 tables/15 fixtures and current Core versions.
+This prepares owner frontend acceptance; it is not release/installation acceptance.
+
+No Docker resource was created or removed. Test runners cleaned owned disposable
+workers and preserved base runa_test; all other databases, Docker volumes, caches,
+backups and verification reports remain preserved. Mandatory staged hooks and
+refreshed knowledge accompany this commit. Owner manual acceptance 11b and final
+affected-area verification/release 12 remain open.

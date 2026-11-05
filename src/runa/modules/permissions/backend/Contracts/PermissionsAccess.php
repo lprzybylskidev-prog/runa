@@ -2,7 +2,7 @@
 
 namespace Runa\Modules\Permissions\Contracts;
 
-/** Authorized ordinary access management; all mutations enforce fresh both-factor proof. */
+/** Authorized ordinary access management; all mutations enforce fresh password confirmation. */
 interface PermissionsAccess
 {
     /** @return array{user_public_id: string, identity_version: int, eligible: bool, security_version: int, revision: int, super_admin: bool, assigned: array{roles: list<string>, permissions: list<string>}, definitions: array{roles: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>, permissions: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>}} */

@@ -117,7 +117,7 @@ final class AdministrationPages implements ManagementPageProvider
 
     public static function command(string $key, string $title, string $operation, array $inputs, string $binding, string $permission = 'access.manage', bool $destructive = false, bool $review = true): ManagementCommandDefinition
     {
-        return new ManagementCommandDefinition($key, $title, new ManagementOperation(new ApiOperation($operation, 'runa.permissions.'.$permission), $inputs, 'both', previewRequired: $review), $binding,
+        return new ManagementCommandDefinition($key, $title, new ManagementOperation(new ApiOperation($operation, 'runa.permissions.'.$permission), $inputs, 'password', previewRequired: $review), $binding,
             destructive: $destructive, proofAction: 'runa.permissions.'.$permission);
     }
 

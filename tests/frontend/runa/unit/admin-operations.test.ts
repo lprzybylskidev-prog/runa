@@ -69,9 +69,6 @@ function admin(): AdminController {
     error: shallowRef(),
     entryProof: {
       password: ref(''),
-      code: ref(''),
-      method: ref('totp'),
-      methods: shallowRef([]),
       open: ref(false),
       busy: ref(false),
       confirmed: ref(false),
@@ -79,7 +76,7 @@ function admin(): AdminController {
       requirement: computed(() => 'password'),
       begin: vi.fn(async () => {}),
       confirm: vi.fn(async () => {}),
-      sendEmail: vi.fn(async () => {}),
+      request: vi.fn(async () => true),
       reset: vi.fn(),
     },
     refresh: vi.fn(async () => {}),

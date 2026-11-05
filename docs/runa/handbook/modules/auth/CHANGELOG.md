@@ -2,6 +2,8 @@
 
 ## 4.0.0 — Unreleased
 
+- Auth 4.0.0 / AuthStepUp 2.0.0: use password-only confirmation for sensitive operations and protected places. Reserve factor challenges for login; retain new-authenticator enrollment validation. Remove factor proof modes/storage and password_change_factor. Share the existing Auth page across Admin and own account, preserving cancelled drafts, native proof consumption and Audit. Trusted-device issuance reuses the factor verified at login.
+
 - Auth 4.0.0 / AuthPolicies 2.0.0: allow optional account-rule expiry, with null meaning indefinite and no maximum horizon for a future date. Update effective policy reads, session cleanup, status/history and Audit handling; correct the original pre-1.0 schema and current Auth consumer constraints. Space operation fields and show explicit optional/indefinite copy.
 
 - Move selected-user rules into User with named bounded editors, separate active/history presentation and live custom rules in Account status. Add guarded AuthPolicies 2.0.0 active exception reads independent of the latest-50 history cap; preserve native proof, revisions and Audit.

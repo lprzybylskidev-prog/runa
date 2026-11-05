@@ -42,8 +42,8 @@ export interface SecurityOptions {
   totp_enabled: boolean;
   email_otp_enabled: boolean;
   recovery_codes_enabled: boolean;
-  password_change_factor: boolean;
   trusted_devices_enabled: boolean;
+  trusted_device_eligible: boolean;
 }
 export function record(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -122,8 +122,8 @@ export function decodeSecurity(value: unknown): SecurityOptions {
     totp_enabled: boolean(v.totp_enabled),
     email_otp_enabled: boolean(v.email_otp_enabled),
     recovery_codes_enabled: boolean(v.recovery_codes_enabled),
-    password_change_factor: boolean(v.password_change_factor),
     trusted_devices_enabled: boolean(v.trusted_devices_enabled),
+    trusted_device_eligible: boolean(v.trusted_device_eligible),
   };
 }
 export function factorMethods(

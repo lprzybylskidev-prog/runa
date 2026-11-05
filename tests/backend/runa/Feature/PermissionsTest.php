@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\DictionaryEntry;
@@ -293,8 +292,8 @@ it('preserves Optional module grants while disabled and restores them when reena
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
 });
 
-/** Real password, factor enrollment and session-bound proof, without a mocked authorizer. */
-function permissionAccessManager($test): array
+/** Real password and session-bound proof, without a mocked authorizer. */
+function permissionAccessManager($test): void
 {
     config()->set('hashing.bcrypt.rounds', 4);
     $user = User::where('public_id', $test->permissionUser->publicId)->firstOrFail();
@@ -316,18 +315,13 @@ function permissionAccessManager($test): array
     app('router')->getRoutes()->refreshNameLookups();
     $test->postJson('/api/runa/auth/login', ['identifier' => $user->email, 'password' => 'permission-access-password'])->assertOk();
     $test->withCredentials()->withCookie('runa_session', app('session')->getId());
-    $begin = $test->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'permission-access-password'])->assertOk()->json('data');
-    $code = app(Google2FA::class)->oathTotp($begin['secret'], intdiv(now()->getTimestamp(), 30));
-    $codes = $test->postJson('/api/runa/auth/security/totp-confirm', ['current_password' => 'permission-access-password', 'enrollment_code' => $code])->assertOk()->json('data.recovery_codes');
     $test->permissionAccess = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
 
-    return $codes;
 }
 
-function permissionAccessProof($test, string $code, string $action = 'runa.permissions.access.manage'): void
+function permissionAccessProof($test, string $action = 'runa.permissions.access.manage'): void
 {
-    $test->postJson('/api/runa/auth/step-up', ['action' => $action, 'requirement' => 'both',
-        'current_password' => 'permission-access-password', 'method' => 'recovery', 'code' => $code])->assertOk();
+    $test->postJson('/api/runa/auth/step-up', ['action' => $action, 'current_password' => 'permission-access-password'])->assertOk();
     $request = Request::create('/', 'POST');
     $request->setLaravelSession(app('session')->driver());
     app()->instance('request', $request);
@@ -341,10 +335,10 @@ function permissionDefinition(string $kind, string $code, array $permissions = [
 }
 
 it('applies reviewed ordinary access snapshots with real step up and preserves direct versus role semantics', function (): void {
-    $codes = permissionAccessManager($this);
+    permissionAccessManager($this);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('access-target@example.test', name: 'Target', active: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
-    ($this->asPermissionUser)(function () use ($codes, $target, $read): void {
+    ($this->asPermissionUser)(function () use ($target, $read): void {
         $api = $this->permissionAccess;
         $management = app(ModuleManagement::class)->read('runa.permissions');
         expect($management->diagnostics)->not->toContain('management_declaration_unavailable')
@@ -360,33 +354,33 @@ it('applies reviewed ordinary access snapshots with real step up and preserves d
         $draft = $api->previewDefinition(permissionDefinition('role', 'reader', [$read]));
         // Managing ordinary rights does not require the actor to hold those rights.
         expect(fn () => $api->saveDefinition($draft))->toThrow(OperationRejected::class);
-        permissionAccessProof($this, $codes[0]);
+        permissionAccessProof($this);
         $role = $api->saveDefinition($draft);
         $preview = $api->previewAssignments($target->publicId, new AssignmentSet([$role['public_id']]));
         expect($preview->effectiveAdded)->toBe(['runa.audit.read']);
-        permissionAccessProof($this, $codes[1]);
+        permissionAccessProof($this);
         $result = $api->applyAssignments($preview);
         expect($result['revision'])->toBe(1)->and($result['assigned']['permissions'])->toBe([])->and($result['assigned']['roles'])->toBe([$role['public_id']]);
         expect(fn () => $api->applyAssignments($preview))->toThrow(OperationRejected::class);
-        permissionAccessProof($this, $codes[2]);
+        permissionAccessProof($this);
         $same = $api->previewAssignments($target->publicId, new AssignmentSet([$role['public_id'], $role['public_id']]));
         expect($api->applyAssignments($same)['revision'])->toBe(1);
         $copy = $api->previewCopy($target->publicId, $this->permissionUser->publicId);
         expect($copy->requested->roles)->toBe([$role['public_id']])->and($copy->requested->permissions)->toBe([]);
         $presetDraft = $api->previewDefinition(permissionDefinition('preset', 'saved_reader', source: $target->publicId));
-        permissionAccessProof($this, $codes[3]);
+        permissionAccessProof($this);
         $preset = $api->saveDefinition($presetDraft);
         expect($preset['assigned'])->toBe($result['assigned']);
         $apply = $api->previewPreset($preset['public_id'], $this->permissionUser->publicId);
-        permissionAccessProof($this, $codes[4]);
+        permissionAccessProof($this);
         $api->applyAssignments($apply);
         expect($this->permissionApi->allows('runa.audit.read'))->toBeTrue();
         $edit = $api->previewDefinition(permissionDefinition('preset', 'saved_reader', id: $preset['public_id'], version: 1));
-        permissionAccessProof($this, $codes[5]);
+        permissionAccessProof($this);
         $api->saveDefinition($edit);
         expect($api->assignments($target->publicId)['assigned'])->toBe($result['assigned'])
             ->and($api->assignments($this->permissionUser->publicId)['assigned']['roles'])->toBe([$role['public_id']]);
-        permissionAccessProof($this, $codes[6]);
+        permissionAccessProof($this);
         $api->deleteDefinition('preset', $preset['public_id'], 2);
         expect($this->permissionApi->allows('runa.audit.read'))->toBeTrue();
         expect(DB::table('runa_audit.events')->where('action', 'assignments.changed')->count())->toBe(2);
@@ -394,15 +388,15 @@ it('applies reviewed ordinary access snapshots with real step up and preserves d
 })->group('permissions-access');
 
 it('refuses stale access previews and protected roles and rolls back aggregate changes with required Audit', function (): void {
-    $codes = permissionAccessManager($this);
+    permissionAccessManager($this);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('access-rollback@example.test', name: 'Target', active: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
-    ($this->asPermissionUser)(function () use ($codes, $target, $read): void {
+    ($this->asPermissionUser)(function () use ($target, $read): void {
         $api = $this->permissionAccess;
         $system = DB::table('runa_permissions.roles')->where('system', true)->value('public_id');
         expect(fn () => $api->previewAssignments($target->publicId, new AssignmentSet([$system])))->toThrow(OperationRejected::class);
         $preview = $api->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read]));
-        permissionAccessProof($this, $codes[0]);
+        permissionAccessProof($this);
         DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT access_fixture_refusal CHECK (action <> 'assignments.changed') NOT VALID");
         expect(fn () => DB::transaction(fn () => $api->applyAssignments($preview)))->toThrow(OperationRejected::class);
         expect(fn () => $api->applyAssignments($preview))->toThrow(AuditUnavailable::class);
@@ -411,14 +405,14 @@ it('refuses stale access previews and protected roles and rolls back aggregate c
             ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
         DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT access_fixture_refusal');
         $api->applyAssignments($preview);
-        permissionAccessProof($this, $codes[1]);
+        permissionAccessProof($this);
         expect(fn () => $api->applyAssignments($preview))->toThrow(OperationRejected::class);
         $replace = $api->previewAssignments($target->publicId, new AssignmentSet, 'replace');
         expect($replace->effectiveRemoved)->toBe(['runa.audit.read']);
         $api->applyAssignments($replace);
         expect($api->assignments($target->publicId)['assigned']['permissions'])->toBe([]);
         // ABA is rejected by the monotonic assignment revision even when content returns to empty.
-        permissionAccessProof($this, $codes[2]);
+        permissionAccessProof($this);
         expect(fn () => $api->applyAssignments($preview))->toThrow(OperationRejected::class);
         $missing = (string) Str::uuid7();
         expect(fn () => $api->previewAssignments($missing, new AssignmentSet))->toThrow(OperationRejected::class);
@@ -426,32 +420,32 @@ it('refuses stale access previews and protected roles and rolls back aggregate c
 })->group('permissions-access');
 
 it('binds custom role membership and preset previews to versions and retains RESTRICT references', function (): void {
-    $codes = permissionAccessManager($this);
+    permissionAccessManager($this);
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
-    ($this->asPermissionUser)(function () use ($codes, $read): void {
+    ($this->asPermissionUser)(function () use ($read): void {
         $api = $this->permissionAccess;
         $draft = $api->previewDefinition(permissionDefinition('role', 'versioned', [$read]));
-        permissionAccessProof($this, $codes[0]);
+        permissionAccessProof($this);
         $role = $api->saveDefinition($draft);
         $presetDraft = $api->previewDefinition(permissionDefinition('preset', 'template', roles: [$role['public_id']]));
-        permissionAccessProof($this, $codes[1]);
+        permissionAccessProof($this);
         $preset = $api->saveDefinition($presetDraft);
         $staleApply = $api->previewPreset($preset['public_id'], $this->permissionUser->publicId);
         $edit = $api->previewDefinition(permissionDefinition('role', 'versioned', id: $role['public_id'], version: 1));
-        permissionAccessProof($this, $codes[2]);
+        permissionAccessProof($this);
         $api->saveDefinition($edit);
-        permissionAccessProof($this, $codes[3]);
+        permissionAccessProof($this);
         expect(fn () => $api->applyAssignments($staleApply))->toThrow(OperationRejected::class)
             ->and(fn () => $api->saveDefinition($edit))->toThrow(OperationRejected::class)
             ->and(fn () => $api->deleteDefinition('role', $role['public_id'], 2))->toThrow(OperationRejected::class);
         expect(DB::table('runa_audit.events')->where('action', 'access.refused')->count())->toBeGreaterThanOrEqual(3);
         // The same unconsumed proof remains available after refused mutations.
         $api->deleteDefinition('preset', $preset['public_id'], 1);
-        permissionAccessProof($this, $codes[4]);
+        permissionAccessProof($this);
         $api->deleteDefinition('role', $role['public_id'], 2);
         expect(fn () => $api->definition('role', $role['public_id']))->toThrow(OperationRejected::class);
         $system = DB::table('runa_permissions.roles')->where('system', true)->first();
-        permissionAccessProof($this, $codes[5]);
+        permissionAccessProof($this);
         expect(fn () => $api->deleteDefinition('role', $system->public_id, 1))->toThrow(OperationRejected::class);
         expect($api->definitions('role')['items'])->toHaveCount(1);
         expect(fn () => new DefinitionInput('role', new DictionaryEntry('runa.permissions.super_admin', 'System', 'System', 'System.', 'System.'), new AssignmentSet))->toThrow(InvalidArgumentException::class);
@@ -459,14 +453,14 @@ it('binds custom role membership and preset previews to versions and retains RES
 })->group('permissions-access');
 
 it('copies exact ordinary assignments without flattening roles or replacing protected system membership', function (): void {
-    $codes = permissionAccessManager($this);
+    permissionAccessManager($this);
     $source = app(ChangeIdentity::class)->create(new NewIdentity('copy-source@example.test', name: 'Source', active: true));
     $target = app(ChangeIdentity::class)->create(new NewIdentity('copy-target@example.test', name: 'Target', active: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
-    ($this->asPermissionUser)(function () use ($codes, $source, $target, $read): void {
+    ($this->asPermissionUser)(function () use ($source, $target, $read): void {
         $api = $this->permissionAccess;
         $draft = $api->previewDefinition(permissionDefinition('role', 'copy_reader', [$read]));
-        permissionAccessProof($this, $codes[0]);
+        permissionAccessProof($this);
         $role = $api->saveDefinition($draft);
         $system = DB::table('runa_permissions.roles')->where('system', true)->value('id');
         $roleId = DB::table('runa_permissions.roles')->where('public_id', $role['public_id'])->value('id');
@@ -480,24 +474,24 @@ it('copies exact ordinary assignments without flattening roles or replacing prot
         $preview = $api->previewCopy($source->publicId, $target->publicId, 'replace');
         expect($preview->requested->roles)->toBe([$role['public_id']])->and($preview->requested->permissions)->toBe([])
             ->and($preview->removed['permissions'])->toBe([$read]);
-        permissionAccessProof($this, $codes[1]);
+        permissionAccessProof($this);
         $result = $api->applyAssignments($preview);
         expect($result['super_admin'])->toBeTrue()->and($result['assigned']['roles'])->toBe([$role['public_id']])
             ->and($result['assigned']['permissions'])->toBe([]);
         $roleChange = $api->previewDefinition(permissionDefinition('role', 'copy_reader', id: $role['public_id'], version: 1));
         expect($roleChange->affectedUsers)->toBe(2)->and($roleChange->permissionRemoved)->toBe(['runa.audit.read']);
-        permissionAccessProof($this, $codes[2]);
+        permissionAccessProof($this);
         expect(fn () => $api->deleteDefinition('role', $role['public_id'], 1))->toThrow(OperationRejected::class);
     });
 })->group('permissions-access');
 
 it('rolls back custom role and preset member writes after their aggregate Audit event fails', function (): void {
-    $codes = permissionAccessManager($this);
+    permissionAccessManager($this);
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
-    ($this->asPermissionUser)(function () use ($codes, $read): void {
+    ($this->asPermissionUser)(function () use ($read): void {
         $api = $this->permissionAccess;
         $role = $api->previewDefinition(permissionDefinition('role', 'rollback', [$read]));
-        permissionAccessProof($this, $codes[0]);
+        permissionAccessProof($this);
         DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT access_definition_refusal CHECK (action <> 'role.saved') NOT VALID");
         expect(fn () => $api->saveDefinition($role))->toThrow(AuditUnavailable::class);
         expect(DB::table('runa_permissions.roles')->where('code', 'custom.rollback')->exists())->toBeFalse()
@@ -506,7 +500,7 @@ it('rolls back custom role and preset member writes after their aggregate Audit 
         DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT access_definition_refusal');
         $saved = $api->saveDefinition($role);
         $preset = $api->previewDefinition(permissionDefinition('preset', 'rollback', roles: [$saved['public_id']]));
-        permissionAccessProof($this, $codes[1]);
+        permissionAccessProof($this);
         DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT access_definition_refusal CHECK (action <> 'preset.saved') NOT VALID");
         expect(fn () => $api->saveDefinition($preset))->toThrow(AuditUnavailable::class);
         expect(DB::table('runa_permissions.presets')->count())->toBe(0)->and(DB::table('runa_permissions.preset_roles')->count())->toBe(0);
@@ -569,22 +563,22 @@ it('preserves last eligible authority across lifecycle changes without blocking 
     });
 })->group('permissions-authority');
 
-it('requires dedicated authority grants and real both factor proof while rejecting self escalation and last removal', function (): void {
-    $codes = permissionAccessManager($this);
+it('requires dedicated authority grants and real password confirmation while rejecting self escalation and last removal', function (): void {
+    permissionAccessManager($this);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('authority-target@example.test', name: 'Authority target', active: true));
     $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
-    ($this->asPermissionUser)(function () use ($codes, $target, $api): void {
+    ($this->asPermissionUser)(function () use ($target, $api): void {
         expect(fn () => $api->previewAuthority($target->publicId, true))->toThrow(OperationRejected::class);
         ($this->directPermission)('runa.permissions.authority.manage');
         expect(fn () => $api->previewAuthority($this->permissionUser->publicId, true))->toThrow(OperationRejected::class);
         $preview = $api->previewAuthority($target->publicId, true);
         expect(fn () => $api->applyAuthority($preview))->toThrow(OperationRejected::class);
-        permissionAccessProof($this, $codes[0], 'runa.permissions.authority.manage');
+        permissionAccessProof($this, 'runa.permissions.authority.manage');
         $result = $api->applyAuthority($preview);
         expect($result['super_admin'])->toBeTrue()->and($result['revision'])->toBe(1);
         expect(fn () => $api->applyAuthority($preview))->toThrow(OperationRejected::class);
         $remove = $api->previewAuthority($target->publicId, false);
-        permissionAccessProof($this, $codes[1], 'runa.permissions.authority.manage');
+        permissionAccessProof($this, 'runa.permissions.authority.manage');
         expect(fn () => $api->applyAuthority($remove))->toThrow(OperationRejected::class)
             ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.authority.manage')->value('consumed_at'))->toBeNull();
         // A second usable member permits removal, and the refused proof was rolled back.
@@ -597,19 +591,19 @@ it('requires dedicated authority grants and real both factor proof while rejecti
 })->group('permissions-authority');
 
 it('binds force role deletion to practical effects references confirmation and transactional history', function (): void {
-    $codes = permissionAccessManager($this);
+    permissionAccessManager($this);
     ($this->directPermission)('runa.permissions.roles.force_delete');
     $target = app(ChangeIdentity::class)->create(new NewIdentity('force-role@example.test', name: 'Role recipient', active: true));
     $second = app(ChangeIdentity::class)->create(new NewIdentity('force-role-second@example.test', name: 'Second recipient', active: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
     $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
-    ($this->asPermissionUser)(function () use ($api, $codes, $target, $second, $read): void {
+    ($this->asPermissionUser)(function () use ($api, $target, $second, $read): void {
         $ordinary = $this->permissionAccess;
-        permissionAccessProof($this, $codes[0]);
+        permissionAccessProof($this);
         $role = $ordinary->saveDefinition($ordinary->previewDefinition(permissionDefinition('role', 'force_reader', [$read])));
-        permissionAccessProof($this, $codes[1]);
+        permissionAccessProof($this);
         $preset = $ordinary->saveDefinition($ordinary->previewDefinition(permissionDefinition('preset', 'force_template', roles: [$role['public_id']])));
-        permissionAccessProof($this, $codes[2]);
+        permissionAccessProof($this);
         $ordinary->applyAssignments($ordinary->previewAssignments($target->publicId, new AssignmentSet([$role['public_id']])));
         $measure = function () use ($api, $role): array {
             DB::flushQueryLog();
@@ -636,7 +630,7 @@ it('binds force role deletion to practical effects references confirmation and t
             'created_at' => now(), 'updated_at' => now()]);
         [$preview] = $measure();
         expect($preview->users)->toHaveCount(2)->and($preview->users[1]['permission_removed'])->toBe(['runa.audit.read']);
-        permissionAccessProof($this, $codes[3], 'runa.permissions.roles.force_delete');
+        permissionAccessProof($this, 'runa.permissions.roles.force_delete');
         expect(fn () => $api->forceDeleteRole($preview, false))->toThrow(OperationRejected::class);
         // Audit fails only after assignment/preset histories and actual unlinking have occurred.
         DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT force_delete_refusal CHECK (action <> 'role.force_deleted') NOT VALID");
@@ -657,21 +651,21 @@ it('binds force role deletion to practical effects references confirmation and t
 })->group('permissions-authority');
 
 it('refuses stale force deletion after recipient changes and preserves other effective grant sources', function (): void {
-    $codes = permissionAccessManager($this);
+    permissionAccessManager($this);
     ($this->directPermission)('runa.permissions.roles.force_delete');
     $target = app(ChangeIdentity::class)->create(new NewIdentity('force-stale@example.test', name: 'Stale recipient', active: true));
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
-    ($this->asPermissionUser)(function () use ($codes, $target, $read): void {
+    ($this->asPermissionUser)(function () use ($target, $read): void {
         $ordinary = $this->permissionAccess;
         $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
-        permissionAccessProof($this, $codes[0]);
+        permissionAccessProof($this);
         $role = $ordinary->saveDefinition($ordinary->previewDefinition(permissionDefinition('role', 'stale_force', [$read])));
-        permissionAccessProof($this, $codes[1]);
+        permissionAccessProof($this);
         $ordinary->applyAssignments($ordinary->previewAssignments($target->publicId, new AssignmentSet([$role['public_id']])));
         $stale = $api->previewRoleDeletion($role['public_id'], 1);
-        permissionAccessProof($this, $codes[2]);
+        permissionAccessProof($this);
         $ordinary->applyAssignments($ordinary->previewAssignments($target->publicId, new AssignmentSet(permissions: [$read])));
-        permissionAccessProof($this, $codes[3], 'runa.permissions.roles.force_delete');
+        permissionAccessProof($this, 'runa.permissions.roles.force_delete');
         expect(fn () => $api->forceDeleteRole($stale, true))->toThrow(OperationRejected::class);
         $fresh = $api->previewRoleDeletion($role['public_id'], 1);
         expect($fresh->users[0]['permission_removed'])->toBe([]);
@@ -752,8 +746,7 @@ it('keeps the last superadministrator active through self service and rolls back
     permissionAccessManager($this);
     permissionSystemMember($this->permissionUser->publicId);
     app()->bind(AuthorityGuard::class, ProtectedAuthority::class);
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.deactivate', 'requirement' => 'password',
-        'current_password' => 'permission-access-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.deactivate', 'current_password' => 'permission-access-password'])->assertOk();
     $version = User::where('public_id', $this->permissionUser->publicId)->value('version');
     $this->postJson('/api/runa/auth/profile/lifecycle', ['version' => $version, 'operation' => 'deactivate'])
         ->assertConflict()->assertJsonPath('error.code', 'authority_change_refused');
@@ -763,13 +756,13 @@ it('keeps the last superadministrator active through self service and rolls back
 })->group('permissions-authority');
 
 it('rolls back dedicated authority membership revision and proof after required grant history fails', function (): void {
-    $codes = permissionAccessManager($this);
+    permissionAccessManager($this);
     ($this->directPermission)('runa.permissions.authority.manage');
     $target = app(ChangeIdentity::class)->create(new NewIdentity('authority-rollback@example.test', name: 'Rollback', active: true));
-    ($this->asPermissionUser)(function () use ($codes, $target): void {
+    ($this->asPermissionUser)(function () use ($target): void {
         $api = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAuthority::class, '1.0.0');
         $preview = $api->previewAuthority($target->publicId, true);
-        permissionAccessProof($this, $codes[0], 'runa.permissions.authority.manage');
+        permissionAccessProof($this, 'runa.permissions.authority.manage');
         DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT authority_history_refusal CHECK (action <> 'authority.granted') NOT VALID");
         expect(fn () => $api->applyAuthority($preview))->toThrow(AuditUnavailable::class)
             ->and(DB::table('runa_permissions.user_roles')->where('user_public_id', $target->publicId)->count())->toBe(0)
@@ -1101,13 +1094,13 @@ it('integrates real Core HTTP session CSRF profile and logout without authority 
 })->group('core-integration');
 
 it('serializes permission members of multiple roles as JSON lists', function (): void {
-    $codes = permissionAccessManager($this);
+    permissionAccessManager($this);
     $read = DB::table('runa_permissions.permissions')->where('code', 'runa.audit.read')->value('public_id');
-    ($this->asPermissionUser)(function () use ($codes, $read): void {
+    ($this->asPermissionUser)(function () use ($read): void {
         $roles = [];
         foreach (['first_reader', 'second_reader'] as $index => $code) {
             $preview = $this->permissionAccess->previewDefinition(permissionDefinition('role', $code, [$read]));
-            permissionAccessProof($this, $codes[$index]);
+            permissionAccessProof($this);
             $roles[] = $this->permissionAccess->saveDefinition($preview)['public_id'];
         }
         $references = app(AccessState::class)->references(new AssignmentSet($roles));

@@ -43,7 +43,7 @@ export interface AdminCommandData {
   title: AdminText;
   mode: 'independent' | 'atomic';
   destructive: boolean;
-  requirement: 'none' | 'password' | 'second_factor' | 'both';
+  requirement: 'none' | 'password';
   preview_required: boolean;
   inputs: string[];
   bulk: boolean;

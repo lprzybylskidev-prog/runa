@@ -54,7 +54,7 @@ const security = {
   totp_enabled: true,
   email_otp_enabled: true,
   recovery_codes_enabled: true,
-  password_change_factor: false,
+  trusted_device_eligible: false,
   trusted_devices_enabled: false,
 };
 const json = (value: unknown, status = 200) =>

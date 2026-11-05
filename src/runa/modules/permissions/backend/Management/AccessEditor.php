@@ -74,7 +74,7 @@ final readonly class AccessEditor implements ManagementOptionsReader, Management
         $review = $this->native($input);
 
         return new ManagementReview($review->fingerprint, ['review_summary' => ['before' => $review->before, 'after' => $review->after,
-            'added' => $review->added, 'removed' => $review->removed, 'effective_added' => $review->effectiveAdded, 'effective_removed' => $review->effectiveRemoved]], 'both', true);
+            'added' => $review->added, 'removed' => $review->removed, 'effective_added' => $review->effectiveAdded, 'effective_removed' => $review->effectiveRemoved]], 'password', true);
     }
 
     public function execute(ManagementWrite $input): ManagementOutcome

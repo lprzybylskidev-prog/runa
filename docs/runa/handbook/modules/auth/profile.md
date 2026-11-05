@@ -20,7 +20,7 @@ Audit rolls mutations back and returns safe 503. Session loss uses established 4
 | ------ | ------------------------ | -------------------------------------------------------------------- |
 | GET    | profile                  | `profile.show`; own private projection                               |
 | PATCH  | profile                  | `profile.edit`; version, complete naming alternative, optional login |
-| POST   | profile/email            | `email.change`; version, email, current_password                     |
+| POST   | profile/email            | `email.change`; version, email; password proof runa.auth.self.email  |
 | POST   | email/complete           | `email.complete`; token in POST body; public single-use redemption   |
 | POST   | profile/secondary-emails | `secondary.add_own`; version, email                                  |
 | PATCH  | profile/secondary-emails | `secondary.change_own`; version, address_id, email                   |
@@ -94,25 +94,25 @@ view and custom trusted compositions use these same owning APIs. Administrative
 operations require current Permissions grants and pass AuthorityGuard under the
 same default PostgreSQL transaction; protected-authority invariants remain enforced.
 
-| Method                                                       | Permission                     | Additional requirements                                                                                                               |
-| ------------------------------------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| edit(publicId, expectedVersion, ProfileChange)               | runa.auth.profiles.manage      | exclusive complete naming/login value                                                                                                 |
-| changeEmail(publicId, expectedVersion, email)                | runa.auth.emails.manage        | every-action both-factor step-up for `runa.auth.email.admin_change`                                                                   |
-| replaceVerifiedEmail(publicId, expectedVersion, email)       | runa.auth.emails.verify_bypass | configured bypass and every-action both-factor step-up for `runa.auth.email.admin_bypass`                                             |
-| requireVerification(publicId, expectedVersion)               | runa.auth.emails.reverify      | every-action both-factor step-up for `runa.auth.email.require_verification`                                                           |
-| verifyEmail(publicId, expectedVersion)                       | runa.auth.emails.verify_bypass | current primary only; administrative bypass enabled; every-action both-factor `runa.auth.email.admin_bypass`                          |
-| verifySecondary(publicId, expectedVersion, addressId)        | runa.auth.emails.verify_bypass | current owned secondary; secondary feature and administrative bypass enabled; every-action both-factor `runa.auth.email.admin_bypass` |
-| addSecondary(publicId, expectedVersion, email)               | runa.auth.secondary.manage     | enabled secondary addresses and current ownership rules                                                                               |
-| changeSecondary(publicId, expectedVersion, addressId, email) | runa.auth.secondary.manage     | resets verification; address belongs to target                                                                                        |
-| removeSecondary(publicId, expectedVersion, addressId)        | runa.auth.secondary.manage     | address belongs to target                                                                                                             |
-| notificationEmails(publicId)                                 | runa.auth.addresses.read       | verified notification-only secondaries for an eligible account                                                                        |
+| Method                                                       | Permission                     | Additional requirements                                                                                                            |
+| ------------------------------------------------------------ | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| edit(publicId, expectedVersion, ProfileChange)               | runa.auth.profiles.manage      | exclusive complete naming/login value                                                                                              |
+| changeEmail(publicId, expectedVersion, email)                | runa.auth.emails.manage        | every-action password step-up for `runa.auth.email.admin_change`                                                                   |
+| replaceVerifiedEmail(publicId, expectedVersion, email)       | runa.auth.emails.verify_bypass | configured bypass and every-action password step-up for `runa.auth.email.admin_bypass`                                             |
+| requireVerification(publicId, expectedVersion)               | runa.auth.emails.reverify      | every-action password step-up for `runa.auth.email.require_verification`                                                           |
+| verifyEmail(publicId, expectedVersion)                       | runa.auth.emails.verify_bypass | current primary only; administrative bypass enabled; every-action password `runa.auth.email.admin_bypass`                          |
+| verifySecondary(publicId, expectedVersion, addressId)        | runa.auth.emails.verify_bypass | current owned secondary; secondary feature and administrative bypass enabled; every-action password `runa.auth.email.admin_bypass` |
+| addSecondary(publicId, expectedVersion, email)               | runa.auth.secondary.manage     | enabled secondary addresses and current ownership rules                                                                            |
+| changeSecondary(publicId, expectedVersion, addressId, email) | runa.auth.secondary.manage     | resets verification; address belongs to target                                                                                     |
+| removeSecondary(publicId, expectedVersion, addressId)        | runa.auth.secondary.manage     | address belongs to target                                                                                                          |
+| notificationEmails(publicId)                                 | runa.auth.addresses.read       | verified notification-only secondaries for an eligible account                                                                     |
 
 Normal administrative email change verifies the new address before replacement;
 it does not require old-address consent. Administrative email verification defaults enabled through
 `admin_email_verification_bypass`; the Auth policy view exposes the boolean
 “Administrative email verification” control. Disabling it removes the creation
 verification section and the existing verified-replacement action. The distinct
-permission and both-factor proof remain required. Both
+permission and password proof remain required. Both
 completion paths revoke all sessions/trust, advance security generation and notify
 the former primary. All account changes and proof consumption commit with Audit;
 a failure cannot consume proof while rolling back the mutation.
@@ -130,7 +130,7 @@ and `EmailAddresses` own transactional execution. These are runtime backend APIs
 not own-account HTTP operations or customer presentation authorization.
 
 Both require `runa.auth.emails.verify_bypass`, the current
-`admin_email_verification_bypass` setting and fresh every-action both-factor proof
+`admin_email_verification_bypass` setting and fresh every-action password proof
 for `runa.auth.email.admin_bypass`. Primary confirmation additionally requires
 enabled email verification. Secondary confirmation requires enabled secondary
 addresses and rechecks current address ownership/sharing policy. Both use the

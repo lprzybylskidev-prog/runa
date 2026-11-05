@@ -7,7 +7,7 @@ import type {
   AdminSectionPresentationProps,
   AdminComponentRegistry,
 } from '@/runa/admin';
-import { AuthIdentityFields, AuthOperationProof } from '@/runa/auth';
+import { AuthIdentityFields } from '@/runa/auth';
 import {
   Button,
   Checkbox,
@@ -325,8 +325,7 @@ async function submit() {
       command.value.key,
     );
     if (review) {
-      if (!creationProof.confirmed.value) await creationProof.begin();
-      else {
+      {
         const result = await props.controller.execute(
           props.section.key,
           command.value.key,
@@ -572,10 +571,6 @@ async function submit() {
             <li v-for="line in summary" :key="line">{{ line }}</li>
           </ul>
         </div>
-        <AuthOperationProof
-          v-if="command && creationProof.open.value"
-          :controller="creationProof"
-        />
       </div>
     </ViewBoundary>
     <template #feedback

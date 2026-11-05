@@ -55,7 +55,7 @@ verification, required factor enrollment/challenge, then required password chang
 Change-specific factor policy also sends an account with no usable factor to
 enrollment first. Mandatory TOTP never offers email OTP as an alternative.
 The security projection adds `recovery_codes_enabled` and
-`password_change_factor` and `email_verified`; other fields and existing contracts remain compatible.
+`trusted_device_eligible` and `email_verified`; other fields and existing contracts remain compatible.
 After each successful security operation, reload session/security state before
 showing ordinary access. An unknown restriction or malformed projection fails
 closed. Refresh/resend/sign-out are explicit supporting actions.
@@ -135,61 +135,51 @@ restricted-session refresh resumes. Codes stay print-hidden and in memory only.
 
 ## Operation proof composition
 
-Auth supplies a standalone operation-proof page alongside its inline composition.
-Public source owner: Auth; ordinary App/module
-consumers import `@/runa/auth`. Implementation stays in Auth frontend; no new HTTP
-route, proof engine or session owner is introduced. Public signatures:
-`AuthOperationProofPage({controller: OperationProofController, locale?: 'pl'|'en',
-title?: string, description?: string, homeHref?: string})`, default slot
-`{controller: OperationProofController}`, events `confirmed()` and `cancel()`.
-The page reuses the controller and renders through the replaceable Auth MinimalLayout;
-`AuthPresentation.operationProofPage` replaces the full page with the same contract.
-`useAuthPresentation(): ComputedRef<AuthPresentation>` is public for composition.
-The controller accepts optional `locale: () => 'pl'|'en'`; its readonly error becomes
-`ComputedRef<string>`. Inline AuthOperationProof additionally accepts optional locale.
-Both supplied presentations support PL/EN; none automatically executes a business
-mutation. `ApplicationSessionShellSlots.admission(): VNode[]` optionally renders
-the caller's pre-admission view outside ApplicationLayout, after native session
-reauthentication selection. AuthApplication forwards it. Registration/presentation
-does not change server-side authorization. A page replacement initializes the supplied
-controller with begin(), binds its transient fields and emits confirmed only after
-confirm() succeeds; cancel resets the controller before emitting cancel. The page
-never constructs another proof controller. Keep the controller locale getter aligned
-with an explicit page locale; omitted locales follow the surrounding presentation.
-
-Auth owns public useOperationProof/AuthOperationProof through `@/runa/auth`,
-implemented under Auth frontend and bundled presentation. Administrative App/module
-consumers retain their existing session owner; this controller never starts one.
-Call in the caller's Vue scope with source-owned action/requirement and an identity
-that becomes undefined whenever the owning session/account/authority is unavailable.
+Auth owns the password-only useOperationProof controller and replaceable
+AuthOperationProofPage, imported through @/runa/auth and implemented in Auth frontend.
+The former inline AuthOperationProof export is retired. Second factors belong to
+login only; no operation view discovers or requests eligible factor methods.
 
 ```ts
-type ProofRequirement = 'none' | 'password' | 'second_factor' | 'both';
+type ProofRequirement = 'none' | 'password';
+interface PasswordConfirmation {
+  request(controller: OperationProofController): Promise<boolean>;
+  cancel(controller?: OperationProofController): void;
+}
 function useOperationProof(options: {
   identity: () => string | undefined;
   action: () => string;
   requirement: () => ProofRequirement;
   locale?: () => 'pl' | 'en';
+  confirmation?: PasswordConfirmation;
 }): OperationProofController;
 ```
 
-OperationProofController has password/code Ref<string>, method Ref<FactorMethod>,
-methods Ref<readonly FactorMethod[]>, open/busy/confirmed Ref<boolean>, error
-ComputedRef<string>, requirement ComputedRef<ProofRequirement>, begin/confirm/sendEmail
-methods returning Promise<void> and reset():void. FactorMethod is totp/email/recovery.
-AuthOperationProof accepts controller:OperationProofController and optional locale:'pl'|'en'; it has no
-slots/events. Headless consumers use the same controller with their own controls.
-Both supplied presentations use shared PL/EN copy and existing public fields/buttons.
-The page focuses its reading heading without a visible outline, matching Auth entry
-screens while retaining control focus indicators. Cancellation uses the shared
-danger/error outline button in inline and standalone proof presentations.
+OperationProofController exposes password Ref<string>, open/busy/confirmed
+Ref<boolean>, error ComputedRef<string>, requirement ComputedRef<ProofRequirement>,
+begin()/confirm():Promise<void>, request():Promise<boolean> and reset():void.
+request opens the shared full-page confirmation host and resolves false on cancel,
+reset, identity/access loss or disposal. It never silently replays a refused write.
+The composing owner preserves its reviewed subject/draft/revision and rechecks them
+before executing the original submitted intent once after successful confirmation.
 
-begin reads native security options only when a factor is required. Eligibility
-uses the existing Auth required/enrolled/enabled/recovery rules. confirm uses
-native step-up for the exact action; sendEmail uses security/email-send only for
-an eligible email method. Native backend proof policy remains authoritative.
-Passwords/codes clear after each settled attempt; reset/disposal/identity/action/
-requirement changes abort and fence pending work and erase methods/credentials.
-No credential is persisted. Failure is safe and explicitly retryable; proof
-confirmation never submits or retries a business mutation. confirmed is feedback,
-not an authorization token or promise that a later native write will succeed.
+ApplicationSessionShell supplies one host for account/Admin consumers, retaining
+mounted drafts and suspending underlying modal portals/focus while the existing
+MinimalLayout-based Auth page takes over. No second session, browser storage or
+credential-bearing URL is introduced. Application-owned shell replacements can
+compose public providePasswordConfirmation(): {active:ShallowRef<OperationProofController|undefined>,
+complete(confirmed?:boolean):void,cancel(controller?:OperationProofController):void}
+and usePasswordConfirmation():PasswordConfirmation|undefined. Render the existing
+AuthOperationProofPage for active, wire confirmed to complete and cancel to cancel,
+and suspend retained presentation through the public UI visibility contract.
+Missing host fails closed; standalone protected entry can still render the page
+with its existing controller and explicit begin/confirm events.
+
+AuthOperationProofPage accepts controller, optional locale, title, description and
+homeHref; its default slot receives {controller}. Emits confirmed/cancel. It uses
+existing operationProofPage/MinimalLayout replacements, PL/EN fields, focus and
+FormNotifications. Confirmation sends action/current_password to native step-up;
+credentials clear on every settled attempt/reset/identity change/disposal. It
+returns no transferable authorization token. Backend grants/proof/session/revision
+checks remain authoritative. Native login entry continues to own 2FA challenges
+and authenticator setup-code validation.

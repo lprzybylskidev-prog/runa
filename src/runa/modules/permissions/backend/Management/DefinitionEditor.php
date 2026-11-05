@@ -126,7 +126,7 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
         $summary = $review instanceof DefinitionPreview ? ['before' => $review->before, 'after' => $review->after, 'affected_users' => $review->affectedUsers, 'permission_added' => $review->permissionAdded, 'permission_removed' => $review->permissionRemoved]
             : ($review instanceof RoleDeletionPreview ? ['users' => $review->users, 'presets' => $review->presets] : ['deleted_definition' => $review]);
 
-        return new ManagementReview($this->fingerprint($review), ['review_summary' => $summary], 'both', true);
+        return new ManagementReview($this->fingerprint($review), ['review_summary' => $summary], 'password', true);
     }
 
     public function execute(ManagementWrite $input): ManagementOutcome
