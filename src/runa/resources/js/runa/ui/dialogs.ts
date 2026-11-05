@@ -1,5 +1,5 @@
 import type { ContentLoadingShape } from './loading';
-import type { ControlTone } from './controls';
+import type { ButtonIntent } from './controls';
 export type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 export type DialogCloseReason = 'close' | 'escape' | 'outside';
 export interface DialogProps {
@@ -21,5 +21,5 @@ export interface DialogProps {
 export interface ConfirmDialogProps extends DialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
-  confirmTone?: ControlTone;
+  confirmIntent?: ButtonIntent | undefined;
 }

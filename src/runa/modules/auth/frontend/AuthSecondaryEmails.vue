@@ -216,7 +216,7 @@ async function remove() {
     :model-value="Boolean(removing)"
     :title="text('Usunąć dodatkowy adres?', 'Remove secondary address?')"
     :confirm-label="text('Usuń adres', 'Remove address')"
-    confirm-tone="danger"
+    confirm-intent="danger"
     :locale="locale"
     :busy="busy"
     @update:model-value="!$event && (removing = undefined)"
@@ -254,8 +254,9 @@ async function remove() {
     >
       <template #actions>
         <Button
-          :busy="busy"
           v-if="failure === 'csrf'"
+          intent="inspect"
+          :busy="busy"
           @click="account.refreshCsrf"
           >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
         >

@@ -271,9 +271,13 @@ async function exportRows() {
     </div>
     <FormNotifications :locale="locale" :error="!pending ? tr(error) : ''">
       <template #actions
-        ><Button :busy="loading" :disabled="pending" @click="refresh()">{{
-          tr('Retry')
-        }}</Button></template
+        ><Button
+          intent="inspect"
+          :busy="loading"
+          :disabled="pending"
+          @click="refresh()"
+          >{{ tr('Retry') }}</Button
+        ></template
       >
     </FormNotifications>
     <Table
@@ -300,6 +304,7 @@ async function exportRows() {
       >
       <template #actions="{ row }">
         <Button
+          intent="inspect"
           size="sm"
           :disabled="
             pending || controller.busy.value || controller.refreshing.value
@@ -311,8 +316,8 @@ async function exportRows() {
         <Button
           v-for="command in actions(row)"
           :key="command"
+          :intent="command === 'modules.resume' ? 'commit' : 'caution'"
           size="sm"
-          :tone="command === 'modules.resume' ? 'primary' : 'warning'"
           :disabled="
             pending || controller.busy.value || controller.refreshing.value
           "
@@ -322,8 +327,9 @@ async function exportRows() {
       </template>
     </Table>
     <Button
-      :busy="loading"
       v-if="cursor"
+      intent="inspect"
+      :busy="loading"
       size="sm"
       :disabled="
         loading ||

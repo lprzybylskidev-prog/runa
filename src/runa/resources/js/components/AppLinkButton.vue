@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { ButtonVariant, ControlTone } from '../runa/ui/controls';
+import type { ButtonVariant, ButtonTone } from '../runa/ui/controls';
 withDefaults(
-  defineProps<{ href: string; variant?: ButtonVariant; tone?: ControlTone }>(),
-  { variant: 'outline', tone: 'primary' },
+  defineProps<{ href: string; variant?: ButtonVariant; tone?: ButtonTone }>(),
+  { variant: 'outline', tone: 'neutral' },
 );
 </script>
 <template>

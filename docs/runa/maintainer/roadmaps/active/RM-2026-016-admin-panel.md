@@ -1151,6 +1151,15 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Keep native server preview/revision validation, password proof and Audit.
     Synchronize current presentation guidance/assets and commit; no runtime data
     changes or new tests for this simple presentation cleanup. Gates remain 11b/12.
+- [x] 11a93. Unify system action button semantics and snapshot change markers.
+  - Owner approved 2026-11-05: green commits, neutral safe cancellation/navigation,
+    yellow discarded drafts/caution, blue reads/tools and red destructive effects.
+    Password proof alone never determines color; bulk openers are blue and final
+    actions reflect the selected effect. Importance remains a separate variant.
+  - Remove feedback-context color inheritance from Button, migrate current default
+    views and document the public explicit intent contract in both guidance products.
+  - Add snapshot highlight spacing and anchor previous-value help below Changed.
+  - Prepare current assets and focused evidence; broad verification remains point 12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -8033,3 +8042,57 @@ route to the owning presentation contract and need no new rule. No migration,
 settings publication, dependency or Docker resource change; existing storage and
 reports are preserved. Mandatory hooks/fresh knowledge accompany the commit.
 Manual acceptance 11b and final verification/release 12 remain open.
+
+### Point 11a93 — Explicit shared action semantics and snapshot markers
+
+Owner approved the proposed system-wide policy on 2026-11-05: green commit,
+neutral safe cancellation/navigation, yellow discard/caution, blue reads/tool
+openers and red destructive effects. Password proof alone never implies danger;
+bulk openers and selected final effects are distinct. Importance uses variants.
+
+Delivered public ButtonIntent/ButtonTone, explicit ConfirmDialog.confirmIntent and
+optional BulkProvider action intent. Button no longer inherits surrounding feedback
+color; nested feedback retains its existing inheritance. Semantic hover/pressed/busy
+colors use the existing palette in both themes. Busy retains native activation
+blocking. All 239 shared Button instances across 66 current Vue consumers were
+reviewed and assigned source-owned intents, including Admin, Auth, Permissions,
+Audit, reference App, shared forms/dialogs/tables and native error presentation.
+Dedicated raw navigation, selection and descriptive tooltip triggers retain their
+own interaction contracts. LinkButton navigation now defaults neutral. Auth final
+operation colors use selected effects/parameters; shared confirmations carry their
+own intent. No backend authorization, proof or Audit behavior changes.
+
+Snapshot change rows now have 12px inner padding and vertical breathing room.
+Previous-value Tooltip measures only the Changed marker and aligns below its start,
+using the additive public align prop and existing viewport collision behavior.
+The long-name mobile exercise exposed a settings grid child with automatic minimum
+width; min-w-0 fixes that owner container without hiding overflow or truncating
+other page content.
+
+Current public component/architecture/palette/Admin/Auth guidance and platform plus
+Auth/Admin/Permissions changelogs are synchronized. Owner and customer frontend
+references point to the canonical action policy. Neither root nor customer AGENTS
+needs another always-loaded rule; their existing shared-component and presentation
+boundaries already apply. Existing unreleased Admin 0.2.0, Auth 5.0.0, Permissions
+2.1.0 and prepared platform 0.7.0 remain appropriate. The public presentation
+signature correction is intentional under the standing pre-1.0 authorization; all
+current consumers and documented signatures are migrated, without adapters or new
+dependencies.
+
+Focused uncertainty diagnostics PASS: five intent/feedback cases, one selected-user
+submission/proof case and two Admin destructive/stale-bulk confirmation cases.
+The initial filename-style frontend filter selected zero tests; it is not evidence
+of coverage and was replaced by the supported test-name filters above. Supported
+strict TypeScript/assets/native error build PASS. Native Nginx APIs and actual
+settings page were prepared; a browser-only snapshot read projection exercised
+load/cancel without capture/publication writes. Rendered dark/light inspection
+confirmed 12px padding, 8px below/start tooltip and semantic hover colors; settled
+390px layout measured scrollWidth=innerWidth=390 with no page errors. Browser
+session logged out. Evidence: .runtime/button-review/{focused,confirmation-focused,
+admin-confirm-focused,build,readiness}.log and
+.runtime/artifacts/playwright/button-semantics/.
+
+No migration/reset or task-created Docker resources; development/test data,
+volumes, Qdrant/model caches, backups and evidence remain preserved. Mandatory
+hooks and current knowledge accompany this commit. Owner manual acceptance 11b
+and broad final affected-area verification/release 12 remain open.

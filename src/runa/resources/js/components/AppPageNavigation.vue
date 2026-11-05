@@ -66,6 +66,7 @@ const label = computed(() => props.label || t('pageNavigation'));
     <AppButton
       v-for="entry in loading ? [] : fallbackEntries"
       :key="entry.key"
+      intent="neutral"
       :variant="
         entry.routeKey === publishedCurrent?.routeKey ? 'solid' : 'outline'
       "

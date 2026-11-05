@@ -8,9 +8,15 @@ const emit = defineEmits<AdminActionEmits>();
 </script>
 <template>
   <Button
+    :intent="
+      command.destructive
+        ? 'danger'
+        : ['save', 'create'].includes(command.intent)
+          ? 'commit'
+          : 'inspect'
+    "
     :busy="busy"
     :disabled="disabled || !command.available"
-    :tone="command.destructive ? 'danger' : 'primary'"
     variant="outline"
     @click="emit('invoke')"
     >{{ tr(command.title) }}</Button

@@ -1,3 +1,4 @@
+import type { ButtonIntent } from '@/runa/ui';
 import {
   computed,
   effectScope,
@@ -76,7 +77,11 @@ export function useAdminForm(
   >({});
   const review = shallowRef<AdminPreview>();
   const commandReviews = ref<Record<string, AdminCommandReview>>({});
-  const confirmation = shallowRef<{ title: AdminText; description: string }>();
+  const confirmation = shallowRef<{
+    title: AdminText;
+    description: string;
+    intent: ButtonIntent;
+  }>();
   const failures = ref(new Set<string>());
   const editors = ref<Record<string, string | null>>({});
   const activated = ref(new Set<string>());
@@ -127,9 +132,13 @@ export function useAdminForm(
     confirmationResult = undefined;
     resolve?.(accepted);
   }
-  function ask(title: AdminText, description: string): Promise<boolean> {
+  function ask(
+    title: AdminText,
+    description: string,
+    intent: ButtonIntent = 'discard',
+  ): Promise<boolean> {
     if (confirmationResult || !alive) return Promise.resolve(false);
-    confirmation.value = { title, description };
+    confirmation.value = { title, description, intent };
     return new Promise((resolve) => {
       confirmationResult = resolve;
     });
@@ -678,7 +687,11 @@ export function useAdminForm(
         options.confirmReviewed &&
         (!command.preview_required || input.review)
       ) &&
-      !(await ask(command.title, 'Confirm this destructive operation.'))
+      !(await ask(
+        command.title,
+        'Confirm this destructive operation.',
+        'danger',
+      ))
     )
       return;
     // Confirmation never authorizes a changed draft, subject, review or descriptor.
@@ -859,6 +872,7 @@ export function useAdminForm(
         !(await ask(
           'Save destructive changes?',
           'Confirm the reviewed changes.',
+          'danger',
         ))
       )
         return;

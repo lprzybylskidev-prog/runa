@@ -26,14 +26,15 @@ const copy = computed(() => operationProofCopy(props.locale ?? locale.value));
     />
     <div class="flex flex-wrap gap-2">
       <Button
+        intent="commit"
         :type="submit ? 'submit' : 'button'"
         :busy="controller.busy.value"
         @click="!submit && emit('confirm')"
         >{{ copy.confirm }}</Button
       >
       <Button
+        intent="cancel"
         type="button"
-        tone="danger"
         variant="outline"
         :disabled="controller.busy.value"
         @click="emit('cancel')"

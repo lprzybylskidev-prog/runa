@@ -366,7 +366,7 @@ async function submit() {
             )
           "
         />
-        <Button :busy="busy" @click="read(true)">{{
+        <Button intent="inspect" :busy="busy" @click="read(true)">{{
           text('Spróbuj ponownie', 'Retry loading')
         }}</Button>
       </template>
@@ -589,6 +589,7 @@ async function submit() {
     /></template>
     <template #actions
       ><Button
+        intent="commit"
         type="submit"
         :disabled="!record || readonly || controller.blocked.value"
         >{{ text('Utwórz konto', 'Create account') }}</Button

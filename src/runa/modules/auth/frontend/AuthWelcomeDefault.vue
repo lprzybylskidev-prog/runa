@@ -42,7 +42,7 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
           "
         >
           <template #actions
-            ><Button @click="load">{{
+            ><Button intent="inspect" @click="load">{{
               text('Ponów', 'Retry')
             }}</Button></template
           >

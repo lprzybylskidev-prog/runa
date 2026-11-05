@@ -130,7 +130,7 @@ function value(v: HistoryValue, field?: string): string {
       "
     >
       <template #actions
-        ><Button variant="outline" @click="$emit('retry')">{{
+        ><Button intent="inspect" variant="outline" @click="$emit('retry')">{{
           text('Ponów', 'Retry')
         }}</Button></template
       >
@@ -221,7 +221,7 @@ function value(v: HistoryValue, field?: string): string {
       </p>
     </div>
     <template #footer
-      ><Button variant="outline" @click="$emit('close')">{{
+      ><Button intent="cancel" variant="outline" @click="$emit('close')">{{
         text('Zamknij', 'Close')
       }}</Button></template
     >

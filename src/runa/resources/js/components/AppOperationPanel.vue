@@ -94,18 +94,21 @@ const errorText = computed(() => {
       <div class="mt-2 flex flex-wrap gap-2">
         <AppButton
           v-if="operation.canCancel.value"
+          intent="caution"
           size="sm"
           @click="operation.cancel()"
           >{{ english ? 'Cancel' : 'Anuluj' }}</AppButton
         >
         <AppButton
           v-if="operation.canRetry.value"
+          intent="inspect"
           size="sm"
           @click="operation.retry()"
           >{{ english ? 'Retry' : 'Spróbuj ponownie' }}</AppButton
         >
         <AppButton
           v-if="operation.download.value"
+          intent="inspect"
           size="sm"
           @click="downloadExport(operation.download.value)"
           >{{ english ? 'Download' : 'Pobierz' }}</AppButton

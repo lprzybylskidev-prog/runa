@@ -118,6 +118,7 @@ defineExpose({ focus: layer.focus });
             </div>
             <AppButton
               v-if="closable"
+              intent="cancel"
               icon-only
               size="sm"
               :disabled="busy"

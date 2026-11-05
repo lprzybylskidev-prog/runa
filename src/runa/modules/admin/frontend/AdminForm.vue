@@ -78,8 +78,9 @@ async function save() {
       </slot>
       <slot name="actions" :controller="controller">
         <Button
-          :busy="controller.busy.value"
           v-if="atomic"
+          intent="inspect"
+          :busy="controller.busy.value"
           :disabled="
             controller.blocked.value || !!controller.conflicts.value.length
           "
@@ -88,16 +89,19 @@ async function save() {
         >
         <Button
           v-if="atomic"
+          intent="commit"
           type="submit"
-          variant="outline"
           :disabled="
             controller.blocked.value || !!controller.conflicts.value.length
           "
           >{{ tr('Save') }}</Button
         >
-        <Button v-if="controller.dirty.value" @click="controller.reset">{{
-          tr('Discard changes')
-        }}</Button>
+        <Button
+          v-if="controller.dirty.value"
+          intent="discard"
+          @click="controller.reset"
+          >{{ tr('Discard changes') }}</Button
+        >
       </slot>
     </template>
   </Form>
@@ -106,6 +110,7 @@ async function save() {
     :model-value="!!controller.confirmation.value"
     :title="tr(controller.confirmation.value?.title ?? tr('Confirm'))"
     :description="tr(controller.confirmation.value?.description ?? '')"
+    :confirm-intent="controller.confirmation.value?.intent"
     @confirm="controller.confirm(true)"
     @cancel="controller.confirm(false)"
     @update:model-value="!$event && controller.confirm(false)"

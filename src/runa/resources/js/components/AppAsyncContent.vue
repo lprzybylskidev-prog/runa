@@ -53,9 +53,12 @@ const emptyTitle = computed(() => props.emptyTitle || t('noResults'));
         ><AppAlert tone="danger" :title="errorTitle"
           >{{ errorMessage
           }}<template v-if="retryLabel" #actions
-            ><AppButton :size="actionSize" @click="emit('retry')">{{
-              retryLabel
-            }}</AppButton></template
+            ><AppButton
+              intent="inspect"
+              :size="actionSize"
+              @click="emit('retry')"
+              >{{ retryLabel }}</AppButton
+            ></template
           ></AppAlert
         ></slot
       >

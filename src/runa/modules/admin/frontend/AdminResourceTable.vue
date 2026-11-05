@@ -62,6 +62,7 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
   >
     <template #actions
       ><Button
+        intent="inspect"
         :busy="controller.resource.busy.value"
         size="sm"
         :disabled="controller.resource.busy.value"
@@ -120,6 +121,7 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
               (command) => command.intent === 'create' && command.available,
             )
           "
+          intent="inspect"
           size="sm"
           @click="controller.select(null)"
           >{{ tr('New record') }}</Button
@@ -151,9 +153,12 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
       #actions="scope"
     >
       <slot name="actions" v-bind="scope"
-        ><Button size="sm" @click="controller.select(scope.row.public_id)">{{
-          tr('Details')
-        }}</Button></slot
+        ><Button
+          intent="inspect"
+          size="sm"
+          @click="controller.select(scope.row.public_id)"
+          >{{ tr('Details') }}</Button
+        ></slot
       >
     </template>
     <template
@@ -189,7 +194,10 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
   <ConfirmDialog
     :locale="adminLocale"
     :model-value="!!controller.confirmation.value"
-    :title="tr(controller.confirmation.value ?? tr('Confirm bulk action'))"
+    :confirm-intent="controller.confirmation.value?.intent"
+    :title="
+      tr(controller.confirmation.value?.title ?? tr('Confirm bulk action'))
+    "
     :description="tr('Continue with this action for the selected records?')"
     @confirm="controller.confirm(true)"
     @cancel="controller.confirm(false)"

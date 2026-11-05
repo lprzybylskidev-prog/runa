@@ -1,3 +1,4 @@
+import type { ButtonIntent } from '@/runa/ui';
 import { useAdminLocale } from './localization';
 import { computed, inject, onScopeDispose, ref, toValue, watch } from 'vue';
 import type { MaybeRefOrGetter } from 'vue';
@@ -48,7 +49,7 @@ export function useAdminTable(
     publicIds: [],
   });
   const selected = ref<string | null | undefined>();
-  const confirmation = ref<AdminText>();
+  const confirmation = ref<{ title: AdminText; intent: ButtonIntent }>();
   let confirmResult: ((accepted: boolean) => void) | undefined;
   const registry = inject(
     adminCollectionsKey,
@@ -355,7 +356,14 @@ export function useAdminTable(
                 if (!command || runtime.busy.value || confirmResult)
                   throw new Error('Bulk action unavailable.');
                 const snapshot = JSON.stringify([query.value, selection.value]);
-                confirmation.value = command.title;
+                confirmation.value = {
+                  title: command.title,
+                  intent: command.destructive
+                    ? 'danger'
+                    : ['save', 'create'].includes(command.intent)
+                      ? 'commit'
+                      : 'caution',
+                };
                 const accepted = await new Promise<boolean>((resolve) => {
                   confirmResult = resolve;
                 });

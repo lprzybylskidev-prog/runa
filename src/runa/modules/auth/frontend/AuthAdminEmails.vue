@@ -236,9 +236,13 @@ function remove(publicId: string) {
     >
       <Alert v-if="missing" tone="warning"
         >{{ t('Unable to load the current record.')
-        }}<Button :busy="refreshing" size="sm" @click="retry">{{
-          t('Retry loading')
-        }}</Button></Alert
+        }}<Button
+          intent="inspect"
+          :busy="refreshing"
+          size="sm"
+          @click="retry"
+          >{{ t('Retry loading') }}</Button
+        ></Alert
       >
       <div
         v-if="primary && controller.records.value.primary_email"
@@ -258,8 +262,9 @@ function remove(publicId: string) {
               get('primary_email', 'verified') === false &&
               available(primary, 'verify')
             "
-            size="sm"
+            intent="commit"
             variant="outline"
+            size="sm"
             :disabled="controller.busy.value"
             @click="emit('operation', 'primary_email', 'verify', {})"
             >{{
@@ -268,6 +273,7 @@ function remove(publicId: string) {
           >
           <Button
             v-if="available(primary, 'change') || available(primary, 'replace')"
+            intent="inspect"
             size="sm"
             variant="outline"
             :disabled="
@@ -385,12 +391,14 @@ function remove(publicId: string) {
         @keep="controller.resolve(conflict.path, 'local')"
       />
       <template #actions
-        ><Button type="submit" variant="outline">{{
+        ><Button intent="commit" type="submit">{{
           method === 'change'
             ? text('Wyślij link zmiany', 'Send change link')
             : text('Zapisz adres', 'Save email')
         }}</Button
-        ><Button @click="close">{{ t('Cancel') }}</Button></template
+        ><Button intent="cancel" @click="close">{{
+          t('Cancel')
+        }}</Button></template
       >
     </Form>
   </Dialog>

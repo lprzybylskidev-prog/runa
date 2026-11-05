@@ -41,6 +41,7 @@ function accept() {
     <slot />
     <template #footer
       ><AppButton
+        intent="neutral"
         data-dialog-accept
         variant="solid"
         :busy="busy"

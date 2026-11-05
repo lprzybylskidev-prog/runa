@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Unify shared action buttons with explicit semantic intents across supplied views: green commit, neutral cancellation/navigation, yellow discard/caution, blue reads/tools and red destructive effects. Separate hierarchy from meaning and preserve color while busy; align snapshot previous-value help below the padded Changed marker.
+
 - Simplify module settings Save to a confirmation question; omit the repeated differences and policy consequence messages while preserving native validation, password proof and Audit.
 
 - Use the full workspace width for module settings and pack group cards in independent responsive columns, removing large gaps below shorter groups.

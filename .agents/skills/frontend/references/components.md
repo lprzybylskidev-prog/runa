@@ -45,3 +45,8 @@ When composing custom native controls, verify computed pointer/hover/pressed/foc
 and disabled behavior in the rendered build, including checkbox hit areas. Follow
 `docs/runa/handbook/modules/permissions/README.md#searchable-assignment-catalogue`
 for the supplied access editor's interaction states.
+
+For action colors and hierarchy follow
+`docs/runa/handbook/development/frontend/components.md#action-button-semantics`.
+Use the public explicit intent/confirmation contracts for application controls;
+feedback context and password requirements never determine action meaning.

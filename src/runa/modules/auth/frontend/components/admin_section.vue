@@ -182,6 +182,7 @@ function select(row: Record<string, AdminJson>) {
           </dl>
           <Button
             v-if="!section.readonly"
+            intent="inspect"
             size="sm"
             class="mt-2"
             :disabled="controller.busy.value"
@@ -192,12 +193,14 @@ function select(row: Record<string, AdminJson>) {
       </ul>
       <div v-if="paged" class="mb-4 flex gap-2">
         <Button
+          intent="inspect"
           size="sm"
           :disabled="resource.busy.value || !next"
           @click="older"
           >{{ tr('Older entries') }}</Button
         >
         <Button
+          intent="inspect"
           size="sm"
           :disabled="resource.busy.value"
           @click="resource.clear()"

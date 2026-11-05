@@ -401,9 +401,9 @@ const passwordHint = computed(() =>
       </h2>
       <Button
         v-if="tab === 'preferences'"
+        intent="discard"
         size="sm"
         variant="outline"
-        tone="danger"
         :disabled="busy || !ready"
         data-preferences-reset
         @click="preferencesView?.beginReset()"
@@ -418,10 +418,12 @@ const passwordHint = computed(() =>
             'Unsaved values for this account were retained in memory.',
           )
         }}
-        <Button @click="restoreDraft">{{
+        <Button intent="inspect" @click="restoreDraft">{{
           text('Przywróć do przejrzenia', 'Restore for review')
         }}</Button>
-        <Button @click="draft = null">{{ text('Odrzuć', 'Discard') }}</Button>
+        <Button intent="discard" @click="draft = null">{{
+          text('Odrzuć', 'Discard')
+        }}</Button>
       </Alert>
       <AuthAccountEditor
         v-if="tab === 'details' && !['deactivate', 'delete'].includes(task)"
@@ -437,21 +439,24 @@ const passwordHint = computed(() =>
       >
         <Button
           v-if="has('self_deactivate')"
+          intent="caution"
           variant="outline"
-          tone="warning"
           @click="selectTask('deactivate')"
           >{{ text('Dezaktywuj konto', 'Deactivate account') }}</Button
         >
         <Button
           v-if="has('self_delete')"
+          intent="danger"
           variant="outline"
-          tone="danger"
           @click="selectTask('delete')"
           >{{ text('Usuń konto', 'Delete account') }}</Button
         >
-        <Button v-if="task !== 'details'" @click="selectTask('details')">{{
-          text('Wróć do danych konta', 'Back to account details')
-        }}</Button>
+        <Button
+          v-if="task !== 'details'"
+          intent="cancel"
+          @click="selectTask('details')"
+          >{{ text('Wróć do danych konta', 'Back to account details') }}</Button
+        >
       </div>
 
       <Form
@@ -593,16 +598,16 @@ const passwordHint = computed(() =>
         </FormSection>
         <template #actions
           ><Button
+            :intent="
+              task === 'deactivate'
+                ? 'caution'
+                : destructive
+                  ? 'danger'
+                  : 'commit'
+            "
             type="submit"
             variant="outline"
             :busy="busy"
-            :tone="
-              task === 'deactivate'
-                ? 'warning'
-                : destructive
-                  ? 'danger'
-                  : 'primary'
-            "
             :disabled="task === 'details' && !fieldNames.length"
             >{{ text('Zatwierdź', 'Submit') }}</Button
           ></template
@@ -635,14 +640,15 @@ const passwordHint = computed(() =>
               v-if="
                 tab === 'accountHistory' && !row.action?.startsWith('password.')
               "
+              intent="inspect"
               variant="outline"
               @click="account.openHistoryDetail(row.public_id)"
               >{{ text('Szczegóły', 'Details') }}</Button
             >
             <Button
-              :busy="busy"
               v-else-if="!history"
-              tone="danger"
+              intent="danger"
+              :busy="busy"
               :disabled="busy"
               @click="revoke(row.public_id)"
               >{{
@@ -655,6 +661,7 @@ const passwordHint = computed(() =>
         </Table>
         <Button
           v-if="cursor"
+          intent="inspect"
           :busy="busy"
           @click="perform(() => readPage(true))"
           >{{ text('Wczytaj starsze', 'Load older') }}</Button
@@ -684,12 +691,17 @@ const passwordHint = computed(() =>
     :locale="locale"
   >
     <template #actions>
-      <Button :busy="busy" v-if="failure === 'csrf'" @click="refreshCsrf">{{
-        text('Odśwież zabezpieczenie', 'Renew form security')
-      }}</Button>
       <Button
-        :busy="busy || account.refreshing.value"
+        v-if="failure === 'csrf'"
+        intent="inspect"
+        :busy="busy"
+        @click="refreshCsrf"
+        >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
+      >
+      <Button
         v-if="failure && (!ready || failure === 'refresh_failed')"
+        intent="inspect"
+        :busy="busy || account.refreshing.value"
         @click="!ready ? initialize() : account.refresh()"
         >{{ text('Spróbuj pobrać ponownie', 'Retry loading') }}</Button
       >

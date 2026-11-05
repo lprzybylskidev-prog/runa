@@ -75,9 +75,13 @@ function operation(key: string, revoke = false) {
     >
       <Alert v-if="!record" tone="warning"
         >{{ t('Unable to load the current record.') }}
-        <Button :busy="refreshing" size="sm" @click="load(true)">{{
-          t('Retry loading')
-        }}</Button></Alert
+        <Button
+          intent="inspect"
+          :busy="refreshing"
+          size="sm"
+          @click="load(true)"
+          >{{ t('Retry loading') }}</Button
+        ></Alert
       >
       <template v-else>
         <div class="divide-y divide-line">
@@ -106,6 +110,7 @@ function operation(key: string, revoke = false) {
               <div v-if="writable" class="flex flex-wrap gap-2">
                 <Button
                   v-if="choices.includes(key)"
+                  intent="inspect"
                   size="sm"
                   variant="outline"
                   :disabled="controller.busy.value"
@@ -122,9 +127,9 @@ function operation(key: string, revoke = false) {
                 >
                 <Button
                   v-if="active.some((row) => row.key === key)"
+                  intent="caution"
                   size="sm"
                   variant="outline"
-                  tone="warning"
                   :disabled="controller.busy.value"
                   @click="operation(key, true)"
                   >{{

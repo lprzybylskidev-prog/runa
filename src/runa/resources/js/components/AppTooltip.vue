@@ -2,8 +2,12 @@
 import { onScopeDispose, ref, useId } from 'vue';
 import { useFloatingLayer } from '../composables/useFloatingLayer';
 const props = withDefaults(
-  defineProps<{ text: string; placement?: 'bottom' | 'right' }>(),
-  { placement: 'bottom' },
+  defineProps<{
+    text: string;
+    placement?: 'bottom' | 'right';
+    align?: 'start' | 'end';
+  }>(),
+  { placement: 'bottom', align: 'end' },
 );
 const anchor = ref<globalThis.HTMLElement>();
 const panel = ref<globalThis.HTMLElement>();
@@ -52,7 +56,7 @@ const { position, ready, teleportTarget } = useFloatingLayer({
   anchor,
   panel,
   placement: () => props.placement,
-  align: () => 'end',
+  align: () => props.align,
   dismiss,
   hideOnScroll: true,
 });

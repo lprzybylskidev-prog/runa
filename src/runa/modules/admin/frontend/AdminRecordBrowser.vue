@@ -52,6 +52,7 @@ watch(
       <slot name="toolbar" :table="table" />
       <Button
         v-if="allowCreate"
+        intent="inspect"
         class="mb-4"
         :disabled="form.busy.value"
         @click="table.select(null)"
@@ -60,6 +61,7 @@ watch(
       <AdminResourceTable :controller="table">
         <template #actions="{ row }"
           ><Button
+            intent="inspect"
             size="sm"
             :disabled="form.busy.value"
             @click="table.select(row.public_id)"

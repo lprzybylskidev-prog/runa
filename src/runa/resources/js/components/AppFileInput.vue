@@ -258,6 +258,7 @@ const fileKeys = computed(() => {
         />
         <AppButton
           v-if="!readonly"
+          intent="inspect"
           :disabled="disabled"
           :aria-describedby="describedBy"
           :aria-invalid="invalid || undefined"
@@ -371,6 +372,7 @@ const fileKeys = computed(() => {
             </div>
             <AppButton
               v-if="!readonly"
+              intent="discard"
               data-file-remove
               size="sm"
               variant="ghost"

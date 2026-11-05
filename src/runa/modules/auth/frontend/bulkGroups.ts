@@ -1,3 +1,4 @@
+import type { ButtonIntent } from '@/runa/ui';
 /** Private presentation grouping; native projected commands retain all admission/proof authority. */
 export const authBulkGroups = [
   {
@@ -38,37 +39,45 @@ export function authBulkGroup(command: string) {
   );
 }
 
-export function authActionTone(
+/** Source-owned effects; opening a tool is always inspect at the call site. */
+export function authActionIntent(
   key: string,
-  grouped = false,
-): 'success' | 'danger' | 'warning' | 'primary' {
-  if (grouped && authBulkGroup(key)) return 'primary';
-  if (['activate', 'restore', 'schedule_activation'].includes(key))
-    return 'success';
+  enabled?: boolean | null,
+  clearDate = false,
+): ButtonIntent {
+  if (key === 'require_password_change' && enabled === false) return 'commit';
+  if (key === 'toggle_activation')
+    return enabled === true ? 'commit' : 'caution';
+  if (key === 'toggle_deletion') return enabled === false ? 'commit' : 'danger';
+  if (['set_security_lock', 'toggle_security_lock'].includes(key))
+    return enabled === false ? 'commit' : 'caution';
+  if (key === 'set_attempt_lock') return clearDate ? 'commit' : 'caution';
   if (
     [
       'delete',
-      'deactivate',
-      'schedule_deactivation',
-      'set_security_lock',
+      'remove',
+      'remove_avatar',
       'factor_reset',
       'revoke',
+      'revoke_device',
       'revoke_trust',
     ].includes(key)
   )
     return 'danger';
   if (
     [
+      'deactivate',
+      'schedule_deactivation',
       'require_verification',
       'require_password_change',
       'password_reset',
-      'set_attempt_lock',
       'invalidate_invitation',
       'revoke_exceptions',
+      'reset_preferences',
     ].includes(key)
   )
-    return 'warning';
-  return 'primary';
+    return 'caution';
+  return 'commit';
 }
 
 /** One thematic order for single-account and selected-account commands. */

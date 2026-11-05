@@ -59,6 +59,7 @@ watch(
     </div>
     <template #footer>
       <Button
+        intent="neutral"
         variant="outline"
         :busy="busy"
         data-recovery-acknowledge

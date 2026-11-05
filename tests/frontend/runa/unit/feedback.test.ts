@@ -28,7 +28,6 @@ const settle = async () => {
 type Trigger = { toggle: () => void; open: boolean; panelId: string };
 function trigger({ toggle, open, panelId }: Trigger) {
   return h(
-    'button',
     { onClick: toggle, 'aria-expanded': open, 'aria-controls': panelId },
     'Details',
   );
@@ -227,7 +226,6 @@ it('keeps errors persistent and restores the invoking control when closing a foc
       return () =>
         h('div', [
           h(
-            'button',
             { onClick: () => show({ title: 'Failure', tone: 'danger' }) },
             'Notify',
           ),
@@ -334,12 +332,13 @@ it('inherits semantic tones through nested slots and updates them reactively', a
     '.app-status',
     '.app-progress',
     '.app-statistic',
-    'button',
   ])
     expect(wrapper.get(selector).attributes('data-tone')).toBe('danger');
-  expect(wrapper.get('button').attributes('data-variant')).toBe('outline');
+  expect(wrapper.get('button').attributes('data-tone')).toBe('neutral');
+  expect(wrapper.get('button').attributes('data-variant')).toBe('neutral');
   await wrapper.setProps({ tone: 'success' });
-  expect(wrapper.get('button').attributes('data-tone')).toBe('success');
+  expect(wrapper.get('button').attributes('data-tone')).toBe('neutral');
+  expect(wrapper.get('.app-badge').attributes('data-tone')).toBe('success');
   await wrapper.setProps({ tone: 'neutral' });
   expect(wrapper.get('button').attributes('data-variant')).toBe('neutral');
 });
@@ -361,19 +360,19 @@ it('respects nearest explicit tones, explicit button variants and standalone def
     },
   });
   const buttons = wrapper.findAll('button');
-  expect(buttons[0]!.attributes('data-tone')).toBe('warning');
+  expect(buttons[0]!.attributes('data-tone')).toBe('neutral');
   expect(buttons[1]!.attributes('data-tone')).toBe('info');
   expect(buttons[1]!.attributes('data-variant')).toBe('outline');
   const button = mount(Button);
-  expect(button.attributes('data-tone')).toBe('primary');
+  expect(button.attributes('data-tone')).toBe('neutral');
   expect(button.attributes('data-variant')).toBe('neutral');
   expect(mount(Badge).attributes('data-tone')).toBe('neutral');
 });
-it('renders a matching retry action in every AsyncContent error', () => {
+it('renders an inspect retry action independently of AsyncContent error tone', () => {
   const wrapper = mount(AsyncContent, {
     props: { state: 'error', retryLabel: 'Retry' },
   });
-  expect(wrapper.get('button').attributes('data-tone')).toBe('danger');
+  expect(wrapper.get('button').attributes('data-tone')).toBe('info');
   expect(wrapper.get('button').attributes('data-variant')).toBe('outline');
 });
 

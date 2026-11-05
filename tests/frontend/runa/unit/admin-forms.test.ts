@@ -543,7 +543,9 @@ it('Admin collection adapters retain native export limits and deny secret column
     { action: 'revoke', selection: table.selection.value, operationKey: 'key' },
     new AbortController().signal,
   );
-  await vi.waitFor(() => expect(table.confirmation.value).toBe('Save profile'));
+  await vi.waitFor(() =>
+    expect(table.confirmation.value?.title).toBe('Save profile'),
+  );
   table.selection.value = { mode: 'explicit', publicIds: [otherId] };
   table.confirm(true);
   await expect(pending).rejects.toThrow();

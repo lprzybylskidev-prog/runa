@@ -5,7 +5,7 @@ import type {
   ApplicationNavigate,
   ApplicationSessionController,
 } from '@/runa/auth';
-import type { ApplicationLayoutProps } from '@/runa/ui';
+import type { ApplicationLayoutProps, ButtonIntent } from '@/runa/ui';
 import type { TableColumn, TableProvider, TableQuery } from '@/runa/ui';
 // String precedes Boolean in Vue runtime prop inference: an empty text draft stays a string.
 export type AdminJson =
@@ -278,7 +278,9 @@ export interface AdminFormController {
   sections: ComputedRef<readonly AdminSectionData[]>;
   records: Ref<Record<string, AdminRecord>>;
   blocked: ComputedRef<boolean>;
-  confirmation: Ref<{ title: AdminText; description: string } | undefined>;
+  confirmation: Ref<
+    { title: AdminText; description: string; intent: ButtonIntent } | undefined
+  >;
   confirm(accepted: boolean): void;
   beforeLeave(): Promise<boolean>;
   selectSubject(publicId: string | null): Promise<boolean>;
@@ -351,7 +353,7 @@ export interface AdminTableController {
   adapters: ComputedRef<AdminCollectionAdapters>;
   selected: Ref<string | null | undefined>;
   select(publicId: string | null): Promise<boolean>;
-  confirmation: Ref<AdminText | undefined>;
+  confirmation: Ref<{ title: AdminText; intent: ButtonIntent } | undefined>;
   confirm(accepted: boolean): void;
 }
 export interface AdminCollectionAdapters {

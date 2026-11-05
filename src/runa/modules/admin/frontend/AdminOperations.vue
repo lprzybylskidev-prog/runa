@@ -601,6 +601,7 @@ defineExpose({ controller });
       >
         <template #actions
           ><Button
+            intent="inspect"
             :busy="controller.refreshing.value"
             :disabled="controller.busy.value"
             @click="refresh()"
@@ -673,8 +674,8 @@ defineExpose({ controller });
             <div class="flex flex-wrap items-end justify-end gap-4">
               <div class="flex flex-wrap items-center gap-4">
                 <Select
-                  :label="tr('Module state')"
                   v-model="filter"
+                  :label="tr('Module state')"
                   :options="[
                     {
                       value: 'enabled',
@@ -755,20 +756,22 @@ defineExpose({ controller });
           >
             <Button
               v-if="!selectedModule.enabled"
+              intent="commit"
+              variant="outline"
               :disabled="controller.busy.value"
               @click="review('enable')"
               >{{ tr('Enable module') }}</Button
             >
             <Button
               v-else
-              tone="warning"
+              intent="caution"
               :disabled="controller.busy.value"
               @click="review('disable')"
               >{{ tr('Disable module') }}</Button
             >
             <Button
+              intent="danger"
               variant="outline"
-              tone="danger"
               :disabled="controller.busy.value"
               @click="review('unregister')"
               >{{ tr('Unregister module') }}</Button
@@ -776,6 +779,7 @@ defineExpose({ controller });
           </div>
           <Button
             v-if="has('health.diagnose')"
+            intent="inspect"
             class="ml-auto"
             variant="outline"
             :busy="pendingCommand === 'health.diagnose'"
@@ -793,8 +797,8 @@ defineExpose({ controller });
         />
         <AdminOperationResult v-if="result" :result="result" />
         <component
-          v-if="has('modules.manage') || has('settings.manage')"
           :is="presentation.operationHistory ?? AdminOperationHistory"
+          v-if="has('modules.manage') || has('settings.manage')"
           :key="selected"
           :controller="controller"
           :module="selected"
@@ -847,8 +851,8 @@ defineExpose({ controller });
             <template #actions="{ row }">
               <Button
                 v-if="has('work.cancel') && cancellable(row)"
+                intent="caution"
                 size="sm"
-                tone="warning"
                 :disabled="controller.busy.value"
                 @click="
                   command('work.cancel', { id: row.workId ?? null }, true)
@@ -856,6 +860,7 @@ defineExpose({ controller });
                 >{{ tr('Request cancellation') }}</Button
               >
               <Button
+                intent="inspect"
                 size="sm"
                 :disabled="controller.busy.value || controller.refreshing.value"
                 :busy="workStatusId === String(row.workId)"
@@ -872,6 +877,7 @@ defineExpose({ controller });
 
       <template #footer
         ><Button
+          intent="cancel"
           variant="outline"
           :disabled="controller.busy.value"
           @click="closeModule"
@@ -900,13 +906,15 @@ defineExpose({ controller });
     </div>
     <template #footer>
       <Button
-        :busy="pendingCommand === 'health.diagnose'"
         v-if="controller.error.value && !diagnosis"
+        intent="inspect"
+        :busy="pendingCommand === 'health.diagnose'"
         :disabled="controller.busy.value"
         @click="diagnose"
         >{{ tr('Retry') }}</Button
       >
       <Button
+        intent="cancel"
         data-diagnosis-close
         variant="outline"
         :disabled="pendingCommand === 'health.diagnose'"
@@ -989,6 +997,7 @@ defineExpose({ controller });
       </template>
       <Button
         v-else-if="!previewLoading"
+        intent="inspect"
         :disabled="controller.busy.value"
         @click="review(intent)"
         >{{ tr('Review again') }}</Button
@@ -996,6 +1005,7 @@ defineExpose({ controller });
     </div>
     <template #footer>
       <Button
+        intent="cancel"
         data-lifecycle-cancel
         variant="outline"
         :disabled="controller.busy.value"
@@ -1003,7 +1013,13 @@ defineExpose({ controller });
         >{{ tr('Cancel') }}</Button
       >
       <Button
-        :tone="intent === 'enable' ? 'primary' : 'danger'"
+        :intent="
+          intent === 'enable'
+            ? 'commit'
+            : intent === 'disable'
+              ? 'caution'
+              : 'danger'
+        "
         :busy="pendingCommand === 'modules.apply'"
         :disabled="
           controller.busy.value ||

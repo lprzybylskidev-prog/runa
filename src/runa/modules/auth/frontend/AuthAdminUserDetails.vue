@@ -26,7 +26,7 @@ import {
   Tabs,
 } from '@/runa/ui';
 import AuthAdminActionGroups from './AuthAdminActionGroups.vue';
-import { groupAuthActions, authActionTone } from './bulkGroups';
+import { groupAuthActions, authActionIntent } from './bulkGroups';
 import AuthAdminUserStatus from './AuthAdminUserStatus.vue';
 import AuthAdminPolicyExceptions from './AuthAdminPolicyExceptions.vue';
 import { policyRuleNames, usePolicyExceptions } from './policyExceptions';
@@ -722,14 +722,9 @@ function supplied(section: AdminSectionData) {
             <AuthAdminActionGroups :groups="actionGroups">
               <template #default="{ item }">
                 <Button
+                  intent="inspect"
                   size="sm"
                   variant="outline"
-                  :tone="
-                    authActionTone(
-                      actionKey(item.actions[0]!),
-                      item.actions.length > 1,
-                    )
-                  "
                   :disabled="form.busy.value"
                   @click="open(item.actions, true)"
                   >{{ t(item.title) }}</Button
@@ -935,15 +930,27 @@ function supplied(section: AdminSectionData) {
         /></template>
         <template #actions>
           <Button
+            :intent="
+              command?.preview_required && !review
+                ? 'inspect'
+                : pending
+                  ? authActionIntent(
+                      actionKey(pending),
+                      typeof form.values.value[path('enabled')] === 'boolean'
+                        ? (form.values.value[path('enabled')] as boolean)
+                        : null,
+                      form.values.value[path('at')] === null,
+                    )
+                  : 'commit'
+            "
             type="submit"
-            variant="outline"
-            :tone="pending ? authActionTone(actionKey(pending)) : 'primary'"
+            variant="solid"
             >{{
               command?.preview_required && !review
                 ? text('Sprawdź zmiany', 'Review changes')
                 : text('Zatwierdź', 'Confirm')
             }}</Button
-          ><Button @click="close()">{{ t('Cancel') }}</Button>
+          ><Button intent="cancel" @click="close()">{{ t('Cancel') }}</Button>
         </template>
       </Form>
     </Dialog>
@@ -952,6 +959,7 @@ function supplied(section: AdminSectionData) {
       :model-value="!!form.confirmation.value"
       :title="t(form.confirmation.value?.title ?? 'Confirm')"
       :description="t(form.confirmation.value?.description ?? '')"
+      :confirm-intent="form.confirmation.value?.intent"
       @confirm="form.confirm(true)"
       @cancel="form.confirm(false)"
       @update:model-value="!$event && form.confirm(false)"

@@ -283,7 +283,7 @@ function closeCrop(value: boolean) {
             {{ profile.email }}
           </p>
           <template #actions
-            ><Button type="submit" variant="outline" :busy="busy">{{
+            ><Button intent="commit" type="submit" :busy="busy">{{
               text('Zapisz dane', 'Save details')
             }}</Button></template
           >
@@ -310,6 +310,7 @@ function closeCrop(value: boolean) {
         </dl>
         <Button
           v-if="has('email_verification_enabled') && !profile.email_verified"
+          intent="inspect"
           class="mt-5"
           :busy="busy"
           @click="sendVerification"
@@ -352,7 +353,7 @@ function closeCrop(value: boolean) {
             />
           </div>
           <template #actions
-            ><Button type="submit" variant="outline" :busy="busy">{{
+            ><Button intent="commit" type="submit" :busy="busy">{{
               text('Zapisz hasło', 'Save password')
             }}</Button></template
           >
@@ -442,22 +443,23 @@ function closeCrop(value: boolean) {
             />
             <Button
               v-if="originals[0] && files.length"
+              intent="inspect"
               @click="cropOpen = true"
               >{{ text('Popraw kadr', 'Adjust crop') }}</Button
             >
           </template>
           <template #actions
             ><Button
+              intent="commit"
               type="submit"
-              variant="outline"
               :busy="busy || cropping"
               :disabled="!files.length && !removeAvatar"
               >{{ text('Zapisz zdjęcie', 'Save image') }}</Button
             >
             <Button
               v-if="canAvatar && profile.has_avatar"
+              intent="danger"
               variant="outline"
-              tone="danger"
               :disabled="busy || cropping || originals.length > 0"
               @click="removeOpen = true"
               >{{ text('Usuń avatar', 'Remove avatar') }}</Button
@@ -486,7 +488,7 @@ function closeCrop(value: boolean) {
     v-model="removeOpen"
     :title="text('Usunąć avatar?', 'Remove avatar?')"
     :confirm-label="text('Usuń avatar', 'Remove avatar')"
-    confirm-tone="danger"
+    confirm-intent="danger"
     :locale="locale"
     :busy="busy"
     @confirm="confirmRemoval"
@@ -526,8 +528,9 @@ function closeCrop(value: boolean) {
     >
       <template #actions>
         <Button
-          :busy="busy"
           v-if="failure === 'csrf'"
+          intent="inspect"
+          :busy="busy"
           @click="account.refreshCsrf"
           >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
         >
@@ -553,11 +556,11 @@ function closeCrop(value: boolean) {
       @ready="cropReady = $event"
     />
     <template #footer>
-      <Button :disabled="cropping" @click="closeCrop(false)">{{
+      <Button intent="cancel" :disabled="cropping" @click="closeCrop(false)">{{
         text('Anuluj', 'Cancel')
       }}</Button>
       <Button
-        variant="outline"
+        intent="commit"
         :busy="cropping"
         :disabled="!cropReady"
         @click="applyCrop"

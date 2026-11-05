@@ -146,7 +146,7 @@ const reviewed = computed(
 </script>
 <template>
   <AdminForm :controller="form">
-    <div class="space-y-4">
+    <div class="min-w-0 space-y-4">
       <h1 class="text-xl font-semibold">
         {{ t(controller.page.value?.title ?? '') }}
       </h1>
@@ -168,6 +168,7 @@ const reviewed = computed(
             />
           </div>
           <Button
+            intent="inspect"
             :disabled="
               blocked ||
               !snapshots.selected.value ||
@@ -180,6 +181,7 @@ const reviewed = computed(
           >
           <Button
             v-if="snapshotWritable"
+            intent="danger"
             variant="outline"
             :disabled="
               form.busy.value ||
@@ -191,6 +193,7 @@ const reviewed = computed(
           >
           <Button
             v-if="snapshotWritable"
+            intent="commit"
             variant="outline"
             :disabled="blocked || !form.records.value[snapshotsSection]"
             @click="
@@ -228,7 +231,9 @@ const reviewed = computed(
         >{{
           label('Nie udało się wczytać ustawień.', 'Unable to load settings.')
         }}
-        <Button @click="form.refresh">{{ t('Retry') }}</Button></Alert
+        <Button intent="inspect" @click="form.refresh">{{
+          t('Retry')
+        }}</Button></Alert
       >
       <div v-else class="columns-1 gap-4 xl:columns-2">
         <Card
@@ -249,7 +254,7 @@ const reviewed = computed(
               :data-setting-key="field.key"
               :class="
                 snapshots.changes.value.includes(field.key)
-                  ? 'bg-primary/5 ring-1 ring-inset ring-primary/40'
+                  ? 'my-2 rounded bg-primary/5 px-3 py-3! ring-1 ring-inset ring-primary/40'
                   : ''
               "
             >
@@ -322,6 +327,9 @@ const reviewed = computed(
               <Tooltip
                 v-if="snapshots.changes.value.includes(field.key)"
                 :text="oldValue(field.key)"
+                placement="bottom"
+                align="start"
+                class="w-fit justify-self-start sm:col-span-2"
               >
                 <template #default="{ descriptionId }"
                   ><button
@@ -357,6 +365,7 @@ const reviewed = computed(
     <template #actions>
       <Button
         v-if="writable"
+        intent="commit"
         :disabled="
           blocked || !form.dirty.value || !!snapshots.resource.busy.value
         "
@@ -369,6 +378,7 @@ const reviewed = computed(
       >
       <Button
         v-if="snapshots.previous.value"
+        intent="cancel"
         variant="outline"
         :disabled="form.busy.value"
         @click="snapshots.cancel"
@@ -376,6 +386,7 @@ const reviewed = computed(
       >
       <Button
         v-else-if="form.dirty.value"
+        intent="discard"
         variant="outline"
         :disabled="form.busy.value"
         @click="form.reset"
@@ -412,6 +423,7 @@ const reviewed = computed(
       />
       <template #actions
         ><Button
+          intent="commit"
           type="submit"
           :busy="form.busy.value"
           :disabled="!name.trim() || name.trim().length > 80"
@@ -431,10 +443,12 @@ const reviewed = computed(
     "
   >
     <template #footer
-      ><Button :disabled="blocked || !reviewed" @click="apply">{{
-        label('Zatwierdź', 'Confirm')
-      }}</Button
-      ><Button variant="outline" @click="reviewOpen = false">{{
+      ><Button
+        intent="commit"
+        :disabled="blocked || !reviewed"
+        @click="apply"
+        >{{ label('Zatwierdź', 'Confirm') }}</Button
+      ><Button intent="cancel" variant="outline" @click="reviewOpen = false">{{
         label('Anuluj', 'Cancel')
       }}</Button></template
     >

@@ -2,6 +2,8 @@
 
 ## 5.0.0 — Unreleased
 
+- Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/tools and red destructive effects, independent of feedback context or password proof.
+
 - Simplify module settings Save to a confirmation question; omit the repeated differences and policy consequence messages while preserving native validation, password proof and Audit.
 
 - Use the full workspace width for module settings and pack group cards in independent responsive columns, removing large gaps below shorter groups.

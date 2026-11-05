@@ -81,6 +81,7 @@ async function key(
           <AppButton
             v-for="n in kind === 0 ? 24 : 60"
             :key="n"
+            intent="neutral"
             role="option"
             :aria-selected="Number(parts[kind]) === n - 1"
             :tabindex="Number(parts[kind]) === n - 1 ? 0 : -1"

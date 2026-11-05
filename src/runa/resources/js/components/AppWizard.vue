@@ -62,10 +62,10 @@ useContentMotion(content, () => props.modelValue);
     <ol :aria-label="text('Kroki', 'Steps')" class="flex flex-wrap gap-2">
       <li v-for="(step, index) in steps" :key="step.key">
         <AppButton
+          intent="neutral"
           :disabled="busy"
           :aria-current="index === modelValue ? 'step' : undefined"
           :variant="index === modelValue ? 'soft' : 'ghost'"
-          :tone="index === modelValue ? 'primary' : 'secondary'"
           @click="emit('update:modelValue', index)"
           >{{ index + 1 }}. {{ step.label }}</AppButton
         >
@@ -93,17 +93,19 @@ useContentMotion(content, () => props.modelValue);
     <slot name="feedback" />
     <div class="flex flex-wrap gap-3 border-t border-line pt-5">
       <AppButton
+        intent="cancel"
         :disabled="busy || modelValue <= 0"
         @click="emit('previous')"
         >{{ text('Wstecz', 'Back') }}</AppButton
       >
       <AppButton
         v-if="modelValue < steps.length - 1"
+        intent="inspect"
         :busy="busy"
         @click="emit('next')"
         >{{ text('Dalej', 'Next') }}</AppButton
       >
-      <AppButton v-else :busy="busy" variant="solid" @click="emit('finish')">{{
+      <AppButton v-else intent="commit" :busy="busy" @click="emit('finish')">{{
         text('Zakończ', 'Finish')
       }}</AppButton>
       <slot name="actions" />

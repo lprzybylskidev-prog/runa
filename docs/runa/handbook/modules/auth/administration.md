@@ -216,7 +216,7 @@ date ranges last in lifecycle, verification/invitation, credential and activity
 order. This presentation order is independent of table-column order and retains
 only projected authorized fields. Date filters use one compact DateTimeRangeInput for each inclusive date range. Separate small bulk action buttons sit immediately below filters, above the
 standard table toolbar. Each button opens a reviewed operation for the captured
-selection; related operations share a primary outlined button and modal operation selector; only granted and currently enabled actions appear.
+selection; related operations share a info outlined button and modal operation selector; only granted and currently enabled actions appear.
 Selected UUIDs are captured for review; no manual ID entry or all-account toggle
 exists in this UI. Session revocation admits at most 100 accounts; other reviewed
 user operations admit at most 99, reserving one native transaction subject for the
@@ -403,12 +403,12 @@ facts: Two-factor authentication omits the redundant enabled suffix. Bulk action
 are wrapping buttons, with a shared selection count and per-operation 99/100 limits.
 Activity (activate/deactivate/invert), deletion (delete/restore/invert), lifecycle
 schedules (activation/deactivation), invitations (send/invalidate) and security lock
-(on/off/invert) each share a primary outlined button. The compact modal presents selected/candidate counts together and right-aligns
+(on/off/invert) each share a info outlined button. The compact modal presents selected/candidate counts together and right-aligns
 confirmation. It uses the public Select to
 choose only currently projected, authorized commands, then renders that command's
 parameters and starts an authoritative impact preview. Binary inversion uses each
 account's stored flag; dates and invitation delivery are explicit operations, not
-binary inversion. Attempt lock also has a primary outlined button with explicit set-deadline/clear choices. Force password
+binary inversion. Attempt lock also has a info outlined button with explicit set-deadline/clear choices. Force password
 change is a separate one-way bulk action (no boolean switch); standalone lifecycle
 and native BulkUserChange APIs still support clearing the forced-change flag.
 Selecting the current operation preserves its valid review/proof. Actual
@@ -426,7 +426,7 @@ Cancel returns to the unchanged review; failed writes require a new explicit
 review/attempt. There is no separate identity button or duplicate confirmation.
 
 Actions follow account lifecycle, invitation/email, credentials/locks, revocations
-and presentation reset order. Grouped buttons use the shared primary outlined
+and presentation reset order. Grouped buttons use the shared info outlined
 style; individual actions retain their semantic tones in both themes. The directory omits the account-state column
 and picker entry. Its Deleted filter has Not deleted (default), Deleted and All
 choices using unchanged current/deleted/all wire values; deleted records use
@@ -540,11 +540,7 @@ the draft. A clean authoritative refresh or explicit Revert clears this local ca
 Admin field replacements remain supported through the identity component's named
 slots and the existing guarded AdminField resolution.
 
-Toolbar buttons share the bulk view's action-tone catalogue. Mixed operation groups
-retain their shared group tone; password/verification/exception actions use warning,
-and factor/session/trust revocation uses danger. Individual operation confirmation
-uses the selected action's tone; Cancel retains the ordinary neutral treatment.
-Session/device/address row actions use the same semantic outline buttons.
+Toolbar and bulk tool openers use inspect (blue). Final operation buttons use the source-owned effect catalogue and current parameters: commit/activate/clear-lock green, deactivate/set-lock/default-reset yellow, deletion and factor/session/trust revocation red. Cancel remains neutral. Preview is blue even when the eventual operation is destructive. Password proof never determines color. Row actions retain their actual effect. All follow the public [button semantics](../../development/frontend/components.md#action-button-semantics).
 
 One Email addresses card lists the primary address and available secondary
 addresses. Add/Edit opens the shared email dialog; Remove selects the actual row.

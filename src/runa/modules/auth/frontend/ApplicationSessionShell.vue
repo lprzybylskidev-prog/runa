@@ -205,12 +205,14 @@ const contentReadiness = useViewReadiness({
   >
     <AuthEntry v-if="paused" page="login" :authenticated="authenticated" />
     <component
-      v-else-if="!loading && !session"
       :is="presentation.minimalLayout ?? MinimalLayout"
+      v-else-if="!loading && !session"
     >
       <Alert tone="danger">
         {{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
-        <Button @click="refresh">{{ text('Ponów', 'Retry') }}</Button>
+        <Button intent="inspect" @click="refresh">{{
+          text('Ponów', 'Retry')
+        }}</Button>
       </Alert>
     </component>
     <slot v-else-if="$slots.admission" name="admission" />
@@ -311,7 +313,9 @@ const contentReadiness = useViewReadiness({
       ></slot>
       <Alert v-else-if="!session" tone="danger">
         {{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
-        <Button @click="refresh">{{ text('Ponów', 'Retry') }}</Button>
+        <Button intent="inspect" @click="refresh">{{
+          text('Ponów', 'Retry')
+        }}</Button>
       </Alert>
       <div
         v-else
@@ -331,7 +335,7 @@ const contentReadiness = useViewReadiness({
           "
         >
           <template #actions
-            ><Button @click="refresh">{{
+            ><Button intent="inspect" @click="refresh">{{
               text('Odśwież sesję', 'Refresh session')
             }}</Button></template
           >
@@ -343,6 +347,7 @@ const contentReadiness = useViewReadiness({
           {{ Math.ceil(remaining / 1000) }} s.
           <Button
             v-if="session.activity.extension"
+            intent="commit"
             @click="activity('click')"
             >{{ text('Kontynuuj pracę', 'Continue working') }}</Button
           >

@@ -80,6 +80,7 @@ defineExpose({
         <div class="flex flex-wrap gap-1">
           <Button
             v-if="canChange"
+            intent="inspect"
             variant="ghost"
             size="sm"
             :disabled="busy"
@@ -90,8 +91,9 @@ defineExpose({
             >{{ text('Edytuj', 'Edit') }}</Button
           >
           <Button
-            :busy="busy"
             v-if="!address.verified && canChange"
+            intent="inspect"
+            :busy="busy"
             variant="ghost"
             size="sm"
             :disabled="busy"
@@ -106,6 +108,7 @@ defineExpose({
           >
           <Button
             v-if="!address.verified && canVerify"
+            intent="commit"
             variant="ghost"
             size="sm"
             :disabled="busy"
@@ -120,8 +123,8 @@ defineExpose({
           >
           <Button
             v-if="canRemove"
+            intent="danger"
             variant="ghost"
-            tone="danger"
             size="sm"
             :disabled="busy"
             :aria-label="
@@ -187,8 +190,8 @@ defineExpose({
         </div>
         <div class="flex flex-wrap gap-2">
           <Button
+            intent="commit"
             type="submit"
-            variant="outline"
             :busy="busy"
             :disabled="Boolean(editing && email === originalEmail)"
             >{{
@@ -199,6 +202,7 @@ defineExpose({
           >
           <Button
             v-if="editing || email"
+            intent="cancel"
             :disabled="busy"
             @click="emit('cancel')"
             >{{ text('Anuluj', 'Cancel') }}</Button

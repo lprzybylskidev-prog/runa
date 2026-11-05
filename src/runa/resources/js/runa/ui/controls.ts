@@ -8,3 +8,23 @@ export type ControlTone =
   | 'accent';
 export type ControlSize = 'sm' | 'md' | 'lg';
 export type ButtonVariant = 'neutral' | 'solid' | 'outline' | 'soft' | 'ghost';
+
+/** Action meaning is independent of feedback context, language and password proof. */
+export type ButtonIntent =
+  | 'neutral'
+  | 'commit'
+  | 'cancel'
+  | 'discard'
+  | 'inspect'
+  | 'caution'
+  | 'danger';
+export type ButtonTone = ControlTone | 'neutral';
+export const buttonIntentTones: Readonly<Record<ButtonIntent, ButtonTone>> = {
+  neutral: 'neutral',
+  commit: 'success',
+  cancel: 'neutral',
+  discard: 'warning',
+  inspect: 'info',
+  caution: 'warning',
+  danger: 'danger',
+};

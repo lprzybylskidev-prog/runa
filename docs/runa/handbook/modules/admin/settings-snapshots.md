@@ -88,3 +88,10 @@ It does not repeat field differences or policy consequence messages. The server
 preview still validates the exact candidate before confirmation; native password
 proof, revision checking, publication effects and Audit remain authoritative.
 Snapshot-loaded field highlights and previous-value help remain in the editor.
+
+Changed snapshot rows have inner padding and vertical breathing room around their
+highlight. The content-sized Changed marker anchors previous-value Tooltip below,
+start-aligned, with ordinary viewport collision handling. Save/apply/capture use
+commit, load uses inspect, delete uses danger and snapshot Cancel uses cancel;
+discarding an ordinary draft uses discard, following
+[shared action semantics](../../development/frontend/components.md#action-button-semantics).

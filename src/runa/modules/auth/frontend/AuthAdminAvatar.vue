@@ -223,27 +223,29 @@ async function mutate(remove = false) {
     <div class="flex flex-wrap gap-3">
       <Button
         v-if="files.length"
+        intent="inspect"
         :disabled="controller.busy.value || cropping"
         @click="cropOpen = true"
         >{{ tr({ pl: 'Popraw kadr', en: 'Adjust crop' }) }}</Button
       >
       <Button
         v-if="originals.length"
+        intent="discard"
         :disabled="controller.busy.value || cropping"
         @click="clearDraft"
         >{{ tr({ pl: 'Cofnij zmiany', en: 'Revert changes' }) }}</Button
       >
       <Button
         v-if="files.length"
-        variant="outline"
+        intent="commit"
         :disabled="!!conflict || controller.busy.value || cropping"
         @click="mutate()"
         >{{ tr({ pl: 'Zapisz avatar', en: 'Save avatar' }) }}</Button
       >
       <Button
         v-if="record.values.has_avatar"
+        intent="danger"
         variant="outline"
-        tone="danger"
         :disabled="controller.busy.value || cropping || !!originals.length"
         @click="
           removeRevision = record.revision;
@@ -269,11 +271,14 @@ async function mutate(remove = false) {
         @ready="cropReady = $event"
       />
       <template #footer>
-        <Button :disabled="cropping" @click="closeCrop(false)">{{
-          tr({ pl: 'Anuluj', en: 'Cancel' })
-        }}</Button>
         <Button
-          variant="outline"
+          intent="cancel"
+          :disabled="cropping"
+          @click="closeCrop(false)"
+          >{{ tr({ pl: 'Anuluj', en: 'Cancel' }) }}</Button
+        >
+        <Button
+          intent="commit"
           :busy="cropping"
           :disabled="!cropReady"
           @click="applyCrop"

@@ -98,7 +98,9 @@ function display(key: string) {
       <p class="text-sm text-muted">
         {{ tr('Unable to load the current record.') }}
       </p>
-      <Button size="sm" @click="retry">{{ tr('Retry loading') }}</Button>
+      <Button intent="inspect" size="sm" @click="retry">{{
+        tr('Retry loading')
+      }}</Button>
     </div>
     <p v-else-if="!record.public_id" class="text-sm text-muted">
       {{ tr('Select an event to read its immutable details.') }}
@@ -211,12 +213,14 @@ function display(key: string) {
         </p>
         <div class="flex flex-wrap gap-2">
           <Button
+            intent="inspect"
             size="sm"
             :disabled="resource.busy.value || !record.values.payload_next"
             @click="next"
             >{{ tr('Next payload part') }}</Button
           >
           <Button
+            intent="inspect"
             size="sm"
             :disabled="
               resource.busy.value ||

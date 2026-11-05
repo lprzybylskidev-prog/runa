@@ -134,6 +134,7 @@ function drop(key: string) {
     />
     <AppTooltip :text="text('Kolumny i widoki', 'Columns and views')">
       <AppButton
+        intent="inspect"
         size="sm"
         icon-only
         variant="ghost"
@@ -201,6 +202,7 @@ function drop(key: string) {
               />
               <div class="flex items-center gap-1">
                 <AppButton
+                  intent="neutral"
                   size="sm"
                   :disabled="index === 0"
                   :aria-label="`${text('Przesuń wyżej', 'Move up')}: ${columns.find((c) => c.key === column.key)?.label}`"
@@ -208,6 +210,7 @@ function drop(key: string) {
                   >↑</AppButton
                 >
                 <AppButton
+                  intent="neutral"
                   size="sm"
                   :disabled="index === state.current.columns.length - 1"
                   :aria-label="`${text('Przesuń niżej', 'Move down')}: ${columns.find((c) => c.key === column.key)?.label}`"
@@ -237,6 +240,7 @@ function drop(key: string) {
                   />
                 </div>
                 <AppButton
+                  intent="neutral"
                   size="sm"
                   icon-only
                   :disabled="column.width === undefined"
@@ -248,6 +252,7 @@ function drop(key: string) {
             </li>
           </ul>
           <AppButton
+            intent="discard"
             size="sm"
             @click="
               controller.resetColumns();
@@ -276,6 +281,8 @@ function drop(key: string) {
           />
           <div class="flex flex-wrap gap-2">
             <AppButton
+              intent="commit"
+              variant="outline"
               size="sm"
               :disabled="invalidWidths"
               @click="
@@ -287,6 +294,7 @@ function drop(key: string) {
               >{{ text('Zapisz jako nowy', 'Save as new') }}</AppButton
             >
             <AppButton
+              intent="commit"
               size="sm"
               :disabled="!selected || invalidWidths"
               @click="
@@ -298,6 +306,8 @@ function drop(key: string) {
               >{{ text('Zapisz zmiany', 'Save changes') }}</AppButton
             >
             <AppButton
+              intent="commit"
+              variant="outline"
               size="sm"
               :disabled="!selected"
               @click="
@@ -309,27 +319,30 @@ function drop(key: string) {
               >{{ text('Zmień nazwę', 'Rename') }}</AppButton
             >
             <AppButton
+              intent="commit"
+              variant="outline"
               size="sm"
               :disabled="!selected"
               @click="controller.setDefault(state.activeId)"
               >{{ text('Ustaw domyślny', 'Set default') }}</AppButton
             >
             <AppButton
+              intent="caution"
               size="sm"
               :disabled="!state.defaultId"
               @click="controller.setDefault(null)"
               >{{ text('Usuń domyślny', 'Clear default') }}</AppButton
             >
             <AppButton
+              intent="danger"
               size="sm"
               variant="outline"
-              tone="danger"
               :disabled="!selected"
               @click="controller.remove()"
               >{{ text('Usuń widok', 'Delete view') }}</AppButton
             >
           </div>
-          <AppButton size="sm" @click="controller.reset()">{{
+          <AppButton intent="discard" size="sm" @click="controller.reset()">{{
             text('Przywróć ustawienia początkowe', 'Reset current view')
           }}</AppButton>
           <p v-if="state.defaultId" class="text-xs text-muted">

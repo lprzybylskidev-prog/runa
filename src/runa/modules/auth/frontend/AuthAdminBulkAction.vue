@@ -6,7 +6,7 @@ import type {
   AdminComponentRegistry,
   AdminSectionPresentationProps,
 } from '@/runa/admin';
-import { authBulkGroup } from './bulkGroups';
+import { authBulkGroup, authActionIntent } from './bulkGroups';
 import { Alert, Button, ContentLoading, Select } from '@/runa/ui';
 
 const props = defineProps<
@@ -322,11 +322,19 @@ async function submit() {
       <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
         <Button
           v-if="!review && command"
+          intent="inspect"
           :disabled="controller.busy.value"
           @click="controller.reviewCommand(section.key, command.key)"
           >{{ tr({ pl: 'Sprawdź skutki', en: 'Review impact' }) }}</Button
         >
         <Button
+          :intent="
+            authActionIntent(
+              command?.key ?? '',
+              choice?.enabled,
+              choice?.clearDate,
+            )
+          "
           :busy="controller.busy.value"
           :disabled="
             controller.busy.value ||
@@ -336,7 +344,6 @@ async function submit() {
             !command?.available
           "
           variant="solid"
-          tone="primary"
           @click="submit"
           >{{ tr({ pl: 'Zatwierdź', en: 'Confirm' }) }}</Button
         >

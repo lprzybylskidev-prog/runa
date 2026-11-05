@@ -11,6 +11,7 @@ const emit = defineEmits<{ 'update:modelValue': [value: boolean] }>();
     @update:model-value="emit('update:modelValue', $event)"
     ><template #trigger="{ toggle, open, panelId }"
       ><AppButton
+        intent="neutral"
         :disabled="disabled"
         :aria-expanded="open"
         :aria-controls="open ? panelId : undefined"

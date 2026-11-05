@@ -29,7 +29,7 @@ function reload() {
     "
   >
     <template v-if="status.error !== 'conflict'" #actions
-      ><AppButton @click="reload">{{
+      ><AppButton intent="inspect" @click="reload">{{
         locale === 'pl' ? 'Wczytaj ustawienia' : 'Reload settings'
       }}</AppButton></template
     >

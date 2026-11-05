@@ -42,18 +42,20 @@ const presentation = useAdminPresentation();
           tr('This administration page is unavailable.'),
       )
     }}
-    <Button @click="controller.refresh">{{ tr('Retry') }}</Button>
+    <Button intent="inspect" @click="controller.refresh">{{
+      tr('Retry')
+    }}</Button>
   </Alert>
   <AdminComponentBoundary
     v-else
     :identity="page.owner + ':' + page.key + ':' + page.revision"
   >
     <component
-      v-if="page.component || presentation.page"
       :is="
         resolveAdminComponent(page.component, components).component ??
         presentation.page
       "
+      v-if="page.component || presentation.page"
       :controller="controller"
       :form="form"
     />

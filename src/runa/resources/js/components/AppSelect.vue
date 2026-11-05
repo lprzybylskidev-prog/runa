@@ -320,6 +320,7 @@ onScopeDispose(cancel);
         </button>
         <AppButton
           v-if="clearable && values.length"
+          intent="neutral"
           :size="size"
           :disabled="disabled || readonly"
           :aria-label="text('Wyczyść wybór', 'Clear selection')"
@@ -418,12 +419,14 @@ onScopeDispose(cancel);
             <div class="flex flex-wrap gap-2">
               <AppButton
                 v-if="failed"
+                intent="inspect"
                 :size="size"
                 @click="load(retryAppend)"
                 >{{ text('Ponów', 'Retry') }}</AppButton
               >
               <AppButton
                 v-if="!provider && offset > 0"
+                intent="neutral"
                 :size="size"
                 @click="
                   offset = Math.max(0, offset - limit);
@@ -433,12 +436,13 @@ onScopeDispose(cancel);
               >
               <AppButton
                 v-if="canMore"
+                intent="inspect"
                 :size="size"
                 :disabled="loading"
                 @click="more"
                 >{{ text('Kolejne wyniki', 'More results') }}</AppButton
               >
-              <AppButton :size="size" @click="close(true)">{{
+              <AppButton intent="neutral" :size="size" @click="close(true)">{{
                 text('Gotowe', 'Done')
               }}</AppButton>
             </div>

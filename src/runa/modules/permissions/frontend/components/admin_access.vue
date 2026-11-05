@@ -34,7 +34,7 @@ async function select() {
         :errors="invalid ? [tr('Enter a valid UUIDv7.')] : []"
         @keydown.enter.prevent="select"
       />
-      <Button :busy="selecting" @click="select">{{
+      <Button intent="inspect" :busy="selecting" @click="select">{{
         tr('Select account')
       }}</Button>
     </div>

@@ -179,6 +179,7 @@ async function bulk(action: string) {
           :text="format.toUpperCase()"
         >
           <AppButton
+            intent="inspect"
             size="sm"
             icon-only
             :aria-label="format.toUpperCase()"
@@ -206,6 +207,7 @@ async function bulk(action: string) {
         </AppTooltip>
         <AppTooltip v-if="printAdapter" :text="english ? 'Print' : 'Drukuj'">
           <AppButton
+            intent="inspect"
             size="sm"
             icon-only
             :aria-label="english ? 'Print' : 'Drukuj'"
@@ -226,6 +228,7 @@ async function bulk(action: string) {
               :text="english ? 'Export settings' : 'Ustawienia eksportu'"
             >
               <AppButton
+                intent="inspect"
                 size="sm"
                 icon-only
                 variant="ghost"
@@ -271,7 +274,7 @@ async function bulk(action: string) {
                 ]"
                 :disabled="operation.busy.value"
               />
-              <AppButton size="sm" @click="close()">{{
+              <AppButton intent="neutral" size="sm" @click="close()">{{
                 english ? 'Done' : 'Gotowe'
               }}</AppButton>
             </div>
@@ -281,6 +284,7 @@ async function bulk(action: string) {
           <AppButton
             v-for="action in bulkProvider?.actions ?? []"
             :key="action.key"
+            :intent="action.intent ?? 'inspect'"
             size="sm"
             :disabled="operation.busy.value"
             @click="bulk(action.key)"

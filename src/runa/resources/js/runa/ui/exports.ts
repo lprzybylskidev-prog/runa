@@ -1,3 +1,4 @@
+import type { ButtonIntent } from './controls';
 export type ExportFormat = 'csv' | 'xlsx' | 'pdf';
 export type ExportCell = string | number | boolean | null;
 
@@ -120,7 +121,11 @@ export interface BulkRequest<Query> {
   readonly operationKey: string;
 }
 export interface BulkProvider<Query> {
-  readonly actions: readonly { key: string; label: string }[];
+  readonly actions: readonly {
+    key: string;
+    label: string;
+    intent?: ButtonIntent;
+  }[];
   readonly cancellation: boolean;
   start(
     request: BulkRequest<Query>,

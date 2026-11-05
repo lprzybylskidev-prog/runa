@@ -184,13 +184,14 @@ defineExpose({ reset, focus: () => trigger.value?.focus() });
                 {{ message }}
               </p>
               <div class="flex flex-wrap justify-end gap-2">
-                <AppButton size="sm" @click="clear(close)">{{
+                <AppButton intent="neutral" size="sm" @click="clear(close)">{{
                   text('Wyczyść', 'Clear')
                 }}</AppButton>
-                <AppButton size="sm" @click="close()">{{
+                <AppButton intent="cancel" size="sm" @click="close()">{{
                   text('Anuluj', 'Cancel')
                 }}</AppButton>
                 <AppButton
+                  intent="commit"
                   size="sm"
                   :disabled="!draftValid"
                   @click="apply(close)"

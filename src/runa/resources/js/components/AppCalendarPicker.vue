@@ -174,6 +174,7 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
   <div ref="root" class="calendar-picker space-y-3">
     <div class="flex items-center justify-between gap-1">
       <AppButton
+        intent="neutral"
         size="sm"
         icon-only
         :aria-label="text('Poprzedni', 'Previous')"
@@ -182,6 +183,7 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
       >
       <div class="flex min-w-0 items-center gap-1" aria-live="polite">
         <AppButton
+          intent="neutral"
           size="sm"
           variant="ghost"
           :aria-label="text('Wybierz miesiąc', 'Choose month')"
@@ -189,6 +191,7 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
           >{{ months[month] }}</AppButton
         >
         <AppButton
+          intent="neutral"
           size="sm"
           variant="ghost"
           :aria-label="text('Wybierz rok', 'Choose year')"
@@ -197,6 +200,7 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
         >
       </div>
       <AppButton
+        intent="neutral"
         size="sm"
         icon-only
         :aria-label="text('Następny', 'Next')"
@@ -228,6 +232,7 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
         <AppButton
           v-for="day in days.slice((week - 1) * 7, week * 7)"
           :key="day.value"
+          intent="neutral"
           role="gridcell"
           size="sm"
           :variant="modelValue === day.value ? 'solid' : 'ghost'"
@@ -254,6 +259,7 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
       <AppButton
         v-for="(name, i) in months"
         :key="name"
+        intent="neutral"
         size="sm"
         :aria-pressed="i === month"
         :data-month="i"
@@ -269,6 +275,7 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
       <AppButton
         v-for="y in years"
         :key="y"
+        intent="neutral"
         size="sm"
         :aria-pressed="y === year"
         @click="chooseYear(y)"
@@ -276,6 +283,7 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
       >
     </div>
     <AppButton
+      intent="neutral"
       size="sm"
       variant="soft"
       class="w-full"

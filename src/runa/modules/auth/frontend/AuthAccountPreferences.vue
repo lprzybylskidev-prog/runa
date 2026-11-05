@@ -258,8 +258,9 @@ defineExpose({ beginReset, reload });
             }}
           </p>
           <Button
-            :busy="busy || account.refreshing.value"
             v-if="failure"
+            intent="inspect"
+            :busy="busy || account.refreshing.value"
             variant="outline"
             :disabled="busy"
             @click="reload()"
@@ -321,17 +322,22 @@ defineExpose({ beginReset, reload });
               "
             />
             <template v-if="dirty(choice)" #actions>
-              <Button type="submit" size="sm" variant="outline" :busy="busy">{{
+              <Button intent="commit" type="submit" size="sm" :busy="busy">{{
                 text('Zapisz', 'Save')
               }}</Button>
-              <Button size="sm" :disabled="busy" @click="revert(choice)">{{
-                text('Cofnij zmiany', 'Revert changes')
-              }}</Button>
               <Button
-                :busy="busy || account.refreshing.value"
+                intent="discard"
+                size="sm"
+                :disabled="busy"
+                @click="revert(choice)"
+                >{{ text('Cofnij zmiany', 'Revert changes') }}</Button
+              >
+              <Button
                 v-if="
                   failure === 'refresh_failed' && failedKey === keyOf(choice)
                 "
+                intent="inspect"
+                :busy="busy || account.refreshing.value"
                 size="sm"
                 :disabled="busy"
                 @click="reload(keyOf(choice))"
@@ -349,7 +355,7 @@ defineExpose({ beginReset, reload });
       text('Przywrócić ustawienia domyślne?', 'Restore default settings?')
     "
     :confirm-label="text('Przywróć domyślne', 'Restore defaults')"
-    confirm-tone="danger"
+    confirm-intent="discard"
     :locale="locale"
     :busy="busy"
     @update:model-value="closeReset"
@@ -370,13 +376,15 @@ defineExpose({ beginReset, reload });
       :locale="locale"
       ><template #actions
         ><Button
-          :busy="busy"
           v-if="failure === 'csrf'"
+          intent="inspect"
+          :busy="busy"
           @click="account.refreshCsrf"
           >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
         ><Button
-          :busy="busy || account.refreshing.value"
           v-if="failure === 'refresh_failed'"
+          intent="inspect"
+          :busy="busy || account.refreshing.value"
           @click="account.refresh()"
           >{{ text('Spróbuj pobrać ponownie', 'Retry loading') }}</Button
         ></template

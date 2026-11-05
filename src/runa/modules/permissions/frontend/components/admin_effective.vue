@@ -121,10 +121,10 @@ async function next() {
       :english="adminLocale === 'en'"
       :rows="rows"
       :query="query"
-      @update:query="query = $event"
       :columns="columns"
       :row-key="(row: Record<string, AdminJson>) => String(row.code)"
       :caption="tr('Current bounded permission page')"
+      @update:query="query = $event"
     >
       <template
         v-for="key in ['direct', 'roles_truncated', 'available', 'effective']"
@@ -139,12 +139,14 @@ async function next() {
     </Table>
     <div class="mt-3 flex gap-2">
       <Button
+        intent="inspect"
         size="sm"
         :disabled="resource.busy.value || !current?.values.next"
         @click="next"
         >{{ tr('Next permissions') }}</Button
       >
       <Button
+        intent="inspect"
         size="sm"
         :disabled="resource.busy.value"
         @click="resource.clear()"

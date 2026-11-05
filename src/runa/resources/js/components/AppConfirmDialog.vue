@@ -5,7 +5,7 @@ import type { ConfirmDialogProps, DialogCloseReason } from '../runa/ui/dialogs';
 const props = withDefaults(defineProps<ConfirmDialogProps>(), {
   confirmLabel: '',
   cancelLabel: '',
-  confirmTone: 'primary',
+  confirmIntent: 'commit',
   description: '',
   size: 'md',
   busy: false,
@@ -36,15 +36,16 @@ const emit = defineEmits<{
     <template #default="{ close }"><slot :close="close" /></template>
     <template #footer="{ close }"
       ><AppButton
+        intent="cancel"
         data-dialog-cancel
         :disabled="busy || !closable"
         @click="close()"
         >{{ cancelLabel || (locale === 'pl' ? 'Anuluj' : 'Cancel') }}</AppButton
       ><AppButton
+        :intent="confirmIntent"
         :busy="busy"
         :disabled="loading"
         variant="solid"
-        :tone="confirmTone"
         @click="!props.busy && !props.loading && emit('confirm')"
         >{{
           confirmLabel || (locale === 'pl' ? 'Potwierdź' : 'Confirm')

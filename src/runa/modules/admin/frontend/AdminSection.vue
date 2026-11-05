@@ -102,6 +102,7 @@ async function retry() {
             : tr('Unable to load the current record.')
         }}
         <Button
+          intent="inspect"
           :busy="controller.busy.value"
           size="sm"
           :disabled="controller.busy.value"
@@ -192,6 +193,7 @@ async function retry() {
         <div class="flex flex-wrap gap-2">
           <Button
             v-if="command.preview_required"
+            intent="inspect"
             :disabled="controller.busy.value || !command.available"
             @click="controller.reviewCommand(section.key, command.key)"
             >{{ tr('Review') }} {{ tr(command.title) }}</Button

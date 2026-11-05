@@ -290,24 +290,31 @@ const readiness = useViewReadiness({
               :label="t('remember')"
             />
             <Button
-              :busy="busy"
               v-if="method === 'email' && needsProof"
+              intent="inspect"
+              :busy="busy"
               variant="outline"
               @click="sendEmail"
               >{{ t('sendCode') }}</Button
             >
             <template v-if="screen === 'verify' && !isTokenPage">
-              <Button :busy="busy" variant="outline" @click="sendEmail">{{
-                t('resend')
+              <Button
+                intent="inspect"
+                :busy="busy"
+                variant="outline"
+                @click="sendEmail"
+                >{{ t('resend') }}</Button
+              >
+              <Button intent="inspect" :busy="busy" @click="refresh">{{
+                t('refresh')
               }}</Button>
-              <Button :busy="busy" @click="refresh">{{ t('refresh') }}</Button>
             </template>
           </template>
           <template v-if="hasSubmit || failure" #actions>
             <Button
               v-if="hasSubmit"
+              intent="commit"
               type="submit"
-              variant="outline"
               :busy="busy"
               >{{ submitLabel }}</Button
             >
@@ -328,9 +335,14 @@ const readiness = useViewReadiness({
           <TextLink v-if="screen !== 'login' && !session" href="/auth/login">{{
             t('backLogin')
           }}</TextLink>
-          <Button v-if="session" :busy="busy" variant="ghost" @click="logout">{{
-            t('logout')
-          }}</Button>
+          <Button
+            v-if="session"
+            intent="neutral"
+            :busy="busy"
+            variant="ghost"
+            @click="logout"
+            >{{ t('logout') }}</Button
+          >
           <TextLink
             v-if="
               screen === 'complete' &&
@@ -351,15 +363,20 @@ const readiness = useViewReadiness({
     :locale="locale"
   >
     <template #actions>
-      <Button v-if="!ready && failure" @click="initialize">{{
+      <Button v-if="!ready && failure" intent="inspect" @click="initialize">{{
         t('retry')
       }}</Button>
-      <Button :busy="busy" v-if="failure === 'csrf'" @click="refreshCsrf">{{
-        t('refreshCsrf')
-      }}</Button>
       <Button
+        v-if="failure === 'csrf'"
+        intent="inspect"
         :busy="busy"
+        @click="refreshCsrf"
+        >{{ t('refreshCsrf') }}</Button
+      >
+      <Button
         v-if="session && ['conflict', 'account_restricted'].includes(failure)"
+        intent="inspect"
+        :busy="busy"
         @click="refresh"
         >{{ t('refresh') }}</Button
       >

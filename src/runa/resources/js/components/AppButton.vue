@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import { formActivity } from '../composables/formActivity';
-import { useInheritedFeedbackTone } from '../composables/useFeedbackTone';
+import { buttonIntentTones } from '../runa/ui/controls';
 import AppSpinner from './AppSpinner.vue';
 import type {
-  ControlTone,
+  ButtonTone,
+  ButtonIntent,
   ControlSize,
   ButtonVariant,
 } from '../runa/ui/controls';
@@ -16,11 +17,13 @@ const props = withDefaults(
     busy?: boolean | undefined;
     size?: ControlSize;
     variant?: ButtonVariant | undefined;
-    tone?: ControlTone | undefined;
+    tone?: ButtonTone | undefined;
+    intent?: ButtonIntent | undefined;
     iconOnly?: boolean;
   }>(),
   {
     tone: undefined,
+    intent: undefined,
     variant: undefined,
     type: 'button',
     compact: false,
@@ -34,15 +37,18 @@ const formBusy = inject(formActivity, undefined);
 const busy = computed(
   () => props.busy ?? (props.type === 'submit' && formBusy?.value === true),
 );
-const contextTone = useInheritedFeedbackTone();
-const tone = computed(
-  () =>
-    props.tone ??
-    (contextTone.value === 'neutral' ? 'primary' : contextTone.value),
+// Explicit intent wins over a low-level presentation tone. No inherited alert tone.
+const tone = computed(() =>
+  props.intent ? buttonIntentTones[props.intent] : (props.tone ?? 'neutral'),
 );
 const variant = computed(
   () =>
-    props.variant ?? (contextTone.value === 'neutral' ? 'neutral' : 'outline'),
+    props.variant ??
+    (props.intent === 'commit'
+      ? 'solid'
+      : tone.value === 'neutral'
+        ? 'neutral'
+        : 'outline'),
 );
 </script>
 
@@ -52,6 +58,7 @@ const variant = computed(
     :disabled="disabled || busy"
     :aria-busy="busy || undefined"
     :data-tone="tone"
+    :data-intent="intent"
     :data-variant="variant"
     :data-size="size"
     class="app-button"

@@ -283,6 +283,7 @@ defineExpose({ reset, focus: () => control.value?.focus() });
         >
           <template #trigger="{ toggle, panelId }"
             ><AppButton
+              intent="neutral"
               :size="size"
               :disabled="disabled || readonly"
               :aria-label="pickerLabel"
@@ -348,6 +349,7 @@ defineExpose({ reset, focus: () => control.value?.focus() });
               class="mt-3 flex justify-between gap-2 border-t border-line pt-3"
             >
               <AppButton
+                intent="neutral"
                 size="sm"
                 variant="ghost"
                 @click="
@@ -355,9 +357,13 @@ defineExpose({ reset, focus: () => control.value?.focus() });
                   close();
                 "
                 >{{ text('Wyczyść', 'Clear') }}</AppButton
-              ><AppButton size="sm" variant="soft" @click="close()">{{
-                text('Gotowe', 'Done')
-              }}</AppButton>
+              ><AppButton
+                intent="neutral"
+                size="sm"
+                variant="soft"
+                @click="close()"
+                >{{ text('Gotowe', 'Done') }}</AppButton
+              >
             </div>
           </template>
         </AppPopover>

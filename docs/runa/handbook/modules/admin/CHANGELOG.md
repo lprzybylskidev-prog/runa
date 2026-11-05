@@ -2,6 +2,8 @@
 
 ## 0.2.0 — Unreleased
 
+- Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/tools and red destructive effects, independent of feedback context or password proof.
+
 - Admin 0.2.0: send all declared sensitive independent/aggregate actions through the existing full-page Auth password confirmation. Remove inline proof editors and factor selection. Preserve submitted subject/review/revision, hide retained modal portals during confirmation, and cancel without mutation or draft loss.
 
 - Admin 0.2.0: retain business reasons through aggregate Save and operational writes, localize known refusals and map identifiable fields. Compose the shared Auth secondary-email editor with native grants and proof.

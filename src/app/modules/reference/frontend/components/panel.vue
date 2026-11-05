@@ -58,7 +58,9 @@ async function load() {
       ><h2>{{ copy.title }}</h2></template
     >
     <div class="flex flex-col items-start gap-4" :aria-busy="busy">
-      <Button :busy="busy" @click="load">{{ copy.load }}</Button>
+      <Button intent="inspect" :busy="busy" @click="load">{{
+        copy.load
+      }}</Button>
       <p role="status" class="break-words text-muted">
         {{ failed ? copy.failed : message }}
       </p>

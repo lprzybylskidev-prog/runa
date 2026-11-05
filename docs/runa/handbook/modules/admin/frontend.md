@@ -111,7 +111,14 @@ interface AdminFormController {
   sections: ComputedRef<readonly AdminSectionData[]>;
   records: Ref<Record<string, AdminRecord>>;
   blocked: ComputedRef<boolean>;
-  confirmation: Ref<{ title: AdminText; description: string } | undefined>;
+  confirmation: Ref<
+    | {
+        title: AdminText;
+        description: string;
+        intent: import('@/runa/ui').ButtonIntent;
+      }
+    | undefined
+  >;
   confirm(accepted: boolean): void;
   beforeLeave(): Promise<boolean>;
   selectSubject(publicId: string | null): Promise<boolean>;
@@ -317,7 +324,9 @@ interface AdminTableController {
   adapters: ComputedRef<AdminCollectionAdapters>;
   selected: Ref<string | null | undefined>;
   select(publicId: string | null): Promise<boolean>;
-  confirmation: Ref<string | undefined>;
+  confirmation: Ref<
+    { title: AdminText; intent: import('@/runa/ui').ButtonIntent } | undefined
+  >;
   confirm(accepted: boolean): void;
 }
 interface AdminResourceTableProps {

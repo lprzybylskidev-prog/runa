@@ -127,6 +127,7 @@ const duplicateMessage = computed(
           <span class="min-w-0 break-all">{{ tag }}</span
           ><AppButton
             v-if="!readonly"
+            intent="discard"
             size="sm"
             variant="ghost"
             :disabled="disabled"

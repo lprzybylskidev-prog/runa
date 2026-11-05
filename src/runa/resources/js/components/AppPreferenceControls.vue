@@ -28,6 +28,7 @@ const emit = defineEmits<{
       <form v-if="!fixedLocale" method="get">
         <input type="hidden" name="theme" :value="theme" />
         <AppButton
+          intent="neutral"
           :size="size"
           type="submit"
           compact
@@ -40,6 +41,7 @@ const emit = defineEmits<{
       <form method="get">
         <input type="hidden" name="lang" :value="locale" />
         <AppButton
+          intent="neutral"
           :size="size"
           type="submit"
           compact
@@ -66,6 +68,7 @@ const emit = defineEmits<{
       <AppTooltip v-if="!fixedLocale" :text="t('changeLanguage')">
         <template #default="{ descriptionId }">
           <AppButton
+            intent="neutral"
             :size="size"
             compact
             :aria-label="languageLabel"
@@ -79,6 +82,7 @@ const emit = defineEmits<{
       <AppTooltip :text="t('changeTheme')">
         <template #default="{ descriptionId }">
           <AppButton
+            intent="neutral"
             :size="size"
             compact
             :aria-label="themeLabel"

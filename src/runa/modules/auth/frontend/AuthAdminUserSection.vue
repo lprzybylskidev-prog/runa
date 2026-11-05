@@ -652,9 +652,13 @@ async function refreshTable() {
             tone="warning"
             class="md:col-span-2"
             >{{ t('Unable to load the current record.') }}
-            <Button :busy="controller.busy.value" size="sm" @click="retry">{{
-              t('Retry loading')
-            }}</Button></Alert
+            <Button
+              intent="inspect"
+              :busy="controller.busy.value"
+              size="sm"
+              @click="retry"
+              >{{ t('Retry loading') }}</Button
+            ></Alert
           >
           <div v-else class="min-w-0 space-y-5 md:col-span-2">
             <FormNotifications
@@ -692,9 +696,9 @@ async function refreshTable() {
                 <Button
                   v-for="command in rowCommands"
                   :key="command.key"
+                  intent="danger"
                   size="sm"
                   variant="outline"
-                  tone="danger"
                   :disabled="controller.busy.value || resource.busy.value"
                   @click="rowAction(row, command.key)"
                   >{{ t(command.title) }}</Button
@@ -734,6 +738,7 @@ async function refreshTable() {
                 <div v-if="!section.readonly" class="mt-3 flex flex-wrap gap-2">
                   <Button
                     v-if="kind === 'secondary'"
+                    intent="inspect"
                     size="sm"
                     variant="outline"
                     :disabled="controller.busy.value"
@@ -751,9 +756,9 @@ async function refreshTable() {
                       )[kind]?.includes(command.key),
                     )"
                     :key="command.key"
+                    intent="danger"
                     size="sm"
                     variant="outline"
-                    tone="danger"
                     :disabled="controller.busy.value"
                     @click="rowAction(row, command.key)"
                     >{{ t(command.title) }}</Button
@@ -785,6 +790,7 @@ async function refreshTable() {
               class="flex gap-2"
             >
               <Button
+                intent="inspect"
                 size="sm"
                 :disabled="
                   resource.busy.value ||
@@ -795,6 +801,7 @@ async function refreshTable() {
                 >{{ t('Latest entries') }}</Button
               >
               <Button
+                intent="inspect"
                 size="sm"
                 :disabled="
                   resource.busy.value ||
@@ -1027,8 +1034,8 @@ async function refreshTable() {
             !section.readonly &&
             (dirty || kind === 'secondary')
           "
+          intent="commit"
           type="submit"
-          variant="outline"
           :busy="controller.busy.value"
           :disabled="!!conflicts.length"
           >{{
@@ -1044,12 +1051,14 @@ async function refreshTable() {
         >
         <Button
           v-if="dirty && !section.readonly"
+          intent="discard"
           :disabled="controller.busy.value"
           @click="revert"
           >{{ text('Cofnij zmiany', 'Revert changes') }}</Button
         >
         <Button
           v-if="kind === 'secondary' && get('address_id')"
+          intent="cancel"
           :disabled="controller.busy.value"
           @click="
             set('address_id', null);

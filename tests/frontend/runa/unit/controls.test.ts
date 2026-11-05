@@ -1,3 +1,4 @@
+import { authActionIntent } from '../../../../src/runa/modules/auth/frontend/bulkGroups';
 import { afterEach, expect, it } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import {
@@ -33,4 +34,36 @@ it('names groups and keeps icons decorative with configurable size/color', () =>
   expect(icon.attributes('width')).toBe('16');
   expect(icon.attributes('stroke')).toBe('red');
   expect(icon.attributes('aria-hidden')).toBe('true');
+});
+
+it('keeps action meaning independent from feedback, labels, hierarchy and busy state', async () => {
+  const wrapper = mount(Button, {
+    props: { intent: 'commit', tone: 'danger' },
+    slots: { default: 'Zapisz' },
+  });
+  expect(wrapper.attributes('data-tone')).toBe('success');
+  expect(wrapper.attributes('data-variant')).toBe('solid');
+  await wrapper.setProps({ variant: 'outline', busy: true });
+  expect(wrapper.attributes('data-tone')).toBe('success');
+  expect(wrapper.attributes('data-variant')).toBe('outline');
+  expect(wrapper.attributes('disabled')).toBeDefined();
+  await wrapper.setProps({ intent: 'cancel', busy: false });
+  expect(wrapper.attributes('data-tone')).toBe('neutral');
+  await wrapper.setProps({ intent: 'discard' });
+  expect(wrapper.attributes('data-tone')).toBe('warning');
+  await wrapper.setProps({ intent: 'inspect' });
+  expect(wrapper.attributes('data-tone')).toBe('info');
+  await wrapper.setProps({ intent: 'danger' });
+  expect(wrapper.attributes('data-tone')).toBe('danger');
+});
+
+it('colors selected Auth effects rather than password requirements or mixed tool openers', () => {
+  expect(authActionIntent('activate')).toBe('commit');
+  expect(authActionIntent('deactivate')).toBe('caution');
+  expect(authActionIntent('delete')).toBe('danger');
+  expect(authActionIntent('set_security_lock', true)).toBe('caution');
+  expect(authActionIntent('set_security_lock', false)).toBe('commit');
+  expect(authActionIntent('set_attempt_lock', null, true)).toBe('commit');
+  expect(authActionIntent('reset_preferences')).toBe('caution');
+  expect(authActionIntent('revoke')).toBe('danger');
 });

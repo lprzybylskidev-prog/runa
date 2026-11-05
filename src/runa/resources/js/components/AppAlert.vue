@@ -55,10 +55,10 @@ const closeLabel = computed(() => props.closeLabel || t('close'));
     </div>
     <AppButton
       v-if="dismissible"
+      intent="cancel"
       icon-only
       size="sm"
       :variant="tone === 'neutral' ? 'neutral' : 'ghost'"
-      :tone="tone === 'neutral' ? 'secondary' : tone"
       :aria-label="closeLabel"
       @click="$emit('close')"
       >×</AppButton

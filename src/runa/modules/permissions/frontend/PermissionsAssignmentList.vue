@@ -298,7 +298,6 @@ const locked = computed(
           v-model="query"
           type="search"
           data-size="sm"
-          @keydown.enter.prevent="searchNow"
           :aria-label="
             field === 'roles'
               ? text('Szukaj ról', 'Search roles')
@@ -312,6 +311,7 @@ const locked = computed(
           maxlength="160"
           autocomplete="off"
           class="runa-field-control assignment-search"
+          @keydown.enter.prevent="searchNow"
         />
       </div>
       <div
@@ -360,6 +360,7 @@ const locked = computed(
     >
       <template #actions
         ><Button
+          intent="inspect"
           :busy="resource.busy.value || selectedResource.busy.value"
           size="sm"
           @click="
@@ -377,10 +378,10 @@ const locked = computed(
       :label="t('Loading record details')"
     >
       <div
+        ref="rows"
         class="max-h-80 min-w-0 overflow-y-auto overscroll-contain"
         :aria-label="title"
         role="group"
-        ref="rows"
         data-assignment-rows
       >
         <label

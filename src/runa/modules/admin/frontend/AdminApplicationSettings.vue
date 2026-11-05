@@ -60,6 +60,7 @@ onMounted(async () => {
       >
         <div class="flex flex-wrap items-center justify-end gap-3">
           <Button
+            intent="inspect"
             :busy="controller.refreshing.value"
             :disabled="controller.busy.value"
             @click="settings.refresh"
@@ -83,8 +84,9 @@ onMounted(async () => {
         >
           <template #actions>
             <Button
-              :busy="controller.refreshing.value"
               v-if="settings.invalid.value || controller.error.value"
+              intent="inspect"
+              :busy="controller.refreshing.value"
               :disabled="controller.busy.value"
               @click="settings.refresh"
               >{{ tr('Retry') }}</Button
@@ -232,6 +234,7 @@ onMounted(async () => {
           </p>
           <Button
             v-else
+            intent="discard"
             :disabled="controller.busy.value || settings.imageBusy.value"
             :aria-label="tr('Restore defaults') + ': ' + tr(field.title)"
             variant="outline"
@@ -240,19 +243,22 @@ onMounted(async () => {
             >{{ tr('Restore defaults') }}</Button
           >
           <Alert
-            class="sm:col-span-2"
             v-if="settings.conflicts.value.has(field.key)"
+            class="sm:col-span-2"
             tone="warning"
           >
             {{ tr(field.title) }} {{ tr('changed elsewhere. Current value:') }}
             {{ settings.base.value[field.key] ?? tr('Source default') }}.
             <div class="mt-2 flex flex-wrap gap-3">
               <Button
+                intent="discard"
                 :disabled="controller.busy.value"
                 @click="settings.resolve(field.key, false)"
                 >{{ tr('Use current value') }}</Button
               >
               <Button
+                intent="commit"
+                variant="outline"
                 :disabled="controller.busy.value"
                 @click="settings.resolve(field.key, true)"
                 >{{ tr('Keep my value') }}</Button
@@ -262,6 +268,7 @@ onMounted(async () => {
         </div>
         <Button
           v-if="settings.fields.value.some((field) => field.writable)"
+          intent="commit"
           :disabled="
             controller.busy.value ||
             !settings.dirty.value ||

@@ -45,12 +45,19 @@ async function resolve(keep = false) {
     <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">{{ current }}</p>
     <slot />
     <div class="mt-3 flex flex-wrap gap-2">
-      <AppButton :disabled="busy" @click="resolve()">{{
+      <AppButton intent="discard" :disabled="busy" @click="resolve()">{{
         locale === 'pl' ? 'Użyj aktualnych danych' : 'Use current values'
       }}</AppButton>
-      <AppButton v-if="allowKeep" :disabled="busy" @click="resolve(true)">{{
-        locale === 'pl' ? 'Zachowaj moje zmiany' : 'Keep my edits'
-      }}</AppButton>
+      <AppButton
+        v-if="allowKeep"
+        intent="commit"
+        variant="outline"
+        :disabled="busy"
+        @click="resolve(true)"
+        >{{
+          locale === 'pl' ? 'Zachowaj moje zmiany' : 'Keep my edits'
+        }}</AppButton
+      >
     </div>
   </AppAlert>
 </template>

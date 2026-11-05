@@ -549,6 +549,7 @@ function changePage(value: number) {
       </div>
       <AppTooltip :text="text('Resetuj filtry', 'Reset filters')">
         <AppButton
+          intent="neutral"
           size="sm"
           icon-only
           variant="ghost"
@@ -600,6 +601,7 @@ function changePage(value: number) {
         />
         <AppTooltip :text="text('Odśwież', 'Refresh')">
           <AppButton
+            intent="inspect"
             size="sm"
             icon-only
             variant="ghost"
@@ -634,6 +636,7 @@ function changePage(value: number) {
           >{{ text('Wybrane', 'Selected') }}: {{ selectedCount }}</span
         >
         <AppButton
+          intent="neutral"
           size="sm"
           :disabled="loading || page?.counts !== 'exact' || !page?.matching"
           @click="selectMatching"
@@ -642,6 +645,7 @@ function changePage(value: number) {
           }}</AppButton
         >
         <AppButton
+          intent="neutral"
           size="sm"
           :disabled="!selectedCount"
           @click="updateSelection({ mode: 'explicit', publicIds: [] })"
@@ -784,6 +788,7 @@ function changePage(value: number) {
                     column.sortable !== false &&
                     page?.capabilities.sort.includes(column.key)
                   "
+                  intent="neutral"
                   variant="ghost"
                   size="sm"
                   class="-ml-[13px]"
@@ -918,12 +923,14 @@ function changePage(value: number) {
       />
       <div v-else class="flex items-center gap-2">
         <AppButton
+          intent="neutral"
           size="sm"
           :disabled="loading || query.page <= 1"
           @click="changePage(query.page - 1)"
           >{{ text('Poprzednia', 'Previous') }}</AppButton
         ><span>{{ query.page }}</span
         ><AppButton
+          intent="neutral"
           size="sm"
           :disabled="loading || !page?.hasNext"
           @click="changePage(query.page + 1)"

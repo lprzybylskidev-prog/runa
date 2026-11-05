@@ -191,9 +191,13 @@ const missing = computed(() =>
     >
       <Alert v-if="missing" tone="warning"
         >{{ t('Unable to load the current record.') }}
-        <Button :busy="refreshing" size="sm" @click="load(true)">{{
-          t('Retry loading')
-        }}</Button></Alert
+        <Button
+          intent="inspect"
+          :busy="refreshing"
+          size="sm"
+          @click="load(true)"
+          >{{ t('Retry loading') }}</Button
+        ></Alert
       >
       <div class="divide-y divide-line">
         <section

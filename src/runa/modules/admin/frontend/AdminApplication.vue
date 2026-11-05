@@ -110,7 +110,7 @@ const validPath = computed(
           v-if="state === 'proof_required'"
           :controller="controller"
         />
-        <component v-else :is="authPresentation.minimalLayout ?? MinimalLayout">
+        <component :is="authPresentation.minimalLayout ?? MinimalLayout" v-else>
           <Alert
             v-if="
               !controller.session.loading.value &&
@@ -119,7 +119,7 @@ const validPath = computed(
             tone="danger"
           >
             {{ tr('Session could not be loaded.') }}
-            <Button @click="controller.session.refresh">{{
+            <Button intent="inspect" @click="controller.session.refresh">{{
               tr('Retry')
             }}</Button>
           </Alert>
@@ -130,7 +130,9 @@ const validPath = computed(
                   tr('The administrator panel is unavailable.'),
               )
             }}
-            <Button @click="controller.refresh">{{ tr('Retry') }}</Button>
+            <Button intent="inspect" @click="controller.refresh">{{
+              tr('Retry')
+            }}</Button>
           </Alert>
         </component>
       </template>

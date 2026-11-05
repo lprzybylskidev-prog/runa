@@ -98,3 +98,8 @@ Setting metadata retains the stable technical key and separate human names and
 explanations in Polish/English. Preserve the owning descriptions through declared
 Admin fields; use the public settings help/external-label contract in the linked
 snapshot guide rather than deriving labels or maintaining a second text registry.
+
+For action colors and hierarchy follow
+`docs/runa/handbook/development/frontend/components.md#action-button-semantics`.
+Use the public explicit intent/confirmation contracts for application controls;
+feedback context and password requirements never determine action meaning.

@@ -294,6 +294,7 @@ onScopeDispose(() => {
         </a>
         <AppButton
           v-if="mobile"
+          intent="cancel"
           icon-only
           class="shell-group-toggle"
           :aria-label="t('closeNavigation')"
@@ -338,6 +339,7 @@ onScopeDispose(() => {
           <AppButton
             v-if="sidebar"
             ref="drawerTrigger"
+            intent="neutral"
             icon-only
             class="shell-sidebar-toggle"
             size="sm"
@@ -417,6 +419,7 @@ onScopeDispose(() => {
           >
             <template #trigger="{ toggle, open, panelId }">
               <AppButton
+                intent="neutral"
                 icon-only
                 class="shell-avatar-button"
                 :disabled="userLoading || navigationLoading"

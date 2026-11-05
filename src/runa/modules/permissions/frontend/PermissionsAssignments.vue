@@ -172,18 +172,19 @@ function revert() {
         </div>
         <template v-if="dirty && writable" #actions
           ><Button
+            intent="inspect"
             type="submit"
             variant="outline"
             :disabled="!!conflicts.length"
             >{{ t({ pl: 'Sprawdź zmiany', en: 'Review changes' }) }}</Button
-          ><Button @click="revert">{{
+          ><Button intent="discard" @click="revert">{{
             t({ pl: 'Cofnij zmiany', en: 'Revert changes' })
           }}</Button></template
         >
       </Form>
       <div v-else class="space-y-3">
         <p>{{ t('Unable to load the current record.') }}</p>
-        <Button :busy="controller.busy.value" @click="retry">{{
+        <Button intent="inspect" :busy="controller.busy.value" @click="retry">{{
           t('Retry loading')
         }}</Button>
       </div>

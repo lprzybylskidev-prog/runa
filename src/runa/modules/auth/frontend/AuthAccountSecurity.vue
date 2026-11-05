@@ -273,8 +273,8 @@ watch(
             <p class="text-xs text-muted">{{ securityMethod.description }}</p>
           </div>
           <Button
+            intent="inspect"
             variant="outline"
-            :tone="securityMethod.enrolled ? 'danger' : 'primary'"
             :disabled="busy || modal !== null || !securityMethod.available"
             @click="selectMethod(securityMethod.value, securityMethod.enrolled)"
             >{{
@@ -291,6 +291,7 @@ watch(
           security.recovery_codes_enabled &&
           security.enrolled.includes('totp')
         "
+        intent="inspect"
         variant="outline"
         :disabled="busy || modal !== null"
         @click="setAction('recoveryRotate')"
@@ -318,6 +319,7 @@ watch(
         </p>
         <div class="flex flex-wrap gap-2">
           <Button
+            intent="inspect"
             variant="outline"
             :disabled="busy || !canTrustDevice"
             @click="setAction('trustIssue')"
@@ -346,9 +348,9 @@ watch(
         >
           <template #actions="{ row }"
             ><Button
+              intent="danger"
               size="sm"
               variant="outline"
-              tone="danger"
               :disabled="busy"
               @click="
                 removing = row.public_id;
@@ -359,8 +361,9 @@ watch(
           >
         </Table>
         <Button
-          :busy="trustedLoading"
           v-if="trustedCursor"
+          intent="inspect"
+          :busy="trustedLoading"
           :disabled="busy"
           @click="loadTrustedDevices(true)"
           >{{ text('Wczytaj starsze', 'Load older') }}</Button
@@ -407,14 +410,20 @@ watch(
 
       <template #actions>
         <Button
+          :intent="
+            overviewAction === 'disable'
+              ? 'danger'
+              : overviewAction === 'recoveryRotate'
+                ? 'caution'
+                : 'commit'
+          "
           type="submit"
           variant="outline"
-          :tone="overviewAction === 'disable' ? 'danger' : 'primary'"
           :busy="busy"
           :disabled="overviewAction === 'trustIssue' && !canTrustDevice"
           >{{ operationLabel }}</Button
         >
-        <Button :disabled="busy" @click="close(false)">{{
+        <Button intent="cancel" :disabled="busy" @click="close(false)">{{
           text('Anuluj', 'Cancel')
         }}</Button>
       </template>
@@ -429,8 +438,9 @@ watch(
     >
       <template #actions
         ><Button
-          :busy="busy"
           v-if="failure === 'csrf'"
+          intent="inspect"
+          :busy="busy"
           @click="account.refreshCsrf"
           >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
         ></template
@@ -441,7 +451,7 @@ watch(
     :model-value="Boolean(removing)"
     :title="text('Unieważnić zaufanie?', 'Revoke device trust?')"
     :confirm-label="text('Unieważnij', 'Revoke')"
-    confirm-tone="danger"
+    confirm-intent="danger"
     :locale="locale"
     :busy="busy"
     @update:model-value="
@@ -467,8 +477,9 @@ watch(
     >
       <template #actions
         ><Button
-          :busy="busy"
           v-if="failure === 'csrf'"
+          intent="inspect"
+          :busy="busy"
           @click="account.refreshCsrf"
           >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
         ></template

@@ -54,6 +54,11 @@ for replacement precedence, props/events and remaining form delivery.
 
 ## AppTooltip
 
+Tooltip accepts `placement?: 'bottom' | 'right'` (bottom default) and
+`align?: 'start' | 'end'` (end default). Its root is the measured anchor; use a
+content-sized wrapper such as w-fit when composing it in a stretching grid.
+Viewport clamping and collision fallback remain active.
+
 - Source: `src/runa/resources/js/components/AppTooltip.vue`; public `Tooltip`. Existing `text`, optional bottom/right placement and scoped `descriptionId` remain compatible. The description ID is present only while shown.
 - Pointer and keyboard-focus states are separate. A short 80ms bridge allows entering teleported content; pointer leave from both trigger/content dismisses unless keyboard focus remains. Click, Escape, outside pointer and document scroll dismiss; rapid enter/leave and preference transitions do not retain stale hover state. Escape stays suppressed until a new hover/focus session; a repeated pointerenter while the anchor is still hovered, or a delayed first pointerenter during the same keyboard focus, does not reopen a dismissed tooltip. Leave reschedules a single hover-bridge timer and dismissal cancels it, preventing obsolete callbacks from disturbing later interactions.
 - Uses shared `useFloatingLayer` for measured viewport-clamped fixed positioning, resize/content observation, top-layer Escape/outside dismissal and teardown. Both placements teleport outside scroll clipping; no runtime DOM access during static error rendering.
@@ -96,10 +101,44 @@ for replacement precedence, props/events and remaining form delivery.
 ## AppButton
 
 - Source: `src/runa/resources/js/components/AppButton.vue`; public `Button`. Native attributes/listeners inherit; safe default `type="button"`. No shell dependency.
-- `variant`: neutral (compatible default), solid, outline, soft, ghost. `tone`: primary, secondary, success, danger, warning, info, accent. `size`: sm (36px), md (44px), lg (52px). Use md for usual touch actions.
+- `variant`: neutral, solid, outline, soft, ghost. `tone`: neutral, primary, secondary, success, danger, warning, info, accent. Public `ButtonIntent` supplies action meaning; `ButtonTone` includes neutral. `size`: sm (36px), md (44px), lg (52px). Use md for usual touch actions.
 - `busy?: boolean` disables activation and exposes aria-busy plus a decorative spinner; slot text supplies context. When omitted, a `type="submit"` Button inherits the nearest public Form's busy state; other buttons and standalone submit buttons default to false. Explicit true/false overrides this local default. The private form-activity injection is UI implementation, not another public entrypoint. `disabled` uses native semantics. `aria-pressed` supports toggle feedback. `iconOnly` (or compatible `compact`) makes a square; provide an accessible name. Tooltip is separate.
+- Intent overrides a low-level tone. With no explicit variant, commit uses solid; other colored intents use outline; neutral uses neutral. Without intent/tone, the button is neutral. Busy preserves the action color and blocks activation; unavailable controls use disabled tokens.
 - Colors use finite CSS token mappings, without inline styles so build-time native error rendering retains its CSP contract. Reduced motion preserves the static busy indicator.
 - Used by MinimalLayout preferences and ApplicationLayout preferences, sidebar/drawer controls and profile trigger. Shell disclosures/navigation and modal backdrop remain specialized internal compositions.
+
+### Action button semantics
+
+Owner-approved defaults apply across application and module views. Pass explicit
+`intent` from source-owned operation metadata; never infer it from translated text,
+HTTP verb, feedback ancestors or password confirmation requirements.
+
+| Intent  | Meaning and examples                                        | Token role       |
+| ------- | ----------------------------------------------------------- | ---------------- |
+| commit  | Save, apply, create, activate                               | success / green  |
+| cancel  | Safe Cancel, Close, Back                                    | neutral          |
+| discard | Discard unsaved work, restore defaults                      | warning / yellow |
+| inspect | Load, refresh, preview, open an editor or bulk tool, export | info / blue      |
+| caution | Deactivate, set a lock, cancel running work                 | warning / yellow |
+| danger  | Delete stored data, revoke sessions/devices/access          | danger / red     |
+| neutral | Navigation, selection, disclosure, acknowledgment           | neutral          |
+
+Meaning and importance are separate: use solid for the main action and outline,
+soft or ghost for secondary actions without changing its semantic role. Keep the
+same role on hover, pressed and busy states in both themes. Readable labels and
+focus indicators remain required; color alone never identifies an action.
+
+A mixed bulk opener is inspect. Its final confirmation reflects the selected
+operation and parameters. Enabling and disabling a lock can therefore differ.
+Password proof does not turn a green save red. Safe cancellation remains neutral
+even inside a danger alert/dialog; discarding an edited draft is yellow.
+
+`ConfirmDialog.confirmIntent?: ButtonIntent` defaults to commit and its Cancel is
+neutral. Controllers that ask about destructive changes or discarded drafts must
+supply the corresponding intent in their confirmation projection. Public
+`BulkProvider.actions` may declare `intent?: ButtonIntent`; omission means inspect.
+A control opening a subsequent review uses inspect and that review owns the final
+effect's intent. These are presentation contracts and grant no backend authority.
 
 ## AppButtonGroup
 
@@ -253,7 +292,7 @@ DateInput/TimeInput/DateTimeInput accept optional size sm/md (md default); the i
 - Dialog error feedback uses FormNotifications inside the modal portal, with dismissible persistent failure feedback and no inline duplicate.
 - initialFocus accepts a selector in the panel; by default custom Dialog focuses its first content control or panel, ConfirmDialog focuses Cancel and AlertDialog focuses acknowledgment. Modal focus traps Tab/Shift+Tab, contains programmatic focus and restores the invoking control after close. Nested dialogs and their floating Select/Popover/Tooltip panels share dismissal ownership; one Escape dismisses only the newest layer.
 - Escape defaults on, backdrop dismissal defaults on (closeOnOutside=false selects close-button-only pointer dismissal) and requires down/up on the backdrop. closable=false disables user dismissal; busy blocks closing and disables contained native fields. close emits close/escape/outside reason plus update:modelValue(false); parent-owned model changes remain authoritative. Prior inert/scroll state is restored on close/unmount, including dynamic body siblings and nested locks.
-- ConfirmDialog supplies localized cancel/confirm buttons, configurable labels/tone and emits confirm while staying open. Caller owns busy, error, retry and success closure; never close before a failed operation can be recovered. Cancel and initial focus favor the nondestructive action. AlertDialog uses role=alertdialog and emits acknowledge before requesting close. locale defaults pl; pass en for English.
+- ConfirmDialog supplies localized cancel/confirm buttons, configurable labels/confirmIntent and emits confirm while staying open. Caller owns busy, error, retry and success closure; never close before a failed operation can be recovered. Cancel and initial focus favor the nondestructive action. AlertDialog uses role=alertdialog and emits acknowledge before requesting close. locale defaults pl; pass en for English.
 - The accepted application drawer remains specialized; it only reuses the scroll-lock primitive. No provisional dialog composition exists in either layout. The isolated advanced-form scenario uses ConfirmDialog without changing useDirtyGuard’s application-owned confirmation seam.
 
 ### Table
@@ -264,7 +303,7 @@ DateInput/TimeInput/DateTimeInput accept optional size sm/md (md default); the i
 
 ### Nested semantic colors
 
-Alert (including Toast/AsyncContent errors), Badge, Status, Progress and Statistic establish a reactive semantic tone context for descendants. An omitted child tone inherits the closest context; explicit tones override it and establish a new context. Buttons in a colored context default to that tone and the outline variant; explicit variants/tones remain authoritative. A neutral context restores neutral feedback and neutral button defaults. Standalone defaults are unchanged. This applies through wrapper components and slots without shell dependencies; use component props rather than descendant CSS overrides. Ordinary form input validation and dedicated shell navigation retain their own contracts.
+Alert (including Toast/AsyncContent errors), Badge, Status, Progress and Statistic establish a reactive semantic tone context for nested feedback. Omitted feedback tones inherit; explicit tones establish a new context and neutral resets it. Button never inherits feedback tone. Its explicit action intent follows [action button semantics](#action-button-semantics), including blue AsyncContent retry and neutral dismissal. This works through wrappers and slots without descendant CSS overrides. Ordinary input validation and shell navigation retain their own contracts.
 
 ### TablePreferences and useTableViews
 
@@ -348,7 +387,7 @@ still handles identity loss. It ships with the ordinary frontend runtime.
 ## LinkButton and Auth application composition
 
 `LinkButton` maps to `AppLinkButton.vue`: a native anchor with required href and
-existing button variants/tone, preserving open-in-new-tab and keyboard semantics.
+existing button variants/tone (neutral by default), preserving open-in-new-tab and keyboard semantics.
 Use Button for mutations and LinkButton for styled navigation; it inherits the
 shared control focus/color/motion without duplicating local button markup. Auth
 welcome and application dropdown/entry use it. It does not authorize a destination.
