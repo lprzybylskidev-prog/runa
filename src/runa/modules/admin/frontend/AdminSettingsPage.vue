@@ -143,17 +143,6 @@ async function apply() {
 const reviewed = computed(
   () => props.form.commandReviews.value[`${props.settingsSection}:publish`],
 );
-const reviewedFields = computed(() =>
-  Object.entries(reviewed.value?.changes ?? {}).filter(
-    ([key]) => key !== 'summary',
-  ),
-);
-const summary = computed(() => {
-  const value = reviewed.value?.changes.summary;
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? value
-    : {};
-});
 </script>
 <template>
   <AdminForm :controller="form">
@@ -434,42 +423,13 @@ const summary = computed(() => {
   <Dialog
     v-model="reviewOpen"
     :locale="locale"
-    :title="label('Potwierdź zmianę ustawień', 'Confirm settings changes')"
+    :title="
+      label(
+        'Czy na pewno zapisać ustawienia?',
+        'Are you sure you want to save these settings?',
+      )
+    "
   >
-    <dl class="space-y-3 text-sm">
-      <div v-for="[key, change] in reviewedFields" :key="key">
-        <dt class="font-semibold">
-          {{ t(section?.fields.find((f) => f.key === key)?.label ?? key) }}
-        </dt>
-        <dd
-          v-if="change && typeof change === 'object' && !Array.isArray(change)"
-        >
-          {{ display(change.old) }} → {{ display(change.new) }}
-        </dd>
-      </div>
-    </dl>
-    <Alert
-      v-if="summary.force_password_change === true"
-      tone="warning"
-      class="mt-4"
-      >{{
-        label(
-          'Zmiana wymusi ustawienie nowych haseł dla kont: ',
-          'This change requires new passwords for accounts: ',
-        )
-      }}{{ summary.password_accounts }}</Alert
-    >
-    <p
-      v-if="summary.exceptions_revalidated === true"
-      class="mt-4 text-sm text-muted"
-    >
-      {{
-        label(
-          'Indywidualne wyjątki polityki zostaną unieważnione. Cofnięte sesje i uprawnienia nie zostaną przywrócone.',
-          'Individual policy exceptions will be invalidated. Revoked sessions and access will not be restored.',
-        )
-      }}
-    </p>
     <template #footer
       ><Button :disabled="blocked || !reviewed" @click="apply">{{
         label('Zatwierdź', 'Confirm')

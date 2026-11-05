@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Simplify module settings Save to a confirmation question; omit the repeated differences and policy consequence messages while preserving native validation, password proof and Audit.
+
 - Use the full workspace width for module settings and pack group cards in independent responsive columns, removing large gaps below shorter groups.
 
 - Compact the shared module settings editor into bounded label/control rows and responsive group columns; widen the snapshot selector. Preserve source technical keys and separate PL/EN names/descriptions through authorized Admin projection, with keyboard/touch-accessible help. Clarify Auth descriptions and units without changing setting behavior.

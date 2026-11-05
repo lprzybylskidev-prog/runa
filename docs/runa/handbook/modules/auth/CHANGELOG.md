@@ -2,6 +2,8 @@
 
 ## 5.0.0 — Unreleased
 
+- Simplify module settings Save to a confirmation question; omit the repeated differences and policy consequence messages while preserving native validation, password proof and Audit.
+
 - Use the full workspace width for module settings and pack group cards in independent responsive columns, removing large gaps below shorter groups.
 
 - Compact the shared module settings editor into bounded label/control rows and responsive group columns; widen the snapshot selector. Preserve source technical keys and separate PL/EN names/descriptions through authorized Admin projection, with keyboard/touch-accessible help. Clarify Auth descriptions and units without changing setting behavior.

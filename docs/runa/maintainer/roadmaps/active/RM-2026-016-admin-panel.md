@@ -1145,6 +1145,12 @@ reassessment before resuming point 3; completed point history remains evidence.
     complete cards together, existing source order and compact normal card spacing.
   - Prepare current assets and synchronize the owning guide/changelogs; commit
     before owner acceptance. No data/schema/security or public API change.
+- [x] 11a92. Simplify settings save confirmation.
+  - Owner feedback 2026-11-05: show only a confirmation question when saving;
+    remove the differences list and policy consequence messages from that dialog.
+  - Keep native server preview/revision validation, password proof and Audit.
+    Synchronize current presentation guidance/assets and commit; no runtime data
+    changes or new tests for this simple presentation cleanup. Gates remain 11b/12.
 - [ ] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
@@ -8003,3 +8009,27 @@ and skills already route to that canonical presentation contract, so no new rule
 needed. No Docker resources or database data changed; existing resources/evidence
 remain preserved. Mandatory hooks/fresh knowledge accompany the commit. Owner manual
 acceptance 11b and final verification/release 12 remain open.
+
+### Point 11a92 — Question-only settings Save confirmation
+
+Owner feedback 2026-11-05 removes repeated change details and the policy-exception/
+revoked-session notice from the Save confirmation. The shared settings editor now
+asks only whether to save, with Confirm/Cancel actions in Polish/English. Removed
+unused presentation computations as well as all consequence/difference markup from
+that dialog. Snapshot field highlights and native server preview, stale-candidate
+validation, password proof, actual publication effects and Audit remain unchanged.
+
+Supported strict TypeScript/assets/native error build PASS. Focused real-page
+preparation changed a local password-length draft, received the native preview,
+confirmed the question-only dialog and absence of field differences/consequence
+copy, then cancelled without submitting a publication. Evidence:
+`.runtime/settings-snapshots/simple-confirm-build.log`,
+`.runtime/settings-snapshots/simple-confirm-readiness.mjs` and
+`.runtime/artifacts/playwright/settings-snapshots/simple-confirm.png`.
+No new regression test duplicates this simple presentation removal; broad suites
+remain in point 12. Current guide and both changelogs are synchronized. Existing
+unreleased versions remain appropriate. Owner/customer instruction products already
+route to the owning presentation contract and need no new rule. No migration,
+settings publication, dependency or Docker resource change; existing storage and
+reports are preserved. Mandatory hooks/fresh knowledge accompany the commit.
+Manual acceptance 11b and final verification/release 12 remain open.

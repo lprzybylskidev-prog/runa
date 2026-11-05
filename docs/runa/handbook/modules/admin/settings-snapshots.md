@@ -82,3 +82,9 @@ its primitives; replacements must preserve the same accessible association.
 Shared Select supports hideLabel; BooleanInputProps and TemporalInputProps support
 id, and temporal inputs/TagsInput support hideLabel. Hidden labels retain accessible
 names; visible external labels target the explicit native control ID.
+
+The save dialog asks only whether to save the settings, with Confirm/Cancel actions.
+It does not repeat field differences or policy consequence messages. The server
+preview still validates the exact candidate before confirmation; native password
+proof, revision checking, publication effects and Audit remain authoritative.
+Snapshot-loaded field highlights and previous-value help remain in the editor.
