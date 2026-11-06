@@ -184,5 +184,64 @@
     "top_k": 6,
     "intent": "current",
     "probe_only": true
+  },
+  {
+    "query": "Point 11a93 explicit shared action semantics solid main actions blue tool openers",
+    "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-016-admin-panel.md",
+    "section": "Point 11a93",
+    "top_k": 6,
+    "filters": {
+      "roadmap_id": "RM-2026-016",
+      "status": "closed"
+    },
+    "intent": "history",
+    "per_source": 6,
+    "max_chars": 24000,
+    "expected": [
+      {
+        "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-016-admin-panel.md",
+        "section": "Point 11a93",
+        "purpose": "historical_evidence",
+        "decision_ids": ["RM016-action-solid-blue-openers"],
+        "unknown_fields": ["effective_date", "applicable_version"]
+      }
+    ]
+  },
+  {
+    "query": "Point 11a95 quiet outlines effect colored modal tools mixed purple concrete confirmation",
+    "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-016-admin-panel.md",
+    "section": "Point 11a95",
+    "top_k": 6,
+    "filters": {
+      "roadmap_id": "RM-2026-016",
+      "status": "closed"
+    },
+    "intent": "history",
+    "per_source": 6,
+    "max_chars": 24000,
+    "expected": [
+      {
+        "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-016-admin-panel.md",
+        "section": "Point 11a95",
+        "purpose": "historical_evidence",
+        "decision_ids": ["RM016-action-outline-effect-openers"],
+        "unknown_fields": ["effective_date", "applicable_version"]
+      }
+    ]
+  },
+  {
+    "query": "AppButton quiet outlines effect color modal mixed purple final confirmation",
+    "source_path": "docs/runa/handbook/development/frontend/components.md",
+    "section": "Action button semantics",
+    "top_k": 5,
+    "intent": "current",
+    "expected": [
+      {
+        "source_path": "docs/runa/handbook/development/frontend/components.md",
+        "section": "Action button semantics",
+        "purpose": "current_guidance"
+      }
+    ],
+    "forbidden_sources": ["docs/runa/maintainer/customer-agent/AGENTS.md"]
   }
 ]

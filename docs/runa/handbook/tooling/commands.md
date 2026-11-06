@@ -147,7 +147,9 @@ empty/failure semantics, reports and guarded cleanup.
 
 ### `php artisan runa:test:frontend`
 
-Run only application Vitest/Vue component tests from `tests/frontend/app/unit`, using `src/vitest.config.mjs`.
+Run only application Vitest/Vue component tests from `tests/frontend/app/unit` and
+`tests/frontend/app/modules/<code>`, using `src/vitest.config.mjs`. Optional module
+tests are delivered together with their module source.
 
 ### `php artisan runa:test:e2e --critical`
 

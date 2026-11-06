@@ -30,10 +30,10 @@ with its documented limitations and approved RA-01–RA-07. Point 7 subsequently
 exposed the Admin/hybrid-health transaction premise documented at the end:
 the owner has now approved its exact-call repair design and instructed continued
 implementation. Point 7 is now complete with the reconciliation recorded below;
-point 8 is current.
+point 8 is complete and point 9 is current.
 Gate B remains approved and roadmap lifecycle stays active. The complete
 [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
-is retained verbatim. Points 1–7 are complete; point 8 is current. Points 2–6 require
+is retained verbatim. Points 1–8 are complete; point 9 is current. Points 2–6 require
 individual renewed reconciliation, approved corrections and completion records;
 their original completion declarations do not restore acceptance automatically.
 Continue in order through the existing implementation, owner manual acceptance
@@ -839,7 +839,7 @@ below are retained as historical records only.
     current examples and relevant module changelogs. Explicitly record any UI
     premise requiring owner choice rather than inventing a redesign.
 
-- [ ] 8. Resolve approved tooling, configuration, infrastructure and knowledge issues.
+- [x] 8. Resolve approved tooling, configuration, infrastructure and knowledge issues.
   - **Objective:** remove demonstrated development friction and stale configuration
     while preserving recently refactored architecture.
   - **Preconditions:** approved audit findings; points 3–7 changes known so retrieval
@@ -3217,3 +3217,43 @@ reports, development/reference data, base test database and knowledge/model cach
 No Docker resource was created or removed. Point 10 still owns preparing stable
 current assets/data before point-11 owner acceptance. No release is prepared.
 Point 7 is complete in this reconciliation commit; continue with point 8.
+
+## Point 8 — Tooling/configuration/knowledge reconciliation — 2026-11-06
+
+The [owning dispositions](../../reviews/RM-2026-017-tooling-dispositions.md)
+record actual input consumers, dependency retention, source/native evidence limits
+and the synchronized instruction products. No dependency upgrade, Docker rebuild,
+new environment key, database reset or knowledge architecture change is selected.
+
+Correct two demonstrated freshness/placement defects: Vite now selects absolute
+workspace-root runtime caches, and DevelopmentSetup hashes the shared/module
+frontend, registry and native error build inputs it previously omitted. Unchanged
+inputs still skip installation/build; changed inputs require preparation without
+introducing data operations on reopen. A real HMR startup creates the correct
+cache and no source-local node_modules parent; resolving both installed Vite
+configs confirms their application/error cache paths. Stop that task-owned process.
+The focused real-fingerprint startup fixture passes **1 selected, 19 deselected,
+native exit 0, cleanup 0**, without an actual build/install/data operation.
+Also align the native frontend empty-scope detector with the canonical module
+root: a module-only customer suite executes Vitest, and declined/absent tests
+remain empty. Its focused command-selection fixture passes **1 selected,
+13 deselected, native exit 0, cleanup 0** without starting a browser.
+
+Extend private metadata/golden cases with source-verified RM-016 11a93 superseded
+and 11a95 accepted presentation decisions, plus the current public Button source.
+Exact historical hash and heading bind the annotations; closed bytes remain
+unchanged. Existing missing-evidence and customer receipt/private exclusion cases
+remain final obligations. Real composed configuration resolves the two statuses
+and supersession link. Focused existing annotation-hash refusal fixture passes
+**1 selected, 24 deselected, native exit 0, cleanup 0**. Complete golden/doctor/
+Boost/native acceptance stays final, not implied by a fixture or configuration load.
+
+The initial relevant knowledge check was stale after point-7 docs, so it was
+incrementally refreshed before bounded current-intent retrieval; the canonical
+artifact-placement original was opened. Refresh subsequent staged source/metadata
+changes incrementally before commit; preserve the collection, models/caches and
+receipt scope. Public environment/command docs, central changelog and the source
+configuration map are synchronized; existing owner/customer selectors already
+cover these rules and need no duplicated policy. No module contract/version
+change follows. Preserve all data/reports/caches; no Docker resource was created
+or removed. Point 8 is complete in this commit; point 9 is next.

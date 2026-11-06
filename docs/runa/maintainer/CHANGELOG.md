@@ -4,6 +4,11 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Keep Vite caches under workspace `.runtime`; invalidate development setup after
+  shared/module frontend, registry or native error build changes while preserving
+  nondestructive reopen. Add hash-bound RM-016 decision retrieval cases without
+  rewriting closed history or changing knowledge runtime/model dependencies.
+
 - Add Framework API 1.1.0 exact-call Admin read-health planning, preserving separate
   on-use checks before the locked read, current grants/proof/Policies and consumed
   source/expiry/rollback/reconnect evidence. Update the reference and generated

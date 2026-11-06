@@ -18,6 +18,9 @@ if (
 
 export default defineConfig({
   root: 'app/resources',
+  cacheDir: fileURLToPath(
+    new URL('../.runtime/frontend/vite/application', import.meta.url),
+  ),
   resolve: {
     alias: {
       '@/runa': fileURLToPath(
