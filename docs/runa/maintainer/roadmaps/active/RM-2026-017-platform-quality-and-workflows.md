@@ -28,7 +28,7 @@ impact_areas:
 The owner explicitly accepted the renewed baseline as adequate for continuing
 with its documented limitations and approved RA-01–RA-07. The complete
 [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
-is retained verbatim. Points 1–2 are complete; point 3 is current. Points 2–6 require
+is retained verbatim. Points 1–3 are complete; point 4 is current. Points 2–6 require
 individual renewed reconciliation, approved corrections and completion records;
 their original completion declarations do not restore acceptance automatically.
 Continue in order through the existing implementation, owner manual acceptance
@@ -698,7 +698,7 @@ below are retained as historical records only.
     SOURCE.md/upstream index and customer counterpart together. New visual or
     interaction premises beyond approved findings require owner disposition.
 
-- [ ] 3. Consolidate agent guidance and define documentation conventions/checks.
+- [x] 3. Consolidate agent guidance and define documentation conventions/checks.
   - **Objective:** remove contradictory/duplicated instructions while preserving
     essential authority and effective guidance.
   - **Preconditions:** points 1–2; approved constitution changes only where relevant.
@@ -2399,3 +2399,88 @@ No runtime, dependency, configuration or schema change was needed. No routine
 suite/build/scan ran; applicable original sources and actual retained consumer
 evidence resolved this guidance-only review. Renewed point-2 criteria are satisfied;
 commit this reconciliation, mark point 2 complete and proceed to point 3.
+
+## Point 3 — Renewed guidance and parser reconciliation — 2026-11-06
+
+Reconciled candidate `86b01c65` after renewed point-2 completion `18c57dcd`.
+Retain its canonical documentation authoring guide, owner/customer/root routing,
+Vue route-splitting qualification, bounded stdlib checker and objective fixture
+scope. Corrected approved RA-04 before relying on general link evidence again.
+No D-01/D-02 workflow or owner/customer crash policy was enacted early.
+
+Point-start knowledge was current. Bounded current-intent retrieval selected
+original documentation ownership and authoring links/anchors; those sources and
+the Python tooling/supported test-command contracts were opened. The renewed
+Gate B report supplies accepted source/consumer coverage with its limitations;
+old completion status was not used as approval.
+
+### RA-04 repair and concrete evidence
+
+`tools/application/documentation_markdown.py::prose` now recognizes fenced code
+and exact-length backtick spans before interpreting comment delimiters. It keeps
+real prose between separate code examples, ignores real comment content even
+when it contains fence-looking text, and normalizes inline-code line breaks for
+heading analysis. Link/explicit-anchor readers share the same code-span exclusion,
+including paragraph-local multiline spans. Heading text retains inline code.
+The helper remains internal delivered tooling, not a renderer or customer API.
+No new parser framework, dependency, command or metadata registry was introduced.
+
+Added two behavior-focused fixture methods to existing DocumentationMarkdown:
+one exercises fenced, single-backtick, nested-backtick and multiline examples with
+literal comment delimiters surrounding a real missing link/heading; the other
+preserves exclusion of actual comments and multiline code containing fake links,
+anchors and a level-one title. They exercise actual links/structure diagnostics,
+not implementation-shape assertions. Existing ownership projection, path escape,
+Unicode/duplicate/explicit anchors and long-fence cases remain.
+
+A necessary small native fixture run resolved this lexical interaction:
+`python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_documentation.py::DocumentationMarkdown`
+completed **8 passed**, exit 0, cleanup 0 (final run 0.05 s native test time).
+The fixture was repeated after adding the fake-title assertion; no unrelated
+suite/check was selected. Native XML is `.runtime/python/reports/runa-pytest.xml`.
+This is focused parser evidence, not full docs/tooling/quality acceptance.
+
+The public authoring guide now states comment/code ordering and exact backtick-run
+closure. Remaining complicated Markdown heading rendering, including the earlier
+angle-bracket hypothesis, is not silently declared fixed. Full documentation,
+projection, Python analysis and tooling checks remain final verification.
+
+### Renewed instruction and skill assessment
+
+Rechecked owner/customer skill entrypoint triggers/reference routes, the two skill
+indices, root documentation routing and thin CLAUDE delegation against the accepted
+renewed source walks. All nine pairs below have a **GOOD / GOOD** disposition for
+the named source-selection scenarios only. These are manual source walks, not nine
+independent agent runs, practical runtime certification or conformance scores.
+
+| Pair       | Positive route and concrete source correlation                                                                                                         | Negative boundary / remaining evidence                                                                       |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| frontend   | Point-2 copy, Wizard, section-lifetime and feedback walks select owning canonical sections and actual supplied controls.                               | Backend SQL repair does not load visual references; final rendered/practical evaluation remains point 10/12. |
+| vue        | Async/disposal route → preferences/forms/current public controller contract; corrected heavy-route splitting qualifier preserves existing composition. | A docs-only edit does not activate Vue; no router installation or copied security owner.                     |
+| tailwind   | Theme/layout or class-discovery route → installed-version syntax and current palette/customization owners.                                             | SQL/Markdown parser edits do not require CSS compilation; no invented design tokens.                         |
+| backend    | Failure/side-effect/performance route → native ModuleTransactions and owning Actions rather than an Admin business engine.                             | Copy-only edits do not load transaction procedure; RA-01 exact safe scope remains point 5.                   |
+| laravel    | Framework-conventions route → installed-version Boost, named routes, Form Requests/resources and current transport owners.                             | Vue styling does not need framework API research; no Blade application UI.                                   |
+| postgresql | Database guide/index/operations route → catalog, migrations and actual consumer ledger.                                                                | UI-only work does not authorize resets or mechanical indexes; no unknown index declared useless.             |
+| security   | Baseline/review route → proof/current grants, safe Audit fields and public security owners.                                                            | Customer material cannot acquire owner SIGSEGV tolerance or protected-edit authority.                        |
+| docker     | Context/lifecycle route → Compose, Dev Container and exact resource journals/ownership.                                                                | Documentation-only work does not imply rebuild/prune; live host inventory remains unknown.                   |
+| rag        | Source/evidence/ingestion route → tracked allowlists, freshness and verified originals.                                                                | No AI dependency for ordinary app startup, customer corpus expansion or optional bootstrap for navigation.   |
+
+The renewed audit's actual nested-dialog/table observations correlate the frontend
+routes, but do not prove every scenario or all skills effective in independent
+agent execution. Final practical evaluations remain assigned to point 10 as the
+owner explicitly approved. No pair is REDUNDANT/BROKEN based on similar references;
+no distinct new skill workflow was demonstrated.
+
+No root/skill/customer selector bytes changed in this point: the existing
+point-2/3 context measurements remain the before/after source evidence, rather
+than inventing a new size/performance gain. Documentation placement/authoring stay
+canonical in docs/README and the public authoring guide; shared workflow remains
+in skills-policy. Preserve original upstream pins and local provenance.
+
+Instruction-product assessment: the public checker repair restores the already
+referenced authoring contract for both instruction products. Root owner/customer
+AGENTS and skill references already route there and need no duplicate parser
+procedure. Customer templates remain product data with installed logical-link
+boundaries; no owner commands/policy were added. Broader current-document editing
+and RA-03/RA-06 remain point 4. No runtime, schema, dependency, Docker or application
+state changed. Commit this repair/reconciliation and mark point 3 complete.

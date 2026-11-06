@@ -71,7 +71,12 @@ before checking ownership and existence. Asset fragments are not Markdown headin
 Leading metadata, comments and fenced examples do not create links
 or headings. A fence closes only with the same character, at least its opening
 length and no trailing nonspace text. Keep links/anchor markup out of inline code
-unless they are examples. Use fenced rather than indented code examples: links in
+unless they are examples. Literal comment delimiters inside fenced or inline code
+remain examples; they cannot hide real prose between separate examples. Inline
+code closes with a backtick run of exactly its opening length, including code
+spans continued within a paragraph. Real comments exclude their content even when
+it contains example-looking fences or links.
+Use fenced rather than indented code examples: links in
 indented prose/list items are still checked. This is an offline source checker, not a complete
 Markdown renderer; for complex markup confirm the rendered target as well.
 

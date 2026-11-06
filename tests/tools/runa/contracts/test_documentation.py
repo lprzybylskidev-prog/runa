@@ -94,6 +94,37 @@ class DocumentationMarkdown(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "owner-only"):
             docs_checks.links(self.root, [source], logical_paths=mapping)
 
+    def test_code_comment_delimiters_cannot_hide_real_links_or_headings(self) -> None:
+        examples = (
+            ("```html\n<!--\n```", "```html\n-->\n```"),
+            ("Opener: `<!--`.", "Closer: `-->`."),
+            ("Opener: ``literal ` <!--``.", "Closer: ``--> ` literal``."),
+            ("Opener: `literal\n<!--`.", "Closer: `-->\nliteral`."),
+        )
+        for opening, closing in examples:
+            with self.subTest(opening=opening):
+                source = self.write(
+                    "guide.md",
+                    f"# Root\n\n{opening}\n\n## Real\n[Broken](missing.md)\n\n{closing}\n",
+                )
+                self.assertIn("real", anchors(source.read_text()))
+                with self.assertRaisesRegex(ValueError, "Broken documentation link"):
+                    docs_checks.links(self.root, [source])
+                source.write_text(source.read_text().replace("## Real", "# Second title"))
+                with self.assertRaisesRegex(ValueError, "level-one title"):
+                    docs_checks.structure([source])
+
+    def test_real_comments_and_multiline_code_still_exclude_example_links(self) -> None:
+        source = self.write(
+            "guide.md",
+            "# Root\n\n<!--\n```html\n# Hidden\n[Hidden](missing.md)\n-->\n"
+            "\n``example ` [Example](missing.md)\n# Fake title\n<a id='fake'></a> <!--``\n"
+            "\n## Real\n[Read](#real)\n",
+        )
+        docs_checks.links(self.root, [source])
+        docs_checks.structure([source])
+        self.assertEqual(anchors(source.read_text()), {"root", "real"})
+
     def test_markdown_reference_destinations_and_encoded_paths_are_checked(self) -> None:
         self.write("a guide.md", "# Guide\n")
         source = self.write("index.md", "# Index\n[Read][guide]\n\n[guide]: <a%20guide.md#guide>\n")
