@@ -31,3 +31,19 @@ Never replace local skills by pulling current upstream `main`.
 The accepted research also discussed `magnus919/agent-skills` (backend/Compose), `laravel/agent-skills` (Laravel simplification/conventions), `supabase/agent-skills` (PostgreSQL), `ofershap/tailwind-best-practices`, `PaulRBerg/agent-skills` (Tailwind), and community Vue/RAG sources. These are research leads rather than additional installed skills or verified pinned adaptations. Preserve that distinction; inspect and record exact paths/revisions/license before copying any new material.
 
 The seven supplied commit identifiers were confirmed to resolve in their named repositories during the bootstrap audit on 2026-10-17. This checks provenance identifiers, not the completeness of the original upstream review. No source was upgraded or dependency approved by this check.
+
+## Frontend standards and selective loading
+
+The frontend selection map is owned by
+[visual direction](../design/visual-direction.md#ui-standards-and-guidance-map).
+The owner/customer frontend selectors route by affected topic; canonical handbook
+standards replace repeated general checklists. This is local guidance maintenance,
+not a new Sablier revision or adoption of community skill candidates.
+
+Primary accessibility references checked on 2026-11-06:
+[WCAG 2.2, Recommendation 2024-12-12](https://www.w3.org/TR/2024/REC-WCAG22-20241212/)
+and [WAI-ARIA modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/).
+[The frontend accessibility baseline](../architecture/frontend.md#accessibility-baseline)
+owns practical application and honest limits. No source text/code/assets or
+installers were copied. Preserve existing pins and review exact paths/licensing
+before any future community-source adaptation.

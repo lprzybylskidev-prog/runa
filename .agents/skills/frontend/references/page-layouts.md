@@ -35,9 +35,9 @@ For application settings and runtime branding composition, follow
 and its owning settings contract. Use public App registration/adapters and shared
 controllers; preserve canonical identity and technical/source policy ownership.
 
-For password/2FA proof before entry or a sensitive operation, use the public Auth
+For password confirmation before protected entry or a sensitive operation, use the public Auth
 [operation-proof composition](../../../../docs/runa/handbook/modules/auth/entry-ui.md#operation-proof-composition)
-with its inline or MinimalLayout page default. Reuse the caller's session and
+with its shared full-page default. Reuse the caller's session and
 proof controller; presentation replacements do not duplicate credential requests.
 
 Admin follows the shared application language preference (Polish default, English

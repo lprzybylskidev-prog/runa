@@ -567,7 +567,7 @@ Dependencies below refer to completed points, not approval inferred from time.
     Stop and receive explicit owner approval of findings/selected scope and any
     new architecture. Record rejected/deferred recommendations and reasons.
 
-- [ ] 2. Establish Runa UI/UX standards and selective frontend skill guidance.
+- [x] 2. Establish Runa UI/UX standards and selective frontend skill guidance.
   - **Objective:** make accepted behavior discoverable before conformity repairs.
   - **Preconditions:** approved point-1 findings and decision ledger; external
     candidates rechecked as needed before actual adaptation.
@@ -1480,3 +1480,98 @@ in the agreed order without another Gate A/B confirmation. Feature/0.8.0 remains
 unchanged; no data rebuild, new dependency or candidate-version preparation is
 authorized by this acceptance. Point 9 still requires source-backed exact state,
 command/input design and a reliable native adapter before its implementation.
+
+## Point 2 — UI standards and selective frontend guidance — 2026-11-06
+
+Delivered after explicit Gate B acceptance. The existing visual-direction guide now
+owns the topic-to-guide map and routes accepted refinements: shared Polish-default
+Admin, immediate frames/local regions, geometric content loading with Table/Button/
+preference-cover exceptions, quiet effect-colored outlines and purple mixed tools,
+source-only technical policy, module snapshots, dedicated assignment presentation
+and full-page password confirmation. A-01 is corrected in its canonical current
+paragraph; immutable reference history is preserved. No UI/runtime behavior changed.
+
+The same guide owns concise PL/EN copy, task/label/help/outcome responsibilities,
+responsive density and identity. The architecture accessibility baseline now links
+specific primary criteria, distinguishes reflow from text resizing, accounts for
+target-size exceptions and directs actual modal focus/inert review. Existing form,
+table, navigation, readiness, motion and customization guides still own their full
+procedures/signatures. No duplicate design standard, new skill or component system
+was created. These are clarifications of the accepted WCAG 2.2 AA/identity policy,
+not new conformance certification or a different visual premise.
+
+Updated both frontend skill entrypoints and customer topic selection, retaining
+mandatory frontend activation but conditional topic/section loading. Owner a11y/UX
+references now select canonical standards rather than repeating generic checklists;
+all seven existing references remain. Removed the obsolete password/2FA and inline
+proof recommendation from the owner layout reference in favor of the already
+accepted shared full-page password contract. Public component/security ownership
+and customer protected-source boundaries are preserved. A-07's frontend part is
+delivered; Vue routing wording and wider skill consolidation remain in point 3.
+
+### Grounding and provenance
+
+Point-start knowledge status was current. A query overlapping the required Gate B
+commit index refresh was refused by the exclusive writer; used focused sources,
+then retried successfully after completion. Current-intent retrieval directed the
+original component action semantics, shared skill workflow and frontend architecture;
+opened those owners. No optional service was bootstrapped or broad AI gate run.
+
+Applied runa-frontend and skill-creator, adapting progressive disclosure within the
+existing owner/customer skill structure. Root owner/customer AGENTS/CLAUDE need no
+new invariant: their frontend routing, public replacement, language/security and
+instruction-product rules already apply. The two frontend SOURCE.md files and
+upstream source index record the local consolidation and preserve original pins.
+
+Checked W3C WCAG 2.2 Recommendation 2024-12-12 and the primary WAI-ARIA modal dialog
+pattern on 2026-11-06. Used links/local paraphrases; no upstream text/code/assets,
+installer, dependency or community skill was copied. Community planning candidates
+remain research leads; no new source adaptation or license claim is inferred.
+W3C criteria support technical review; APG examples are guidance, not conformance
+proof. No changed original Sablier review date/revision is claimed.
+
+### Selective-loading source walk-throughs
+
+These are manual source walk-throughs against the changed selectors, not independent
+agent runs or rendered acceptance. Each prompt was traced to its actual route:
+
+| Prompt                                                   | Selected route / observed result                                                                                                                                     | Boundary / outcome                                                                                                                                         |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shorten a login heading in Polish and English            | Frontend selector → visual-direction interface-copy section and owning Auth catalogue. Its explicit copy row does not select forms/tables/session/motion references. | Preserve meaning and accessible name. No controllers, extra skills or full form procedures needed solely for wording.                                      |
+| Repair detail-dialog readiness and failure feedback      | Frontend → loading contract + forms feedback/recovery; Dialog's component section; a11y/motion only for changed focus/transition.                                    | Keeps local initial settlement, retained refresh/drafts, one FormNotifications owner and existing focus stack. No global loader or copied credential form. |
+| Repair dense table filter layout and capability handling | Frontend → tables reference and relevant Table/provider/temporal sections; Vue/Tailwind for actual implementation.                                                   | Retains analogous Auth/Permissions/Audit consumer review and real server capability/export authority. No default session/credential reference load.        |
+| Backend-only transaction/refusal correction              | Frontend description explicitly excludes backend-only work. Backend/security owners apply.                                                                           | No visual/a11y reference is selected by this skill.                                                                                                        |
+
+For the inspected selection scenarios the frontend pair rating changes from NEEDS
+IMPROVEMENT to GOOD, limited to these source routes. Final practical/rendition
+revalidation remains point 10/12. No score or test-count target is introduced.
+
+Measured UTF-8 entrypoint bytes before/after: owner 5,502 → 3,912; customer
+7,240 → 2,042. Owner a11y reference 1,746 → 1,092; UX/performance 2,410 → 947.
+Interface-copy section is 2,322 bytes and the optional full standards map 7,078.
+A copy walkthrough now selects 6,234 owner / 4,364 customer bytes for entrypoint plus
+copy section, or 13,312 / 11,442 including the whole map, excluding the common
+translation source. Earlier broad per-view feedback routing could add the entire
+30,821-byte forms guide to the 5,502/7,240-byte entrypoint even for that task.
+These are measured selected-source footprints, not model tokens, total session
+context, speed measurements or proof that shorter guidance is better. Canonical
+handbook content is deliberately retained and can grow where standards need it.
+
+### Focused evidence and remaining obligations
+
+The skill-creator quick_validate invocation was unavailable because the frozen
+Python environment has no PyYAML. No package was installed or toolchain changed.
+A focused frontmatter parse using the existing Composer Symfony YAML library
+passed for both selectors (name/type/description); focused local navigation review
+confirmed 53 edited guidance Markdown link/heading targets. This resolves the
+concrete metadata/navigation uncertainty; it is not the full documentation gate
+or the future general anchor parser. Formatting used the existing Prettier tool.
+No new executable skill script or low-value wording-matching test was added.
+
+Future rendered obligations remain keyboard/focus, reduced motion, long/empty
+content, responsive desktop/tablet/phone, PL/EN and both themes; logical loading,
+error/retry, dirty/conflict and access loss retain the owning scenarios. No browser
+acceptance, full tests, build, scanners, data operation or resource cleanup was
+needed for these guidance-only edits. Preserve the audit artifacts, inherited
+endpoint journal, all application/test data and shared caches. Mandatory hooks
+and incremental staged-source indexing apply to this point's commit.

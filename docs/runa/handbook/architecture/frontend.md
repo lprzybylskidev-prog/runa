@@ -112,7 +112,7 @@ WCAG 2.2 AA is the project baseline, not a formal certification claim.
 - Prefer semantic HTML before ARIA.
 - All functionality must be keyboard accessible.
 - No keyboard traps.
-- Focus must be visible.
+- Focus must be visible and remain reachable beneath sticky chrome and floating layers.
 - Manage focus for modal/temporary layers and return it appropriately.
 - Forms have real labels; placeholders are not labels.
 - Instructions and errors are programmatically related to controls.
@@ -120,12 +120,26 @@ WCAG 2.2 AA is the project baseline, not a formal certification claim.
 - Color is not the only carrier of meaning.
 - Design-system contrast targets AA.
 - UI must remain functional at 200% zoom/text scaling.
-- Minimum WCAG 2.2 target size is approximately 24x24 CSS px; prefer about 44x44 for frequent touch actions when practical.
+- Check the 24×24 CSS-pixel target criterion with its spacing and other exceptions; prefer about 44×44 for frequent touch actions when practical.
 - Respect `prefers-reduced-motion` without breaking state communication.
 - No critical action/information may exist only on hover.
 - Screen-reader checks are performed periodically for critical/complex flows rather than mechanically for every button.
 
-Accessibility is part of normal component review.
+Accessibility is part of normal component review. Use the applicable criteria from
+[WCAG 2.2](https://www.w3.org/TR/2024/REC-WCAG22-20241212/), especially semantics
+1.3.1, contrast 1.4.3/1.4.11, reflow 1.4.10, keyboard 2.1.1/2.1.2, focus
+2.4.3/2.4.7/2.4.11, targets 2.5.8, labels/errors 3.3.1/3.3.2 and status 4.1.3.
+Check narrow reflow at 320 CSS pixels independently of 200% text resizing;
+meaningful two-dimensional data can retain a bounded horizontal viewport.
+Record criterion-specific exceptions and actual observed limits.
+
+For modals, review the [WAI-ARIA dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/):
+move focus inside, contain the tab sequence, make underlying content inert and
+restore focus to a usable opener or logical successor. Choose initial focus for
+the content; a reading heading can be appropriate for a long structured dialog.
+A role/aria-modal attribute alone does not implement these behaviors. Preserve
+Runa's documented busy/closure and protected-flow contracts. Pattern examples and
+automated assertions do not prove complete conformance.
 
 ## Content robustness
 
@@ -219,7 +233,7 @@ Rendered behavior is the acceptance truth.
 
 Before creating a page or form, inspect two analogous existing pages/forms when available and search existing shared controls/layouts. If fewer exist, inspect what is available and establish the first pattern deliberately. Never invent examples that do not exist.
 
-The maintained catalogue lives in `docs/runa/handbook/development/frontend/components.md`; page, form and table patterns live alongside it. Update those references in the same task whenever a reusable component or pattern is established, replaced or removed. Record real paths, intended use, relevant contracts and canonical examples. Persist reusable user corrections without waiting for a separate documentation request.
+Use the [UI standards and guidance map](../design/visual-direction.md#ui-standards-and-guidance-map) to select only affected topics. The maintained catalogue lives in `docs/runa/handbook/development/frontend/components.md`; page, form and table patterns live alongside it. Update those references in the same task whenever a reusable component or pattern is established, replaced or removed. Record real paths, intended use, relevant contracts and canonical examples. Persist reusable user corrections without waiting for a separate documentation request.
 
 Disable native form validation for controlled application forms and show errors through the common application UX. Preserve labels, input semantics, autofill/password-manager support and accessible error associations. Block known invalid submits and duplicate submits; preserve recoverable input on 409/422/server failures. A conflict offers a clear refresh/recovery path instead of silent overwriting.
 
