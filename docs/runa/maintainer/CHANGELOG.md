@@ -2,7 +2,9 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
-## Unreleased — 0.7.0 candidate
+## [0.7.0] - 2026-11-06
+
+Feature release — RM-2026-016. Core Admin 1.0.0 with source-owned administration, native security/Audit and customer presentation contracts. Backend accepted under the standing owner SIGSEGV/139 exception; retained native failures and interrupted coverage remain disclosed.
 
 - Prepare Admin 1.0.0 as its first stable creation release, with explicit install/update history and synchronized current module contracts.
 

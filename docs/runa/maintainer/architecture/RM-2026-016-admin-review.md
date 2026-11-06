@@ -4,7 +4,7 @@ Review date: 2026-10-29. Planning baseline: platform `0.6.2`, clean `main` after
 RM-2026-015. This review specifies proposed contracts, not a delivered public API.
 The owner approved the design directions below and explicitly requested activation
 on 2026-10-29. Work belongs to the active
-[RM-2026-016 roadmap](../roadmaps/active/RM-2026-016-admin-panel.md); point 1
+[RM-2026-016 roadmap](../roadmaps/closed/RM-2026-016-admin-panel.md); point 1
 finalizes complete public signatures before runtime implementation.
 
 ## Authority and evidence

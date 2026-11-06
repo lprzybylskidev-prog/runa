@@ -1,6 +1,6 @@
 # Admin module changelog
 
-## 1.0.0 — Unreleased
+## 1.0.0 — 2026-11-06
 
 - Complete the first stable Admin creation release with guarded PL/EN administration, owning module declarations and application presentation extensions. Record the explicit creation-release upgrade boundary after development 0.2.0; no application tables or business data changes.
 

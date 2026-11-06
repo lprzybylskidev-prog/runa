@@ -1,11 +1,11 @@
 ---
 id: RM-2026-016
 title: Admin Panel Core administration framework
-status: active
+status: closed
 branch: roadmap/RM-2026-016-admin-panel
 created_at: 2026-10-29
 activated_at: 2026-10-29
-closed_at: null
+closed_at: 2026-11-06
 release_type: feature
 proposed_version: 0.7.0
 prepared_version: 0.7.0
@@ -1251,7 +1251,7 @@ reassessment before resuming point 3; completed point history remains evidence.
     f5494f67e9f5f236d0326d757d140d70f959f244; automated verification remains pending.
   - Reopened during 11a102 for affected table presentation and TOTP enrollment
     repairs; prior acceptance remains historical and affected acceptance must repeat.
-- [ ] 12. Complete affected-area verification, release finalization and closure.
+- [x] 12. Complete affected-area verification, release finalization and closure.
   - Prerequisites: all implementation points complete and committed, explicit owner
     manual acceptance in 11b; no unresolved
     architecture, public-signature, module-version or synchronization decisions.
@@ -9009,3 +9009,60 @@ do not trigger another full backend or complete graph solely for this clarificat
 The final coordinator's native failed state remains intact. PHP static analysis
 failed for stale local source registration, then passed in full after supported
 runa:modules:sync runa; this independent repaired result is retained separately.
+
+## Final report
+
+RM-2026-016 delivers feature release **0.7.0** and the first stable Admin module
+**1.0.0**. Auth 5.0.0, Permissions 2.1.0 and Audit 1.1.0 retain their assessed
+versions. Source-owned bilingual administration, native owning transactions,
+password confirmation, grants, concurrency and Audit are delivered with customer
+presentation/composition contracts. Application version remains unchanged.
+
+The owner explicitly accepted the rendered table/TOTP repairs on 2026-11-06 and
+repeatedly instructed publication using already completed tests, without further
+reruns. Apply that final owner instruction over the earlier complete-graph rerun
+plan. Accepted evidence includes complete frontend 539 PASS, E2E 407 PASS/139 matrix
+skips, tooling 524 PASS/three policy deselections, native installation/update PASS,
+source security/dependency checks and PHP static analysis PASS as recorded above.
+Backend combines 784 confirmed PASS and seven interrupted cases under the standing
+owner SIGSEGV exception, with cleanup 0 and original failed logs preserved.
+
+The redundant final coordinator at candidate da1d6b06 was stopped at the owner's
+instruction. It is **interrupted/failed, not a clean selected-graph PASS**. It had
+independently passed formatting, lint, dependencies, secrets, module-development
+contracts, frontend build/types/unit tests, source review and documentation, but
+its full backend hit confirmed 139; PHP analysis first refused stale source and
+then passed completely after supported registry synchronization. Its interrupted
+browser repetition does not replace the earlier complete accepted browser result.
+Pending or blocked nodes in that redundant repetition are not represented as PASS.
+Final version-declaration changes add Admin's explicit stateless creation-release
+edge and synchronized planner expectations; a further focused run was refused by
+the active suite lock and is not claimed as executed. No further test execution
+is authorized or performed solely for publication.
+
+Preserve `.runtime/quality/` native state and logs, prior quality snapshots under
+`.runtime/artifacts/RM-2026-016-preclosure/`, the original final-failure reports and
+individual/supplemental backend evidence. Closure uses the owner's explicit reuse
+of accepted results and standing separate-evidence disposition; the all-green-only
+release validator cannot represent this result and is not reported as passing.
+The owner expressly ordered immediate publication rather than another graph run.
+No native FAILED report or coordinator state is rewritten to PASS.
+
+Documentation ownership/current capability/version claims and both instruction
+products were reviewed in the recorded points. Owner SIGSEGV rules now explicitly
+cover closure/merge/publication without renewed approval or reruns and retain a
+verified corrected-runtime retirement condition. Customer policy is unchanged.
+Platform VERSION and runtime manifest remain aligned at 0.7.0; published tags and
+closed historical records are preserved. No production deployment is claimed.
+
+Supported backend cleanup removed only disposable worker databases; base test and
+development data, active development services, caches, backups and all reports are
+preserved. The interrupted redundant browser endpoint journal retains its two
+owned testing containers for supported recovery because a child was still active
+at interruption. They are disclosed as retained, not falsely claimed removed;
+no global Docker cleanup or data deletion was performed. Prior completed browser
+and installation runs cleaned their task resources as recorded above.
+
+Release completion consists of the closure commit, merge commit on main, annotated
+v0.7.0 tag, push and GitHub Release publication. Remote publication is independently
+verified during execution; no incomplete check is relabelled as a clean gate.

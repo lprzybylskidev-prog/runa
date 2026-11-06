@@ -1,7 +1,7 @@
 # Admin design reassessment before platform 1.0
 
 Review date: 2026-10-30. Owner-requested review from the beginning of
-[RM-2026-016](../roadmaps/active/RM-2026-016-admin-panel.md), following the owner's
+[RM-2026-016](../roadmaps/closed/RM-2026-016-admin-panel.md), following the owner's
 explicit rejection of compatibility-driven design during platform development.
 This is a source-grounded review and proposed correction, not approval of a new
 transaction/security architecture or a claim that point 3 is complete.
