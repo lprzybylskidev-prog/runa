@@ -976,3 +976,495 @@ publication, live application readiness, current full test discovery or audit PA
 | 37–40                     | Gates A/B, severity/finite scope and significant-unknown discussion boundary                                               |
 | 41–44                     | Ordered dependencies, final qualitative/manual/automated stages, version/module assessment                                 |
 | 45–47                     | Per-point objectives/preconditions/deliverables/boundaries/evidence/docs/approval, planning restrictions and owner handoff |
+
+## Point 1 — Baseline audit record — 2026-11-06
+
+**Audit deliverable prepared; Gate B awaiting owner approval.** Point 1 remains
+open until that approval is recorded. No recommendation below is implemented.
+Activation commit: `f0131f80`. All runtime/tooling findings refer to source
+`6889a98b22ee79c1ebc6344e67a8c940f0dfb000`; activation changed only this roadmap.
+Fetched origin before activation; main had zero divergence. Feature/0.8.0 remains
+approved. This audit neither publishes a release nor attests remote release assets.
+
+### Method, evidence and limits
+
+Reviewed owning source, public signatures, tests as source, current guidance and
+RM-016 decision chains. A tracked-source census records exact paths in
+`.runtime/artifacts/playwright/RM-2026-017-audit/source-inventory.json` (SHA-256
+`d4d92fdded50cae71a9496f491de3b960f104cfa882f80677eee91d28014dfe1`).
+Its 2,023 paths establish inventory boundaries, not 2,023 manually reviewed files.
+The source-area and decision ledgers below distinguish inspected mechanisms,
+correlated consumers and unknown behavior. No claim of exhaustive line-by-line
+inspection, security certification or combinatorial test coverage is made.
+
+Knowledge initially refused freshness: branch changed and the newly staged active
+roadmap was absent from the old corpus; 208 documents/11,397 chunks. The existing
+stack was available. Required incremental indexing for the activation commit
+succeeded without bootstrap/rebuild; after hook formatting and a second incremental
+refresh it reported current, 209 documents/11,556 chunks, zero missing/orphans and
+no interrupted write. Hooks passed on the activation commit. Bounded audit-intent
+retrieval for accepted loading/action/native-transaction rules led to the original
+Auth administration, Admin operations, Permissions and native transaction guides;
+those originals were opened. Retrieval exposed stale current-guide prose as well
+as accurate contracts: freshness does not establish factual currency. An initial
+unsupported `research` intent was refused with exit 2; corrected to documented
+`audit`. No result from the refused invocation was used. This is navigation
+experience, not knowledge doctor/evaluation acceptance.
+
+Laravel Boost application-info succeeded: PHP 8.4, Laravel 13.37.0, PostgreSQL,
+and installed package identities corresponding to the inspected declarations.
+Read-only catalog queries examined relation placement, FK actions and identity
+column types without reading account/business rows. No migrations, module sync,
+seed, reset, write, package installation, dependency audit, scanner, test suite,
+quality graph, image build or environment restart ran for this audit. Existing
+mandatory commit hooks and knowledge refresh remain distinct from broad gates.
+
+The browser work was three bounded one-off Playwright diagnostics, using the
+already installed Chromium directly against existing development Nginx. No
+supported suite selects these exact read-only observations without broader harness
+preparation, so no internal suite runner was substituted. Purpose/scope were
+announced before activity. No test spec or production route was added. Browser
+contexts/processes were closed in finally blocks. Only GET requests were made;
+no login, preference change or form submission occurred. Ordinary guest session
+initialization by the existing server is not represented as a database reset or
+business mutation. Screenshots/JSON are preserved as audit evidence, not fixtures.
+
+### Bounded rendered observations
+
+| Observation               | Environment and selection                                                                                           | Actual result                                                                                                                                                                                                                                                         | Limits / disposition                                                                                                                                                                                       |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R-01 root                 | Existing `http://nginx:8080/`; Chromium, fresh guest, Polish, default system/light appearance; 1440×900 and 390×900 | HTTP 200; document language pl; no horizontal document overflow; footer shows independent application 0.0.0/platform 0.7.0; first Tab reaches skip link. Screenshots visually inspected: accepted mono typography, palette, modest corners and illustration retained. | No redesign correction justified by these two samples. No English/dark/other-engine matrix or contrast certification.                                                                                      |
+| R-02 login                | Actual named route `/auth/login`, same sizes; 390px context requests reduced motion                                 | HTTP 200; associated identifier/password/remember labels; username/current-password autocomplete; no overflow; Tab reaches identifier, password, remember, submit and recovery link; no pageerror or write.                                                           | No submitted validation/authentication, authenticated pages, screen reader, zoom or modal interaction acceptance. Reduced-motion media matched; complete computed-animation cancellation was not measured. |
+| R-03 delayed initial read | Login at 1440×900; hold only browser GET `/api/runa/auth/entry-options`, observe pending region, then release       | Header/main/footer remain mounted; pending state has two busy elements and no input form; after release three inputs appear and busy settles to zero. No pageerror.                                                                                                   | Confirms this initial-region case only, not every image/session/Admin completion order. Running animations observed; visual smoothness and frame-time performance unmeasured.                              |
+| R-04 failed initial read  | Login at 1440×900; abort only that options GET in the browser                                                       | Frame remains, no writable form appears, localized `Spróbuj ponownie` action is visible; pending state settles; no pageerror.                                                                                                                                         | Retry was not clicked. Deliberate browser-side fault, not a claimed live server failure. No protected content was bypassed.                                                                                |
+| R-05 console context      | Root/login session discovery                                                                                        | Session GET returns 401 for a fresh guest; Chromium logs resource failure on root. No transport requestfailed in ordinary root reads.                                                                                                                                 | Expected anonymous discovery, not a demonstrated application defect; do not weaken API authentication to remove the console line.                                                                          |
+
+Artifacts: `.runtime/artifacts/playwright/RM-2026-017-audit/` contains `root.json`,
+`login.json`, `readiness.json`, four width screenshots and two readiness screenshots.
+The observed internal URL is container-network evidence, not a promised host URL.
+No owner frontend acceptance is claimed. No protected Admin/account/Permissions/
+Audit dialog was opened: no authenticated browser context was available, and this
+point prohibits state mutations to establish one. The test upstream
+`http://nginx-test:8080/` did not resolve and 127.0.0.1:4178 refused connection.
+Starting the private harness can prepare module state/assets, so it was not started
+under an audit label. Those rendered observations remain explicitly deferred to
+working acceptance preparation and points 11–12; they are not source-review PASS.
+
+### RM-016 decision-to-consumer ledger
+
+The following completes the correction index (104 entries, including 11a102a/b)
+without replacing the immutable record. Each title is from RM-016's accepted
+checklist; detailed disposition evidence remains in its corresponding report.
+Family keys resolve to exact current source paths below. This is a source/history
+correlation, not proof that every mapped consumer/state has been executed or every
+historical diagnostic independently repeated. Findings are limited to A-01–A-08.
+The earlier grouped decision matrix retains reasoning; this index prevents an
+individual correction from disappearing behind those ranges.
+
+Original points 1–3 / revised ARCH-001 map to FRAMEWORK plus native owning
+participants; 2a/2b replace old whole-write ordering. Point 4 maps to SHELL/ENTRY,
+5–6 to Admin controllers/Aggregate and public presentation, 7 to USERS/DETAIL,
+8 to ACCESS/VALUES, 9 to OPS, 10/ARCH-004 to SETTINGS, 11/11b to owner acceptance,
+and 12 to immutable release evidence. ARCH-002 retains CLI-only maintenance and
+ARCH-003 retains security, with later password-only refinement 11a87. Code-owned
+fallback branding remains alongside explicitly accepted runtime assets (11a23).
+
+Relevant implementations and superseded revisions were compared using git show:
+fd6da8be versus bffa7337 for outline/effect/mixed intent, d3e8656a for nearest-Form
+submit activity, and 1f304326 for validated bounded ManagementRead inputs. These
+are actual diffs, not commit-title-only evidence. Current source and the loading
+review resolve circular versus geometric indicators and retained slot spacing.
+
+| Family    | Current source anchors (repository-relative)                                                                                                                                      |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ENTRY     | `src/runa/modules/auth/frontend/AuthEntryFlow.vue`; `src/runa/modules/auth/frontend/useAuthEntry.ts`; `src/runa/modules/auth/frontend/AuthOperationProofPageDefault.vue`          |
+| SHELL     | `src/runa/modules/auth/frontend/ApplicationSessionShell.vue`; `src/runa/modules/auth/frontend/useApplicationSession.ts`; `src/runa/resources/js/layouts/ApplicationLayout.vue`    |
+| READINESS | `src/runa/resources/js/composables/useViewReadiness.ts`; `src/runa/resources/js/components/AppContentLoading.vue`; `src/runa/modules/auth/frontend/ApplicationSessionShell.vue`   |
+| NAV       | `src/runa/resources/js/components/AppPageNavigation.vue`; `src/runa/modules/auth/frontend/ApplicationSessionShell.vue`                                                            |
+| LOCALE    | `src/runa/modules/admin/frontend/localization.ts`; `src/runa/modules/admin/frontend/messages.ts`                                                                                  |
+| OPS       | `src/runa/modules/admin/frontend/AdminOperations.vue`; `src/runa/modules/admin/frontend/AdminOperationHistory.vue`                                                                |
+| SETTINGS  | `src/runa/modules/admin/frontend/AdminSettingsPage.vue`; `src/runa/modules/admin/frontend/AdminApplicationSettings.vue`                                                           |
+| TABLE     | `src/runa/resources/js/components/AppTable.vue`; `src/runa/resources/js/composables/useTableViewport.ts`; `src/runa/modules/admin/frontend/useAdminTable.ts`                      |
+| VALUES    | `src/runa/resources/js/components/AppValuePreview.vue`; `src/runa/modules/audit/frontend/components/admin_detail.vue`                                                             |
+| FEEDBACK  | `src/runa/resources/js/components/AppFormNotifications.vue`; `src/runa/resources/js/components/AppButton.vue`                                                                     |
+| USERS     | `src/runa/modules/auth/frontend/components/admin_users.vue`; `src/runa/modules/auth/frontend/AuthDirectoryFilters.vue`; `src/runa/modules/auth/backend/Queries/UserDirectory.php` |
+| BULK      | `src/runa/modules/auth/frontend/AuthAdminBulkAction.vue`; `src/runa/modules/auth/backend/Actions/BulkUsers.php`; `src/runa/modules/auth/frontend/AuthAdminActionGroups.vue`       |
+| DETAIL    | `src/runa/modules/auth/frontend/AuthAdminUserDetails.vue`; `src/runa/modules/auth/frontend/AuthAccountDefault.vue`                                                                |
+| ACCESS    | `src/runa/modules/permissions/frontend/PermissionsAssignments.vue`; `src/runa/modules/permissions/frontend/PermissionsAccessImport.vue`                                           |
+| AUTHORITY | `src/runa/modules/permissions/backend/Support/PreserveAuthority.php`; `src/runa/modules/permissions/backend/Actions/ManageAuthority.php`                                          |
+| PROOF     | `src/runa/modules/auth/backend/Actions/StepUp.php`; `src/runa/modules/auth/backend/Definitions/StepUpApi.php`                                                                     |
+| FRAMEWORK | `src/runa/Support/Modules/Data/ModuleTransactions.php`; `src/runa/ModuleFramework/Api/OperationGuard.php`                                                                         |
+| TESTS     | `tools/application/testing/runner.py`; `tools/application/quality_evidence.py`; `tests/tools/runa/unit/test_test_runner.py`                                                       |
+| DEV       | `tools/application/development_config.py`; `tools/application/development_setup.py`                                                                                               |
+| BUTTON    | `src/runa/resources/js/components/AppButton.vue`; `src/runa/resources/js/runa/ui/controls.ts`                                                                                     |
+
+| RM-016 correction                                                                                                                                      | Current consumer family | Retained / superseded disposition                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- | ----------------------------------------------------------------------------------- |
+| 11a1 — Apply owner-requested Polish Admin label correction.                                                                                            | LOCALE                  | Completed by 11a2/4.                                                                |
+| 11a2 — Complete the requested panel rename in both supported languages.                                                                                | LOCALE                  | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a3 — Complete Auth operation-proof presentation and native Admin entry composition.                                                                  | ENTRY, PROOF            | Proof strength superseded by 11a87; full-page owner retained.                       |
+| 11a4 — Apply owner-approved Polish/English Admin localization.                                                                                         | LOCALE                  | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a5 — Match Auth proof heading focus and cancellation styling.                                                                                        | ENTRY, PROOF            | Cancellation color superseded by 11a93/95; reading-focus rule retained.             |
+| 11a6 — Stabilize Admin menu advertisement and password admission revalidation.                                                                         | SHELL                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a7 — Unify initial presentation readiness and nondestructive revalidation.                                                                           | READINESS, SHELL        | Whole-page boundary superseded by 11a8/9/11/16.                                     |
+| 11a8 — Keep layouts visible from startup and localize loading placeholders.                                                                            | READINESS, SHELL        | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a9 — Synchronize initial content/avatar completion within the visible frame.                                                                         | READINESS, SHELL        | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a10 — Move page-level navigation into the shared top bar.                                                                                            | NAV                     | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a11 — Coordinate current navigation and Admin initial presentation.                                                                                  | READINESS, SHELL        | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a12 — Refine the Admin dashboard and module operation dialogs.                                                                                       | OPS, FRAMEWORK          | Local content Spinner superseded by 11a40; Table/Button exceptions retained.        |
+| 11a13 — Repair modal operation feedback and deliver native operation history.                                                                          | OPS, FRAMEWORK          | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a14 — Align navigation hierarchy and scope the module overview.                                                                                      | NAV                     | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a15 — Cover breadcrumb discovery with shared navigation readiness.                                                                                   | READINESS, SHELL        | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a16 — Settle account-menu admission and display controls before initial reveal.                                                                      | SHELL                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a17 — Make module health policy code-only and repair filtered-list loading.                                                                          | OPS, FRAMEWORK          | Source-only health retained; do not restore editor.                                 |
+| 11a18 — Put module controls first and review lifecycle actions in a dialog.                                                                            | OPS, FRAMEWORK          | Placement refined by 11a19; unregister preserves data.                              |
+| 11a19 — Consolidate module actions and show diagnosis in a dialog.                                                                                     | OPS, FRAMEWORK          | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a20 — Translate the lifecycle confirmation Cancel label.                                                                                             | LOCALE                  | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a21 — Remove the generic module settings editor in favor of owned pages.                                                                             | OPS, FRAMEWORK          | Generic settings editor rejected; native settings remain.                           |
+| 11a22 — Make optional integration configuration source-only.                                                                                           | OPS, FRAMEWORK          | Source-only integration retained.                                                   |
+| 11a23 — Deliver application display defaults, uploaded branding and settings layout.                                                                   | SETTINGS                | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a24 — Enable timezone search and remove redundant settings copy.                                                                                     | SETTINGS                | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a25 — Unify form and operation failure notifications across delivered views.                                                                         | FEEDBACK, DETAIL        | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a26 — Make shared feedback mandatory in both frontend skill entrypoints.                                                                             | FEEDBACK, DETAIL        | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a27 — Unify module record browsers and system table controls.                                                                                        | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a28 — Keep filter reset beside filters and format module timestamps.                                                                                 | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a29 — Remove repeated registry/authorization read amplification across supplied flows.                                                               | FRAMEWORK, USERS, SHELL | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a30 — Complete the application-wide repeated-work performance review and repairs.                                                                    | FRAMEWORK, USERS, SHELL | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a31 — Deliver Auth-owned protected-section idle access and migrate Admin.                                                                            | PROOF, SHELL            | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a32 — Keep table headers and a below-header horizontal scrollbar visible during page scrolling; use typed date/time filters throughout module views. | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a33 — Unify application date/time presentation and input defaults; remove timezone annotations and maintain durable frontend guidance.               | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a34 — Repair compact timestamp filters, pinned-header scroll latency and exact filtered totals.                                                      | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a35 — Vertically center header labels and scroll wide tables horizontally on header wheel input.                                                     | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a36 — Unify localized dictionary values in module filters, tables and read-only details.                                                             | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a37 — Improve module detail readability and bounded value previews.                                                                                  | VALUES, READINESS       | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a38 — Link Audit identifiers and refine shared JSON previews.                                                                                        | VALUES, READINESS       | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a39 — Animate detail-modal reads and right-align preview expansion links.                                                                            | VALUES, READINESS       | Circular detail loader superseded by 11a40.                                         |
+| 11a40 — Standardize content-loading presentation across the supplied frontend.                                                                         | READINESS, SHELL        | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a41 — Put the collapsed JSON continuation marker on its own line.                                                                                    | VALUES, READINESS       | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a42 — Restore content spacing after loading-wrapper migration.                                                                                       | READINESS, SHELL        | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a43 — Complete configuration-aware Auth user administration.                                                                                         | USERS, BULK             | Approval/expiry facts superseded by 11a50/52.                                       |
+| 11a44 — Complete Auth directory filtering, security facts and bulk operations.                                                                         | USERS, BULK             | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a45 — Consolidate temporal range controls across supplied views.                                                                                     | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a46 — Align Auth filter density, concise labels and direct bulk buttons.                                                                             | USERS, BULK             | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a47 — Localize the unfiltered All choice in the shared Admin catalogue.                                                                              | LOCALE                  | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a48 — Audit application-wide PL/EN presentation and repair missing defaults.                                                                         | LOCALE                  | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a49 — Refine Auth bulk action review, impact counts and deleted-user presentation.                                                                   | USERS, BULK             | Final proof authority is 11a87; ordinary bulk exclusions remain.                    |
+| 11a50 — Remove redundant account expiry in favor of scheduled deactivation.                                                                            | USERS, BULK             | Independent account expiry removed.                                                 |
+| 11a51 — Supply configured automatic development administrator seeding.                                                                                 | DEV                     | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a52 — Consolidate account admission into activation and scheduled lifecycle.                                                                         | USERS, BULK             | Independent approval removed.                                                       |
+| 11a53 — Enable the default 30-day password lifetime.                                                                                                   | USERS, BULK             | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a54 — Group related Auth bulk operations with explicit modal choices.                                                                                | USERS, BULK             | Neutral group tone superseded by 11a56/95.                                          |
+| 11a55 — Restore Auth Users runtime build/source alignment after hook formatting.                                                                       | USERS, BULK             | Source/build mismatch refused correctly; build after formatting.                    |
+| 11a56 — Match grouped bulk buttons to the primary outlined avatar-removal button.                                                                      | USERS, BULK             | Effect colors refined by 11a95.                                                     |
+| 11a57 — Explain blocked bulk previews and refine the bulk modal.                                                                                       | USERS, BULK             | Protected-target handling refined by 11a58/60/101.                                  |
+| 11a58 — Exclude every protected superadministrator from all Auth bulk mutations.                                                                       | USERS, BULK             | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a59 — Restore spacing after additional Auth bulk modal fields.                                                                                       | USERS, BULK             | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a60 — Review all Auth bulk actions and correct eligibility/refusal handling.                                                                         | USERS, BULK             | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a61 — Order user-directory filters by task and keep dates last.                                                                                      | USERS, BULK             | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a62 — Repair private development seed configuration through editor reopen.                                                                           | DEV                     | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a63 — Deliver comprehensive Auth account creation and pre-activation invitations.                                                                    | USERS, BULK             | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a64 — Refine account creation copy and administrative verification defaults.                                                                         | USERS, BULK             | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a65 — Enforce configuration-based visibility across module presentations.                                                                            | DETAIL, USERS, SETTINGS | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a66 — Unify horizontal wheel scrolling and overflow indicators.                                                                                      | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a67 — Rebuild user details around owner-approved task-based forms.                                                                                   | DETAIL, ACCESS, BULK    | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a68 — Align user details with existing Auth presentation and workflows.                                                                              | DETAIL, ACCESS, BULK    | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a69 — Refine user details after the owner's eight-point review.                                                                                      | DETAIL, ACCESS, BULK    | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a70 — Recreate the local development database at the owner's explicit request.                                                                       | DEV                     | Historical owner-requested reset only; no current reset permission.                 |
+| 11a71 — Replace redundant operation copy with consistent visible progress.                                                                             | FEEDBACK, DETAIL        | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a72 — Reuse secondary-email presentation and audit actionable failures system-wide.                                                                  | FEEDBACK, DETAIL        | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a73 — Replace sprawling assignments with a dedicated compact access editor.                                                                          | DETAIL, ACCESS, BULK    | Refined by 11a74/75 and 11a96/97.                                                   |
+| 11a74 — Polish the dedicated access editor's visual proportions.                                                                                       | DETAIL, ACCESS, BULK    | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a75 — Complete custom access-editor interaction affordances.                                                                                         | DETAIL, ACCESS, BULK    | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a76 — Organize account actions/status, add administrative address confirmation and compact preferences.                                              | DETAIL, ACCESS, BULK    | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a77 — Rebuild local review data at the owner's explicit request.                                                                                     | DEV                     | Historical owner-requested reset only; no current reset permission.                 |
+| 11a78 — Refine action-group presentation after owner review.                                                                                           | DETAIL, ACCESS, BULK    | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a79 — Omit action separators at wrapped row starts.                                                                                                  | DETAIL, ACCESS, BULK    | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a80 — Present selected-user sessions and trusted devices as tables.                                                                                  | DETAIL, ACCESS, BULK    | Omitted table capabilities corrected by 11a83.                                      |
+| 11a81 — Identify trusted browsers in own and Admin security tables.                                                                                    | DETAIL, ACCESS, BULK    | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a82 — Enrich new-browser security email with recognizable context.                                                                                   | DETAIL, ACCESS, BULK    | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a83 — Complete supplied table capabilities across account and Admin views.                                                                           | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a84 — Align table filter controls beneath wrapped labels.                                                                                            | TABLE                   | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a85 — Move account policy exceptions into User and expose active rules in status.                                                                    | DETAIL, ACCESS, BULK    | Expiry cap/local history superseded by 11a86/88.                                    |
+| 11a86 — Allow indefinite account rules and space operation fields.                                                                                     | DETAIL, ACCESS, BULK    | Optional indefinite expiry retained; factor premise superseded by 11a87.            |
+| 11a87 — Restrict second factors to login and unify password confirmation.                                                                              | PROOF, SHELL            | Current password-only operation/place confirmation; factors login-only.             |
+| 11a88 — Simplify selected-user rule presentation.                                                                                                      | DETAIL, ACCESS, BULK    | Audit owns history; removed local panel stays removed.                              |
+| 11a89 — Replace policy history recovery with reusable named settings snapshots.                                                                        | SETTINGS                | Snapshots retained; historical reset is not current authorization.                  |
+| 11a90 — Compact module settings and expose source descriptions.                                                                                        | SETTINGS                | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a91 — Use full workspace width and pack settings groups vertically.                                                                                  | SETTINGS                | Retain accepted owning behavior; rendered/native variants unexecuted in this audit. |
+| 11a92 — Simplify settings save confirmation.                                                                                                           | SETTINGS                | Question-only Save confirmation retained.                                           |
+| 11a93 — Unify system action button semantics and snapshot change markers.                                                                              | BUTTON, BULK            | Solid primary and blue opener rule superseded by 11a95.                             |
+| 11a94 — Repair stale component assets after final source formatting.                                                                                   | SETTINGS, USERS         | Post-format source/build alignment remains required.                                |
+| 11a95 — Refine buttons to quiet outlines and outcome-based openers.                                                                                    | BUTTON, BULK            | Quiet outlines; mixed purple; final effect retained.                                |
+| 11a96 — Simplify Permissions administration and extend selected-user access tools.                                                                     | ACCESS, DETAIL          | Definition-only Permissions; account tools in Auth.                                 |
+| 11a97 — Refine Permissions readonly copy and selected-user import dialogs.                                                                             | ACCESS, DETAIL          | Copy/preset use separate parameter dialogs.                                         |
+| 11a98 — Remove clearing from the access import mode selector.                                                                                          | ACCESS, DETAIL          | Mode intentionally non-clearable.                                                   |
+| 11a99 — Make protected authority an individual and selected-account action.                                                                            | AUTHORITY, BULK         | Protected authority remains dedicated owning transaction.                           |
+| 11a100 — Align protected-authority actions with existing bulk presentation.                                                                            | AUTHORITY, BULK         | Aggregate effect presentation; no per-account list restoration.                     |
+| 11a101 — Skip protected last-administrator targets in authority batches.                                                                               | AUTHORITY, BULK         | Retain required administrator under canonical authority locks.                      |
+| 11a102 — Repair failures from the first final affected-area verification.                                                                              | TESTS                   | Historical repairs/results only; no new case/PASS inference.                        |
+| 11a102a — Complete installation/update, tooling/docs and dependency repair verification.                                                               | TESTS                   | Historical repairs/results only; no new case/PASS inference.                        |
+| 11a102b — Complete frontend unit/browser repair verification.                                                                                          | TESTS                   | Historical repairs/results only; no new case/PASS inference.                        |
+
+No closed roadmap bytes or historical acceptance reports were edited. A mapping
+to a retained source family is not permission to restore a removed field, page,
+editor, proof mode or reset procedure.
+
+### Findings and finite correction proposal
+
+Severity ranks demonstrated impact, not an unmeasured exploit or assumed defect.
+High workflow findings below are delivery gaps against approved D-01–D-03; they
+are not claims that the existing tool promised those new features. No Critical
+runtime/security defect was demonstrated. This does not prove absence of defects.
+
+| ID / priority | Owner, exact location and verified fact                                                                                                                                                                                                                                                                                                                                               | Impact and proposed correction                                                                                                                                                                                                                                                                                                                                                                                         | Evidence classification                                                                                                                                                                                                                                                               |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-01 / Medium | Handbook `design/visual-direction.md`, REF-003 shared-layout language paragraph still mandates English Admin; RM-016 11a4, root/customer AGENTS and current catalogues require Polish default.                                                                                                                                                                                        | Misleads future presentation work. Replace the current rule and preserve the historical decision in RM-016.                                                                                                                                                                                                                                                                                                            | Source-verified contradiction, extends P-01.                                                                                                                                                                                                                                          |
+| A-02 / Medium | `architecture/module-transactions.md`, current native versions section says Auth 3.1.0/unreleased platform; `modules/admin/operations.md` administrative-read paragraph says unreleased Auth 2.0.0 and later Auth 4.0.0; `modules/auth/administration.md` introduction says Auth 4.0.0/unreleased 0.7.0. Current manifest is Auth 5.0.0/platform 0.7.0.                               | Current guides and retrieval can steer consumers to an obsolete delivery state. Reconcile present-tense versions/status with actual definitions and release evidence, including Admin operations' pending-acceptance prose. AuthAdministration 2.1.0, AuthProfiles 2.1.0, PermissionsAccess 2.2.0 and AuthStepUp 2.0.0 were separately matched to Definitions; do not replace interface versions with module versions. | Source-verified current-prose staleness, extends P-02; historical changelog entries are not errors solely for naming earlier versions.                                                                                                                                                |
+| A-03 / High   | `tools/application/quality_service.py::QualityService.run` removes an existing unlocked quality directory with shutil.rmtree before starting another run.                                                                                                                                                                                                                             | Latest-only execution cannot preserve/reuse the required campaign/attempt evidence automatically. Extend the existing service with preserved attempts, explicit planning and conservative input/dependency validity. Never exercise deletion of current evidence as an audit reproduction.                                                                                                                             | Source-verified lifecycle, P-03/D-01; no evidence was deleted.                                                                                                                                                                                                                        |
+| A-04 / High   | `tools/application/quality_evidence.py::check_evidence` requires overall passed and every selected node passed/exit 0. `quality_state.py` has native execution states only.                                                                                                                                                                                                           | Cannot consume standing separate owner acceptance of confirmed worker SIGSEGV; RM-016 used an explicit separate disposition. Add independently validated owner assessment and coverage references without rewriting native failure; maintain strict customer closure.                                                                                                                                                  | Source-verified representation gap, P-03/D-03.                                                                                                                                                                                                                                        |
+| A-05 / High   | `tools/application/testing/runner.py::TestService.run_scope/execute` records suite exit/cleanup; `ScopeResult` and results schema lack discovered-case/worker/start/completion/attempt identity. Owner composition is `tools/maintainer/test_cli.py::OWNER`.                                                                                                                          | Aggregate exit 1 cannot establish the exact interrupted case or recovered coverage. Extend the existing lifecycle with persistent bounded accounting/adapter and original-plus-at-most-two exact-case retries only after confirmed SIGSEGV. Do not infer identity from the last name/dot or parent exit.                                                                                                               | Source-verified missing proposed capability, D-02. Exact native parallel adapter reliability remains an explicit design risk, not a proven implementation.                                                                                                                            |
+| A-06 / Medium | `tools/application/docs_checks.py::links` strips fragments before resolution; its fence state stores only character, not opening length/valid closing syntax.                                                                                                                                                                                                                         | Existing file PASS cannot detect a dead heading link; nested/longer fenced examples can be misinterpreted. Extend this checker with explicitly specified local anchor/fence behavior and objective fixtures for duplicate headings, inline markup, Unicode, code examples and customer logical paths.                                                                                                                  | Source-verified parser gaps/P-07. No claim that every current fragment is broken or that a new Markdown framework is needed.                                                                                                                                                          |
+| A-07 / Low    | Frontend owner/customer SKILL entrypoints accumulate topic-specific mandates; e.g. every changed view routes to full forms guidance. Owner entrypoint 5,502 bytes; customer 7,240; forms 30,821 and components 70,196. Vue `references/routing-async-performance.md` unconditionally says lazy-load route components while the frontend UX reference limits splitting to heavy areas. | Discovery is useful, but trivial copy tasks can load irrelevant procedure and route guidance can imply speculative splitting. Make topic/negative triggers and section-level selection explicit, consolidate summaries in canonical guides, qualify splitting by actual architecture/measurement. Retain essential feedback/security rules.                                                                            | Source-backed instruction-quality finding; increased agent error/time is unmeasured, not a benchmark. No arbitrary size target or dedicated UX skill justified yet.                                                                                                                   |
+| A-08 / Medium | `src/runa/resources/js/components/AppFormNotifications.vue` watch source contains error/success/invalid/attempt but omits locale, while callback builds the default invalid title from props.locale. `runa/ui/index.ts` exports this component directly; AppToastViewport changes labels but does not translate message.title.                                                        | A mounted invalid=true, error='', success='' notification can retain Polish text after locale changes to en. Include locale in the owning update path, retain the existing message identity/single notification, and add a PL→EN→PL regression without resetting form/controller.                                                                                                                                      | Missing reactive dependency verified in source; visible outcome deduced from explicit Vue watch semantics. Reproduction scenario specified, not claimed as a rendered reproduction. Existing feedback.test.ts checks invalid text/repeated attempts, not this locale-only transition. |
+
+| Finding   | Stage / dependencies                                         | Effort; risk                    | Alternatives / disposition                                                                                                                                                                     |
+| --------- | ------------------------------------------------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A-01      | 2/4 after Gate B                                             | S; low                          | Leaving both rules contradicts accepted identity. Correct owning current prose, no historical edit.                                                                                            |
+| A-02      | 4; Definitions/manifests remain authority                    | M; low/medium                   | Blind number replacement risks corrupting API versions/history. Review each present-tense claim and metadata in its context.                                                                   |
+| A-03/A-04 | 9; exact supported input/state/command design recorded first | L; high evidence-integrity risk | Manual copying remains possible but fails the approved durable workflow. A parallel runner/history service adds duplicate authority; reject.                                                   |
+| A-05      | 9; native event/discovery adapter and cleanup ownership      | L; high attribution risk        | Whole-suite retries waste work and were rejected. Ambiguous identity must use disclosed bounded remaining coverage and preserve unknown attempt counts. Stop recovery on unsafe cleanup.       |
+| A-06      | 3; define objective authoring/anchor semantics               | M; medium parser compatibility  | File-only checks retain an acknowledged blind spot. Reject subjective writing/LLM scores as hard gates.                                                                                        |
+| A-07      | 2–3, reassess 10                                             | M; medium guidance-loss risk    | Keep nine skills and improve routing first. A new UX skill remains optional only with demonstrated activation benefit. Both products need assessment; no owner authority in customer guidance. |
+| A-08      | 6; regression and public component guide                     | S; low/medium shared reach      | Remounting notifications/forms on locale change loses state; translating at each consumer duplicates the defect. Correct the common owner.                                                     |
+
+Proposed finite implementation scope is A-01–A-08 plus already approved D-01–D-06
+and required release/module-range alignment. No backend business/schema repair,
+new dependency, data rebuild, infrastructure rewrite or new per-view redesign is
+selected by the evidence above. Points 5, 7 and 8 retain review/disposition work;
+they must not manufacture changes to fill a checklist. Any additional correction
+needs a recorded evidence-backed addition to the approved finite list, with owner
+discussion for significant behavioral/architectural assumptions. No blanket
+permission to optimize, remove tests or refactor working Core is inferred.
+
+### Source-area inventory and disposition
+
+Paths in this table are repository-relative; grouped paths cover the census, not
+just the currently open IDE files. Reviewed/no-change means no correction selected
+from the stated evidence, not all tests passing. Unknown means the stated property
+was not established; it cannot support release acceptance.
+
+| Source area / owning files                                                                                                                             | Reviewed conclusion                                                                                                                                                                                                                                             | Remaining unknown / final obligation                                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Foundation, Runtime, Providers; Application.php, MaintenanceState.php, RuntimeHeartbeat.php, RunaServiceProvider.php, AuthTransportServiceProvider.php | Native and derived maintenance stay independent; queue heartbeat has explicit worker context; source registration/configuration and Fortify ignoreRoutes have real owners. No demonstrated maintenance defect; preserve guards.                                 | Live failure/reconnection/queue/scheduler matrices and reused-worker behavior unexecuted.                                                                                          |
+| Contracts, Support, ModuleFramework, Integration; ModuleTransactions.php, OperationGuard.php, TransactionSecurity.php, PermissionGate.php              | Native source-owned transaction phases, canonical registry/authority/subject locks, guarded rechecks, proof consumption, rollback and refusal are present. Record-policy arguments do not receive a generic grant bypass. No replacement architecture selected. | Concurrency/deadlock/rollback/late access-loss properties require native tests. Other framework engines are inventoried, not individually certified.                               |
+| Auth backend; StepUp, LoginController/LoginRequest/SessionResource, TransactionSecurity, UserDirectory, AdministrationApi/ProfilesApi/StepUpApi        | Thin login transport and password-only native proof; bounded authoritative directory filters/sorts and declared versions. No factor-as-operation-password or foreign-persistence correction selected.                                                           | Every lifecycle/bulk/mail/operator branch, privacy attack path and real grant combination not executed. Preserve default eligibility/proof/Audit invariants in final backend area. |
+| Permissions backend; AccessTransaction, AccessApi and Management/Definitions families                                                                  | Registry→authority order, owning proof and manual transactional Audit; guarded ordinary access distinct from protected authority. No superadmin bypass or generic Admin engine justified.                                                                       | Batch last-admin retention/revision races and every definition mutation require existing native coverage.                                                                          |
+| Audit backend; RecordEvent/RecordAttempt, ReadEvents, storage/migrations                                                                               | Successful records use owning connection; attempts have independent entry; page summaries avoid payload trees, counts precede cursor and sorting uses validated source fields. Preserve immutable history.                                                      | Large/hostile payload bounds, rollback/redaction and authorized reads not exercised. No index removal from source appearances alone.                                               |
+| Admin backend; Actions/Aggregate and AggregateMutation, Queries/Projection, fixed integrations                                                         | Aggregate prepares source-owned participants and uses ModuleTransactions; ordinary independent operations retain their own protocol. No direct cross-module persistence replacement selected.                                                                   | Complete declaration/generator/record-policy matrix, reviewed native effects and all resource-boundary cases remain final tests.                                                   |
+| Database/Identity/Settings/Images/Logging/Mail, technical migrations, public routes/controllers and configuration                                      | Inventoried platform owners with distinct public/internal placement. Sample migrations, public settings contracts, structured-redaction and native mail guides reviewed for boundary consistency. No deletion merely for absent static imports.                 | Each untraced helper/formatter/image path is not a security/performance PASS; no standalone new capability selected.                                                               |
+| App source, AppServiceProvider, resources/js/App.vue/main.ts, reference module declarations/controllers/model/migration                                | App remains minimal DefaultApplication composition; optional reference has named guarded API/HTTP/job/command/schedule owners. Customer presentation stays App-owned.                                                                                           | Full acquisition/generator/independent consumer/runtime workflows unexecuted. App version remains 0.0.0.                                                                           |
+| Shared frontend resources/js/{components,composables,lib,runa}, CSS, build/error/native templates                                                      | Inspected Dialog/modal stack, FormNotifications, Button intents, Table, readiness/image and HTTP owners; preserve immediate frames/local regions, outline/effect semantics and public facades. A-08 selected; no visual redesign.                               | Full focus restoration, modal portals, table pinning/exports, dark/English/mobile zoom and image races are not certified by source samples.                                        |
+| Auth frontend; session shell/useApplicationSession, useAuthEntry, own/admin account/default/detail/creation/security/preferences/history consumers     | One session/public composition owner and explicit identity/disposal fences; root/login observed. All supplied consumer families inventoried. No independent copied security controller selected.                                                                | Authenticated dirty/reconciliation/operation-proof/account-switch and security views not rendered in audit.                                                                        |
+| Admin frontend; useAdminTable/useAdminForm/readiness, AdminSettingsPage, application/operations/resource-browser consumers                             | Shared controllers/table providers; snapshot load is a draft operation; current settings groups and readiness owners exist. Source-correlated with accepted corrections.                                                                                        | Protected operational/settings/data scenarios unobserved; no claim that all values, animation or tab/back state passed.                                                            |
+| Permissions/Audit frontend; PermissionsAssignments/AssignmentList/AccessImport, definition consumers and Audit admin_history/admin_detail              | Owning specialized editor and shared generic table/value presentation exist; do not restore removed access page or redundant local history.                                                                                                                     | Keyboard high-cardinality selection, copy/preset reviews, JSON expansion and authorized deep links require rendered coverage.                                                      |
+| src/runa/{Console,Development,Tooling,Testing,testing,frontend,build}; src bootstrap/public                                                            | Inventoried delivery/runtime/testing roles; supported test composition and development-only routing reviewed. No general Artisan/shell/reset web endpoint selected.                                                                                             | Cold dispatch, no-vendor management, full source/runtime isolation and unsupported input tests unexecuted.                                                                         |
+| tools/core, tools/application, tools/maintainer, distribution, bin and hooks                                                                           | Reviewed shared test/quality/knowledge/docs/dependency/transport ownership and targeted entrypoints. A-03–A-06 own demonstrated gaps. Preserve stdlib host and container application execution.                                                                 | Every operational adapter was not executed; source inventory does not establish install/update/deploy acceptance.                                                                  |
+| Dependency manifests/locks and configuration examples                                                                                                  | Laravel/Fortify have actual consumers; Vue renders supplied UI; PDF/XLSX are dynamic binary-export imports. Tests/lint/build tools have declared roles. Composer/pnpm lock updates are not selected.                                                            | Current advisory/CVE status unknown: no fresh Composer/pnpm audit/Trivy ran. No package is labelled vulnerable, unused or safe from age/name alone.                                |
+| compose.yaml/compose.production.yaml, docker, .devcontainer                                                                                            | Sibling services, host-owned workspace, separate production stages and optional AI topology remain. Development Nginx observed healthy; no build/recreate/reset justified.                                                                                      | Live Docker ownership, actual production image contents and health across restarts unobserved without host access.                                                                 |
+| .agents, root AGENTS/CLAUDE, customer-agent, handbook/app/maintainer docs                                                                              | Both instruction products and nine paired skill entrypoints reviewed; relevant references walked below. A-01/A-02/A-06/A-07 selected; immutable history stays untouched.                                                                                        | Individual editorial accuracy for the remaining current documents is point 4's per-document ledger; no file-count claim of full prose correctness.                                 |
+| tools/application/knowledge, owner config/goldens, .codex Boost configuration                                                                          | Incremental freshness/retrieval and Boost application-info work; corpus source guard explicitly excludes customer authoring data, owner receipt scopes and generated/secrets. Stale guide contents can still be retrieved.                                      | Freshness/doctor/evals, move/delete, immutable annotation applicability and receipt exclusion require final strict knowledge checks after changes.                                 |
+| tests/backend, tests/frontend, tests/tools, app/runa splits and modules                                                                                | Central ownership/config composition inspected. Test source protects separate native and consumer contracts; no automatic pruning selected. New A-08 and parser/resume/accounting regressions have clear owners.                                                | Actual current case/dataset discovery and all native results remain unexecuted; RM-016's 791 is historical only.                                                                   |
+
+### PostgreSQL catalog observations
+
+Read-only Boost catalog inventory returned 46 ordinary tables: shared 12,
+runa_auth 22, runa_permissions 10, runa_audit 2. No ordinary/view/materialized/
+foreign relation was returned for public or runa_admin. All selected FK constraints
+have RESTRICT on both delete/update; querying deviations returned an empty result.
+All selected id columns are bigint with identity; querying deviations returned
+empty. These are catalog observations of the configured development database,
+not migration replay, row validity or query-plan performance evidence.
+
+Inspected Auth users CREATE, Permissions user_roles CREATE and Audit events CREATE
+with the canonical database guide. Naming/identity helpers, UTC moments, optimistic
+versions, same-module FKs and foreign UUID references have source owners; technical
+rows do not acquire mechanical public IDs. Each remaining table maps to native
+migration/ledger/session/credential/mail/preferences/permission/history/work/settings
+owners rather than being presumed leftover. No runtime write, EXPLAIN ANALYZE,
+index-drop or data cleanup was done. Index usefulness under actual workloads and
+full constraint/public_id coverage remain unknown; retain existing indexes unless
+a measured owning query review justifies change. No reset is authorized here.
+
+### Skill effectiveness and context assessment
+
+These are manual source walk-throughs, not spawned agents, model benchmarks or
+rendered task execution. For each supplied positive/negative scenario, followed
+the entrypoint and relevant reference to its canonical guide and a representative
+consumer. Checked both customer entrypoint and references as product data; they
+never became owner operating authority. GOOD here means the examined route is
+usable, with the stated limits; final practical revalidation remains point 10.
+
+| Pair       | Source walk / observed route                                                                                                                                                             | Negative boundary and rating (owner / customer)                                                                                                                                                |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| frontend   | Detail read → loading.md and Dialog; feedback → forms/components and FormNotifications; access/definitions → owning module guide. Existing seven references already cover design topics. | Backend-only task has no visual trigger. A trivial view-copy change still meets broad per-view mandates: selective-loading ambiguity A-07. NEEDS IMPROVEMENT / NEEDS IMPROVEMENT.              |
+| vue        | Stale account-bound request → routing-async-performance, public preference/customization/form contracts and useApplicationSession identity/cleanup.                                      | Docs-only task needs no Vue. No copied session controller authorized. Blanket route lazy-loading overstates actual routing needs, A-07. NEEDS IMPROVEMENT / GOOD for inspected customer route. |
+| tailwind   | Existing class adjustment → classes-verification and palette/customization; finite static class maps and package-version check are explicit.                                             | SQL change has no trigger; no new tokens/helper dependency without need. GOOD / GOOD. Final build/render timing remains controlled by roadmap.                                                 |
+| backend    | Aggregate refusal/side effect → failure-side-effects and module-transactions; examined Aggregate and Audit owner.                                                                        | Copy-only change needs no backend references; direct foreign model/repository replacement not justified. GOOD / GOOD; concurrency not executed.                                                |
+| laravel    | Login transport → framework-conventions, LoginRequest/controller/resource; customer reference explicitly routes uncertain APIs to installed-version Boost.                               | Vue styling has no trigger; no Blade UI or guessed framework API. GOOD / GOOD; Boost application-info observed, no new Laravel implementation required docs search.                            |
+| postgresql | Index/FK/concurrency → database.md and schema-indexes, mapped to catalog/migration/owning read.                                                                                          | UI task does not trigger reset/index work. GOOD / GOOD; performance benefit unmeasured.                                                                                                        |
+| security   | Password/current grant/Audit → baseline, review-workflow and public audience contract; examined StepUp, PermissionGate and RecordEvent.                                                  | Owner 139 tolerance stays maintainer-only; no operator infrastructure authority layer introduced. GOOD / GOOD; no full vulnerability scan claim.                                               |
+| docker     | Concrete missing test upstream → lifecycle-devcontainer, test resource lifecycle and actual journal; no Docker access means preserve/defer.                                              | Docs task does not imply rebuild/prune; production and optional AI remain separate. GOOD / GOOD; host-native operations not executed.                                                          |
+| rag        | Branch/source stale → knowledge guide and ingestion-metadata; original-source verification and source exclusions inspected.                                                              | Application startup does not depend on knowledge; copied customer authoring/receipts cannot expand corpus. GOOD / GOOD; one retrieval and index refresh are not evaluation PASS.               |
+
+Owner/customer entrypoint byte footprints respectively: backend 4,104/2,901;
+Laravel 1,514/1,015; PostgreSQL 887/697; frontend 5,502/7,240; Vue 1,552/1,032;
+Tailwind 1,196/1,020; security 1,355/1,086; Docker 1,006/719; RAG 1,283/885.
+These are measured source bytes read for entrypoint inspection, not tokenizer or
+loaded-context performance metrics. Selected reference reads were domain-specific;
+shared canonical documents must not be counted nine times as independent cost.
+Root AGENTS remains 458 lines/4,031 words/32,207 bytes; customer AGENTS
+424/3,742/30,078; owner frontend 76/539/5,502; customer frontend 114/784/7,240.
+Forms is 281 lines/3,933 words/30,821 bytes; components 645/8,437/70,196. No
+consolidation has occurred, so before/after improvement is not claimed. Preserve
+these comparable baselines for points 2–3/10. No skill is declared REDUNDANT or
+BROKEN merely because another skill shares its handbook references.
+
+External planning candidates remain research inputs, with the pinned/provenance/
+license limits already recorded above. No upstream source was adopted or newly
+attested during this audit. Existing frontend SOURCE.md retains its Sablier pin;
+no installer/script or mandatory subagent instruction was executed. The source
+walks justify improving existing routing first, not inventing a design skill now.
+Before copying/adopting any external text, point 2 must inspect the exact selected
+material/license and relevant primary accessibility standard; a planning URL is
+not that evidence.
+
+### Test value, configuration and developer journeys
+
+Retain separate source ownership, native backend transaction/security tests,
+frontend mounted reconciliation/component tests and real browser behavior tests:
+asserting the same public requirement at these different boundaries is not by
+itself duplication. `view-readiness.test.ts` verifies DOM/focus/draft retention and
+identity withdrawal; `feedback.test.ts` verifies notification ownership/repeated
+attempts; `auth-entry.test.ts` covers token/disabled registration/credential flows;
+`test_test_runner.py` verifies native exits, cleanup failure, discovery and suite
+locks; `test_quality_state.py` verifies malformed state refusal and preserved
+native evidence. Their purposes differ. No test is proposed for deletion solely
+from repeated labels, file length or a historic slow/crashed run.
+
+Add A-08 regression to shared feedback ownership; extend existing documentation
+contracts for A-06 and quality/test lifecycle contracts for A-03–A-05. Keep an
+explicit keep/consolidate/remove/add ledger when implementation identifies actual
+duplicates. Native case/dataset inventory must come through the supported owner
+backend discovery route (TestService has an explicit list-tests/list-tests-xml
+path) before case recovery is designed. It was not run in this read-only audit;
+no present case count is inferred from PHP test-file counts or RM-016 reports.
+Do not classify crash interruptions as ordinary flakes or remove their tests.
+
+The source journey is consistent in ownership: README/setup → environment/editor
+and environment-file guides → development module guide/public-api placement →
+frontend customization → public/owner testing and command guides → production
+architecture/deployment/update. Examples must retain their documented host versus
+container transport. `DevelopmentSetup.setup_fingerprint` names dependency owner
+inputs/locks/config/tooling; `dependencies.materialize` composes Runa+App inputs and
+preserves locks; `DevelopmentRuntime` selects existing Compose transport. Source
+declarations are not proof of native first acquisition, reopen or deployment.
+
+Configuration map: platform defaults in `src/runa/config`, App contributions in
+`src/app/config`, module source definitions/manifest versus native settings are
+distinct; application presentation settings are not generic technical configuration.
+Development creators/readers are `development_config/setup/runtime`; production
+uses explicit Compose/env inputs; test layout/APP_ENV/worker ownership are selected
+by TestService and its owner composition. No private env file contents or secret
+values were printed, edited or copied into this report. No dependency version or
+Docker pin change is selected merely because a newer version might exist.
+
+### Verification mechanics: proposed implementation boundary
+
+D-01–D-03 already approve the capability and policy direction. The following is a
+concrete design proposal for Gate B, not a claim that commands/schema exist:
+
+- Keep the existing quality root, stable lock, manual groups and executor. Introduce
+  a versioned campaign record with campaign/attempt/node identities and immutable
+  per-attempt native evidence references; current state becomes a validated view of
+  that campaign. Archive referenced evidence before a new campaign replaces latest.
+  Retention is bounded by campaign ownership/references, never deletion of evidence
+  still needed for release, crash accounting or recovery.
+- Extend the existing command parser with explicit resume planning and execution,
+  provisionally `quality-plan --resume` and `quality-roadmap --resume --background`
+  with the same manual groups. These are proposed names only; document exact
+  supported signatures/types before point-9 code. Status shows native outcome,
+  validity, coverage, cleanup and separate owner assessment. Customer transport
+  exposes neutral mechanics only, without owner acceptance flags.
+- A reviewed node input declaration binds source/config/toolchain/lock/harness/
+  graph/environment assumptions and prerequisite provenance. No automatic group
+  classifier. Missing/uncertain boundaries invalidate the potentially affected
+  scope. A shared/runtime change invalidates all declared consumers. Runtime
+  fixture/scanner phases bound to exact resource/run identity rerun together when
+  that identity changes. Nonsecret environment declarations only; secrets are
+  excluded from evidence/fingerprints. Unknown secret-dependent environment
+  compatibility cannot be assumed from hashes or an unchanged public file.
+- Existing TestService owns discovery, execution, locks and cleanup. An adapter
+  records native case/dataset start/completion plus worker signal and attempt
+  identity before supplemental execution. Persist retry budget before launch.
+  Match exactly the case and mode; up to two additional attempts only for reliable
+  confirmed SIGSEGV. Ordinary failure remains blocking. Preserve isolated retry
+  concurrency separately from original parallel-suite coverage.
+- Ambiguous attribution retains unknown original identity/count. Discover remaining
+  selected cases minus reliable completions and run explicit bounded selections
+  through the same supported runner only after safe cleanup. No fabricated exact
+  crash identity, reset retry budget or full-suite restart loop. Unknown unexecuted
+  cases are not acceptable SIGSEGV coverage.
+- Private owner composition supplies the separate acceptance assessment validated
+  against native evidence, coverage, absence of ordinary failures and cleanup 0.
+  Never rewrite native failed state. Ordinary complete affected-area repair remains
+  required; revalidate reuse against changes, then rerun only invalid nodes and real
+  prerequisites under the delivered policy. Exception retirement stays tied to
+  corrected runtime verification, not a retry PASS.
+
+Before point 9, the exact event adapter/discovery/dataset mapping and full record/
+command signatures need a source-backed design check with deterministic fixtures.
+No unverified parallel case identity adapter is pre-approved as reliable. A changed
+premise or inability to meet safe accounting returns to the owner; it cannot be
+hidden by setting the coordinator to passed. No full native/crash experiment is
+needed or authorized during point 1.
+
+### Resources, inherited recovery and instruction products
+
+Observed inherited journal `.runtime/tests/endpoint.json` records project
+`runa-dev`, run `454f8f080fc946efb9fad9d86e33c264`; companion endpoint override
+and lock remain. `tools/application/test_resources.py::EndpointService` uses exact
+project/working-directory/service/run labels, suite/endpoint locks and journaled
+cleanup. This journal alone does not establish whether containers are still alive.
+Docker CLI is absent inside this workspace context; no live IDs/labels/mounts or
+ownership were attested. DNS failure is not evidence that a container is safe to
+delete. Preserve the journal/override/locks and inherited RM-016 evidence. Supported
+host recovery needs its own exact live inventory before any removal; no host
+transition/rebuild is required merely to finish this bounded audit.
+
+Task-created resources: temporary Chromium contexts/processes, all closed;
+`.runtime/artifacts/playwright/RM-2026-017-audit` evidence, retained. Removed Docker
+containers/networks/image tags/volumes: none. Application/base test data, shared
+Qdrant/model/pnpm/Python caches, backups and all prior quality/native reports
+preserved. No global cleanup, cache pruning or inferred ownership.
+
+Instruction-product assessment for point 1: only this owner roadmap changed.
+Root AGENTS, owner skills and the customer bundle require no capability/rule update
+for activation/audit evidence; their affected future changes are A-07 and point 9.
+The customer product must not receive this roadmap or owner SIGSEGV assessment.
+Current guides with A-01/A-02 remain deliberately unfixed pending Gate B. Final
+quality groups are still provisional; no gate/area is labelled PASS by exclusion.
+
+### Gate B owner handoff
+
+Approve or amend the finite A-01–A-08 correction list, preservation of the current
+architecture/identity, existing-skill-first approach, D-01–D-03 design boundary and
+explicit rendered/host/discovery limits above. The release remains feature/0.8.0;
+no reconfirmation of Gate A is requested. Core ranges exclude 0.8.0 today: defer
+candidate version preparation to its separately authorized release procedure;
+there is no permission here to bump versions or bypass maintenance.
+
+Point 1 remains unchecked solely pending owner acceptance of this audit and chosen
+scope. Stop before point 2 and all corrections. Protected rendered scenarios,
+actual case discovery, performance measurements and advisory scans remain explicit
+obligations where relevant; the owner may require further bounded audit evidence
+before accepting Gate B. No silence or automatic check grants that acceptance.
