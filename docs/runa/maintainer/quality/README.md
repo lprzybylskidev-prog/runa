@@ -64,9 +64,8 @@ prepares a native installation or production fixture. Add broad groups when thei
 runtime behavior or images are affected; an excluded image scan is not PASS.
 
 Platform-wide verification uses supported `--all` for release 0.10.0, then 0.15.0,
-0.20.0 and subsequent 0.x.0 minor milestones divisible by five. The current 0.6.x
-series is followed by the first scheduled checkpoint at 0.10.0. PATCH releases do
-not count as five additional minor releases. A skipped checkpoint must be completed
+0.20.0 and subsequent 0.x.0 minor milestones divisible by five. The first scheduled
+checkpoint is 0.10.0. PATCH releases do not count as five additional minor releases. A skipped checkpoint must be completed
 before a later release is finalized. Always run full verification before 1.0.0,
 including its readiness procedure; this does not authorize a major release.
 Record milestone scope, exact candidate, graph, results and raw evidence in its
@@ -309,7 +308,11 @@ Before roadmap closure:
 - remove them, or
 - promote them to a durable tool/test.
 
-Generated runtime artifacts may be gitignored.
+This visible-source rule applies to authored scratch scripts awaiting removal or
+promotion, not generated browser evidence. Generated runtime artifacts use the
+[workspace-root artifact tree](../../handbook/architecture/project-principles.md#generated-tooling-and-build-state)
+and may be gitignored. Browser screenshots, traces, videos and reports belong in
+`.runtime/artifacts/playwright/`; preserve existing evidence during cleanup.
 
 ## Execution contract
 

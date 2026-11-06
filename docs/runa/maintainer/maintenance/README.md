@@ -36,7 +36,14 @@ Do not create maintenance items just to hide TODO/FIXME/HACK and make a gate gre
 
 ## Deprecations
 
-When deprecating configuration, endpoint, CLI, or mechanism:
+Use the canonical [pre-1.0 compatibility policy](../workflows/releases.md#pre-10-compatibility)
+before choosing a transition. During Runa platform development, prefer a coherent
+change in the owning implementation and its current consumers; do not introduce
+aliases or a second API solely for an unpublished intermediate interface. Record
+honest module/API versions and preserve security, data and published history.
+
+When an actual compatibility obligation requires deprecating configuration, an
+endpoint, CLI or mechanism:
 
 - document the replacement,
 - warn where appropriate,
@@ -48,7 +55,9 @@ For renamed environment/config keys, a temporary alias/fallback may be used when
 
 Temporary config aliases/fallbacks must not live forever; removal belongs to a later roadmap.
 
-A significant incompatible/breaking deprecation may require the user's explicit major-version decision under Runa version rules.
+Major-version approval follows the owning platform/module policy; the standing
+pre-1.0 owner authorization remains applicable. Promotion of the platform to
+1.0.0 still requires the owner's explicit decision.
 
 ## Registry coverage and reminders
 

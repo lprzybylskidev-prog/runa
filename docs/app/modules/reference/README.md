@@ -18,8 +18,14 @@ The first-development installer offers the example interactively or with `--refe
 | Classified CLI, hourly scheduling and jobs      | `backend/Definitions/ReferenceCommands.php`, `ReferenceSchedules.php`, `ReferenceJobs.php`           |
 | Independent versioned facts/listeners           | `backend/Definitions/ReferenceEvents.php`, `ReferenceListener.php`, `ReferenceEventHandler.php`      |
 | Navigation, page and named slot contributions   | `backend/Definitions/ReferenceFrontend.php`, `frontend/components/panel.vue`                         |
-| Management metadata                             | `backend/Definitions/ReferenceManagement.php`                                                        |
+| Descriptive management metadata only            | `backend/Definitions/ReferenceManagement.php`                                                        |
 | Reusable source assertion                       | `tests/backend/app/modules/reference/ModuleContractTest.php` (repository-relative)                   |
+
+The management declaration currently describes `reference.inspect` and a future
+`inspect` action; its component list is empty. It supplies no executable Admin
+operation or owned Admin page. The standalone frontend panel below is a separate
+working page/slot example. Use the [Admin authoring examples](../../../runa/handbook/modules/admin/examples.md)
+for a dedicated page; management metadata alone does not create one.
 
 ## Install and observe
 
@@ -40,8 +46,10 @@ The opt-in frontend registry exposes `app.reference.panel`. Compose the existing
 Run `php artisan runa:test --scope=backend ../tests/backend/app/modules/reference`
 from the configured development PHP terminal for the delivered source assertion.
 Native backend paths resolve from `src`; use `./bin/artisan` from the host only
-when setup/recovery transport is needed. Runtime metadata can be checked with `runa:modules:check app --runtime` after synchronization. Owner acceptance in `tests/backend/runa/Feature/ModuleReferenceTest.php` additionally exercises real PostgreSQL install/retry/settings/API/work/events/retained-data disable and production refusal. Private framework regressions cover dependency/Core/failure/concurrency scenarios
-with isolated fixtures; they are excluded from customer delivery.
+when setup/recovery transport is needed. Runtime metadata can be checked with `runa:modules:check app --runtime` after synchronization. This source assertion does not exercise PostgreSQL installation, settings changes,
+work/events, retained-data disable or production exclusion. Add application-owned
+behavior tests for the examples you adopt; private platform suites are not
+delivered customer tests or a customer verification prerequisite.
 
 - Missing source: inspect the installation selection and sparse projection. Do not materialize declined examples on ordinary reopen/update.
 - Critical unknown health: explicitly diagnose before enable; scheduled recovery only handles due enabled modules. Health failure never changes enabled flags.

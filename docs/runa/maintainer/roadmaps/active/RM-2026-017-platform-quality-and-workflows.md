@@ -28,7 +28,7 @@ impact_areas:
 The owner explicitly accepted the renewed baseline as adequate for continuing
 with its documented limitations and approved RA-01–RA-07. The complete
 [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
-is retained verbatim. Points 1–3 are complete; point 4 is current. Points 2–6 require
+is retained verbatim. Points 1–4 are complete; point 5 is current. Points 2–6 require
 individual renewed reconciliation, approved corrections and completion records;
 their original completion declarations do not restore acceptance automatically.
 Continue in order through the existing implementation, owner manual acceptance
@@ -727,7 +727,7 @@ below are retained as historical records only.
     warnings, relative links/anchors, metadata and audience boundaries. Record
     unaffected-product reasons; discuss any new constitutional premise first.
 
-- [ ] 4. Reconcile current documentation and developer journeys.
+- [x] 4. Reconcile current documentation and developer journeys.
   - **Objective:** make documentation accurate and usable by a new developer.
   - **Preconditions:** points 1–3; owning code/contract facts identified.
   - **Deliverables:** reviewed document inventory and per-document disposition;
@@ -2633,3 +2633,68 @@ examples through delivered public contracts, with visual alignment retained.
 The observed metadata-only Admin declaration is an explicit completion target;
 this does not authorize inventing new platform mechanisms or unrelated domains.
 This planning update changes no runtime, data, dependencies or versions.
+
+## Point 4 — Renewed documentation and developer-path reconciliation — 2026-11-06
+
+Reconciled candidate `00da181d` after renewed points 2/3. Retain its useful
+A-01/A-02/version/path corrections; the prior repeated editorial-retain reasons
+were insufficient. The [renewed per-document ledger](../../reviews/RM-2026-017-documentation.md)
+now covers all 194 current Markdown files under docs, including six later review/
+decision records, with document-specific owning comparisons and justified
+historical classifications. Closed roadmaps, dated evidence and verbatim owner
+decisions retain their bytes. Root discovery and both instruction products are
+assessed separately; an inventory row is not a native or semantic certification.
+
+Point-start knowledge was current: 216 documents, 12,214 chunks, no drift,
+missing/orphan chunks or interrupted write. Bounded current-intent retrieval
+selected original documentation ownership and RA-03 artifact placement; opened
+those originals and the authoring/skills/knowledge procedures. Followed the
+architecture → setup → module/API → frontend → testing → update/deployment path
+through actual command registries, initialization/setup branches, generator,
+Core manifests/API definitions, public frontend exports, reference declarations,
+central test runner, delivery exclusions and deployment/forward-data owners.
+The ledger states the exact comparisons and native/rendered limits.
+
+### Corrections and consolidation
+
+- RA-03: public testing now sends generated browser evidence to
+  `.runtime/artifacts/playwright/`. Owner quality distinguishes that evidence from
+  visible authored scratch source awaiting promotion/removal. Existing artifacts
+  remain preserved; no relocation or deletion was needed.
+- RA-06: removed the stale “current 0.6.x” premise from manual quality selection;
+  the 0.10.0/0.15.0/0.20.0 all-group cadence remains unchanged.
+- Corrected remaining future generator/reference claims, the owner architecture's
+  obsolete module/test/command tree, exact approved updater file scope and missing
+  supplied-module data-phase summaries. Ordinary App and optional modules retain
+  separate installation/availability and customer integration ownership.
+- Removed the remaining English-only Admin direction in owner localization;
+  Polish-default/English-secondary UI and English technical output stay distinct.
+  Qualified maintenance transition guidance with the existing pre-1.0 policy.
+- Consolidated duplicate 1.0 readiness checklists: the public guide owns shared
+  scale/runtime/security/recovery requirements; the existing owner entrypoint links
+  it and retains full owner --all, canonical failure disposition and explicit
+  owner promotion authority. This changes no policy or release decision.
+- The reference guide now identifies its management action as descriptive with
+  an empty component binding, distinct from the working panel/slot. Its source
+  assertion is not runtime coverage; absent private suites are no customer test
+  prerequisite. Approved runnable showcase completion remains point 7.
+
+A one-off changed-document diagnostic used existing docs_checks.structure/links
+because the supported complete documentation gate has no changed-path scope.
+It resolved the new readiness/canonical and public-projection link uncertainty;
+**PASS for all 11 changed Markdown files**, including public projection links.
+A separate in-memory census comparison confirmed **194 documents, zero missing or
+obsolete inventory rows**. These are focused editorial diagnostics, not full
+documentation or projection acceptance. No
+routine suite, complete docs gate, installation, build, image scan, deployment or
+browser matrix ran. Complete selected-area verification remains point 12.
+
+Instruction-product assessment: root owner/customer AGENTS and the nine skill
+pairs already route to the corrected canonical guides, as reconciled in points
+2/3; no new global constraint or duplicated procedure is needed. The owner
+readiness wrapper is private; customer links target only the public checklist.
+No document moved/deleted, so stage and refresh incremental knowledge in place.
+No runtime/config/schema/API/module/platform version or dependency changed. No
+Docker resource or application/test data was created, reset or removed; existing
+reports, model caches and operation evidence remain preserved. Commit this
+reconciliation and mark point 4 complete; point 5 owns the next implementation.
