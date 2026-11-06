@@ -29,10 +29,11 @@ The owner explicitly accepted the renewed baseline as adequate for continuing
 with its documented limitations and approved RA-01–RA-07. Point 7 subsequently
 exposed the Admin/hybrid-health transaction premise documented at the end:
 the owner has now approved its exact-call repair design and instructed continued
-implementation. Point 7 remains open.
+implementation. Point 7 is now complete with the reconciliation recorded below;
+point 8 is current.
 Gate B remains approved and roadmap lifecycle stays active. The complete
 [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
-is retained verbatim. Points 1–6 are complete; point 7 is current. Points 2–6 require
+is retained verbatim. Points 1–7 are complete; point 8 is current. Points 2–6 require
 individual renewed reconciliation, approved corrections and completion records;
 their original completion declarations do not restore acceptance automatically.
 Continue in order through the existing implementation, owner manual acceptance
@@ -806,7 +807,7 @@ below are retained as historical records only.
     motion/public replacement guides and both instruction products. New interaction
     semantics beyond accepted findings return to the owner.
 
-- [ ] 7. Bring all supplied views into the agreed standard.
+- [x] 7. Bring all supplied views into the agreed standard.
   - **Objective:** deliver complete consistent experiences using corrected owners.
   - **Preconditions:** points 5–6 and approved per-view corrections.
   - **Deliverables:** Auth entry/confirmation/account/security/preferences/history;
@@ -3180,3 +3181,39 @@ checks remain final. No data/runtime/dependency change accompanied this correcti
 Owner/customer test selectors already route to the canonical public test guide;
 updated that guide and the owner discovery description, manifest and changelog.
 No new always-loaded rule or copied customer instruction is needed.
+
+### Point-7 supplied-view reconciliation and completion — 2026-11-06
+
+Complete the implementation with the
+[view/state dispositions and final selection](../../reviews/RM-2026-017-view-dispositions.md).
+Every supplied family has a correction or a source-grounded retention reason;
+the capability ledger above covers the reference showcase and justified exclusions.
+Public presentation/security owners are retained, and current module/generator,
+test discovery/delivery and instruction-product guidance is synchronized.
+
+Local runtime preparation used the exact committed source `bef757e2` and the
+documented trusted module plan/apply and native health/transition contracts, with
+maintenance and a retained operation journal. Auth/Admin were upgraded without
+reset; reference 0.3.0 was installed and enabled with its single welcome sample.
+Existing users/settings/data and base test databases remain. Bounded real browser
+observations confirm the repaired RA-05 sequence and reference page/refresh/widget
+200 responses, with PL/EN, desktop/light and phone/tablet/dark samples and no page
+errors or horizontal page overflow in those settled samples. Focused component,
+backend and optional source-delivery results are recorded above; none is a full
+suite or final matrix result.
+
+Retain the initial wrong-label timeout and the later single unclassified activity
+503 as failed observations. Its cause is unknown; a subsequent settled diagnostic
+and three concurrent read/heartbeat pairs succeed. Final automated selection must
+include concurrency and protected-content recovery; a reproducible failure needs
+an owning repair. Do not manufacture a PASS or weaken the generation/proof fence.
+The final rendered/manual selection is explicit in the linked review.
+
+Stopped the task-owned Vite process on port 5174. Its generated dependency cache
+was relocated from the unconfigured Vite default `src/app/node_modules/.vite` to
+`.runtime/frontend/vite/RM-2026-017-point7` and the empty generated parent removed;
+cache configuration is a demonstrated point-8 correction. Preserve browser/native
+reports, development/reference data, base test database and knowledge/model caches.
+No Docker resource was created or removed. Point 10 still owns preparing stable
+current assets/data before point-11 owner acceptance. No release is prepared.
+Point 7 is complete in this reconciliation commit; continue with point 8.
