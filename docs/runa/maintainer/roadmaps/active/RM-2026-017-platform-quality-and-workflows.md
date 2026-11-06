@@ -3034,3 +3034,22 @@ private-implementation cases. Supported focused tooling diagnostic:
 — **1 PASS, 6 deselected, exit 0, cleanup 0**. This is a narrow enforcement
 correction needed to retain the customer example, not approval or implementation
 of the stopped health-admission design. No rule or hook was suppressed.
+
+### Point-7 design review requested — 2026-11-06
+
+The owner explicitly authorized preparing and presenting the Admin/on-use/hybrid
+repair design before implementation. This is not approval to implement it.
+The [proposed design](../../reviews/RM-2026-017-admin-read-health-design.md)
+recommends an optional pure source read-call plan and one health admission per
+public invocation occurrence. Checks run outside transactions; adapter/business
+reads and current authority/proof/result validation retain the locked Admin root.
+It covers record/page/options/widget consumers and widget failure isolation,
+refuses unplanned calls and avoids request-wide health or authorization reuse.
+
+The exact proposed signatures, dynamic-call limits, public/internal ownership,
+Framework API MINOR assessment (proposed 1.1.0), alternatives and regression
+obligations are in that review document. Platform feature/0.8.0 remains unchanged.
+No runtime, public contract, manifest/version, migration, test or dependency was
+changed for this design-only work; no new runtime verification was executed.
+Gate B remains approved, lifecycle active and point 7 open. Await the owner's
+explicit design decision before implementing this prerequisite or advancing.
