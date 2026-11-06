@@ -1,9 +1,10 @@
 # Proposed Admin read health admission
 
 Date: 2026-11-06. Roadmap: RM-2026-017, point 7.
-Status: **PROPOSED — owner review required before implementation.**
+Status: **APPROVED — implementation authorized by the owner on 2026-11-06.**
 
-The owner authorized preparing and presenting this design, not implementing it.
+The owner first authorized preparing and presenting this design, then explicitly
+accepted it and instructed recording that acceptance and continuing implementation.
 Gate B and feature/0.8.0 remain approved; point 7 stays open. This proposal extends
 that point's scope rather than activating another roadmap. It changes no source
 contract, runtime, data, dependency or release version by itself.
@@ -266,3 +267,15 @@ Approve or amend the exact-occurrence read-plan extension, its preparation timin
 fail-closed dynamic-call boundary and proposed Framework API assessment. Only an
 explicit approval of the resulting design authorizes implementation. The prior
 answer authorized this proposal and presentation only.
+
+## Owner approval — 2026-11-06
+
+The owner explicitly accepted the presented design and instructed the agent to
+record the decision and proceed. Approval covers the exact-occurrence read-plan
+extension, preparation outside the locked read, refusal of unplanned calls and
+the proposed additive Framework API 1.1.0 assessment. Preserve all named security,
+health and transactional guarantees. Implement within active point 7; platform
+feature/0.8.0, point order, manual acceptance and final verification stay unchanged.
+The proposal and its original request for a decision above remain design history;
+this approval supersedes the implementation stop, not the remaining acceptance
+obligations. No dependency, reset, production deployment or release PASS is implied.

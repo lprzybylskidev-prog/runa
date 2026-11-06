@@ -28,7 +28,8 @@ impact_areas:
 The owner explicitly accepted the renewed baseline as adequate for continuing
 with its documented limitations and approved RA-01–RA-07. Point 7 subsequently
 exposed the Admin/hybrid-health transaction premise documented at the end:
-implementation is stopped for owner design discussion, with point 7 still open.
+the owner has now approved its exact-call repair design and instructed continued
+implementation. Point 7 remains open.
 Gate B remains approved and roadmap lifecycle stays active. The complete
 [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
 is retained verbatim. Points 1–6 are complete; point 7 is current. Points 2–6 require
@@ -3053,3 +3054,17 @@ No runtime, public contract, manifest/version, migration, test or dependency was
 changed for this design-only work; no new runtime verification was executed.
 Gate B remains approved, lifecycle active and point 7 open. Await the owner's
 explicit design decision before implementing this prerequisite or advancing.
+
+### Point-7 Admin read-health design approved — 2026-11-06
+
+The owner explicitly accepted the presented
+[repair design](../../reviews/RM-2026-017-admin-read-health-design.md) and instructed
+recording approval and proceeding. Exact-occurrence read plans, independent health
+preparation, existing locked business reads, unplanned-call refusal and the
+additive Framework API 1.1.0 assessment are authorized within point 7. Preserve
+all documented authority/proof/health/source/expiry/worker invariants and widget
+failure isolation. The preceding discussion stop is superseded; Gate B remains
+approved and the roadmap active. Point 7 remains current/open until its full
+implementation, documentation, necessary focused evidence and commits are done.
+Platform feature/0.8.0 and points 8–12, including owner manual acceptance and final
+verification last, are unchanged. This is not release, dependency or reset approval.
