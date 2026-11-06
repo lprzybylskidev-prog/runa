@@ -2090,3 +2090,34 @@ Their UI assertions remain valuable; they do not prove real backend/browser
 integration. The present live observations add that missing evidence for visited
 reads only. Whole-suite redundancy/gaps and other real integration owners remain
 unreviewed; no test deletion or new test policy is proposed from this sample.
+
+### Renewed dialog and documentation inspection — 2026-11-06
+
+Continued point 1 at candidate `62b1cec7` with current knowledge, scoped real
+creation/user/security/role/preset dialogs and nested access-copy focus/viewport
+observations. The [detailed evidence and capability ledger](../../reviews/RM-2026-017-renewed-dialogs-and-documentation.md)
+records inspected states, native side effects, test-value review, prior-point
+reassessment and remaining work. It does not complete any audit area or restore
+Gate B. No implementation correction or broad verification was performed.
+
+- **RA-03 / confirmed, Low:** the current testing guide still prescribes
+  `.playwright/scratch` or `tools/scratch`, contradicting canonical workspace
+  `.runtime` placement. Proposed point-4 documentation reconciliation, small effort.
+- **RA-04 / confirmed, Medium:** point-3 parser strips HTML comments before
+  recognizing code. Two small diagnostics show literal comment delimiters inside
+  fenced/inline code hiding a real broken link; the actual link/structure checker
+  accepts both documents. Proposed bounded parser repair and interaction fixtures,
+  medium effort/regression risk; prior point-3 acceptance remains pending.
+- **RH-03 / unexplained:** some dialog captures contain generic failure feedback.
+  A separate instrumented read did not reproduce it; completed authenticated
+  section responses were 200. Cause, impact and correction remain unestablished.
+  Do not infer preference failure or security refusal from a toast alone.
+
+Live nested-copy evidence confirms parent inertness, forward/backward keyboard
+containment and child-only Escape with focus returned into the parent. Creation
+Escape restores its opener. Narrow captures show no document overflow in those
+samples; they do not certify complete form reachability, a11y, exports or other
+states. Existing A-08 results are preserved; the dismissed-locale sequence remains
+RH-02. Authentication/activity and preferences POSTs are disclosed native effects;
+method/path alone does not distinguish preference snapshots from writes. No
+account, definition, access or settings Save/Apply was submitted.
