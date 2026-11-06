@@ -145,8 +145,8 @@ reader failure while still available shows an empty unavailable diagnostic.
 | Cross-module editing and aggregate writes | Intentionally absent: no foreign-subject editing use case exists in this read-only scenario. Use the [Admin examples](../../../runa/handbook/modules/admin/examples.md) and their opt-in generator/Core examples when adding one.                                                                        |
 
 Application frontend regressions live in
-`tests/frontend/app/unit/modules/reference/presentation.test.ts`. Run the scoped
-`php artisan runa:test:frontend ../tests/frontend/app/unit/modules/reference/presentation.test.ts`
+`tests/frontend/app/modules/reference/presentation.test.ts`. Run the scoped
+`php artisan runa:test:frontend ../tests/frontend/app/modules/reference/presentation.test.ts`
 from the development PHP terminal. They cover retained reads, duplicate requests,
 dismissed localized failures, replacement response markup, cancellation and
 unavailable widget content and public Admin section refresh retention/busy feedback. Private owner suites additionally exercise native Admin

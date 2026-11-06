@@ -35,5 +35,8 @@
     "upgrades": ["App\\Modules\\Reference\\Definitions\\ReferenceUpgrades"]
   },
   "docs": ["docs/app/modules/reference/README.md"],
-  "tests": ["tests/backend/app/modules/reference"]
+  "tests": [
+    "tests/backend/app/modules/reference",
+    "tests/frontend/app/modules/reference"
+  ]
 }

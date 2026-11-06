@@ -36,7 +36,10 @@ export default defineConfig({
   },
   server: { fs: { allow: [fileURLToPath(new URL('../', import.meta.url))] } },
   test: {
-    include: ['../tests/frontend/app/unit/**/*.test.ts'],
+    include: [
+      '../tests/frontend/app/unit/**/*.test.ts',
+      '../tests/frontend/app/modules/**/*.test.ts',
+    ],
     attachmentsDir: '../.runtime/artifacts/playwright/application/vitest',
     restoreMocks: true,
     browser: {

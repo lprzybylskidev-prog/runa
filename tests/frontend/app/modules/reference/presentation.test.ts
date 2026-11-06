@@ -1,10 +1,10 @@
 import { afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { DOMWrapper, enableAutoUnmount, mount } from '@runa/testing/vue';
-import Panel from '../../../../../../src/app/modules/reference/frontend/components/panel.vue';
-import Widget from '../../../../../../src/app/modules/reference/frontend/components/response_widget.vue';
+import Panel from '../../../../../src/app/modules/reference/frontend/components/panel.vue';
+import Widget from '../../../../../src/app/modules/reference/frontend/components/response_widget.vue';
 import { Button } from '@/runa/ui';
 import { computed, defineComponent, h, ref, shallowRef } from 'vue';
-import InspectSection from '../../../../../../src/app/modules/reference/frontend/components/inspect_section.vue';
+import InspectSection from '../../../../../src/app/modules/reference/frontend/components/inspect_section.vue';
 import { useAdminForm } from '@/runa/admin';
 import type {
   AdminWidgetData,

@@ -297,6 +297,7 @@ class BootstrapContracts(unittest.TestCase):
             "src/app/modules/reference/module.json",
             "src/app/modules/module_probe/module.json",
             "docs/app/modules/reference/README.md",
+            "tests/frontend/app/modules/reference/presentation.test.ts",
         ):
             file = repo / name
             file.parent.mkdir(parents=True, exist_ok=True)
@@ -394,6 +395,8 @@ class BootstrapContracts(unittest.TestCase):
                 )
                 example = destination / "src/app/modules/reference/module.json"
                 self.assertEqual(example.exists(), include)
+                frontend = destination / "tests/frontend/app/modules/reference/presentation.test.ts"
+                self.assertEqual(frontend.exists(), include)
                 self.assertEqual(receipt["reference_module"], include)
                 self.assertFalse((destination / "src/app/modules/module_probe").exists())
                 if include:
@@ -404,6 +407,7 @@ class BootstrapContracts(unittest.TestCase):
                     capture_output=True,
                 )
                 self.assertEqual(example.exists(), include)
+                self.assertEqual(frontend.exists(), include)
                 if include:
                     self.assertEqual(example.read_text(), "customer edit\n")
                 production = Path(folder) / "production"

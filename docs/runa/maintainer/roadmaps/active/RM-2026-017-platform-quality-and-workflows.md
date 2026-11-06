@@ -3153,3 +3153,30 @@ separate retained evidence, not rerun coverage. The generated Vitest dynamic-imp
 warning persists without blocking this diagnostic. No runtime-version or asset
 readiness claim follows; the bounded real consumer observation still needs a
 normal nondestructive development preparation and current dev assets/HMR.
+
+### Point-7 reference test delivery corrected — 2026-11-06
+
+Post-implementation delivery review found the new reference frontend cases under
+app/unit/modules rather than the canonical central app/modules root. The existing
+acquisition exclusion covered backend cases only, leaving frontend imports behind
+when the customer declined reference. Move the file to
+`tests/frontend/app/modules/reference/presentation.test.ts`, declare that root in
+its manifest and add app/runa module globs to the existing Vitest configurations.
+The source installer excludes this root alongside declined reference source,
+backend cases and owning docs. Existing customer configurations remain customer-
+owned; protected updates do not overwrite them.
+
+Extend the existing source acquisition/reopen fixture with this frontend file and
+include/exclude assertions. Supported focused tooling command:
+`python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_bootstrap.py --filter=reference_choices_survive_reopen_and_production_projection`
+— **1 PASS, 26 deselected, native exit 0, cleanup 0**. This is the local isolated
+Git/source projection fixture, not native installation, Docker or production-image
+acceptance. Temporary fixture checkouts are removed by their supported lifecycle.
+The moved Inspector case also passes through the application frontend command at
+its canonical path: **1 PASS, 3 skipped, native exit 0, cleanup 0**. Retain earlier
+commands/paths as historical evidence; current reproduction uses the new path.
+The Vitest dynamic-import warning remains disclosed. Full frontend/source/delivery
+checks remain final. No data/runtime/dependency change accompanied this correction.
+Owner/customer test selectors already route to the canonical public test guide;
+updated that guide and the owner discovery description, manifest and changelog.
+No new always-loaded rule or copied customer instruction is needed.

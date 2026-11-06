@@ -655,6 +655,7 @@ def acquire(
                 "!/src/app/modules/reference/",
                 "!/docs/app/modules/reference/",
                 "!/tests/backend/app/modules/reference/",
+                "!/tests/frontend/app/modules/reference/",
             ]
         git(source, home, "sparse-checkout", "init", "--no-cone")
         git(

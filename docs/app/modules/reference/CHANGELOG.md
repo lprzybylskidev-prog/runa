@@ -2,6 +2,9 @@
 
 ## 0.3.0 — Unreleased
 
+- Declare central backend/frontend module tests, discover frontend module cases and
+  exclude their source together with a declined reference example on acquisition.
+
 - Prepare a read-only Admin page and dashboard widget through the existing
   guarded Ping 1.0.0 API, with an explicit inspect grant and replaceable localized
   presentation. Remove the future-action placeholder. Use Framework API ^1.1.0 exact-call read-health planning for native section/widget
