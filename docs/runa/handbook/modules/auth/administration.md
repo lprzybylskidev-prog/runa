@@ -302,6 +302,13 @@ exported through `@/runa/admin`; no server capability or new runtime dependency 
 introduced. App source remains under `src/app`; no sample page/provider is added
 to the minimal scaffold.
 
+Closing the user dialog discards only after the shared dirty guard accepts, then
+ends its selected-subject scope and clears activated reads, records, lookups and
+proofs. A refused close preserves the draft. Opening bulk editing starts a fresh
+subject-free scope and sets the exact explicit selection; later refreshes do not
+reread the previous user's details or creation form. Tabs within one open user
+retain their shared drafts and atomic participant activation.
+
 Bounded collection entries use public ValuePreview for escaped long read-only
 values and structured JSON; known instant fields retain application-timezone
 formatting. Shared Admin read-only fields and reviewed differences use the same

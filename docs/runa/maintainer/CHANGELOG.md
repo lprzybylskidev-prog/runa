@@ -4,6 +4,16 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Align the application import rule with the already public Admin facade; keep
+  private Admin implementation imports refused.
+
+- Prepare app.reference 0.3.0's read-only Admin page/widget using its existing
+  guarded Ping API; align panel feedback/read retention and document customer
+  capability reproduction. Native integration is pending the documented health
+  admission design decision. Keep optional development-only source and stored data.
+- Auth: clear closed user-dialog state before later reads/bulk editing and use
+  administrator activation terminology in Polish and English registration copy.
+
 - Admin 1.0.1: scope lazy record-section activation to its selected editor subject;
   stop closed sections from refreshing. Keep dismissed form outcomes absent across
   language changes and align Wizard actions with the shared spacing standard.

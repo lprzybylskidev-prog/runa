@@ -82,6 +82,9 @@ const config = await eslint.calculateConfigForFile(filename);
 if (!config.rules?.['runa/public-imports']) throw new Error('Audience rule missing from resolved source config');
 for (const [source, expected] of [
  ["import type { AuthEntryController } from '@/runa/auth'; export type X = AuthEntryController;", 0],
+ ["import type { AdminWidgetData } from '@/runa/admin'; export type X = AdminWidgetData;", 0],
+ ["export { AdminSection, useAdminLocale } from '@/runa/admin';", 0],
+ ["export * from '../../../runa/modules/admin/frontend/contracts';", 1],
  ["export { http } from '@runa/lib/http';", 1],
  ["export * from '../../../runa/modules/auth/frontend/contracts/controllers';", 1],
  ["void import('@runa/components/AppButton.vue');", 1],

@@ -26,7 +26,10 @@ impact_areas:
 **Gate B: APPROVED — ORDERED IMPLEMENTATION RESUMED.**
 
 The owner explicitly accepted the renewed baseline as adequate for continuing
-with its documented limitations and approved RA-01–RA-07. The complete
+with its documented limitations and approved RA-01–RA-07. Point 7 subsequently
+exposed the Admin/hybrid-health transaction premise documented at the end:
+implementation is stopped for owner design discussion, with point 7 still open.
+Gate B remains approved and roadmap lifecycle stays active. The complete
 [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
 is retained verbatim. Points 1–6 are complete; point 7 is current. Points 2–6 require
 individual renewed reconciliation, approved corrections and completion records;
@@ -2916,3 +2919,118 @@ consumers retain the same public methods and document their scope. Owner and
 customer AGENTS/skills therefore require no edit for these localized repairs.
 Stage intended sources and refresh knowledge before mandatory hooks. Point 6 is
 complete with this reconciliation commit; point 7 is next.
+
+## Point 7 — Owning design and capability ledger — 2026-11-06
+
+Continue the approved per-view work after the shared editor correction. Reference
+uses its existing nonsensitive Ping API, with no new business operation, persistent
+mutation or platform mechanism. Its module-owned ManagementPageProvider declares
+an inspect page and dashboard widget guarded by app.reference.reference.inspect;
+Admin entry remains independently required. A private Management adapter implements
+ManagementResourceReader::{read,page} and ManagementWidgetReader::widget with the
+published DTO signatures. It calls ModuleApis::resolve('app.reference', Ping::class,
+'1.0.0')->read(); no direct handler/settings/foreign persistence access. The
+singleton rejects subjects, cursors, filters and sorting. Its content revision is
+a hash of the nonsensitive response, not a fabricated durable entity ID or health
+timestamp. No write interface, proof input, new grant or Audit mutation is added.
+The existing Ping::read(): PingResult and HTTP signature remain unchanged.
+
+| Delivered capability                                                               | Current example / point-7 disposition                                                                                                                                                        |
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity, source/installed versions, optional lifecycle and effective availability | Existing manifest, explicit sync/update/health/preview/apply reproduction; retain disabled-by-default and production exclusion.                                                              |
+| Owned PostgreSQL data and initialization                                           | Existing UUIDv7 Sample and repeat-safe welcome row; retain source/install demonstration and data, no unrelated CRUD added.                                                                   |
+| Guarded PHP API and named HTTP/resource                                            | Existing Ping 1.0.0 and GET /api/app/reference/ping; both panel and Admin consume guarded public paths.                                                                                      |
+| Settings, encrypted secret, revisions/reinitialization                             | Existing source/CLI example; document redacted read and exact revision/generation write, never expose credential in Admin or Ping. No generic settings editor.                               |
+| CLI, queue, cancellation, schedule, storage and versioned events/listeners         | Existing inspect/work/hourly schedule/observed v1; document explicit CLI reproduction and repeat-safe/at-least-once limits. Do not turn operational work into an unreviewed Admin write.     |
+| Frontend page, navigation, named slot                                              | Existing page/slot panel; align shared layout, localized feedback, retained read and replacement slot. Document host composition without recursion.                                          |
+| Admin page, binding, authorization, component and widget                           | Missing working example: replace future-action metadata with owned read-only inspect page, public AdminSection composition and dashboard widget using Ping.                                  |
+| Cross-module editable contributions / native aggregate writes                      | Deliberately excluded: existing example has no foreign-subject business data or persisted editing use case. Route to runnable Admin generator and Core examples instead of duplicating them. |
+| Integrations, source-only health and work policy                                   | No external service is used; existing source/CLI policies are the intentional demonstration. No fictional integration or generic runtime editor.                                             |
+
+Reference advances independently 0.2.0 → 0.3.0 for additive executable Admin
+composition, retaining Ping API 1.0.0 and existing migrations/upgrades. Add one
+source-only forward edge. Auth retains the unreleased 5.0.1 patch assessment with
+its additional local editor/copy corrections; Admin remains 1.0.1.
+
+Point-7 implementation checkpoint: Auth's accepted close now erases the whole
+selected-subject scope through public selectSubject(null); bulk entry does the
+same before its section editor. Refused dirty close returns before reset. No
+profile/Security/creation or stale bulk lane remains eligible for refresh after
+close. RA-07 changes both registration catalogues to administrator activation.
+Reference's page/section/widget use shared Card/Button/AdminSection and public
+Admin props; standalone panel uses shared FormNotifications, retains the last
+response and exposes typed response markup without copying orchestration.
+
+Focused browser-component diagnostics resolve the concrete editor/read/feedback
+uncertainties: Auth dialog regression PASS (1 selected, 51 skipped), application
+reference presentation PASS (3 tests), both native exit 0 and cleanup 0. The Auth
+test initially used the wrong accessible close label; corrected to Close dialog.
+The first app frontend invocation suffered a Chromium page crash before collection;
+a subsequent selected case exposed a test assertion inspecting the wrapper instead
+of the notification's body portal. Corrected that assertion; all three cases then
+passed. Native failure reports remain retained. The generated Vitest dynamic-import
+warning remains disclosed. No broad suite or final acceptance is claimed.
+
+Implementation is still point 7. Native Admin boundary diagnostic, committed
+source, nondestructive local runtime alignment and bounded rendered observations
+remain before its completion. The final full backend/frontend/E2E, locale/theme/
+viewport/accessibility/identity matrices remain points 10–12, not this checkpoint.
+
+### Point-7 stop: newly demonstrated Admin/health premise — 2026-11-06
+
+**Point 7 remains OPEN; implementation stopped for architectural discussion.**
+The focused native Admin regression now reaches the candidate page with its inspect
+grant, but GET `/api/admin/app.reference/inspect/sections/response?kind=record`
+returns 503 `module_unavailable`. Immediately before it, the same test confirms
+reference availability and direct guarded Ping success. The denial without inspect
+is the existing deliberate 404, not 403; the assertion was corrected accordingly.
+
+Source-verified cause: Admin Queries/Access::read calls AdminEntry::read, whose
+run opens/locks its default-connection transaction before invoking Projection and
+the module adapter. Ping's reference.read operation has the existing hybrid health
+policy. ModuleHealth::inspect refuses applicable on-use checks at a nonzero
+transaction level. The native mutation-only HealthAdmissions scope is not active
+for these Admin reads; a preceding direct Ping is a separate operation and cannot
+legitimately supply cached authorization/health acceptance. The private admission
+engine already has bounded preparation/sealing/source/policy/expiry checks, but
+extending its consumer/meaning to Admin reads is an architectural premise needing
+explicit review, not an application presentation workaround.
+
+No policy changed to scheduled, no health/permission check was skipped, no private
+engine was imported into reference, no generic cache/adaptor was added, and no
+Admin transaction was removed. Root AGENTS' significant-unknown stop and point 7's
+new-platform-mechanism boundary apply. Asked the owner whether to extend point 7
+with an explicit design preserving per-operation health, source/policy/generation/
+expiry fences, authorization/proof, lock consistency and worker cleanup; no new
+design or implementation is approved by this checkpoint. Resolve scope/design
+before further runtime changes, final acceptance or advancing to point 8.
+
+Final focused native diagnostic: **FAIL, 1 test, 16 assertions before refusal,
+native exit 1, cleanup 0**. The expected successful read remains a failing
+regression rather than a skipped/pending test or rewritten PASS. Intermediate
+fixture errors were corrected (Core-only history cleanup helper and the deliberate
+hidden-page 404). The supported one-worker runner removed its owned
+runa_test_test_1 after every run; base runa_test and development data remain intact.
+No development module update, enablement/grant, reset, asset build, Docker resource
+creation or deletion occurred. Existing reports/model caches and endpoints remain.
+
+Point-7 source/docs/tests are retained as a reviewable implementation checkpoint;
+their incomplete state is explicit in the example and public authoring guide.
+The backend adapter/source/lifecycle regressions added to ModuleReferenceTest are
+unexecuted final obligations. Frontend's 1 owner + 3 application focused PASSes
+remain valid for their stated scenarios only. No broad quality graph was run.
+Both instruction products already route Admin composition and health/transactions
+to canonical guides; no reusable instruction change is approved at this stop, so
+owner/customer AGENTS/skills need no edit. Any agreed platform repair must assess
+them again along with module/API versions and current public guidance.
+
+Checkpoint hook reconciliation: the first commit attempt was correctly refused
+by the application public-import rule. Its allowlist omitted the already delivered
+and documented @/runa/admin facade although the facade exports the used types and
+controls. Add only admin/index.ts to the existing source allowlist, without exposing
+private Admin paths. Extend the existing AST regression with public type/value and
+private-implementation cases. Supported focused tooling diagnostic:
+`python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_api_boundary.py --filter=frontend_rule_uses_ast`
+— **1 PASS, 6 deselected, exit 0, cleanup 0**. This is a narrow enforcement
+correction needed to retain the customer example, not approval or implementation
+of the stopped health-admission design. No rule or hook was suppressed.

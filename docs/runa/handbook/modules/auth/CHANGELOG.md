@@ -2,6 +2,10 @@
 
 ## 5.0.1 — Unreleased
 
+- End user-dialog reads on close and isolate subsequent bulk editing; retain dirty
+  drafts when closing is refused. Use administrator activation terminology in both
+  registration locales.
+
 - Group synchronous admission, eligibility, factor-restriction and session-lifetime
   settings reads under short registry-locked transactions. Reuse the current
   admission's user/session locally; recheck every subsequent operation, expiry,

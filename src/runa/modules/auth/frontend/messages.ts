@@ -12,7 +12,7 @@ const pl = {
   challenge: 'Potwierdź drugi składnik',
   loginHelp: 'Podaj dane swojego konta.',
   registerHelp:
-    'Wypełnij dane konta. Aktywacja może wymagać potwierdzenia adresu lub zatwierdzenia przez administratora.',
+    'Wypełnij dane konta. Aktywacja może wymagać potwierdzenia adresu lub aktywacji przez administratora.',
   forgotHelp:
     'Jeśli konto może odzyskać dostęp, wyślemy wiadomość z dalszymi instrukcjami.',
   resetHelp:
@@ -128,7 +128,7 @@ const en: Copy = {
   challenge: 'Confirm second factor',
   loginHelp: 'Enter your account credentials.',
   registerHelp:
-    'Enter your account details. Activation may require email verification or administrator approval.',
+    'Enter your account details. Activation may require email verification or activation by an administrator.',
   forgotHelp:
     'If the account is eligible for recovery, we will email further instructions.',
   resetHelp:

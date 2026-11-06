@@ -2682,3 +2682,137 @@ it('protected authority bulk reuses omitted-account warnings and refreshes grant
     ),
   );
 });
+
+it('Auth user dialogs end creation and detail reads on close and isolate the next bulk editor', async () => {
+  const creation = section('creation', [field('email', false)]);
+  creation.commands = [
+    {
+      key: 'create',
+      title: 'Create account',
+      inputs: ['email'],
+      mode: 'independent',
+      requirement: 'none',
+      destructive: false,
+      preview_required: false,
+      bulk: false,
+      action: null,
+      available: true,
+      intent: 'create',
+    },
+  ];
+  const profile = section('profile', [field('name', false)]);
+  const bulk = section('bulk_sessions', [
+    { ...field('public_ids', false), type: 'uuid', multiple: true },
+    field('summary'),
+  ]);
+  bulk.commands = [
+    {
+      key: 'revoke',
+      title: 'Revoke sessions',
+      inputs: ['public_ids'],
+      mode: 'independent',
+      requirement: 'none',
+      destructive: true,
+      preview_required: true,
+      bulk: false,
+      action: null,
+      available: true,
+      intent: 'action',
+    },
+  ];
+  const controller = page([
+    section('directory', [field('display_name')], 'table'),
+    creation,
+    profile,
+    bulk,
+  ]);
+  const reads: URL[] = [];
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    reads.push(url);
+    if (url.pathname.endsWith('/directory'))
+      return response({
+        items: [
+          {
+            public_id: target,
+            revision: '1',
+            values: { display_name: 'Dialog target' },
+          },
+        ],
+        next: null,
+        total: 1,
+      });
+    const selected = url.searchParams.get('public_id');
+    return response({
+      public_id: selected,
+      revision: '1',
+      values: url.pathname.endsWith('/creation')
+        ? { email: null }
+        : url.pathname.endsWith('/profile')
+          ? { name: 'Existing name' }
+          : { public_ids: [], summary: null },
+    });
+  });
+  let form!: AdminFormController;
+  let leave = false;
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        form = useAdminForm(controller, {
+          autoRead: false,
+          confirmLeave: async () => leave,
+        });
+        return () => h(AuthAdminUsers, { controller, form });
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(wrapper.text()).toContain('Dialog target'));
+  const click = async (label: string) =>
+    wrapper
+      .findAll('button')
+      .find((button) => button.text() === label)!
+      .trigger('click');
+  const close = async () => {
+    const dialog = document.querySelector('[role=dialog]')!;
+    await new DOMWrapper(dialog)
+      .get('button[aria-label="Close dialog"]')
+      .trigger('click');
+  };
+  await click('Create account');
+  await vi.waitFor(() => expect(form.records.value.creation).toBeDefined());
+  form.set('creation.email', 'draft@example.test');
+  await close();
+  expect(form.values.value['creation.email']).toBe('draft@example.test');
+  leave = true;
+  await close();
+  await vi.waitFor(() => expect(form.records.value.creation).toBeUndefined());
+  const stopped = reads.length;
+  await form.refresh();
+  expect(reads).toHaveLength(stopped);
+  await click('Details');
+  await vi.waitFor(() =>
+    expect(form.records.value.profile?.public_id).toBe(target),
+  );
+  expect(
+    reads.filter((url) => url.pathname.endsWith('/creation')),
+  ).toHaveLength(1);
+  await close();
+  await vi.waitFor(() => expect(form.records.value.profile).toBeUndefined());
+  await wrapper.get('tbody input[type=checkbox]').setValue(true);
+  await wrapper
+    .get('[data-bulk-command="bulk_sessions:revoke"]')
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(form.values.value['bulk_sessions.public_ids']).toEqual([target]),
+  );
+  const beforeRefresh = reads.length;
+  await form.refresh();
+  expect(reads.slice(beforeRefresh).map((url) => url.pathname)).toEqual([
+    '/api/admin/runa.auth/users/sections/bulk_sessions',
+  ]);
+  expect(
+    reads
+      .slice(beforeRefresh)
+      .every((url) => !url.searchParams.has('public_id')),
+  ).toBe(true);
+});

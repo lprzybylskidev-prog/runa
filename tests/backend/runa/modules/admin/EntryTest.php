@@ -1,5 +1,6 @@
 <?php
 
+use App\Modules\Reference\Contracts\Ping;
 use App\Settings\PointTenFixture\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Encryption\Encrypter;
@@ -32,6 +33,7 @@ use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleOperationHistory;
 use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\ModuleTransitions;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Admin\Contracts\AdminAccess;
 use Runa\Modules\Admin\Contracts\AdminRegistry;
@@ -2675,4 +2677,47 @@ it('Permissions navigation stays definition-only and selected-user source lookup
     $this->getJson('/api/admin/runa.permissions/roles/sections/editor?'.http_build_query(['kind' => 'options', 'field' => 'permissions', 'filters' => json_encode(['search' => 'runa.audit.read', 'language' => 'pl'])]))->assertOk()->assertJsonPath('data.items.0.value', $permission->public_id)->assertJsonPath('data.items.0.label', $permission->name_pl);
     DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)->where('permission_id', DB::table('runa_permissions.permissions')->where('code', 'runa.auth.users.read')->value('id'))->delete();
     $this->getJson($path.'?'.http_build_query($query))->assertNotFound()->assertJsonMissingPath('data');
+});
+
+it('guards the reference Admin showcase independently from public Ping and withdraws revoked inspect access', function (): void {
+    $registry = app(ModuleRegistry::class);
+    expect($registry->snapshot()->modules)->not->toHaveKey('app.reference');
+    try {
+        app(ModuleUpdates::class)->apply('app', str_repeat('e', 40), static function (): void {});
+        expect(app(ModuleHealth::class)->diagnose('app.reference')['blocked'])->toBeFalse();
+        $transitions = app(ModuleTransitions::class);
+        expect($transitions->apply($transitions->preview('enable', 'app.reference'))->status)->toBe('succeeded');
+        ($this->adminGrant)('runa.admin.enter');
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        $path = '/api/admin/app.reference/inspect';
+        $this->getJson($path)->assertNotFound();
+        $this->getJson('/api/admin')->assertOk()->assertJsonMissing(['id' => 'app.reference']);
+        ($this->adminGrant)('app.reference.reference.inspect');
+        $page = $this->getJson($path)->assertOk()->json('data');
+        expect($page['sections'][0]['readonly'])->toBeTrue()
+            ->and($page['sections'][0]['commands'])->toBe([]);
+        expect(app(ModuleAvailability::class)->statuses('app.reference', 'reference.read')['app.reference']->available)->toBeTrue();
+        expect(app(ModuleApis::class)->resolve('app.reference', Ping::class, '1.0.0')->read()->message)->toBe('reference');
+        $this->getJson($path.'/sections/response?kind=record')->assertOk()
+            ->assertJsonPath('data.public_id', null)->assertJsonPath('data.values.message', 'reference');
+        $bootstrap = $this->getJson('/api/admin')->assertOk()->json('data');
+        $widget = collect($bootstrap['dashboard']['widgets'])->firstWhere('id', 'app.reference.response');
+        expect($widget['diagnostic'])->toBeNull()->and($widget['values'])->toBe(['message' => 'reference'])
+            ->and($widget['observed_at'])->toBeNull();
+        $permission = DB::table('runa_permissions.permissions')->where('code', 'app.reference.reference.inspect')->value('id');
+        DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)
+            ->where('permission_id', $permission)->delete();
+        $this->getJson($path.'/sections/response?kind=record')->assertNotFound()->assertJsonMissingPath('data');
+        $this->getJson('/api/admin')->assertOk()->assertJsonMissing(['id' => 'app.reference']);
+    } finally {
+        // Only this test's newly installed reference module in the isolated worker database.
+        $id = DB::table('shared.modules')->where('module_id', 'app.reference')->value('id');
+        DB::table('shared.module_update_steps')->where('module_id', $id)->delete();
+        DB::table('shared.module_transitions')->where('target', 'app.reference')->delete();
+        DB::table('shared.modules')->where('module_id', 'app.reference')->delete();
+        DB::statement('DROP TABLE IF EXISTS app_reference.samples RESTRICT');
+        DB::statement('DROP SCHEMA IF EXISTS app_reference RESTRICT');
+        DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    }
 });

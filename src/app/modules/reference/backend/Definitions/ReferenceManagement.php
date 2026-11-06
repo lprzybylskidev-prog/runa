@@ -2,11 +2,21 @@
 
 namespace App\Modules\Reference\Definitions;
 
+use App\Modules\Reference\Contracts\Ping;
+use App\Modules\Reference\Management\ReferenceReader;
 use Runa\Contracts\Modules\ManagementAction;
+use Runa\Contracts\Modules\ManagementApiTarget;
+use Runa\Contracts\Modules\ManagementBinding;
+use Runa\Contracts\Modules\ManagementComponent;
+use Runa\Contracts\Modules\ManagementField;
+use Runa\Contracts\Modules\ManagementFieldAccess;
+use Runa\Contracts\Modules\ManagementPage;
+use Runa\Contracts\Modules\ManagementPageProvider;
 use Runa\Contracts\Modules\ManagementPermission;
-use Runa\Contracts\Modules\ManagementProvider;
+use Runa\Contracts\Modules\ManagementSection;
+use Runa\Contracts\Modules\ManagementWidget;
 
-final class ReferenceManagement implements ManagementProvider
+final class ReferenceManagement implements ManagementPageProvider
 {
     public function permissions(): array
     {
@@ -15,11 +25,40 @@ final class ReferenceManagement implements ManagementProvider
 
     public function actions(): array
     {
-        return [new ManagementAction('inspect', 'reference.inspect', ['pl' => 'Sprawdź przykład', 'en' => 'Inspect reference'], ['pl' => 'Opis przyszłej akcji administracyjnej.', 'en' => 'Descriptor for a future administrative action.'])];
+        return [new ManagementAction('inspect', 'reference.inspect', ['pl' => 'Sprawdź przykład', 'en' => 'Inspect reference'], ['pl' => 'Odczyt odpowiedzi publicznego API bez zmiany danych.', 'en' => 'Read the public API response without changing data.'])];
     }
 
     public function components(): array
     {
+        return [new ManagementComponent('reference.section', 'app.reference.inspect_section', 'reference.inspect')];
+    }
+
+    public function pages(): array
+    {
+        $permission = 'app.reference.reference.inspect';
+
+        return [new ManagementPage('inspect', ['pl' => 'Moduł referencyjny', 'en' => 'Reference module'], $permission, [
+            new ManagementSection('response', ['pl' => 'Odpowiedź API', 'en' => 'API response'], $permission, null, 'inspect', [
+                new ManagementFieldAccess(new ManagementField('message', 'text', ['pl' => 'Etykieta', 'en' => 'Label'],
+                    ['pl' => 'Bieżąca wartość z publicznego API modułu.', 'en' => 'Current value from the module public API.']), $permission),
+            ], component: 'app.reference.inspect_section'),
+        ], default: true)];
+    }
+
+    public function bindings(): array
+    {
+        return [new ManagementBinding('inspect', ReferenceReader::class,
+            [new ManagementApiTarget('app.reference', Ping::class, '1.0.0', ['read'])])];
+    }
+
+    public function contributions(): array
+    {
         return [];
+    }
+
+    public function widgets(): array
+    {
+        return [new ManagementWidget('response', ['pl' => 'Moduł referencyjny', 'en' => 'Reference module'],
+            'app.reference.reference.inspect', 'inspect', component: 'app.reference.response_widget')];
     }
 }

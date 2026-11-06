@@ -6,26 +6,27 @@ The first-development installer offers the example interactively or with `--refe
 
 ## Source map
 
-| Contract                                        | Working source under `src/app/modules/reference/`                                                    |
-| ----------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Identity, compatibility, declarations           | `module.json`                                                                                        |
-| Health, lifecycle and work decisions            | `backend/Definitions/ReferenceHealthPolicy.php`, `ReferenceWorkPolicy.php`, `ReferenceJobPolicy.php` |
-| Typed public API, guarded proxy, implementation | `backend/Contracts/Ping.php`, `backend/PingProxy.php`, `backend/PingHandler.php`                     |
-| Named guarded HTTP/resource                     | `backend/Definitions/ReferenceHttp.php`, `backend/Http/`                                             |
-| Owned schema and UUIDv7 model                   | `database/migrations/`, `backend/Models/Sample.php`                                                  |
-| Transactional installation                      | `backend/Definitions/ReferenceUpgrades.php`, `backend/InitializeReference.php`                       |
-| Typed settings and reversible reinitialization  | `backend/Definitions/ReferenceSettings.php`                                                          |
-| Classified CLI, hourly scheduling and jobs      | `backend/Definitions/ReferenceCommands.php`, `ReferenceSchedules.php`, `ReferenceJobs.php`           |
-| Independent versioned facts/listeners           | `backend/Definitions/ReferenceEvents.php`, `ReferenceListener.php`, `ReferenceEventHandler.php`      |
-| Navigation, page and named slot contributions   | `backend/Definitions/ReferenceFrontend.php`, `frontend/components/panel.vue`                         |
-| Descriptive management metadata only            | `backend/Definitions/ReferenceManagement.php`                                                        |
-| Reusable source assertion                       | `tests/backend/app/modules/reference/ModuleContractTest.php` (repository-relative)                   |
+| Contract                                        | Working source under `src/app/modules/reference/`                                                                                                         |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity, compatibility, declarations           | `module.json`                                                                                                                                             |
+| Health, lifecycle and work decisions            | `backend/Definitions/ReferenceHealthPolicy.php`, `ReferenceWorkPolicy.php`, `ReferenceJobPolicy.php`                                                      |
+| Typed public API, guarded proxy, implementation | `backend/Contracts/Ping.php`, `backend/PingProxy.php`, `backend/PingHandler.php`                                                                          |
+| Named guarded HTTP/resource                     | `backend/Definitions/ReferenceHttp.php`, `backend/Http/`                                                                                                  |
+| Owned schema and UUIDv7 model                   | `database/migrations/`, `backend/Models/Sample.php`                                                                                                       |
+| Transactional installation                      | `backend/Definitions/ReferenceUpgrades.php`, `backend/InitializeReference.php`                                                                            |
+| Typed settings and reversible reinitialization  | `backend/Definitions/ReferenceSettings.php`                                                                                                               |
+| Classified CLI, hourly scheduling and jobs      | `backend/Definitions/ReferenceCommands.php`, `ReferenceSchedules.php`, `ReferenceJobs.php`                                                                |
+| Independent versioned facts/listeners           | `backend/Definitions/ReferenceEvents.php`, `ReferenceListener.php`, `ReferenceEventHandler.php`                                                           |
+| Navigation, page and named slot contributions   | `backend/Definitions/ReferenceFrontend.php`, `frontend/components/panel.vue`                                                                              |
+| Guarded Admin page, read adapter and widget     | `backend/Definitions/ReferenceManagement.php`, `backend/Management/ReferenceReader.php`, `frontend/components/inspect_section.vue`, `response_widget.vue` |
+| Reusable source assertion                       | `tests/backend/app/modules/reference/ModuleContractTest.php` (repository-relative)                                                                        |
 
-The management declaration currently describes `reference.inspect` and a future
-`inspect` action; its component list is empty. It supplies no executable Admin
-operation or owned Admin page. The standalone frontend panel below is a separate
-working page/slot example. Use the [Admin authoring examples](../../../runa/handbook/modules/admin/examples.md)
-for a dedicated page; management metadata alone does not create one.
+The candidate Admin example is read-only: it shows the same current nonsensitive label as
+Ping through an owned page and dashboard widget. The adapter uses the guarded API;
+it never reads another module's models or exposes encrypted settings. No write,
+synthetic entity identity, health timestamp or automatic permission assignment is
+introduced. Admin is optional to the business API; the module needs no Core
+manifest dependency just to declare framework-owned management contracts.
 
 ## Install and observe
 
@@ -39,7 +40,7 @@ The named `app.reference.reference.read` HTTP route is `GET /api/app/reference/p
 
 Read settings with `runa:modules:settings app.reference`; pass a JSON `values` patch through stdin with `--write --revision=<read revision> --generation=<read generation>` to change `label`. The optional `credential` setting demonstrates encrypted storage and reinitialization; it has no external service effect and is never returned in Ping/logs. Read projection exposes only whether it is set. Revision/generation conflicts require a fresh read and deliberate retry. Infrastructure keys remain outside module settings.
 
-The opt-in frontend registry exposes `app.reference.panel`. Compose the existing ModulePage/navigation adapters in your chosen shell; the installer does not replace App.vue. The panel uses shared Card/Button and HTTP transport, Polish default/English locale prop, explicit loading/error/retry feedback and abort on unmount. It remains static except inherited control feedback; no page entrance motion is needed. The `app.reference.panel` host accepts `reference.panel` v1 contributions; place ModuleSlot at the host location in a consumer. Do not place the page into its own host recursively.
+The opt-in frontend registry exposes `app.reference.panel`. Compose the existing ModulePage/navigation adapters in your chosen shell; the installer does not replace App.vue. The panel uses shared Card/Button and HTTP transport, Polish default/English locale prop, Button-owned loading, shared FormNotifications error/retry feedback, retained previous response during refresh and abort on unmount. It remains static except inherited control feedback; no page entrance motion is needed. The `app.reference.panel` host accepts `reference.panel` v1 contributions; place ModuleSlot at the host location in a consumer. Do not place the page into its own host recursively.
 
 ## Checks and troubleshooting
 
@@ -58,7 +59,7 @@ delivered customer tests or a customer verification prerequisite.
 - Waiting disable: inspect active work; run/reconcile the module's own bounded policy. Do not edit flags or discard leases.
 - Production refusal: remove development reference source from the delivery projection; disabling it is insufficient.
 
-Use the [public module development guide](../../../runa/handbook/development/modules.md) for creation, dependency direction, source boundaries, tests and independent version policy. Current reference version is 0.2.0, independently of platform VERSION.
+Use the [public module development guide](../../../runa/handbook/development/modules.md) for creation, dependency direction, source boundaries, tests and independent version policy. Current reference version is 0.3.0, independently of platform VERSION.
 
 The health declaration implements HealthPolicy schema 2. Its hybrid mode and
 check timing are defined in ReferenceHealthPolicy source only; no Admin tab or
@@ -72,3 +73,74 @@ as described in the Admin authoring guide. Existing values remain preserved.
 The example panel binds its own request state to public Button busy, retaining a
 stable action label and result/error output; no loading sentence or separate
 spinner implementation is needed.
+
+## Admin integration status
+
+The unreleased 0.3.0 Admin composition is implemented in source but not ready for
+use: a focused native regression confirms that reading Ping inside Admin returns 503. The existing hybrid health policy requires an independent check boundary,
+while Admin invokes the adapter inside its entry transaction. Standalone Ping and
+presentation-component diagnostics do not establish native Admin acceptance.
+Preserve the existing health/security policy; resolution requires an agreed
+platform design. The journey below describes the intended composition and must
+be verified after that repair. No development data/runtime update has been applied
+for this candidate.
+
+## Admin customer journey and replacement contracts
+
+After the explicit app update and enable steps above, use the application's normal
+Permissions administration to grant `runa.admin.enter` and
+`app.reference.reference.inspect` to an authorized development account. Entry uses
+the shared session/password confirmation. Registration does not grant access.
+Open `/admin/app.reference/inspect`: the label comes from the existing guarded
+`Ping::read(): PingResult` API 1.0.0. Refresh rereads that API. The Admin dashboard
+also displays its response; it makes no claim about technical health or observation
+freshness. Grant withdrawal hides the page/widget and refuses subsequent reads;
+disabling the module withdraws the owning API too. Public nonsensitive Ping remains
+usable without Admin entry. No business mutation or Audit event is emitted by a read.
+
+Source declarations remain application-owned in `backend/Definitions`; the private
+`Management/ReferenceReader` adapter implements the delivered
+`ManagementResourceReader::{read,page}` and `ManagementWidgetReader::widget` DTO
+signatures. It refuses foreign public IDs, cursors, filters and sorts. It is not a
+new supported business API. The response revision hashes the current message and
+is only a read projection identity. The `admin_showcase` 0.2.0 → 0.3.0 forward edge
+changes no schema, sample row, credential, settings or prior upgrade identities.
+
+`inspect_section.vue` consumes public `AdminSectionPresentationProps` and composes
+`AdminSection` inside shared Card/Button chrome. Admin owns authorization,
+readiness, read cancellation, errors and disposal. Customers can edit this example
+or replace the section through the documented Admin presentation provider, retaining
+one form controller. `response_widget.vue` accepts public `{widget: AdminWidgetData}`;
+it renders only available response values and uses the shared Admin locale.
+
+The standalone `panel.vue` keeps `{locale?: 'pl'|'en'}` (Polish default) and exposes
+a default slot `{busy:boolean, message:string, load:()=>Promise<void>}` for response
+markup. It owns the HTTP lane, duplicate-read guard, retained response, notification
+lifetime and unmount cancellation. Values are nonsensitive business text and are
+never translated. Existing page/slot keys remain unchanged; no customer copies
+security logic. Mount a ModulePage for `app.reference.panel` or a ModuleSlot for
+its declared host in an opted-in application composition. Do not recursively
+mount a host inside its own panel contribution.
+
+## Capability reproduction and deliberate exclusions
+
+| Capability                                | Runnable source / reproduction                                                                                                                                                                                                                                                                           |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity and retained optional lifecycle  | Inspect `module.json`, `runa:modules:check app --runtime`, then the explicit lifecycle preview/apply procedure above. Disable retains the sample and settings.                                                                                                                                           |
+| Owned PostgreSQL data                     | Explicit app update runs the one-table migration and repeat-safe initializer for the `welcome` Sample. The model and migration show UUIDv7/ownership; the example intentionally supplies no unrelated record editor.                                                                                     |
+| Guarded PHP and HTTP                      | Resolve Ping 1.0.0 above, or request `GET /api/app/reference/ping` while effectively available.                                                                                                                                                                                                          |
+| Settings/encryption/reinitialization      | `runa:modules:settings app.reference`; write only a reviewed JSON `values` patch with the exact revision/generation. The optional credential is redacted, not a working external integration.                                                                                                            |
+| CLI/work/scheduler/storage                | `app:reference:inspect`; while enabled, `app:reference:work`. Observe the returned work ID through the public `ModuleWork::status($workId)` adapter; the owning hourly schedule invokes the same operational entry. `ReferenceJobHandler` shows cancellation checkpoints and repeat-safe scoped storage. |
+| Versioned facts and listeners             | Work publishes `observed` v1. `ReferenceEvents`, `ReferenceListener` and `ReferenceEventHandler` show independent synchronous/asynchronous consumers; queue completion is distinct from initial dispatch. Publication may repeat on retry.                                                               |
+| Frontend page/navigation/visual slot      | `ReferenceFrontend`, panel and an opted-in ModulePage/ModuleSlot consumer as above. Production excludes their source/build entries.                                                                                                                                                                      |
+| Admin composition                         | The inspect page, declared binding, native grant, replaceable section and dashboard widget above are executable.                                                                                                                                                                                         |
+| Health and work policy                    | `runa:modules:health app.reference` and the source-owned policy definitions. No generic Admin health/integration editor.                                                                                                                                                                                 |
+| Cross-module editing and aggregate writes | Intentionally absent: no foreign-subject editing use case exists in this read-only scenario. Use the [Admin examples](../../../runa/handbook/modules/admin/examples.md) and their opt-in generator/Core examples when adding one.                                                                        |
+
+Application frontend regressions live in
+`tests/frontend/app/unit/modules/reference/presentation.test.ts`. Run the scoped
+`php artisan runa:test:frontend ../tests/frontend/app/unit/modules/reference/presentation.test.ts`
+from the development PHP terminal. They cover retained reads, duplicate requests,
+dismissed localized failures, replacement response markup, cancellation and
+unavailable widget content. Private owner suites additionally exercise native Admin
+grants and adapter availability; they are not customer dependencies.

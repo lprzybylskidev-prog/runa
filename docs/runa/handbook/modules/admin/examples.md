@@ -71,6 +71,19 @@ optional host must leave the owning business API usable. The dashboard host acce
 widgets rather than arbitrary editable sections. Visual SlotHost/SlotContribution
 contracts remain separate from editable ManagementContribution declarations.
 
+## Supplied reference module
+
+The unreleased optional development-only `app.reference` candidate declares a read-only inspect page,
+owned adapter, replaceable section and dashboard widget through its existing Ping
+API. Its source dictionary declares `app.reference.reference.inspect`; native Admin
+entry is still required separately. It deliberately has no settings editor or
+foreign-record write. When the example is selected, follow its application-owned
+`docs/app/modules/reference/README.md` for capability reproduction and composition.
+Native reference/Admin acceptance is pending an explicit resolution of hybrid
+health checks inside Admin's read transaction; the example guide records that
+limitation. Do not treat the source declarations as a working native acceptance.
+The clean scaffold keeps the generator examples below without installing reference.
+
 ## Independent application page
 
 No module manifest is needed for application-owned source information. The following

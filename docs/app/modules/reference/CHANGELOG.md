@@ -1,5 +1,18 @@
 # Reference module changelog
 
+## 0.3.0 — Unreleased
+
+- Prepare a read-only Admin page and dashboard widget through the existing
+  guarded Ping 1.0.0 API, with an explicit inspect grant and replaceable localized
+  presentation. Remove the future-action placeholder. Native integration remains
+  blocked by the existing hybrid-health/Admin read-transaction boundary; source
+  and component diagnostics are not native acceptance.
+- Align panel spacing/actions and localized outcomes with shared Form/Card/Button
+  contracts; retain the last response during refresh, expose response markup and
+  cancel unmounted reads. Add customer capability reproduction and regressions.
+- Add source-only admin_showcase forward edge; preserve schema, sample identities,
+  settings, credentials and prior upgrade steps. No new dependency or business write.
+
 ## 0.2.0 — 2026-10-31
 
 - Reuse shared Button busy animation for connection checks and retain the action label.

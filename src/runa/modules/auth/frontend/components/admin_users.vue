@@ -204,7 +204,7 @@ async function openBulk(chosen: (typeof bulkChoices.value)[number]) {
   )
     return;
   const ids = [...selection.value];
-  if (!(await props.form.beforeLeave())) return;
+  if (!(await props.form.selectSubject(null))) return;
   if (!(await props.form.editSection(chosen.section.key, null))) return;
   props.form.set(props.form.fieldPath(chosen.section.key, 'public_ids'), ids);
   activeBulk.value = chosen.value;
@@ -215,13 +215,7 @@ async function openBulk(chosen: (typeof bulkChoices.value)[number]) {
 async function close() {
   if (!(await props.form.beforeLeave())) return;
   props.form.reset();
-  if (
-    mode.value === 'bulk' &&
-    !(await props.form.closeSection(
-      openedBulk.value?.section.key ?? 'bulk_sessions',
-    ))
-  )
-    return;
+  if (!(await props.form.selectSubject(null))) return;
   open.value = false;
   table.selected.value = undefined;
 }
