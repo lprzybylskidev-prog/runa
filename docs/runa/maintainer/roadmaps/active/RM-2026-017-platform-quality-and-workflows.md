@@ -28,7 +28,7 @@ impact_areas:
 The owner explicitly accepted the renewed baseline as adequate for continuing
 with its documented limitations and approved RA-01–RA-07. The complete
 [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
-is retained verbatim. Point 1 is complete; point 2 is current. Points 2–6 require
+is retained verbatim. Points 1–2 are complete; point 3 is current. Points 2–6 require
 individual renewed reconciliation, approved corrections and completion records;
 their original completion declarations do not restore acceptance automatically.
 Continue in order through the existing implementation, owner manual acceptance
@@ -679,7 +679,7 @@ below are retained as historical records only.
     Stop and receive explicit owner approval of findings/selected scope and any
     new architecture. Record rejected/deferred recommendations and reasons.
 
-- [ ] 2. Establish Runa UI/UX standards and selective frontend skill guidance.
+- [x] 2. Establish Runa UI/UX standards and selective frontend skill guidance.
   - **Objective:** make accepted behavior discoverable before conformity repairs.
   - **Preconditions:** approved point-1 findings and decision ledger; external
     candidates rechecked as needed before actual adaptation.
@@ -2355,3 +2355,47 @@ tests/evidence. Do not manufacture extra changes or revert correct work. The
 mandatory penultimate owner manual acceptance and final verification stay in place.
 This decision-record commit changes owner roadmap/review records only; current
 root/skill/customer products need no update until their owning reusable changes.
+
+## Point 2 — Renewed standards and selector reconciliation — 2026-11-06
+
+Reconciled candidate `79c533a0` after renewed Gate B approval commit `2fd81e53`.
+Retain its implementation: the standards map owns all required topics, including
+accepted RM-016 supersessions, immediate frames/local regions, Table/Button/cover
+indicator exceptions, Polish-default Admin, outline/effect semantics, specialized
+access editors, source-only policy and full-page password confirmation. No new
+standard or skill is necessary to implement the renewed finite correction list.
+
+Applied the frontend skill for this review. Point-start knowledge was current
+and current-intent retrieval selected the original frontend accessibility baseline,
+visual guidance map and settings-snapshot presentation; opened their applicable
+sections. Compared both frontend selectors, owner a11y/layout/UX references,
+customer application reference and provenance records against those originals.
+No external material was copied or newly adopted, so existing research pins/dates
+and their stated license/review limits remain unchanged.
+
+Renewed task walk-throughs are source-selection exercises, not independent agent
+executions or new rendered acceptance:
+
+| Accepted task                  | Observed selective route and consumer correlation                                                                                                               | Conclusion / later owner                                                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| RA-07 registration terminology | Copy row → visual-direction interface copy → Auth messages/RegisterAccount. No table, session or full form reference is mandated by wording alone.              | Existing selectors support the correction; point 7 changes both locales.                                                             |
+| RA-02 Wizard action divider    | Controls/form composition row → component and forms action-area sections → AppWizard/AppForm.                                                                   | Existing canonical standard already expresses spacing without the separator; point 6 repairs the owner.                              |
+| RA-05 section lifetime         | Reconciliation/loading rows → public forms contract and Admin controllers → real create-close-details observation.                                              | Correct discovery expands to state/identity ownership; point 6/7 repairs source. No standard can substitute for that implementation. |
+| RH-02 dismissed outcome        | Feedback row → forms feedback/recovery and FormNotifications/useToasts. Preserve the new owner decision with the owning point-6 implementation/docs/regression. | One local owner remains sufficient; no global state or framework introduced.                                                         |
+| Backend-only RA-01             | Frontend selector explicitly excludes backend-only work; backend/security/database own the read-scope design.                                                   | No visual reference load is required solely for SQL repair.                                                                          |
+
+For these source routes both frontend selectors meet this point's discovery and
+selective-loading acceptance criteria. Existing measured before/after source-byte
+footprints and provenance in the original point-2 record remain evidence of those
+original edits, not a new benchmark. No selector bytes changed in this reconciliation.
+Final practical skill assessment stays in point 10; native component/browser and
+owner manual acceptance remain their assigned later stages.
+
+Instruction-product assessment: owner and customer frontend products already
+route to the same canonical standards with their correct authority boundaries;
+root AGENTS/CLAUDE need no change. RH-01/RH-02 owning contract documentation belongs
+with points 5/6, respectively, rather than claiming those repairs delivered now.
+No runtime, dependency, configuration or schema change was needed. No routine
+suite/build/scan ran; applicable original sources and actual retained consumer
+evidence resolved this guidance-only review. Renewed point-2 criteria are satisfied;
+commit this reconciliation, mark point 2 complete and proceed to point 3.
