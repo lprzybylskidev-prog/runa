@@ -529,18 +529,18 @@ guessing or hidden detached orchestration.
 
 ## Implementation plan
 
-All boxes remain open. Every implementation point requires committed work,
+Every implementation point requires committed work,
 synchronized current-state docs, affected owner/customer instruction-product
 assessment and recorded necessary focused evidence. No routine suite/check runs
 are implied by a point ending. Broad tests, static analysis, integration/browser
 matrices, images and scanners remain in point 12. Mandatory hooks stay in force.
 Dependencies below refer to completed points, not approval inferred from time.
 
-- [ ] 1. Comprehensive baseline audit and owner approval (Gate B).
+- [x] 1. Comprehensive baseline audit and owner approval (Gate B).
   - **Objective:** establish the complete source-grounded baseline before changes.
   - **Preconditions:** Gate A metadata/process dispositions, explicit activation,
     correct roadmap branch and refreshed knowledge availability/freshness. Gate A
-    and separate activation are approved; Gate B remains pending.
+    and separate activation are approved; Gate B accepted on 2026-11-06.
   - **Deliverables:** complete area inventories and decision-to-consumer ledger;
     concise owner summary and full technical findings retained in this roadmap;
     severity/effort/risk/dependency ranking and finite proposed correction list.
@@ -979,8 +979,8 @@ publication, live application readiness, current full test discovery or audit PA
 
 ## Point 1 — Baseline audit record — 2026-11-06
 
-**Audit deliverable prepared; Gate B awaiting owner approval.** Point 1 remains
-open until that approval is recorded. No recommendation below is implemented.
+**Audit deliverable accepted at Gate B on 2026-11-06.** The owner approved
+the reported scope and limits and authorized continuation. No recommendation below is implemented.
 Activation commit: `f0131f80`. All runtime/tooling findings refer to source
 `6889a98b22ee79c1ebc6344e67a8c940f0dfb000`; activation changed only this roadmap.
 Fetched origin before activation; main had zero divergence. Feature/0.8.0 remains
@@ -1468,3 +1468,15 @@ scope. Stop before point 2 and all corrections. Protected rendered scenarios,
 actual case discovery, performance measurements and advisory scans remain explicit
 obligations where relevant; the owner may require further bounded audit evidence
 before accepting Gate B. No silence or automatic check grants that acceptance.
+
+### Gate B acceptance — 2026-11-06
+
+The owner explicitly accepted the preceding audit handoff and authorized work.
+This accepts A-01–A-08, the retained architecture/identity, existing-skill-first
+approach, D-01–D-03 implementation boundary and recorded rendered/host/discovery
+limits. The preceding handoff is retained as historical context; its waiting state
+is resolved by this decision. Point 1 is complete and implementation may proceed
+in the agreed order without another Gate A/B confirmation. Feature/0.8.0 remains
+unchanged; no data rebuild, new dependency or candidate-version preparation is
+authorized by this acceptance. Point 9 still requires source-backed exact state,
+command/input design and a reliable native adapter before its implementation.
