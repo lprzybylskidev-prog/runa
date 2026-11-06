@@ -44,10 +44,11 @@ treated as absent; required image, ownership, mount and privilege checks still a
 
 ```sh
 python3 update.py --plan --installation /absolute/customer-development \
-  --repository lprzybylskidev-prog/runa --target v0.4.1 --json
+  --repository lprzybylskidev-prog/runa --target <published-target-tag> --json
 ```
 
-Select an actually published stable annotated release. The example target 0.4.1 requires publication before use; earlier pre-separation layouts are unsupported. --preflight performs the same nonmutating checks. Exit 0 indicates a valid planning snapshot; a customization decision may still be required before execution. Neither mode mutates the installation. Private access uses --token-file or interactive --ask-token; never pass credentials in URLs/arguments. --expected-commit pins an independently supplied target commit.
+Select an actually published stable annotated release. Replace `<published-target-tag>` with the selected published target; earlier
+pre-separation layouts are unsupported. --preflight performs the same nonmutating checks. Exit 0 indicates a valid planning snapshot; a customization decision may still be required before execution. Neither mode mutates the installation. Private access uses --token-file or interactive --ask-token; never pass credentials in URLs/arguments. --expected-commit pins an independently supplied target commit.
 
 ## Source and identity
 

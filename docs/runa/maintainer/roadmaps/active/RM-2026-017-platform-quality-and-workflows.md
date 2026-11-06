@@ -609,7 +609,7 @@ Dependencies below refer to completed points, not approval inferred from time.
     warnings, relative links/anchors, metadata and audience boundaries. Record
     unaffected-product reasons; discuss any new constitutional premise first.
 
-- [ ] 4. Reconcile current documentation and developer journeys.
+- [x] 4. Reconcile current documentation and developer journeys.
   - **Objective:** make documentation accurate and usable by a new developer.
   - **Preconditions:** points 1–3; owning code/contract facts identified.
   - **Deliverables:** reviewed document inventory and per-document disposition;
@@ -1673,3 +1673,67 @@ migration, data operation, Docker resource creation or cleanup was needed. Prese
 application/base test data, inherited endpoint state, shared caches and reports.
 Owner/public quality docs and the Python guide describe actual new source-check
 behavior; root owner/customer and Vue counterparts are synchronized in this point.
+
+## Point 4 — Current documentation and developer journeys — 2026-11-06
+
+The [per-document reconciliation ledger](../../reviews/RM-2026-017-documentation.md)
+records 188 existing Markdown documents across handbook, App, owner engineering,
+customer instruction products and historical evidence. The review covers audience,
+structure, discovery, status/version language and command/source walk-throughs;
+retained rows are justified no-change dispositions, not certification of every
+signature or native workflow. The new ledger itself is an owner audit deliverable.
+
+The handbook now provides an ordered architecture → initialization → editor →
+feature/module → public API → frontend composition → tests → update/deployment
+path linking canonical procedures. The command guide owns execution locations:
+root Artisan forwards to src/artisan, native backend arguments resolve from src,
+PHP/Node remain container tools and host setup uses the existing transport.
+Development initialization and reopen/data preparation are explicitly distinct;
+post-create prose now matches the actual fixed Dev Container command.
+
+P-01/A-01 was resolved in point 2; its stale module-framework language consumer is
+now corrected too. P-02/A-02 current-prose corrections match Auth module 5.0.0,
+Permissions 2.1.0 and current Auth ^5.0.0 dependencies while preserving independent
+AuthAdministration/AuthProfiles 2.1.0, AuthStepUp 2.0.0 and PermissionsAccess 2.2.0.
+The App manifest range is >=0.2.1 <0.8.0. Current guides describe delivered Admin
+pages/forms/settings/component evidence, with metadata-only declarations still
+distinct from executable bindings. The deferred-concerns registry removes Admin
+under its existing removal condition. Historical upgrade versions are explicitly
+historical; no closed roadmap, changelog entry or dated evidence was rewritten.
+
+The reference guide now uses the central application test path and a scoped native
+invocation; its version is 0.2.0. Module generation/source guidance matches
+frontend/components and the four delivered Core modules. Owner installation
+scaffold prose uses central docs/app/tests, and the update example requires an
+actual published target placeholder rather than stale publication instructions.
+No new capability, runtime configuration, dependency, API/module/platform version,
+migration or data operation is introduced by these editorial changes.
+
+### Grounding, focused evidence and instruction products
+
+Knowledge status was current at point start: 210 documents, 11,662 chunks, no
+branch/parser/metadata drift, missing/orphan chunks or interrupted write. Bounded
+current-intent retrieval returned documentation ownership and lifecycle/current
+state sources; those owning documents were opened. Source evidence and the scope
+limits for each developer journey are retained in the reconciliation ledger.
+
+A one-off direct diagnostic used existing docs_checks.links on the changed guides
+only because the supported complete documentation gate has no changed-path scope.
+Its purpose was to resolve new navigation/public-projection and renamed-anchor
+uncertainty. The first run found current inbound links to the point-specific
+operations heading removed here. Updated all three current consumers, then the
+same diagnostic returned **PASS for 34 changed guides**, including public
+ownership and local Markdown anchors. This is not all-document/projection or
+external-link acceptance. No test suite, image build, scanner, native installation,
+update, deployment or browser matrix ran. Full source/docs/delivery/knowledge
+checks remain point 12; mandatory formatting/hooks and staged incremental knowledge
+refresh apply to this commit.
+
+Both instruction products already route these subjects to the corrected canonical
+handbook. Root AGENTS/CLAUDE, owner skills and the separate customer bundle need
+no new duplicated version/procedure rule; the point-3 paired-product assessment
+remains valid. The ledger records this disposition. No document was moved/deleted,
+so incremental indexing replaces changed passages without a collection rebuild or
+move/delete recovery. Owning future implementation points must synchronize current
+prose again when behavior/versions change. No Docker resources were created or
+removed; existing development/test data, caches and reports remain preserved.

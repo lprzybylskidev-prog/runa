@@ -1,6 +1,6 @@
 # Admin authoring and consumer examples
 
-These examples consume the delivered 0.7.0 candidate contracts. Source and focused
+These examples consume the delivered 0.7.0 contracts. Source and focused
 consumer checks do not establish final browser, installation or release acceptance.
 Keep application implementations in `src/app`, application documentation in
 `docs/app` and tests in the owning central `tests` roots. The supplied application

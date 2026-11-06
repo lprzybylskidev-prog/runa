@@ -1,10 +1,9 @@
 # Application entry and own-account screens
 
-Auth 0.9.0 adds `AuthWelcome` and `AuthApplication` to `@/runa/auth`. The explicit
-`0.8.0 -> 0.9.0` ModuleUpdates edge adds the `public_welcome_enabled` setting with
-default true, without a migration or dependency. Fresh installations use the same
-default. Existing identities, sessions and settings remain intact. Audit ^0.3.0 and
-framework API ^1.0.0 remain compatible; apply the normal fenced module update.
+Auth exports `AuthWelcome` and `AuthApplication` from `@/runa/auth`. The
+`public_welcome_enabled` setting defaults to true. Apply the normal fenced module
+update before using changed source; the current module/dependency and guarded API
+versions are listed in the [Auth contract](README.md).
 
 ## Entry, routes and settings
 
@@ -15,8 +14,9 @@ the documented headless contracts when customizing App.
 Named document routes are `runa.auth.pages.application`, `runa.auth.pages.account`
 and the [existing entry routes](entry-ui.md). Unknown paths remain 404. Document
 GETs contain no account data and never grant access; every account request uses
-the server's module/session/eligibility/CSRF boundaries. The separately owned [Admin shell](../admin/frontend.md) is delivered for platform
-0.7.0 development; its generated business screens remain in progress.
+the server's module/session/eligibility/CSRF boundaries. The separately owned
+[Admin shell and generated forms](../admin/frontend.md) are delivered with
+platform 0.7.0.
 
 With public welcome enabled, guests see sign-in and registration only when public
 registration is enabled. Authenticated visitors see application access; restricted

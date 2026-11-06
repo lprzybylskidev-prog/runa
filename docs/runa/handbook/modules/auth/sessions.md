@@ -1,11 +1,14 @@
 # Auth sessions and login abuse defenses
 
-Auth 0.3.0 adds the explicit `0.2.0 -> 0.3.0` settings-default upgrade and owned
+The historical Auth 0.3.0 release introduced the explicit `0.2.0 -> 0.3.0` settings-default upgrade and owned
 `sessions`, `trusted_devices` and `login_windows` migrations. Upgrade through the
 normal fenced ModuleUpdates transport. Existing untracked 0.2.0 sessions require
 login again. No dependency, new service or native Laravel recaller is introduced.
-Auth 0.4.0 adds [trust issuance, second factors and reusable step-up](security.md),
+Auth 0.4.0 introduced [trust issuance, second factors and reusable step-up](security.md),
 with a forward credential migration; session signatures remain compatible.
+
+Current module/dependency versions are in the [Auth contract](README.md); the
+versions above identify retained upgrade history.
 
 ## Admission, deadlines and revocation
 

@@ -5,11 +5,11 @@ metadata, static hints, owner errors and customer replacements. See its exact
 [field composition and delivery contract](../../modules/admin/frontend.md#delivered-field-composition).
 Default Admin forms use useAdminForm/AdminForm/AdminSection for field-bound lookups,
 controlled drafts, safe errors, dirty guards and automatic reconciliation without
-replay or remounting. Independent writes are delivered; native multi-owner Save
-execution retains roadmap point 6. Public formValuesEqual compares finite JSON
+replay or remounting. Independent writes and native multi-owner Save are delivered
+through the [owning transaction protocol](../../architecture/module-transactions.md). Public formValuesEqual compares finite JSON
 values independently of object key order for feature reconciliation.
 
-Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. Auth entry/restricted and own-account forms consume these controls with guarded backend writes; see the [Auth entry contract](../../modules/auth/entry-ui.md). Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. the isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
+Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. Auth entry/restricted and own-account forms consume these controls with guarded backend writes; see the [Auth entry contract](../../modules/auth/entry-ui.md). Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. The isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
 
 ## Container and field composition
 

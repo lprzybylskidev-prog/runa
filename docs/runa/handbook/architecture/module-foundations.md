@@ -1,6 +1,6 @@
 # Module transaction and identity foundations
 
-These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its append-only store, automatic capture and authorized reads; see the [Audit guide](../modules/audit/README.md). The [Auth identity/lifecycle foundation](../modules/auth/README.md) is also delivered; [Auth cookie/session/CSRF entry transport](../modules/auth/transport.md) is delivered; [operational sessions](../modules/auth/sessions.md), credentials, private profiles, preferences and [policy/operator contracts](../modules/auth/policies-and-operators.md) are delivered; [Permissions declarations/current action grants and ordinary access management](../modules/permissions/README.md) are delivered; administration screens remain deferred.
+These additive framework seams prepare Audit, Auth and Permissions. Audit now supplies its append-only store, automatic capture and authorized reads; see the [Audit guide](../modules/audit/README.md). The [Auth identity/lifecycle foundation](../modules/auth/README.md) is also delivered; [Auth cookie/session/CSRF entry transport](../modules/auth/transport.md) is delivered; [operational sessions](../modules/auth/sessions.md), credentials, private profiles, preferences and [policy/operator contracts](../modules/auth/policies-and-operators.md) are delivered; [Permissions declarations/current action grants and ordinary access management](../modules/permissions/README.md) are delivered; [administration screens](../modules/admin/README.md) are delivered through Admin.
 Use the existing [module framework](module-framework.md) and
 [development guide](../development/modules.md) for source ownership and adapters.
 
@@ -71,11 +71,11 @@ Durable dictionaries use `code`, `name_pl`, `name_en`, `description_pl`,
 `toRow()` projects those five database columns. It does not create another editable
 source, change manifests or introduce translation catalogs for dictionary values.
 
-## Future management declarations
+## Management metadata and executable pages
 
-The [Admin contract specification](../modules/admin/README.md) defines the
-RM-2026-016 additive page/binding/participation target. It is not implemented;
-current schema-1 declarations below retain their existing meaning and signatures.
+The delivered [Admin contract](../modules/admin/README.md) defines executable
+page/binding/participation extensions. Schema-1 entity metadata below remains
+a separate descriptive contract and never creates executable handlers implicitly.
 
 ManagementEntityProvider optionally extends an existing ManagementProvider with
 version 1 ManagementEntity metadata. Bounded fields describe localized labels,
@@ -85,8 +85,8 @@ without executable rules; configuration reuses ModuleSettings descriptors.
 ManagementOperation describes a permission-bound operation, declared writable input
 names, step-up, revision, preview and bulk requirements. ModuleManagement projects
 entities alongside existing declarations, checking permissions/duplicates/bounds.
-Invalid declarations produce a safe diagnostic. No renderer or execution endpoint
-is supplied. Actual Actions/FormRequests enforce validation and security, regardless
+Invalid declarations produce a safe diagnostic. Rendering and execution require
+explicit Admin page/handler bindings. Actual Actions/FormRequests enforce validation and security, regardless
 of presentation metadata; secrets never belong in the projection.
 
 ## Trusted operator and ordinary bulk selection

@@ -1,6 +1,6 @@
 # Account preferences and security delivery
 
-Auth 0.6.0 adds `AuthPreferences` and `AuthDelivery` 1.0.0. Auth owns persistence;
+Auth supplies `AuthPreferences` 1.1.0 and `AuthDelivery` 1.0.0. Auth owns persistence;
 originating modules own preference schemas, notification categories and content.
 These are user preferences, separate from global versioned `ModuleSettings`.
 There is no Notifications runtime or operational in-app channel.
@@ -271,7 +271,7 @@ the display timezone without changing UTC storage or date-only values. See
 
 ## Administrative account preferences
 
-Auth 3.1.0 supplies additive `AuthPreferences` API **1.1.0**. Existing self-service
+The guarded `AuthPreferences` API uses independent version **1.1.0**. Existing self-service
 methods retain their current-principal binding and signatures. Administrative
 methods explicitly select another account through the guarded adapter:
 

@@ -1,6 +1,6 @@
 # Auth identities, lifecycle and entry transport
 
-Current Core `runa.auth` source develops at independent version `4.0.0` for
+Core `runa.auth` is delivered at independent version `5.0.0` for
 platform >=0.7.0 <0.8.0, requiring
 `runa.audit ^1.0.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
@@ -20,9 +20,9 @@ are delivered. [Permissions action grants and introspection](../permissions/READ
 ordinary assignment/preset/copy and [protected authority](../permissions/authority.md)
 are delivered. First-administrator bootstrap grants the actual Permissions system role through the trusted operator adapter; installer invitations and private no-mail CLI setup are delivered.
 The explicit [development corpus](../../data/seeding.md#explicit-module-development-contributors) supplies local scenarios, safe account discovery and private initial setup, independently of production initialization.
-The unreleased 4.0.0 administration source supplies Users and policy views through
-Admin; see [administration](administration.md). Owner browser acceptance and final
-release verification remain open. Administrative operations require current native grants.
+Auth administration supplies Users and policy views through Admin; see
+[administration](administration.md). It was delivered with platform 0.7.0.
+Administrative operations require current native grants.
 
 See the [built-in contract audiences](../../architecture/public-api.md#built-in-module-contracts-and-execution)
 for public APIs, local helpers and reserved integration. Contract paths remain

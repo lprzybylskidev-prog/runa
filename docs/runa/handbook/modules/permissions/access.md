@@ -2,8 +2,8 @@
 
 Permissions supplies guarded `PermissionsAccess` API 2.2.0. Resolve it through
 ModuleApis; never resolve its implementation or write assignment tables directly.
-The current module requires Auth ^2.0.0 || ^3.0.0 and Audit ^1.0.0; framework API remains 1.0.0.
-The explicit 0.1.0 → 0.2.0 edge validates new storage; the transactional updater
+Permissions 2.1.0 requires Auth ^5.0.0 and Audit ^1.0.0; framework API remains 1.0.0.
+The retained 0.1.0 → 0.2.0 upgrade edge validates storage; the transactional updater
 runs the forward migration for fresh installs and upgrades, without assigning users.
 
 ## Authorization and proof

@@ -118,15 +118,15 @@ acceptance belongs to the roadmap's final verification, not per-point execution.
 
 ## Current native API versions and intentional break
 
-Auth 3.1.0 and Permissions 2.1.0 retain the intentional replacement
+Auth 5.0.0 and Permissions 2.1.0 retain the intentional replacement
 of arbitrary ambient transaction nesting on AuthProfiles.edit and
 PermissionsAccess.applyAssignments. Their guarded API versions are AuthProfiles 2.1.0 and PermissionsAccess 2.2.0; other
 Core guarded APIs remain at their declared versions. Call standalone writes with
 no ambient transaction. Source-owned composition uses the documented phases;
 there is no v1 alias or nested whole-write compatibility path. Current native
 consumers and rollback fixtures follow that contract. Supplied modules require
-platform >=0.7.0 <0.8.0; private owner fixtures explicitly select that candidate
-runtime while released platform VERSION remains unchanged until closure.
+platform >=0.7.0 <0.8.0, matching the delivered 0.7.0 platform.
+Module versions and guarded API versions are independent.
 
 Authorization/introspection and effective-permission previews read current cached
 availability; they do not run external on-use checks for unrelated permission

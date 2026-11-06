@@ -1,7 +1,7 @@
 # Permissions
 
-Current Core `runa.permissions` source develops at independent version `2.1.0`
-for platform >=0.7.0 <0.8.0, requiring `runa.auth ^4.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
+Core `runa.permissions` is delivered at independent version `2.1.0`
+for platform >=0.7.0 <0.8.0, requiring `runa.auth ^5.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
 `runa.permissions.super_admin` role, with **no user assignments**. Matching installed

@@ -81,7 +81,7 @@ Define default and maximum page sizes.
 
 Filter/sort fields are explicit whitelists.
 
-Use cursor pagination later for genuinely large continuous datasets when it provides a clear benefit.
+Use cursor pagination for genuinely large continuous datasets when it provides a clear benefit.
 
 ## Bulk operations
 

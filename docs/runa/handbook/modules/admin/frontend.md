@@ -2,7 +2,7 @@
 
 # Admin frontend contract
 
-Status: points 4–5 deliver the PL/EN session shell, guarded reads and independent
+Admin 1.0.0 supplies the PL/EN session shell, guarded reads and independent
 commands, compiled component resolution, presentation providers, generated record
 forms and cursor tables. Public facade `@/runa/admin` exports AdminApplication,
 AdminLayout, AdminPage, AdminSection, AdminForm, AdminField, AdminAction,
@@ -13,9 +13,14 @@ useAdminResource/useAdminTable and validateAdminField. Source home is
 `src/app/resources/js`; HTTP uses `@/runa/http`, UI primitives use `@/runa/ui`.
 
 Record forms execute explicit independent commands or compatible native atomic
-preview/Save through the shared form owner. Point 6 delivers server coordination
-and initial profile/access record adapters. Point 9 delivers operational dashboard,
-module diagnosis, lifecycle/work controls and retained settings operation recovery. Point 10 delivers application global settings and runtime branding. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
+preview/Save through the shared form owner. Native server coordination supplies
+profile/access record adapters. Framework operations supply the dashboard,
+module diagnosis, lifecycle/work controls, retained settings operation recovery,
+application global settings and runtime branding. Owning Permissions and Audit
+pages use their public presentation facades. Auth supplies Users, policy and
+bulk-session controls; see [Auth administration](../auth/administration.md).
+These are delivered 0.7.0 contracts; later changes retain the roadmap's rendered
+and automated acceptance requirements.
 
 ## Initial presentation
 
@@ -787,8 +792,8 @@ to useAdmin and ApplicationSessionShell directly; it does not nest AuthApplicati
 Only the creator owns disposal, request observation, heartbeat/activity listeners,
 logout and session refresh. Consumers never dispose a supplied controller. Account
 switch/expiry fences every Admin response and clears protected state; shell locale
-stays scoped. Actual facade consumers change together in point 4, without old-shape
-adapters or copied security logic. App routers can supply a controller across route
+stays scoped. Facade consumers share these props and the supplied controller without copied
+security logic. App routers can supply a controller across route
 changes; the default dispatcher owns one for its mounted application boundary.
 
 A minimal advertisement is implemented on AdminAccess:
@@ -917,7 +922,7 @@ beforeLeave(): Promise<boolean>
 
 `AdminOperationData = Record<string, AdminJson>`. The exact finite views/commands,
 inputs, grants and native result shapes are in the
-[operational transport contract](operations.md#operational-http-and-presentation-contract-point-9).
+[operational transport contract](operations.md#operational-http-and-presentation-contract).
 Replacement editors set `dirty`, call `beforeLeave()` before target/editor changes,
 clear account-local data on `contextRevision`, and observe `changed` for refreshed
 reads. Keep dirty drafts during read refresh/conflicts; an accepted reload may

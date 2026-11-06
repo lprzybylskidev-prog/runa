@@ -10,10 +10,10 @@ The host owns Docker lifecycle operations. PHP, Composer, Node/pnpm, PostgreSQL 
 
 A future developer should be able to:
 
-1. clone the repository,
-2. open it in VS Code,
-3. choose Reopen/Rebuild in Container,
-4. obtain a working development stack except for explicitly required local secrets/settings.
+1. clone the customer repository and reconcile required local settings,
+2. explicitly initialize its dependencies and forward data using the host command below,
+3. open it in VS Code and choose Reopen in Container,
+4. use the working stack; later reopen preserves existing data and credentials.
 
 There is no separate developer bootstrap script whose existence compensates for a broken devcontainer. The devcontainer/Compose setup is the bootstrap path.
 
@@ -354,7 +354,7 @@ Host Python 3 and Docker Compose are required for the host wrapper and VS Code i
 
 The pinned Laravel skeleton was generated in an isolated container directory and only the required application files were adopted. Runtime depends on `laravel/framework`; starter auth/models/migrations, Blade welcome views, Tinker, Pail, PAO and demo frontend content are absent. `src/composer.lock` records the actual dependency graph. Install through `composer install`, not an unplanned update.
 
-The devcontainer's post-create command is `./bin/artisan runa:dev:setup --if-needed`, executed inside the container. With a matching setup fingerprint and required dependency/build outputs (including the generated `src/public/runa-error/pages/503-pl-system.html`), it skips dependency installation and frontend rebuilding while retaining configuration and hook/MCP checks. Missing output or changed inputs run complete setup; the retired `503-pl.html` filename is not readiness evidence. It creates a missing `.env` from `.env.dev.example` with a random development database password, installs locked PHP dependencies, generates a missing application key, validates configuration/templates and sets the hooks path. It preserves existing environment values and keys on repeated runs. Setup also prepares the guarded testing environment and installs/builds the locked frontend as described below; it never runs migrations or seeds.
+The devcontainer's post-create command is `python3 -m tools.application.development setup --if-needed`, executed inside the container. It uses the same setup implementation as the public `runa:dev:setup --if-needed` operation. With a matching setup fingerprint and required dependency/build outputs (including the generated `src/public/runa-error/pages/503-pl-system.html`), it skips dependency installation and frontend rebuilding while retaining configuration and hook/MCP checks. Missing output or changed inputs run complete setup; the retired `503-pl.html` filename is not readiness evidence. It creates a missing `.env` from `.env.dev.example` with a random development database password, installs locked PHP dependencies, generates a missing application key, validates configuration/templates and sets the hooks path. It preserves existing environment values and keys on repeated runs. Setup also prepares the guarded testing environment and installs/builds the locked frontend as described below; it never runs migrations or seeds.
 
 Nginx publishes `http://localhost:8080`; `GET /api/health` returns only `{"status":"ok"}`. This is a lightweight application liveness check, not proof of database/queue readiness. PHP-FPM and Nginx run without root. API failures render JSON. Incoming `X-Request-ID` values must contain 1–64 ASCII letters, digits, underscores or hyphens; otherwise a fresh UUIDv7 is generated. The identifier is returned and placed in logging context. No request payload is logged by this middleware.
 
@@ -366,7 +366,8 @@ PostgreSQL 18.6 persists data under the named volume mounted at `/var/lib/postgr
 
 ## Frontend foundation
 
-When setup inputs or generated outputs require it, post-create `./bin/artisan runa:dev:setup --if-needed` installs `src/pnpm-lock.yaml` with `--frozen-lockfile` and builds the Vue SPA. `http://localhost:8080/` serves the Vite-built HTML through the named Laravel `spa` route without Blade or a session/auth module. Hashed assets live in ignored `src/public/build`; API traffic remains under `/api`. Changes to frontend source require a new `pnpm run build` when using this built-output URL.
+When setup inputs or generated outputs require it, post-create `./bin/artisan runa:dev:setup --if-needed` installs `src/pnpm-lock.yaml` with `--frozen-lockfile` and builds the Vue SPA. `http://localhost:8080/` serves the Vite-built HTML through the named Laravel `spa` route without Blade. DefaultApplication composes the supplied Auth/Admin views;
+protected data and actions retain their server-side session and authorization checks. Hashed assets live in ignored `src/public/build`; API traffic remains under `/api`. Changes to frontend source require a new `pnpm run build` when using this built-output URL.
 
 For HMR, run `pnpm run dev` inside the devcontainer and open the VS Code-forwarded port 5173 at `/build/`. Vite proxies `/api` to the sibling Nginx, which still calls PHP-FPM/Laravel. The HMR server is frontend tooling, not the Laravel runtime. Light/dark/system and PL/EN preference state is owned by the shell; no UI framework or global state dependency is installed.
 

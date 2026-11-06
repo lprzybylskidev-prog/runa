@@ -2,11 +2,10 @@
 
 # Auth administration
 
-Auth 4.0.0 supplies source-owned administration declarations and adapters, consumed
+Auth 5.0.0 supplies source-owned administration declarations and adapters, consumed
 by Admin without a reverse backend dependency. Business behavior remains available
-through the owning guarded APIs without Admin. This is unreleased source for
-platform 0.7.0; complete browser/security/release verification belongs to
-RM-2026-016 point 12.
+through the owning guarded APIs without Admin. These contracts are delivered with
+platform 0.7.0; the interface versions below are independent of the module version.
 
 ## Guarded administrative reads
 
@@ -456,7 +455,7 @@ individual-action presentation remains outside this bulk-protection change.
 
 ## Task-based user details
 
-Auth 4.0.0 replaces the default per-section tabs with at most two nonempty
+The default administration replaces per-section tabs with at most two nonempty
 areas: User and Security. User starts with individual action
 buttons, then editable identity/avatar, one complete account-status grid, primary/secondary emails,
 searchable assignments, preferences and user rules. Status consolidates authorized verification

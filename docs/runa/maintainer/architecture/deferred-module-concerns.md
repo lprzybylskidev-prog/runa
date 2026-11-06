@@ -9,7 +9,6 @@ Remove an entry when the responsible module is implemented and move its durable 
 | Data management       | Data-management module   | Physical deletion/anonymization and its audited lifecycle                                                                            | Approved module policy is delivered             |
 | Files/uploads         | Filesystem module        | General upload storage/scanning/metadata/versioning and file lifecycle; Auth private avatars already have their own bounded contract | Filesystem policy is delivered                  |
 | External integrations | Integrations module      | Provider credentials, adapter/retry/circuit and inbound/outbound contracts; LDAP/OIDC/SSO remain excluded                            | Integration policy is delivered                 |
-| Administration        | Admin module             | Audit viewer, user/role/preset/assignment UI and generic management renderer; typed backend contracts already exist                  | Approved Admin UI is delivered                  |
 | Notifications         | Notifications module     | General notifications and operational in-app delivery; direct Auth/security email is delivered                                       | Notifications runtime is delivered              |
 | Throttling            | Throttling module        | Optional general request throttling; Auth retains intrinsic login/OTP safeguards and supplies an exclusive request adapter seam      | General throttling contract is delivered        |
 | Teams                 | Teams module             | Team membership and team-scoped grants                                                                                               | Teams policy is delivered                       |
@@ -29,6 +28,9 @@ current grants, ordinary access/preset/copy operations, protected authority and
 last-superadministrator participation. First-administrator integration and explicit
 local development fixtures are implemented. Independent versions and limitations
 belong in their public guides/changelogs; this registry records remaining scope.
+[Admin](../../handbook/modules/admin/README.md) delivers the Audit viewer, user/role/
+preset/assignment UI and declared page rendering as of platform 0.7.0, so
+administration is no longer a deferred module concern.
 Frontend customization and integrated acceptance were delivered by closed RM-2026-011
 and refined by released RM-2026-012 (0.6.0). Use the current public presentation
 contract; this registry does not carry an open implementation or verification point.

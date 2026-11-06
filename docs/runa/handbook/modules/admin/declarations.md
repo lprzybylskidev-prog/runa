@@ -2,13 +2,13 @@
 
 # Admin declarations, bindings and wire values
 
-Status: point 3 implements declarations/discovery, capability interfaces,
-field-bound options, typed widget results and source-bound component/build
-projection. Point 4 adds compiled resolution, the shared session shell, entry
-advertisement and page-read/document HTTP. Point 5 adds section-read HTTP, the frontend resource read lane, independent
-write/preview HTTP and generated forms. Point 6 delivers native atomic coordination
-and profile/access adapters; point 7 adds complete Auth administrative declarations. Point 8 adds owning Permissions pages and the immutable Audit viewer; points 9–10 deliver framework operations and settings. Point 11 adds [generator and consumer examples](examples.md). See
-[ownership and delivery](README.md). Named value classes are final readonly, with
+Admin 1.0.0 supplies declarations/discovery, capability interfaces, field-bound
+options, typed widget results and source-bound component/build projection. It
+includes compiled resolution, the shared session shell, entry advertisement,
+page/section/resource HTTP, independent writes/previews, generated forms and native
+atomic coordination. Core declarations, framework operations, application settings
+and [generator/consumer examples](examples.md) use these delivered contracts.
+See [ownership and delivery](README.md). Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
 belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.
 
@@ -182,7 +182,7 @@ handler methods reject with `OperationRejected('admin_operation_unavailable',
 'runa.admin', <declared operation>, 404)` rather than empty success.
 
 The capability interfaces and read/result DTOs above are implemented in the
-point-3 implementation. Generated forms and independent write dispatch are delivered in point 5. A handler
+declaration implementation. Generated forms and independent write dispatch are delivered. A handler
 implements only its actual capabilities. Resource, lookup, widget and write bindings
 require their corresponding interface; no reader implements dummy write methods.
 A source-declared unsupported capability is a structural declaration error.
@@ -410,12 +410,11 @@ the entire form Save with 409, even when hidden by a presentation replacement;
 optional omitted sections are excluded explicitly from the participant set. Every
 write revalidates availability; discovery is never authority for a later request.
 
-Point 3 covers two pages from one owner with one unavailable optional target,
-independent sibling lookup grants, mismatched option identities, typed widget
-freshness and page/build identity. Points 4–5 cover compiled registry mismatch,
-required component blocking and controlled lookup requests; final point 12 runs
-complete affected-area verification. No rendered or runtime PASS follows from
-these revised signatures.
+Relevant regression scenarios include two pages from one owner with an unavailable
+optional target, independent sibling lookup grants, mismatched option identities,
+typed widget freshness, page/build identity, compiled registry mismatch, required
+component blocking and controlled lookup requests. Source signatures alone do not
+establish rendered or runtime acceptance.
 
 Malformed declarations/DTOs throw `InvalidArgumentException`; owning validation
 and revision conflicts retain their safe errors. HTTP maps unauthenticated to 401,
@@ -457,8 +456,9 @@ Source component keys resolve to their owning module's existing
 `src/app/resources/js/components/admin/<key>.vue`. Symlinks, imports, foreign keys
 and missing source are refused in source-bearing environments. Production strips
 Vue sources and validates the generated evidence against the current module
-manifest instead. Browser registry resolution, development-server evidence publication and shell
-replacement are implemented in point 4; final rendered acceptance remains point 12.
+manifest instead. Browser registry resolution, development-server evidence
+publication and shell replacement are delivered through the
+[frontend contract](frontend.md).
 
 Bootstrap selects the first authorized declared default, otherwise the first
 page ordered by order/key. Owners with no authorized page disappear. Page reads

@@ -26,8 +26,8 @@ prompting when settings are missing.
 The delivered `src/app` is the clean initial application scaffold: application
 manifest (Runa, independently versioned 0.0.0), empty presentation configuration,
 provider/routes/SPA entrypoints, dependency declarations, database/test extension
-entrypoints and empty Actions/modules/config/docs/lang/database/frontend/test
-extension roots. The welcome screen remains the platform UI consumer; no sample
+entrypoints and empty application extension roots. Application documentation and
+roadmaps live under docs/app; authored tests live under the central tests roots. The welcome screen remains the platform UI consumer; no sample
 business entity/module is installed. The reserved lowercase modules root adds no
 module framework or registration.
 
