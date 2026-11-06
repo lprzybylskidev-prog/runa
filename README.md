@@ -18,11 +18,11 @@ Core [Audit](docs/runa/handbook/modules/audit/README.md),
 [Permissions](docs/runa/handbook/modules/permissions/README.md) supply transactional
 history, session/CSRF authentication, private account views and current action
 grants. [Trusted initial administrator setup/recovery](docs/runa/handbook/modules/auth/policies-and-operators.md)
-uses the actual protected system role. No administration UI is supplied.
+uses the actual protected system role. Core [Admin](docs/runa/handbook/modules/admin/README.md) supplies declarative administration through guarded owning APIs.
 
 ## Application work
 
-Application UI defaults to Polish with English support and light/dark themes; administration UI is English-only. Technical source, APIs, commands and repository documentation are English-only.
+Application and administration UI default to Polish with English support and light/dark themes. Technical source, APIs, commands and repository documentation are English-only.
 
 Use one active application roadmap under `docs/app/roadmaps`, a roadmap branch, Conventional Commits and local verification. See [roadmap workflow](docs/runa/handbook/workflows/roadmaps.md), [Git](docs/runa/handbook/workflows/git.md) and [quality](docs/runa/handbook/quality/README.md). This project has no CI pipeline.
 

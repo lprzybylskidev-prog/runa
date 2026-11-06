@@ -45,3 +45,12 @@ change was involved; internal collaborator paths are not customer entrypoints.
 Source-placement and audience routing was reconciled on 2026-10-28 for local
 RM-2026-012 point 19. The delivered public boundary/projection guides own the
 procedures; no upstream refresh, dependency or protected-edit authority was added.
+
+Mandatory per-view FormNotifications routing is local Runa guidance sourced from
+`docs/runa/handbook/development/frontend/forms.md` and its shared component contract.
+It adds no upstream dependency or protected-platform edit authority.
+
+Read/request amplification review routing comes from local RM-2026-016 runtime
+measurements and the public application architecture/loading guides. Customer
+repairs retain App ownership; no upstream refresh, dependency or quality-gate
+change is involved.

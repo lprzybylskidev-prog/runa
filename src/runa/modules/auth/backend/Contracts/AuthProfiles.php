@@ -10,6 +10,10 @@ interface AuthProfiles
 
     public function replaceVerifiedEmail(string $publicId, int $expectedVersion, string $email): bool;
 
+    public function verifyEmail(string $publicId, int $expectedVersion): bool;
+
+    public function verifySecondary(string $publicId, int $expectedVersion, string $addressId): bool;
+
     public function requireVerification(string $publicId, int $expectedVersion): bool;
 
     public function addSecondary(string $publicId, int $expectedVersion, string $email): string;

@@ -9,6 +9,11 @@ export interface TableColumn<Row> {
   key: string;
   label: string;
   value: (row: Row) => string | number | null;
+  filterOptions?: readonly { value: string; label: string }[];
+  /** Date/time filters edit explicit-offset instants in the application time zone. */
+  filterType?: 'datetime';
+  /** Pair this start key with an explicit endpoint key in one compact filter. */
+  filterRange?: { endKey: string; label: string };
   compare?: (a: Row, b: Row) => number;
   filter?: (row: Row, value: string) => boolean;
   /** Data columns sort by default; false opts out. Server capabilities still apply. */
@@ -20,6 +25,8 @@ export interface TablePage<Row> {
   total: number | null;
   matching: number | null;
   counts: 'exact' | 'stale' | 'unknown';
+  /** Cursor pages use previous/next even when their matching count is exact. */
+  pagination?: 'numbered' | 'cursor';
   hasNext: boolean;
   capabilities: {
     sort: readonly string[];

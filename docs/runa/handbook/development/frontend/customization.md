@@ -13,11 +13,12 @@ Public entrypoints and implementation imports follow the
 
 The supplied `src/app/resources/js/App.vue` renders `DefaultApplication` from
 `@/runa/auth`. That platform component selects exact Auth pages, `/app`, `/account`
-and welcome. When welcome is enabled, the default `/app` has Home / Application breadcrumbs and an otherwise empty workspace: no page heading, welcome card or account links. Native unknown server paths remain 404 responses.
+and welcome, plus AdminApplication for `/admin` and declared Admin page locations.
+When welcome is enabled, the default `/app` has Home / Application breadcrumbs and an otherwise empty workspace: no page heading, welcome card or account links. Native unknown server paths remain 404 responses.
 `main.ts` imports the shared CSS through `@/runa/ui/styles.css` and mounts
 `createApplication(App)` from `@/runa/ui`. This public helper returns a Vue App,
 so customers can install their own plugins before mounting. It hydrates public
-identity without delaying rendering; failed requests retain manifest defaults.
+identity and public presentation in place after immediate root/layout mounting, including bounded logo decoding; failed initial requests retain source defaults and failed background reads retain confirmed branding. See [view readiness](loading.md). Runtime name/logo overrides use the [application settings contract](../../modules/admin/operations.md#application-settings-contracts-and-storage) and [public loader/controller seams](../../modules/admin/frontend.md#application-global-settings-and-runtime-branding).
 
 The retained application files are manifest/dependency files, the HTML entry,
 Vue root/bootstrap, named welcome route, provider/seed/test/config extension
@@ -27,11 +28,43 @@ Runa; no forwarding application controller is needed. `src/app/config/branding.p
 is an optional presentation override (empty by default).
 
 Customers own `src/app/resources/index.html` metadata, their own assets/styles,
-route wiring and added pages/components. Application identity/version/logo belongs
-in `src/app/application.json`; platform version remains independent. Theme tokens
+route wiring and added pages/components. Canonical application identity/version and source logo defaults belong
+in `src/app/application.json`; approved runtime displayed-name/logo selection belongs in application settings; platform version remains independent. Theme tokens
 come from the shared CSS; add application CSS after that import. Tailwind scans
 application resources/modules and platform source. Keep complete utility names
 statically discoverable. See [branding/layouts](../../architecture/frontend.md).
+
+## Configuration-based capability visibility
+
+When current module configuration disables a capability, omit its operational
+forms, inputs, actions and enclosing sections from the rendered UI. Do not replace
+them with disabled controls, explanatory placeholders, empty cards/tabs or empty
+navigation destinations. Apply the same rule to supplied defaults, App views and
+partial/full presentation replacements. Use the owning current capability
+projection; never infer configuration from a previous successful operation.
+
+Compose independent capabilities separately: disabling profile edits removes the
+edit form, while authorized profile facts may remain as ordinary read-only text.
+Disabling avatar editing removes upload/save controls; an authorized existing
+avatar may remain as an image. Disabling every factor removes the factor card,
+while enabled password or trusted-device capabilities retain their own sections.
+Hide dependent recipient inputs when a notification category is turned off, while
+keeping its enable switch and explicit Save available.
+
+Configuration editors that enable/reconfigure a capability remain available to
+authorized operators. A temporarily busy control, loading region, validation/
+conflict state or unmet prerequisite of an enabled feature is distinct from a
+configuration-disabled capability and may use its documented disabled state.
+Module diagnostics/recovery and mandatory current security-completion flows retain
+their owning availability contracts. Backend permission/policy/validation remains
+authoritative; hiding a form does not authorize a write.
+
+React to current configuration changes without reinitializing unrelated dirty
+drafts or replaying writes. Remove invalid selected options and close unavailable
+editors; discard their secret/proof state. Review sibling consumers of a shared
+capability and cover enabled/disabled transitions at the owning controller or
+rendered-component boundary. Customer findings in protected Runa source are
+reported to its owner, not repaired through protected edits.
 
 ## Compose with supplied screens
 
@@ -57,6 +90,28 @@ import { Button } from '@/runa/ui';
 </template>
 ```
 
+`AuthApplication` accepts optional `session`, `navigation`, `topNavigation`,
+`navigationLoading`, `contentLoading`,
+`current`, `locale` and `accountMenu` composition inputs. It reuses the public
+`ApplicationSessionShell` from `@/runa/auth`; only the creator calls
+`useApplicationSession` and owns its disposal. The shell takes a required session
+controller and the same navigation inputs, plus an `account-menu` slot with
+`{session, entries}` and loading/default slots. Extra same-origin account links
+never replace the supplied User panel/sign-out controls. Its minimal Admin
+advertisement stays in that dropdown and refreshes with session authority, without
+loading protected Admin metadata. See [Admin shell contracts](../../modules/admin/frontend.md#shared-session-shell-and-account-menu-seam).
+
+`AdminApplication` from `@/runa/admin` retains localized PL/EN entry proof and session
+orchestration. Its default slot receives `{controller: AdminController}`; a
+customer may render its own navigation/page content there. Nested
+`AdminPresentationProvider` supports partial layout/page/section/widget/loading
+replacement. Import useAdmin/useAdminPage for a full source-owned presentation,
+and resolve projected component identities through public resolveAdminComponent.
+Check the [runtime export status](../../modules/admin/frontend.md) before consuming
+future form/resource components. `DefaultApplication` forwards an explicitly
+supplied `adminComponents` static App registry; the minimal scaffold adds no example
+screen. Admin and its shared controls follow the shared Polish/English application preference.
+
 For independent page composition, `MinimalLayout`, `ApplicationLayout`,
 `IdentityProvider` and controls remain available from `@/runa/ui`. Importing them
 does not require a module registry or router. The supplied dedicated shell menu
@@ -72,14 +127,15 @@ names, URLs or backend metadata. Keep the map stable during an active form. The 
 definitions while observing map changes; callers do not need to mutate imported
 components or copy provider logic.
 
-| Entry               | Customer component contract                                                                                                                                                                                                                                                                                          |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `minimalLayout`     | Accept and render the default content slot, including its `t` translator slot argument for welcome, and forward `header-actions` for the welcome entry links; accept layout props including homeHref. A wrapper around public MinimalLayout can forward all slots/props and override header, illustration or footer. |
-| `applicationLayout` | Accept ApplicationLayout props and its default/user-menu/breadcrumbs slots. Forward width/navigation/current/title/user identity (including userAvatar/userLoading/homeHref) and preserve the account/sign-out controls.                                                                                             |
-| `entry`             | Accept `page: EntryPage` and optional `authenticated(session)` callback. Use `useAuthEntry(page, authenticated)` once per keyed page. This includes reauthentication after expiry.                                                                                                                                   |
-| `account`           | Accept `accountId: string`; use `useAuthAccount(accountId)` once. The wrapper remounts on account identity change.                                                                                                                                                                                                   |
-| `accountLoading`    | Static initial account structure, without account props or reads. Used before session validation and while the default account controller initializes. Public `AuthAccountLoading` is the supplied fallback.                                                                                                         |
-| `welcome`           | Use `useAuthWelcome()` once to retain welcome policy and session-aware links.                                                                                                                                                                                                                                        |
+| Entry                | Customer component contract                                                                                                                                                                                                                                                                                          |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `minimalLayout`      | Accept and render the default content slot, including its `t` translator slot argument for welcome, and forward `header-actions` for the welcome entry links; accept layout props including homeHref. A wrapper around public MinimalLayout can forward all slots/props and override header, illustration or footer. |
+| `applicationLayout`  | Accept ApplicationLayout props and its default/user-menu/breadcrumbs slots. Forward width/navigation/current/title/user identity (including userAvatar/userLoading/homeHref) and preserve the account/sign-out controls.                                                                                             |
+| `entry`              | Accept `page: EntryPage` and optional `authenticated(session)` callback. Use `useAuthEntry(page, authenticated)` once per keyed page. This includes reauthentication after expiry.                                                                                                                                   |
+| `operationProofPage` | Accept AuthOperationProofPageProps and its controller slot; emit confirmed/cancel as specified in the [Auth proof contract](../../modules/auth/entry-ui.md#operation-proof-composition). Reuse the supplied controller, native proof and caller session.                                                             |
+| `account`            | Accept `accountId: string`; use `useAuthAccount(accountId)` once. The wrapper remounts on account identity change.                                                                                                                                                                                                   |
+| `accountLoading`     | Static initial account structure, without account props or reads. Used before session validation and while the default account controller initializes. Public `AuthAccountLoading` is the supplied fallback.                                                                                                         |
+| `welcome`            | Use `useAuthWelcome()` once to retain welcome policy and session-aware links.                                                                                                                                                                                                                                        |
 
 ```vue
 <script setup lang="ts">
@@ -180,8 +236,8 @@ the controller validation/focus contract aligned.
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `useAuthEntry(page, authenticated?)` | Render `screen`, title/description, ready/busy/failure/notice, `fieldNames`, values/errors/labels/passwordHint, naming/remember/method choices, enrollment and recovery-code states. Call submit, initialize/refresh, refreshCsrf, sendEmail, logout, codesSaved and changeMethod for the corresponding explicit actions. Bind form/heading refs for validation/focus. Honor needsProof, hasSubmit, methods, enrollmentRequired and token-page restrictions. Without callback the controller handles the approved return; with callback the parent resumes its session boundary.                                                                                                                                                                     |
 | `useAuthAccount(accountId)`          | Render server capabilities/tabs, profile/security, task/fields/errors, proofMethods, busy/failure/notice and explicit draft review. Use saveSection(details/avatar/password/security) with sectionFields/sectionErrors and overviewAction/removeAvatar for independent cards; bind form to the submitting Form. Existing saveOverview and choose/submit remain supported. Use refresh for nondestructive read reconciliation and render detailConflicts/resolveDetails and avatarConflict/resolveAvatar locally. Call selectTab, revoke, readPage, saveDelivery, resetPreferences, restoreDraft, sendCode/sendVerification and refreshCsrf for the corresponding actions. Bind form/heading/feedback refs. Never silently resubmit a restored draft. |
-| `useAuthWelcome()`                   | Render loading/failed/retry, options and optional session. The controller enforces disabled welcome. Link a restricted session to `/auth/security`, an unrestricted one to `/app`, guests to sign-in and registration only when enabled.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `useApplicationSession(navigate?)`   | One boundary for the mounted private application. Render loading/failure/pending/warning/remaining; unmount protected content when paused or without a session. Render AuthEntry or a replacement with authenticated callback while paused. Use refresh/logout/activity and render only the current unrestricted session. Navigation defaults to document navigation; an optional callback integrates a customer router.                                                                                                                                                                                                                                                                                                                             |
+| `useAuthWelcome()`                   | Render loading/refreshing/failed/retry, options and optional session. The controller enforces disabled welcome. Link a restricted session to `/auth/security`, an unrestricted one to `/app`, guests to sign-in and registration only when enabled.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `useApplicationSession(navigate?)`   | One boundary for the mounted private application. Render loading/refreshing/failure/pending/warning/remaining; unmount protected content when paused or without a session. Render AuthEntry or a replacement with authenticated callback while paused. Use refresh/logout/activity and render only the current unrestricted session. Navigation defaults to document navigation; an optional callback integrates a customer router.                                                                                                                                                                                                                                                                                                                  |
 
 The default Preferences presentation uses the same public account replacement seam.
 Use `saveDelivery(choice)` with a cloned per-row draft and explicit Save/Revert;
@@ -253,10 +309,17 @@ welcome is enabled. With welcome disabled (or its policy not yet available), omi
 Home and use /app for the brand link in authenticated and Auth entry layouts.
 useApplicationSession exposes welcomeEnabled from the existing public entry options;
 this optional read never blocks a valid session and is fenced against stale results.
-Custom ApplicationLayout wrappers forward userAvatar, userLoading, homeHref and breadcrumbs; use public Avatar for a
-custom user identity row. The session controller exposes profileLoading for its
-optional presentation read; combine it with initial loading when passing Avatar
-loading. Image readiness is handled by Avatar itself. These presentation fields never establish authorization.
+Custom ApplicationLayout wrappers forward userAvatar, userAvatarImage, userLoading,
+homeHref and breadcrumbs. The controller exposes loading for initial session
+validation and refreshing for background validation. profileLoading describes the
+optional profile read. The supplied shell mounts its layout immediately. Its content/avatar placeholders
+finish together once session/profile/preferences and decoded image or bounded
+fallback are ready; only those placeholders wait, never the layout frame.
+The readiness latch resets per account/session, so background reads retain
+mounted content and the existing decoded avatar. Its avatar owner is shared with the dropdown. These
+presentation fields never establish authorization. For custom shells, compose the
+public [view/image readiness contract](loading.md), include account/session identity,
+use bounded optional fallbacks and retain strict controller request fences.
 
 Keep private forms scoped to the current account and unmount them on pause/switch.
 In a full customer shell, key the private subtree by session.public_id.
@@ -377,3 +440,9 @@ account deletion uses danger outline actions, including confirmation submits.
 Account history provides a replaceable `historyDetail` presentation and typed detail
 controller state; follow the [Auth history contract](../../modules/auth/history.md)
 for props/events, lifecycle fencing, safe output and old-event limitations.
+
+Nested page defaults publish their subview navigation through public `PageNavigation`
+into ApplicationLayout's top bar. Custom App layouts consume `usePageNavigationHost`
+and retain its registered links/current context and guarded navigate event; see
+[page-level composition](page-layouts.md#page-level-navigation-composition).
+Do not recreate account tabs or Admin settings navigation inside page content.

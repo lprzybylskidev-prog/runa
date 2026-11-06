@@ -10,7 +10,7 @@ final class BulkSessionsProxy extends GuardedApi implements AuthBulkSessions
 {
     public function preview(SessionSelection $selection, bool $trust = false): array
     {
-        /** @var array{accounts: list<array{public_id: string, version: int, security_version: int, sessions: list<string>, trusted_devices: list<string>}>, sessions: int, trusted_devices: int, fingerprint: string} $result */
+        /** @var array{accounts: list<array{public_id: string, version: int, security_version: int, sessions: list<string>, trusted_devices: list<string>}>, sessions: int, trusted_devices: int, fingerprint: string, selected_accounts: int, skipped_accounts: int} $result */
         $result = $this->invoke(__FUNCTION__, [$selection, $trust]);
 
         return $result;
@@ -18,7 +18,7 @@ final class BulkSessionsProxy extends GuardedApi implements AuthBulkSessions
 
     public function revoke(SessionSelection $selection, bool $trust, string $fingerprint): array
     {
-        /** @var array{accounts: int, sessions: int, trusted_devices: int} $result */
+        /** @var array{accounts: int, sessions: int, trusted_devices: int, skipped_accounts: int} $result */
         $result = $this->invoke(__FUNCTION__, [$selection, $trust, $fingerprint]);
 
         return $result;

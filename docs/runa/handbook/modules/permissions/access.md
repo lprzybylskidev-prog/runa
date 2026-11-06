@@ -1,8 +1,8 @@
 # Ordinary access management
 
-Permissions 0.2.0 adds guarded `PermissionsAccess` API 1.0.0. Resolve it through
+Permissions supplies guarded `PermissionsAccess` API 2.2.0. Resolve it through
 ModuleApis; never resolve its implementation or write assignment tables directly.
-The existing Auth/Audit dependencies and framework API versions are unchanged.
+The current module requires Auth ^2.0.0 || ^3.0.0 and Audit ^1.0.0; framework API remains 1.0.0.
 The explicit 0.1.0 → 0.2.0 edge validates new storage; the transactional updater
 runs the forward migration for fresh installs and upgrades, without assigning users.
 
@@ -16,7 +16,7 @@ lookup and require `runa.auth.eligibility.read`. These grants never replace curr
 actor eligibility, source/module availability, record policies or session checks.
 
 Every mutation, including deletion and a no-op application, requires a fresh,
-session/action-bound `both` AuthStepUp proof for `runa.permissions.access.manage`.
+session/action-bound password AuthStepUp proof for `runa.permissions.access.manage`.
 It is consumed with `everyAction: true` inside the default PostgreSQL business
 transaction. Confirm through Auth's existing step-up endpoint; credentials and
 codes never enter Permissions APIs, Audit, metadata or presets. A trusted server
@@ -35,7 +35,7 @@ use Runa\Modules\Permissions\Contracts\AssignmentSet;
 use Runa\Modules\Permissions\Contracts\PermissionsAccess;
 use Runa\Support\Modules\Api\ModuleApis;
 
-$access = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '1.0.0');
+$access = app(ModuleApis::class)->resolve('runa.permissions', PermissionsAccess::class, '2.2.0');
 $review = $access->previewAssignments($userPublicId, new AssignmentSet(
     roles: [$rolePublicId], permissions: [$permissionPublicId],
 ));
@@ -77,8 +77,8 @@ consumes its proof but creates no duplicate assignment event or revision.
 
 ## Custom roles and presets
 
-`definitions(kind, after)` lists at most 100 safe dictionary summaries with an
-exclusive UUIDv7 cursor; `definition(kind, publicId)` returns the owned dictionary,
+`definitions(kind, after, filters = [])` lists at most 100 safe dictionary summaries with an
+exclusive UUIDv7 cursor and optional bounded [search/selected-ID filters](README.md#searchable-assignment-catalogue); `definition(kind, publicId)` returns the owned dictionary,
 version and assignments. Read/list kind is `role`, `preset` or `permission`; permissions are read-only
 source dictionaries. Use their safe UUIDv7 summaries to select direct grants.
 Mutation kind is exactly `role` or `preset`.
@@ -98,7 +98,7 @@ $draft = new DefinitionInput('preset', new DictionaryEntry(
     'custom.support', 'Wsparcie', 'Support', 'Dostęp wsparcia.', 'Support access.',
 ), new AssignmentSet(), sourceUser: $sourceUserPublicId);
 $review = $access->previewDefinition($draft);
-// After review and a fresh both-factor proof:
+// After review and a fresh password proof:
 $preset = $access->saveDefinition($review);
 ```
 
@@ -139,14 +139,30 @@ consumers must roll back their root before recording independent refusal history
 through AuditRecords::attempt; never escape an open transaction on another connection.
 
 The existing management provider declares bounded custom-role/preset/assignment
-entities, dictionary/reference fields and revision/preview/both-factor requirements.
+entities, dictionary/reference fields and revision/preview/password requirements.
 Metadata uses its provider-local permission keys and never grants permission or
 executes a write. Unknown management schema versions refuse through the shared
-adapter. No renderer, administration navigation, HTTP CRUD surface or Admin UI is
-introduced. Future adapters must enforce these same public backend contracts.
+adapter. The source-owned [Admin pages](administration.md) consume these same public backend contracts; the metadata itself executes no operation.
 
 Tests prepare real-session/step-up, stale preview and ABA, role/preset independence,
 copy semantics, protected-role exclusion, ordinary grants beyond the actor's own,
 reference deletion refusal and aggregate-Audit/proof rollback. Broad integration,
 concurrency, source/runtime/version and final security checks run in the roadmap's
 final verification point.
+
+Administrative profile/assignment standalone writes now use the framework's
+[native phased transaction protocol](../../architecture/module-transactions.md).
+Call AuthProfiles 2.1.0 / PermissionsAccess 2.2.0 without an ambient transaction;
+aggregate callers use source-owned participants. This intentionally replaces
+nested whole-write composition, preserving current grants, reviewed differences,
+stronger action proof and atomic owning Audit. Source/global settings and external
+operations retain their separate owning workflows.
+
+## Admin native assignment composition
+
+The private source-declared AssignmentContribution/AssignmentEditor joins the
+Auth profile record with ordinary reviewed roles/permissions replacement and
+bounded guarded field lookups. Native password proof, monotonic revisions,
+protected-role exclusion and same-transaction Audit remain authoritative.
+See [Admin composition](../admin/composition.md) for supported inputs, exact review
+and the root protocol. Protected authority and bulk workflows stay independent.

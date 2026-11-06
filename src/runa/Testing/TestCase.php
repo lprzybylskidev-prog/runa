@@ -71,10 +71,19 @@ abstract class TestCase extends FrameworkTestCase
             config()->set('queue.default', 'sync');
             config()->set('mail.default', 'array');
         });
-        $app->make(Kernel::class)->bootstrap();
-        if (! isset(self::$migrated[$name])) {
-            $this->migrateTestDatabase($name, $storage);
-            self::$migrated[$name] = true;
+        try {
+            $app->make(Kernel::class)->bootstrap();
+            if (! isset(self::$migrated[$name])) {
+                $this->migrateTestDatabase($name, $storage);
+                self::$migrated[$name] = true;
+            }
+        } catch (\Throwable $error) {
+            // A failed bootstrap/preparation is not assigned to the framework test instance,
+            // so its normal teardown cannot release captured connection services.
+            foreach ($app->make(DatabaseManager::class)->getConnections() as $connection) {
+                $connection->disconnect();
+            }
+            throw $error;
         }
 
         return $app;

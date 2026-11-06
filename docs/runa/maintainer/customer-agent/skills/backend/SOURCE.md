@@ -43,3 +43,8 @@ no upstream refresh, dependency addition or new runtime authority was involved.
 Source-placement and audience routing was reconciled on 2026-10-28 for local
 RM-2026-012 point 19. The delivered public boundary/projection guides own the
 procedures; no upstream refresh, dependency or protected-edit authority was added.
+
+Read-path performance routing was added from local RM-2026-016 measurements on
+2026-10-31. The delivered application architecture guide owns the procedure;
+customer repairs retain application scope. No upstream refresh, dependency,
+protected-edit authority or changed quality gate is involved.

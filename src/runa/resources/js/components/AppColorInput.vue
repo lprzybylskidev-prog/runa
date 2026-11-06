@@ -27,8 +27,15 @@ const props = withDefaults(
     required: false,
     pickLabel: '',
     locale: 'pl',
-    invalidMessage: 'Enter a color in #RRGGBB format.',
+    invalidMessage: '',
   },
+);
+const invalidMessage = computed(
+  () =>
+    props.invalidMessage ||
+    (props.locale === 'pl'
+      ? 'Podaj kolor w formacie #RRGGBB.'
+      : 'Enter a color in #RRGGBB format.'),
 );
 const emit = defineEmits<{
   'update:modelValue': [value: string | null];
@@ -116,7 +123,7 @@ const messages = computed(() => [
       ? [props.error]
       : []
     : props.error),
-  ...(!valid.value ? [props.invalidMessage] : []),
+  ...(!valid.value ? [invalidMessage.value] : []),
 ]);
 function update(value: string | null) {
   if (props.disabled || props.readonly) return;
@@ -147,6 +154,7 @@ function update(value: string | null) {
       >
         <template #trigger="{ toggle, panelId }"
           ><AppButton
+            intent="neutral"
             :disabled="disabled || readonly"
             :aria-label="pickerLabel"
             aria-haspopup="dialog"
@@ -213,6 +221,7 @@ function update(value: string | null) {
             <AppButton
               v-for="color in palette"
               :key="color"
+              intent="neutral"
               size="sm"
               :aria-label="color"
               :aria-pressed="draft?.toLowerCase() === color"
@@ -228,6 +237,7 @@ function update(value: string | null) {
             class="mt-3 flex justify-between gap-2 border-t border-line pt-3"
           >
             <AppButton
+              intent="neutral"
               size="sm"
               variant="ghost"
               @click="
@@ -235,9 +245,13 @@ function update(value: string | null) {
                 close();
               "
               >{{ text('Wyczyść', 'Clear') }}</AppButton
-            ><AppButton size="sm" variant="soft" @click="close()">{{
-              text('Gotowe', 'Done')
-            }}</AppButton>
+            ><AppButton
+              intent="neutral"
+              size="sm"
+              variant="soft"
+              @click="close()"
+              >{{ text('Gotowe', 'Done') }}</AppButton
+            >
           </div>
         </template>
       </AppPopover></template

@@ -10,6 +10,9 @@ Both themes share orchid/lavender, cyan and indigo identity. Light surfaces are 
 
 ![Dark and light palettes with HEX values, gradients and interaction states](color-palette-preview.svg)
 
+Application actions follow the [shared button semantics](../development/frontend/components.md#action-button-semantics).
+Action meaning selects existing tokens; this policy does not add another palette.
+
 ## Semantic roles
 
 Bootstrap-like role names do not introduce Bootstrap. Solid/hover pair with foreground; subtle pairs with text. Dark pastel solids use dark foregrounds. The same foreground applies to solid and hover.

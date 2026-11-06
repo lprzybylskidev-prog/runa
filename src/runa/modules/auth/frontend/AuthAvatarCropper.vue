@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onScopeDispose, ref, shallowRef, watch } from 'vue';
-import { FormNotifications, Spinner } from '@/runa/ui';
+import { FormNotifications, ContentLoading } from '@/runa/ui';
 import type {
   AuthAvatarCropperProps,
   AuthAvatarCropperEmits,
@@ -309,8 +309,9 @@ onScopeDispose(() => {
 </script>
 <template>
   <div class="space-y-4">
-    <Spinner
+    <ContentLoading
       v-if="loading"
+      shape="image"
       :label="text('Wczytywanie zdjęcia', 'Loading image')"
     />
     <FormNotifications

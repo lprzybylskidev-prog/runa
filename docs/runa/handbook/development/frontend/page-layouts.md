@@ -34,13 +34,24 @@ The layout owns locale/theme composables once. Consumers use scoped `t`, preserv
 
 ## Preserved root welcome view
 
+The source-owned welcome catalogue uses localized module manifests, including
+Admin 0.1.0 with the existing adjustments icon. Catalogue visibility does not
+indicate installation, access grants or rendered Admin availability; see
+[Admin delivery status](../../modules/admin/README.md#delivery-status-and-acceptance-ownership).
+
 `src/app/resources/js/App.vue` delegates to public DefaultApplication; its platform-owned AuthWelcome composes MinimalLayout with the existing heading/description and session-aware entry links. The layout itself supplies `AppBrandIllustration.vue` by default. Illustration, geometry, backdrop and preference interactions are preserved. The footer now includes independent application/platform versions. Exact `/auth/...` paths now render the lazy AuthEntry component using this same layout; see the [Auth entry contract](../../modules/auth/entry-ui.md). The original root was accepted on 2026-10-18; the point-2 layout/footer and subsequent mobile corrections were accepted on 2026-10-18.
 
 ## Application layout
 
-Canonical source: `src/runa/resources/js/layouts/ApplicationLayout.vue`, public `ApplicationLayout` from `@/runa/ui`. Point 3 was visually accepted by the owner on 2026-10-18. Account-dropdown/self-service integration and Admin UI remain separate; Auth entry/restricted views use MinimalLayout.
+Optional ApplicationLayoutProps accept explicit `undefined` as well as omission;
+Vue wrappers may forward it and the existing component defaults still apply.
+AdminLayout forwards the typed public slots, including the sidebar-bottom
+`collapsed` value, without widening their props to a string-indexed map.
 
-Supply optional userAvatar with userName/userInitials for the profile disclosure; custom wrappers forward these props. Supply typed navigation/topNavigation descriptors, URL-derived current context, title/description, independent sidebar/topbar visibility and contained/fluid width. The sidebar stays fixed at desktop widths, scrolls independently and persists collapse/groups by application identity. Below 64rem it becomes a focus-trapped, Escape/backdrop-dismissable drawer with focus return; it never relocates to another side. The top header stays visible with sticky positioning; toolbar scrolls with the page. The brand row and header are both 64px high, the Runa mark sits in the same 42px square as MinimalLayout, and sidebar collapse/expand is a 36px sm control before top navigation, inset 24px from the header left edge. Sidebar groups are full-width disclosure buttons with a centered chevron inside; their parent label does not navigate. Hidden sidebar headings, labels, nested subtrees and supplementary sections reserve no space; the collapsed icon list starts 8px below the brand row. Collapsed enabled/disabled icons share exact centering; the sidebar footer retains just the platform version. Dotted left/right edge indicators fade in when more top-navigation content is available in that direction and disappear at its ends or when it fits. The header is 64px high; its horizontal navigation scrollbar sits at the bottom edge. Wheel input over overflowing top navigation is consumed for horizontal movement (also at the ends), leaving Ctrl+wheel zoom native. Top-navigation dropdowns are floating cards teleported outside the nav scroller; they overlay content without stretching the 64px header. Sidebar groups expand inline. Escape/outside click/document scroll/resize dismiss cards; nav scrolling repositions the open card, and Tab boundaries preserve navigation focus order. The circular initials disclosure remains a reusable slot seam; AuthApplication supplies the actual profile link and sign-out action together through that seam.
+Canonical source: `src/runa/resources/js/layouts/ApplicationLayout.vue`, public `ApplicationLayout` from `@/runa/ui`. Point 3 was visually accepted by the owner on 2026-10-18. Account-dropdown/self-service use the shared ApplicationSessionShell; Admin shell
+delivery and acceptance follow the [Admin frontend guide](../../modules/admin/frontend.md); Auth entry/restricted views use MinimalLayout.
+
+Supply optional userAvatar with userName/userInitials for the profile disclosure; custom wrappers forward these props. Supply typed navigation/topNavigation descriptors, URL-derived current context, title/description, independent sidebar/topbar visibility and contained/fluid width. The sidebar stays fixed at desktop widths, scrolls independently and persists collapse/groups by application identity. Below 64rem it becomes a focus-trapped, Escape/backdrop-dismissable drawer with focus return; it never relocates to another side. The top header stays visible with sticky positioning; toolbar scrolls with the page. The brand row and header are both 64px high, the Runa mark sits in the same 42px square as MinimalLayout, and sidebar collapse/expand is a 36px sm control before top navigation, inset 24px from the header left edge. Sidebar groups are full-width disclosure buttons with a centered chevron inside; their parent label does not navigate. Hidden sidebar headings, labels, nested subtrees and supplementary sections reserve no space; the collapsed icon list starts 8px below the brand row. Collapsed enabled/disabled icons share exact centering; the sidebar footer retains just the platform version. The shared [horizontal scrolling contract](components.md#horizontal-scrolling) applies to top navigation, modal/content tabs and tables. Dotted left/right edge indicators fade in when more top-navigation content is available in that direction and disappear at its ends or when it fits. The header is 64px high; its horizontal navigation scrollbar sits at the bottom edge. Wheel input over overflowing top navigation is consumed for horizontal movement (also at the ends), leaving Ctrl+wheel zoom native. Top-navigation dropdowns are floating cards teleported outside the nav scroller; they overlay content without stretching the 64px header. Sidebar groups expand inline. Escape/outside click/document scroll/resize dismiss cards; nav scrolling repositions the open card, and Tab boundaries preserve navigation focus order. The circular initials disclosure remains a reusable slot seam; AuthApplication supplies the actual profile link and sign-out action together through that seam.
 
 Workspace slots follow heading/actions → breadcrumbs → statistics → toolbar → content/default + optional supplementary region. Other slots: sidebar-bottom, user-menu and footer. All expose t; sidebar-bottom exposes collapsed. Footer/identity and extracted preference controls are shared with MinimalLayout. Both layouts use the finalized Tooltip via AppPreferenceControls; ApplicationLayout uses sm language/theme controls and retains its unique circular initials trigger and delegates its existing user-menu content to Popover. `topbar: false` hides the area navigation/avatar while retaining utility controls and access to a visible sidebar. Print hides navigation/footer/unnecessary controls by default and may be explicitly overridden.
 
@@ -102,3 +113,105 @@ screens. Replacing the whole header replaces this default group as well.
 Welcome header authentication/application entry uses quiet text links beside
 preferences, without button surfaces/borders. Preserve muted default text,
 underline/color on hover, visible keyboard focus and 44px touch targets.
+
+## Shared authenticated shell
+
+`ApplicationSessionShell` from `@/runa/auth` composes the supplied layout with one
+caller-owned ApplicationSessionController, profile/account menu, expiry warning,
+reauthentication and safe content admission. AuthApplication creates a controller
+only when none is supplied; AdminApplication uses that same public shell directly.
+Extra source-owned links occupy the account-menu seam; User panel and sign-out
+remain supplied. Admin entry is advertised only there. See the complete
+[composition and props](../../modules/admin/frontend.md#shared-session-shell-and-account-menu-seam).
+
+ApplicationLayout accepts optional `locale` for a fixed presentation scope. Its
+shared controls inherit that locale without persisting an account-language change;
+the language cycle is hidden while the theme control remains usable. Standalone
+layouts bootstrap account preferences; inside the session shell they reuse its
+session admission rather than issuing another session read.
+
+For action proof before application admission, ApplicationSessionShell and
+AuthApplication expose an optional admission slot outside ApplicationLayout;
+native paused-session reauthentication retains priority. Admin uses this slot for
+AuthOperationProofPage (MinimalLayout), loading and refusals. The slot is a
+presentation boundary, not authorization. Keep one shared session controller and
+an identity-bound Auth proof controller; see the [Auth proof contract](../../modules/auth/entry-ui.md#operation-proof-composition).
+
+## Initial presentation readiness
+
+Both layouts always render their frame immediately. Optional readiness: ViewReadiness
+controls the content/default region only (including MinimalLayout actions); ApplicationLayout also
+accepts userAvatarImage: ImageReadiness for a prepared shared avatar. Defaults
+remain immediately usable for independent/static composition. Supplied Auth
+screens and the shared session shell declare initial dependencies and preserve
+mounted content during refresh. Follow [view readiness](loading.md) for exact
+public signatures, optional fallbacks and presentation replacement requirements.
+
+## Page-level navigation composition
+
+The sidebar selects an application area/module. Subviews within the selected area
+use the shared horizontal top bar, including account tabs and Admin application
+settings; do not duplicate them as navigation buttons inside content. Record
+selection, save/retry/review and other use-case actions remain content controls.
+
+UI owns public `PageNavigation` and `usePageNavigationHost` consumption/composition
+from `@/runa/ui`, implemented in shared components/composables, delivered in the
+frontend runtime. PageNavigation accepts `entries: readonly NavigationEntry[]`,
+`current?: RouteContext`, `label?: string`, `disabled?: boolean`,
+`loading?: boolean`; it emits
+`navigate(href: string, event: MouseEvent)`. In an ApplicationLayout subtree it
+registers with that layout's host and renders no duplicate content menu. Without
+a host, it supplies a labeled standalone navigation fallback with controlled
+buttons, keeping independent presentation usable. Latest mounted publisher owns
+the page context; disposal removes its registration without clearing a newer one.
+
+Publish PageNavigation before dependent content is ready and set loading while its
+initial data settles. Loading renders an animated skeleton in the actual header
+(or standalone fallback), withholding actionable links without a duplicate content
+placeholder.
+
+`usePageNavigationHost()` returns readonly computed `entries`, `current`, `loading`,
+and `navigate(href,event): boolean` for a custom App layout to compose the existing
+top navigation. Call once in layout setup; retain the same mounted layout instance
+when page entries change. It handles only available registered links and delegates
+selection/guards to the publishing controller. Explicit layout topNavigation
+entries remain supported; page entries join that top bar without replacing sidebar
+context. Custom layouts render a local skeleton while host loading is true.
+`ApplicationLayout.navigationLoading?: boolean` supplies the same placeholder for
+initial sidebar/top navigation discovery before a page publisher mounts. Neither
+helper starts sessions, authorizes access or performs writes.
+
+`usePageResolver` also returns readonly current `href: ComputedRef<string>` alongside its
+existing methods/current descriptor so query-driven subviews react to deliberate
+navigation and browser history. Account uses `?tab=...` (default details); Admin
+dashboard uses `?section=application` (default Modules); selected modules
+use `?module=...` and one content view without a local tab bar. Named server entry paths
+remain unchanged. Native modified clicks retain their link behavior; guarded
+navigation preserves the existing dirty/write protections and never replays writes.
+
+### Breadcrumb hierarchy
+
+UI owns public ApplicationBreadcrumbSlotContext from @/runa/ui, implemented in
+src/runa/resources/js/runa/ui/layouts.ts and delivered in the frontend runtime.
+ApplicationLayout's breadcrumbs slot receives t plus optional navigation,
+topNavigation, current and navigate(href: string, event: MouseEvent): void.
+The default layout supplies its current sidebar entries, merged page/top entries,
+page-published RouteContext (falling back to its own current) and existing navigation
+handler. Custom layouts can supply the same scope without another router/session.
+
+The shared session shell derives breadcrumb labels from that same presentation
+context. Render enabled Home, the area, owning module where applicable, then the
+current page/subview. Prior levels are safe links; only the leaf has aria-current.
+Admin dashboard defaults to Home / Administrator panel / Modules; application
+settings uses that page's label. Owner pages use Home / Administrator panel /
+owner / page; account uses Home / Application / User panel / subview. Query-driven
+page navigation updates the leaf together with the top bar, including browser
+history. Dialog-local module tabs are not additional page breadcrumb levels.
+Breadcrumb navigate events reuse the layout's existing navigation handler and
+page dirty guards; modified clicks retain native link behavior.
+
+The default layout covers the breadcrumb slot with an animated Skeleton while
+its shell/page navigation is loading, matching the top-bar readiness. Its region
+retains aria-busy and a bounded responsive placeholder; incomplete links are not
+mounted. Custom layouts follow the same existing navigationLoading/host loading
+signals. Standalone ready/static breadcrumb slots render immediately.

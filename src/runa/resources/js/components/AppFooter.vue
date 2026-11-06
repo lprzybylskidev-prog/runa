@@ -1,14 +1,27 @@
 <script setup lang="ts">
+import { useLocale } from '../composables/useLocale';
 import { safeBrandUrl, useIdentity } from '../runa/ui/identity';
 import type { FooterOptions } from '../runa/ui/identity';
-withDefaults(
+import { computed } from 'vue';
+import { useApplicationDisplayDefaults } from '../runa/ui/displayDefaults';
+import { toLocalDateTime } from '../lib/temporal';
+const props = withDefaults(
   defineProps<{
     options?: FooterOptions | undefined;
     poweredByLabel?: string;
   }>(),
-  { options: undefined, poweredByLabel: 'Powered by' },
+  { options: undefined, poweredByLabel: '' },
 );
 const identity = useIdentity();
+const defaults = useApplicationDisplayDefaults();
+const year = computed(() =>
+  toLocalDateTime(new Date().toISOString(), defaults.value.timezone).slice(
+    0,
+    4,
+  ),
+);
+const { t } = useLocale();
+const poweredByLabel = computed(() => props.poweredByLabel || t('poweredBy'));
 </script>
 
 <template>
@@ -17,8 +30,7 @@ const identity = useIdentity();
     class="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-6 text-xs text-muted sm:px-10"
   >
     <span v-if="options?.copyright !== false">{{
-      options?.copyrightText ??
-      `© ${new Date().getFullYear()} Łukasz Przybylski`
+      options?.copyrightText ?? `© ${year} Łukasz Przybylski`
     }}</span>
     <div class="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-2">
       <a

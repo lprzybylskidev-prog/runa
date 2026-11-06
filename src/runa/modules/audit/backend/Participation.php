@@ -3,6 +3,7 @@
 namespace Runa\Modules\Audit;
 
 use Illuminate\Database\Connection;
+use Runa\Contracts\Modules\OperationalParticipant;
 use Runa\Contracts\Modules\PreparationContext;
 use Runa\Contracts\Modules\PreparationParticipant;
 use Runa\Contracts\Modules\SettingsParticipant;
@@ -12,9 +13,19 @@ use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Storage\AppendEvents;
 
 /** Only the trusted framework adapter uses this class, never customer business code. */
-final readonly class Participation implements PreparationParticipant, SettingsParticipant
+final readonly class Participation implements OperationalParticipant, PreparationParticipant, SettingsParticipant
 {
     public function __construct(private AppendEvents $writer, private ModuleRegistry $registry) {}
+
+    public function recording(Connection $connection, string $module, string $operation, array $context): void
+    {
+        $outcome = match ($operation) {
+            'module.transition.failed', 'module.transition.recovery_required' => 'failure',
+            'module.transition.refused' => 'refused',
+            default => 'success',
+        };
+        $this->writer->record($connection, new AuditEvent($module, $operation, outcome: $outcome, context: $context));
+    }
 
     public function publishing(Connection $connection, SettingsPublication $publication): void
     {

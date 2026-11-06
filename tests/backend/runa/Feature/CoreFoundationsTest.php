@@ -47,7 +47,7 @@ it('bounds entity metadata and projects database dictionary columns without exec
     $dictionary = DictionaryEntry::fromLocalized('account.active', $names, $descriptions);
     expect(array_keys($dictionary->toRow()))->toBe(['code', 'name_pl', 'name_en', 'description_pl', 'description_en']);
     $field = new ManagementField('name', 'text', $names, $descriptions, writable: true);
-    $operation = new ManagementOperation(new ApiOperation('update', 'account.update'), ['name'], 'both');
+    $operation = new ManagementOperation(new ApiOperation('update', 'account.update'), ['name'], 'password');
     $entity = new ManagementEntity('account', 'account.read', $names, $descriptions, [$field], [$operation]);
     expect($entity->schemaVersion)->toBe(1)->and($entity->operations[0]->revisionRequired)->toBeTrue();
     expect(fn () => new ManagementEntity('account', 'account.read', $names, $descriptions, [], [$operation]))->toThrow(InvalidArgumentException::class);

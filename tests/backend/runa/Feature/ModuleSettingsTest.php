@@ -54,6 +54,46 @@ afterEach(function (): void {
     SettingsCalls::reset();
 });
 
+it('bounds repeated runtime setting reads and invalidates writes rollback reused roots and changed source', function (): void {
+    $db = DB::connection();
+    $db->beginTransaction();
+    try {
+        $db->flushQueryLog();
+        $db->enableQueryLog();
+        expect($this->settings->integer($this->module, 'attempts'))->toBe(3);
+        for ($i = 0; $i < 25; $i++) {
+            expect($this->settings->integer($this->module, 'attempts'))->toBe(3);
+            expect($this->settings->read($this->module)['settings']['token'])->not->toHaveKey('value');
+        }
+        $queries = $db->getQueryLog();
+        $db->disableQueryLog();
+        // One cold registry inventory plus one settings row, regardless of keys
+        // or nested read savepoints; no caller prewarming is required.
+        expect(count(array_filter($queries, static fn (array $query): bool => str_contains($query['query'], '"shared"."modules"'))))->toBe(2);
+        $values = array_map(static fn (array $entry): mixed => $entry['value'] ?? null, $this->settings->read($this->module)['settings']);
+        $db->beginTransaction();
+        $values['attempts'] = 4;
+        $db->table('shared.modules')->where('module_id', $this->module)->update(['settings_values' => app(Encrypter::class)->encrypt(json_encode($values, JSON_THROW_ON_ERROR), false)]);
+        expect($this->settings->integer($this->module, 'attempts'))->toBe(4);
+        $db->rollBack();
+        expect($this->settings->integer($this->module, 'attempts'))->toBe(3);
+        $db->rollBack();
+        $db->beginTransaction();
+        expect($this->settings->integer($this->module, 'attempts'))->toBe(3);
+        $path = $this->sources->root.'/'.$this->registry->snapshot()->modules[$this->module]->sourcePath.'/module.json';
+        $original = file_get_contents($path);
+        try {
+            file_put_contents($path, $original."\n");
+            expect(fn () => $this->settings->integer($this->module, 'attempts'))->toThrow(RuntimeException::class, 'Invalid settings declaration or defaults.');
+        } finally {
+            file_put_contents($path, $original);
+        }
+    } finally {
+        $db->disableQueryLog();
+        $db->rollBack(0);
+    }
+});
+
 it('validates defaults and exact built in types without coercion and supports registered types', function (): void {
     expect($this->settings->read($this->module)['settings']['attempts']['value'])->toBe(3);
     foreach ([['attempts' => '3'], ['attempts' => 0], ['rate' => 0.1], ['active' => 1], ['mode' => 'missing'], ['tags' => 'x'], ['label' => 'invalid'], ['unknown' => true], ['token' => str_repeat('s', 40000)]] as $patch) {

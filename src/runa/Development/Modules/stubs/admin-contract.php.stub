@@ -1,0 +1,9 @@
+<?php
+
+namespace {{namespace}}\Contracts;
+
+/** Stateless text calculation; no persisted record or implicit CRUD. */
+interface {{name}}Tools
+{
+    public function normalize(string $text): string;
+}

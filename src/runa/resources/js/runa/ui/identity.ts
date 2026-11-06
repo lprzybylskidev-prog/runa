@@ -1,11 +1,26 @@
 import { computed, inject } from 'vue';
 import type { ComputedRef, InjectionKey } from 'vue';
 import { version } from '../../../../platform.json';
-import {
-  id,
-  name,
-  version as applicationVersion,
-} from '../../../../../app/application.json';
+import applicationManifest from '../../../../../app/application.json';
+const { id, name, version: applicationVersion } = applicationManifest;
+const sourceBranding: unknown =
+  'branding' in applicationManifest ? applicationManifest.branding : undefined;
+const sourceLogo: unknown =
+  sourceBranding &&
+  typeof sourceBranding === 'object' &&
+  'logo' in sourceBranding
+    ? sourceBranding.logo
+    : undefined;
+const builtLogo =
+  sourceLogo &&
+  typeof sourceLogo === 'object' &&
+  'src' in sourceLogo &&
+  typeof sourceLogo.src === 'string' &&
+  safeBrandUrl(sourceLogo.src) &&
+  'accessibleName' in sourceLogo &&
+  typeof sourceLogo.accessibleName === 'string'
+    ? { src: sourceLogo.src, accessibleName: sourceLogo.accessibleName }
+    : undefined;
 
 export interface ApplicationIdentity {
   readonly applicationId: string;
@@ -32,6 +47,7 @@ export const defaultIdentity: Readonly<ApplicationIdentity> =
     applicationName: name,
     applicationVersion: applicationVersion,
     platformVersion: version.trim(),
+    ...(builtLogo ? { logo: builtLogo } : {}),
   });
 
 /** Only same-origin absolute asset paths and public HTTPS URLs are supported. */

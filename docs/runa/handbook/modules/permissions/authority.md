@@ -1,11 +1,17 @@
 # Protected authority and role deletion
 
-Permissions 0.3.0 adds guarded `PermissionsAuthority` API 1.0.0 and the trusted
+The historical Permissions 0.3.0 introduced guarded `PermissionsAuthority` API 1.0.0 and the trusted
 Auth lifecycle participant. It requires Auth ^0.10.1 and Audit ^0.4.0. The explicit
 0.2.0 → 0.3.0 source upgrade validates the protected role and synchronizes new
 declarations during reserved preparation. It grants no user access automatically.
 
 ## Dedicated authority operations
+
+Role-deletion previews batch recipient roles, direct assignments and revisions
+with the existing per-recipient limits. Identical source-reference sets can be
+reused within that locked preview; guarded identity eligibility and effective
+permission comparisons remain current for each recipient. This is collection
+loading, never a retained grant decision or authority bypass.
 
 Resolve `PermissionsAuthority` through ModuleApis, using `runa.permissions` and
 API version `1.0.0`. `runa.permissions.authority.manage` protects both
@@ -22,7 +28,7 @@ preview and rejects stale state with `access_preview_stale` (409). Caller-provid
 projection fields are never execution authority. Newly reviewed no-ops emit no
 duplicate membership history or revision.
 
-Each mutation consumes a fresh session/action-bound `both` AuthStepUp proof for
+Each mutation consumes a fresh session/action-bound password AuthStepUp proof for
 `runa.permissions.authority.manage` with `everyAction: true`. Password/OTP inputs
 stay in Auth. A superadministrator still passes account/session eligibility,
 required factors, step-up, record/domain policies and module availability. The
@@ -80,7 +86,7 @@ for lockout and the delivered trusted OperatorAuthority bootstrap integration. N
 Ordinary `PermissionsAccess::deleteDefinition` still refuses user/preset references.
 `runa.permissions.roles.force_delete` separately authorizes
 `previewRoleDeletion(publicId, version)` and `forceDeleteRole(reviewed, confirmed)`.
-Every execution requires explicit `confirmed: true` plus a fresh `both` proof for
+Every execution requires explicit `confirmed: true` plus a fresh password proof for
 that exact capability. Module-owned, predefined and system roles always refuse.
 
 The bounded preview returns all impacted user UUIDv7s, assigned before/after sets,
@@ -103,4 +109,52 @@ Required aggregate `assignments.changed`, `preset.saved` and `role.force_deleted
 events include old/new sets and provenance. Proofs, all histories, revisions and
 unlinking roll back together. No automatic per-pivot events are invented. Existing
 metadata declares these separate capabilities, preview/proof/revision requirements
-and explicit confirmation without introducing an Admin renderer or UI.
+and explicit confirmation and is consumed by the [Admin authority and force-deletion sections](administration.md).
+
+Auth bulk operations exclude every protected superadministrator account before
+mutation, regardless of activity or locks, through the trusted batch membership
+contract. Their preview warns about omitted targets and fingerprints current
+membership. Individual native operations continue to enforce the last eligible
+administrator invariant above. See [Auth bulk contracts](../auth/administration.md#native-bulk-user-operations).
+
+## Explicit selected-account authority changes
+
+Permissions owns guarded runtime server consumption API `PermissionsAuthorityBatch`
+1.0.0, resolved through `ModuleApis` for `runa.permissions`. Its complete methods are
+`previewBatch(UserSelection $selection, bool $grant): AuthorityBatchPreview` and
+`applyBatch(AuthorityBatchPreview $reviewed): array`, returning a list of
+`{user_public_id: string, super_admin: bool, revision: int}`. Source homes are
+`backend/Contracts/PermissionsAuthorityBatch.php`, `AuthorityBatchPreview.php`,
+`backend/Actions/ManageAuthority.php` and the guarded batch proxy/declaration.
+`AuthorityBatchPreview` has public readonly `publicIds: list<string>`, `grant: bool`,
+`fingerprint: string`, `targets: list<AuthorityPreview>`,
+`skippedPublicIds: list<string>` with those constructor arguments in that order.
+The skipped list is unique, belongs to the selected current members and is empty
+for grants; it identifies protected members retained during removal. The selected
+IDs and target snapshots are complete,
+unique, ordered and bounded to 100. All-selection intent is refused.
+
+Both methods require `runa.permissions.authority.manage` and the guarded
+PermissionsSelections explicit selection capability (`runa.permissions.users.select`).
+The preview and execution use one registry/authority lock and all target snapshots.
+Missing/deleted subjects and self-escalation refuse the entire batch. Removal checks
+the complete removal set against the existing last-eligible-administrator guard.
+When no eligible administrator remains outside the selection, bulk removal retains
+the eligible selected member with the lowest UUIDv7 and excludes it from writes.
+If none is eligible already, all selected protected members are retained. The
+complete effective removal set still passes the invariant guard. Individual native
+authority writes continue to refuse last-administrator removal. The retention plan
+is included in the fingerprint and recomputed under lock before execution; changes
+to that plan invalidate the review. Admin reports retained members through the
+existing protected-account warning and skipped count rather than refusing the batch.
+Execution revalidates every target before any membership write, consumes one fresh
+password proof for the batch and commits all memberships/revisions/per-target Audit
+records together. Retained and unchanged targets keep their membership/revision
+and emit no mutation history. A stale preview or Audit failure rolls back every
+target and proof.
+This dedicated Permissions capability includes protected members by design; ordinary
+Auth bulk operations continue to exclude them.
+
+The Admin contribution lives in Permissions and supplies grant/revoke commands to
+Auth's user-details action toolbar and explicit directory selection. Permissions
+supplies no ordinary-access or superadministrator checkbox editor for this action.

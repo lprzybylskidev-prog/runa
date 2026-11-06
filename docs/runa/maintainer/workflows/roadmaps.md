@@ -98,6 +98,7 @@ Every roadmap contains:
    - a `Decisions` subsection for significant dated decisions.
 3. Implementation plan
    - ordered checklist,
+   - frontend additions/changes require owner manual acceptance as the penultimate point,
    - final checklist item is always full verification/release/merge/report.
 
 ## Discussion and activation
@@ -149,7 +150,7 @@ Before finalizing the roadmap, sanity-check point dependencies and order.
 
 Implementation points deliver code, test code and synchronized documentation. Do not schedule routine test runs or verification after every point. Only a small, fast, focused check needed to answer a concrete implementation question belongs there; no check is needed merely because a point ends. Mandatory commit hooks remain in force.
 
-Schedule full test suites, broad integration/concurrency/installation acceptance, static analysis, image builds/scanner pipelines and full quality/security/AI gates in the final verification point, after all implementation work. Implement their test harnesses and scenarios earlier without running the broad acceptance. Then perform full verification, insert fixes if needed and repeat final verification under the existing failure procedure. Do not create an earlier acceptance point that duplicates the final gate or makes later implementation depend on its PASS.
+Schedule full test suites, broad integration/concurrency/installation acceptance, static analysis, image builds/scanner pipelines and full quality/security/AI gates in the final verification point, after all implementation work. Implement their test harnesses and scenarios earlier without running the broad acceptance. Then perform full verification, insert fixes if needed and repeat final verification under the existing failure procedure. Owner manual frontend acceptance below is a distinct required point; it does not duplicate the automated final gate.
 
 Apply this check when creating, importing, reviewing, activating and executing roadmaps, regardless of whether the author is the user, ChatGPT, another agent or an external tool. If a supplied or existing roadmap requires broad verification earlier, stop and identify the conflicting point and this rule to the user before activation or further execution. Wait for the user to resolve the plan; do not silently run the checks, relabel them as lightweight, rearrange an agreed plan or treat normal roadmap precedence as approval of an exception.
 
@@ -229,6 +230,38 @@ Do not blindly rebase.
 
 Move `paused/` -> `active/` and continue.
 
+## Manual frontend acceptance
+
+Owner decision, 2026-10-31: every roadmap that adds or changes frontend behavior or
+presentation has an explicit penultimate point for the owner's manual tests. Apply
+this during planning/review and to an active roadmap when frontend scope appears.
+Roadmaps without frontend changes do not need this point. The agent must not mark
+it complete based on its own browser checks, an automated PASS or silence; record
+the owner's explicit result and the tested source/environment.
+
+Before handing over, complete and commit implementation and prepare an actually
+working application at the agreed local URL: aligned runtime/source versions,
+explicit nondestructive migrations/module upgrades, current built assets or working
+HMR, available required services/Core, and usable authorized test access. Confirm
+the real page and relevant API responses rather than liveness alone. Preserve
+data/credentials and security/maintenance guards; do not clear a blocker by bypassing
+it. Build the assets needed for this manual runtime here, including the supported
+build command's prerequisites. This is authorized operational preparation, not a
+full quality/build/image acceptance claim; broad automated verification stays last.
+
+If version compatibility requires advancing candidate metadata before the gate,
+follow the release workflow's documented owner-authorized preparation; never fake
+the runtime version or weaken constraints. Record why, what was prepared, safe
+access instructions and any remaining blocker in the roadmap. Do not claim ready
+while the owner still sees stale assets, 503, missing data or unusable access.
+
+Insert readiness and UI repair points before manual acceptance so it remains the
+penultimate checklist point. Process reported defects there; reopen/repeat affected
+manual acceptance after changes to the accepted frontend. Final verification and
+release/merge remain last and require completed owner acceptance. Repairs found by
+the final gate retain its complete affected-area repair loop; insert them before
+the manual point when present, otherwise immediately before final verification.
+
 ## Final verification point
 
 The final point runs complete checks for changed behavior/contracts, their real prerequisites and the mandatory baseline, then performs release finalization. Full verification means completing that agreed scope; it does not mean all groups at every closure. Record `quality_groups` (comma-separated names or `all`) and `quality_rationale` in frontmatter before execution. The agent chooses scope proportionately; owner steering overrides it. Excluded groups are not PASS. Flag-free workflows retain legacy behavior for compatibility. See the quality guide for group availability and closure evidence.
@@ -246,7 +279,7 @@ Record the reviewed sources, findings and disposition in the active roadmap. A d
 If a failure requires code/config/docs work:
 
 1. leave the roadmap active,
-2. add a new fix point immediately before the final verification point,
+2. add a new fix point before manual acceptance when present, otherwise immediately before final verification,
 3. implement and complete the fix point,
 4. rerun final verification from the beginning.
 

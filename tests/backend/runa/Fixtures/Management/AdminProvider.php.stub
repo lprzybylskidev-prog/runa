@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Management\FIXTURE_NAMESPACE;
+
+use Runa\Contracts\Modules\ApiOperation;
+use Runa\Contracts\Modules\ManagementApiTarget;
+use Runa\Contracts\Modules\ManagementBinding;
+use Runa\Contracts\Modules\ManagementCommandDefinition;
+use Runa\Contracts\Modules\ManagementContribution;
+use Runa\Contracts\Modules\ManagementField;
+use Runa\Contracts\Modules\ManagementFieldAccess;
+use Runa\Contracts\Modules\ManagementOperation;
+use Runa\Contracts\Modules\ManagementPage;
+use Runa\Contracts\Modules\ManagementPageProvider;
+use Runa\Contracts\Modules\ManagementSection;
+use Runa\Contracts\Modules\ManagementWidget;
+
+final class Provider implements ManagementPageProvider
+{
+    public static bool $duplicate = false;
+    public static string $view = 'record';
+    public static bool $optionalPage = false;
+    public static bool $changed = false;
+    public static bool $hiddenWidget = true;
+    public static ?string $component = null;
+    public static ?string $nestedComponent = null;
+    public static bool $destructive = false;
+    public static bool $previewRequired = false;
+
+    public function permissions(): array { return []; }
+    public function actions(): array { return []; }
+    public function components(): array { return []; }
+    public function section(): ManagementSection
+    {
+        $names = ['pl' => 'Pole', 'en' => 'Field'];
+        return new ManagementSection('profile', 'Profile', 'runa.admin.enter', 'runa.auth.profile.update', 'profile', [
+            new ManagementFieldAccess(new ManagementField('name', 'text', $names, $names, filterable: true, sortable: true, writable: true), 'runa.admin.enter', 'runa.auth.profile.update', component: self::$nestedComponent),
+            new ManagementFieldAccess(new ManagementField('hidden', 'text', $names, $names, filterable: true, sortable: true, writable: true, choices: ['private_choice']), 'runa.auth.identities.read', 'runa.auth.profile.update'),
+            new ManagementFieldAccess(new ManagementField('token', 'text', $names, $names, sensitive: true), 'runa.admin.enter'),
+            new ManagementFieldAccess(new ManagementField('allowed_reference', 'uuid', $names, $names, referenceModule: 'runa.auth', referenceOperation: 'identity'), 'runa.admin.enter'),
+            new ManagementFieldAccess(new ManagementField('reference', 'uuid', $names, $names, referenceModule: 'runa.auth', referenceOperation: 'identity'), 'runa.auth.identities.read'),
+        ], [new ManagementCommandDefinition('update', 'Update', new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'), ['name'], previewRequired: self::$previewRequired), 'profile', destructive: self::$destructive, intent: 'save')], component: self::$nestedComponent, view: self::$view);
+    }
+    public function pages(): array
+    {
+        if (self::$changed) { \Illuminate\Support\Facades\DB::table('shared.module_registry_state')->where('id', 1)->increment('generation'); }
+        $page = new ManagementPage('users', 'Users', 'runa.admin.enter', [$this->section()], component: self::$component);
+        if (self::$optionalPage) { return [$page, new ManagementPage('optional', 'Optional', 'runa.admin.enter', [new ManagementSection('remote', 'Remote', 'runa.admin.enter', null, 'remote', [])])]; }
+        return self::$duplicate ? [$page, $page] : [$page, new ManagementPage('hidden', 'Secret page', 'runa.auth.identities.read', [], order: -1, default: true)];
+    }
+    public function bindings(): array { return [new ManagementBinding('profile', Handler::class, []), ... (self::$optionalPage ? [new ManagementBinding('remote', Handler::class, [new ManagementApiTarget('app.absent', 'App\\Absent\\Read', '1.0.0', ['read'])])] : [])]; }
+    public function contributions(): array { return [new ManagementContribution('extra', 'app.users.profile', new ManagementSection('details', 'Extra', 'runa.admin.enter', null, 'profile', []))]; }
+    public function widgets(): array { return [new ManagementWidget('private', 'Private widget', self::$hiddenWidget ? 'runa.auth.identities.read' : 'runa.admin.enter', 'profile', component: self::$nestedComponent)]; }
+}

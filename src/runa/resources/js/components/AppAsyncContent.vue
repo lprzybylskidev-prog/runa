@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { useLocale } from '../composables/useLocale';
 import { useContentMotion } from '../composables/useContentMotion';
-import { ref } from 'vue';
-import AppSpinner from './AppSpinner.vue';
+import { computed, ref } from 'vue';
+import AppContentLoading from './AppContentLoading.vue';
 import AppAlert from './AppAlert.vue';
 import AppButton from './AppButton.vue';
 import AppEmptyState from './AppEmptyState.vue';
@@ -23,34 +24,41 @@ const props = withDefaults(
     errorMessage: '',
     emptyDescription: '',
     retryLabel: '',
-    loadingLabel: 'Loading',
-    errorTitle: 'Unable to load content',
-    emptyTitle: 'No results',
+    loadingLabel: '',
+    errorTitle: '',
+    emptyTitle: '',
   },
 );
 const emit = defineEmits<{ retry: [] }>();
 const content = ref<globalThis.HTMLElement>();
-useContentMotion(content, () => props.state);
+useContentMotion(content, () =>
+  props.state === 'refreshing' ? 'success' : props.state,
+);
+const { t } = useLocale();
+const loadingLabel = computed(() => props.loadingLabel || t('loading'));
+const errorTitle = computed(() => props.errorTitle || t('unableToLoadContent'));
+const emptyTitle = computed(() => props.emptyTitle || t('noResults'));
 </script>
 <template>
-  <div ref="content" :aria-busy="state === 'loading'" class="min-w-0">
+  <div
+    ref="content"
+    :aria-busy="state === 'loading' || state === 'refreshing'"
+    class="min-w-0"
+  >
     <div v-if="state === 'loading'">
-      <slot name="loading"
-        ><div class="flex items-center gap-3 py-6 text-sm text-muted">
-          <AppSpinner :label="loadingLabel" /><span aria-hidden="true">{{
-            loadingLabel
-          }}</span>
-        </div></slot
-      >
+      <slot name="loading"><AppContentLoading :label="loadingLabel" /></slot>
     </div>
     <div v-else-if="state === 'error'">
       <slot name="error" :retry="() => emit('retry')"
         ><AppAlert tone="danger" :title="errorTitle"
           >{{ errorMessage
           }}<template v-if="retryLabel" #actions
-            ><AppButton :size="actionSize" @click="emit('retry')">{{
-              retryLabel
-            }}</AppButton></template
+            ><AppButton
+              intent="inspect"
+              :size="actionSize"
+              @click="emit('retry')"
+              >{{ retryLabel }}</AppButton
+            ></template
           ></AppAlert
         ></slot
       >
@@ -62,8 +70,13 @@ useContentMotion(content, () => props.state);
           :description="emptyDescription ?? ''"
       /></slot>
     </div>
-    <div v-else>
+    <AppContentLoading
+      v-else
+      :loading="false"
+      :refreshing="state === 'refreshing'"
+      :label="loadingLabel"
+    >
       <slot name="success"><slot /></slot>
-    </div>
+    </AppContentLoading>
   </div>
 </template>

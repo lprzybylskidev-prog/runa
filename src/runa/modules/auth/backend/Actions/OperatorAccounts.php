@@ -54,7 +54,7 @@ final readonly class OperatorAccounts
             $user = new User;
             $user->forceFill(['name' => $input->name, 'first_name' => $input->firstName, 'surname' => $input->surname,
                 'email' => $input->email, 'email_claim' => $input->email, 'login' => $input->login, 'login_claim' => $input->login,
-                'active' => true, 'approved' => true, 'verification_required' => true, 'version' => 1, 'security_version' => 1]);
+                'active' => true, 'verification_required' => true, 'version' => 1, 'security_version' => 1]);
             app(EmailAddresses::class)->available($connection, $user, $input->email, true);
             $user->save();
             $authority->initialize($connection, $user->public_id);
@@ -110,10 +110,8 @@ final readonly class OperatorAccounts
             }
             // Explicit trusted operator recovery; never restores a deleted identity.
             $user->active = true;
-            $user->approved = true;
             $user->activate_at = null;
             $user->deactivate_at = null;
-            $user->expires_at = null;
             $user->security_locked = false;
             $user->attempt_locked_until = null;
             $user->totp_secret = null;

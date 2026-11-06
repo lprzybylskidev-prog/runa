@@ -1,4 +1,12 @@
 <script setup lang="ts">
+import { useHorizontalScroll } from '../composables/useHorizontalScroll';
+import { usePageNavigationHost } from '../composables/usePageNavigationHost';
+import { inject, toRef } from 'vue';
+import { provideLocale } from '../composables/useLocale';
+import AppViewBoundary from '../components/AppViewBoundary.vue';
+import { useViewReadiness } from '../composables/useViewReadiness';
+import { applicationSessionOwner } from '../lib/applicationSession';
+const sessionOwned = inject(applicationSessionOwner, false);
 import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
 import {
   accountPreferences,
@@ -21,6 +29,7 @@ import AppBackdrop from '../components/AppBackdrop.vue';
 import AppFooter from '../components/AppFooter.vue';
 import AppLoadingOverlay from '../components/AppLoadingOverlay.vue';
 import AppTopNavigation from '../components/AppTopNavigation.vue';
+import AppSkeleton from '../components/AppSkeleton.vue';
 import AppNavigation from '../components/AppNavigation.vue';
 import AppPreferenceControls from '../components/AppPreferenceControls.vue';
 import RunaLogo from '../components/RunaLogo.vue';
@@ -47,7 +56,18 @@ const props = withDefaults(defineProps<ApplicationLayoutProps>(), {
   userInitials: 'RU',
   userAvatar: '',
   userLoading: false,
+  locale: undefined,
 });
+const standaloneReadiness = useViewReadiness({
+  identity: 'layout',
+  required: true,
+});
+provideLocale(toRef(props, 'locale'));
+const pageNavigation = usePageNavigationHost();
+const topEntries = computed(() => [
+  ...props.topNavigation,
+  ...pageNavigation.entries.value,
+]);
 const emit = defineEmits<{
   navigate: [href: string, event: globalThis.MouseEvent];
   localeChange: [locale: Locale];
@@ -70,7 +90,7 @@ const {
   changePreference,
   applyPreference,
   finishPreferenceChange,
-} = useDisplayPreferences();
+} = useDisplayPreferences(undefined, toRef(props, 'locale'));
 watch(locale, (value) => emit('localeChange', value), { immediate: true });
 watch(
   () => identity.value.applicationId,
@@ -151,6 +171,7 @@ function navigate(href: string, event: globalThis.MouseEvent) {
     event.altKey
   )
     return;
+  if (pageNavigation.navigate(href, event)) return;
   emit('navigate', href, event);
   if (event.defaultPrevented) {
     void closeDrawer(false);
@@ -184,58 +205,8 @@ function keydown(event: globalThis.KeyboardEvent) {
   }
 }
 const topNavElement = ref<globalThis.HTMLElement>();
-const topOverflow = ref({ left: false, right: false });
-let topNavObserver: globalThis.ResizeObserver | undefined;
-function updateTopOverflow() {
-  const element = topNavElement.value;
-  topOverflow.value = {
-    left: !!element && element.scrollLeft > 1,
-    right:
-      !!element &&
-      element.scrollWidth - element.clientWidth - element.scrollLeft > 1,
-  };
-}
-watch(
-  topNavElement,
-  (element) => {
-    topNavObserver?.disconnect();
-    if (element) {
-      topNavObserver = new globalThis.ResizeObserver(updateTopOverflow);
-      topNavObserver.observe(element);
-      if (element.firstElementChild)
-        topNavObserver.observe(element.firstElementChild);
-    }
-    updateTopOverflow();
-  },
-  { flush: 'post' },
-);
-watch(
-  () => props.topNavigation,
-  async () => {
-    await nextTick();
-    updateTopOverflow();
-  },
-);
-onScopeDispose(() => topNavObserver?.disconnect());
-function scrollTopNavigation(event: globalThis.WheelEvent) {
-  if (event.ctrlKey || !(event.currentTarget instanceof window.HTMLElement))
-    return;
-  const navigation = event.currentTarget;
-  if (navigation.scrollWidth <= navigation.clientWidth) return;
-  const delta =
-    Math.abs(event.deltaX) > Math.abs(event.deltaY)
-      ? event.deltaX
-      : event.deltaY;
-  if (!delta) return;
-  event.preventDefault();
-  const unit =
-    event.deltaMode === 1
-      ? 16
-      : event.deltaMode === 2
-        ? navigation.clientWidth
-        : 1;
-  navigation.scrollLeft += delta * unit;
-}
+const { edges: topOverflow, wheel: scrollTopNavigation } =
+  useHorizontalScroll(topNavElement);
 let unlockDrawerScroll: (() => void) | undefined;
 watch(drawer, (open) => {
   unlockDrawerScroll?.();
@@ -248,7 +219,9 @@ watch(
   },
 );
 onMounted(() => {
-  initializePreferenceSession();
+  if (!props.readiness && !sessionOwned && !props.preferenceStore)
+    void initializePreferenceSession();
+
   document.addEventListener('keydown', keydown);
 });
 const media = window.matchMedia('(max-width: 63.999rem)');
@@ -321,6 +294,7 @@ onScopeDispose(() => {
         </a>
         <AppButton
           v-if="mobile"
+          intent="cancel"
           icon-only
           class="shell-group-toggle"
           :aria-label="t('closeNavigation')"
@@ -334,7 +308,9 @@ onScopeDispose(() => {
           {{ t('workspace') }}
         </p>
         <nav :aria-label="t('modules')">
+          <AppSkeleton v-if="navigationLoading" :lines="4" />
           <AppNavigation
+            v-else
             :entries="navigation"
             :current="current"
             :expanded="expanded"
@@ -363,6 +339,7 @@ onScopeDispose(() => {
           <AppButton
             v-if="sidebar"
             ref="drawerTrigger"
+            intent="neutral"
             icon-only
             class="shell-sidebar-toggle"
             size="sm"
@@ -387,7 +364,7 @@ onScopeDispose(() => {
           >
           <div
             v-if="topbar"
-            class="shell-top-nav-frame"
+            class="shell-top-nav-frame runa-horizontal-frame"
             :class="{
               'has-overflow-left': topOverflow.left,
               'has-overflow-right': topOverflow.right,
@@ -397,20 +374,37 @@ onScopeDispose(() => {
               ref="topNavElement"
               class="shell-top-nav"
               :aria-label="t('areas')"
-              @scroll="updateTopOverflow"
               @wheel="scrollTopNavigation"
             >
+              <AppSkeleton
+                v-if="navigationLoading || pageNavigation.loading.value"
+                class="w-48"
+                :lines="1"
+                data-navigation-loading
+              />
               <AppTopNavigation
-                :entries="topNavigation"
-                :current="current"
+                v-else
+                :entries="topEntries"
+                :current="pageNavigation.current.value ?? current"
                 @navigate="navigate"
               />
             </nav>
           </div>
         </div>
         <div class="shell-header-controls" data-print-hide>
+          <div
+            v-if="navigationLoading"
+            class="flex gap-2"
+            aria-busy="true"
+            data-preferences-loading
+          >
+            <AppSkeleton v-if="!props.locale" class="w-9 py-3" :lines="1" />
+            <AppSkeleton class="w-9 py-3" :lines="1" />
+          </div>
           <AppPreferenceControls
+            v-else
             size="sm"
+            :fixed-locale="!!props.locale"
             :locale="locale"
             :theme="theme"
             :theme-label="themeLabel"
@@ -425,8 +419,10 @@ onScopeDispose(() => {
           >
             <template #trigger="{ toggle, open, panelId }">
               <AppButton
+                intent="neutral"
                 icon-only
                 class="shell-avatar-button"
+                :disabled="userLoading || navigationLoading"
                 :aria-label="`${t('userMenu')}: ${userName}`"
                 :aria-expanded="open"
                 :aria-controls="panelId"
@@ -434,6 +430,7 @@ onScopeDispose(() => {
                 @click="toggle"
                 ><AppAvatar
                   :src="userAvatar"
+                  :image="userAvatarImage"
                   :loading="userLoading"
                   :initials="userInitials"
                   :size="40"
@@ -468,8 +465,26 @@ onScopeDispose(() => {
             <slot name="actions" :t="t" />
           </div>
         </header>
-        <div v-if="$slots.breadcrumbs" class="shell-breadcrumbs">
-          <slot name="breadcrumbs" :t="t" />
+        <div
+          v-if="$slots.breadcrumbs"
+          class="shell-breadcrumbs"
+          :aria-busy="navigationLoading || pageNavigation.loading.value"
+        >
+          <AppSkeleton
+            v-if="navigationLoading || pageNavigation.loading.value"
+            :lines="1"
+            class="w-80 max-w-full py-1"
+            data-breadcrumbs-loading
+          />
+          <slot
+            v-else
+            name="breadcrumbs"
+            :t="t"
+            :navigation="navigation"
+            :top-navigation="topEntries"
+            :current="pageNavigation.current.value ?? current"
+            :navigate="navigate"
+          />
         </div>
         <section
           v-if="$slots.statistics"
@@ -488,7 +503,9 @@ onScopeDispose(() => {
           ]"
         >
           <div class="shell-content">
-            <slot name="content" :t="t"><slot :t="t" /></slot>
+            <AppViewBoundary :readiness="props.readiness ?? standaloneReadiness"
+              ><slot name="content" :t="t"><slot :t="t" /></slot
+            ></AppViewBoundary>
           </div>
           <aside
             v-if="$slots.supplementary"

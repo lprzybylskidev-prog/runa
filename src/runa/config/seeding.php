@@ -8,13 +8,16 @@ use Runa\Modules\Permissions\Development\PermissionsDevelopmentSeeder;
 return [
     // Explicit application ManagedSeeder registration only; loose files are never discovered.
     'register' => [],
-    // Explicit opt-in via runa:seed:development --modules; native db:seed stays application-owned.
+    'development_modules' => env('APP_ENV') === 'local' && (bool) env('DEV_SEED_MODULES', false),
+    // Explicit module-graph opt-in via the development command or local application default seeding.
     'contributors' => [
         'runa.auth' => Accounts::class,
         'runa.permissions' => Access::class,
     ],
     'development' => [
         AuthDevelopmentSeeder::class => [
+            'administrator_email' => env('APP_ENV') === 'local' ? env('DEV_SEED_ADMIN_EMAIL') : null,
+            'administrator_password' => env('APP_ENV') === 'local' ? env('DEV_SEED_ADMIN_PASSWORD') : null,
             'random' => (bool) env('DEV_SEED_AUTH_RANDOM', false),
             'seed' => (int) env('DEV_SEED_AUTH_SEED', 17),
             'counts' => ['extra_users' => (int) env('DEV_SEED_AUTH_USERS_COUNT', 3)],

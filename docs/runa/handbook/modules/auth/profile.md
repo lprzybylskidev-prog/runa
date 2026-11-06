@@ -20,7 +20,7 @@ Audit rolls mutations back and returns safe 503. Session loss uses established 4
 | ------ | ------------------------ | -------------------------------------------------------------------- |
 | GET    | profile                  | `profile.show`; own private projection                               |
 | PATCH  | profile                  | `profile.edit`; version, complete naming alternative, optional login |
-| POST   | profile/email            | `email.change`; version, email, current_password                     |
+| POST   | profile/email            | `email.change`; version, email; password proof runa.auth.self.email  |
 | POST   | email/complete           | `email.complete`; token in POST body; public single-use redemption   |
 | POST   | profile/secondary-emails | `secondary.add_own`; version, email                                  |
 | PATCH  | profile/secondary-emails | `secondary.change_own`; version, address_id, email                   |
@@ -34,6 +34,8 @@ Audit rolls mutations back and returns safe 503. Session loss uses established 4
 `profile` returns public_id, version, display_name, the exclusive name or
 first_name/surname representation, login, primary email/verification, secondary
 public_id/email/verified_at rows, initials, has_avatar and current capabilities.
+The additive boolean capability `email_verification_enabled` reports whether the
+current module policy permits the optional primary-address verification controls.
 It never returns internal IDs, private storage paths, credentials or tokens.
 Name/login edits are complete replacements: supply either name or both first_name
 and surname, plus the desired login (null clears it). Naming/normalization rules
@@ -87,28 +89,61 @@ to prove their addressed primary during initial password setup.
 
 ## Protected administrative contracts
 
-Resolve `AuthProfiles` 1.0.0 through guarded ModuleApis. No general administration
-page or user-management HTTP CRUD is supplied. Ordinary administrative operations require current Permissions grants and must also pass the neutral AuthorityGuard under the same default PostgreSQL transaction; authority-changing operations remain denied until its protected-authority integration.
+Resolve `AuthProfiles` 2.1.0 through guarded ModuleApis. The supplied Users Admin
+view and custom trusted compositions use these same owning APIs. Administrative
+operations require current Permissions grants and pass AuthorityGuard under the
+same default PostgreSQL transaction; protected-authority invariants remain enforced.
 
-| Method                                                       | Permission                     | Additional requirements                                                                   |
-| ------------------------------------------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------- |
-| edit(publicId, expectedVersion, ProfileChange)               | runa.auth.profiles.manage      | exclusive complete naming/login value                                                     |
-| changeEmail(publicId, expectedVersion, email)                | runa.auth.emails.manage        | every-action both-factor step-up for `runa.auth.email.admin_change`                       |
-| replaceVerifiedEmail(publicId, expectedVersion, email)       | runa.auth.emails.verify_bypass | configured bypass and every-action both-factor step-up for `runa.auth.email.admin_bypass` |
-| requireVerification(publicId, expectedVersion)               | runa.auth.emails.reverify      | every-action both-factor step-up for `runa.auth.email.require_verification`               |
-| addSecondary(publicId, expectedVersion, email)               | runa.auth.secondary.manage     | enabled secondary addresses and current ownership rules                                   |
-| changeSecondary(publicId, expectedVersion, addressId, email) | runa.auth.secondary.manage     | resets verification; address belongs to target                                            |
-| removeSecondary(publicId, expectedVersion, addressId)        | runa.auth.secondary.manage     | address belongs to target                                                                 |
-| notificationEmails(publicId)                                 | runa.auth.addresses.read       | verified notification-only secondaries for an eligible account                            |
+| Method                                                       | Permission                     | Additional requirements                                                                                                            |
+| ------------------------------------------------------------ | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| edit(publicId, expectedVersion, ProfileChange)               | runa.auth.profiles.manage      | exclusive complete naming/login value                                                                                              |
+| changeEmail(publicId, expectedVersion, email)                | runa.auth.emails.manage        | every-action password step-up for `runa.auth.email.admin_change`                                                                   |
+| replaceVerifiedEmail(publicId, expectedVersion, email)       | runa.auth.emails.verify_bypass | configured bypass and every-action password step-up for `runa.auth.email.admin_bypass`                                             |
+| requireVerification(publicId, expectedVersion)               | runa.auth.emails.reverify      | every-action password step-up for `runa.auth.email.require_verification`                                                           |
+| verifyEmail(publicId, expectedVersion)                       | runa.auth.emails.verify_bypass | current primary only; administrative bypass enabled; every-action password `runa.auth.email.admin_bypass`                          |
+| verifySecondary(publicId, expectedVersion, addressId)        | runa.auth.emails.verify_bypass | current owned secondary; secondary feature and administrative bypass enabled; every-action password `runa.auth.email.admin_bypass` |
+| addSecondary(publicId, expectedVersion, email)               | runa.auth.secondary.manage     | enabled secondary addresses and current ownership rules                                                                            |
+| changeSecondary(publicId, expectedVersion, addressId, email) | runa.auth.secondary.manage     | resets verification; address belongs to target                                                                                     |
+| removeSecondary(publicId, expectedVersion, addressId)        | runa.auth.secondary.manage     | address belongs to target                                                                                                          |
+| notificationEmails(publicId)                                 | runa.auth.addresses.read       | verified notification-only secondaries for an eligible account                                                                     |
 
 Normal administrative email change verifies the new address before replacement;
-it does not require old-address consent. Bypass defaults disabled through
-`admin_email_verification_bypass` and requires its distinct permission. Both
+it does not require old-address consent. Administrative email verification defaults enabled through
+`admin_email_verification_bypass`; the Auth policy view exposes the boolean
+“Administrative email verification” control. Disabling it removes the creation
+verification section and the existing verified-replacement action. The distinct
+permission and password proof remain required. Both
 completion paths revoke all sessions/trust, advance security generation and notify
 the former primary. All account changes and proof consumption commit with Audit;
 a failure cannot consume proof while rolling back the mutation.
 
 ## Secondary notification addresses
+
+### Administrative confirmation of existing addresses
+
+Auth owns `AuthProfiles` 2.1.0, consumed through guarded `ModuleApis` by trusted
+application/module integrations and the Admin adapter. The complete additive
+signatures are `verifyEmail(string $publicId, int $expectedVersion): bool` and
+`verifySecondary(string $publicId, int $expectedVersion, string $addressId): bool`.
+The interface/proxy/definition live in the Auth backend package; `ManageProfiles`
+and `EmailAddresses` own transactional execution. These are runtime backend APIs,
+not own-account HTTP operations or customer presentation authorization.
+
+Both require `runa.auth.emails.verify_bypass`, the current
+`admin_email_verification_bypass` setting and fresh every-action password proof
+for `runa.auth.email.admin_bypass`. Primary confirmation additionally requires
+enabled email verification. Secondary confirmation requires enabled secondary
+addresses and rechecks current address ownership/sharing policy. Both use the
+locked account version and refuse already verified or missing addresses.
+Successful confirmation increments the account version and records explicit
+`email.admin_verified` or `secondary.admin_verified` Audit in the same transaction.
+Primary confirmation clears forced verification, advances security generation and
+revokes sessions/trust and pending security/address-change proofs. Secondary
+confirmation invalidates its pending address links without revoking account
+sessions or changing primary security delivery. Audit/refusal rollback preserves
+the previous state and proof. The Admin secondary command additionally requires `runa.auth.secondary.manage`
+for its selected-address input. Admin presents explicit confirmation beside each
+unverified address; the existing editor still handles replacement separately.
 
 `secondary_emails_enabled` defaults false. `secondary_self_add`,
 `secondary_self_change` and `secondary_self_remove` independently default true
@@ -131,7 +166,7 @@ The guarded notificationEmails result contains only verified current secondaries
 not the primary. These addresses are never identifiers for login, reset, invitation,
 OTP or other core security mail. A business module must decide sensitivity/disclosure
 before requesting notification routing. Category/channel/recipient preferences and
-the public delivery declaration layer follow in roadmap point 9.
+the public delivery declaration layer follow the [preference contract](preferences.md).
 
 ## Avatar ownership and storage
 
@@ -141,7 +176,8 @@ preserving the stored image; initials remain available for both name alternative
 Own reads always use the current authenticated identity. Administrative multipart
 POST and DELETE `users/avatar` use `avatar.admin_upload`/`avatar.admin_remove`,
 require `runa.auth.avatars.manage`, target public_id, version and AuthorityGuard.
-They are backend domain operations, with no administration UI.
+The configuration-aware Users administration Avatar tab consumes these native
+operations; see [Auth administration](administration.md).
 
 Uploads use native content/MIME/image/dimension validation for JPEG, PNG and WebP,
 1–4096 pixels per dimension, and `avatar_max_kib` (default 2048, range 1–5120).
@@ -195,3 +231,51 @@ No Audit viewer or user-management UI is included.
 The separate [account-history detail contract](history.md) supplies an account-bound
 allowlisted change projection and replaceable modal. The summary endpoint retains
 its existing four fields; it is not expanded with arbitrary Audit payloads.
+
+Administrative profile/assignment standalone writes now use the framework's
+[native phased transaction protocol](../../architecture/module-transactions.md).
+Call AuthProfiles 2.1.0 / PermissionsAccess 2.2.0 without an ambient transaction;
+aggregate callers use source-owned participants. This intentionally replaces
+nested whole-write composition, preserving current grants, reviewed differences,
+stronger action proof and atomic owning Audit. Source/global settings and external
+operations retain their separate owning workflows.
+
+## Admin native profile composition
+
+The source-declared ProfilePage/ProfileEditor supplies current-actor default and
+explicit authorized target records, complete naming/login replacement and native
+transaction participation. It uses the same owner validation/Audit phases as
+AuthProfiles.edit; email, lifecycle and file workflows remain independent.
+See [Admin composition](../admin/composition.md) for the supported input, preview,
+source ownership and atomic Save protocol; the classes are private declaration
+adapters, not direct application factory APIs.
+
+The [Auth administration guide](administration.md) owns directory/profile read
+projection, primary/secondary address action presentation and the full current
+administrative grants/proofs/revisions map. These independent workflows use the
+same owning APIs; they never join the profile/access atomic Save.
+
+Raster container inspection is shared with application branding through platform
+public `Runa\Support\Images\RasterImageContent::safe(string $bytes, string $mime): bool`.
+Its internal parser lives under src/runa/Images. Avatar storage/publication/cleanup
+remain Auth-owned. This checks container metadata, not complete pixel decoding.
+
+### Account table exports
+
+The named authenticated GET `/api/runa/auth/profile/table-export` endpoint
+(`runa.auth.tables.export`) checks `runa.permissions.tables.export` and
+current Auth availability. It returns `{data:{allowed:true}}`; denial is HTTP 403.
+The account controller checks this capability and repeats it before bounded loaded
+session/device/history exports; existing self-service reads still own the data.
+
+### Administrative avatar presentation
+
+Auth owns GET `/api/runa/auth/users/avatar?public_id=<UUIDv7>` for authorized
+administrative presentation, guarded by `runa.auth.avatars.manage` and current
+avatar/admin-editor availability. Its private inline image response uses the same
+MIME, no-store, nosniff and CSP headers as the own-avatar route. The native Auth
+Action rechecks target visibility, including the separate deleted-account read
+grant, and never exposes storage paths. A missing image uses the shared Avatar's
+initials fallback. This is a runtime HTTP consumption endpoint for authenticated
+Admin/application presentation; implementation stays in Auth backend. Existing
+POST/DELETE and own-avatar route contracts remain unchanged.

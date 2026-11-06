@@ -13,7 +13,7 @@ final class AuditReadApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(AuditReads::class, AuditReadProxy::class, ReadEvents::class, '1.0.0', [
+        return new ApiDefinition(AuditReads::class, AuditReadProxy::class, ReadEvents::class, '1.1.0', [
             'page' => new ApiOperation('audit.read.page', 'runa.audit.read'),
             'detail' => new ApiOperation('audit.read.detail', 'runa.audit.read'),
             'metadata' => new ApiOperation('audit.read.metadata', 'runa.audit.read'),

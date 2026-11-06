@@ -16,6 +16,25 @@ If code and documentation disagree, investigate staleness. Do not blindly make e
 
 Project-specific rules override upstream skills and generic best practices.
 
+## Pre-1.0 development
+
+Until Runa platform 1.0.0, backward compatibility is not a design requirement.
+The owner authorizes necessary incompatible changes to Runa, its public APIs and
+existing Core modules without repeated compatibility or module-MAJOR approval.
+Prefer a coherent design: change the owning implementation and update current
+consumers, generators, tests and documentation. Remove obsolete paths instead of
+adding adapters, duplicate APIs or execution workarounds solely to preserve old
+interfaces. An independent Core module's 1.x version does not override this
+platform-development decision.
+
+Assess and record module/API versions honestly. This authorization does not waive
+security/business invariants, data protection, roadmap discussion of significant
+new architectural/behavioral assumptions, or final verification. Published tags
+and closed historical records remain immutable. Promoting the platform to 1.0.0
+still requires an explicit owner decision. Customer instructions retain their
+application scope and never authorize protected-platform edits. Follow the
+canonical owner policy in docs/runa/maintainer/workflows/releases.md#pre-10-compatibility.
+
 ## Roadmap gate
 
 No platform/application implementation, runtime configuration change, migration, or production-impacting change may start without an active roadmap.
@@ -68,6 +87,13 @@ If implementation uncovers a significant unknown that changes behavior, architec
 
 ## Final roadmap point
 
+When a roadmap adds or changes frontend behavior/presentation, its penultimate
+point is the owner's manual frontend acceptance. Prepare a working application
+and current assets/data before handing it over; only the owner confirms acceptance.
+Place repairs before that point and repeat affected manual acceptance after UI
+changes. Final automated verification/release stays last. See the
+[manual acceptance procedure](docs/runa/maintainer/workflows/roadmaps.md#manual-frontend-acceptance).
+
 The final point completes all verification for the affected areas and release finalization, including the current-state documentation review in `docs/runa/maintainer/workflows/roadmaps.md` and closure synchronization in `docs/runa/maintainer/workflows/releases.md`.
 
 Ordinary roadmap closure runs only complete checks for changed behavior/contracts
@@ -84,13 +110,13 @@ Record complete all-group PASS for the milestone; a scoped result is insufficien
 If verification finds work:
 
 - keep the roadmap active,
-- insert a fix point immediately before final verification,
+- insert a fix point before manual acceptance when present, otherwise immediately before final verification,
 - implement and verify the fix point,
 - rerun final verification from the beginning.
 
 During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then restart final verification from the beginning. This exception does not authorize broad checks during ordinary implementation points.
 
-For owner backend verification, treat a run whose only test execution failure is a confirmed worker SIGSEGV/exit 139 as PASS under the `docs/runa/maintainer/testing/strategy.md#backend-sigsegv-owner-acceptance`. Preserve native failed reports, require successful cleanup and disclose interrupted coverage. Other failures remain blocking. This standing owner decision requires no repeated approval, mandatory restart, retry loop or root-cause investigation; customer application policy is unchanged.
+For owner backend verification, treat a run whose only test execution failure is a confirmed worker SIGSEGV/exit 139 as PASS under the `docs/runa/maintainer/testing/strategy.md#backend-sigsegv-owner-acceptance`. Preserve native failed reports, require successful cleanup and disclose interrupted coverage. Other failures remain blocking. This standing owner decision requires no repeated approval, mandatory restart, retry loop or root-cause investigation. Apply it during final verification, closure, merge and publication without asking again; a validator that cannot represent the exception does not revoke it. Use the canonical separate evidence disposition instead of rewriting native FAILED reports or restarting an already accepted backend solely for release metadata. Retire this temporary owner rule only after corrected PHP/runtime verification meets the canonical removal condition; customer application policy is unchanged.
 
 If the failure reveals an architectural/behavioral assumption problem, stop and discuss it with the user.
 
@@ -196,7 +222,25 @@ PostgreSQL only.
 - Optimistic concurrency is the default for business edit forms.
 - After production has ever been deployed, never edit a committed migration that may have run there. See the database migration policy.
 
-Before any real production deployment, an active roadmap authorizes necessary identified Runa dev/test database resets and volume rebuilds under `docs/runa/handbook/architecture/database.md`, without repeated approval for hypothetical production data. Inspect ownership/context and show exact destructive scope first; uncertain ownership or irreplaceable data requires clarification. Ordinary reopen remains nondestructive.
+Until Runa platform 1.0.0, the owner explicitly authorizes editing, deleting and
+consolidating existing Runa migrations, including committed migrations, and fully
+resetting/reseeding identified Runa development/test databases within an active
+roadmap. Prefer correcting the original CREATE definitions and rebuilding the
+database over adding ALTER/UPDATE/data-transfer migrations solely to preserve an
+unpublished development schema or its disposable data. Normally use one migration
+per table, with its complete current columns, indexes and constraints; a small
+cohesive table group is acceptable. Put initial data in seeders/initializers.
+Do not build compatibility upgrade machinery for intermediate development states.
+Apply the actual supported reset procedure across platform/module/application
+storage and their ledgers; ordinary application migrate:fresh alone does not reset
+Runa storage. Follow `docs/runa/handbook/architecture/database.md`.
+
+Inspect ownership/context and show the exact destructive scope before a reset;
+this standing authorization requires no repeated approval for rebuildable dev/test
+data or hypothetical production data. Real production/customer data, backups and
+uncertain or irreplaceable data remain protected. Before any real production
+deployment, necessary identified development volume rebuilds have the same standing
+authorization. Ordinary reopen remains nondestructive.
 
 Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/database.md`.
 
@@ -206,15 +250,18 @@ Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/d
 - Every current and future Runa view ships usable defaults and a documented public presentation replacement/composition contract. Keep platform views and reusable session/security orchestration in src/runa; customers own their presentation in src/app without protected edits or copied security logic. Keep the delivered app scaffold minimal. Follow [frontend adoption](docs/runa/handbook/development/frontend/customization.md).
 - Tailwind CSS.
 - Polish user UI is default; English is secondary.
-- Admin panel is English-only.
+- Admin panel follows the application language: Polish default, English secondary.
 - Responsive desktop/tablet/mobile from day one.
 - Light and dark themes from day one.
 - Frontend validation handles known UX errors immediately; backend remains security/integrity authority.
+- Omit forms, sections and controls for capabilities disabled by current module configuration; do not render disabled substitutes or empty wrappers. Keep configuration switches and transient loading/write/prerequisite states distinct. Follow [capability visibility](docs/runa/handbook/development/frontend/customization.md#configuration-based-capability-visibility).
 - Reuse established components/page patterns before inventing new ones; maintain the frontend skill’s component and pattern references in the same task.
+- Sidebar navigation selects areas/modules; subview links use the shared top bar. Follow [page-navigation composition](docs/runa/handbook/development/frontend/page-layouts.md#page-level-navigation-composition).
 - Use one thin HTTP client/wrapper, not scattered fetch calls.
 - Do not use native browser validation when it conflicts with controlled application UX.
 - Rendered UI is the acceptance truth.
 - Accessibility is part of normal component review.
+- Views follow the public [readiness contract](docs/runa/handbook/development/frontend/loading.md): mount layout frames immediately, localize loading to dependent elements/regions, refresh in place, bound optional image waits and clear protected content on identity/access loss.
 - Data views follow the public forms guide automatic read reconciliation: refresh in place, preserve dirty drafts, share aggregate mutation revisions, resolve overlapping changes locally and never silently replay writes or reinitialize edited forms.
 - TypeScript strict mode.
 - No `any` for known API payloads.
@@ -226,6 +273,11 @@ Load the frontend, Vue, and Tailwind skills as appropriate.
 ## Security
 
 Security decisions happen server-side. Frontend hiding/route guards are UX only.
+
+Second factors authenticate login only. Sensitive operations and protected places
+use Auth password confirmation through its shared full-page view; never collect
+operation passwords or 2FA codes in separate inline/modal forms. Authenticator
+enrollment still verifies its setup code. Follow the Auth security/entry UI guides.
 
 Never:
 
@@ -349,7 +401,7 @@ follow the same boundary. Update both instruction products when a reusable rule 
 
 ## Module development
 
-For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH; incompatible changes require an explicitly owner-approved MAJOR before implementation, regardless of how much code is rewritten. Platform versioning remains independent. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
+For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH. Incompatible changes follow the standing pre-1.0 authorization above; from platform 1.0.0 they require an explicitly owner-approved MAJOR before implementation. Platform versioning remains independent. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
 
 ## Language and naming
 

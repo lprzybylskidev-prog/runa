@@ -44,6 +44,13 @@ final readonly class Profiles
 
     public function editLocked(User $user, int $version, ProfileChange $change, bool $own): Identity
     {
+        $this->validateEditLocked($user, $version, $change, $own);
+
+        return $this->applyEditLocked($user, $change, $own);
+    }
+
+    public function validateEditLocked(User $user, int $version, ProfileChange $change, bool $own): void
+    {
         $this->version($user, $version);
         $namesChanged = [$user->name, $user->first_name, $user->surname] !== [$change->name, $change->firstName, $change->surname];
         $loginChanged = $user->login !== $change->login;
@@ -56,6 +63,13 @@ final readonly class Profiles
         if ($loginChanged && $change->login !== null && User::withTrashed()->where('login_claim', $change->login)->where('id', '<>', $user->id)->exists()) {
             throw new IdentityConflict('identifier_conflict');
         }
+    }
+
+    /** Apply only after the owning locked validation phase; no cross-owner re-preview. */
+    public function applyEditLocked(User $user, ProfileChange $change, bool $own): Identity
+    {
+        $namesChanged = [$user->name, $user->first_name, $user->surname] !== [$change->name, $change->firstName, $change->surname];
+        $loginChanged = $user->login !== $change->login;
         if ($namesChanged || $loginChanged) {
             $before = $user->only(['name', 'first_name', 'surname', 'login']);
             $user->forceFill(['name' => $change->name, 'first_name' => $change->firstName, 'surname' => $change->surname,
@@ -83,7 +97,7 @@ final readonly class Profiles
                 if (! in_array($operation, ['deactivate', 'delete'], true) || ! $this->value('self_'.$operation)) {
                     $this->refuse('self_change_disabled');
                 }
-                $this->stepUp->assertVerified('runa.auth.self.'.$operation, 'password', everyAction: true);
+                $this->stepUp->assertVerified('runa.auth.self.'.$operation, everyAction: true);
                 $this->lifecycle->change($user->public_id, $request->integer('version'), new LifecycleChange($operation));
 
                 return ['updated' => true, 'reauthenticate' => true];
@@ -127,9 +141,6 @@ final readonly class Profiles
     /** @return ProfileSnapshot */
     public function projection(User $user): array
     {
-        $initials = $user->name !== null ? preg_split('/\s+/u', $user->name) : [$user->first_name, $user->surname];
-        $initials = is_array($initials) ? array_values(array_filter($initials, 'is_string')) : [];
-        $initials = mb_strtoupper(mb_substr($initials[0] ?? '', 0, 1).(count($initials) > 1 ? mb_substr($initials[array_key_last($initials)], 0, 1) : ''));
         /** @var list<\stdClass> $secondary */
         $secondary = $this->value('secondary_emails_enabled') ? app('db')->connection()->table('runa_auth.secondary_emails')
             ->where('user_id', $user->id)->whereNull('deleted_at')->orderBy('id')->get(['public_id', 'email', 'verified_at'])->toArray() : [];
@@ -137,11 +148,12 @@ final readonly class Profiles
         foreach (['own_name_editable', 'own_login_editable', 'own_email_editable', 'secondary_emails_enabled', 'secondary_self_add', 'secondary_self_change', 'secondary_self_remove', 'avatar_enabled', 'avatar_editor', 'avatar_max_kib', 'secondary_email_limit', 'own_login_history', 'own_account_history', 'self_deactivate', 'self_delete'] as $key) {
             $capabilities[$key] = $this->value($key);
         }
+        $capabilities['email_verification_enabled'] = $this->value('email_verification') !== 'disabled';
 
         return ['public_id' => $user->public_id, 'version' => $user->version, 'display_name' => $user->identity()->displayName,
             'name' => $user->name, 'first_name' => $user->first_name, 'surname' => $user->surname, 'login' => $user->login,
             'email' => $user->email, 'email_verified' => $user->email_verified_at !== null, 'secondary_emails' => $secondary,
-            'initials' => $initials, 'has_avatar' => $this->value('avatar_enabled') && $user->avatar_path !== null, 'capabilities' => $capabilities];
+            'initials' => $user->initials(), 'has_avatar' => $this->value('avatar_enabled') && $user->avatar_path !== null, 'capabilities' => $capabilities];
     }
 
     public function version(User $user, int $version): void

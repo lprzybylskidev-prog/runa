@@ -11,6 +11,7 @@ parameters:
         - ../../src/runa/Mail
         - ../../src/runa/ModuleFramework
         - ../../src/runa/modules
+        - ../../src/runa/Settings
         - ../../src/runa/Runtime
         - ../../src/runa/Database
         - ../../src/runa/Development

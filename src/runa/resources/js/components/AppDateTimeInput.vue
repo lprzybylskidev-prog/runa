@@ -1,27 +1,30 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+import { useApplicationDisplayDefaults } from '../runa/ui/displayDefaults';
 import AppTemporalInput from './AppTemporalInput.vue';
 import type { TemporalInputProps, TimeDisambiguation } from '../runa/ui/forms';
-withDefaults(
+const props = withDefaults(
   defineProps<
     TemporalInputProps & {
-      timeZone: string;
+      timeZone?: string | undefined;
       disambiguation?: TimeDisambiguation;
-      zoneLabel?: string;
     }
   >(),
   {
     locale: 'pl',
+    size: 'md',
     helper: '',
     error: '',
-    invalidMessage: 'Check the date or time.',
+    invalidMessage: '',
     disabled: false,
     readonly: false,
     required: false,
+    timeZone: undefined,
     disambiguation: 'reject',
-    zoneLabel: 'Time zone',
   },
 );
+const defaults = useApplicationDisplayDefaults();
+const timeZone = computed(() => props.timeZone ?? defaults.value.timezone);
 const emit = defineEmits<{
   'update:modelValue': [value: string | null];
   validity: [valid: boolean];
@@ -37,6 +40,7 @@ defineExpose({
   <AppTemporalInput
     ref="control"
     v-bind="$props"
+    :time-zone="timeZone"
     kind="datetime-local"
     @update:model-value="emit('update:modelValue', $event)"
     @validity="emit('validity', $event)"

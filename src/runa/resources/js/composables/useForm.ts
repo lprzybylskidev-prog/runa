@@ -29,6 +29,10 @@ function stable(value: FormValue, seen = new Set<object>()): string {
 function clone<T extends FormValue>(value: T): T {
   return JSON.parse(stable(value)) as T;
 }
+/** Compare finite JSON values independently of object key order. */
+export function formValuesEqual(left: FormValue, right: FormValue): boolean {
+  return stable(left) === stable(right);
+}
 export function laravelFieldErrors(payload: unknown): FieldErrors {
   const result: FieldErrors = Object.create(null) as FieldErrors;
   if (

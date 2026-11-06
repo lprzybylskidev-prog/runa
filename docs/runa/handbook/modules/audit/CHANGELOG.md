@@ -1,5 +1,49 @@
 # Audit module changelog
 
+## 1.1.0 — 2026-10-30
+
+- Extend AuditReads to 1.1.0 with optional SQL summary ordering before cursor paging, nulls last and stable append-identity ties; expose implemented sort keys in the Admin history table without changing immutable events or read authority.
+
+- Combine history From/Until filters into one compact shared DateTimeRangeInput. Preserve exact URL/query keys, authorized filtering, UTC transport and application-timezone display.
+
+- Make truncated JSON explicit with a separate continuation-marker line.
+
+- Use detail-shaped pulsing ContentLoading placeholders for initial detail-modal reads and retry, with retained payload pulsing during continuation. Circular content indicators are removed.
+
+- Move correlation into Event and make correlation/actor UUID values links to their exact history filters; remove technical-ID/related-entity cards and share colored JSON previews with inline expansion.
+
+- Group event/actor/technical metadata, omit empty filter-only properties, format and collapse JSON with Show all, hide single-part controls and explain entity-history links.
+
+- Localize actor kinds and outcomes consistently in history filters, rows and immutable details, using lowercase labels in both languages without changing stored payloads or export codes.
+
+- Return exact SQL-filtered AuditPage.total before cursor/limit and forward it to Admin, including entity/date filters and zero matches.
+
+- Declare from/until as datetime filters and use the shared timezone-aware calendar/time picker. Keep history headers and horizontal scrolling accessible while scrolling the page.
+
+- Keep reset beside filter fields in the shared filter region. Render declared
+  event timestamps and known Auth entry dates through the application locale/
+  timezone formatter, preserving canonical instants in transport and exports.
+
+- Use shared table refresh/reset icons with Tooltips, compact automatic filters
+  and dictionary Selects; open Details in guarded dialogs. Supply bounded
+  CSV/XLSX/PDF/Print behind the shared `runa.permissions.tables.export` grant
+  and current owning read authorization.
+
+- Use shared FormNotifications for administrative event-detail read errors.
+
+- Localize the administrative history/detail presentation through shared Admin PL/EN copy while preserving immutable Audit records and technical identifiers.
+
+- Add reserved operational participation for atomic framework lifecycle phase history and first cooperative cancellation requests, without configuration values or runner tokens.
+
+- Preserve the 64-KiB management-record bound with explicit large-payload continuation; reconstruct complete immutable JSON through guarded reads.
+- Deliver source-owned Admin cursor/filter/detail/entity-history viewer and public presentation defaults; summaries omit payloads, current read authority remains required.
+- Add no-transform admin_history forward preparation and target platform >=0.7.0 <0.8.0. AuditReads/AuditRecords remain 1.0.0; no backend module dependency or mutable event API.
+
+## 1.0.5 — 2026-10-30
+
+- Widen platform compatibility to <0.8.0, preserving the >=0.4.2 lower bound and existing API contracts.
+- Append the source-only admin_platform forward edge; no schema or data transformation.
+
 ## 1.0.4 — 2026-10-28
 
 - Complete typed capture, event and payload contracts with the actual public trait consumer; retain atomic history and redaction rules.

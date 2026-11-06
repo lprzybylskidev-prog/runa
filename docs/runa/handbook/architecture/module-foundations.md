@@ -73,6 +73,10 @@ source, change manifests or introduce translation catalogs for dictionary values
 
 ## Future management declarations
 
+The [Admin contract specification](../modules/admin/README.md) defines the
+RM-2026-016 additive page/binding/participation target. It is not implemented;
+current schema-1 declarations below retain their existing meaning and signatures.
+
 ManagementEntityProvider optionally extends an existing ManagementProvider with
 version 1 ManagementEntity metadata. Bounded fields describe localized labels,
 types, sensitivity/editability, filters/sorts and UUID public reference lookups.
@@ -94,5 +98,5 @@ health so a locked administrator can recover; exact Core source/data, the defaul
 transaction, registry/authority lock order, fences and Audit remain mandatory.
 Ordinary Auth bulk sessions instead use neutral BulkUserSelection -> guarded
 PermissionsSelections.users with current native selection and Auth bulk grants,
-preview and fresh both-factor proof. Never expose the operator participant as a
+preview and fresh password proof. Never expose the operator participant as a
 public API or reuse a selection DTO as a persistent authorization decision.

@@ -39,12 +39,12 @@ const props = withDefaults(
     required: false,
     helper: '',
     error: '',
-    chooseLabel: 'Choose files',
-    removeLabel: 'Remove',
-    emptyLabel: 'No files selected',
-    countMessage: 'Too many files.',
-    sizeMessage: 'File is too large.',
-    typeMessage: 'File type is not accepted.',
+    chooseLabel: '',
+    removeLabel: '',
+    emptyLabel: '',
+    countMessage: '',
+    sizeMessage: '',
+    typeMessage: '',
   },
 );
 const emit = defineEmits<{
@@ -56,6 +56,25 @@ const root = ref<globalThis.HTMLElement>();
 const dragDepth = ref(0);
 const dragging = ref(false);
 const text = (pl: string, en: string) => (props.locale === 'pl' ? pl : en);
+const chooseLabel = computed(
+  () => props.chooseLabel || text('Wybierz pliki', 'Choose files'),
+);
+const removeLabel = computed(() => props.removeLabel || text('Usuń', 'Remove'));
+const emptyLabel = computed(
+  () => props.emptyLabel || text('Nie wybrano plików', 'No files selected'),
+);
+const countMessage = computed(
+  () =>
+    props.countMessage || text('Wybrano zbyt wiele plików.', 'Too many files.'),
+);
+const sizeMessage = computed(
+  () => props.sizeMessage || text('Plik jest zbyt duży.', 'File is too large.'),
+);
+const typeMessage = computed(
+  () =>
+    props.typeMessage ||
+    text('Ten typ pliku nie jest dozwolony.', 'File type is not accepted.'),
+);
 const number = (value: number) =>
   new Intl.NumberFormat(props.locale === 'pl' ? 'pl-PL' : 'en-GB', {
     maximumFractionDigits: 1,
@@ -163,7 +182,7 @@ const messages = computed(() => [
     : props.error),
   ...issues.value.map(
     (issue) =>
-      `${issue.fileName ? `${issue.fileName}: ` : ''}${issue.code === 'count' ? props.countMessage : issue.code === 'size' ? props.sizeMessage : props.typeMessage}`,
+      `${issue.fileName ? `${issue.fileName}: ` : ''}${issue.code === 'count' ? countMessage.value : issue.code === 'size' ? sizeMessage.value : typeMessage.value}`,
   ),
 ]);
 function select(event: Event) {
@@ -239,6 +258,7 @@ const fileKeys = computed(() => {
         />
         <AppButton
           v-if="!readonly"
+          intent="inspect"
           :disabled="disabled"
           :aria-describedby="describedBy"
           :aria-invalid="invalid || undefined"
@@ -352,6 +372,7 @@ const fileKeys = computed(() => {
             </div>
             <AppButton
               v-if="!readonly"
+              intent="discard"
               data-file-remove
               size="sm"
               variant="ghost"

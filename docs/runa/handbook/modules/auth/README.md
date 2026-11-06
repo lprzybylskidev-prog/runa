@@ -1,6 +1,7 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` ships at independent version `1.1.4`, requiring
+Current Core `runa.auth` source develops at independent version `4.0.0` for
+platform >=0.7.0 <0.8.0, requiring
 `runa.audit ^1.0.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 0.1.0` initialization creates no user, password or
@@ -19,7 +20,9 @@ are delivered. [Permissions action grants and introspection](../permissions/READ
 ordinary assignment/preset/copy and [protected authority](../permissions/authority.md)
 are delivered. First-administrator bootstrap grants the actual Permissions system role through the trusted operator adapter; installer invitations and private no-mail CLI setup are delivered.
 The explicit [development corpus](../../data/seeding.md#explicit-module-development-contributors) supplies local scenarios, safe account discovery and private initial setup, independently of production initialization.
-There is no management UI. Administrative operations require current native grants.
+The unreleased 4.0.0 administration source supplies Users and policy views through
+Admin; see [administration](administration.md). Owner browser acceptance and final
+release verification remain open. Administrative operations require current native grants.
 
 See the [built-in contract audiences](../../architecture/public-api.md#built-in-module-contracts-and-execution)
 for public APIs, local helpers and reserved integration. Contract paths remain
@@ -27,7 +30,12 @@ stable; private module implementation is not an application extension seam.
 
 ## Public values and access
 
-Resolve version `1.0.0` contracts through `ModuleApis`:
+Resolve the declared contract version through `ModuleApis`: AuthProfiles uses
+`2.1.0`; AuthLifecycle uses `2.1.0`; AuthAdministration uses `2.1.0`; AuthBulkUsers and AuthBulkSessions use `2.0.0`;
+AuthStepUp uses `2.0.0`; AuthPreferences uses `1.1.0`; AuthPolicies uses `3.0.0`;
+AuthSecurity uses `1.2.0`; other current Auth interfaces, including
+AuthIdentities below, use `1.0.0`.
+Administrative profile composition follows the [native phase contract](../../architecture/module-transactions.md).
 
 ```php
 use Runa\Modules\Auth\Contracts\AuthIdentities;
@@ -47,10 +55,18 @@ No bigint ID, address, login, model, credential, session or proof is exposed.
 Eligibility reasons are authorized server information, never anonymous responses.
 Permission checks use the current Permissions grants; missing readiness or grants deny these operations.
 
-`AuthLifecycle` version `1.0.0` offers `create(NewIdentity): Identity`, requiring
+`AuthLifecycle` version `2.1.0` offers `create(NewIdentity, ?IdentitySetup = null): Identity`, requiring
 `runa.auth.users.create`, and `change(publicId, expectedVersion, LifecycleChange)`
-requiring `runa.auth.users.manage`. These are administrative backend contracts,
-without HTTP routes. A permission does not substitute for the separate authority
+requiring `runa.auth.users.manage`. These are administrative backend contracts.
+The Auth-owned public creation DTO has the complete signature
+`NewIdentity::__construct(string $email, ?string $name = null, ?string $firstName = null,
+?string $surname = null, ?string $login = null, bool $active = false)`. It lives under
+`backend/Contracts` and is consumed through the guarded lifecycle API at runtime.
+NewIdentity contains no credentials or independent approval state. Optional IdentitySetup
+configures initial credentials, verification, schedules and locks through the
+[creation contract](administration.md#pages-and-independent-actions). That guide
+owns its complete signature, permissions, proof and secret-handling requirements.
+A permission does not substitute for the separate authority
 invariant participant; `AuthorityGuard` lazily resolves the trusted Permissions
 participant and refuses missing/stale integration. Deactivate/delete exclude the
 target from usable administrators; non-removing work uses an empty exclusion set.
@@ -98,8 +114,8 @@ identifier takeover, account merge, historical rekeying or physical deletion.
 
 Every relevant ingress must evaluate current state and UTC time. Never cache an
 initial login result or rely on scheduler cadence. `Eligibility` reports all current
-blockers separately: deleted, approval_required, before_activation/inactive,
-deactivated, expired, security_locked and attempt_locked. Email verification and
+blockers separately: deleted, before_activation/inactive,
+deactivated, security_locked and attempt_locked. Email verification and
 password change remain distinct restricted-flow requirements. `mayAuthenticate()`
 requires no blockers; `mayOperate()` additionally requires no restrictions.
 Transport checks session revocation generation, password age and session-specific
@@ -107,13 +123,13 @@ factor restrictions; sensitive consumers use the separate step-up contract.
 
 Activation before activate_at is denied even when the active flag is true. At
 activate_at, scheduled activation becomes effective independently of the stored
-active flag. At deactivate_at and expires_at the corresponding blockers apply;
-at attempt_locked_until the temporary lock ends. Removing/changing expiry restores
-eligibility immediately when every other predicate allows it. Approval, activation,
-verification, expiry and both lock types never implicitly change one another.
+active flag. At deactivate_at the deactivated blocker applies; at
+attempt_locked_until the temporary lock ends. Account access has no independent
+expiry date. Activation, verification and both lock types remain separate.
+There is no independent approval flag or approval operation.
 
-`LifecycleChange` operations: approve, activate, deactivate, delete, restore,
-schedule_activation, schedule_deactivation, set_expiry, set_security_lock,
+`LifecycleChange` operations: activate, deactivate, delete, restore,
+schedule_activation, schedule_deactivation, set_security_lock,
 set_attempt_lock and require_password_change. Date values use canonical
 `YYYY-MM-DDTHH:MM:SSZ`; null clears a date. Scheduling accepts future activation/
 deactivation only and requires activation before deactivation when both exist.
@@ -140,8 +156,7 @@ Operational sessions and trusted-device rows bind that generation and are revoke
 in the same lifecycle transaction. Reactivation never restores them. The
 [session/abuse contract](sessions.md) defines proof binding, deadlines, own/admin
 revocation, remembered-cookie persistence, heartbeat and cleanup. Trust issuance and 2FA follow the [credential contract](security.md). Scheduled deadlines also require current-time ingress checks;
-future lifecycle orchestration does not replace those checks. Temporary locks and
-account expiry stay independent.
+future lifecycle orchestration does not replace those checks. Temporary locks remain independent of scheduled deactivation.
 
 Root conflicts and invariant refusals are recorded through Audit's independent
 attempt API after rollback. Nested callers must first roll back their root and
@@ -156,3 +171,13 @@ concurrency, installation/delivery and operational Auth acceptance run in the fi
 roadmap verification after their owning implementation points.
 
 Entry/restricted screens use the [Auth entry UI contract](entry-ui.md); own-account screens and session-expiry integration use the [account UI contract](account-ui.md).
+
+## Administrative directory and pages
+
+AuthAdministration 2.1.0 supplies bounded user directory, field-authorized profile
+and lifecycle reads. Auth declares the Users, policy/named snapshots and bulk
+session pages, with native independent actions and the existing profile/access
+Save host. See [administration](administration.md) for complete public signatures,
+grants, versions, proof actions, revisions and presentation composition. Auth remains
+independent of Admin for its business operations; operator and self-service
+capabilities retain their own audiences.

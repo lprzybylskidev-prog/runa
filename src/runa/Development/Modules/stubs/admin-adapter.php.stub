@@ -1,0 +1,73 @@
+<?php
+
+namespace {{namespace}}\Management;
+
+use {{namespace}}\Contracts\{{name}}Tools;
+use Runa\Contracts\Modules\{ManagementOutcome, ManagementPageResult, ManagementRead, ManagementRecord,
+    ManagementResourceReader, ManagementReview, ManagementWidgetReader, ManagementWidgetResult, ManagementWrite, ManagementWriter};
+use Runa\Support\Modules\Api\{ModuleApis, OperationRejected};
+use Runa\Support\Modules\Settings\ModuleSettings;
+
+/** Presentation adapter only; calculation remains in the owning guarded API. */
+final readonly class {{name}}Adapter implements ManagementResourceReader, ManagementWidgetReader, ManagementWriter
+{
+    public function __construct(private ModuleApis $apis, private ModuleSettings $settings) {}
+
+    private function text(): string
+    {
+        return $this->apis->resolve('{{id}}', {{name}}Tools::class, '1.0.0')
+            ->normalize($this->settings->text('{{id}}', '{{key}}_text') ?? '');
+    }
+
+    private function revision(): string
+    {
+        $state = $this->settings->read('{{id}}');
+
+        return $state['generation'].':'.$state['revision'];
+    }
+
+    public function read(ManagementRead $input): ManagementRecord
+    {
+        $this->query($input);
+
+        return new ManagementRecord(null, $this->revision(), ['text' => $this->text()]);
+    }
+
+    public function page(ManagementRead $input): ManagementPageResult
+    {
+        return new ManagementPageResult([$this->read($input)], null, 1);
+    }
+
+    public function widget(ManagementRead $input): ManagementWidgetResult
+    {
+        return new ManagementWidgetResult($this->read($input)->values);
+    }
+
+    public function preview(ManagementWrite $input): ManagementReview
+    {
+        return new ManagementReview(hash('sha256', $this->calculate($input)), [], 'none', false);
+    }
+
+    public function execute(ManagementWrite $input): ManagementOutcome
+    {
+        return new ManagementOutcome('committed', new ManagementRecord(null, $this->revision(), ['text' => $this->calculate($input)]));
+    }
+
+    private function calculate(ManagementWrite $input): string
+    {
+        if ($input->command !== 'normalize' || $input->publicId !== null
+            || ! hash_equals($this->revision(), $input->revision)
+            || array_keys($input->values) !== ['text'] || ! is_string($input->values['text'])) {
+            throw new OperationRejected('text_input_changed', '{{id}}', '{{key}}.normalize', 409);
+        }
+
+        return $this->apis->resolve('{{id}}', {{name}}Tools::class, '1.0.0')->normalize($input->values['text']);
+    }
+
+    private function query(ManagementRead $input): void
+    {
+        if ($input->publicId !== null || $input->cursor !== null || $input->filters !== [] || $input->sort !== []) {
+            throw new OperationRejected('text_query_invalid', '{{id}}', '{{key}}.normalize', 422);
+        }
+    }
+}

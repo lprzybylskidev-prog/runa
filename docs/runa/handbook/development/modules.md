@@ -20,6 +20,7 @@ Run in local/testing development, from the repository root:
 ./bin/artisan runa:make:module app.documents api DocumentLookup
 ./bin/artisan runa:make:module app.documents component DocumentSummary
 ./bin/artisan runa:make:module app.documents test DocumentContractTest
+./bin/artisan runa:make:module app.documents admin Document
 ```
 
 The default previews complete candidate contents, repository-relative paths and current/candidate SHA-256 hashes as JSON Lines. Add `--write` to apply. Names are simple PascalCase identifiers; the module ID is explicit and owner-qualified. New skeletons are Optional, version `0.1.0`, initially unregistered. Their minimal lifecycle policy is stateless and accepts null/current installed versions. Replace that policy before introducing persistent data, asynchronous work or external effects. No business feature or Core/Auth/Permissions mock is generated.
@@ -30,13 +31,22 @@ Controllers are invokable 501 stubs under `backend/Http/Controllers` with a mani
 
 Existing files require an explicit repeated `--overwrite=repository/path=SHA256`, using the current hash from the reviewed preview. This includes `module.json` when a controller/API adds a declaration. Every existing target needs its own authorization; unknown paths and stale hashes fail before writes. There is no blanket force option. Skeleton roots can never be overwritten. The generator serializes its own writers, rejects collisions/symlinks and restores its generated files if complete-layout validation fails. As with all trusted source tooling, do not concurrently replace source directories using other processes.
 
+The opt-in `admin` element emits a working stateless text-tool API, management
+pages/navigation/entities/forms/table/action/widget/contribution, an owned section
+component, immediate settings provider and central test/guide. It does not depend
+on Admin for business execution or grant access. A competing settings provider is
+refused; merge with the owning provider deliberately. See the complete
+[Admin generator and consumer examples](../modules/admin/examples.md) for output,
+public signatures, extension/replacement patterns and persistence limitations.
+Manifest declaration/docs edits require their exact current overwrite hash.
+
 Runa-owned generation additionally requires a receipt-free owner checkout with its real `.git` directory, maintainer tooling and owner contract. Copied owner files in a customer acquisition do not grant permission. Production refuses generation; source/runtime operator diagnostics remain available; no module-management HTTP write endpoint exists.
 
 ## Welcome catalogue
 
 Every new Runa-owned module must also complete the default welcome page: supply
-PL/EN names and descriptions in its manifest, add its icon to the platform-owned
-`src/runa/modules/auth/frontend/welcomeModules.ts` map, and inspect its tooltip in both
+PL/EN names and descriptions in its manifest, add its icon to
+the shared `src/runa/resources/js/runa/ui/modulePresentation.ts` icon map, and inspect its tooltip in both
 locales/themes with pointer and keyboard focus. The build-time catalogue discovers
 Runa manifests automatically and reuses their public descriptions; it does not
 represent installation/availability or disclose grants. A generic fallback avoids
@@ -73,7 +83,14 @@ The agent assesses and updates each changed module's `X.Y.Z` manifest version an
 
 Record the chosen impact and check required dependents and enabled optional integrations. Pre-1.0 does not make silent contract breaks acceptable; state compatibility decisions explicitly. The first stable module release follows the agreed creation-roadmap rule; later module MAJOR changes require a separate owner decision. Platform/application major-release approval remains independent.
 
-`module_versions.py` compares tracked and untracked module implementation against the specified existing Git ref (default `main`), requires a monotonically increased version and a `## X.Y.Z` or `## [X.Y.Z]` central changelog heading for changed implementation, and rejects downgrades. New modules require their initial entry. Test-only edits do not force a bump. Missing baseline/shallow history, malformed versions or unsafe changelog paths fail; provide an available deliberate baseline rather than silently skipping checks. It does not infer semantic breaks, select the bump, prove the entry's accuracy or authorize deletion of a retained module. Human/agent review owns those decisions and must review dependent constraints. Backend-impact local quality graphs include these scoped checks; no CI or universal pre-commit gate is introduced.
+`module_versions.py` compares tracked and untracked module implementation against the specified existing Git ref (default `main`), requires a monotonically increased version and a `## X.Y.Z` or `## [X.Y.Z]` central changelog heading for changed implementation, and rejects downgrades. New modules require their initial entry. Test-only edits do not force a bump. Missing baseline/shallow history, malformed versions or unsafe changelog paths fail; provide an available deliberate baseline rather than silently skipping checks. It does not infer semantic breaks, select the bump, prove the entry's accuracy or authorize deletion of a retained module. Human/agent review owns those decisions and must review dependent constraints.
+
+Runa platform/Core maintenance before platform 1.0.0 has standing owner
+authorization for intentional incompatible refactoring; it does not promise frozen
+Core API signatures merely because an independent Core module already uses 1.x.
+Current consumers, module/API version assessments and release notes must track the
+change. This owner policy does not authorize customer edits to protected Runa or
+change the approval policy for customer-owned application modules. Backend-impact local quality graphs include these scoped checks; no CI or universal pre-commit gate is introduced.
 
 ## Working reference and application integration
 
@@ -81,7 +98,7 @@ The optional first-development example is `app.reference`, version 0.1.2. Choose
 
 Production builds copy both owners' module source into the frontend build for component discovery and into the PHP dependency stage for runtime discovery, pruning raw frontend and development implementations before the final runtime copy. The Vite module plugin is a build input only. The tracked Runa module root contains the Core Audit, Auth and Permissions source; clean customer builds need no pre-existing local directories. Docker context exclusions remove development examples and tests before these copies.
 
-Module anatomy follows the generated skeleton: strict manifest; owned `backend/Contracts` DTOs/interfaces and guarded implementations; explicit `database/migrations`; local frontend components; central tests under tests/<technology>/<owner>/modules/<code> and central owner docs. Registration, enabled flags, health, source version and successfully installed data version are separate. Inspect `ModuleUpdates::plan(owner)` and apply under the existing trusted application operation journal/maintenance boundary before enabling data-dependent modules. Application update execution is explicit. `ModuleTransitions` previews and atomically applies lifecycle changes; diagnose critical health before enabling. Health policies and work policies belong to the module, including retry/checkpoint/cancellation/compensation decisions.
+Module anatomy follows the generated skeleton: strict manifest; owned `backend/Contracts` DTOs/interfaces and guarded implementations; explicit `database/migrations`; local frontend components; central tests under tests/<technology>/<owner>/modules/<code> and central owner docs. Registration, enabled flags, health, source version and successfully installed data version are separate. Inspect `ModuleUpdates::plan(owner)` and apply under the existing trusted application operation journal/maintenance boundary before enabling data-dependent modules. Application update execution is explicit. `ModuleTransitions` previews and atomically applies lifecycle changes; diagnose critical health before enabling. Health policies are defined exclusively in module source through HealthPolicy schema 2 (no runtime overrides); work policies also belong to the module, including retry/checkpoint/cancellation/compensation decisions.
 
 An ordinary application consumer can resolve a module API without becoming a module itself:
 
@@ -126,3 +143,26 @@ to that module's own central roots. They do not require test files in production
 or load test code during discovery. Existing module-relative `tests` declarations
 retain their prior ownership checks. Generator previews and exact overwrite
 hashes cover central test files, with owner/receipt and symlink guards unchanged.
+
+## Native transactional participation
+
+The [owning transaction protocol](../architecture/module-transactions.md) documents
+source-owned phases shared by standalone writes and aggregate forms, operation-
+specific health admission, locked review validation and atomic proof/Audit. Use
+its public source contracts for owned mutations; do not wrap a whole guarded write
+inside another transaction or import a foreign module's private mutation class.
+
+Administrator-editable module settings must have a dedicated module-owned Admin
+page, named snapshots and the owning validation/publication/recovery workflow.
+Reuse native settings and Audit contracts; declaring a SettingsProvider alone does
+not create an administrative editor. The module operations dialog has no generic
+settings tab or read/update endpoint. Source/CLI-only technical demonstrations
+remain separate from administrator-facing settings pages. See the
+[Admin authoring guide](../modules/admin/examples.md).
+
+Optional integrations declare enabled state and non-sensitive configuration in source
+through IntegrationProvider and schema-2 IntegrationDefinition; Admin supplies no
+runtime integration editor. Follow [optional integrations](../architecture/module-framework.md#delivered-public-events-and-optional-integrations)
+for the complete source contract and availability rules.
+
+Administrator-editable module settings use the reusable [named snapshot contract](../modules/admin/settings-snapshots.md)

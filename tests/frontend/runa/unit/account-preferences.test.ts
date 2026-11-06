@@ -371,3 +371,49 @@ it('a forbidden session refresh clears cached account preferences into a restric
     fetch.mockRestore();
   }
 });
+
+it('Admin bilingual guest preference subscribers receive writes and resets without an account request', () => {
+  const memory = new Map<string, string>();
+  let requests = 0;
+  const store = createAccountPreferenceStore(
+    createPreferenceStore({
+      read: (key) => memory.get(key) ?? null,
+      write: (key, value) => {
+        memory.set(key, value);
+      },
+      remove: (key) => {
+        memory.delete(key);
+      },
+    }),
+    async () => {
+      requests++;
+      return snapshot('unused');
+    },
+  );
+  const observed: string[] = [];
+  const stop = store.store.subscribe!(() =>
+    observed.push(store.store.read(scope, 'runa.theme', theme)),
+  );
+  store.store.write(scope, 'runa.theme', theme, 'dark');
+  store.store.reset(scope, 'runa.theme');
+  expect(observed).toEqual(['dark', 'system']);
+  expect(requests).toBe(0);
+  stop();
+});
+
+it('preference business refusals retain specific copy without pretending the revision changed', async () => {
+  let reads = 0;
+  const store = createAccountPreferenceStore(guest(), async (input) => {
+    if (input.operation === 'snapshot') {
+      reads++;
+      return snapshot('A');
+    }
+    throw new ApiError(409, { error: { code: 'preferences_already_adopted' } });
+  });
+  await store.connect('A');
+  store.store.write(scope, 'runa.theme', theme, 'dark');
+  await store.flush();
+  expect(store.status().error).toBe('save_failed');
+  expect(store.status().message?.[0]).toContain('zostały już przeniesione');
+  expect(reads).toBe(1);
+});

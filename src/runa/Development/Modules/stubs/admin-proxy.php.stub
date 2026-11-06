@@ -1,0 +1,19 @@
+<?php
+
+namespace {{namespace}}\Proxies;
+
+use {{namespace}}\Contracts\{{name}}Tools;
+use Runa\Support\Modules\Api\GuardedApi;
+
+final class {{name}}ToolsProxy extends GuardedApi implements {{name}}Tools
+{
+    public function normalize(string $text): string
+    {
+        $result = $this->invoke('normalize', [$text]);
+        if (! is_string($result)) {
+            throw new \UnexpectedValueException('Invalid text calculation result.');
+        }
+
+        return $result;
+    }
+}

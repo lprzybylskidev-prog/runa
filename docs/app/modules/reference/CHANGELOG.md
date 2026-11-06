@@ -1,5 +1,12 @@
 # Reference module changelog
 
+## 0.2.0 — 2026-10-31
+
+- Reuse shared Button busy animation for connection checks and retain the action label.
+
+- Adopt source-only HealthPolicy schema 2, removing runtime mode overrides. Require
+  platform >=0.7.0 and add the source_health forward edge without domain data changes.
+
 ## 0.1.2 — 2026-10-28
 
 - Consume the supported HTTP facade in the example panel instead of a private implementation import; requests and behavior remain unchanged.

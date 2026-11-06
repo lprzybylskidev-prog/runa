@@ -17,12 +17,14 @@ const emit = defineEmits<{ 'update:modelValue': [mode: StatisticsMode] }>();
       <h2 class="text-sm font-semibold">{{ label }}</h2>
       <AppButtonGroup :label="label" data-print-hide
         ><AppButton
+          intent="neutral"
           size="sm"
           :aria-pressed="modelValue === 'global'"
           :disabled="disabled"
           @click="emit('update:modelValue', 'global')"
           >{{ globalLabel }}</AppButton
         ><AppButton
+          intent="neutral"
           size="sm"
           :aria-pressed="modelValue === 'filtered'"
           :disabled="disabled"

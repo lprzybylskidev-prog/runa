@@ -18,6 +18,15 @@ final readonly class ModuleFrontendRoutes
             if (! $this->connection->getSchemaBuilder()->hasTable('shared.module_registry_state')) {
                 return;
             }
+        } catch (\Throwable) {
+            return;
+        }
+        $this->connection->transaction($this->registerRoutes(...));
+    }
+
+    private function registerRoutes(): void
+    {
+        try {
             $records = $this->registry->snapshot()->modules;
         } catch (\Throwable) {
             return;
@@ -28,7 +37,7 @@ final readonly class ModuleFrontendRoutes
                 continue;
             }
             try {
-                $pages = $this->frontend->pages($record);
+                $pages = $this->connection->transaction(fn (): array => $this->frontend->pages($record));
             } catch (\Throwable) {
                 continue;
             }

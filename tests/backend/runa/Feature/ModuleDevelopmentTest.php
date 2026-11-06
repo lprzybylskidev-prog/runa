@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Validation\ValidationException;
+use Runa\Contracts\Modules\ManagementRead;
 use Runa\Development\Modules\ModuleGenerator;
 use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\Api\ModuleHttp;
@@ -10,6 +12,7 @@ use Runa\ModuleFramework\Console\ModuleConsole;
 use Runa\ModuleFramework\Events\EventDefinitions;
 use Runa\ModuleFramework\HealthPolicies;
 use Runa\ModuleFramework\LifecyclePolicies;
+use Runa\ModuleFramework\Management\ApplicationManagement;
 use Runa\ModuleFramework\ModuleAutoloader;
 use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleRegistry;
@@ -189,4 +192,85 @@ it('restores complete source and docs when final discovery finds a namespace col
     expect(is_dir($this->directory.'/'.$this->relative))->toBeFalse()
         ->and(is_dir($this->directory.'/docs/app/modules/'.$this->code))->toBeFalse()
         ->and(file_get_contents($ordinary.'/Existing.php'))->toBe('<?php // preserved ordinary source');
+});
+
+it('generates opt-in Admin consumers with a working independent business API and exact manifest consent', function (): void {
+    $this->generator->write($this->generator->plan($this->id));
+    $manifestPath = $this->relative.'/module.json';
+    $before = file_get_contents($this->directory.'/'.$manifestPath);
+    $plan = $this->generator->plan($this->id, 'admin', 'Text');
+    expect($plan)->toHaveCount(11);
+    expect(fn () => $this->generator->write($plan))->toThrow(RuntimeException::class);
+    expect(file_get_contents($this->directory.'/'.$manifestPath))->toBe($before)
+        ->and(is_dir($this->directory.'/'.$this->relative.'/backend/Management'))->toBeFalse();
+    $this->generator->write($plan, [$manifestPath => hash('sha256', $before)]);
+    $source = (new ModuleDiscovery($this->directory.'/src', true))->discover('app')[0];
+    expect(get_object_vars($source->manifest->definition['dependencies']->required))->toBe([])
+        ->and(get_object_vars($source->manifest->definition['dependencies']->optional))->toBe([])
+        ->and((new ModuleContractSuite($this->directory.'/src', true))->source($this->id))->toBe([]);
+    foreach ($plan as $path => $contents) {
+        expect($contents)->not->toContain('{{')->not->toContain('Runa\\Modules\\Admin\\');
+        if (str_starts_with($path, $this->relative.'/backend/') && str_ends_with($path, '.php')) {
+            require_once $this->directory.'/'.$path;
+        }
+    }
+    $prefix = $source->manifest->prefix;
+    $tools = new ($prefix.'Handlers\\TextToolsHandler');
+    expect($tools->normalize('  Working   without Admin  '))->toBe('Working without Admin');
+    expect(fn () => $tools->normalize("unsafe\ninput"))->toThrow(ValidationException::class);
+    $provider = new ($prefix.'Definitions\\TextManagement');
+    expect($provider->pages()[0]->sections[1]->view)->toBe('table')
+        ->and($provider->pages()[0]->sections[0]->commands[0]->mode)->toBe('independent')
+        ->and($provider->bindings()[0]->targets[0]->module)->toBe($this->id)
+        ->and($provider->widgets())->toHaveCount(1)
+        ->and($provider->contributions())->toHaveCount(1)
+        ->and($provider->entities())->toHaveCount(1);
+    $settings = new ($prefix.'Definitions\\TextSettings');
+    expect($settings->valid(['text_text' => 'Default']))->toBeTrue()
+        ->and($settings->valid(['text_text' => "bad\nvalue"]))->toBeFalse();
+    // Customer-edited source is never replaced by a regenerated bundle without its exact hash.
+    $adapter = $this->relative.'/backend/Management/TextAdapter.php';
+    file_put_contents($this->directory.'/'.$adapter, "\n// Customer extension\n", FILE_APPEND);
+    expect(fn () => $this->generator->write($this->generator->plan($this->id, 'admin', 'Text')))->toThrow(RuntimeException::class);
+    expect(file_get_contents($this->directory.'/'.$adapter))->toContain('Customer extension');
+});
+
+it('refuses competing settings and oversized Admin declarations before writing', function (): void {
+    $this->generator->write($this->generator->plan($this->id));
+    expect(fn () => $this->generator->plan($this->id, 'admin', str_repeat('A', 49)))->toThrow(InvalidArgumentException::class);
+    $plan = $this->generator->plan($this->id, 'admin', 'First');
+    $path = $this->relative.'/module.json';
+    $this->generator->write($plan, [$path => hash_file('sha256', $this->directory.'/'.$path)]);
+    expect(fn () => $this->generator->plan($this->id, 'admin', 'Second'))->toThrow(InvalidArgumentException::class);
+    expect(is_file($this->directory.'/'.$this->relative.'/backend/Definitions/SecondSettings.php'))->toBeFalse();
+    file_put_contents($this->directory.'/.git/runa-bootstrap.json', '{"schema_version":1,"mode":"dev"}');
+    expect(fn () => $this->generator->plan('runa.'.$this->code, 'admin', 'Text'))->toThrow(InvalidArgumentException::class);
+    expect(fn () => (new ModuleGenerator($this->directory, false))->plan($this->id, 'admin', 'Text'))->toThrow(InvalidArgumentException::class);
+});
+
+it('executes the documented independent application page with owned binding and query refusal', function (): void {
+    $guide = file_get_contents(dirname(base_path()).'/docs/runa/handbook/modules/admin/examples.md');
+    preg_match_all('/```php\n(<\?php\n\/\/ src\/app\/Management\/(Release\w+)\.php\n.*?)\n```/s', $guide, $blocks, PREG_SET_ORDER);
+    expect($blocks)->toHaveCount(2);
+    $namespace = 'App\\Management\\Example'.bin2hex(random_bytes(6));
+    $directory = $this->directory.'/src/app/Management';
+    mkdir($directory, 0755, true);
+    foreach ($blocks as $block) {
+        $path = $directory.'/'.$block[2].'.php';
+        file_put_contents($path, str_replace('namespace App\\Management;', 'namespace '.$namespace.';', $block[1]));
+        require $path;
+    }
+    $readerClass = $namespace.'\\ReleaseReader';
+    $reader = new $readerClass;
+    $provider = new ($namespace.'\\ReleasePage');
+    app()->bind($readerClass, $readerClass);
+    $registry = new ApplicationManagement(app(), $this->directory.'/src');
+    $registry->register($provider);
+    expect($registry->make($readerClass))->toBeInstanceOf($readerClass)
+        ->and($registry->providers())->toBe([$provider])
+        ->and($provider->pages()[0]->key)->toBe('release')
+        ->and($reader->read(new ManagementRead)->values)->toBe(['label' => 'Application release 1'])
+        ->and($reader->page(new ManagementRead)->total)->toBe(1);
+    expect(fn () => $reader->read(new ManagementRead(filters: ['unapproved' => true])))->toThrow(OperationRejected::class);
+    expect(fn () => $registry->register($provider))->toThrow(InvalidArgumentException::class);
 });

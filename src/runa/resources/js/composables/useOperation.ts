@@ -16,12 +16,33 @@ export function operationFailure(cause: unknown): OperationFailure {
     'selection_stale',
     'unsafe_download_url',
   ];
+  let reason: unknown;
+  if (
+    cause instanceof ApiError &&
+    cause.status < 500 &&
+    cause.payload &&
+    typeof cause.payload === 'object'
+  ) {
+    if ('reason' in cause.payload) reason = cause.payload.reason;
+    else if (
+      'error' in cause.payload &&
+      cause.payload.error &&
+      typeof cause.payload.error === 'object' &&
+      'code' in cause.payload.error
+    )
+      reason = cause.payload.error.code;
+  }
   const code =
-    cause instanceof ApiError && [401, 403].includes(cause.status)
+    (cause instanceof ApiError && [401, 403].includes(cause.status)) ||
+    (cause instanceof Error && cause.message === 'permission_denied')
       ? 'forbidden'
-      : cause instanceof Error && known.includes(cause.message)
-        ? cause.message
-        : 'operation_failed';
+      : typeof reason === 'string' && known.includes(reason)
+        ? reason
+        : !(cause instanceof ApiError) &&
+            cause instanceof Error &&
+            known.includes(cause.message)
+          ? cause.message
+          : 'operation_failed';
   return { code, message: '', retryable: code === 'operation_failed' };
 }
 export function useOperation(pollInterval = 750) {

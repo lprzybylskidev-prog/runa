@@ -20,7 +20,7 @@ final readonly class PolicyHistory implements SettingsAuthorization, SettingsPar
     {
         if ($context->actor?->kind === 'actor') {
             app(AuthorityLock::class)->acquire($connection);
-            app(StepUp::class)->assertVerified('runa.auth.policy.publish', 'both', everyAction: true);
+            app(StepUp::class)->assertVerified('runa.auth.policy.publish', everyAction: true);
         }
     }
 

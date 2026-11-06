@@ -24,20 +24,19 @@ const props = withDefaults(
       kind: TemporalKind;
       timeZone?: string;
       disambiguation?: TimeDisambiguation;
-      zoneLabel?: string;
     }
   >(),
   {
     locale: 'pl',
+    size: 'md',
     helper: '',
     error: '',
-    invalidMessage: 'Check the date or time.',
+    invalidMessage: '',
     disabled: false,
     readonly: false,
     required: false,
     timeZone: 'UTC',
     disambiguation: 'reject',
-    zoneLabel: 'Time zone',
   },
 );
 const emit = defineEmits<{
@@ -52,6 +51,11 @@ const reason = ref('');
 const rawDraft = ref('');
 const open = ref(false);
 const text = (pl: string, en: string) => (props.locale === 'pl' ? pl : en);
+const invalidMessage = computed(
+  () =>
+    props.invalidMessage ||
+    text('Sprawdź datę lub godzinę.', 'Check the date or time.'),
+);
 const pickerLabel = computed(
   () => `${text('Wybierz', 'Choose')}: ${props.label}`,
 );
@@ -167,7 +171,15 @@ function reset() {
 onMounted(reset);
 watch(
   () => [props.modelValue, props.kind, props.timeZone, props.locale] as const,
-  ([value, kind, zone, locale], [, oldKind, oldZone, oldLocale]) => {
+  ([value, kind, zone, locale], [oldValue, oldKind, oldZone, oldLocale]) => {
+    // Presentation changes cannot discard an incomplete local draft.
+    if (
+      invalid.value &&
+      value === oldValue &&
+      kind === oldKind &&
+      (locale !== oldLocale || zone !== oldZone)
+    )
+      return;
     if (
       value !== emitted ||
       kind !== oldKind ||
@@ -217,18 +229,8 @@ const messages = computed(() => [
       ? [props.error]
       : []
     : props.error),
-  ...(invalid.value ? [props.invalidMessage] : []),
+  ...(invalid.value ? [invalidMessage.value] : []),
 ]);
-const description = computed(() =>
-  [
-    props.helper,
-    props.kind === 'datetime-local'
-      ? `${props.zoneLabel}: ${props.timeZone}`
-      : '',
-  ]
-    .filter(Boolean)
-    .join(' '),
-);
 watch(
   () => [props.disabled, props.readonly],
   ([disabled, readonly]) => {
@@ -239,13 +241,15 @@ defineExpose({ reset, focus: () => control.value?.focus() });
 </script>
 <template>
   <AppFormField
+    :id="props.id ?? ''"
+    :hide-label="props.hideLabel ?? false"
     :label="label"
-    :helper="description"
+    :helper="helper"
     :error="messages"
     :required="required"
   >
     <template #default="{ id, describedBy, invalid: fieldInvalid }">
-      <div class="temporal-field-row">
+      <div class="temporal-field-row" :data-size="size">
         <input
           v-bind="attrs"
           :id="id"
@@ -266,6 +270,7 @@ defineExpose({ reset, focus: () => control.value?.focus() });
           "
           :data-time-error="reason || undefined"
           class="runa-field-control"
+          :data-size="size"
           @keydown="keyboard"
           @input="change"
           @compositionend="change"
@@ -278,6 +283,8 @@ defineExpose({ reset, focus: () => control.value?.focus() });
         >
           <template #trigger="{ toggle, panelId }"
             ><AppButton
+              intent="neutral"
+              :size="size"
               :disabled="disabled || readonly"
               :aria-label="pickerLabel"
               aria-haspopup="dialog"
@@ -331,9 +338,6 @@ defineExpose({ reset, focus: () => control.value?.focus() });
                 {{ text('Najpierw wybierz datę.', 'Choose a date first.') }}
               </p>
             </div>
-            <p v-if="kind === 'datetime-local'" class="mt-3 text-xs text-muted">
-              {{ zoneLabel }}: {{ timeZone }}
-            </p>
             <p
               v-if="invalid"
               role="status"
@@ -345,6 +349,7 @@ defineExpose({ reset, focus: () => control.value?.focus() });
               class="mt-3 flex justify-between gap-2 border-t border-line pt-3"
             >
               <AppButton
+                intent="neutral"
                 size="sm"
                 variant="ghost"
                 @click="
@@ -352,9 +357,13 @@ defineExpose({ reset, focus: () => control.value?.focus() });
                   close();
                 "
                 >{{ text('Wyczyść', 'Clear') }}</AppButton
-              ><AppButton size="sm" variant="soft" @click="close()">{{
-                text('Gotowe', 'Done')
-              }}</AppButton>
+              ><AppButton
+                intent="neutral"
+                size="sm"
+                variant="soft"
+                @click="close()"
+                >{{ text('Gotowe', 'Done') }}</AppButton
+              >
             </div>
           </template>
         </AppPopover>
@@ -380,5 +389,10 @@ defineExpose({ reset, focus: () => control.value?.focus() });
   border-left: 0;
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
+}
+.temporal-field-row[data-size='sm'] .temporal-trigger.app-button {
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
 }
 </style>

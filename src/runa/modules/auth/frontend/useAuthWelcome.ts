@@ -9,10 +9,13 @@ export function useAuthWelcome() {
   const options = shallowRef<EntryOptions>(),
     session = shallowRef<EntrySession>();
   const failed = ref(false),
-    loading = ref(true);
+    loading = ref(true),
+    refreshing = ref(false);
   const abort = new AbortController();
   async function load() {
-    loading.value = true;
+    if (refreshing.value) return;
+    refreshing.value = true;
+    loading.value = !options.value;
     failed.value = false;
     try {
       const result = decodeOptions(
@@ -34,11 +37,14 @@ export function useAuthWelcome() {
       if (!abort.signal.aborted && !(error instanceof RequestCancelledError))
         failed.value = true;
     } finally {
-      if (!abort.signal.aborted) loading.value = false;
+      if (!abort.signal.aborted) {
+        loading.value = false;
+        refreshing.value = false;
+      }
     }
   }
   onMounted(load);
   onScopeDispose(() => abort.abort());
 
-  return { text, options, session, failed, loading, load };
+  return { text, options, session, failed, loading, refreshing, load };
 }

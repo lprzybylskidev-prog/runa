@@ -70,6 +70,14 @@ If implementation uncovers a significant unknown that changes behavior, architec
 
 ## Final roadmap point
 
+When a roadmap adds or changes frontend behavior/presentation, its penultimate
+point is the application owner's manual frontend acceptance. Prepare a working
+application and current assets/data before handing it over; only the owner confirms
+acceptance. Place repairs before that point and repeat affected manual acceptance
+after UI changes. Final automated verification/release stays last. Follow
+`docs/runa/handbook/workflows/roadmaps.md#manual-frontend-acceptance`; this grants
+no authority to edit protected platform versions/source.
+
 The final point completes all verification for the affected areas and release finalization, including the current-state documentation review in `docs/runa/handbook/workflows/roadmaps.md` and closure synchronization in `docs/runa/handbook/workflows/releases.md`.
 
 Ordinary roadmap closure runs only complete checks for changed behavior/contracts
@@ -81,7 +89,7 @@ ordinary affected-area closure; follow the owning quality guide for its cadence.
 If verification finds work:
 
 - keep the roadmap active,
-- insert a fix point immediately before final verification,
+- insert a fix point before manual acceptance when present, otherwise immediately before final verification,
 - implement and verify the fix point,
 - rerun final verification from the beginning.
 
@@ -203,15 +211,18 @@ Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/d
 - Every current and future Runa view ships usable defaults and a documented public presentation replacement/composition contract. Keep platform views and reusable session/security orchestration in src/runa; customers own their presentation in src/app without protected edits or copied security logic. Keep the delivered app scaffold minimal. Follow [frontend adoption](docs/runa/handbook/development/frontend/customization.md).
 - Tailwind CSS.
 - Polish user UI is default; English is secondary.
-- Admin panel is English-only.
+- Admin panel follows the application language: Polish default, English secondary.
 - Responsive desktop/tablet/mobile from day one.
 - Light and dark themes from day one.
 - Frontend validation handles known UX errors immediately; backend remains security/integrity authority.
+- Omit forms, sections and controls for capabilities disabled by current module configuration; do not render disabled substitutes or empty wrappers. Keep configuration switches and transient loading/write/prerequisite states distinct. Follow [capability visibility](docs/runa/handbook/development/frontend/customization.md#configuration-based-capability-visibility).
 - Reuse established components/page patterns before inventing new ones; maintain the frontend skill’s component and pattern references in the same task.
+- Sidebar navigation selects areas/modules; subview links use the shared top bar. Follow [page-navigation composition](docs/runa/handbook/development/frontend/page-layouts.md#page-level-navigation-composition).
 - Use one thin HTTP client/wrapper, not scattered fetch calls.
 - Do not use native browser validation when it conflicts with controlled application UX.
 - Rendered UI is the acceptance truth.
 - Accessibility is part of normal component review.
+- Views follow the public [readiness contract](docs/runa/handbook/development/frontend/loading.md): mount layout frames immediately, localize loading to dependent elements/regions, refresh in place, bound optional image waits and clear protected content on identity/access loss.
 - Data views follow the public forms guide automatic read reconciliation: refresh in place, preserve dirty drafts, share aggregate mutation revisions, resolve overlapping changes locally and never silently replay writes or reinitialize edited forms.
 - TypeScript strict mode.
 - No `any` for known API payloads.
@@ -223,6 +234,11 @@ Load the frontend, Vue, and Tailwind skills as appropriate.
 ## Security
 
 Security decisions happen server-side. Frontend hiding/route guards are UX only.
+
+Second factors authenticate login only. Sensitive operations and protected places
+use Auth password confirmation through its shared full-page view; never collect
+operation passwords or 2FA codes in separate inline/modal forms. Authenticator
+enrollment still verifies its setup code. Follow the Auth security/entry UI guides.
 
 Never:
 

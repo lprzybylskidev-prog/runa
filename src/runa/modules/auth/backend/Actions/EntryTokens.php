@@ -49,14 +49,21 @@ final readonly class EntryTokens implements AuthInvitations
                 return false;
             }
             $this->authority->assertMayRemove($connection, []);
-            $changed = $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('purpose', 'invitation')
-                ->whereNull('consumed_at')->whereNull('invalidated_at')->update(['invalidated_at' => now(), 'delivery_secret' => null]);
-            if ($changed) {
-                $this->transactions->record('invitation.invalidated', $user);
-            }
 
-            return $changed > 0;
+            return $this->invalidateLocked($connection, $user);
         });
+    }
+
+    /** Private owning phase shared by single and bulk invalidation. */
+    public function invalidateLocked(Connection $connection, User $user): bool
+    {
+        $changed = $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->where('purpose', 'invitation')
+            ->whereNull('consumed_at')->whereNull('invalidated_at')->update(['invalidated_at' => now(), 'delivery_secret' => null]);
+        if ($changed) {
+            $this->transactions->record('invitation.invalidated', $user);
+        }
+
+        return $changed > 0;
     }
 
     /** Internal only: owning registry/authority/user locks are already held. */
@@ -66,7 +73,9 @@ final readonly class EntryTokens implements AuthInvitations
             || ! in_array($purpose, ['invitation', 'verification', 'reset', 'email_otp'], true)) {
             throw new \LogicException('Invalid Auth token transaction.');
         }
-        if (! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()
+        if (! ($purpose === 'invitation'
+            ? $this->identities->mayAcceptInvitation($user, CarbonImmutable::now('UTC'))
+            : $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate())
             || ($purpose === 'invitation' && $user->password !== null)
             || ($purpose === 'verification' && $user->email_verified_at !== null)
             || ($purpose === 'reset' && $user->password === null)
@@ -121,7 +130,9 @@ final readonly class EntryTokens implements AuthInvitations
             if ($user === null || $token === null || $token->consumed_at !== null || $token->invalidated_at !== null
                 || CarbonImmutable::parse($token->expires_at)->lte(CarbonImmutable::now('UTC'))
                 || $token->recipient !== $user->email || $token->security_version !== $user->security_version
-                || ! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()
+                || ! ($purpose === 'invitation'
+                    ? $this->identities->mayAcceptInvitation($user, CarbonImmutable::now('UTC'))
+                    : $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate())
                 || ($purpose === 'invitation' && ($user->password !== null || $password === null))) {
                 throw new OperationRejected('entry_token_invalid', 'runa.auth', 'entry.complete', 422);
             }

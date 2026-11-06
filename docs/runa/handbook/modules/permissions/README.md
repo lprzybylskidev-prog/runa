@@ -1,11 +1,11 @@
 # Permissions
 
-Core `runa.permissions` has independent version `1.0.4`, requiring
-`runa.auth ^1.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
+Current Core `runa.permissions` source develops at independent version `2.1.0`
+for platform >=0.7.0 <0.8.0, requiring `runa.auth ^4.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
 `runa.permissions.super_admin` role, with **no user assignments**. Matching installed
-versions are no-ops. No administration UI or new dependency is supplied.
+versions are no-ops. Source-owned [Admin administration](administration.md) is supplied without a backend dependency on Admin or any new package.
 
 See the [built-in contract audiences](../../architecture/public-api.md#built-in-module-contracts-and-execution)
 for public APIs, local helpers and reserved integration. Contract paths remain
@@ -127,7 +127,7 @@ effective is still false without a grant and current eligibility/availability.
 ## Delivery boundary
 
 Custom-role/preset CRUD and reviewed assignment/copy operations use PermissionsAccess
-1.0.0 under the [ordinary access contract](access.md). Protected superadmin
+2.1.0 under the [ordinary access contract](access.md). Protected superadmin
 assignment/removal, last-superadmin participation and confirmed custom-role force
 deletion use the separate [protected authority contract](authority.md). The neutral
 AuthorityGuard now resolves the trusted Permissions participant and refuses missing
@@ -148,7 +148,7 @@ all=true. `users` requires current `runa.permissions.users.select`; it returns
 canonical sorted selection intent, never a durable authorization or resolved Auth
 model. AuthBulkSessions rechecks this public operation on preview AND execution
 through its neutral BulkUserSelection bridge. The independent Auth bulk capability,
-fresh session/action-bound both-factor proof, exact impact fingerprint and atomic
+exact impact fingerprint, explicit Admin review confirmation and atomic
 limits remain mandatory. The owning Auth operation expands all accounts inside its
 transaction; unknown selected identities or overflow refuse the complete operation.
 There is no foreign SQL, copied identity store or implicit role-management grant.
@@ -165,3 +165,67 @@ scenario ledger. It never replaces ordinary guarded PermissionsAccess or step-up
 never grants protected membership through ordinary fixtures and never runs in
 production initialization. The actual first fixture administrator uses Auth's
 existing trusted operator participant.
+
+Native assignment composition follows the [owning phase contract](../../architecture/module-transactions.md); arbitrary ambient whole-write nesting is intentionally replaced.
+
+### Shared table export grant
+
+`runa.permissions.tables.export` authorizes supplied table export/printing across
+modules. It never grants access to a page, record or field. Owning read permissions,
+availability and record Policies remain mandatory and are rechecked on export.
+It is declared by Permissions 2.1.0 and synchronized by `table_exports` forward
+preparation. Source role declarations may grant it through the ordinary contract;
+no automatic ordinary-user assignment or generic superadmin bypass is added.
+
+### Searchable assignment catalogue
+
+Permissions owns the public `PermissionsAssignments` presentation exported through
+`@/runa/permissions`, implemented in `src/runa/modules/permissions/frontend`
+and supported for platform/App Admin-section composition, taking `AdminSectionPresentationProps` and emitting
+`submit(section: string, command: string, fields?: string[])`. It has no slots and ships in frontend
+assets, uses the existing Admin controller/resource lane and leaves native review,
+proof, grants, protected membership and transactions with Permissions. Public
+PermissionsAccess 2.2.0 extends `definitions(string $kind, ?string $after = null,
+array $filters = [], ?string $sort = null, string $direction = 'asc'): array`
+with optional `search: string` (at most 160 characters)
+and `public_ids: list<string>` (at most 100 UUIDv7 references). The return shape
+remains `{items: list<{public_id,code,name_pl,name_en,version}>,next: ?string,total:int}`.
+Kinds remain role/permission/preset. Filters run in the owning bounded PostgreSQL
+read; pagination preserves the public-ID cursor and totals describe the filtered
+set. Proxies, exact-version consumers and native declarations use 2.2.0.
+Literal code/name filters and ordering follow the [administration contract](administration.md). This
+additive runtime server-consumption API remains guarded through ModuleApis; no
+foreign query or grant resolver becomes a presentation API.
+
+The default is a dedicated compact access editor: one catalogue, role/direct-
+permission selectors with draft counts, integrated server search, All/Assigned
+scope, dense selectable rows and a bounded scroll region. The same selected entry
+is never repeated in a separate chip/list above the catalogue. Each category keeps
+its own query/cursor across switching; inactive categories load on demand.
+Catalogue pages contain at most 25 entries. Selected-ID hydration is bounded to
+100; it also keeps unavailable assignments removable from Assigned without exposing
+UUIDs. Existing native assignment limits remain 100 per category, independent of
+the available catalogue size. Visible-page select/deselect preserves off-page
+choices. A failed or pending read cannot authorize selecting stale results.
+
+The toolbar uses the shared small search-field size with bounded desktop width;
+category controls fit their labels on wide screens and distribute space on mobile.
+Category/scope/page buttons expose pointer, hover, pressed and keyboard-focus
+states. Disabled pagination and locked row/bulk choices use a default cursor and
+avoid actionable hover treatment. Native checkboxes inherit their row's cursor;
+reduced-motion preferences suppress added transitions.
+
+Quiet scope controls, aligned counters and lightweight pagination keep chrome
+subordinate to catalogue rows. Touch rows remain taller on narrow screens.
+
+Enter in search runs a read and never submits the enclosing access form. Native
+checkboxes, focus treatment and semantic field chrome retain Runa's shared visual
+language inside the dedicated editor. Keyboard navigation, readonly browsing,
+local loading, Polish/English and light/dark/mobile presentation remain supported.
+Review/Revert belongs to the complete roles/direct-permissions draft; the native
+controller owns dirty guards, optimistic conflicts, review and operation proof.
+
+The default assignment editor also offers searchable source-account copying and
+saved preset application in Auth user details. These independent reviewed commands
+preserve source fingerprints and require an explicit final submission; see
+[Permissions administration](administration.md#selected-user-access-in-auth).

@@ -1,9 +1,9 @@
 # Auth policies and trusted operator recovery
 
-Auth 0.7.0 adds the transactional `0.6.0 -> 0.7.0` storage/defaults edge,
-AuthPolicies 1.0.0 and AuthBulkSessions 1.0.0. Audit ^0.3.0 and framework API
-^1.0.0 remain unchanged. Install through the fenced ModuleUpdates workflow;
-ordinary startup does not migrate or initialize an administrator.
+Auth 5.0.0 supplies AuthPolicies 3.0.0 and AuthBulkSessions 2.0.0 with
+Audit ^1.0.0 and framework API ^1.0.0. Install the current per-table storage and
+technical initialization through the fenced ModuleUpdates workflow; ordinary
+startup does not migrate or initialize an administrator.
 
 ## One current policy and immutable history
 
@@ -17,19 +17,20 @@ observer is not used for mandatory persistence.
 
 An optional framework SettingsAuthorization participant runs after candidate and
 revision validation, before the candidate write/reservation fence, in that same
-transaction. Auth consumes an actor's every-action both-factor proof for
+transaction. Auth consumes an actor's every-action password proof for
 `runa.auth.policy.publish` there, against the old policy. History persists after
 the actual stored write. A refused publication also restores the proof's unused
 state. Compensation does not require the user's proof a second time.
 
-AuthPolicies provides bounded history (50 revisions per page), old/new comparison
-through `preview`, revision/generation-checked `publish`, historical `restore` and
-account exception reads/writes. Restore republishes a snapshot as a NEW revision;
-it never clears forced-password flags, restores revoked sessions/trust or reverses
-previous effects. ModuleSettings validates restored values against current source
-rules. Trusted operator settings writes retain the existing CLI trust boundary;
-web/API consumers require `runa.auth.policy.read`, `runa.auth.policy.write` or
-`runa.auth.policy.exceptions` as declared. Administrative gateways require current Permissions grants and their independent security predicates. There is no settings administration UI.
+AuthPolicies 3.0.0 provides bounded internal history (50 revisions per page),
+old/new comparison through `preview`, revision/generation-checked `publish` and
+account exception reads/writes. The guarded historical `restore` operation was
+removed; trusted operator recovery remains a separate CLI-only capability.
+The Admin policy page uses [named settings snapshots](../admin/settings-snapshots.md)
+and never displays Audit or revision-history payloads. Loading a snapshot changes
+only the form. Explicit application uses the native reviewed publication, current
+rules, grants and password proof. A new publication never clears forced-password
+flags, restores revoked sessions/trust or reverses previous effects.
 
 `password_policy_effect` defaults to `future_only`. When `force_change` accompanies
 an actual complexity change, all non-deleted password-bearing accounts must choose
@@ -38,46 +39,104 @@ passwords satisfy new complexity. Existing lifecycle/verification restrictions,
 current factor requirements and captured session deadlines remain independently
 authoritative. A future-only change does not force password replacement.
 
-## Temporary account exceptions
+## Account rule overrides
 
 The explicit allowlist contains only `password_expiry_days` (1–3650) and
 `session_idle_minutes` (1–43200). Exceptions cannot disable password expiry with
 zero, change absolute session deadlines, relax 2FA/step-up, reactivate accounts or
 bypass identity/permission rules. Global expiry may still be disabled with zero.
 
-A write requires an authorized actor, fresh both-factor every-action proof for
-`runa.auth.policy.exception`, a reason without secrets, an expiry no later than
-30 days, the current global policy revision and the last per-key mutation version
+A write requires an authorized actor, fresh password every-action proof for
+`runa.auth.policy.exception`, a reason without secrets, an optional future expiry without a maximum horizon, the current global policy revision and the last per-key mutation version
 (initially zero). Passing null revokes the exception. Versions continue across
 revocation/recreation; stale requests cannot overwrite a recreated exception.
 Bounded authorized reads expose public identity, key/value, reason, actor, versions,
 expiry and revocation. Revalidation on any policy publication conservatively revokes
 existing exceptions; an administrator must explicitly reconsider/reissue them.
-No policy change silently extends an exception.
+No policy change silently extends an exception. A null expiry means indefinite
+until explicit revocation or the existing policy-publication invalidation; a
+non-null expiry ends the override at that UTC instant. This does not make a
+password or session itself unlimited: the configured override value and captured
+absolute session deadline still apply.
 
 Ingress, session projection/cleanup and password-expiry reminder calculation read
 current effective values. Expired exceptions stop applying immediately without
 waiting for cron. Cleanup preserves sessions covered by a live extension; an
 extension never moves the session's captured absolute deadline.
 
+Auth-owned public write signature in `AuthPolicies` 3.0.0:
+
+```php
+public function exception(string $publicId, string $key, ?int $value,
+    string $reason, ?string $expiresAt, int $version, int $policyRevision): array;
+// Returns array{public_id:string|null, version:int}; null value revokes.
+```
+
+The guarded entrypoint, permission, password proof and transactional Audit
+remain unchanged. The `expires_at` member returned by both exception reads is now
+`string|null`, an incompatible row-contract change from 1.x. Auth 5.0.0 and current
+consumer constraints reflect it under the standing pre-1.0 owner authorization.
+
+### Active account exception projection
+
+Auth owns `AuthPolicies` 3.0.0, consumed through guarded
+`ModuleApis::resolve('runa.auth', AuthPolicies::class, '3.0.0')` by authorized
+application/module integrations and the Admin management adapter. The added
+`public function activeExceptions(string $publicId): array` returns the same
+`list<array{public_id:string,key:string,value:int,reason:string,actor:string,
+version:int,policy_revision:int,expires_at:string|null,revoked_at:string|null}>` shape
+as `exceptions()`, limited to the two allowlisted keys, current policy revision,
+unrevoked rows and either null or future expiry. Permission remains `runa.auth.policy.exceptions`.
+Implementation lives in Auth backend Contracts/PoliciesProxy/Actions/Definitions;
+it ships in the normal backend runtime, with no new HTTP endpoint. History retains
+its chronological latest-50 contract; active reads are independent of that cap.
+The Admin readonly `active_exceptions` field carries this projection for status
+and named rule editing. Browser expiry filtering is presentation only; native
+policy enforcement remains authoritative.
+
 ## Bulk session revocation
 
-AuthBulkSessions accepts an immutable SessionSelection for one/selected UUIDv7
+The public Auth-owned administrative consumption entrypoint is guarded
+`ModuleApis::resolve('runa.auth', AuthBulkSessions::class, '2.0.0')`; the contract
+lives under Auth backend/Contracts and its runtime engine remains private.
+
+```php
+interface AuthBulkSessions {
+    public function preview(SessionSelection $selection, bool $trust = false): array;
+    public function revoke(SessionSelection $selection, bool $trust, string $fingerprint): array;
+}
+// preview: {accounts:list<safe eligible inventory>, selected_accounts:int,
+// skipped_accounts:int, sessions:int, trusted_devices:int, fingerprint:string}
+// revoke: {accounts:int, skipped_accounts:int, sessions:int, trusted_devices:int}
+```
+
+AuthBulkSessions 2.0.0 accepts an immutable SessionSelection for one/selected UUIDv7
 accounts or an explicit all-account selection. Preview contains exact unrevoked
 session identities/counts and optional trust impact. Execution requires
-`runa.auth.sessions.bulk_revoke`, a fresh both-factor every-action proof for the
-same action, and the matching preview fingerprint. Re-read account/security/policy
+`runa.auth.sessions.bulk_revoke` and the matching preview fingerprint; no
+additional operation proof is required. The Admin UI requires explicit review
+confirmation after its protected entry. Re-read account/security/policy
 versions and target rows under registry/authority/user locks; changed targets
 require a new preview. Other modules do not query Auth tables.
 
+Session previews load the selected session and optional trust inventories in
+bounded collection queries after locking the complete account selection. The
+combined row cap and ordered per-account fingerprint remain unchanged. Execution
+batches the corresponding revocations while recording each account's Audit event
+inside the same transaction.
+
 Each operation is atomic and limited to 100 accounts and 10000 total session/trust
 rows. All-account mode exceeding these limits refuses before mutation; it never
-silently truncates or partially succeeds. The neutral BulkUserSelection bridge calls guarded PermissionsSelections.users
+silently truncates or partially succeeds among eligible targets. Protected
+superadministrator accounts are explicitly excluded, including inactive/locked
+members; preview reports selected_accounts and skipped_accounts, and accounts
+contains only eligible inventories. Revocation reports processed accounts and
+skipped_accounts. Protected membership participates in the exact fingerprint. The neutral BulkUserSelection bridge calls guarded PermissionsSelections.users
 on both preview and execution, requiring current `runa.permissions.users.select`.
 Selection intent is never a reusable grant; Auth still resolves current targets
-and requires its own bulk permission and both-factor proof. Each target
+and requires its own bulk permission and exact reviewed fingerprint. Each target
 receives a manual Audit event in the same transaction; Audit failure rolls back
-revocations and proof consumption. No management UI is supplied.
+revocations. The supplied Users page places this operation below its directory filters.
 
 ## Scheduled lifecycle
 
@@ -163,7 +222,7 @@ Development and customer clones initialize explicitly using the same local CLI;
 ordinary reopen/start/update never issues another administrator.
 
 Recovery targets an existing administrator, including an inactive one, but never
-restores a soft-deleted identity. It explicitly reactivates/approves/unlocks the
+restores a soft-deleted identity. It explicitly reactivates/unlocks the
 account, clears activation/deactivation/expiry dates and old factor enrollment,
 revokes all sessions/trust/proofs/entry tokens, advances revocation generation and
 requires completion using the new token. An account-wide pending-recovery blocker
@@ -189,3 +248,16 @@ through the explicit [module fixture workflow](../../data/seeding.md#explicit-mo
 The fixture administrator uses this same real initialization/singleton/authority
 contract and refuses an installation already owned by another administrator.
 It neither resets an existing password nor overrides current security policy.
+
+## Trusted batch authority classification
+
+Auth owns the trusted Core consumption contract OperatorAuthority under
+backend/Contracts; it is not a customer ModuleApis entrypoint. In addition to
+initialize(Connection, string): void and isAdministrator(Connection, string): bool,
+it supports administrators(Connection $connection, array $publicIds): array:
+list<string> UUIDv7 input/output, at most 100 distinct input identities. The Core
+OperatorPermissions bridge delegates to the source-owned Permissions participant
+at runtime. Bulk callers already hold registry/authority/Auth locks on the exact
+default transaction; current Core source/data/fences remain required. The owning
+Permissions query includes inactive/locked superadministrators and batches current
+protected system-role membership without exposing foreign tables to Auth.

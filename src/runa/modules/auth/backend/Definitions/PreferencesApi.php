@@ -13,7 +13,9 @@ final class PreferencesApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(AuthPreferences::class, PreferencesProxy::class, AccountPreferences::class, '1.0.0', [
+        return new ApiDefinition(AuthPreferences::class, PreferencesProxy::class, AccountPreferences::class, '1.1.0', [
+            'account' => new ApiOperation('preferences.admin_read', 'runa.auth.preferences.read'),
+            'updateAccount' => new ApiOperation('preferences.admin_write', 'runa.auth.preferences.manage'),
             'read' => new ApiOperation('preferences.read'), 'write' => new ApiOperation('preferences.write'),
             'reset' => new ApiOperation('preferences.reset'), 'resetAccount' => new ApiOperation('preferences.admin_reset', 'runa.auth.preferences.reset'),
         ]);

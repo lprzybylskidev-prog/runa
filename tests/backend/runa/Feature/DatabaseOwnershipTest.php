@@ -10,7 +10,11 @@ it('keeps migration, wipe, reset and seed operations within their database owner
     try {
         $platformBefore = DB::table('shared.migrations')->orderBy('id')->get()->toJson();
         $job = DB::table('shared.jobs')->insertGetId(['queue' => '9c', 'payload' => 'protected-platform-sentinel', 'attempts' => 0, 'available_at' => 0, 'created_at' => 0]);
+        $settingsBefore = DB::table('shared.application_settings')->where('singleton', 1)->first();
+        DB::table('shared.application_settings')->where('singleton', 1)->update(['values' => '{"presentation.name":"Application wipe sentinel"}', 'revision' => 73]);
         $preserved = function () use ($platformBefore, $job): void {
+            $settings = DB::table('shared.application_settings')->where('singleton', 1)->first();
+            expect((int) $settings->revision)->toBe(73)->and($settings->values)->toContain('Application wipe sentinel');
             expect(DB::table('shared.migrations')->orderBy('id')->get()->toJson())->toBe($platformBefore);
             expect(DB::table('shared.jobs')->where('id', $job)->value('payload'))->toBe('protected-platform-sentinel');
         };
@@ -28,6 +32,9 @@ it('keeps migration, wipe, reset and seed operations within their database owner
         $preserved();
         $fixture->command(false, ['runa:seed']);
         expect(DB::table('app_9c.records')->count())->toBe(2); // Only the explicitly registered application seeder.
+        DB::table('shared.application_settings')->where('singleton', 1)->update(['values' => $settingsBefore->values, 'revision' => $settingsBefore->revision]);
+        $fixture->command(true, ['migrate', '--force']);
+        expect((int) DB::table('shared.application_settings')->where('singleton', 1)->value('revision'))->toBe((int) $settingsBefore->revision);
         $appHistory = DB::table('shared.application_migrations')->orderBy('id')->get()->toJson();
         $appRows = DB::table('app_9c.records')->get()->toJson();
         $appPreserved = function () use ($appHistory, $appRows): void {
@@ -184,8 +191,8 @@ it('keeps the protected platform table inventory synchronized with actual platfo
         $expected = DatabaseScope::PLATFORM_TABLES;
         sort($expected);
         expect(array_column($tables, 'name'))->toBe($expected);
-        $registryIdentities = DB::select("SELECT table_name, data_type, is_identity, identity_generation FROM information_schema.columns WHERE table_schema = 'shared' AND table_name IN ('modules', 'module_registry_state', 'module_transitions', 'module_work', 'module_update_steps') AND column_name = 'id' ORDER BY table_name");
-        expect(array_column($registryIdentities, 'table_name'))->toBe(['module_registry_state', 'module_transitions', 'module_update_steps', 'module_work', 'modules']);
+        $registryIdentities = DB::select("SELECT table_name, data_type, is_identity, identity_generation FROM information_schema.columns WHERE table_schema = 'shared' AND table_name IN ('application_settings', 'modules', 'module_registry_state', 'module_settings_snapshots', 'module_transitions', 'module_work', 'module_update_steps') AND column_name = 'id' ORDER BY table_name");
+        expect(array_column($registryIdentities, 'table_name'))->toBe(['application_settings', 'module_registry_state', 'module_settings_snapshots', 'module_transitions', 'module_update_steps', 'module_work', 'modules']);
         foreach ($registryIdentities as $identity) {
             expect($identity->data_type)->toBe('bigint')->and($identity->is_identity)->toBe('YES')->and($identity->identity_generation)->toBe('ALWAYS');
         }

@@ -321,6 +321,13 @@ class Updater(unittest.TestCase):
             "src/app/resources/js/main.ts",
             "src/app/resources/js/errorLayout.ts",
             "src/app/resources/css/customer.css",
+            "src/app/resources/js/components/admin/CustomerAdmin.vue",
+            "src/app/resources/js/components/admin/CustomerSection.vue",
+            "src/app/Management/CustomerPage.php",
+            "src/app/modules/documents/backend/Management/DocumentAdapter.php",
+            "src/app/modules/documents/frontend/components/document_section.vue",
+            "docs/app/modules/documents/DocumentAdmin.md",
+            "tests/backend/app/modules/documents/DocumentAdminTest.php",
         )
         for root in (self.fixture.original, self.fixture.target, self.fixture.installed):
             for name in names:

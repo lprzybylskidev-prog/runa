@@ -1,5 +1,35 @@
 # Table and List Patterns
 
+The default Table keeps its original semantic header visible while the page (or
+enclosing dialog) scrolls, bounded by the table's end and below the Application
+shell header. Wide tables place a synchronized horizontal scrollbar immediately
+below that header; touch/trackpad and keyboard scrolling of the data region remain
+available. Header labels remain left-aligned and are vertically centered within
+the complete header band: overflowing tables reserve equal space above labels
+and for the native rail below them. Wheel input over the header or rail scrolls
+wide tables horizontally, including line/page wheel modes and native trackpad
+horizontal intent. At either horizontal end the gesture does not chain to page
+scrolling. Ctrl+wheel keeps browser zoom; tables that fit retain normal page
+scrolling, as does wheel input over body rows. Tables that fit their container
+need no horizontal scrollbar. Directional dotted edge cues follow the shared
+[horizontal scrolling contract](components.md#horizontal-scrolling), also used by
+Tabs and ApplicationLayout top navigation. The private viewport
+composable coalesces vertical scrolling into one animation-frame callback and applies
+compositor-layer transforms directly to the header and rail before paint, without
+a Vue render or synchronous layout mutation inside the scroll event;
+column/overflow measurements run on resize rather than each scroll. The composable
+stays in Runa; customer presentations compose public Table or replace
+its presentation through application-owned components.
+
+`TableColumn<Row>.filterType?: 'datetime'` is a public consumption descriptor owned
+by Runa UI, declared in `src/runa/resources/js/runa/ui/tables.ts` and consumed by
+runtime Table from `@/runa/ui`. It selects compact (`size="sm"`) DateTimeInput using the application
+timezone and PL/EN picker copy. Query values remain explicit-offset ISO instants,
+normalized to UTC on edit. Incomplete/invalid drafts stay local without issuing a
+new filter query. Reset filters clears invalid drafts even without a committed
+filter. Dictionary filterOptions still select Select; other descriptors retain
+text filters. Custom filter slots own equivalent typed controls/draft handling.
+
 Canonical implementation: `src/runa/resources/js/components/AppTable.vue`, provider contracts in `src/runa/resources/js/runa/ui/tables.ts`, processing/transport helpers in `src/runa/resources/js/lib/table.ts`.
 
 Reuse filters, statistics, pagination, sorting, row/bulk actions and loading/empty/error states. The established page order is heading/description/actions, breadcrumbs, optional statistics, optional toolbar/filters, then mandatory content, with an optional supplementary panel. Statistics/Statistic now implement the global/filtered user switch, KPI slots and optional per-view mode persistence through useStatisticsMode; providers/calculations remain external. the isolated ApplicationScenario test fixture demonstrates integration above its toolbar. Pagination and the table foundation are available; personalization and named saved views are available; cross-page selection, provider-owned bulk operations and exports are available. Preserve mobile access to data and actions, including horizontal scrolling or an intentional responsive presentation when needed. Respect the canonical API pagination/filter contract and finite page sizes. Update this reference when a reusable pattern changes.
@@ -8,7 +38,7 @@ Reuse filters, statistics, pagination, sorting, row/bulk actions and loading/emp
 
 `Table`, `useTable`, `TableColumn<Row>`, `TableQuery`, `TablePage<Row>` and the provider helpers are public through `@/runa/ui`. Table is controlled through `query` / `update:query` and `selection` / `update:selection` (legacy explicit `selected` / `update:selected` remains supported). Use a stable `rowKey`, normally the backend `public_id`. Selection supports explicit IDs or an all-matching query snapshot with exclusions.
 
-Pass `mode="client"` with a bounded, already-loaded `rows` array, or `mode="server"` with `provider(query, signal)`. Client mode filters and sorts before slicing; numeric values compare numerically, strings use locale comparison and nulls follow populated values in ascending order. Use `compare` for dates/exact domain ordering and `filter` for column-specific semantics. Server mode never applies local filtering/slicing to returned rows. Providers return `rows`, `total`, `matching`, `counts` (`exact`, `stale`, `unknown`), `hasNext`, and capabilities (`sort`, `filter`, `maxPerPage`). Only exact matching counts drive numbered pagination. Unknown/stale counts use previous/next. Consumers must keep query page sizes within provider capabilities; normalization bounds helper requests to 100 by default. Filters reset the page through the filter slot's `update`; custom query controls must do the same.
+Pass `mode="client"` with a bounded, already-loaded `rows` array, or `mode="server"` with `provider(query, signal)`. Client mode filters and sorts before slicing; numeric values compare numerically, strings use locale comparison and nulls follow populated values in ascending order. Use `compare` for dates/exact domain ordering and `filter` for column-specific semantics. Server mode never applies local filtering/slicing to returned rows. Providers return `rows`, `total`, `matching`, `counts` (`exact`, `stale`, `unknown`), `hasNext`, and capabilities (`sort`, `filter`, `maxPerPage`). `TablePage<Row>.pagination?: 'numbered' | 'cursor'` is owned by Runa UI in `src/runa/resources/js/runa/ui/tables.ts` and consumed by runtime Table from `@/runa/ui`. Its default preserves numbered pagination when matching counts are exact; `cursor` always uses previous/next, independently of count accuracy. Unknown/stale counts also use previous/next. Exact counts remain available for the result label and authorized all-matching selection. Consumers must keep query page sizes within provider capabilities; normalization bounds helper requests to 100 by default. Filters reset the page through the filter slot's `update`; custom query controls must do the same.
 
 Data columns are sortable by default; set `sortable: false` to opt out. Server
 headers additionally require the key in the returned `capabilities.sort`; providers
@@ -19,6 +49,30 @@ for default-sortable columns, including hidden ones. Action/selection columns ar
 not sortable. Displayed dates need a `compare` adapter over their original instants;
 never sort localized date text. History loaded in bounded cursor batches sorts only
 the loaded rows; this does not claim global ordering of unloaded history.
+
+Supplied tables expose their applicable shared capabilities: sorting, filters,
+search over local rows, page size/pagination, columns/named views, refresh and
+separately authorized CSV/XLSX/PDF/print. Selection and bulk actions require an
+actual owning operation; server tables advertise only implemented query keys.
+Do not omit a supported capability merely because the view uses a custom renderer.
+
+UI owns public `withTableFilters<Row>(columns: readonly TableColumn<Row>[]):
+TableColumn<Row>[]`, exported by `@/runa/ui` and implemented in runtime
+`resources/js/lib/table.ts`. Application/module presentations may use it for
+bounded, already-loaded rows. It returns copied descriptors with case-insensitive,
+trimmed substring filters over displayed values and preserves explicit domain
+filters, options, comparators and labels. It performs no read or authorization.
+Server readers supply their own filtering; never use this helper to imply matching
+or ordering over unloaded server pages. Exports reuse the same descriptors/query.
+
+The public UI Table `filters` slot provides `{query: TableQuery, update(value:
+TableQuery): void, resetKey: number, setValidity(key: string, valid: boolean): void}`.
+Custom filter controls report local invalid drafts through setValidity and key
+resettable controls by resetKey so the standard Reset filters action clears them.
+The optional `afterFilters` default-scope slot inserts content between filters and
+the standard toolbar. UI owns these runtime presentation seams in AppTable.vue;
+no backend operation is implied. AdminResourceTable forwards the same filter scope
+and afterFilters slot through its public AdminResourceTableSlots contract.
 
 Use `cell-<key>` slots for presentation, `actions` for row actions, `filters` for application-owned controls, and `bulk` for external selected-record controls. All controls work without a layout. Wide content remains accessible in a labelled keyboard-scrollable table region. Client tables whose rows are fetched by the caller accept `:loading="readPending"`.
 Keep it true for the request lifetime, including an initially empty rows array;
@@ -44,7 +98,7 @@ Table defaults use compact vertical spacing with middle-aligned body cells and s
 
 ## Column personalization and named views
 
-`TablePreferences` and `useTableViews` are optional, shell-independent exports. Table accepts controlled `columnState` (`key`, `visible`, optional pixel `width`); processing still uses every declared column so hiding a field does not silently remove its active sort/filter. Never put unauthorized fields in descriptors or API responses: hiding columns is presentation only.
+`TablePreferences` and `useTableViews` are optional, shell-independent exports. Table accepts controlled `columnState` (`key`, `visible`, optional pixel `width`) and reconciles subsequent changes into its presentation without fetching data or changing the current page; reapplying identical columns is a no-op; processing still uses every declared column so hiding a field does not silently remove its active sort/filter. Never put unauthorized fields in descriptors or API responses: hiding columns is presentation only.
 
 ```ts
 const tableViews = useTableViews({
@@ -61,7 +115,7 @@ The preference control is `table-views`, scoped by application/module/view, usin
 
 Column controls offer visibility, drag-before reordering plus keyboard move buttons, a compact width text field with px suffix and automatic-width reset. Widths are layout hints with a fixed table layout when configured; spare desktop space can expand columns and narrow screens retain horizontal scrolling. Width values initially use the measured rendered column width (160px fallback for unmeasured/hidden columns), while explicit values show the configured width. Pass Table's column-widths event into TablePreferences measuredWidths. Custom controls can call setColumns/move/reorder/resetColumns directly. Width reset removes manual sizing and restores descriptor order/visibility.
 
-Named views save global search, filters, sort, page size, column order/visibility/width, never the transient page number (applying a view starts at page 1). Controller methods: create(name), select(id), update(), rename(name), remove(), setDefault(id|null), reset(), resetColumns(), selectDefault(). Names are trimmed, unique case-insensitively, 1–80 characters, with at most 50 views. The default view is applied on re-entry; without one the last current snapshot is restored. Dirty is exposed relative to the selected saved snapshot; create/update are explicit and unsaved edits do not mutate saved views. Deleting a default clears its default designation and retains the current presentation. Reset current restores the initial query and columns, preserving named views/default; clear the default separately to change next-entry behavior. Full account/shared synchronization remains deferred.
+Named views save global search, filters, sort, page size, column order/visibility/width, never the transient page number (explicitly applying a view starts at page 1). Identical preference notifications, including a controller’s own write and changes to unrelated preferences, preserve transient pagination. Controller methods: create(name), select(id), update(), rename(name), remove(), setDefault(id|null), reset(), resetColumns(), selectDefault(). Names are trimmed, unique case-insensitively, 1–80 characters, with at most 50 views. The default view is applied on re-entry; without one the last current snapshot is restored. Dirty is exposed relative to the selected saved snapshot; create/update are explicit and unsaved edits do not mutate saved views. Deleting a default clears its default designation and retains the current presentation. Reset current restores the initial query and columns, preserving named views/default; clear the default separately to change next-entry behavior. Full account/shared synchronization remains deferred.
 
 The default Table toolbar uses sm TextInput/Select controls for **Search** and page size. Search splits trimmed text into terms and requires each term to match at least one declared searchable column value before pagination; `TableColumn.searchable=false` excludes a column. Hidden columns remain searchable unless explicitly excluded. Search is independent of per-column filters, which applications may implement through the existing filter slot. `TableQuery.search` is optional and included in saved snapshots. Server providers receive the normalized term string; createApiTableProvider encodes it as `filter[search]` (disable with searchable=false and disable the Table search control for unsupported endpoints). Backend implementations must validate this filter, search only permitted fields/records and count the same matching query, without downloading datasets into the browser.
 
@@ -131,3 +185,84 @@ version 2 and optional `statistics.mode` version 1 keys with server validation.
 The default adapter subscribes to account hydration, preserves guest separation,
 serializes revision writes and reports errors. Reset uses server defaults; custom
 stores own their own lifecycle. See [account preferences](../../modules/auth/preferences.md).
+
+## Admin cursor collections
+
+For projected Admin resource collections, compose public `useAdminTable` and
+`AdminResourceTable` from `@/runa/admin`; see the [exact Admin contract](../../modules/admin/frontend.md#delivered-cursor-table-composition).
+They adapt the existing resource read lane to this server Table contract, retain
+opaque cursors/nullable owner totals, and never apply local dataset processing.
+Automatic section dispatch, shared record editors, selection/views and explicit
+owner-bound export/bulk/print adapters are delivered. TableActions.provider is
+optional for bulk-only/print-only composition; absent export capabilities hide
+export settings and formats. Unknown cursor counts never imply all-page selection.
+Owner/customer table
+references route here; no separate table engine or preference store is introduced.
+
+`Table.retainEmptyFrame?: boolean` (default false) keeps column headers and an
+accessible empty row when the current result is empty, rather than replacing the
+table with EmptyState. Public Table still owns sorting/columns/selection; the prop
+adds presentation only. For already loaded client data, keep rows and pass loading
+only for the initial read; indicate subsequent refresh in the owning toolbar and
+aria-busy region. Admin history/work tables use this composition to preserve
+focus/rows and retain visible empty table structure.
+
+## Shared table controls
+
+Every Table supplies an icon-only Refresh button with a localized Tooltip and
+accessible name. `refresh?: () => void | Promise<void>` connects caller-owned
+reads; absent a callback it reloads the provider/local source. `refreshing?: boolean`
+keeps the icon busy during in-place reads, and `refreshDisabled?: boolean` guards
+owning operations. Remove duplicate table refresh buttons from view toolbars.
+The toolbar keeps preferences/actions grouped at its trailing edge.
+
+Filterable columns render controlled compact filters above the toolbar (one/two/
+three/six columns through mobile/sm/lg/xl). `TableColumn.filterOptions?: readonly
+{ value: string; label: string }[]` selects the shared clearable Select; other
+filters use TextInput. A custom filters slot replaces these controls. Changes reset
+page 1 immediately; owning providers retain cancellation/stale-response protection.
+The shared icon-only Reset filters button lives beside the fields in the labelled
+filter region, including custom filter slots; it is separate from preferences,
+exports and refresh. Search shares this filter region. Page size stays in the
+table toolbar. Reset clears search and filters, preserves
+page size/sort/column preferences and resets page 1. Bind custom controls to query
+rather than a separate unsynchronized draft.
+
+Filter grids align fields to the bottom of each grid row so wrapped labels do not
+stagger the controls. Apply the same alignment in custom filter presentations,
+including the Auth directory; keep labels fully visible without fixed heights.
+
+### Bounded built-in exports
+
+Table accepts `exportAllowed?: boolean` and
+`exportRows?: (signal: AbortSignal) => Promise<readonly Row[]>`. Both are required
+for built-in CSV/XLSX/PDF/Print. The callback reauthorizes the owning read/export
+permission and returns its bounded export data; Table never walks server pages.
+The built-in scope is explicitly `page` (Current loaded rows), with the controlled
+query snapshot, and never claims the entire server dataset. Provider-backed
+application exports can retain broader scopes through TableActions.
+`ExportScope<Query>` includes `{ kind: 'page'; query: Query }` and
+ExportCapabilities.scopes includes `page`. Shared client adapters apply that
+query's page after filtering/sorting; data fetched as an already paginated server
+page is passed with page 1 and its bounded size. Export uses visible columns only.
+
+Tables without a custom toolbar receive in-memory column/named-view controls.
+Explicit TablePreferences/controller integrations retain their owning persistence.
+No account filters are implicitly persisted under a guessed global key.
+
+`TableColumn<Row>.filterRange?: {endKey: string, label: string}` pairs a start
+filter with its declared end key in one DateTimeRangeInput. Table renders the
+start descriptor, hides the duplicate end filter control and atomically updates
+both original string filter keys (or removes cleared keys), restarting page 1.
+Both endpoint descriptors remain in the column/query contract. UI owns this
+optional consumption descriptor in ui/tables.ts and AppTable.vue. The caller
+must supply authorized datetime endpoints; this presentation grants no server
+filter authority. Admin's source adapter pairs the declared filterable datetime
+keys from/until, including Audit; isolated datetime filters retain their existing
+single-moment input. Default range labels and picker controls follow PL/EN.
+
+`Table` accepts optional `rowClass?: (row: Row) => string | undefined` for
+source-controlled row presentation (for example, a deleted record's semantic
+color). The callback preserves selection behavior, row identity and keyboard
+controls. Use existing theme tokens and retain textual state in authorized detail
+views; styling never grants read/write authority.

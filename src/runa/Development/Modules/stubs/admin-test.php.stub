@@ -1,0 +1,13 @@
+<?php
+
+use {{namespace}}\Handlers\{{name}}ToolsHandler;
+use Illuminate\Validation\ValidationException;
+
+uses(\{{testcase}}::class);
+
+it('normalizes text without Admin or persistence and rejects unsafe input', function (): void {
+    $tools = new {{name}}ToolsHandler;
+    expect($tools->normalize('  Example   text  '))->toBe('Example text');
+    expect(fn () => $tools->normalize("unsafe\ntext"))->toThrow(ValidationException::class);
+    expect(fn () => $tools->normalize(str_repeat('x', 161)))->toThrow(ValidationException::class);
+});

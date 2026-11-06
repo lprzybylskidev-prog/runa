@@ -28,6 +28,7 @@ use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Runtime\MaintenanceState;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
@@ -64,7 +65,7 @@ beforeEach(function (): void {
     $loader = new ModuleAutoloader($this->sources->root, $this->registry, true);
     app()->instance(ModuleAutoloader::class, $loader);
     $this->lifecycle = new LifecyclePolicies($this->sources->root, app(), $loader, true);
-    $this->health = new ModuleHealth(DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
+    $this->health = new ModuleHealth(app(HealthAdmissions::class), DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
     $this->availability = new ModuleAvailability($this->registry, $this->health, $this->lifecycle, '0.4.0');
     $this->maintenance = new MaintenanceState(app(), DB::connection(), $this->registry, $this->availability);
     $this->declarations = new ModuleDeclarations($this->sources->root, app(), $loader, true);
@@ -97,6 +98,25 @@ afterEach(function (): void {
     DB::table('shared.modules')->where('module_id', $this->id)->delete();
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     $this->sources->remove();
+});
+
+it('isolates a failed declaration query inside the shared startup snapshot', function (): void {
+    $file = $this->directory.'/backend/Definitions/Routes.php';
+    file_put_contents($file, str_replace('return [', '\\Illuminate\\Support\\Facades\\DB::select("SELECT * FROM shared.runa_missing_registration_fixture"); return [', file_get_contents($file)));
+    $manifest = $this->sources->add('app', 'zz_healthy_metadata');
+    $class = 'App\\Modules\\ZzHealthyMetadata\\Definitions\\Routes';
+    $manifest['declarations']->http = [$class];
+    $this->sources->write('app', 'zz_healthy_metadata', $manifest);
+    file_put_contents($this->sources->root.'/app/modules/zz_healthy_metadata/backend/Definitions/Routes.php', '<?php namespace App\\Modules\\ZzHealthyMetadata\\Definitions; final class Routes implements \\Runa\\Contracts\\Modules\\HttpProvider { public static int $calls = 0; public function schemaVersion(): int { return 1; } public function endpoints(): array { \\Illuminate\\Support\\Facades\\DB::select("SELECT 1"); self::$calls++; return []; } }');
+    try {
+        $generation = $this->registry->synchronize('app')->generation;
+        $this->http->register();
+        expect($class::$calls)->toBe(1)->and($this->registry->snapshot()->generation)->toBe($generation)
+            ->and(DB::selectOne('SELECT 1 as value')->value)->toBe(1);
+    } finally {
+        DB::table('shared.modules')->where('module_id', 'app.zz_healthy_metadata')->delete();
+        DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    }
 });
 
 it('serves an ordinary API-only consumer through typed readonly contracts with per-call checks', function (): void {

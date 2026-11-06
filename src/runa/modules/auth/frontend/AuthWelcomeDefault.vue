@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { provide } from 'vue';
+import { useLocale } from '../../../resources/js/composables/useLocale';
+const { locale } = useLocale();
+import { applicationSessionOwner } from '../../../resources/js/lib/applicationSession';
+provide(applicationSessionOwner, true);
 import {
-  Alert,
+  FormNotifications,
   Button,
   TextLink,
   MinimalLayout,
-  Spinner,
+  ContentLoading,
   Icon,
   Tooltip,
 } from '@/runa/ui';
@@ -21,21 +26,29 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
   >
     <template #header-actions>
       <div class="max-w-full" aria-live="polite">
-        <Spinner
+        <ContentLoading
           v-if="loading"
+          shape="navigation"
           :label="text('Sprawdzanie sesji', 'Checking session')"
         />
-        <Alert v-else-if="failed" tone="danger"
-          >{{
+        <FormNotifications
+          v-else-if="failed"
+          :locale="locale"
+          :error="
             text(
               'Nie udało się pobrać opcji logowania.',
               'Sign-in options could not be loaded.',
             )
-          }}
-          <Button @click="load">{{ text('Ponów', 'Retry') }}</Button></Alert
+          "
         >
+          <template #actions
+            ><Button intent="inspect" @click="load">{{
+              text('Ponów', 'Retry')
+            }}</Button></template
+          >
+        </FormNotifications>
         <nav
-          v-else-if="options"
+          v-if="options && !loading"
           class="flex flex-wrap items-center gap-4"
           :aria-label="text('Dostęp do aplikacji', 'Application access')"
         >

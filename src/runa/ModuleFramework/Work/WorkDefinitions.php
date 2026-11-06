@@ -18,6 +18,16 @@ final readonly class WorkDefinitions
     /** @return array{ModuleRecord, JobDefinition} */
     public function resolve(string $module, string $operation): array
     {
+        [$record, $definitions] = $this->declared($module);
+
+        return [$record, $definitions[$operation] ?? throw new RuntimeException('Unknown module job.')];
+    }
+
+    /** One validated source inventory for a metadata collection, not execution authority.
+     * @return array{ModuleRecord, array<string,JobDefinition>}
+     */
+    public function declared(string $module): array
+    {
         $record = $this->registry->snapshot()->modules[$module] ?? throw new RuntimeException('Module work source missing.');
         $definitions = [];
         foreach ($this->declarations->classes($record, 'jobs') as $class) {
@@ -39,7 +49,7 @@ final readonly class WorkDefinitions
             }
         }
 
-        return [$record, $definitions[$operation] ?? throw new RuntimeException('Unknown module job.')];
+        return [$record, $definitions];
     }
 
     public function policy(ModuleRecord $record, JobDefinition $definition): WorkPolicy

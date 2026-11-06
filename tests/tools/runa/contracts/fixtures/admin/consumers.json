@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "status": "existing-public-boundary-fixtures",
+  "cases": [
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthProfiles; use Runa\\Modules\\Auth\\Contracts\\ProfileChange; use Runa\\Support\\Modules\\Api\\ModuleApis; function profile(ModuleApis $apis, string $id, int $version): void { $apis->resolve('runa.auth', AuthProfiles::class, '2.1.0')->edit($id, $version, new ProfileChange(name: 'Example')); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Permissions\\Contracts\\PermissionsAccess; use Runa\\Modules\\Permissions\\Contracts\\AssignmentPreview; function apply(PermissionsAccess $access, AssignmentPreview $reviewed): array { return $access->applyAssignments($reviewed); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Audit\\Contracts\\AuditReads; use Runa\\Modules\\Audit\\Contracts\\AuditQuery; function history(AuditReads $reads, AuditQuery $query): void { $reads->page($query); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Models\\User;",
+      "expected": ["foreign_module_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\ModuleFramework\\ModuleRegistry;",
+      "expected": ["internal_platform_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthorizationIdentity;",
+      "expected": ["reserved_api_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Audit\\Contracts\\AuditWriter;",
+      "expected": ["reserved_api_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Admin\\Contracts\\AdminAccess; use Runa\\Support\\Modules\\Api\\ModuleApis; function admin(ModuleApis $apis): array { return $apis->resolve('runa.admin', AdminAccess::class, '1.0.0')->bootstrap(); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Integration\\Core\\AdminEntry;",
+      "expected": ["internal_platform_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Integration\\Core\\AdminDiagnostics;",
+      "expected": ["internal_platform_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Admin\\Queries\\Access;",
+      "expected": ["foreign_module_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Contracts\\Modules\\TransactionalMutation; use Runa\\Contracts\\Modules\\MutationDefinition; use Runa\\Contracts\\Modules\\MutationAccess; use Runa\\Contracts\\Modules\\MutationProof; use Runa\\Support\\Modules\\Data\\ModuleTransactions; function commit(ModuleTransactions $transactions, TransactionalMutation $mutation): array { return $transactions->run([$mutation]); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Contracts\\Modules\\TransactionSecurity;",
+      "expected": ["reserved_api_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Contracts\\Modules\\ManagementPageProvider; use Runa\\Contracts\\Modules\\ManagementHandler; use Runa\\Contracts\\Modules\\ManagementPage; use Runa\\Contracts\\Modules\\ManagementRead; use Runa\\Modules\\Admin\\Contracts\\AdminRegistry; function register(AdminRegistry $registry, ManagementPageProvider $provider): void { $registry->register($provider); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\ModuleFramework\\Management\\ManagementPages;",
+      "expected": ["internal_platform_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Admin\\Queries\\Projection;",
+      "expected": ["foreign_module_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\ModuleFramework\\Management\\DeclarationRules;",
+      "expected": ["internal_platform_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Auth\\Contracts\\AuthAdministration; use Runa\\Modules\\Auth\\Contracts\\UserDirectoryQuery; use Runa\\Support\\Modules\\Api\\ModuleApis; function directory(ModuleApis $apis): void { $api = $apis->resolve('runa.auth', AuthAdministration::class, '1.0.0'); $api->users(new UserDirectoryQuery(limit: 25, search: 'Example')); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Modules\\Admin\\Contracts\\AdminOperations; use Runa\\Support\\Modules\\Api\\ModuleApis; function diagnostics(ModuleApis $apis): array { return $apis->resolve('runa.admin', AdminOperations::class, '1.0.0')->read('diagnostics'); }",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Integration\\Core\\AdminOperations;",
+      "expected": ["internal_platform_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Contracts\\Modules\\OperationalParticipant;",
+      "expected": ["reserved_api_import"]
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Contracts\\Settings\\ApplicationSettingProvider; use Runa\\Contracts\\Settings\\ApplicationSetting; use Runa\\Contracts\\Settings\\ApplicationLogo; use Runa\\Support\\Settings\\ApplicationSettings; use Runa\\Support\\Settings\\ApplicationPresentation;",
+      "expected": []
+    },
+    {
+      "source": "<?php namespace App; use Runa\\Settings\\SettingRegistry; use Runa\\Settings\\SettingStore;",
+      "expected": ["internal_platform_import"]
+    }
+  ]
+}

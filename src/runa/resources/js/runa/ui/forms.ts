@@ -18,6 +18,22 @@ export interface DateRangeValue {
   start: string | null;
   end: string | null;
 }
+/** Public compact range control; nullable endpoints retain their owning date/instant kind. */
+export interface TemporalRangeInputProps {
+  modelValue: DateRangeValue;
+  label: string;
+  startLabel?: string | undefined;
+  endLabel?: string | undefined;
+  locale?: 'pl' | 'en' | undefined;
+  size?: 'sm' | 'md' | undefined;
+  helper?: string | undefined;
+  error?: string | undefined;
+  invalidMessage?: string | undefined;
+  disabled?: boolean | undefined;
+  readonly?: boolean | undefined;
+  timeZone?: string | undefined;
+  disambiguation?: TimeDisambiguation | undefined;
+}
 export type TemporalKind = 'date' | 'time' | 'datetime-local';
 export type TimeDisambiguation = 'reject' | 'earlier' | 'later';
 export type ZonedDateTimeResult =
@@ -28,8 +44,11 @@ export type ZonedDateTimeResult =
       candidates: readonly string[];
     };
 export interface TemporalInputProps {
+  id?: string | undefined;
+  hideLabel?: boolean | undefined;
   modelValue: string | null;
   label: string;
+  size?: 'sm' | 'md';
   locale?: 'pl' | 'en';
   helper?: string;
   error?: string | readonly string[];
@@ -39,6 +58,7 @@ export interface TemporalInputProps {
   required?: boolean;
 }
 export interface BooleanInputProps {
+  id?: string | undefined;
   compact?: boolean;
   hideLabel?: boolean;
   modelValue: boolean | null;

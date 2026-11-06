@@ -1,0 +1,810 @@
+import type { AdminMessages } from './contracts';
+
+/** Reviewed Polish presentation for source-owned Admin/Core labels; never business values. */
+export const adminMessages: AdminMessages = {
+  'Enter a snapshot name of 1–80 characters without control characters.':
+    'Podaj nazwę migawki od 1 do 80 znaków, bez znaków sterujących.',
+  'This snapshot name is already used or the limit of 100 snapshots has been reached.':
+    'Ta nazwa migawki jest już zajęta lub osiągnięto limit 100 migawek.',
+  'Settings changed. Refresh the form before saving a snapshot.':
+    'Ustawienia zmieniły się. Odśwież formularz przed zapisaniem migawki.',
+  'This snapshot was deleted or is unavailable. Choose another.':
+    'Ta migawka została usunięta lub jest niedostępna. Wybierz inną.',
+  'This snapshot does not match the current settings definitions. Create a new snapshot.':
+    'Ta migawka nie pasuje do obecnej definicji ustawień. Utwórz nową migawkę.',
+
+  'This login is already in use. Choose another.':
+    'Ten login jest już zajęty. Wybierz inny.',
+  'This email address is already in use. Choose another.':
+    'Ten adres e-mail jest już zajęty. Wybierz inny.',
+
+  'This audit event is no longer available.':
+    'To zdarzenie audytu jest już niedostępne.',
+  'This history event is no longer available.':
+    'To zdarzenie historii jest już niedostępne.',
+  'The history cursor expired. Return to the first page.':
+    'Kursor historii wygasł. Wróć do pierwszej strony.',
+
+  'Application settings changed. Review the current values before saving.':
+    'Ustawienia aplikacji zmieniły się. Sprawdź bieżące wartości przed zapisem.',
+  'Invalid application settings. Check the entered values.':
+    'Nieprawidłowe ustawienia aplikacji. Sprawdź wpisane wartości.',
+
+  'This email address or login is already in use. Choose another.':
+    'Ten adres e-mail lub login jest już zajęty. Wybierz inny.',
+  'The secondary address limit has been reached. Remove an address before adding another.':
+    'Osiągnięto limit dodatkowych adresów. Usuń jeden z nich, aby dodać kolejny.',
+  'This secondary address was removed. Select a current address.':
+    'Ten dodatkowy adres został usunięty. Wybierz aktualny adres.',
+  'Secondary email addresses are disabled.':
+    'Dodatkowe adresy e-mail są wyłączone.',
+  'Editing secondary email addresses is disabled.':
+    'Zmiana dodatkowych adresów e-mail jest wyłączona.',
+  'Enter a different email address.': 'Podaj adres inny niż obecny.',
+  'Changing the primary email address is disabled.':
+    'Zmiana głównego adresu e-mail jest wyłączona.',
+  'The verification link is invalid or expired. Send a new link.':
+    'Link potwierdzający jest nieprawidłowy lub wygasł. Wyślij nowy link.',
+  'Choose a password different from recently used passwords.':
+    'Wybierz hasło inne niż ostatnio używane.',
+  'Identity verification failed. Check your password and current code.':
+    'Nie udało się potwierdzić tożsamości. Sprawdź hasło i aktualny kod.',
+  'The selected recipient is unavailable. Select a current verified address.':
+    'Wybrany adres odbiorcy jest niedostępny. Wybierz aktualny, potwierdzony adres.',
+  'Required notifications cannot be disabled.':
+    'Nie można wyłączyć wymaganych powiadomień.',
+  'This notification category is unavailable.':
+    'Ta kategoria powiadomień jest niedostępna.',
+  'Editing this profile field is disabled.':
+    'Zmiana tego pola profilu jest wyłączona.',
+  'A login is required.': 'Login jest wymagany.',
+  'Invalid image. Choose a supported file within the size limit.':
+    'Nieprawidłowy obraz. Wybierz obsługiwany plik w dozwolonym rozmiarze.',
+  'The uploaded image expired. Select it again.':
+    'Przesłany obraz wygasł. Wybierz go ponownie.',
+  'Avatar editing is disabled.': 'Zmiana awatara jest wyłączona.',
+  'The avatar has already been removed.': 'Awatar został już usunięty.',
+  'Changing your own account state is disabled.':
+    'Samodzielna zmiana stanu konta jest wyłączona.',
+  'Invalid preference value. Choose an available option.':
+    'Nieprawidłowa wartość preferencji. Wybierz dostępną opcję.',
+  'This preference is unavailable.': 'Ta preferencja jest niedostępna.',
+  'Preferences for this module are unavailable.':
+    'Preferencje tego modułu są niedostępne.',
+  'Settings from this device have already been adopted.':
+    'Ustawienia tego urządzenia zostały już przeniesione.',
+  'Your account requires an additional step. Complete it before editing.':
+    'Konto wymaga dodatkowego kroku. Dokończ go przed zmianą danych.',
+  'You do not have permission for this operation.':
+    'Nie masz uprawnień do tej operacji.',
+  'Verification expired. Confirm the operation again.':
+    'Potwierdzenie wygasło. Potwierdź operację ponownie.',
+  'User data changed. Review the current values before saving.':
+    'Dane użytkownika zmieniły się. Sprawdź bieżące wartości przed zapisem.',
+  'User state changed. Review current data before trying again.':
+    'Stan użytkownika zmienił się. Sprawdź bieżące dane przed ponowieniem operacji.',
+  'This account is no longer available.': 'To konto jest już niedostępne.',
+  'Preferences changed. Review the current values before saving.':
+    'Preferencje zmieniły się. Sprawdź bieżące wartości przed zapisem.',
+  'The policy changed. Review the current rules before saving.':
+    'Polityka zmieniła się. Sprawdź bieżące zasady przed zapisem.',
+  'The exception changed. Review the current values before saving.':
+    'Wyjątek zmienił się. Sprawdź bieżące wartości przed zapisem.',
+  'At least one active superadministrator must remain.':
+    'Musi pozostać co najmniej jeden aktywny superadministrator.',
+  'You cannot grant yourself superadministrator authority.':
+    'Nie możesz nadać sobie uprawnień superadministratora.',
+  'These privileges cannot be changed. Keep at least one active superadministrator.':
+    'Nie można zmienić tych uprawnień. Zachowaj co najmniej jednego aktywnego superadministratora.',
+  'This role or permission code is already in use. Choose another.':
+    'Taki kod roli lub uprawnienia jest już zajęty. Wybierz inny.',
+  'This role or permission is managed by the system and cannot be changed.':
+    'Ta rola lub uprawnienie jest zarządzane przez system i nie może być zmienione.',
+  'This role is used by other roles. Remove those references before deleting it.':
+    'Ta rola jest używana przez inne role. Usuń te powiązania przed jej usunięciem.',
+  'A selected role or permission is unavailable or protected. Change the selection.':
+    'Wybrana rola lub uprawnienie jest niedostępne albo chronione. Zmień wybór.',
+  'Too many roles or permissions selected. Reduce the selection.':
+    'Wybrano zbyt wiele ról lub uprawnień. Zmniejsz zaznaczenie.',
+  'This change affects too many permission relationships. Split it into smaller operations.':
+    'Zmiana obejmuje zbyt wiele powiązań uprawnień. Podziel ją na mniejsze operacje.',
+  'Too many roles would be deleted. Reduce the selection.':
+    'Usunięcie obejmuje zbyt wiele ról. Zmniejsz zaznaczenie.',
+  'This role has assignments. Review the effects and confirm deletion.':
+    'Ta rola ma przypisania. Przejrzyj skutki i potwierdź jej usunięcie.',
+  'The selected user is unavailable.': 'Wybrany użytkownik jest niedostępny.',
+  'The selected role or permission is no longer available.':
+    'Wybrana rola lub uprawnienie jest już niedostępne.',
+  'The role or permission changed. Review current values before saving.':
+    'Rola lub uprawnienie zmieniło się. Sprawdź bieżące wartości przed zapisem.',
+  'Roles or permissions changed. Review the operation effects again.':
+    'Role lub uprawnienia zmieniły się. Ponownie przejrzyj skutki operacji.',
+  'Form data changed. Review the current values before saving.':
+    'Dane formularza zmieniły się. Sprawdź bieżące wartości przed zapisem.',
+  'The operation effects changed. Review them again before confirming.':
+    'Skutki operacji zmieniły się. Przejrzyj je ponownie przed zatwierdzeniem.',
+  'Review the operation effects before confirming.':
+    'Przejrzyj skutki operacji przed zatwierdzeniem.',
+  'Available form sections changed. Review current data before saving.':
+    'Dostępne sekcje formularza zmieniły się. Sprawdź bieżące dane przed zapisem.',
+  'These sections cannot be saved together. Save them separately.':
+    'Te sekcje nie mogą zostać zapisane razem. Zapisz je osobno.',
+  'This form is no longer available. Return to the list and open it again.':
+    'Ten formularz jest już niedostępny. Wróć do listy i otwórz go ponownie.',
+  'The operation state changed. Load current data and review the operation again.':
+    'Stan operacji zmienił się. Pobierz aktualne dane i przejrzyj operację ponownie.',
+  'Invalid operation data. Check the entered values.':
+    'Nieprawidłowe dane operacji. Sprawdź wpisane wartości.',
+  'The result is too large to display. Narrow the scope.':
+    'Wynik jest zbyt duży do wyświetlenia. Zawęź zakres.',
+  'This module is no longer available.': 'Ten moduł jest już niedostępny.',
+  'The operation could not complete. Check its current state before trying again.':
+    'Nie udało się zakończyć operacji. Sprawdź jej aktualny stan przed ponowieniem.',
+  'Form security expired. Renew it and submit again.':
+    'Sesja formularza wygasła. Odśwież zabezpieczenie i zatwierdź ponownie.',
+  'Your session expired. Sign in again.':
+    'Sesja wygasła. Zaloguj się ponownie.',
+  'Verify your identity to perform the operation.':
+    'Potwierdź tożsamość, aby wykonać operację.',
+  'Preferences for this application are unavailable.':
+    'Preferencje tej aplikacji są niedostępne.',
+  'Administrator email verification is disabled.':
+    'Potwierdzanie adresu przez administratora jest wyłączone.',
+  'Invalid session selection. Select current sessions.':
+    'Zaznaczenie sesji jest nieprawidłowe. Wybierz aktualne sesje.',
+  'Too many sessions selected. Reduce the selection.':
+    'Zaznaczono zbyt wiele sesji. Zmniejsz zaznaczenie.',
+  'Invalid user selection. Select current accounts.':
+    'Zaznaczenie użytkowników jest nieprawidłowe. Wybierz aktualne konta.',
+  'Too many users selected. Reduce the selection.':
+    'Zaznaczono zbyt wielu użytkowników. Zmniejsz zaznaczenie.',
+  'Selected accounts changed. Review the operation effects again.':
+    'Stan wybranych kont zmienił się. Ponownie przejrzyj skutki operacji.',
+  'Selected sessions changed. Review the operation effects again.':
+    'Zaznaczone sesje zmieniły się. Ponownie przejrzyj skutki operacji.',
+
+  'Choose a future activation or deactivation date.':
+    'Wybierz przyszły termin aktywacji lub dezaktywacji.',
+  'Activation must be scheduled before deactivation. Check the selected accounts and dates.':
+    'Termin aktywacji musi poprzedzać termin dezaktywacji. Sprawdź zaznaczone konta i terminy.',
+  'This operation cannot be applied to deleted accounts. Change the selection or restore them first.':
+    'Tej operacji nie można wykonać na usuniętych kontach. Zmień zaznaczenie lub najpierw przywróć konta.',
+  'An invitation requires a passwordless account without security locks, deletion or reached deactivation.':
+    'Zaproszenie wymaga konta bez hasła, blokad bezpieczeństwa, usunięcia i osiągniętego terminu dezaktywacji.',
+  'A password reset requires an account with a password that can sign in.':
+    'Reset hasła wymaga konta z hasłem, które może się logować.',
+  'This operation cannot be applied to the current account selection. Check the account states and try again.':
+    'Nie można wykonać tej operacji dla bieżącego zaznaczenia. Sprawdź stan kont i spróbuj ponownie.',
+  'An email address or login is already used by another account. Change the selection or resolve the conflict before restoring accounts.':
+    'Adres e-mail lub login jest już używany przez inne konto. Zmień zaznaczenie lub rozwiąż konflikt przed przywróceniem kont.',
+  All: 'Wszystkie',
+  Event: 'Zdarzenie',
+  'Event data': 'Dane zdarzenia',
+  'Loading event details': 'Wczytywanie szczegółów zdarzenia',
+  'Loading record details': 'Wczytywanie szczegółów rekordu',
+  'Unable to load the current record.': 'Nie udało się wczytać rekordu.',
+  'Show related events': 'Pokaż powiązane zdarzenia',
+  'Show actor history': 'Pokaż historię wykonawcy',
+  Actor: 'Wykonawca',
+  'No data.': 'Brak danych.',
+
+  'Choose image': 'Wybierz obraz',
+  'No image selected': 'Nie wybrano obrazu',
+  'Remove image': 'Usuń obraz',
+  'Default language': 'Domyślny język',
+  'Default theme': 'Domyślny motyw',
+  'Default timezone': 'Domyślna strefa czasowa',
+  'Application favicon': 'Favicon aplikacji',
+  'Restore defaults': 'Przywróć domyślne',
+  'Deployed logo': 'Logo z aplikacji',
+  'Choose a PNG, JPEG or WebP image up to 4 MiB.':
+    'Wybierz obraz PNG, JPEG lub WebP do 4 MiB.',
+  'The image could not be read.': 'Nie udało się odczytać obrazu.',
+  'Image dimensions must not exceed 4096 pixels.':
+    'Wymiary obrazu nie mogą przekraczać 4096 pikseli.',
+  'The prepared image is too large. Choose a simpler image.':
+    'Przygotowany obraz jest za duży. Wybierz prostszy obraz.',
+  Polish: 'Polski',
+  English: 'English',
+  System: 'Systemowy',
+  Light: 'Jasny',
+  Dark: 'Ciemny',
+  'Diagnostic result': 'Wynik diagnostyki',
+  'Module enabled': 'Włączenie modułu',
+  'Module disabled': 'Wyłączenie modułu',
+  'Module unregistered': 'Wyrejestrowanie modułu',
+  'A health check could not complete.':
+    'Kontrola stanu nie mogła się zakończyć.',
+  'Another health check is in progress.': 'Trwa już inna kontrola stanu.',
+  'Health policy is unavailable.':
+    'Polityka monitorowania stanu jest niedostępna.',
+  compensating: 'wycofywanie skutków',
+  preparing: 'przygotowywanie',
+  succeeded: 'zakończona',
+  Status: 'Stan',
+  Operation: 'Operacja',
+  'Last change': 'Ostatnia zmiana',
+  Started: 'Rozpoczęto',
+  'Settings change': 'Zmiana ustawień',
+  'Unable to load operation history.':
+    'Nie udało się wczytać historii operacji.',
+  'Load older operations': 'Wczytaj starsze operacje',
+  'Refresh history': 'Odśwież historię',
+  'Operation history': 'Historia operacji',
+  'Loading module information': 'Wczytywanie informacji o module',
+  'Planned changes': 'Planowane zmiany',
+  'Affected modules': 'Moduły objęte zmianą',
+  'Transition blocked': 'Zmiana zablokowana',
+  'Ready to apply': 'Gotowe do zatwierdzenia',
+  'A native module policy blocks this transition.':
+    'Polityka modułu blokuje tę zmianę.',
+  'Core module lifecycle cannot be changed here.':
+    'Cyklu życia modułu Core nie można zmienić w tym miejscu.',
+  'The module requires verification.': 'Moduł wymaga sprawdzenia.',
+  'The lifecycle policy is unavailable.':
+    'Polityka cyklu życia jest niedostępna.',
+  'Module availability changed. Refresh its state.':
+    'Dostępność modułu uległa zmianie. Odśwież jego stan.',
+  'Required dependencies contain a cycle.': 'Wymagane zależności tworzą cykl.',
+  'A required dependency is incompatible.':
+    'Wymagana zależność jest niezgodna.',
+  'A required dependency is unavailable or incompatible.':
+    'Wymagana zależność jest niedostępna lub niezgodna.',
+  'A module operation is in progress.': 'Trwa operacja na module.',
+  'Installed data requires an update.':
+    'Zainstalowane dane wymagają aktualizacji.',
+  'Source and installed versions do not match.':
+    'Wersja źródłowa różni się od zainstalowanej.',
+  'A health check failed.': 'Kontrola stanu modułu wykryła problem.',
+  'Health has not been confirmed.': 'Stan modułu nie został potwierdzony.',
+  'Health observations have expired.': 'Obserwacje stanu modułu wygasły.',
+  'The module is not installed.': 'Moduł nie jest zainstalowany.',
+  'Module source is missing.': 'Brak kodu źródłowego modułu.',
+  'The module is not registered.': 'Moduł nie jest zarejestrowany.',
+  'The module is disabled.': 'Moduł jest wyłączony.',
+  'Check required': 'Wymaga sprawdzenia',
+  'Needs attention': 'Wymaga uwagi',
+  Healthy: 'Sprawny',
+  Failed: 'Niepoprawna',
+  Passed: 'Poprawna',
+  'Valid until': 'Ważne do',
+  'Health observations': 'Obserwacje stanu',
+  None: 'Brak',
+  'Optional dependencies': 'Zależności opcjonalne',
+  'Required dependencies': 'Zależności wymagane',
+  'Optional module': 'Moduł opcjonalny',
+  'Core module': 'Moduł Core',
+  'Not registered': 'Niezarejestrowany',
+  'Not installed': 'Nie zainstalowano',
+  'Not available': 'Brak danych',
+  'Installed version': 'Wersja zainstalowana',
+  'Source version': 'Wersja źródłowa',
+  Close: 'Zamknij',
+  'No modules match this filter.':
+    'Brak modułów pasujących do wybranego filtra.',
+  'Refreshing…': 'Odświeżanie…',
+  'Refreshing module state': 'Odświeżanie stanu modułów',
+  Runtime: 'Środowisko',
+  Platform: 'Platforma',
+  Modules: 'Moduły',
+  'All modules': 'Wszystkie',
+  'Registered modules': 'Zarejestrowane',
+  'Registered and enabled modules': 'Zarejestrowane i włączone',
+  'Module state': 'Stan modułów',
+  enable: 'włącz',
+  disable: 'wyłącz',
+  unregister: 'wyrejestruj',
+  'A value is set. Enter a replacement to change it.':
+    'Wartość jest ustawiona. Wpisz nową, aby ją zastąpić.',
+  'Account UUID (empty uses your account)':
+    'UUID konta (puste oznacza Twoje konto)',
+  'Account operations initially show your current account. Select another account from the directory.':
+    'Początkowo widoczne jest Twoje konto. Wybierz inne konto z listy użytkowników.',
+  'Account state': 'Stan konta',
+  Action: 'Akcja',
+  'Task history': 'Historia zadań',
+  'Refresh tasks': 'Odśwież zadania',
+  'Additional task history is omitted.':
+    'Pomijamy starsze zadania poza limitem odczytu.',
+  'Active work': 'Aktywne zadania',
+  'Actor UUID': 'UUID wykonawcy',
+  'Actor kind': 'Typ wykonawcy',
+  'Additional active work is omitted.':
+    'Pozostałe aktywne zadania zostały pominięte.',
+  'Administrator panel': 'Panel administratora',
+  'Administrator panel access is not available.':
+    'Nie masz dostępu do panelu administratora.',
+  'Administrator panel editor': 'Edytor panelu administratora',
+  'All accounts': 'Wszystkie konta',
+  'All retained modules': 'Wszystkie zachowane moduły',
+  'Application settings': 'Ustawienia aplikacji',
+  'Application settings are temporarily unavailable. Your draft is retained.':
+    'Ustawienia aplikacji są chwilowo niedostępne. Wpisane dane zostały zachowane.',
+  'Application settings could not be read.':
+    'Nie udało się odczytać ustawień aplikacji.',
+  'Application settings saved.': 'Ustawienia aplikacji zostały zapisane.',
+  Available: 'Dostępny',
+  Operations: 'Operacje',
+  'Back to operations': 'Wróć do operacji',
+  'Bulk action cancelled or selection changed.':
+    'Akcja zbiorcza została anulowana lub zmieniono zaznaczenie.',
+  'Bulk action unavailable.': 'Akcja zbiorcza jest niedostępna.',
+  Cancel: 'Anuluj',
+  'Cancel and compensate': 'Anuluj i wycofaj skutki',
+  Cancellation: 'Anulowanie',
+  'Changes saved.': 'Zmiany zostały zapisane.',
+  'Check the highlighted fields.': 'Sprawdź zaznaczone pola.',
+  'Choose Yes or No.': 'Wybierz Tak lub Nie.',
+  'Choose a valid boolean filter.': 'Wybierz prawidłowy filtr logiczny.',
+  'Choose an available value.': 'Wybierz dostępną wartość.',
+  'Choose valid public UUIDs.':
+    'Wybierz prawidłowe publiczne identyfikatory UUID.',
+  'Close record': 'Zamknij rekord',
+  Confirm: 'Potwierdź',
+  'Confirm bulk action': 'Potwierdź akcję zbiorczą',
+  'Confirm the required operation proof, then submit explicitly.':
+    'Potwierdź tożsamość wymaganą dla tej operacji, a następnie ponownie ją zatwierdź.',
+  'Confirm the reviewed changes.': 'Potwierdź sprawdzone zmiany.',
+  'Confirm this destructive operation.':
+    'Potwierdź operację usuwania lub nieodwracalnej zmiany.',
+  'Confirm this operation? Existing work may be interrupted.':
+    'Potwierdzić tę operację? Trwające zadania mogą zostać przerwane.',
+  'Confirm your password to enter the administrator panel.':
+    'Potwierdź hasło, aby wejść do panelu administratora.',
+  'Continue with this action for the selected records?':
+    'Wykonać tę akcję dla zaznaczonych rekordów?',
+  Correlation: 'Identyfikator powiązania',
+  'Current accounts': 'Bieżące konta',
+  'Current bounded permission page': 'Bieżąca strona uprawnień',
+  'Current outcome': 'Bieżący wynik',
+  'Deleted accounts': 'Usunięte konta',
+  'Diagnose now': 'Uruchom diagnostykę',
+  Disabled: 'Wyłączone',
+  'Discard changes': 'Odrzuć zmiany',
+  'Discard unsaved changes?': 'Odrzucić niezapisane zmiany?',
+  'Discard unsaved operational settings?':
+    'Odrzucić niezapisane ustawienia operacyjne?',
+  Enabled: 'Włączone',
+  'Enter a valid date and time.': 'Wpisz prawidłową datę i godzinę.',
+  'Enter a text value.': 'Wpisz wartość tekstową.',
+  'Enter a valid JSON array.': 'Wpisz prawidłową tablicę JSON.',
+  'Enter a valid UUIDv7.': 'Wpisz prawidłowy UUIDv7.',
+  'Enter a valid integer filter.': 'Wpisz prawidłowy filtr całkowitoliczbowy.',
+  'Enter a valid value.': 'Wpisz prawidłową wartość.',
+  'Enter a whole number within the supported range.':
+    'Wpisz liczbę całkowitą w obsługiwanym zakresie.',
+  'Enter public UUIDs.': 'Wpisz publiczne identyfikatory UUID.',
+  'Entity UUID': 'UUID obiektu',
+  'Entity module': 'Moduł obiektu',
+  'Entity type': 'Typ obiektu',
+  'Export field unavailable.': 'Pole eksportu jest niedostępne.',
+  'Filter accounts': 'Filtruj konta',
+  'Filter history': 'Filtruj historię',
+  'First payload part': 'Pierwsza część danych',
+  'First permissions': 'Pierwsza strona uprawnień',
+  'From (UTC ISO-8601)': 'Od (UTC ISO-8601)',
+  'Invalid input.': 'Nieprawidłowe dane.',
+  'Keep my value': 'Zachowaj moją wartość',
+  'Latest entries': 'Najnowsze wpisy',
+  'Loading operational information…': 'Wczytywanie informacji operacyjnych…',
+  'Loading the administrator panel': 'Wczytywanie panelu administratora',
+  'Lookup unavailable.': 'Wyszukiwanie wartości jest niedostępne.',
+  'Maintenance diagnostics and recovery use the supported CLI. Installation, updates and operator commands are unavailable here.':
+    'Diagnostyka i odzyskiwanie podczas konserwacji są dostępne w obsługiwanym CLI. Instalacja, aktualizacje i polecenia operatora nie są dostępne w panelu.',
+  Module: 'Moduł',
+  'Module ID': 'Identyfikator modułu',
+  'Name or authorized login': 'Nazwa lub login dostępny dla Twoich uprawnień',
+  'New custom definition': 'Nowa definicja własna',
+  'New record': 'Nowy rekord',
+  'Next payload part': 'Następna część danych',
+  'Next permissions': 'Następna strona uprawnień',
+  No: 'Nie',
+  'No active work.': 'Brak aktywnych zadań.',
+  'No application settings are available.':
+    'Brak dostępnych ustawień aplikacji.',
+  'No entries in this bounded result.': 'Brak wpisów w tym wyniku.',
+  'No sections are available.': 'Brak dostępnych sekcji.',
+  'No value is set.': 'Nie ustawiono wartości.',
+  'Not set': 'Nie ustawiono',
+  'Observation time is unknown.': 'Czas obserwacji jest nieznany.',
+  Observed: 'Zaobserwowano',
+  'Older entries': 'Starsze wpisy',
+  'Open account': 'Otwórz konto',
+  Details: 'Szczegóły',
+  current: 'bieżące',
+  all: 'wszystkie',
+  human: 'człowiek',
+  anonymous: 'anonimowy',
+  system: 'system',
+  scheduler: 'harmonogram',
+  queue: 'kolejka',
+  cli: 'konsola',
+  machine: 'maszyna',
+  success: 'sukces',
+  attempt: 'próba',
+  refused: 'odmowa',
+  failure: 'niepowodzenie',
+  'Operation UUID': 'UUID operacji',
+  'Operation owner': 'Właściciel operacji',
+  'Enable module': 'Włącz moduł',
+  'Disable module': 'Wyłącz moduł',
+  'Unregister module': 'Wyrejestruj moduł',
+  'Confirm the module action after reviewing its effects.':
+    'Czy na pewno chcesz wykonać tę operację? Sprawdź jej skutki poniżej.',
+  'Review again': 'Sprawdź ponownie',
+  'Disable the module before unregistering it.':
+    'Przed wyrejestrowaniem wyłącz moduł.',
+  'Unregister dependent modules first.': 'Najpierw wyrejestruj moduły zależne.',
+  Outcome: 'Wynik',
+  Progress: 'Postęp',
+  'Public UUID.': 'Publiczny UUID.',
+  'Re-enter this value after reviewing the current record.':
+    'Wpisz tę wartość ponownie po sprawdzeniu bieżącego rekordu.',
+  'Read only.': 'Tylko do odczytu.',
+  'Read status': 'Odczytaj stan',
+  Reasons: 'Powody',
+  Records: 'Rekordy',
+  'Recover settings': 'Odzyskaj ustawienia',
+  Refresh: 'Odśwież',
+  'Refresh current settings': 'Odśwież bieżące ustawienia',
+  'Refresh work status': 'Odśwież stan zadań',
+  Registered: 'Zarejestrowany',
+  'Registered and enabled': 'Zarejestrowany i włączony',
+  'Registry generation': 'Generacja rejestru',
+  'Replacement value.': 'Wartość zastępcza.',
+  'Request cancellation': 'Zażądaj anulowania',
+  'Required editor content is unavailable. Saving is blocked.':
+    'Wymagana część edytora jest niedostępna. Zapisywanie zostało zablokowane.',
+  'Response received': 'Otrzymano odpowiedź',
+  'Resume native workflow': 'Wznów operację modułu',
+  'Retained operation': 'Zachowana operacja',
+  Retry: 'Ponów',
+  'Retry loading': 'Ponów wczytywanie',
+  'Review changes': 'Przejrzyj zmiany',
+  'Review the current differences before saving.':
+    'Sprawdź bieżące różnice przed zapisaniem.',
+  'Review the current differences before submitting.':
+    'Sprawdź bieżące różnice przed zatwierdzeniem.',
+  'Reviewed differences': 'Sprawdzone różnice',
+  'Runtime and module health': 'Stan środowiska i modułów',
+  Save: 'Zapisz',
+  'Save application settings': 'Zapisz ustawienia aplikacji',
+  'Save destructive changes?': 'Zapisać zmiany usuwające dane?',
+  'Select a module above or enter its declared ID.':
+    'Wybierz moduł powyżej lub wpisz jego zadeklarowany identyfikator.',
+  'Select account': 'Wybierz konto',
+  'Select an event to read its immutable details.':
+    'Wybierz zdarzenie, aby odczytać jego niezmienne szczegóły.',
+  'Select module': 'Wybierz moduł',
+  'Session could not be loaded.': 'Nie udało się wczytać sesji.',
+  Set: 'Ustawiono',
+  Settings: 'Ustawienia',
+  'Source default': 'Wartość domyślna ze źródeł',
+  'State changed or the operation could not complete. Refresh and review before another explicit attempt.':
+    'Stan się zmienił lub operacja nie została ukończona. Odśwież dane i sprawdź je przed ponowieniem.',
+  'The administrator panel is currently unavailable.':
+    'Panel administratora jest chwilowo niedostępny.',
+  'The administrator panel is unavailable.':
+    'Panel administratora jest niedostępny.',
+  'The editor changed. Review the current changes before saving.':
+    'Edytor się zmienił. Sprawdź bieżące zmiany przed zapisaniem.',
+  'The operation could not be completed. Check your authority and input.':
+    'Nie udało się wykonać operacji. Sprawdź swoje uprawnienia i wprowadzone dane.',
+  'The owning operation has not committed. Check its status before submitting again.':
+    'Operacja modułu nie została zatwierdzona. Sprawdź jej stan przed ponowieniem.',
+  'The request could not be completed. Try again.':
+    'Nie udało się wykonać żądania. Spróbuj ponownie.',
+  'This administration component is unavailable.':
+    'Ten komponent administracyjny jest niedostępny.',
+  'This administration page is unavailable.':
+    'Ta strona administracyjna jest niedostępna.',
+  'This change was not saved. Check the current values.':
+    'Nie zapisano zmiany. Sprawdź aktualne wartości.',
+  'This field is currently unavailable.': 'To pole jest chwilowo niedostępne.',
+  'This field is required.': 'To pole jest wymagane.',
+  'This lookup is currently unavailable.':
+    'Wyszukiwanie wartości dla tego pola jest chwilowo niedostępne.',
+  'This operation is currently unavailable.':
+    'Ta operacja jest chwilowo niedostępna.',
+  'This operation is pending.': 'Ta operacja oczekuje na ukończenie.',
+  'This operation requires recovery.': 'Ta operacja wymaga odzyskania.',
+  'This section is currently unavailable.':
+    'Ta sekcja jest chwilowo niedostępna.',
+  Unavailable: 'Niedostępne',
+  'Until (UTC ISO-8601)': 'Do (UTC ISO-8601)',
+  'Use current value': 'Użyj bieżącej wartości',
+  'Use the owning declared filters to search this lookup.':
+    'Użyj filtrów zadeklarowanych przez moduł, aby wyszukać wartość.',
+  'Use this entry': 'Użyj tego wpisu',
+  'User directory': 'Lista użytkowników',
+  'Widget information is unavailable or stale.':
+    'Dane widżetu są niedostępne lub nieaktualne.',
+  Yes: 'Tak',
+  'Your unsaved changes will be discarded when you leave this editor.':
+    'Po opuszczeniu edytora niezapisane zmiany zostaną odrzucone.',
+  'Cancellation requested; completion is not confirmed.':
+    'Zażądano anulowania; ukończenie nie zostało potwierdzone.',
+  'Check its status through the owning module before submitting another operation.':
+    'Przed wysłaniem kolejnej operacji sprawdź jej stan w module, do którego należy.',
+  Clear: 'Wyczyść',
+  'Lifecycle, email, invitation, security and policy actions run independently. Profile and access use the shared Save.':
+    'Akcje dotyczące cyklu życia, adresów, zaproszeń, zabezpieczeń i zasad są niezależne. Profil i dostęp korzystają ze wspólnego zapisu.',
+  'Payload part': 'Część danych',
+  'Requested; completion is not confirmed.':
+    'Zażądano; ukończenie nie zostało potwierdzone.',
+  'Required:': 'Wymagane:',
+  Reset: 'Przywróć domyślne',
+  Review: 'Przegląd',
+  Runa: 'Runa',
+  Source: 'Źródło',
+  'changed elsewhere. Current value:':
+    'zmieniono w innym miejscu. Bieżąca wartość:',
+  Access: 'Dostęp',
+  'Account access': 'Dostęp konta',
+  Accounts: 'Konta',
+  Active: 'Aktywne',
+  'Add secondary address': 'Dodaj dodatkowy adres',
+  'Affected accounts, presets and effective losses':
+    'Konta i zestawy objęte zmianą oraz utracone uprawnienia',
+  'All accounts (maximum 100)': 'Wszystkie konta (maksymalnie 100)',
+  'Also revoke trusted devices': 'Unieważnij również zaufane urządzenia',
+  'Apply access preset': 'Zastosuj zestaw uprawnień',
+  'Apply lifecycle change': 'Zastosuj zmianę cyklu życia',
+  'Apply ordinary assignments': 'Zastosuj zwykłe przypisania',
+  'Apply preset UUID': 'UUID zestawu do zastosowania',
+  'Assignment mode': 'Tryb przypisania',
+  'Audit history': 'Historia audytu',
+  'Authentication blockers': 'Przeszkody uwierzytelniania',
+  'Authentication policy': 'Zasady uwierzytelniania',
+  'Bulk session revocation': 'Zbiorcze unieważnianie sesji',
+  'Change protected authority': 'Zmień chronione uprawnienia',
+  'Change secondary address': 'Zmień dodatkowy adres',
+  Code: 'Kod',
+  'Copy from account UUID': 'UUID konta źródłowego',
+  'Copy ordinary assignments': 'Kopiuj zwykłe przypisania',
+  'Create account': 'Utwórz konto',
+  'Credentials and sessions': 'Dane uwierzytelniania i sesje',
+  'Current exception version (0 if absent)':
+    'Bieżąca wersja wyjątku (0, jeśli brak)',
+  'Current policy revision': 'Bieżąca rewizja zasad',
+  'Current preference revision': 'Bieżąca rewizja preferencji',
+  'Current primary email': 'Bieżący główny adres e-mail',
+  Definitions: 'Definicje',
+  'Delete custom permission': 'Usuń własne uprawnienie',
+  'Delete custom role': 'Usuń własną rolę',
+  'Delete custom preset': 'Usuń własny zestaw',
+  'Device UUID': 'UUID urządzenia',
+  'Direct permissions': 'Bezpośrednie uprawnienia',
+  'Display name': 'Nazwa wyświetlana',
+  'Effective changes and affected references':
+    'Wynikowe zmiany i powiązania objęte zmianą',
+  'Effective permissions': 'Efektywne uprawnienia',
+  Email: 'E-mail',
+  'Enable selected flag': 'Włącz wybraną flagę',
+  'Entry and lifecycle': 'Dostęp i cykl życia',
+  'Event detail': 'Szczegóły zdarzenia',
+  Events: 'Zdarzenia',
+  'Exceptions (latest 50)': 'Wyjątki (ostatnie 50)',
+  'First name': 'Imię',
+  'Force delete referenced custom role':
+    'Wymuś usunięcie własnej roli z powiązaniami',
+  'Force deletion': 'Wymuszone usunięcie',
+  'Grant protected membership': 'Nadaj chronione członkostwo',
+  'Invalidate invitation': 'Unieważnij zaproszenie',
+  'Lifecycle operation': 'Operacja cyklu życia',
+  'Live sessions': 'Aktywne sesje',
+  Login: 'Login',
+  Name: 'Nazwa',
+  'New email': 'Nowy adres e-mail',
+  'New preset from account UUID': 'Nowy zestaw z konta o UUID',
+  'Next permission cursor': 'Kursor następnej strony uprawnień',
+  'Operation restrictions': 'Ograniczenia operacji',
+  'Ordinary access': 'Zwykły dostęp',
+  'Ordinary roles': 'Zwykłe role',
+  Permissions: 'Uprawnienia',
+  'Policy consequences': 'Skutki zasad',
+  'Policy history (latest 50)': 'Historia zasad (ostatnie 50)',
+  'Policy history and restore': 'Historia i przywracanie zasad',
+  'Policy key': 'Klucz zasady',
+  'Practical effective changes': 'Rzeczywiste zmiany uprawnień',
+  'Presentation and delivery': 'Wygląd i dostarczanie',
+  Profile: 'Profil',
+  'Protected authority': 'Chronione uprawnienia',
+  'Protected definition': 'Definicja chroniona',
+  'Protected membership and eligibility review':
+    'Przegląd chronionego członkostwa i warunków dostępu',
+  'Protected system definition': 'Chroniona definicja systemowa',
+  Reason: 'Powód',
+  'Remove secondary address': 'Usuń dodatkowy adres',
+  'Replace verified email': 'Zastąp zweryfikowany adres e-mail',
+  'Request email change': 'Zleć zmianę adresu e-mail',
+  'Request password reset': 'Zleć reset hasła',
+  'Require verification': 'Wymagaj weryfikacji',
+  'Reset account preferences': 'Zresetuj preferencje konta',
+  'Reset second factors': 'Zresetuj drugie składniki',
+  'Restore consequences': 'Skutki przywrócenia',
+  'Restore source revision': 'Rewizja źródłowa do przywrócenia',
+  'Review and publish policy': 'Przejrzyj i opublikuj zasady',
+  'Review and restore policy': 'Przejrzyj i przywróć zasady',
+  'Review summary': 'Podsumowanie przeglądu',
+  'Revoke all sessions': 'Unieważnij wszystkie sesje',
+  'Revoke selected sessions and trust': 'Unieważnij wybrane sesje i zaufanie',
+  'Revoke session': 'Unieważnij sesję',
+  'Revoke trusted device': 'Unieważnij zaufane urządzenie',
+  Roles: 'Role',
+  'Save access': 'Zapisz dostęp',
+  'Save custom permission': 'Zapisz własne uprawnienie',
+  'Save custom role': 'Zapisz własną rolę',
+  'Save custom preset': 'Zapisz własny zestaw',
+  'Save profile': 'Zapisz profil',
+  'Secondary address UUID': 'UUID dodatkowego adresu',
+  'Secondary addresses': 'Dodatkowe adresy',
+  'Selected or all accounts': 'Wybrane lub wszystkie konta',
+  'Send or resend invitation': 'Wyślij lub ponów zaproszenie',
+  'Session UUID': 'UUID sesji',
+  'Set or revoke exception': 'Ustaw lub odwołaj wyjątek',
+  'Source owner': 'Właściciel źródła',
+  State: 'Stan',
+  Surname: 'Nazwisko',
+  'Trusted devices': 'Zaufane urządzenia',
+  'Deadline (empty clears)': 'Termin (puste usuwa termin)',
+  'Expiry (within 30 days)': 'Wygaśnięcie (do 30 dni)',
+  Users: 'Użytkownicy',
+  'Value (empty revokes)': 'Wartość (puste odwołuje)',
+  'Verification required': 'Wymagana weryfikacja',
+  Verified: 'Zweryfikowano',
+  'Verified replacement email': 'Zweryfikowany adres zastępczy',
+  Application: 'Aplikacja',
+  Permission: 'Uprawnienie',
+  Role: 'Rola',
+  Preset: 'Zestaw',
+  Presets: 'Zestawy',
+  Eligibility: 'Warunki dostępu',
+  Creation: 'Tworzenie',
+  Lifecycle: 'Cykl życia',
+  Invitations: 'Zaproszenia',
+  'Primary Email': 'Główny adres e-mail',
+  Secondary: 'Adresy dodatkowe',
+  Sessions: 'Sesje',
+  Security: 'Zabezpieczenia',
+  Trust: 'Zaufanie',
+  Preferences: 'Preferencje',
+  Exceptions: 'Wyjątki',
+  History: 'Historia',
+  'First Name': 'Imię',
+  Deleted: 'Usunięte',
+  'Security Locked': 'Blokada bezpieczeństwa',
+  'Password Change Required': 'Wymagana zmiana hasła',
+  'Activate At': 'Termin aktywacji',
+  'Deactivate At': 'Termin dezaktywacji',
+  'Expires At': 'Termin wygaśnięcia',
+  'Attempt Locked Until': 'Blokada prób do',
+  Authentication: 'Uwierzytelnianie',
+  Audit: 'Audyt',
+  'Displayed application name': 'Wyświetlana nazwa aplikacji',
+  'Application logo': 'Logo aplikacji',
+  'Role details': 'Szczegóły roli',
+  'Preset details': 'Szczegóły zestawu',
+  'Permission details': 'Szczegóły uprawnienia',
+  'Name Pl': 'Nazwa (PL)',
+  'Name En': 'Nazwa (EN)',
+  'Description Pl': 'Opis (PL)',
+  'Description En': 'Opis (EN)',
+  'Occurred At': 'Czas zdarzenia',
+  'Actor Public Id': 'Publiczny UUID wykonawcy',
+  'Actor Kind': 'Typ wykonawcy',
+  'Actor Label': 'Nazwa wykonawcy',
+  'Correlation Id': 'Identyfikator powiązania',
+  'Entity Module': 'Moduł obiektu',
+  'Entity Type': 'Typ obiektu',
+  'Entity Public Id': 'Publiczny UUID obiektu',
+  From: 'Od',
+  Until: 'Do',
+  Entities: 'Obiekty',
+  Changes: 'Zmiany',
+  Context: 'Kontekst',
+  Execution: 'Wykonanie',
+  Payload_part: 'Część danych',
+  Payload_next: 'Następna część danych',
+  Installed: 'Zainstalowano',
+  'Optional:': 'Opcjonalne:',
+  missing: 'brak',
+  'not installed': 'niezainstalowany',
+  healthy: 'sprawny',
+  unhealthy: 'niesprawny',
+  unknown: 'nieznany',
+  degraded: 'ograniczona sprawność',
+  pending: 'oczekuje',
+  running: 'w toku',
+  completed: 'ukończono',
+  committed: 'zatwierdzono',
+  failed: 'błąd',
+  cancelled: 'anulowano',
+  ready: 'gotowe',
+  'recovery required': 'wymagane odzyskanie',
+  recovery_required: 'wymagane odzyskanie',
+  code: 'kod',
+  direct: 'bezpośrednie',
+  roles: 'role',
+  'roles truncated': 'pominięto dalsze role',
+  available: 'dostępne',
+  effective: 'efektywne',
+  active: 'aktywne',
+  deleted: 'usunięte',
+  security_locked: 'blokada bezpieczeństwa',
+  password_change_required: 'wymagana zmiana hasła',
+  activate_at: 'termin aktywacji',
+  deactivate_at: 'termin dezaktywacji',
+  expires_at: 'termin wygaśnięcia',
+  attempt_locked_until: 'blokada prób do',
+  public_id: 'publiczny UUID',
+  created_at: 'utworzono',
+  updated_at: 'zmieniono',
+  email: 'e-mail',
+  verified: 'zweryfikowano',
+  revision: 'rewizja',
+  version: 'wersja',
+  key: 'klucz',
+  reason: 'powód',
+  address_id: 'UUID adresu',
+  session_id: 'UUID sesji',
+  device_id: 'UUID urządzenia',
+  occurred_at: 'czas zdarzenia',
+  name: 'nazwa',
+  value: 'wartość',
+  add: 'dodaj',
+  replace: 'zastąp',
+  activate: 'aktywuj',
+  deactivate: 'dezaktywuj',
+  approve: 'zatwierdź',
+  unapprove: 'cofnij zatwierdzenie',
+  delete: 'usuń',
+  restore: 'przywróć',
+  schedule_activation: 'zaplanuj aktywację',
+  schedule_deactivation: 'zaplanuj dezaktywację',
+  set_attempt_lock: 'ustaw blokadę prób',
+  set_security_lock: 'ustaw blokadę bezpieczeństwa',
+  require_password_change: 'wymagaj zmiany hasła',
+  'Large JSON payloads continue across parts.':
+    'Duże dane JSON są podzielone na kolejne części.',
+};
+
+/** Labels for source-owned setting choices; values sent to owning APIs remain unchanged. */
+export const adminChoiceMessages: Readonly<
+  Record<string, { pl: string; en: string }>
+> = {
+  password_expiry_days: {
+    pl: 'Ważność hasła w dniach',
+    en: 'Password lifetime in days',
+  },
+  session_idle_minutes: {
+    pl: 'Limit bezczynności sesji w minutach',
+    en: 'Session idle limit in minutes',
+  },
+  future_only: { pl: 'Tylko przyszłe hasła', en: 'Future passwords only' },
+  force_change: { pl: 'Wymuś zmianę hasła', en: 'Require a password change' },
+  keep_all: { pl: 'Zachowaj wszystkie sesje', en: 'Keep all sessions' },
+  revoke_others: {
+    pl: 'Unieważnij pozostałe sesje',
+    en: 'Revoke other sessions',
+  },
+  revoke_all: { pl: 'Unieważnij wszystkie sesje', en: 'Revoke all sessions' },
+  user: { pl: 'Użytkownik', en: 'User' },
+  admin: { pl: 'Administrator', en: 'Administrator' },
+  both: { pl: 'Użytkownik i administrator', en: 'User and administrator' },
+  neither: { pl: 'Nikt', en: 'Neither' },
+  new: { pl: 'Nowe konta', en: 'New accounts' },
+  disabled: { pl: 'Wyłączone', en: 'Disabled' },
+  optional: { pl: 'Opcjonalny', en: 'Optional' },
+  any: { pl: 'Dowolny drugi składnik', en: 'Any second factor' },
+  totp: {
+    pl: 'Aplikacja uwierzytelniająca (TOTP)',
+    en: 'Authenticator app (TOTP)',
+  },
+  automatic: { pl: 'Automatyczne', en: 'Automatic' },
+  administrator: { pl: 'Przez administratora', en: 'By an administrator' },
+  login: { pl: 'Login', en: 'Login' },
+  either: { pl: 'E-mail lub login', en: 'Email or login' },
+  light: { pl: 'Jasny', en: 'Light' },
+  dark: { pl: 'Ciemny', en: 'Dark' },
+};

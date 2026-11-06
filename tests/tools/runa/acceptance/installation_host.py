@@ -362,6 +362,17 @@ def main() -> None:
                     not (dev / ".git/runa-ownership.json").exists(),
                     "development installation leaves no source baseline",
                 )
+                with urllib.request.urlopen(
+                    "http://127.0.0.1:" + str(web_port) + "/api/presentation", timeout=10
+                ) as response:
+                    presentation = json.load(response)["data"]
+                    check(
+                        presentation["revision"] == 1
+                        and set(presentation) == {"name", "logo", "favicon", "defaults", "revision"}
+                        and presentation["defaults"]
+                        == {"locale": "pl", "theme": "system", "timezone": "Europe/Warsaw"},
+                        "fresh installation creates protected application settings before HTTP without exposing configuration",
+                    )
                 bootstrap_providers = (dev / "src/bootstrap/providers.php").read_bytes()
                 for generator_command in (
                     ["make:config", "CustomerGeneratorProbe"],

@@ -90,6 +90,9 @@ final readonly class CredentialFactors
             $method = $request->string('method')->toString();
             $code = $request->string('code')->toString();
             if ($operation === 'challenge') {
+                if (! in_array('two_factor_required', $this->policy->restrictions($user, $session), true)) {
+                    return null;
+                }
                 if (! $this->verify($connection, $user, $session, $method, $code)) {
                     return null;
                 }
@@ -99,20 +102,21 @@ final readonly class CredentialFactors
                 return ['confirmed' => true];
             }
             if ($operation === 'email_send') {
-                if (! $this->policy->permitted('email') || ! $user->email_factor || $user->email_verified_at === null) {
+                if (! in_array('two_factor_required', $this->policy->restrictions($user, $session), true) || ! $this->policy->permitted('email') || ! $user->email_factor || $user->email_verified_at === null) {
                     return null;
                 }
                 $this->tokens->issueLocked($connection, $user, 'email_otp', sessionHash: $session->session_hash);
 
                 return ['accepted' => true];
             }
-            if (! Hash::check($request->string('current_password')->toString(), $user->password ?? '')) {
-                return null;
-            }
-            // An enrolled factor must confirm changes, even if ordinary login trusted this device.
-            $hasFactors = array_filter($this->policy->enrolled($user), fn ($method) => $this->policy->accepts($method)) !== [];
-            if ($hasFactors && ! $this->verify($connection, $user, $session, $method, $code)) {
-                return null;
+            if ($this->policy->restrictions($user, $session) !== []) {
+                // Completing required enrollment is still part of login admission.
+                if (! in_array($operation, ['totp_begin', 'totp_confirm', 'email_enable'], true)
+                    || ! Hash::check($request->string('current_password')->toString(), $user->password ?? '')) {
+                    return null;
+                }
+            } else {
+                app(StepUp::class)->assertVerified('runa.auth.self.security.'.$operation, everyAction: true);
             }
             $before = AccountHistoryState::factors($user);
             if ($operation === 'totp_begin') {

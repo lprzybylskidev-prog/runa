@@ -1,4 +1,9 @@
 .app-button {
+  --button-solid: var(--runa-text-secondary);
+  --button-hover: var(--runa-text);
+  --button-foreground: var(--runa-surface);
+  --button-subtle: var(--runa-surface-hover);
+  --button-text: var(--runa-text-secondary);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -25,11 +30,11 @@
 }
 .app-button:hover:not(:disabled) {
   background: var(--runa-surface-hover);
-  color: var(--runa-primary-text);
-  border-color: var(--runa-primary-solid);
+  color: var(--button-text);
+  border-color: var(--button-solid);
 }
 .app-button:active:not(:disabled) {
-  background: var(--runa-primary-subtle);
+  background: var(--button-subtle);
 }
 .app-button[aria-pressed='true']:not(:disabled) {
   background: var(--button-subtle);
@@ -41,7 +46,7 @@
   outline: 3px solid var(--runa-focus-ring);
   outline-offset: 4px;
 }
-.app-button:disabled {
+.app-button:disabled:not([aria-busy='true']) {
   background: var(--runa-disabled-background);
   color: var(--runa-disabled-text);
   cursor: not-allowed;
@@ -116,7 +121,7 @@
   width: 52px;
   height: 52px;
 }
-.app-button[data-variant='solid']:not(:disabled) {
+.app-button[data-variant='solid']:is(:not(:disabled), [aria-busy='true']) {
   background: var(--button-solid);
   color: var(--button-foreground);
   border-color: var(--button-solid);
@@ -124,24 +129,23 @@
 .app-button[data-variant='solid']:hover:not(:disabled) {
   background: var(--button-hover);
 }
-.app-button[data-variant='outline']:not(:disabled) {
+.app-button[data-variant='outline']:is(:not(:disabled), [aria-busy='true']) {
   color: var(--button-text);
   border-color: var(--button-text);
 }
-.app-button[data-variant='soft']:not(:disabled) {
+.app-button[data-variant='soft']:is(:not(:disabled), [aria-busy='true']) {
   color: var(--button-text);
   background: var(--button-subtle);
   border-color: transparent;
 }
-.app-button[data-variant='ghost']:not(:disabled) {
+.app-button[data-variant='ghost']:is(:not(:disabled), [aria-busy='true']) {
   color: var(--button-text);
   background: transparent;
   border-color: transparent;
 }
 .app-button[data-variant='soft']:hover:not(:disabled) {
-  background: var(--button-solid);
-  color: var(--button-foreground);
-  border-color: var(--button-solid);
+  background: var(--button-subtle);
+  border-color: var(--button-text);
 }
 .app-button[data-variant='outline']:hover:not(:disabled),
 .app-button[data-variant='ghost']:hover:not(:disabled) {
@@ -154,4 +158,8 @@
   .app-button {
     transition: none;
   }
+}
+
+.app-button[aria-busy='true'] {
+  cursor: progress;
 }

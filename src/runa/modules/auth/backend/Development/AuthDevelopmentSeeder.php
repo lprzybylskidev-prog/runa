@@ -15,6 +15,7 @@ final class AuthDevelopmentSeeder extends ManagedSeeder
 
     protected function seed(SeedContext $context): void
     {
+        app(ReviewFeatures::class)->enable();
         app(Accounts::class)->populate();
     }
 }

@@ -3,6 +3,9 @@ import { defineAsyncComponent } from 'vue';
 export const AuthEntry = defineAsyncComponent(
   () => import('../../../../modules/auth/frontend/AuthEntry.vue'),
 );
+export const AuthAdminCreation = defineAsyncComponent(
+  () => import('../../../../modules/auth/frontend/AuthAdminCreation.vue'),
+);
 export {
   entryPage,
   safeReturnPath,
@@ -64,3 +67,49 @@ export type {
 export type * from '../../../../modules/auth/frontend/contracts/controllers';
 export type * from '../../../../modules/auth/frontend/contracts/presentation';
 export type { Restriction } from '../../../../modules/auth/frontend/entry';
+
+export { default as ApplicationSessionShell } from '../../../../modules/auth/frontend/ApplicationSessionShell.vue';
+export { useOperationProof } from '../../../../modules/auth/frontend/useOperationProof';
+export type {
+  OperationProofController,
+  ProofRequirement,
+} from '../../../../modules/auth/frontend/useOperationProof';
+
+/** Auth-owned Admin presentation; public props come from @/runa/admin. */
+export const AuthAdminUsers = defineAsyncComponent(
+  () => import('../../../../modules/auth/frontend/components/admin_users.vue'),
+);
+export const AuthAdminSection = defineAsyncComponent(
+  () =>
+    import('../../../../modules/auth/frontend/components/admin_section.vue'),
+);
+
+export { default as AuthOperationProofPage } from '../../../../modules/auth/frontend/AuthOperationProofPage.vue';
+export { useAuthPresentation } from '../../../../modules/auth/frontend/presentation';
+
+export { useProtectedActivity } from '../../../../modules/auth/frontend/useProtectedActivity';
+export type {
+  ProtectedActivityOptions,
+  ProtectedActivityStatus,
+} from '../../../../modules/auth/frontend/useProtectedActivity';
+
+export { default as AuthIdentityFields } from '../../../../modules/auth/frontend/AuthIdentityFields.vue';
+export { default as AuthDisplayPreferenceFields } from '../../../../modules/auth/frontend/AuthDisplayPreferenceFields.vue';
+export { default as AuthEmailPreferenceFields } from '../../../../modules/auth/frontend/AuthEmailPreferenceFields.vue';
+export type {
+  AuthIdentityField,
+  AuthIdentityFieldsProps,
+  AuthDisplayPreferenceFieldsProps,
+  AuthEmailPreferenceFieldsProps,
+} from '../../../../modules/auth/frontend/contracts/fields';
+
+export { default as AuthSecondaryEmailFields } from '../../../../modules/auth/frontend/AuthSecondaryEmailFields.vue';
+export type { AuthSecondaryEmailFieldsProps } from '../../../../modules/auth/frontend/contracts/fields';
+
+export {
+  usePasswordConfirmation,
+  providePasswordConfirmation,
+} from '../../../../modules/auth/frontend/passwordConfirmation';
+export type { PasswordConfirmation } from '../../../../modules/auth/frontend/passwordConfirmation';
+
+export { default as AuthAdminBulkAction } from '../../../../modules/auth/frontend/AuthAdminBulkAction.vue';

@@ -1,4 +1,11 @@
 <script setup lang="ts">
+import { provide } from 'vue';
+import { applicationSessionOwner } from '../../../resources/js/lib/applicationSession';
+import { usePreferencePending } from './preferences/usePreferencePending';
+import { useViewReadiness } from '@/runa/ui';
+import { initializePreferenceSession } from './preferences/session';
+provide(applicationSessionOwner, true);
+const preferencePending = usePreferencePending();
 import { computed, ref } from 'vue';
 import { useAuthPresentation } from './presentation';
 import {
@@ -9,7 +16,7 @@ import {
   FormNotifications,
   MinimalLayout,
   RadioGroup,
-  Spinner,
+  ContentLoading,
   TextInput,
   TextLink,
 } from '@/runa/ui';
@@ -26,6 +33,14 @@ const props = defineProps<{
   page: EntryPage;
   authenticated?: ((session: EntrySession) => void) | undefined;
 }>();
+// Login/security already read the session; other public entry pages hydrate once.
+const preferenceSessionSettled = ref(
+  ['login', 'security'].includes(props.page),
+);
+if (!preferenceSessionSettled.value)
+  void initializePreferenceSession().then(() => {
+    preferenceSessionSettled.value = true;
+  });
 const {
   t,
   options,
@@ -120,11 +135,19 @@ const submitLabel = computed(() => {
       : 'confirm') as EntryCopyKey,
   );
 });
+const readiness = useViewReadiness({
+  identity: () => 'auth-entry:' + props.page,
+  required: () =>
+    (ready.value || !!failure.value) &&
+    preferenceSessionSettled.value &&
+    !preferencePending.value,
+});
 </script>
 
 <template>
   <component
     :is="presentation.minimalLayout ?? MinimalLayout"
+    :readiness="readiness"
     :home-href="options?.public_welcome_enabled ? '/' : '/app'"
   >
     <section
@@ -149,7 +172,7 @@ const submitLabel = computed(() => {
         </p>
       </div>
       <div v-if="!ready" class="space-y-5">
-        <Spinner v-if="busy" :label="t('loading')" />
+        <ContentLoading v-if="busy" shape="form" :label="t('loading')" />
       </div>
       <template v-else>
         <Form
@@ -268,22 +291,30 @@ const submitLabel = computed(() => {
             />
             <Button
               v-if="method === 'email' && needsProof"
+              intent="commit"
+              :busy="busy"
               variant="outline"
               @click="sendEmail"
               >{{ t('sendCode') }}</Button
             >
             <template v-if="screen === 'verify' && !isTokenPage">
-              <Button variant="outline" @click="sendEmail">{{
-                t('resend')
+              <Button
+                intent="commit"
+                :busy="busy"
+                variant="outline"
+                @click="sendEmail"
+                >{{ t('resend') }}</Button
+              >
+              <Button intent="inspect" :busy="busy" @click="refresh">{{
+                t('refresh')
               }}</Button>
-              <Button @click="refresh">{{ t('refresh') }}</Button>
             </template>
           </template>
           <template v-if="hasSubmit || failure" #actions>
             <Button
               v-if="hasSubmit"
+              intent="commit"
               type="submit"
-              variant="outline"
               :busy="busy"
               >{{ submitLabel }}</Button
             >
@@ -304,9 +335,14 @@ const submitLabel = computed(() => {
           <TextLink v-if="screen !== 'login' && !session" href="/auth/login">{{
             t('backLogin')
           }}</TextLink>
-          <Button v-if="session" :busy="busy" variant="ghost" @click="logout">{{
-            t('logout')
-          }}</Button>
+          <Button
+            v-if="session"
+            intent="neutral"
+            :busy="busy"
+            variant="ghost"
+            @click="logout"
+            >{{ t('logout') }}</Button
+          >
           <TextLink
             v-if="
               screen === 'complete' &&
@@ -327,14 +363,20 @@ const submitLabel = computed(() => {
     :locale="locale"
   >
     <template #actions>
-      <Button v-if="!ready && failure" @click="initialize">{{
+      <Button v-if="!ready && failure" intent="inspect" @click="initialize">{{
         t('retry')
       }}</Button>
-      <Button v-if="failure === 'csrf'" @click="refreshCsrf">{{
-        t('refreshCsrf')
-      }}</Button>
+      <Button
+        v-if="failure === 'csrf'"
+        intent="inspect"
+        :busy="busy"
+        @click="refreshCsrf"
+        >{{ t('refreshCsrf') }}</Button
+      >
       <Button
         v-if="session && ['conflict', 'account_restricted'].includes(failure)"
+        intent="inspect"
+        :busy="busy"
         @click="refresh"
         >{{ t('refresh') }}</Button
       >

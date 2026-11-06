@@ -5,6 +5,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Queue\Factory;
 use Illuminate\Queue\WorkerOptions;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Monolog\Handler\TestHandler;
@@ -24,6 +25,7 @@ use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\ModuleFramework\Work\WorkDefinitions;
 use Runa\Runtime\MaintenanceState;
 use Runa\Support\Logging\LogContext;
@@ -58,7 +60,7 @@ beforeEach(function (): void {
     $this->registry = new ModuleRegistry(DB::connection(), new ModuleDiscovery($this->sources->root));
     $loader = new ModuleAutoloader($this->sources->root, $this->registry, true);
     $this->lifecycle = new LifecyclePolicies($this->sources->root, app(), $loader, true);
-    $this->health = new ModuleHealth(DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
+    $this->health = new ModuleHealth(app(HealthAdmissions::class), DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
     $this->availability = new ModuleAvailability($this->registry, $this->health, $this->lifecycle, '0.4.0');
     $maintenance = new MaintenanceState(app(), DB::connection(), $this->registry, $this->availability);
     $this->scope = new OperationScope;
@@ -166,7 +168,8 @@ it('validates command classification cron versions and overlap bounds', function
 });
 
 it('preserves the technical pulse and health recovery schedules', function (): void {
-    new Application(app(), app('events'), 'test');
+    // Resolve the owning Artisan instance; another constructor repeats starting callbacks.
+    Artisan::all();
     $events = app(Schedule::class)->events();
     $pulse = array_values(array_filter($events, fn ($event) => str_contains($event->command ?? '', 'runa:runtime:pulse')));
     $health = array_values(array_filter($events, fn ($event) => str_contains($event->command ?? '', 'runa:modules:health')));

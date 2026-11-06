@@ -18,6 +18,7 @@ use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Support\Modules\Data\ModuleSchema;
 use Runa\Support\Modules\ModuleIdentity;
 use Runa\Support\Modules\Storage\ModuleStorage;
@@ -32,7 +33,7 @@ beforeEach(function (): void {
     $this->sources = new ModuleSources;
     $this->registry = new ModuleRegistry(DB::connection(), new ModuleDiscovery($this->sources->root));
     $this->policies = new LifecyclePolicies($this->sources->root, app(), new ModuleAutoloader($this->sources->root, $this->registry, true), true);
-    $this->health = new ModuleHealth(DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), new ModuleAutoloader($this->sources->root, $this->registry, true), true), new HealthDeadline);
+    $this->health = new ModuleHealth(app(HealthAdmissions::class), DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), new ModuleAutoloader($this->sources->root, $this->registry, true), true), new HealthDeadline);
     $this->transitions = new ModuleTransitions(DB::connection(), $this->registry, $this->policies, app(Encrypter::class), '0.4.0', $this->health);
     $this->ids = [];
     $this->add = function (array $required = [], string $kind = 'optional'): string {
@@ -325,7 +326,7 @@ $app->make(Runa\Testing\Database\TestDatabaseGuard::class)->assertSafe();
 $db = Illuminate\Support\Facades\DB::connection();
 $registry = new Runa\ModuleFramework\ModuleRegistry($db, new Runa\ModuleFramework\ModuleDiscovery($argv[1]));
 $policies = new Runa\ModuleFramework\LifecyclePolicies($argv[1], $app, new Runa\ModuleFramework\ModuleAutoloader($argv[1], $registry, true), true);
-$transitions = new Runa\ModuleFramework\ModuleTransitions($db, $registry, $policies, $app->make(Illuminate\Contracts\Encryption\Encrypter::class), '0.4.0', new Runa\ModuleFramework\ModuleHealth($db, $registry, new Runa\ModuleFramework\HealthPolicies($argv[1], $app, new Runa\ModuleFramework\ModuleAutoloader($argv[1], $registry, true), true), new Runa\ModuleFramework\HealthDeadline));
+$transitions = new Runa\ModuleFramework\ModuleTransitions($db, $registry, $policies, $app->make(Illuminate\Contracts\Encryption\Encrypter::class), '0.4.0', new Runa\ModuleFramework\ModuleHealth($app->make(Runa\ModuleFramework\Transactions\HealthAdmissions::class), $db, $registry, new Runa\ModuleFramework\HealthPolicies($argv[1], $app, new Runa\ModuleFramework\ModuleAutoloader($argv[1], $registry, true), true), new Runa\ModuleFramework\HealthDeadline));
 Tests\Fixtures\TransitionPolicy::$prepare[$argv[2]] = static function () { exit(23); };
 $transitions->apply($transitions->preview('enable', $argv[2]));
 WORKER;

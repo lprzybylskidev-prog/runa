@@ -441,7 +441,7 @@ async function leave() {
           :cancel-label="text('Zostań', 'Stay')"
           :confirm-label="text('Opuść', 'Leave')"
           :locale="locale"
-          confirm-tone="warning"
+          confirm-intent="caution"
           @update:model-value="!$event && respond(false)"
           @confirm="respond(true)"
         />

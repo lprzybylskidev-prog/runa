@@ -61,7 +61,11 @@ export { default as Statistic } from '../../components/AppStatistic.vue';
 export { default as Statistics } from '../../components/AppStatistics.vue';
 
 export type * from './forms';
-export { useForm, laravelFieldErrors } from '../../composables/useForm';
+export {
+  useForm,
+  laravelFieldErrors,
+  formValuesEqual,
+} from '../../composables/useForm';
 export {
   parseDecimal,
   formatDecimal,
@@ -77,6 +81,7 @@ export {
   isTimeOnly,
   validDateRange,
   isInstant,
+  instantTimestamp,
   resolveLocalDateTime,
   toLocalDateTime,
   formatDateOnly,
@@ -85,6 +90,7 @@ export { validateFiles } from '../../lib/files';
 export { default as DateInput } from '../../components/AppDateInput.vue';
 export { default as TimeInput } from '../../components/AppTimeInput.vue';
 export { default as DateTimeInput } from '../../components/AppDateTimeInput.vue';
+export { default as DateTimeRangeInput } from '../../components/AppDateTimeRangeInput.vue';
 export { default as DateRangeInput } from '../../components/AppDateRangeInput.vue';
 export { default as Checkbox } from '../../components/AppCheckbox.vue';
 export { default as Switch } from '../../components/AppSwitch.vue';
@@ -115,6 +121,7 @@ export { useTable } from '../../composables/useTable';
 export {
   clientTablePage,
   normalizeTableQuery,
+  withTableFilters,
   createApiTableProvider,
 } from '../../lib/table';
 
@@ -170,3 +177,37 @@ export { default as TextLink } from '../../components/AppTextLink.vue';
 export type * from './layouts';
 export type { HttpErrorContent as HttpErrorContentData } from './errors';
 export type { MessageKey } from '../../locales/messages';
+
+export { loadApplicationPresentation } from './presentation';
+export type { ApplicationPresentation } from './presentation';
+
+export { useViewReadiness } from '../../composables/useViewReadiness';
+export type {
+  ViewReadiness,
+  ViewReadinessOptions,
+} from '../../composables/useViewReadiness';
+export { useImageReadiness } from '../../composables/useImageReadiness';
+export type { ImageReadiness } from '../../composables/useImageReadiness';
+export { default as ViewBoundary } from '../../components/AppViewBoundary.vue';
+
+export { default as PageNavigation } from '../../components/AppPageNavigation.vue';
+export { usePageNavigationHost } from '../../composables/usePageNavigationHost';
+
+export { moduleCatalogue, getModulePresentation } from './modulePresentation';
+export type { ModulePresentation } from './modulePresentation';
+
+export {
+  useApplicationDisplayDefaults,
+  formatApplicationInstant,
+} from './displayDefaults';
+export type { ApplicationDisplayDefaults } from './displayDefaults';
+
+export { default as ValuePreview } from '../../components/AppValuePreview.vue';
+export type { ValuePreviewProps } from './valuePreview';
+
+export { default as ContentLoading } from '../../components/AppContentLoading.vue';
+export type { ContentLoadingProps, ContentLoadingShape } from './loading';
+
+export { default as BooleanBadge } from '../../components/AppBooleanBadge.vue';
+
+export { providePresentationVisibility } from '../../composables/usePresentationVisibility';

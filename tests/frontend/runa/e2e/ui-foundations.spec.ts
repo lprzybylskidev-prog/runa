@@ -37,7 +37,7 @@ for (const [device, width, height] of [
         const modules = page.getByRole('list', {
           name: locale === 'pl' ? 'Moduły Runa' : 'Runa modules',
         });
-        await expect(modules.getByRole('img')).toHaveCount(3);
+        await expect(modules.getByRole('img')).toHaveCount(4);
         const audit = modules.getByRole('img', {
           name: locale === 'pl' ? 'Audyt' : 'Audit',
           exact: true,

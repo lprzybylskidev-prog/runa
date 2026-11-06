@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Dialog, Button, Spinner, Alert } from '@/runa/ui';
+import { BooleanBadge, formatApplicationInstant } from '@/runa/ui';
+import { Dialog, Button, FormNotifications } from '@/runa/ui';
 import type { HistoryValue } from './historyDetails';
 import type {
   AuthHistoryDetailProps,
@@ -70,14 +71,27 @@ const categories: Record<string, readonly [string, string]> = {
   'runa.auth.failed_login': ['Nieudane logowanie', 'Failed login'],
   'runa.auth.locked': ['Blokada logowania', 'Login lock'],
   'runa.auth.password_changed': ['Zmiana hasła', 'Password changed'],
+  'runa.auth.account_deactivation': [
+    'Planowana dezaktywacja konta',
+    'Scheduled account deactivation',
+  ],
   'runa.auth.account_expiry': ['Wygaśnięcie konta', 'Account expiry'],
   'runa.auth.password_expiry': ['Wygaśnięcie hasła', 'Password expiry'],
 };
 function label(pair: readonly [string, string] | undefined, fallback: string) {
   return pair ? text(pair[0], pair[1]) : fallback;
 }
-function value(v: HistoryValue): string {
+const instantFields = new Set([
+  'activate_at',
+  'deactivate_at',
+  'expires_at',
+  'attempt_locked_until',
+  'valid_until',
+]);
+function value(v: HistoryValue, field?: string): string {
   if (v === null) return '—';
+  if (field && instantFields.has(field) && typeof v === 'string')
+    return formatApplicationInstant(v, props.locale);
   if (typeof v === 'boolean') return v ? text('Tak', 'Yes') : text('Nie', 'No');
   if (
     Array.isArray(v) &&
@@ -100,23 +114,27 @@ function value(v: HistoryValue): string {
     :title="text('Szczegóły zdarzenia', 'Event details')"
     :locale="locale"
     size="lg"
+    :loading="loading"
+    :loading-label="text('Wczytywanie szczegółów', 'Loading details')"
+    loading-shape="detail"
     @update:model-value="!$event && $emit('close')"
   >
-    <Spinner
-      v-if="loading"
-      :label="text('Wczytywanie szczegółów', 'Loading details')"
-    />
-    <Alert v-else-if="failed" tone="danger">
-      {{
+    <FormNotifications
+      v-if="failed"
+      :locale="locale"
+      :error="
         text(
           'Nie udało się pobrać szczegółów zdarzenia.',
           'Event details could not be loaded.',
         )
-      }}
-      <Button variant="outline" @click="$emit('retry')">{{
-        text('Ponów', 'Retry')
-      }}</Button>
-    </Alert>
+      "
+    >
+      <template #actions
+        ><Button intent="inspect" variant="outline" @click="$emit('retry')">{{
+          text('Ponów', 'Retry')
+        }}</Button></template
+      >
+    </FormNotifications>
     <div v-else-if="detail" class="space-y-5" data-history-detail>
       <p class="font-semibold">
         {{
@@ -129,20 +147,16 @@ function value(v: HistoryValue): string {
       <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-sm">
         <dt>{{ text('Data', 'Date') }}</dt>
         <dd>
-          {{
-            new Date(detail.occurred_at).toLocaleString(
-              locale === 'pl' ? 'pl-PL' : 'en-GB',
-            )
-          }}
+          {{ formatApplicationInstant(detail.occurred_at, locale) }}
         </dd>
         <dt>{{ text('Wynik', 'Outcome') }}</dt>
         <dd>
           {{
             detail.outcome === 'success'
-              ? text('Powodzenie', 'Success')
+              ? text('sukces', 'success')
               : detail.outcome === 'refused'
-                ? text('Odmowa', 'Refused')
-                : text('Zarejestrowano', 'Recorded')
+                ? text('odmowa', 'refused')
+                : text('zarejestrowano', 'recorded')
           }}
         </dd>
       </dl>
@@ -160,14 +174,24 @@ function value(v: HistoryValue): string {
               <p class="mb-1 text-xs text-muted">
                 {{ text('Przed', 'Before') }}
               </p>
-              <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">
-                {{ value(change.before) }}
+              <BooleanBadge
+                v-if="typeof change.before === 'boolean'"
+                :value="change.before"
+                :locale="locale"
+              />
+              <p v-else class="whitespace-pre-wrap [overflow-wrap:anywhere]">
+                {{ value(change.before, change.field) }}
               </p>
             </div>
             <div>
               <p class="mb-1 text-xs text-muted">{{ text('Po', 'After') }}</p>
-              <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">
-                {{ value(change.after) }}
+              <BooleanBadge
+                v-if="typeof change.after === 'boolean'"
+                :value="change.after"
+                :locale="locale"
+              />
+              <p v-else class="whitespace-pre-wrap [overflow-wrap:anywhere]">
+                {{ value(change.after, change.field) }}
               </p>
             </div>
           </dd>
@@ -197,7 +221,7 @@ function value(v: HistoryValue): string {
       </p>
     </div>
     <template #footer
-      ><Button variant="outline" @click="$emit('close')">{{
+      ><Button intent="cancel" variant="outline" @click="$emit('close')">{{
         text('Zamknij', 'Close')
       }}</Button></template
     >

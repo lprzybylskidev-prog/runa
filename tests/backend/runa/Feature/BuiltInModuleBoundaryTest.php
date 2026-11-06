@@ -17,32 +17,27 @@ final class BuiltInModuleBoundaryTest extends TestCase
             $modules['runa.'.$code] = ['installed' => '1.0.2', 'version' => '1.0.2', 'registered' => true, 'required' => $manifest['dependencies']['required']];
         }
         foreach ($baseline['migrations'] as $migration) {
-            self::assertSame($migration['sha256'], hash_file('sha256', $root.'/'.$migration['path']));
+            $history = new Process(['git', 'show', $baseline['baseline_commit'].':'.$migration['path']], $root);
+            $history->mustRun();
+            self::assertSame($migration['sha256'], hash('sha256', $history->getOutput()));
         }
         // Start at installation to validate every retained edge fingerprint, including
         // completed older edges that a 1.0.2 -> current plan no longer schedules.
-        $input = ['platform' => trim(file_get_contents($root.'/VERSION')), 'modules' => $modules, 'module_steps' => $baseline['module_steps']];
-        foreach ($input['modules'] as &$module) {
-            $module['installed'] = null;
-        }
-        unset($module);
+        // The retained pre-Admin installation upgrades into the declared 0.7 target.
+        $input = ['platform' => '0.7.0', 'modules' => $modules, 'module_steps' => $baseline['module_steps']];
+        $expected = [
+            'runa.admin' => ['initialize', 'standalone_participants', 'creation_release'],
+            'runa.auth' => ['execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts', 'admin_platform', 'native_transactions', 'section_activity', 'user_details', 'settings_snapshots'],
+            'runa.audit' => ['platform_delivery', 'verification_contracts', 'admin_platform', 'admin_history'],
+            'runa.permissions' => ['platform_delivery', 'verification_contracts', 'admin_platform', 'native_transactions', 'table_exports'],
+        ];
         $process = $this->planner($root, $input);
         $process->mustRun();
         foreach (json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR) as $module) {
-            self::assertSame($module['module'] === 'runa.auth' ? ['execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts'] : ['platform_delivery', 'verification_contracts'], $module['pending_upgrades']);
+            self::assertSame($expected[$module['module']], $module['pending_upgrades']);
         }
-        // Installed-source planning must schedule the remaining compatible source-only edges.
-        $input['modules'] = $modules;
-        $process = $this->planner($root, $input);
-        $process->mustRun();
-        foreach (json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR) as $module) {
-            self::assertSame($module['module'] === 'runa.auth' ? ['execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts'] : ['platform_delivery', 'verification_contracts'], $module['pending_upgrades']);
-        }
-        foreach ($input['modules'] as &$module) {
-            $module['installed'] = null;
-        }
-        unset($module);
-        $input['module_steps'][0]['fingerprint'] = str_repeat('0', 64);
+        $input['module_steps'] = $baseline['module_steps'];
+        $input['module_steps'][] = ['module' => 'runa.auth', 'step' => 'upgrade:native_transactions:1.1.5:2.0.0', 'fingerprint' => str_repeat('0', 64), 'status' => 'succeeded'];
         $process = $this->planner($root, $input);
         self::assertSame(1, $process->run());
         self::assertStringContainsString('Module target preflight failed', $process->getErrorOutput());

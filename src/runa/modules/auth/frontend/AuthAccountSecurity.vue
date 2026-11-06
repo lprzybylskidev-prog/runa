@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { withTableFilters } from '@/runa/ui';
+import { trustedDeviceColumns } from './trustedDeviceColumns';
 import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
   Button,
@@ -13,7 +15,6 @@ import {
 import type { TableColumn, TableQuery } from '@/runa/ui';
 import type { AccountRow } from './account';
 import type { useAuthAccount } from './useAuthAccount';
-import AuthAccountProof from './AuthAccountProof.vue';
 import AuthTotpSetup from './AuthTotpSetup.vue';
 const props = defineProps<{ account: ReturnType<typeof useAuthAccount> }>();
 const emit = defineEmits<{ 'feedback-modal': [active: boolean] }>();
@@ -22,8 +23,6 @@ const {
   locale,
   security,
   busy,
-  method,
-  proofMethods,
   target,
   secret,
   qrCode,
@@ -38,11 +37,16 @@ const {
   canTrustDevice,
   trustedRows,
   trustedLoading,
+  trustedLoaded,
   trustedCursor,
   loadTrustedDevices,
   revokeTrustedDevice,
 } = props.account;
-const modal = ref<'factor' | 'devices' | null>(null);
+async function exportRows(signal: AbortSignal) {
+  await props.account.authorizeTableExport(signal);
+  return trustedRows.value;
+}
+const modal = ref<'factor' | null>(null);
 const removing = ref<string>();
 const attempt = ref(0);
 const securityForm = ref<{ focusInvalid: () => void }>();
@@ -60,8 +64,7 @@ function clearDraft() {
   for (const key of Object.keys(sectionErrors.security))
     delete sectionErrors.security[key];
   const errors = props.account.errors;
-  for (const key of ['current_password', 'code', 'enrollment_code'])
-    delete errors[key];
+  for (const key of ['enrollment_code']) delete errors[key];
 }
 onScopeDispose(() => {
   clearDraft();
@@ -77,7 +80,7 @@ const actions = computed(() => [
         },
       ]
     : []),
-  ...(secret.value
+  ...(security.value?.totp_enabled && secret.value
     ? [
         {
           value: 'totpConfirm',
@@ -111,7 +114,8 @@ const actions = computed(() => [
   ...(security.value?.enrolled.length
     ? [{ value: 'disable', label: text('Wyłącz metodę', 'Disable method') }]
     : []),
-  ...(security.value?.recovery_codes_enabled &&
+  ...(security.value?.totp_enabled &&
+  security.value.recovery_codes_enabled &&
   security.value.enrolled.includes('totp')
     ? [
         {
@@ -126,7 +130,7 @@ const actions = computed(() => [
 ]);
 
 const methods = computed(() => [
-  ...(security.value?.totp_enabled || security.value?.enrolled.includes('totp')
+  ...(security.value?.totp_enabled
     ? [
         {
           value: 'totp',
@@ -140,8 +144,7 @@ const methods = computed(() => [
         },
       ]
     : []),
-  ...(security.value?.email_otp_enabled ||
-  security.value?.enrolled.includes('email')
+  ...(security.value?.email_otp_enabled
     ? [
         {
           value: 'email',
@@ -170,6 +173,23 @@ const operationLabel = computed(() =>
     : (actions.value.find((action) => action.value === overviewAction.value)
         ?.label ?? ''),
 );
+watch([actions, methods, () => security.value?.trusted_devices_enabled], () => {
+  if (
+    overviewAction.value !== 'none' &&
+    ((!(
+      (overviewAction.value === 'totpBegin' ||
+        overviewAction.value === 'totpConfirm') &&
+      secret.value &&
+      security.value?.totp_enabled
+    ) &&
+      !actions.value.some((action) => action.value === overviewAction.value)) ||
+      (overviewAction.value === 'disable' &&
+        !methods.value.some((candidate) => candidate.value === target.value)))
+  ) {
+    modal.value = null;
+    clearDraft();
+  }
+});
 function selectMethod(value: string, enrolled: boolean) {
   setAction(
     enrolled ? 'disable' : value === 'totp' ? 'totpBegin' : 'emailEnable',
@@ -185,11 +205,8 @@ function setAction(value: string) {
   failure.value = '';
   notice.value = '';
   qrCode.value = '';
-  method.value = proofMethods.value[0] ?? 'totp';
   target.value = security.value?.enrolled[0] ?? 'totp';
   if (value !== 'totpConfirm') secret.value = '';
-  sectionFields.security.current_password = '';
-  sectionFields.security.code = '';
   sectionFields.security.enrollment_code = '';
   Object.keys(sectionErrors.security).forEach(
     (key) => delete sectionErrors.security[key],
@@ -219,55 +236,35 @@ async function save() {
     clearDraft();
   }
 }
-async function openDevices() {
-  if (busy.value) return;
-  clearDraft();
-  attempt.value = 0;
-  query.value = { ...query.value, page: 1 };
-  modal.value = 'devices';
-  await loadTrustedDevices();
-}
 async function removeDevice() {
   if (!removing.value || busy.value) return;
   attempt.value++;
   if (await revokeTrustedDevice(removing.value)) removing.value = undefined;
 }
-function date(value?: string) {
-  const d = value
-    ? new Date(/[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z')
-    : null;
-  return d && !Number.isNaN(d.getTime())
-    ? d.toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB')
-    : '—';
-}
-function time(value?: string) {
-  const result = value
-    ? new Date(
-        /[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z',
-      ).getTime()
-    : NaN;
-  return Number.isNaN(result) ? 0 : result;
-}
-const columns = computed<TableColumn<AccountRow>[]>(() => [
-  {
-    key: 'created',
-    label: text('Utworzono', 'Created'),
-    value: (row) => date(row.created_at),
-    compare: (a, b) => time(a.created_at) - time(b.created_at),
+const columns = computed<TableColumn<AccountRow>[]>(() =>
+  withTableFilters(
+    trustedDeviceColumns<AccountRow>(locale.value, (row, key) => row[key]),
+  ),
+);
+watch(
+  () => security.value?.trusted_devices_enabled,
+  (enabled) => {
+    if (!enabled) removing.value = undefined;
   },
-  {
-    key: 'expires',
-    label: text('Wygasa', 'Expires'),
-    value: (row) => date(row.expires_at),
-    compare: (a, b) => time(a.expires_at) - time(b.expires_at),
-  },
-]);
+);
 </script>
 <template>
-  <Card data-account-security>
+  <Card
+    v-if="methods.length || security?.trusted_devices_enabled"
+    data-account-security
+  >
     <template #header
       ><h3>
-        {{ text('Uwierzytelnianie dwuetapowe', 'Two-factor authentication') }}
+        {{
+          methods.length
+            ? text('Uwierzytelnianie dwuetapowe', 'Two-factor authentication')
+            : text('Zaufane urządzenia', 'Trusted devices')
+        }}
       </h3></template
     >
     <div class="space-y-4">
@@ -282,8 +279,8 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
             <p class="text-xs text-muted">{{ securityMethod.description }}</p>
           </div>
           <Button
+            :intent="securityMethod.enrolled ? 'danger' : 'commit'"
             variant="outline"
-            :tone="securityMethod.enrolled ? 'danger' : 'primary'"
             :disabled="busy || modal !== null || !securityMethod.available"
             @click="selectMethod(securityMethod.value, securityMethod.enrolled)"
             >{{
@@ -296,8 +293,11 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
       </div>
       <Button
         v-if="
-          security?.recovery_codes_enabled && security.enrolled.includes('totp')
+          security?.totp_enabled &&
+          security.recovery_codes_enabled &&
+          security.enrolled.includes('totp')
         "
+        intent="caution"
         variant="outline"
         :disabled="busy || modal !== null"
         @click="setAction('recoveryRotate')"
@@ -308,9 +308,13 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
 
       <section
         v-if="security?.trusted_devices_enabled"
-        class="space-y-3 border-t border-line pt-4"
+        class="space-y-3"
+        :class="methods.length ? 'border-t border-line pt-4' : ''"
         data-trusted-devices
       >
+        <h3 class="text-sm font-semibold">
+          {{ text('Zaufane urządzenia', 'Trusted devices') }}
+        </h3>
         <p v-if="!canTrustDevice" class="text-xs text-muted">
           {{
             text(
@@ -321,31 +325,63 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
         </p>
         <div class="flex flex-wrap gap-2">
           <Button
+            intent="commit"
             variant="outline"
             :disabled="busy || !canTrustDevice"
             @click="setAction('trustIssue')"
             >{{ text('Zaufaj tej przeglądarce', 'Trust this browser') }}</Button
           >
-          <Button
-            v-if="trustedRows.length"
-            variant="outline"
-            :disabled="busy"
-            @click="openDevices"
-            >{{ text('Zarządzaj urządzeniami', 'Manage devices') }}</Button
-          >
         </div>
+        <Table
+          v-model:query="query"
+          :export-allowed="account.tableExportAllowed?.value === true"
+          :export-rows="exportRows"
+          :refresh="
+            async () => {
+              await loadTrustedDevices();
+            }
+          "
+          :refresh-disabled="busy"
+          mode="client"
+          :rows="trustedRows"
+          :loading="trustedLoading && !trustedLoaded"
+          :refreshing="trustedLoading"
+          :retain-empty-frame="true"
+          :columns="columns"
+          :row-key="(row) => row.public_id"
+          :caption="text('Zaufane urządzenia', 'Trusted devices')"
+          :english="locale === 'en'"
+        >
+          <template #actions="{ row }"
+            ><Button
+              intent="danger"
+              size="sm"
+              variant="outline"
+              :disabled="busy"
+              @click="
+                removing = row.public_id;
+                attempt = 0;
+              "
+              >{{ text('Unieważnij', 'Revoke') }}</Button
+            ></template
+          >
+        </Table>
+        <Button
+          v-if="trustedCursor"
+          intent="inspect"
+          :busy="trustedLoading"
+          :disabled="busy"
+          @click="loadTrustedDevices(true)"
+          >{{ text('Wczytaj starsze', 'Load older') }}</Button
+        >
       </section>
     </div>
   </Card>
   <Dialog
     :model-value="modal !== null && !codes.length"
-    :title="
-      modal === 'devices'
-        ? text('Zaufane urządzenia', 'Trusted devices')
-        : operationLabel
-    "
+    :title="operationLabel"
     :locale="locale"
-    :size="modal === 'devices' ? 'lg' : 'md'"
+    size="md"
     :busy="busy"
     initial-focus="input"
     @update:model-value="close"
@@ -377,63 +413,27 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
           "
         />
       </div>
-      <AuthAccountProof
-        v-if="overviewAction !== 'none'"
-        :password-required="overviewAction !== 'trustIssue'"
-        :account="account"
-        section="security"
-      />
 
       <template #actions>
         <Button
+          :intent="
+            overviewAction === 'disable'
+              ? 'danger'
+              : overviewAction === 'recoveryRotate'
+                ? 'caution'
+                : 'commit'
+          "
           type="submit"
           variant="outline"
-          :tone="overviewAction === 'disable' ? 'danger' : 'primary'"
           :busy="busy"
           :disabled="overviewAction === 'trustIssue' && !canTrustDevice"
           >{{ operationLabel }}</Button
         >
-        <Button :disabled="busy" @click="close(false)">{{
+        <Button intent="cancel" :disabled="busy" @click="close(false)">{{
           text('Anuluj', 'Cancel')
         }}</Button>
       </template>
     </Form>
-    <template v-else-if="modal === 'devices'">
-      <Table
-        v-model:query="query"
-        mode="client"
-        :rows="trustedRows"
-        :loading="trustedLoading"
-        :columns="columns"
-        :row-key="(row) => row.public_id"
-        :caption="text('Zaufane urządzenia', 'Trusted devices')"
-        :english="locale === 'en'"
-        :searchable="false"
-      >
-        <template #actions="{ row }"
-          ><Button
-            size="sm"
-            variant="outline"
-            tone="danger"
-            :disabled="busy"
-            @click="
-              removing = row.public_id;
-              attempt = 0;
-            "
-            >{{ text('Unieważnij', 'Revoke') }}</Button
-          ></template
-        >
-      </Table>
-      <Button
-        v-if="trustedCursor"
-        :disabled="busy"
-        @click="loadTrustedDevices(true)"
-        >{{ text('Wczytaj starsze', 'Load older') }}</Button
-      >
-      <Button :disabled="busy" @click="loadTrustedDevices()">{{
-        text('Odśwież', 'Refresh')
-      }}</Button>
-    </template>
     <FormNotifications
       v-if="modal && !removing"
       :attempt="attempt"
@@ -443,9 +443,13 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
       :locale="locale"
     >
       <template #actions
-        ><Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button></template
+        ><Button
+          v-if="failure === 'csrf'"
+          intent="inspect"
+          :busy="busy"
+          @click="account.refreshCsrf"
+          >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
+        ></template
       >
     </FormNotifications>
   </Dialog>
@@ -453,7 +457,7 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
     :model-value="Boolean(removing)"
     :title="text('Unieważnić zaufanie?', 'Revoke device trust?')"
     :confirm-label="text('Unieważnij', 'Revoke')"
-    confirm-tone="danger"
+    confirm-intent="danger"
     :locale="locale"
     :busy="busy"
     @update:model-value="
@@ -478,9 +482,13 @@ const columns = computed<TableColumn<AccountRow>[]>(() => [
       :locale="locale"
     >
       <template #actions
-        ><Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button></template
+        ><Button
+          v-if="failure === 'csrf'"
+          intent="inspect"
+          :busy="busy"
+          @click="account.refreshCsrf"
+          >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
+        ></template
       >
     </FormNotifications>
   </ConfirmDialog>

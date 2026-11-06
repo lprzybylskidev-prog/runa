@@ -75,3 +75,7 @@ or an equivalent accessible implementation. AccountHistoryDetail and HistoryValu
 are exported from `@/runa/auth`; custom presentation stays in src/app. No private
 controller or security logic needs copying. The supplied modal inherits Dialog
 motion, reduced-motion/print and focus behavior without a second animation layer.
+
+The default detail dialog uses the shared Dialog loading contract with detail-shaped
+pulsing placeholders. The owner supplies loading/failed/detail; no separate
+circular content indicator or extra request is created.

@@ -10,8 +10,35 @@ import {
   type TableColumn,
   type TableQuery,
   type PreferenceStorage,
+  type PreferenceStore,
 } from '../../../../src/runa/resources/js/runa/ui';
 enableAutoUnmount(afterEach);
+it('keeps transient pagination on self and unrelated preference notifications while explicit view selection resets it', async () => {
+  const listeners = new Set<() => void>();
+  const base = createPreferenceStore(adapter());
+  const store: PreferenceStore = {
+    ...base,
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    write(scope, control, definition, value) {
+      base.write(scope, control, definition, value);
+      listeners.forEach((listener) => listener());
+    },
+  };
+  const { controller, query } = setup(adapter(), ref(columns), store);
+  controller.create('Saved');
+  const id = controller.state.value.activeId!;
+  query.value = { ...query.value, page: 2 };
+  await nextTick();
+  expect(query.value.page).toBe(2);
+  listeners.forEach((listener) => listener());
+  await nextTick();
+  expect(query.value.page).toBe(2);
+  controller.select(id);
+  expect(query.value.page).toBe(1);
+});
 const scope = { applicationId: 'test', moduleKey: 'ui', viewKey: 'projects' };
 const columns: TableColumn<{ name: string }>[] = [
   {
@@ -43,7 +70,11 @@ function adapter(raw?: string): PreferenceStorage {
     },
   };
 }
-function setup(storage: PreferenceStorage, descriptors = ref(columns)) {
+function setup(
+  storage: PreferenceStorage,
+  descriptors = ref(columns),
+  store = createPreferenceStore(storage),
+) {
   const query = ref(initial());
   let controller!: ReturnType<typeof useTableViews>;
   const wrapper = mount(
@@ -53,7 +84,7 @@ function setup(storage: PreferenceStorage, descriptors = ref(columns)) {
           scope,
           columns: () => descriptors.value,
           query,
-          store: createPreferenceStore(storage),
+          store,
         });
         return () => h('div');
       },

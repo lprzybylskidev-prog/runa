@@ -32,7 +32,7 @@ User-facing UI:
 - Polish is the default language.
 - English is the secondary language.
 
-Any future administration panel is English-only. This release supplies no Admin UI.
+The supplied administration panel supports Polish by default and English; see the [Admin contract](../modules/admin/README.md) for delivered source and final acceptance status.
 
 Backend, tooling, logs, source code, and documentation remain English-only.
 
@@ -368,7 +368,7 @@ The public `@/runa/ui` facade exports Card (header/actions/body/footer slots), D
 
 Public Spinner is shared by busy Button and LoadingOverlay; decorative embedding avoids duplicate status announcements and preserves the accepted layout transition timing/colors. Skeleton provides bounded decorative text/block/circle placeholders. Progress supports determinate/indeterminate values, finite bounds, localized valueText and semantic tones. Reduced motion removes spinner, skeleton and indeterminate-progress animation. EmptyState composes readable title/description and optional caller actions.
 
-AsyncContent selects a controlled loading/error/empty/success slot, with Spinner/Alert/EmptyState defaults and an optional retry event. It never fetches, cancels requests or infers successful completion. Callers own request races, formatted errors and persistent form state (inactive slots unmount). Localize its default text through props; custom slots own their status announcements.
+AsyncContent selects a controlled loading/refreshing/error/empty/success slot (refreshing retains the same success subtree), with ContentLoading/Alert/EmptyState defaults and an optional retry event. It never fetches, cancels requests or infers successful completion. Callers own request races, formatted errors and persistent form state (inactive slots unmount). Localize its default text through props; custom slots own their status announcements.
 
 Statistic supports label/value/icon/trend/visualization slots and neutral/semantic tones without domain calculations. Statistics always exposes the global/filtered switch and provides the selected mode to its content slot. A view supplies both datasets and keeps global values independent of filters. useStatisticsMode uses the existing validated, versioned preference store, scoped by application/module/view identity, with a per-view default and session fallback. Remount on view-identity changes. The isolated application scenario consumes these primitives in its statistics slot and keys persistence by route.
 
@@ -403,7 +403,7 @@ useForm accepts finite JSON field values, isolates submitted snapshots, blocks c
 
 ### Additional input foundation
 
-DateInput, TimeInput, DateTimeInput, DateRangeInput, Checkbox, Switch, RadioGroup, FileInput, ColorInput, HiddenInput and TagsInput are public primitives. Date-only strings never undergo timezone conversion; moment editing requires an explicit zone and UTC serialization, rejecting DST gaps and requiring an explicit policy for overlaps. Incomplete date/time text drafts and pending tags expose validity so a screen can block stale-value submission. Date/time/color pickers are application-owned: a Monday-first calendar with month/year navigation, 24-hour hour/minute columns, and HSV color plane/sliders/palette use the existing Popover/Button primitives. Text entry remains available with localized dates and unchanged canonical/UTC model contracts. Native date/time/color inputs and popups are not used. File state stays outside finite-JSON useForm snapshots; file selection/type/count/size feedback performs no upload. FileInput provides a themed dropzone, keyboard/touch chooser and selected metadata rows; multiple batches append, single selection replaces, invalid selections stay visible, and readonly/disabled/busy fieldsets prevent edits. Backend integrity and upload authorization remain external. Detailed contracts and reset/recovery guidance live in the frontend form reference.
+DateInput, TimeInput, DateTimeInput, DateRangeInput, Checkbox, Switch, RadioGroup, FileInput, ColorInput, HiddenInput and TagsInput are public primitives. Date-only strings never undergo timezone conversion; moment editing defaults to the configured application timezone (an explicit zone is reserved for domain-specific input) and uses UTC serialization, rejecting DST gaps and requiring an explicit policy for overlaps. Incomplete date/time text drafts and pending tags expose validity so a screen can block stale-value submission. Date/time/color pickers are application-owned: a Monday-first calendar with month/year navigation, 24-hour hour/minute columns, and HSV color plane/sliders/palette use the existing Popover/Button primitives. Text entry remains available with localized dates and unchanged canonical/UTC model contracts. Native date/time/color inputs and popups are not used. File state stays outside finite-JSON useForm snapshots; file selection/type/count/size feedback performs no upload. FileInput provides a themed dropzone, keyboard/touch chooser and selected metadata rows; multiple batches append, single selection replaces, invalid selections stay visible, and readonly/disabled/busy fieldsets prevent edits. Backend integrity and upload authorization remain external. Detailed contracts and reset/recovery guidance live in the frontend form reference.
 
 ### Composable selection
 
@@ -431,7 +431,7 @@ The dialog body scrolls within a bounded viewport while header/footer remain ava
 
 The public `Table` component supports explicit bounded client and paginated server modes through typed columns, stable row keys, controlled query/selection, cell/action/filter slots and cancellable providers. `useTable` ignores obsolete replies. Server counts distinguish exact/stale/unknown; uncertain totals use previous/next navigation. `createApiTableProvider` normalizes allowlisted query fields and uses the shared HTTP transport; application decoders validate unknown `data` + `meta` responses. No backend table engine or domain endpoint is provided. See the [table contracts and integration guidance](../development/frontend/tables.md). Column personalization and named scoped views are available through optional TablePreferences/useTableViews; cross-page explicit/all-matching selection, TableActions/OperationPanel, bounded real CSV/XLSX/PDF adapters, separate printing and application-owned server/bulk providers are available. See the table reference for limits, idempotency, cancellation and license notices.
 
-Semantic feedback components supply a reactive nearest-parent tone context. Nested feedback inherits omitted tones; Buttons inside colored feedback default to the matching outline variant. Explicit tones/variants override inheritance, and a neutral surface resets it. This also covers slotted actions and AsyncContent retry buttons. Standalone component defaults remain unchanged; ordinary form validation and shell navigation keep their independent contracts.
+Semantic feedback components supply a reactive nearest-parent tone context for nested feedback only. Buttons use explicit source-owned action intents, independent of surrounding feedback and password proof. Shared defaults, confirmation projection and hierarchy follow the [action button semantics](../development/frontend/components.md#action-button-semantics).
 
 Table personalization persists presentation/query snapshots in the existing scoped PreferenceStore (schema v2, v1 migration). TablePreferences provides column visibility, drag/keyboard ordering, width controls and named-view create/select/update/rename/delete/default/reset. Hidden columns remain part of query processing; only explicit descriptor removal invalidates filters/sorts. Current and saved snapshots reconcile unavailable/new columns before application. Applying a view resets pagination to page 1. See the table reference for public integration, bounds, default/re-entry behavior and storage fallback; this is UX state, with account persistence through declared schemas when signed in, never a permissions model.
 
@@ -466,3 +466,32 @@ language/theme controls while retaining the default identity/header. Welcome pla
 sign-in, policy-dependent registration and authenticated entry here; these controls
 do not belong in the welcome content panel. The header action group wraps on narrow
 screens. Replacing the whole header replaces this default group as well.
+
+## Runtime application presentation
+
+Global displayed-name/logo overrides use the platform-owned
+[application settings store and consumer precedence](../modules/admin/operations.md#presentation-precedence-and-consumers).
+`/api/identity` remains canonical; public no-store `/api/presentation` exposes only
+name, approved logo and revision. Browser shells use the shared presentation loader;
+normal server errors and mail read the same validated projection with source
+fallback on database failure. Source-declared logos are same-origin static assets;
+selection never fetches a URL or changes CSP. Explicit mail transport/CID settings
+remain developer-owned. The default CID policy can select a source PNG/JPEG inside
+the served public tree; other formats/missing assets retain the configured default.
+Native error shells include an escaped presentation-logo variant. Emergency HTML
+uses only validated build-time source branding, including its source logo, and
+never reads or bakes DB overrides. Canonical versions and Runa's code logo remain
+source-owned. Customer styling and presentation seams remain App-owned.
+
+## Initial readiness and background reads
+
+Use the public [view readiness contract](../development/frontend/loading.md) for
+immediately rendered layout frames, local content/element loading dependencies,
+bounded image decode/fallback and independent regions. Background reads preserve mounted content, focus and drafts; real
+identity/access loss clears protected state. The existing session/security owner
+continues to fence requests; presentation readiness grants no authority.
+
+Content reads use the public ContentLoading and Dialog/AsyncContent/ViewBoundary
+loading defaults; see [loading](../development/frontend/loading.md). Low-level
+Spinner is confined by source lint to shared Table, Button and preference-cover
+owners. Domain views never choose an independent circular content indicator.

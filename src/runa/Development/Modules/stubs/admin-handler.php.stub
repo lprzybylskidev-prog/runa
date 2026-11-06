@@ -1,0 +1,18 @@
+<?php
+
+namespace {{namespace}}\Handlers;
+
+use {{namespace}}\Contracts\{{name}}Tools;
+use Illuminate\Validation\ValidationException;
+
+final class {{name}}ToolsHandler implements {{name}}Tools
+{
+    public function normalize(string $text): string
+    {
+        if (mb_strlen($text) > 160 || preg_match('/[\x00-\x1f\x7f]/u', $text) !== 0) {
+            throw ValidationException::withMessages(['text' => ['Use at most 160 characters without control characters.']]);
+        }
+
+        return trim(preg_replace('/ +/u', ' ', $text) ?? '');
+    }
+}

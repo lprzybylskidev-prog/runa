@@ -93,7 +93,9 @@ it('renders deep links after refresh and suppresses unavailable page setup and i
   expect(loader).not.toHaveBeenCalled();
   expect(setup).not.toHaveBeenCalled();
   expect(page.get('[role="status"]').text()).toBe('Moduł jest niedostępny.');
-  await page.setProps({ view: data });
+  await page.setProps({ locale: 'en' });
+  expect(page.get('[role="status"]').text()).toBe('The module is unavailable.');
+  await page.setProps({ locale: 'pl', view: data });
   await flushPromises();
   await vi.waitFor(() => expect(page.text()).toBe('Page content'));
   expect(setup).toHaveBeenCalledOnce();

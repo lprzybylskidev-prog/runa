@@ -1,10 +1,11 @@
 # Admin Panel architecture review and proposal
 
 Review date: 2026-10-29. Planning baseline: platform `0.6.2`, clean `main` after
-RM-2026-015. No active roadmap. This is an owner proposal, not a delivered public
-API. Owner decisions recorded below approve design directions, not implementation
-or activation. Implementation belongs to the inactive
-[RM-2026-016 draft](../roadmaps/draft/RM-2026-016-admin-panel.md).
+RM-2026-015. This review specifies proposed contracts, not a delivered public API.
+The owner approved the design directions below and explicitly requested activation
+on 2026-10-29. Work belongs to the active
+[RM-2026-016 roadmap](../roadmaps/closed/RM-2026-016-admin-panel.md); point 1
+finalizes complete public signatures before runtime implementation.
 
 ## Authority and evidence
 
@@ -62,7 +63,7 @@ Primary evidence (repository-root-relative paths):
 | 5–6: shell, navigation and entry                               | ApplicationLayout has module/page navigation and user-menu slot. AuthApplication renders `/account` and sign-out inside that menu.                 | `/admin` dashboard, module-left/page-top navigation, deterministic developer order/defaults and account-menu-only entry. No mandatory Overview or empty sections.                                     |
 | 7: identity, native grants, step-up                            | ModuleApis, OperationGuard, AuthStepUp and current Permissions exist. Non-superadministrator native grants work.                                   | Admin entry permission/proof, server-filtered projection and endpoint enforcement. No generic superadministrator bypass.                                                                              |
 | 7: field access                                                | ManagementField has writable/sensitive flags; ManagementEntity has read permission; operations have permissions.                                   | Add explicit field/section read/write authorization declarations and server projections. A writable flag is not a field grant; sensitive is not permission metadata.                                  |
-| 8, 13, 26: standard UI                                         | Shared forms, dirty guards, reconciliation, feedback, themes, accessible controls and responsive shell exist.                                      | Compose English defaults, generated forms, controllers, validation mapping and rendered acceptance.                                                                                                   |
+| 8, 13, 26: standard UI                                         | Shared forms, dirty guards, reconciliation, feedback, themes, accessible controls and responsive shell exist.                                      | Compose PL/EN defaults, generated forms, controllers, validation mapping and rendered acceptance.                                                                                                     |
 | 11, 15: contributions/widgets                                  | SlotHost/SlotContribution already enforce owned build keys, availability, permissions and deterministic composition. Props are flat scalars.       | Publish named Admin hosts, widget/data adapters and editable form participation. A visual slot alone cannot contribute validated writes or coordinate Save.                                           |
 | 12: atomic Save                                                | Exact default PostgreSQL transaction, nested Auth/Permissions savepoints and transactional Audit already exist.                                    | Bounded supported composition protocol; ARCH-001. Settings/lifecycle runner operations cannot join it.                                                                                                |
 | 14, 17–18: diagnostics/work                                    | Persisted ModuleHealth observations, availability root causes, scheduler recovery, active work and cancellation exist.                             | Authorized sanitized HTTP adapters, timestamps/expiry/dependencies, enabled-default filtering and explicit re-evaluation. Preserve bounded progress semantics; no invented percentage if none exists. |
@@ -79,7 +80,8 @@ Primary evidence (repository-root-relative paths):
 
 Sections 1–2 and 31–34 define the review process, reporting and execution limits;
 this review and linked draft satisfy the planning artifacts. Architectural decisions
-and release metadata have owner dispositions recorded below; activation remains pending.
+and release metadata have owner dispositions recorded below; activation is recorded
+in the roadmap.
 
 ### Complete Core API integration matrix
 
@@ -134,7 +136,9 @@ schema-version-1 consumers; version genuinely incompatible DTO changes explicitl
 
 Before implementation, record complete PHP/TS signatures, bounds, exceptions,
 props/slots/controller return shapes and audience in the owning public guide.
-Suggested responsibilities below are design descriptions, not implemented symbols:
+Point 1 records these complete signatures and bounds in the
+[owning Admin specification](../../handbook/modules/admin/README.md).
+Responsibilities below remain design descriptions, not implemented symbols:
 
 | Capability                                                 | Owner / supported consumer / entrypoint                                                                      | Home and delivery                                                                                           |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
@@ -312,7 +316,9 @@ The owner resolved all four decisions on 2026-10-29 as recorded individually bel
 Ordinary new renderer/adapters, additive
 declarations, field permissions, bounded Auth directory reads and public
 presentation seams are implementation work, not separate constitutional conflicts.
-Their exact public signatures still require specification before implementation.
+Their exact public signatures are specified in the
+[Admin contract](../../handbook/modules/admin/README.md) by point 1 before runtime
+implementation. They remain unavailable until the owning implementation point.
 
 ### ARCH-001 — Supported cross-module atomic form coordination
 
@@ -465,7 +471,7 @@ maintenance denial with CLI-only recovery; lifecycle Core/Optional restrictions 
 settings redaction/publication; optional fallback; account-switch/abort races;
 dirty draft reconciliation and no replay; independent pages, partial and complete
 customer replacements; generator output without Admin; light/dark, keyboard,
-mobile/tablet/desktop and English-only Admin including shared feedback.
+mobile/tablet/desktop and Polish/English Admin including shared feedback (owner amendment 2026-10-31).
 
 Initial quality proposal: `docs,backend,frontend,e2e,database,delivery,installation,updates,security-source`.
 Backend/frontend/e2e cover changed contracts, actual rendered surfaces and types;
@@ -495,14 +501,17 @@ Review and update affected handbook procedures in the owning point, including al
 navigation/composition/tables/forms/components/backend operations/widgets,
 cross-module participation/transactions/authorization/availability,
 Core customization/independent pages/full replacement/generator/testing/limitations.
-Examples must execute against delivered signatures. Keep planning here; do not
-publish hypothetical APIs as implemented handbook guidance.
+Examples must execute against delivered signatures. The public Admin contract
+specification records the point 1 implementation target with explicit proposal
+metadata and unavailable status; it does not claim that its APIs are implemented.
 
 Assess root AGENTS/.agents/skills and separately authored customer-agent guidance
 for every reusable change. During implementation, update affected backend/security,
 frontend form/table/layout references and customer public consumption guidance
 without granting protected edits or copying canonical procedures. This planning
-task changes neither product: it introduces no operating rule or delivered API.
+task originally changed neither product. Point 1 subsequently adds delivery-status
+references to owner/customer backend/frontend skills; the canonical public guide
+owns the specification, without authorizing customer protected edits.
 
 ## E. Readiness and approval ledger
 
@@ -519,6 +528,8 @@ task changes neither product: it introduces no operating rule or delivered API.
   cross-module coordination approved; ARCH-002 selects CLI-only maintenance;
   ARCH-003 existing security reviews/proofs approved; ARCH-004 app-owned dynamic
   presentation approved, with code-owned Runa logo and DB-backed customer override.
-- Activation requires the resolved contract specification, confirmed release
-  metadata, refreshed baseline/order and a separate explicit owner declaration
-  that the draft is ready. No implementation or activation occurred in this task.
+- 2026-10-29 — The owner explicitly requests activation after resolving the four
+  architecture decisions and confirming release metadata. Baseline/order remain
+  current. Complete public signatures are agent-owned point 1 specification work,
+  required before runtime implementation rather than before activation. No runtime
+  implementation is delivered by this review or activation.

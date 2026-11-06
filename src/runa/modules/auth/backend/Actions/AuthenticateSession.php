@@ -25,6 +25,7 @@ final readonly class AuthenticateSession
 
     public function login(Request $request): User
     {
+        $request->attributes->remove('runa.auth.login_inactive');
         if (app('db')->connection()->transactionLevel() !== 0) {
             throw new \LogicException('Session admission requires its own root transaction.');
         }
@@ -46,7 +47,12 @@ final readonly class AuthenticateSession
 
                     return null;
                 }
-                $connection->table('runa_auth.users')->where('id', $user->id)->lockForUpdate()->first();
+                $user->refreshForUpdate();
+                if (! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()) {
+                    $this->abuse->failure($connection, $identifier, $user);
+
+                    return null;
+                }
                 // Guard regeneration finishes before hashing the resulting opaque session ID.
                 $request->session()->invalidate();
                 Auth::guard('web')->login($user, false);
@@ -61,7 +67,7 @@ final readonly class AuthenticateSession
                 if ($newBrowser) {
                     $browser = bin2hex(random_bytes(32));
                 }
-                app(SecurityNotices::class)->browserLocked($connection, $user, $browser);
+                app(SecurityNotices::class)->browserLocked($connection, $user, $browser, $request->userAgent());
                 Cookie::queue(cookie('runa_browser', $browser, 525600, '/', null,
                     app()->environment('production') || $request->isSecure(), true, false, 'lax'));
                 $row = $this->sessions->current($request, $user);
@@ -78,8 +84,8 @@ final readonly class AuthenticateSession
         }
         if (! $user instanceof User) {
             $this->transactions->loginRefused();
-            // Identical account/source/existence/lifecycle refusal; no lock timing oracle.
-            throw new OperationRejected('invalid_credentials', 'runa.auth', 'login', 422);
+            throw new OperationRejected($request->attributes->get('runa.auth.login_inactive') === true
+                ? 'account_inactive' : 'invalid_credentials', 'runa.auth', 'login', 422);
         }
 
         return $user;

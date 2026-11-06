@@ -1,1 +1,1 @@
-{{ config('branding.application_name') }}
+{{ app(\Runa\Mail\MailBranding::class)->name() }}

@@ -1,0 +1,32 @@
+<?php
+
+namespace MODULE_NAMESPACE\Definitions;
+
+use Runa\Contracts\Modules\ManagementApiTarget;
+use Runa\Contracts\Modules\ManagementBinding;
+use Runa\Contracts\Modules\ManagementPage;
+use Runa\Contracts\Modules\ManagementPageProvider;
+use Runa\Contracts\Modules\ManagementSection;
+
+final class Descriptor implements ManagementPageProvider
+{
+    public static string $method = 'describe';
+    public static string $target = 'MODULE_ID';
+    public static bool $missingTargets = false;
+    public static bool $duplicate = false;
+    public static ?string $component = null;
+    public function permissions(): array { return []; }
+    public function actions(): array { return []; }
+    public function components(): array { return []; }
+    public function pages(): array
+    {
+        $page = new ManagementPage('index', 'Module page', 'runa.admin.enter', [new ManagementSection('record', 'Record', 'runa.admin.enter', null, 'read', [])], component: self::$component);
+        return self::$duplicate ? [$page, $page] : [$page];
+    }
+    public function bindings(): array
+    {
+        return [new ManagementBinding('read', Handler::class, self::$missingTargets ? [] : [new ManagementApiTarget(self::$target, \MODULE_NAMESPACE\Contracts\Lookup::class, '1.0.0', [self::$method])])];
+    }
+    public function contributions(): array { return []; }
+    public function widgets(): array { return []; }
+}

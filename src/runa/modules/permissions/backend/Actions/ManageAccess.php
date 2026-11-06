@@ -3,6 +3,7 @@
 namespace Runa\Modules\Permissions\Actions;
 
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Permissions\Contracts\AssignmentPreview;
@@ -44,18 +45,60 @@ final readonly class ManageAccess implements PermissionsAccess
         return $this->assignments->apply($reviewed);
     }
 
-    public function definitions(string $kind, ?string $after = null): array
+    public function definitions(string $kind, ?string $after = null, array $filters = [], ?string $sort = null, string $direction = 'asc'): array
     {
         $table = $this->state->table($kind);
+        if (($sort !== null && ! in_array($sort, ['code', 'name_pl', 'name_en'], true)) || ! in_array($direction, ['asc', 'desc'], true)) {
+            throw new \InvalidArgumentException('Invalid definition ordering.');
+        }
         if ($after !== null) {
             new TrustedPrincipal($after);
         }
+        $definitions = $this->database->connection()->table('runa_permissions.'.$table)->whereNull('deleted_at');
+        if (array_diff(array_keys($filters), ['search', 'public_ids', 'code', 'name_pl', 'name_en']) !== [] || (isset($filters['search']) && (! is_string($filters['search']) || mb_strlen($filters['search']) > 160))) {
+            throw new \InvalidArgumentException('Invalid definition filters.');
+        }
+        if (array_key_exists('public_ids', $filters)) {
+            if (! is_array($filters['public_ids'])) {
+                throw new \InvalidArgumentException('Invalid definition references.');
+            }
+            $ids = (new AssignmentSet($filters['public_ids']))->roles;
+            $definitions->whereIn('public_id', $ids);
+        }
+        $search = trim($filters['search'] ?? '');
+        if ($search !== '') {
+            $pattern = '%'.addcslashes($search, '\\%_').'%';
+            $definitions->where(fn (Builder $query) => $query->where('code', 'ilike', $pattern)->orWhere('name_pl', 'ilike', $pattern)->orWhere('name_en', 'ilike', $pattern));
+        }
+        foreach (['code', 'name_pl', 'name_en'] as $key) {
+            if (! array_key_exists($key, $filters)) {
+                continue;
+            }
+            if (! is_string($filters[$key]) || mb_strlen($filters[$key]) > 160) {
+                throw new \InvalidArgumentException('Invalid definition filter.');
+            }
+            $definitions->where($key, 'ilike', '%'.addcslashes(trim($filters[$key]), '\\%_').'%');
+        }
+        $total = (clone $definitions)->count();
+        if ($sort !== null) {
+            if ($after !== null) {
+                $pivot = (clone $definitions)->where('public_id', $after)->first([$sort]);
+                if ($pivot === null) {
+                    throw new \InvalidArgumentException('Unknown definition cursor.');
+                }
+                $definitions->where(fn (Builder $where) => $where->where($sort, $direction === 'asc' ? '>' : '<', $pivot->{$sort})
+                    ->orWhere(fn (Builder $tie) => $tie->where($sort, $pivot->{$sort})->where('public_id', '>', $after)));
+            }
+            $definitions->orderBy($sort, $direction);
+        } elseif ($after !== null) {
+            $definitions->where('public_id', '>', $after);
+        }
         /** @var Collection<int, \stdClass&object{public_id: string, code: string, name_pl: string, name_en: string, version: int}> $rows */
-        $rows = $this->database->connection()->table('runa_permissions.'.$table)->whereNull('deleted_at')
-            ->when($after !== null, fn ($q) => $q->where('public_id', '>', $after))->orderBy('public_id')->limit(101)->get(['public_id', 'code', 'name_pl', 'name_en', 'version']);
+        $rows = $definitions
+            ->orderBy('public_id')->limit(101)->get(['public_id', 'code', 'name_pl', 'name_en', 'version']);
         $page = $rows->take(100);
 
-        return ['items' => array_values($page->map(fn ($row) => ['public_id' => $row->public_id, 'code' => $row->code, 'name_pl' => $row->name_pl, 'name_en' => $row->name_en, 'version' => $row->version])->all()), 'next' => $rows->count() > 100 ? $page->last()?->public_id : null];
+        return ['items' => array_values($page->map(fn ($row) => ['public_id' => $row->public_id, 'code' => $row->code, 'name_pl' => $row->name_pl, 'name_en' => $row->name_en, 'version' => $row->version])->all()), 'next' => $rows->count() > 100 ? $page->last()?->public_id : null, 'total' => $total];
     }
 
     public function definition(string $kind, string $publicId): array

@@ -1,0 +1,27 @@
+<?php
+
+namespace {{namespace}}\Definitions;
+
+use Runa\Contracts\Modules\{SettingDefinition, SettingsContext, SettingsHandler, SettingsProvider};
+
+/** Immediate source defaults; no external effects or recovery work. */
+final class {{name}}Settings implements SettingsProvider, SettingsHandler
+{
+    public function settings(): array
+    {
+        return [new SettingDefinition('{{key}}_text', 'string', 'Example text',
+            ['pl' => 'Tekst przykładowy', 'en' => 'Example text'],
+            ['pl' => 'Domyślna wartość narzędzia tekstowego.', 'en' => 'Default text for the text tool.'], rules: ['max:160'])];
+    }
+
+    public function valid(array $values): bool
+    {
+        $text = $values['{{key}}_text'] ?? null;
+
+        return is_string($text) && preg_match('/[\x00-\x1f\x7f]/u', $text) === 0;
+    }
+
+    public function handler(): string { return self::class; }
+    public function apply(SettingsContext $context): bool { return true; }
+    public function compensate(SettingsContext $context): bool { return true; }
+}

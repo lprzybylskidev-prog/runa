@@ -9,7 +9,7 @@ use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Auth\Contracts\OperatorAuthority;
 
-/** Trusted local recovery: source/data/fences are mandatory; account/policy health is recoverable. */
+/** Trusted recovery and bulk membership: source/data/fences remain mandatory. */
 final readonly class OperatorPermissions implements OperatorAuthority
 {
     public function __construct(private DatabaseManager $database, private ModuleRegistry $registry,
@@ -23,6 +23,11 @@ final readonly class OperatorPermissions implements OperatorAuthority
     public function isAdministrator(Connection $connection, string $publicId): bool
     {
         return $this->participant($connection)->isAdministrator($connection, $publicId);
+    }
+
+    public function administrators(Connection $connection, array $publicIds): array
+    {
+        return $this->participant($connection)->administrators($connection, $publicIds);
     }
 
     private function participant(Connection $connection): OperatorAuthority

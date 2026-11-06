@@ -10,12 +10,13 @@ framework API ^1.0.0 remain compatible; apply the normal fenced module update.
 
 The bundled application-owned App.vue selects AuthEntry for exact `/auth/...`
 paths, AuthApplication for `/app`, AuthApplication with `account` for `/account`,
-and AuthWelcome for `/`. DefaultApplication owns that composition; use its public presentation provider or
+and AuthWelcome for `/`, with AdminApplication for `/admin` and Admin page paths. DefaultApplication owns that composition; use its public presentation provider or
 the documented headless contracts when customizing App.
 Named document routes are `runa.auth.pages.application`, `runa.auth.pages.account`
 and the [existing entry routes](entry-ui.md). Unknown paths remain 404. Document
 GETs contain no account data and never grant access; every account request uses
-the server's module/session/eligibility/CSRF boundaries. No Admin UI is supplied.
+the server's module/session/eligibility/CSRF boundaries. The separately owned [Admin shell](../admin/frontend.md) is delivered for platform
+0.7.0 development; its generated business screens remain in progress.
 
 With public welcome enabled, guests see sign-in and registration only when public
 registration is enabled. Authenticated visitors see application access; restricted
@@ -55,7 +56,7 @@ and private avatar to both the top-bar trigger and dropdown identity. Successful
 own-profile reads after save/remove update both immediately through the session
 controller; revisioned URLs refresh replaced bytes. Initials remain the fallback
 when absent, disabled or unreadable. Profile reads are presentation-only, optional
-and do not block an otherwise valid shell or poll. They never grant access. Profile and CSRF-protected POST sign-out
+and never invalidate an otherwise valid session or poll. The layout mounts immediately; initial content/avatar placeholders finish together after session/profile/preferences/image readiness or bounded fallback; later refreshes keep the existing shell/image visible. See [view readiness](../../development/frontend/loading.md). They never grant access. Profile and CSRF-protected POST sign-out
 share its existing user dropdown, with native links, keyboard/focus return and
 pending/failure feedback. Successful sign-out clears account state and safe drafts
 before navigating through `/`, so welcome policy determines the destination.
@@ -63,12 +64,17 @@ Back/refresh and direct entry recheck the server session. The entry page supplie
 account access, without speculative business statistics or management navigation.
 
 The supplied application/account shell uses ApplicationLayout width="fluid".
-It renders that shell immediately while the server session is checked. Account
+The shell renders its frame immediately; its loading slot supplies a stable
+noninteractive placeholder only in the protected content region until session
+validation. Initial profile/preferences/avatar and bounded Admin-entry advertisement readiness coordinates content/avatar placeholders
+inside the frame; language/theme controls use local skeletons and the account-menu
+trigger stays disabled until initial navigation is ready. The optional advertisement
+settles to no link on refusal/failure or five-second timeout. Subsequent reads retain the mounted content and decoded image. Account
 loading uses the existing Skeleton inside the four destination Cards, retaining
 that structure through account initialization instead of a spinner or a temporary
 MinimalLayout. Skeletons contain no identity values or interactive forms; protected
 content mounts only after session validation. Capability-dependent content is
-resolved from guarded reads. Loading failures expose retry without changing shells;
+resolved from guarded reads. Loading failures expose retry;
 expired/restricted sessions still enter AuthEntry. Existing loaded forms stay
 mounted during ordinary read refreshes. Notification preferences use skeleton rows
 inside their existing Card while their first read is pending.
@@ -77,14 +83,25 @@ page structure. The account fallback is public `AuthAccountLoading`, replaceable
 through `AuthPresentationProvider.components.accountLoading`; both initialization
 stages use that same presentation.
 The default account editor groups identity, private avatar, password and two-factor
-settings in four shared Cards. Details, avatar and password have visible Forms;
+settings in shared Cards. Details and avatar Forms appear only when their current
+capabilities allow editing; otherwise authorized facts use plain text or an image.
+The password Form remains available independently;
 two-factor actions open shared dialogs. Each submission keeps its own credential
 draft, validation and pending state. Wide screens use two
 independent column stacks: details/password on the left, avatar/two-factor on the
 right. A taller neighboring card does not add space between details and password;
 narrow screens retain the same reading order in one column. Saving one card does not submit or clear
 another card's draft. Preferences follows Account and security in the default navigation; sessions and
-optional histories follow it.
+optional histories follow it. These subviews appear in ApplicationLayout's top bar
+through public PageNavigation, without a second content tab row. Its loading publisher stays mounted while the
+account is loading so the animated placeholder appears in the top bar; the
+account content skeleton contains no obsolete tab row. The default
+account destination is `/account`; `?tab=preferences|sessions|...` selects an
+available subview and supports Back/Forward. Unknown/unavailable tabs show Account
+and security. Modified clicks retain native link behavior. Pending writes block
+in-place navigation; the existing account controller owns drafts and reads.
+Independent/custom layouts follow the public
+[page-navigation contract](../../development/frontend/page-layouts.md#page-level-navigation-composition).
 Session/history and trusted-device tables show the shared loading spinner during
 their guarded reads; empty-result text appears only after a completed read.
 Table-tab entry uses one refresh pipeline, without a second rows read after data
@@ -133,31 +150,39 @@ selection must first be saved or discarded before removing the stored image.
 
 The two-factor card lists each policy-available method with its enabled/disabled
 state, explanation and explicit Set up/Disable action. Every factor action opens a
-shared Dialog containing its current-password/proof fields and named submission.
-Cancel, Escape and X clear the local proof, enrollment secret/QR and validation;
+shared parameter Dialog with named submission. Submitting requests the existing
+full-page Auth password confirmation; the dialog and its draft remain mounted
+and hidden while that page is active. No credential fields appear in the dialog.
+Cancel on password confirmation preserves the parameter draft and performs no write.
+Closing the parameter dialog clears enrollment secret/QR and validation;
 pending submissions cannot be dismissed or replayed. Feedback/recovery actions
 stay inside the dialog focus layer. Other card drafts remain untouched.
 Authenticator enrollment keeps the same dialog through begin/confirm, displays the
-private QR/manual key and requires fresh proof at each stage. Success hands
+private QR/manual key and requires fresh password confirmation at each stage.
+The new authenticator code verifies enrollment only. Success hands
 single-display recovery codes to the shared acknowledgement-only Dialog. Initial
 and replacement codes use the same modal; Escape/outside/X cannot discard them.
 Secrets/QR/codes remain memory-only and excluded from print. Email enrollment
 requires a verified primary address.
 
 Trusted devices appear within the two-factor card when policy enables the feature;
-there is no separate default navigation tab. Trust this browser is disabled until a
-usable factor is enrolled. Its Dialog accepts a fresh factor code through the
-existing backend boundary, without inventing an additional password requirement.
-Manage devices opens a bounded, sortable Table in a Dialog, with explicit older-page
-loading and refresh. Each revoke action requires modal confirmation. List errors
-retain the dialog and provide refresh; CSRF errors provide explicit renewal without
-write replay. Disabling/losing a factor never weakens the server's trust checks.
+there is no separate default navigation tab. Trust this browser requires the
+server-projected trusted_device_eligible login prerequisite. Its parameter dialog
+submits through the shared full-page password confirmation. The backend reuses
+the factor already verified during login; it never requests another factor code.
+The inline Trusted devices subsection contains a bounded, sortable shared Table,
+including an empty table when no active device exists. Own and Admin defaults use
+one column definition for browser/platform, current browser, creation, last use and
+expiry. Unknown metadata has localized fallback text. Older-page loading and refresh
+retain the existing read owner; each revoke action requires modal confirmation.
+List errors use ordinary account feedback; CSRF errors provide explicit renewal
+without write replay. Disabling/losing a factor never weakens the server's trust checks.
 Legacy trust tab/choose/submit seams remain for custom presentations; new independent
 trusted-device state/actions are documented in the public presentation contract.
 
 Preferences stacks appearance/language and email Cards at every width, with the confirmed full-reset
-action at the right of its page heading. This view uses explicit language/theme
-RadioGroups rather than the shell's compact cycling buttons. It retains automatic
+action at the right of its page heading. This view uses two compact, bounded language/theme Selects, side by side on
+desktop and stacked on mobile. It retains automatic
 account persistence and the same cover/apply/focus sequence; choosing the current
 value does not save or animate. Shell controls retain their existing behavior.
 
@@ -167,7 +192,8 @@ recipients, and dirty rows expose Save/Revert. Edits stay local until Save. Savi
 reverting or refreshing one row preserves other unsaved row drafts.
 Incoming snapshots merge clean/disjoint fields without overwriting dirty ones;
 overlapping recipient edits use local FormConflict decisions. Recipient
-selection is disabled while the category is off, preserving its configured values.
+selection is omitted while the category is off, preserving its valid configured
+values. The subscription switch and explicit Save remain available.
 Known empty-recipient errors stop locally; server revision/recipient/security rules
 remain authoritative. Required-message summaries are omitted from Preferences;
 mandatory/sensitive delivery remains primary-only on the server. Empty/loading/failed
@@ -191,14 +217,24 @@ Own-account sections reuse Card/Form/FormSection/TextInput/RadioGroup/FileInput/
   status, independent compact add/edit, explicit reissue and confirmed removal.
 - Private JPEG/PNG/WebP avatar, size constraints, removal and initials fallback.
 - Bounded own sessions and trusted devices, revocation, explicit trust issuance
-  using a fresh factor, and explicit older-page loading.
+  using password confirmation after a factor-verified login, and explicit older-page loading.
 - Immediate account theme/language preferences, explicit reset and enabled email
   categories with verified secondary recipients. Mandatory/sensitive security mail
   remains primary-only. Delivery writes use the account preference revision.
 - Independently enabled own login/account summaries through the private history
   API. These show only safe event/time/outcome summaries, never general Audit details.
+  Outcome labels use lowercase in both languages, consistently in table rows and
+  safe event details (`sukces`/`success`, `odmowa`/`refused`); raw event codes remain
+  canonical.
 
-Disabled features disappear. Read-only fields and avatar policy remain enforced by
+Disabled features and their empty wrappers disappear under the shared
+[capability visibility contract](../../development/frontend/customization.md#configuration-based-capability-visibility).
+Disabled factor methods are omitted even when previously enrolled; the security
+Card disappears when neither factors nor trusted devices are available. Optional
+verification controls follow current email-verification policy. Capability
+withdrawal closes affected factor/avatar/secondary-address/lifecycle editors and
+clears their private proof/enrollment state, preserving unrelated drafts.
+Read-only fields and avatar policy remain enforced by
 the backend if policy changes after load. Self-deactivate/delete require an explicit
 confirmation, fresh password step-up and the Permissions-backed neutral authority invariant, including protection of the last eligible superadministrator. Unavailable authority integration refuses the operation.
 Secrets/files clear after attempts/unmount. TOTP setup keys and single-display
@@ -284,13 +320,18 @@ presentation until the authoritative snapshot arrives; logout/switch still fence
 
 Clean profile fields merge automatically. Dirty identity/email fields, secondary
 address editors, avatar files and password/factor drafts remain in memory. Overlapping
-identity/secondary/recipient edits render FormConflict locally. The controller
+identity/secondary/recipient edits render FormConflict locally. The public frontend controller, implemented in Auth's `frontend/useAuthAccount.ts`
+and exported through `@/runa/auth`, additionally exposes `refreshing: Ref<boolean>`
+for its coalesced authoritative read pipeline. It ships as frontend runtime for
+platform/App account composition. It is distinct from the mutation/proof `busy`
+flag and clears on success/failure; requests, account fences and writes retain
+their existing owners. Refresh actions bind it for visible progress. The controller
 exposes refresh, detailConflicts/resolveDetails and avatarConflict/resolveAvatar;
 resolution changes local state only and requires an explicit subsequent save.
 The current profile has no separate avatar-content revision, so an external profile
 version change while an image draft exists conservatively requires local image
 review; it cannot safely prove that replacement bytes are unchanged. Submission,
-cancel, expiry and factor-proof cleanup retain their existing security contracts.
+cancel, expiry and password-proof cleanup retain their existing security contracts.
 
 ## Concise account presentation
 
@@ -300,11 +341,120 @@ redundant verified-email, secondary-address introduction, avatar instructions,
 enrolled-method summaries/status lines, trust explanation and delivery-editor
 introduction. Keep actionable verification errors and enrollment prerequisites.
 The avatar preview is centered within its Card. Trust actions appear directly
-inside the two-factor Card without a redundant subsection heading.
+inside the two-factor Card. Its Trusted devices heading identifies the inline table.
 
-Trusted-device management is visible only when trustedRows contains an active
-record from the existing guarded current-device endpoint. Load that list at
-initialization, visible refresh and after security changes; preserve its independent
-cursor and busy state when opening its dialog. Expired/revoked/missing devices do
-not keep the action visible. This is presentation availability only; server trust,
-factor proof, validation and authorization rules remain unchanged.
+Trusted-device management is visible whenever the feature is configured, even
+with no active records. Load its authorized list at initialization, visible refresh
+and after security changes; preserve its independent cursor, rows and busy state
+through in-place refresh (an explicit fresh read returns to the latest batch). The public controller adds `trustedLoaded: Ref<boolean>` alongside
+`trustedRows`, `trustedLoading` and `trustedCursor`; it becomes true after a successful
+read, allowing initial skeletons while later reads retain the empty/table frame. This is presentation availability only; server trust,
+password confirmation, validation and authorization remain authoritative.
+
+## Shared session composition
+
+AuthApplication now composes public ApplicationSessionShell with one optional
+caller-supplied ApplicationSessionController. It forwards navigation/topNavigation, navigationLoading/contentLoading,
+current, locale and source-owned accountMenu, plus the account-menu slot; account
+self-service and loading replacement retain their existing public contracts.
+Only the creator owns activity/heartbeat/request observation and disposal. The
+shell adds Admin entry beside User panel only after a minimal authenticated
+advertisement. Same-session revalidation retains the known link while the read is
+pending; its result updates the link in place. Lost/restricted/different identity
+hides it immediately, denial/failure hides it on settlement and stale responses are
+ignored. Unchanged activity updates and opening the dropdown do not refetch it.
+The [shared shell contract](../admin/frontend.md#shared-session-shell-and-account-menu-seam)
+owns complete props/slots and availability/proof boundaries. Full frontend
+replacements retain these public controllers without copying session/security logic.
+
+## Shared identity and preference fields
+
+Auth owns three public presentation controls exported from `@/runa/auth`. Their
+implementation lives in `src/runa/modules/auth/frontend`, ships in frontend
+assets and is supported for platform and application presentation composition.
+They do not fetch, persist, authorize, reconcile drafts or perform security steps;
+the composing account/Admin controller retains those responsibilities.
+
+- `AuthIdentityFields` uses the creation form's name-format choices, localized
+  identity labels, autocomplete and 160/64-character name/login limits. Props
+  `AuthIdentityFieldsProps`: `locale: 'pl'|'en'`, `naming: string` (`full` or
+  `single`), `columns?: 1|2` (2), `values: Partial<Record<AuthIdentityField,string|null>>`, optional
+  `errors: Partial<Record<AuthIdentityField,string|readonly string[]>>`,
+  `showName?: boolean` and `showLogin?: boolean` (both true),
+  `loginRequired?: boolean`, `readonly?: boolean`, `disabled?: boolean` (false),
+  `readonlyFields?: readonly string[]` (empty). `AuthIdentityField` is
+  `'name'|'first_name'|'surname'|'login'`. Events: `update:naming(value: string)`,
+  `field(key: AuthIdentityField,value: string|null)`, `blur(key: AuthIdentityField)`.
+  The default slot inserts content before Login; named `name`, `first_name`,
+  `surname`, `login` slots replace the corresponding visible control. The parent
+  preserves inactive naming drafts locally and normalizes the write to the active
+  representation. Switching format restores its prior draft. Hydration and
+  background refresh never silently discard identity values. Creation, selected
+  user details and own-account details consume this same component; each retains
+  its own validation and permitted fields. Omit Login in email-only mode.
+- `AuthDisplayPreferenceFields` takes `AuthDisplayPreferenceFieldsProps`:
+  `locale: 'pl'|'en'`, `language: string`, `theme: string`, `disabled?: boolean`.
+  Events: `update:language(value: string)`, `update:theme(value: string)`.
+  It renders the same compact Interface language and System/Light/Dark Selects in
+  own-account and selected-account preferences.
+- `AuthEmailPreferenceFields` takes `AuthEmailPreferenceFieldsProps`:
+  `locale: 'pl'|'en'`, `label: string`, `enabled: boolean`, `recipients: string[]`,
+  `options: {value:string,label:string}[]`, `error?: string|readonly string[]`,
+  `disabled?: boolean`, `recipientSelection?: boolean` (false). Events: `update:enabled(value: boolean)` and
+  `update:recipients(value: string[])`. It shares the category Switch and compact
+  multiple Send to selector, aligned beside the category on desktop and stacked
+  on mobile with compact row spacing. Disabled optional categories retain their Switch
+  and omit recipients. The recipient selector also requires explicit
+  `recipientSelection=true` from the owning secondary-email capability and more
+  than one address; stale recipient options never override a disabled capability.
+  Own/Admin parents omit categories unavailable by configuration.
+
+All prop interfaces and `AuthIdentityField` are exported through the same facade.
+Preference controls have no slots; compose them in the existing Form/FormSection
+and Card primitives or replace them using these value/event contracts. Own-account
+appearance changes retain the existing display transition, notification rows retain
+independent Save/Revert and conflicts, and administrative preferences retain an
+explicit atomic Save/Revert for the selected account. Selecting another user's
+language/theme never changes the administrator's own presentation.
+
+### Shared secondary-email presentation
+
+Auth owns the public `AuthSecondaryEmailFields` component exported by `@/runa/auth`,
+implemented in `modules/auth/frontend/AuthSecondaryEmailFields.vue`. Application
+compositions, own-account and Admin use the same list, verification badges and
+inline editor. This is pure presentation; the composing controller owns reads,
+drafts, capability admission, removal confirmation, security proof and writes.
+
+`AuthSecondaryEmailFieldsProps` takes `locale: 'pl'|'en'`,
+`addresses: readonly {public_id: string; email: string; verified: boolean}[]`,
+`limit: number`, `email: string`, `editing?: string|null`, `busy?: boolean`,
+`canAdd?: boolean`, `canChange?: boolean`, `canRemove?: boolean`, `canVerify?: boolean`,
+`error?: string|readonly string[]`, `conflicted?: boolean`.
+Events: `update:email(value: string)`, `edit(publicId: string)`,
+`resend(publicId: string)`, `verify(publicId: string)`, `remove(publicId: string)`, `submit()`, `cancel()`.
+The `before-field` slot hosts controller-owned conflict resolution. Exposed
+`focusInvalid()` and `focusEmail()` support asynchronous error/edit focus.
+Capabilities default false; busy defaults false. The editor performs immediate
+required/email validation; authoritative errors remain controller-owned. It omits
+Add at the configured limit and uses Change to resend unverified addresses.
+
+Authenticated account failures retain reviewed business codes before coarse HTTP
+classification: occupied email/login, address limits, reused password, invalid
+proof, notification recipients and preferences have specific Polish/English copy.
+Known email/login/password errors attach to the caller's accepted input only.
+Business 409 does not claim the profile revision changed; stale identity or
+preference revisions still reconcile without replay. Display-preference status
+can carry a reviewed localized message pair through the shared feedback control;
+external delivery mutations retain their own outcome to avoid duplicate feedback.
+Operation proof distinguishes rejected credentials, throttling, expired security
+and signed-out state, and always erases submitted secrets. Anonymous Auth entry
+retains its existing non-enumeration rules.
+
+A rejected proof with HTTP 419 renews CSRF through the existing guarded read while
+busy, clears credentials and requests a new explicit confirmation. It never
+replays proof submission or the protected business write.
+
+Own-account session/history and inline trusted-device tables expose local search,
+column filters, sorting, page size, columns/named views, refresh and authorized
+CSV/XLSX/PDF/print. Processing covers loaded rows only; Load older remains explicit.
+The shared [table contract](../../development/frontend/tables.md) owns these controls.

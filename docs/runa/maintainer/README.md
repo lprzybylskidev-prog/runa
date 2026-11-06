@@ -6,12 +6,16 @@ Owner-only platform engineering, lifecycle and release records. Platform work fo
 
 <!-- runa:current-state -->
 
-- Current version: `0.6.2`
+- Current version: `0.7.0`
 - Active roadmap: `none`
 
 <!-- /runa:current-state -->
 
 These fields are checked projections of canonical root VERSION and the owner roadmap directories. They do not claim remote release publication.
+
+Version 0.7.0 closes RM-2026-016 with owner manual acceptance and the documented
+owner backend SIGSEGV disposition. The release record retains actual verification
+evidence and its limitations.
 
 - [Roadmap workflow](workflows/roadmaps.md), [Git](workflows/git.md), [releases](workflows/releases.md), [quality](quality/README.md) and [changelog](CHANGELOG.md).
 - [Owner roadmaps](roadmaps/README.md), [maintenance](maintenance/README.md), [platform architecture](architecture/application-architecture.md) and [platform tests](testing/strategy.md).

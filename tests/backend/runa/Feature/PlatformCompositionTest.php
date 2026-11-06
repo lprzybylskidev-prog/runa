@@ -106,12 +106,17 @@ final class PlatformCompositionTest extends TestCase
         $process->setInput(json_encode(['platform' => trim(file_get_contents($root.'/VERSION')), 'modules' => $modules, 'module_steps' => []], JSON_THROW_ON_ERROR));
         $process->mustRun();
         $plan = json_decode($process->getOutput(), true, flags: JSON_THROW_ON_ERROR);
-        self::assertCount(3, $plan);
+        self::assertCount(4, $plan);
         foreach ($plan as $module) {
-            $auth = $module['module'] === 'runa.auth';
-            self::assertSame($auth ? '1.1.4' : '1.0.4', $module['to']);
-            self::assertSame($auth ? ['platform_composition', 'execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts'] : ['platform_composition', 'platform_delivery', 'verification_contracts'], $module['pending_upgrades']);
-            self::assertSame('1.0.1', $module['from']);
+            $expected = match ($module['module']) {
+                'runa.admin' => ['1.0.0', null, ['initialize', 'standalone_participants', 'creation_release']],
+                'runa.auth' => ['5.0.0', '1.0.1', ['platform_composition', 'execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts', 'admin_platform', 'native_transactions', 'section_activity', 'user_details', 'settings_snapshots']],
+                'runa.audit' => ['1.1.0', '1.0.1', ['platform_composition', 'platform_delivery', 'verification_contracts', 'admin_platform', 'admin_history']],
+                'runa.permissions' => ['2.1.0', '1.0.1', ['platform_composition', 'platform_delivery', 'verification_contracts', 'admin_platform', 'native_transactions', 'table_exports']],
+            };
+            self::assertSame($expected[0], $module['to']);
+            self::assertSame($expected[1], $module['from']);
+            self::assertSame($expected[2], $module['pending_upgrades']);
         }
     }
 }

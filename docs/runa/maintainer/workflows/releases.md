@@ -50,7 +50,30 @@ A special release roadmap targets a user-selected version.
 
 ## Module versions
 
-Module releases follow the independent [module version policy](../../handbook/development/modules.md#independent-module-versions). New modules reach `1.0.0` at verified closure of their creation roadmap; subsequent compatible features/corrections use MINOR/PATCH and incompatible MAJOR changes require explicit owner approval before implementation. This does not promote the platform version. Finalization includes module manifests/changelogs, dependent constraints and install/update paths.
+Module releases follow the independent [module version policy](../../handbook/development/modules.md#independent-module-versions). New modules reach `1.0.0` at verified closure of their creation roadmap; subsequent compatible features/corrections use MINOR/PATCH and incompatible changes follow the pre-1.0 owner decision below; from platform 1.0.0, module MAJOR changes require explicit owner approval before implementation. This does not promote the platform version. Finalization includes module manifests/changelogs, dependent constraints and install/update paths.
+
+## Pre-1.0 compatibility
+
+Owner decision, 2026-10-30: while Runa platform VERSION is below 1.0.0, maintaining
+old platform/Core contracts is not a design requirement. The owner authorizes
+necessary incompatible changes to existing Runa modules without another
+compatibility or module-MAJOR permission request. Prefer direct changes in the
+owning module, update all current source/generated consumers, tests and canonical
+guidance in the owning roadmap point, and remove superseded implementation. Do
+not add adapters, duplicate models, frozen-signature gates, special execution
+orders or exclusions solely to keep an old interface unchanged.
+
+This is standing change authorization, not authorization to weaken security,
+ignore business invariants, discard durable data, rewrite published tags/closed
+records or skip roadmap/final verification. New architectural/behavioral/security
+premises still follow roadmap discussion. Record intentional breaks and assess
+independent module/API versions and dependent constraints honestly; platform major
+promotion still requires the owner. Preserve supported deployed data/update paths
+when actually needed, rather than hypothetical compatibility with unpublished
+intermediate development states. A creation roadmap may keep a module's current
+0.x.y development version until its final independent creation release; it does
+not require one version/no-op upgrade per implementation point. Customer-owned
+application/module version policy and protected-platform boundaries are unchanged.
 
 ## One roadmap, one release
 
@@ -90,6 +113,27 @@ The GitHub Release may be richer than `docs/runa/maintainer/CHANGELOG.md`, but b
 
 ## Finalization sequence
 
+### Prepared runtime candidate before manual acceptance
+
+When the owner explicitly authorizes preparing the agreed target version early
+to make frontend manual acceptance runnable, set VERSION and the protected runtime
+manifest together. Record `prepared_version`, `prepared_version_approved_at`
+(`YYYY-MM-DD`) and nonempty `prepared_version_reason` in the active roadmap, plus
+the dated owner decision. `prepared_version` must equal both `proposed_version` and
+the version computed from `main:VERSION`/release_type (or the approved explicit
+release target). No other active-version drift is authorized. This metadata is
+source runtime preparation, not a published release or evidence of passed gates.
+
+Keep the published changelog head at the baseline until verified closure; update
+the maintainer README to the actual source version/active roadmap and identify it
+as an unreleased runtime candidate. Finalization retains the already prepared
+target rather than incrementing it again. Reconcile against `main:VERSION`, not
+the prepared VERSION. All manual acceptance, final automated gates, independent
+module creation finalization, closure, immutable tag and publication remain required.
+Customer applications cannot use this owner workflow to change protected manifests.
+
+### Verified closure
+
 Near roadmap completion:
 
 1. complete implementation,
@@ -98,7 +142,8 @@ Near roadmap completion:
    0.10.0, 0.15.0 and later five-minor checkpoints, and before 1.0.0,
 3. resolve failures using inserted fix points and rerun,
 4. prepare concise final technical report,
-5. compute the version from current `VERSION` and `release_type`,
+5. compute the version from the released baseline (`main:VERSION` when a runtime
+   candidate is already prepared) and `release_type`,
    reconcile the roadmap's `proposed_version` with that result before closure,
 6. update `VERSION` and the version field of `src/runa/platform.json` to the same value; preserve `src/app/application.json`,
 7. update `docs/runa/maintainer/CHANGELOG.md` and synchronize the maintainer README current version,
@@ -138,6 +183,18 @@ docs/runa/maintainer/README.md has exactly one block between `<!-- runa:current-
 Use these fields as a checked projection of existing sources, not as a second source of truth. Keep these current-state facts in the block instead of repeating values elsewhere in README prose. The block does not claim GitHub publication. Examples and historical documents are outside this bounded syntax and remain untouched.
 
 `doctor docs` checks this block and command documentation coverage. `doctor release` invokes the same documentation checks in addition to release metadata checks, so final verification covers documentation even without a documentation impact area. Arbitrary capability prose still requires the recorded roadmap review. Offline contracts are `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_docs.py` and `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_release.py`.
+
+## Temporary owner backend SIGSEGV disposition
+
+Apply the standing [owner testing policy](../testing/strategy.md#backend-sigsegv-owner-acceptance)
+during closure and publication without renewed approval. Its separate evidence
+assessment governs the narrow case where the release validator requires an
+all-green coordinator that cannot represent accepted native worker SIGSEGV/139.
+Preserve failed native/validator reports, complete every other selected check and
+real prerequisite, and disclose the exception in release evidence. The validator
+limitation does not cancel owner authorization; it does not waive unrelated
+failures or authorize fake PASS, repeated backend execution or runtime validator
+patches. Remove this section with the canonical exception retirement.
 
 ## Selected-scope evidence
 

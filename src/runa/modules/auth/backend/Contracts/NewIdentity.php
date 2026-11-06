@@ -4,7 +4,7 @@ namespace Runa\Modules\Auth\Contracts;
 
 use Runa\Modules\Auth\Support\Identifiers;
 
-/** Credentials deliberately stay outside module API values. */
+/** Identity data is separate from the optional secret-bearing initial setup. */
 final readonly class NewIdentity
 {
     public string $email;
@@ -14,7 +14,7 @@ final readonly class NewIdentity
     public function __construct(
         string $email, public ?string $name = null, public ?string $firstName = null,
         public ?string $surname = null, ?string $login = null,
-        public bool $active = false, public bool $approved = false,
+        public bool $active = false,
     ) {
         $this->email = Identifiers::email($email);
         $this->login = $login === null ? null : Identifiers::login($login);

@@ -25,7 +25,7 @@ use Runa\Modules\Auth\Contracts\PreferenceScope;
 use Runa\Modules\Auth\Contracts\PreferenceValue;
 use Runa\Support\Modules\Api\ModuleApis;
 
-$preferences = app(ModuleApis::class)->resolve('runa.auth', AuthPreferences::class, '1.0.0');
+$preferences = app(ModuleApis::class)->resolve('runa.auth', AuthPreferences::class, '1.1.0');
 $scope = new PreferenceScope('my-app', 'app.projects', 'list', 'statistics.mode');
 $current = $preferences->read($scope);
 $preferences->write($scope, new PreferenceValue('filtered'), $current['revision']);
@@ -54,6 +54,14 @@ Responses are private/no-store and include account/revision. The snapshot projec
 current source defaults as well as stored values for the selected application and
 shared `runa` display namespace. Other devices converge on visible return, navigation, conflict refresh or new login;
 there is no polling or WebSocket synchronization.
+
+Snapshot reads validate each available provider's declarations once, then load
+the bounded declared preference scopes for the current account in one query.
+Stored-value migration, validation/default fallback and the 1024-entry bound
+remain enforced. Delivery snapshots likewise validate each available provider
+once and batch its declared categories for the current account/module; mandatory
+and sensitive categories retain primary-only routing. These are operation-local
+reads, with no retained account values or authorization decisions across calls.
 
 ## Complete own-account reset
 
@@ -122,7 +130,7 @@ Guest `createPreferenceStore` retains validated versioned scoped localStorage an
 legacy `runa.locale`/`runa.theme` fallback; denied storage uses lifetime memory.
 Reset writes a tombstone so legacy data cannot reappear. Only guest changes write
 legacy keys. Account values never enter guest/legacy storage. All mounted consumers
-subscribe to account changes, and incoming hydration does not generate new saves.
+subscribe to account changes and guest writes/resets, and incoming hydration does not generate new saves.
 Initial locale/theme application to document attributes is also read-only: mounting
 a consumer while its account snapshot is pending must not write defaults back.
 Only subsequent deliberate value changes persist, with the existing hydration guard.
@@ -162,7 +170,12 @@ in the same transaction; failure rolls back changes and revision.
 
 ## Security notices and reminders
 
-Auth declares new_browser, failed_login, locked, password_changed, account_expiry
+Scheduled expiry reminders batch current password-lifetime overrides for their
+locked account cohort and aggregate history for the exact candidate account/
+category/deadline tuples. Mandatory per-notice dispatch authorization, deduplication,
+frequency, expiry and single-attempt delivery checks remain independent and fresh.
+
+Auth declares new_browser, failed_login, locked, password_changed, account_deactivation
 and password_expiry. Lock/password-change notices default enabled and are mandatory,
 sensitive, primary-only. Other notices default disabled and may use ordinary
 notification routing. Global `notice_<category>` settings control availability;
@@ -173,13 +186,13 @@ new-browser notices; it conveys no authentication or trust, and only an HMAC is
 stored with a bounded 100-browser inventory per account.
 
 `expiry_start_days`, `expiry_interval_hours`, `expiry_max_count` bound reminders
-for each exact current account/password deadline. Optional `expiry_admin_copy` is
+for each exact current deactivation/password deadline. Optional `deactivation_admin_copy` is
 a UUIDv7 Auth account reference, re-resolved for current verified eligible delivery;
 no raw email or cross-module SQL is accepted. The copy contains only notice kind
 and deadline. `runa:auth:security.remind` and its minute schedule scan 100 users
 with a durable rotating cursor. Repeated work deduplicates the exact deadline/count;
 changed deadlines, password renewal, deletion, ineligibility and obsolete recipients
-are rechecked before SMTP. Account expiry reminders do not alter expiry or access.
+are rechecked before SMTP. Deactivation reminders read deactivate_at and never change access or its schedule.
 
 `security.deliver` carries only a notice UUIDv7. The private outbox commits with the
 originating Auth mutation; work admission rolls back with that mutation. A persisted
@@ -188,7 +201,15 @@ recipient/deadline and state. One attempt may deliver to deduplicated recipients
 separately; an ambiguous/partial SMTP result is not retried automatically. Inspect
 failed managed work before an explicit operator action. No success/exactly-once
 SMTP guarantee is claimed. Notice bodies contain fixed localized copy and an
-optional UTC deadline, never credentials or submitted login/source data. A trusted
+optional UTC deadline. New-browser notices additionally snapshot the same nullable,
+allowlisted browser/system labels used by trusted-device presentation; raw User-Agent,
+IP addresses, submitted identifiers, credentials and cookies are never included.
+Their native HTML/plain-text bodies show those labels (localized unknown fallback),
+the captured event time explicitly in UTC, recognition reassurance and instructions
+to change the password/contact the application administrator for an unrecognized
+sign-in. Delivery uses the event snapshot, not the worker's browser or send time.
+Only notice UUIDs enter managed work; the private notice row owns the two safe
+labels under the original unpublished CREATE migration. A trusted
 optional `SecurityMailDelivery` binding can later adapt to Notifications; false
 means no send attempted and uses the direct Laravel Mail fallback. Throw after
 an ambiguous attempt; do not return false. Credential recovery remains direct.
@@ -241,3 +262,54 @@ including structured declared preferences. Complete reset emits individual setti
 and notification reset details plus an aggregate count, in the same transaction.
 Existing events are immutable; missing old values cannot be reconstructed. Audit
 structural/redaction limits apply and refusal rolls back both write and revision.
+
+Application language/theme defaults apply when no explicit account/browser
+preference exists. Hydrating/changing application defaults never persists a user
+preference. Public useApplicationDisplayDefaults/formatApplicationInstant supplies
+the display timezone without changing UTC storage or date-only values. See
+[application presentation](../admin/frontend.md#application-display-defaults-image-drafts-and-page-headings).
+
+## Administrative account preferences
+
+Auth 3.1.0 supplies additive `AuthPreferences` API **1.1.0**. Existing self-service
+methods retain their current-principal binding and signatures. Administrative
+methods explicitly select another account through the guarded adapter:
+
+```php
+// Permission: runa.auth.preferences.read
+public function account(string $publicId): array;
+// Permission: runa.auth.preferences.manage
+public function updateAccount(string $publicId, string $locale, string $theme,
+    array $delivery, int $revision): array;
+```
+
+Owner: Auth. Audience: authorized server consumers and the private Admin adapter.
+Entrypoint: `ModuleApis::resolve('runa.auth', AuthPreferences::class, '1.1.0')`.
+Implementation: Auth's `backend/Actions/AccountPreferences` and guarded proxy/API
+provider; runtime delivery, no development tooling dependency.
+
+`account` returns `{account, revision, locale, theme, categories, recipients}`.
+Categories use the own-account delivery projection; recipient options are
+`{value, label}` for primary and current verified secondary addresses. Delivery
+categories and address labels additionally require `runa.auth.addresses.read`;
+without that grant both lists are empty. Language/theme reads remain available.
+`delivery` is a list of `{module, key, enabled, recipients: list<string>}`; omitted
+categories remain unchanged. Unknown/duplicate categories, invalid locale/theme,
+unavailable recipients and attempts to disable or redirect mandatory/sensitive
+categories are refused. A nonempty delivery patch requires the address-read grant.
+An enabled optional category must select at least one current recipient.
+
+One default PostgreSQL transaction locks authority and the selected account,
+checks the supplied preference revision and reuses source-owned preference
+validation and delivery configuration. Invalid/stale changes roll back the whole
+form, including Audit. Accepted changes emit `preferences.admin_changed` alongside
+owning delivery history. `updateAccount` returns `{account, revision}`. Inactive
+and deleted targets can be inspected/edited administratively without changing
+principal identity or granting login. Existing `resetAccount` remains a
+presentation-only reset under its separate reset grant.
+
+The default User tab edits language, theme and optional email categories using the
+same choices/routing constraints as self-service. No revision input is displayed.
+Drafts live in the selected subject's form controller; saving never connects the
+administrator's own preference adapter to the target. Refresh and stale-write
+reconciliation retain dirty values and require explicit conflict resolution.

@@ -4,6 +4,7 @@ namespace Runa\Modules\Auth\Actions;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
+use Illuminate\Support\Collection;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\ModuleAvailability;
@@ -36,25 +37,32 @@ final readonly class DeliveryRouting implements AuthDelivery
                 if (! $provider instanceof DeliveryProvider) {
                     continue;
                 }
-                $seen = [];
-                $found = null;
-                /** @var array<array-key, mixed> $declaredCategories */
-                $declaredCategories = $provider->deliveryCategories();
-                foreach ($declaredCategories as $category) {
-                    if (! $category instanceof DeliveryCategory || count($seen) >= 128 || isset($seen[$category->key])) {
-                        throw new \RuntimeException('Invalid delivery declarations.');
-                    }
-                    $seen[$category->key] = true;
+                foreach ($this->declaredCategories($provider) as $category) {
                     if ($category->key === $key) {
-                        $found = $category;
+                        return $category;
                     }
-                }
-                if ($found !== null) {
-                    return $found;
                 }
             }
         }
         throw new OperationRejected('delivery_category_unavailable', 'runa.auth', 'delivery', 422);
+    }
+
+    /** @return list<DeliveryCategory> */
+    private function declaredCategories(DeliveryProvider $provider): array
+    {
+        $seen = [];
+        $categories = [];
+        /** @var array<array-key, mixed> $declared */
+        $declared = $provider->deliveryCategories();
+        foreach ($declared as $category) {
+            if (! $category instanceof DeliveryCategory || count($seen) >= 128 || isset($seen[$category->key])) {
+                throw new \RuntimeException('Invalid delivery declarations.');
+            }
+            $seen[$category->key] = true;
+            $categories[] = $category;
+        }
+
+        return $categories;
     }
 
     public function recipients(string $publicId, string $module, string $category): array
@@ -175,10 +183,14 @@ final readonly class DeliveryRouting implements AuthDelivery
                 if (! $provider instanceof DeliveryProvider) {
                     continue;
                 }
-                foreach ($provider->deliveryCategories() as $category) {
-                    $this->category($record->id, $category->key);
+                $declared = $this->declaredCategories($provider);
+                /** @var Collection<string, DeliveryRow> $preferences */
+                $preferences = $declared === [] ? collect() : $connection->table('runa_auth.delivery_preferences')
+                    ->where('user_id', $user->id)->where('module', $record->id)->whereIn('category', array_column($declared, 'key'))
+                    ->get(['module', 'category', 'enabled', 'recipients'])->keyBy('category');
+                foreach ($declared as $category) {
                     /** @var DeliveryRow|null $preference */
-                    $preference = $connection->table('runa_auth.delivery_preferences')->where('user_id', $user->id)->where('module', $record->id)->where('category', $category->key)->first();
+                    $preference = $preferences->get($category->key);
                     $categories[] = ['module' => $record->id, 'key' => $category->key, 'names' => $category->names,
                         'mandatory' => $category->mandatory, 'sensitive' => $category->sensitive, 'channel' => 'email',
                         'enabled' => $category->mandatory || $category->sensitive || ($preference->enabled ?? true),

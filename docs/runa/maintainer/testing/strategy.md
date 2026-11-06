@@ -213,6 +213,29 @@ restart/rerun/diagnosis for owner acceptance of that condition. Do not add autom
 retries or modify runtime/dependency pins to implement this policy. No renewed
 per-run approval is needed.
 
+Owner clarification, 2026-11-06: this is standing authorization for final
+verification, roadmap closure, merge, tagging, push and release publication.
+Never ask the owner to accept the same confirmed SIGSEGV again, rerun an already
+accepted backend merely to obtain a green coordinator, or diagnose the crash as
+a release prerequisite. Version/changelog/upgrade-declaration finalization alone
+does not invalidate accepted backend behavior; verify its actual changed contracts
+and consumers without repeating the whole backend solely for that metadata.
+Substantive behavior changes and ordinary failures retain their real checks.
+
+When a release validator cannot represent this documented exception, its lack
+of support does not require another owner approval and must not block an otherwise
+verified release solely for the accepted backend signal. Preserve the native
+FAILED coordinator and failed validator output. Record a separate release
+assessment identifying the candidate, native worker 139, cleanup 0, interrupted
+coverage and actual results of every other selected check and prerequisite.
+Obtain checks blocked by the coordinator through their supported commands; stale
+or unexecuted checks are not PASS. Proceed with the already authorized release
+when those independent requirements are satisfied. This narrow disposition covers
+only the validator's all-green evidence requirement caused by accepted SIGSEGV;
+never waive an unrelated hard gate, alter raw reports, fake coordinator PASS,
+patch the validator at runtime or add retries. Reconcile already repaired unrelated
+failures with their actual successful results in the same separate assessment.
+
 Eligibility requires retained execution evidence identifying the native worker
 signal, successful guarded cleanup (exit 0), and no other test execution failure.
 A ParaTest parent exit 1 can carry a worker exit 139; assess the underlying worker
@@ -239,10 +262,13 @@ coordinator FAILED status must never be presented as a clean all-group PASS.
 This is Runa owner release policy, not customer application permission or a
 runtime recovery feature. The customer instruction product and delivered recovery
 procedure remain unchanged. No reusable skill behavior or product API changes.
-Retire this temporary tolerance when a separately authorized corrected runtime
-replacement passes complete parallel backend verification without using the
-exception; synchronize owner rules and remove obsolete exception-only machinery
-if any was introduced. Do not require root-cause diagnosis in the cancelled work.
+Keep this temporary tolerance while the native PHP/runtime fault remains
+unresolved; do not treat a single lucky passing run as proof of correction.
+Retire it when a corrected PHP/runtime replacement is established and passes
+complete parallel backend verification without using the exception. Remove the
+owner AGENTS summary, this exception procedure, linked release/quality exemptions
+and any obsolete exception-only machinery together. No automatic dependency
+update or root-cause investigation is authorized merely to retire this rule.
 
 ## Test failures
 
@@ -392,3 +418,7 @@ exact floating-point equality. Avatar loading coverage requires both dimensions
 near 40 px to two decimal places; retain visibility, animation, reduced-motion and
 image-loading assertions. This tolerance addresses browser arithmetic, not layout
 regressions or permission to skip failed cases.
+
+Private owner browser preparation clears inherited development environment keys before booting the isolated testing identity, using the existing test environment selector. Preparation errors return nonzero and prevent browser startup; a rendered 503 is never accepted as a prepared application.
+
+Backend worker cleanup follows the public [test resource lifecycle](../../handbook/testing/strategy.md#test-resource-lifecycle), including its bounded disconnect grace period. Native cleanup failures remain failures; the grace period never terminates sessions or authorizes force-drop.

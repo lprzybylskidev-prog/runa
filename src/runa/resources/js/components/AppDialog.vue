@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
-import { computed, provide, ref, toRef, useId } from 'vue';
-import AppAlert from './AppAlert.vue';
+import { computed, provide, ref, useId } from 'vue';
+import AppContentLoading from './AppContentLoading.vue';
+import AppFormNotifications from './AppFormNotifications.vue';
 import AppButton from './AppButton.vue';
+import { usePresentationVisibility } from '../composables/usePresentationVisibility';
+const presentationVisible = usePresentationVisibility();
 import { useModalLayer } from '../composables/useModalLayer';
 import { layerIndex, modalPortal } from '../lib/layers';
 import type { DialogProps, DialogCloseReason } from '../runa/ui/dialogs';
@@ -13,6 +16,9 @@ const props = withDefaults(
     description: '',
     size: 'md',
     busy: false,
+    loading: false,
+    loadingLabel: '',
+    loadingShape: 'form',
     error: '',
     closeOnEscape: true,
     closeOnOutside: true,
@@ -44,7 +50,7 @@ function close(reason: DialogCloseReason = 'close') {
 }
 const layer = useModalLayer({
   key,
-  open: toRef(props, 'modelValue'),
+  open: computed(() => props.modelValue && presentationVisible.value),
   root,
   panel,
   initialFocus: () => props.initialFocus,
@@ -75,7 +81,7 @@ defineExpose({ focus: layer.focus });
         v-if="modelValue"
         ref="root"
         class="dialog-backdrop"
-        :style="{ zIndex }"
+        :style="{ zIndex, display: presentationVisible ? undefined : 'none' }"
         @pointerdown="down"
         @pointerup="up"
         @pointercancel="pressedOutside = false"
@@ -86,7 +92,7 @@ defineExpose({ focus: layer.focus });
           aria-modal="true"
           :aria-labelledby="`${id}-title`"
           :aria-describedby="description ? `${id}-description` : undefined"
-          :aria-busy="busy"
+          :aria-busy="busy || loading"
           tabindex="-1"
           class="dialog-panel"
           :class="`dialog-${size}`"
@@ -112,6 +118,7 @@ defineExpose({ focus: layer.focus });
             </div>
             <AppButton
               v-if="closable"
+              intent="cancel"
               icon-only
               size="sm"
               :disabled="busy"
@@ -122,11 +129,19 @@ defineExpose({ focus: layer.focus });
           </header>
           <div data-dialog-content class="dialog-content">
             <fieldset :disabled="busy" class="min-w-0 space-y-4">
-              <slot :close="close" />
+              <slot v-if="loading" name="loading"
+                ><AppContentLoading
+                  :shape="loadingShape"
+                  :label="
+                    loadingLabel ||
+                    (locale === 'pl'
+                      ? 'Wczytywanie zawartości'
+                      : 'Loading content')
+                  "
+              /></slot>
+              <slot v-else :close="close" />
             </fieldset>
-            <AppAlert v-if="error" tone="danger" class="mt-4">{{
-              error
-            }}</AppAlert>
+            <AppFormNotifications :error="error" :locale="locale" />
           </div>
           <footer v-if="$slots.footer" class="dialog-footer">
             <slot name="footer" :close="close" :busy="busy" />

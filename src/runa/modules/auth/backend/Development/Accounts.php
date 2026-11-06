@@ -27,7 +27,7 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
 
     public function seeders(): array
     {
-        return [AuthDevelopmentSeeder::class];
+        return [AuthDevelopmentSeeder::class, DevelopmentAdministratorSeeder::class];
     }
 
     public function populate(): void
@@ -38,7 +38,7 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
             if ($count > 100) {
                 throw new \InvalidArgumentException('Auth development extra_users limit is 100.');
             }
-            $scenarios = ['administrator', 'reader', 'direct', 'pending', 'unverified', 'password_change', 'second_factor', 'sessions', 'inactive', 'locked', 'expired', 'scheduled'];
+            $scenarios = ['administrator', 'reader', 'direct', 'pending', 'unverified', 'password_change', 'second_factor', 'sessions', 'inactive', 'locked', 'deactivated', 'scheduled'];
             for ($index = 1; $index <= $count; $index++) {
                 $scenarios[] = 'extra_'.$index;
             }
@@ -48,8 +48,9 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
                 if ($c->table('runa_auth.development_fixtures')->where('scenario', $scenario)->exists()) {
                     continue;
                 }
-                $input = new NewIdentity('dev.'.$scenario.'@example.test', name: 'Development '.str_replace('_', ' ', $scenario).' '.$number,
-                    login: 'dev.'.$scenario, active: ! in_array($scenario, ['inactive', 'scheduled'], true), approved: $scenario !== 'pending');
+                $email = $scenario === 'administrator' ? config('seeding.development.'.AuthDevelopmentSeeder::class.'.administrator_email') : null;
+                $input = new NewIdentity(is_string($email) && $email !== '' ? $email : 'dev.'.$scenario.'@example.test', name: 'Development '.str_replace('_', ' ', $scenario).' '.$number,
+                    login: 'dev.'.$scenario, active: ! in_array($scenario, ['pending', 'inactive', 'scheduled'], true));
                 if ($scenario === 'administrator') {
                     // Existing non-fixture administrators/identifiers refuse; never adopt or regrant them.
                     if ($c->table('runa_auth.initialization')->where('id', 1)->value('completed_at') !== null) {
@@ -72,7 +73,7 @@ final class Accounts implements DevelopmentAccounts, DevelopmentContributor
                 $change = match ($scenario) {
                     'password_change' => new LifecycleChange('require_password_change', enabled: true),
                     'locked' => new LifecycleChange('set_security_lock', enabled: true),
-                    'expired' => new LifecycleChange('set_expiry', at: now('UTC')->subDay()->format('Y-m-d\TH:i:s\Z')),
+                    'deactivated' => new LifecycleChange('deactivate'),
                     'scheduled' => new LifecycleChange('schedule_activation', at: now('UTC')->addDay()->format('Y-m-d\TH:i:s\Z')),
                     default => null,
                 };

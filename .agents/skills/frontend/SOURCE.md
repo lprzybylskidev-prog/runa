@@ -29,3 +29,11 @@ Local Runa API/presentation/source-placement routing follows the canonical publi
 handbook and owner contract. RM-2026-012 established those boundaries; RM-2026-013
 consolidated local routing without upstream refresh, copied upstream text, new
 dependency or new customer authority. Original research pins/dates above are unchanged.
+
+Mandatory per-view FormNotifications routing is local Runa guidance sourced from
+`docs/runa/handbook/development/frontend/forms.md` and its shared component contract.
+It adds no upstream dependency or protected-platform edit authority.
+
+Read/request amplification review routing comes from local RM-2026-016 runtime
+measurements and the public application architecture/loading guides. No upstream
+refresh, dependency or workflow/quality-gate change is involved.

@@ -117,8 +117,17 @@ def exercise(
         )
     )
     seed = repository / "src/runa/database/seeders/DatabaseSeeder.php"
+    seed_source = seed.read_text()
+    seed_entry = "public function run(): void\n    {"
+    if seed_source.count(seed_entry) != 1:
+        raise ValueError("Expected the native platform seeder entrypoint.")
     seed.write_text(
-        "<?php namespace Runa\\Database\\Seeders; final class DatabaseSeeder extends \\Illuminate\\Database\\Seeder { public function run(): void { \\Illuminate\\Support\\Facades\\DB::table('shared.update_reference')->upsert([['code'=>'baseline','label'=>'updated-reference']], ['code'], ['label']); } }\n"
+        seed_source.replace(
+            seed_entry,
+            seed_entry
+            + "\n        \\Illuminate\\Support\\Facades\\DB::table('shared.update_reference')->upsert([['code'=>'baseline','label'=>'updated-reference']], ['code'], ['label']);",
+            1,
+        )
     )
     (repository / "release-note.txt").write_text("target release guide\n")
     (repository / "retired-guide.txt").unlink()
@@ -173,6 +182,21 @@ def exercise(
             stream.write("\nTEAM_RELEASE_MARKER=\n")
     infrastructure = {path: path.read_bytes() for path in (workspace, definitions)}
     call([*update_runtime.compose(prod, "dev", prod), "up", "-d", "--wait", "redis"], cwd=prod)
+    output(
+        [
+            "docker",
+            "exec",
+            project + "-postgres-1",
+            "psql",
+            "-U",
+            "runa",
+            "-d",
+            "runa",
+            "-XqAt",
+            "-c",
+            'UPDATE shared.application_settings SET values = \'{"presentation.name":"Customer preserved presentation","business.retained":true}\'::jsonb, revision = 123 WHERE singleton = 1',
+        ]
+    )
     client = bootstrap.GitHub("fixture/runa")
 
     def local_git(source: Path, home: Path, *args: str, **kwargs: Unpack[GitOptions]) -> bytes:
@@ -463,6 +487,34 @@ def exercise(
                 if not name.endswith(("/src/runa/platform.json", "/VERSION"))
             ),
             "customer identity, dependency locks, settings survive reviewed update and recovery",
+        )
+        settings = json.loads(
+            output(
+                [
+                    "docker",
+                    "exec",
+                    project + "-postgres-1",
+                    "psql",
+                    "-U",
+                    "runa",
+                    "-d",
+                    "runa",
+                    "-XqAt",
+                    "-c",
+                    "SELECT json_build_object('revision', revision, 'values', values) FROM shared.application_settings WHERE singleton = 1",
+                ]
+            )
+        )
+        check(
+            settings
+            == {
+                "revision": 123,
+                "values": {
+                    "presentation.name": "Customer preserved presentation",
+                    "business.retained": True,
+                },
+            },
+            "forward platform update and recovery preserve application values and revision independently of module settings",
         )
         check(
             not (prod / ".runtime/production/in-progress.json").exists()

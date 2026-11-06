@@ -2,15 +2,16 @@
 
 namespace Runa\Modules\Permissions\Actions;
 
-use Illuminate\Database\Connection;
+use Illuminate\Database\DatabaseManager;
 use Runa\Modules\Permissions\Contracts\AssignmentPreview;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
 use Runa\Modules\Permissions\Support\AccessState;
 use Runa\Modules\Permissions\Support\AccessTransaction;
+use Runa\Support\Modules\Data\ModuleTransactions;
 
 final readonly class ChangeAssignments
 {
-    public function __construct(private AccessState $state, private AccessTransaction $transactions) {}
+    public function __construct(private AccessState $state, private AccessTransaction $transactions, private ModuleTransactions $mutations, private DatabaseManager $database) {}
 
     /** Called under the shared authority lock for a coherent reviewed snapshot. */
     public function preview(string $userPublicId, AssignmentSet $requested, string $mode, ?string $sourceUser = null, ?string $preset = null): AssignmentPreview
@@ -48,33 +49,55 @@ final readonly class ChangeAssignments
     /** @return array{user_public_id: string, identity_version: int, eligible: bool, security_version: int, revision: int, super_admin: bool, assigned: array{roles: list<string>, permissions: list<string>}, definitions: array{roles: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>, permissions: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>}} */
     public function apply(AssignmentPreview $reviewed): array
     {
-        return $this->transactions->run(function (Connection $c) use ($reviewed): array {
-            $current = $this->preview($reviewed->userPublicId, $reviewed->requested, $reviewed->mode, $reviewed->sourceUser, $reviewed->preset);
-            if (! hash_equals($current->fingerprint, $reviewed->fingerprint)) {
-                $this->state->reject('access_preview_stale', 409);
-            }
-            if ($current->before === $current->after) {
-                return $this->state->user($current->userPublicId);
-            }
-            // Only ordinary roles change. Protected system assignment is preserved even in replace mode.
-            foreach (['roles' => 'role', 'permissions' => 'permission'] as $kind => $singular) {
-                $ids = $c->table('runa_permissions.'.$kind)->whereIn('public_id', $current->removed[$kind])->where('system', false)->pluck('id')->all();
-                $c->table('runa_permissions.user_'.$kind)->where('user_public_id', $current->userPublicId)->whereIn($singular.'_id', $ids)->delete();
-                $ids = $c->table('runa_permissions.'.$kind)->whereIn('public_id', $current->added[$kind])->where('system', false)->pluck('id')->all();
-                foreach ($ids as $id) {
-                    $c->table('runa_permissions.user_'.$kind)->insert(['user_public_id' => $current->userPublicId,
-                        $singular.'_id' => $id, 'created_at' => now('UTC'), 'updated_at' => now('UTC')]);
-                }
-            }
-            /** @var int|null $storedRevision */
-            $storedRevision = $c->table('runa_permissions.user_access')->where('user_public_id', $current->userPublicId)->value('version');
-            $revision = $storedRevision ?? 0;
-            $c->table('runa_permissions.user_access')->updateOrInsert(['user_public_id' => $current->userPublicId], ['version' => $revision + 1, 'updated_at' => now('UTC')]);
-            // Explicit aggregate event: query-builder pivots emit no model events to suppress.
-            $this->transactions->record('assignments.changed', 'user', $current->userPublicId, $current->before, $current->after,
-                ['mode' => $current->mode, 'source_user' => $current->sourceUser, 'preset' => $current->preset, 'revision' => $revision + 1]);
+        $mutation = $this->mutation($reviewed);
+        $results = $this->mutations->run([$mutation]);
 
-            return $this->state->user($current->userPublicId);
-        }, write: true);
+        /** @var array{user_public_id: string, identity_version: int, eligible: bool, security_version: int, revision: int, super_admin: bool, assigned: array{roles: list<string>, permissions: list<string>}, definitions: array{roles: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>, permissions: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>}} $result Frozen owning mutation result after commit. */
+        $result = $results['runa.permissions.'.$mutation->definition()->key];
+
+        return $result;
+    }
+
+    public function mutation(AssignmentPreview $reviewed): AssignmentMutation
+    {
+        return new AssignmentMutation($this, $this->state, $this->transactions, $reviewed);
+    }
+
+    public function validate(AssignmentPreview $reviewed): AssignmentPreview
+    {
+        $current = $this->preview($reviewed->userPublicId, $reviewed->requested, $reviewed->mode, $reviewed->sourceUser, $reviewed->preset);
+        if (! hash_equals($current->fingerprint, $reviewed->fingerprint)) {
+            $this->state->reject('access_preview_stale', 409);
+        }
+
+        return $current;
+    }
+
+    /** Owning apply consumes only the locked, previously validated snapshot. */
+    public function applyValidated(AssignmentPreview $current): void
+    {
+        if ($current->before === $current->after) {
+            return;
+        }
+        $c = $this->database->connection();
+        // Only ordinary roles change. Protected system assignment is preserved even in replace mode.
+        foreach (['roles' => 'role', 'permissions' => 'permission'] as $kind => $singular) {
+            /** @var list<int> $ids PostgreSQL internal bigint identifiers. */
+            $ids = $c->table('runa_permissions.'.$kind)->whereIn('public_id', $current->removed[$kind])->where('system', false)->pluck('id')->all();
+            $c->table('runa_permissions.user_'.$kind)->where('user_public_id', $current->userPublicId)->whereIn($singular.'_id', $ids)->delete();
+            /** @var list<int> $ids PostgreSQL internal bigint identifiers. */
+            $ids = $c->table('runa_permissions.'.$kind)->whereIn('public_id', $current->added[$kind])->where('system', false)->pluck('id')->all();
+            if ($ids !== []) {
+                $c->table('runa_permissions.user_'.$kind)->insert(array_map(static fn (int $id): array => ['user_public_id' => $current->userPublicId,
+                    $singular.'_id' => $id, 'created_at' => now('UTC'), 'updated_at' => now('UTC')], $ids));
+            }
+        }
+        /** @var int|null $storedRevision */
+        $storedRevision = $c->table('runa_permissions.user_access')->where('user_public_id', $current->userPublicId)->value('version');
+        $revision = $storedRevision ?? 0;
+        $c->table('runa_permissions.user_access')->updateOrInsert(['user_public_id' => $current->userPublicId], ['version' => $revision + 1, 'updated_at' => now('UTC')]);
+        // Explicit aggregate event: query-builder pivots emit no model events to suppress.
+        $this->transactions->record('assignments.changed', 'user', $current->userPublicId, $current->before, $current->after,
+            ['mode' => $current->mode, 'source_user' => $current->sourceUser, 'preset' => $current->preset, 'revision' => $revision + 1]);
     }
 }

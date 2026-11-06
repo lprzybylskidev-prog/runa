@@ -19,7 +19,7 @@ import type {
 } from '../runa/ui/exports';
 const props = withDefaults(
   defineProps<{
-    provider: ExportProvider<Query>;
+    provider?: ExportProvider<Query> | undefined;
     printAdapter?: PrintAdapter<Query> | undefined;
     bulkProvider?: BulkProvider<Query> | undefined;
     query: Query;
@@ -31,6 +31,7 @@ const props = withDefaults(
   }>(),
   {
     feedbackTarget: undefined,
+    provider: undefined,
     filename: 'export',
     english: false,
     printAdapter: undefined,
@@ -56,39 +57,47 @@ watch(
   },
 );
 watch(
-  () => props.provider.capabilities.scopes,
+  () => props.provider?.capabilities.scopes ?? [],
   (values) => {
-    if (!values.includes(scope.value as 'all' | 'filtered' | 'selected'))
+    if (
+      !values.includes(scope.value as 'all' | 'filtered' | 'selected' | 'page')
+    )
       scope.value = values[0] ?? 'filtered';
   },
   { immediate: true },
 );
 const selected = computed(() => selectionCount(props.selection));
 const scopes = computed(() =>
-  props.provider.capabilities.scopes.map((value) => ({
+  (props.provider?.capabilities.scopes ?? []).map((value) => ({
     value,
     label:
-      value === 'all'
+      value === 'page'
         ? props.english
-          ? 'All rows'
-          : 'Wszystkie wiersze'
-        : value === 'selected'
+          ? 'Current loaded rows'
+          : 'Bieżące wczytane wiersze'
+        : value === 'all'
           ? props.english
-            ? 'Selected rows'
-            : 'Zaznaczone wiersze'
-          : props.english
-            ? 'Filtered results'
-            : 'Przefiltrowane wyniki',
+            ? 'All rows'
+            : 'Wszystkie wiersze'
+          : value === 'selected'
+            ? props.english
+              ? 'Selected rows'
+              : 'Zaznaczone wiersze'
+            : props.english
+              ? 'Filtered results'
+              : 'Przefiltrowane wyniki',
     disabled: value === 'selected' && selected.value === 0,
   })),
 );
 function snapshot(): ExportScope<Query> {
   const result: ExportScope<Query> =
-    scope.value === 'selected'
-      ? { kind: 'selected', selection: props.selection }
-      : scope.value === 'all'
-        ? { kind: 'all' }
-        : { kind: 'filtered', query: props.query };
+    scope.value === 'page'
+      ? { kind: 'page', query: props.query }
+      : scope.value === 'selected'
+        ? { kind: 'selected', selection: props.selection }
+        : scope.value === 'all'
+          ? { kind: 'all' }
+          : { kind: 'filtered', query: props.query };
   return JSON.parse(JSON.stringify(result)) as ExportScope<Query>;
 }
 function key() {
@@ -98,6 +107,8 @@ function key() {
   ).join('');
 }
 async function exportFile(format: ExportFormat) {
+  if (!props.provider) return;
+  const provider = props.provider;
   const request = {
     format,
     scope: snapshot(),
@@ -110,9 +121,9 @@ async function exportFile(format: ExportFormat) {
     operationKey: key(),
   };
   await operation.run(
-    (signal) => props.provider.start(request, signal),
+    (signal) => provider.start(request, signal),
     true,
-    props.provider.capabilities.execution === 'client',
+    provider.capabilities.execution === 'client',
   );
 }
 async function print() {
@@ -140,29 +151,43 @@ async function bulk(action: string) {
 <template>
   <div class="min-w-0 space-y-3">
     <div class="space-y-2">
-      <p class="text-xs font-semibold text-muted">
-        {{ scopes.find((option) => option.value === scope)?.label
+      <p v-if="provider || selected" class="text-xs font-semibold text-muted">
+        {{
+          provider
+            ? scopes.find((option) => option.value === scope)?.label
+            : english
+              ? 'Selected rows'
+              : 'Zaznaczone wiersze'
         }}<template v-if="scope === 'selected'">: {{ selected }}</template>
       </p>
       <div
         class="flex flex-wrap items-center gap-1"
         role="group"
-        :aria-label="english ? 'Export and print' : 'Eksport i druk'"
+        :aria-label="
+          provider
+            ? english
+              ? 'Export and print'
+              : 'Eksport i druk'
+            : english
+              ? 'Selected row actions'
+              : 'Akcje zaznaczonych wierszy'
+        "
       >
         <AppTooltip
-          v-for="format in ['csv', 'xlsx', 'pdf'] as const"
+          v-for="format in provider ? (['csv', 'xlsx', 'pdf'] as const) : []"
           :key="format"
           :text="format.toUpperCase()"
         >
           <AppButton
+            intent="inspect"
             size="sm"
             icon-only
             :aria-label="format.toUpperCase()"
             :disabled="
               operation.busy.value ||
-              !provider.capabilities.formats.includes(format) ||
-              !provider.capabilities.scopes.includes(
-                scope as 'all' | 'filtered' | 'selected',
+              !provider?.capabilities.formats.includes(format) ||
+              !provider?.capabilities.scopes.includes(
+                scope as 'all' | 'filtered' | 'selected' | 'page',
               ) ||
               (scope === 'selected' && !selected)
             "
@@ -182,6 +207,7 @@ async function bulk(action: string) {
         </AppTooltip>
         <AppTooltip v-if="printAdapter" :text="english ? 'Print' : 'Drukuj'">
           <AppButton
+            intent="inspect"
             size="sm"
             icon-only
             :aria-label="english ? 'Print' : 'Drukuj'"
@@ -193,6 +219,7 @@ async function bulk(action: string) {
           /></AppButton>
         </AppTooltip>
         <AppPopover
+          v-if="provider"
           :label="english ? 'Export settings' : 'Ustawienia eksportu'"
           align="end"
         >
@@ -201,6 +228,7 @@ async function bulk(action: string) {
               :text="english ? 'Export settings' : 'Ustawienia eksportu'"
             >
               <AppButton
+                intent="inspect"
                 size="sm"
                 icon-only
                 variant="ghost"
@@ -246,7 +274,7 @@ async function bulk(action: string) {
                 ]"
                 :disabled="operation.busy.value"
               />
-              <AppButton size="sm" @click="close()">{{
+              <AppButton intent="neutral" size="sm" @click="close()">{{
                 english ? 'Done' : 'Gotowe'
               }}</AppButton>
             </div>
@@ -256,6 +284,7 @@ async function bulk(action: string) {
           <AppButton
             v-for="action in bulkProvider?.actions ?? []"
             :key="action.key"
+            :intent="action.intent ?? 'neutral'"
             size="sm"
             :disabled="operation.busy.value"
             @click="bulk(action.key)"

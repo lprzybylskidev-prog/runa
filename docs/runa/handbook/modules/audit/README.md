@@ -1,8 +1,8 @@
 # Audit
 
-`runa.audit` is a platform-owned Core module, version `1.0.4`, with no
+`runa.audit` is a platform-owned Core module, version `1.1.0`, with no
 Auth or Permissions dependency. It supplies append-only manual events, opt-in
-automatic model capture, local suppression and permission-protected reads. No Audit viewer or administration interface is supplied.
+automatic model capture, local suppression and permission-protected reads. It supplies a source-owned [read-only Admin viewer](administration.md) without depending on Admin, Auth or Permissions.
 
 See the [built-in contract audiences](../../architecture/public-api.md#built-in-module-contracts-and-execution)
 for public APIs, local helpers and reserved integration. Contract paths remain
@@ -220,10 +220,10 @@ Never infer bulk capture from use of the trait elsewhere on the model.
 
 ## Authorized reads
 
-Resolve `Contracts\AuditReads` for `runa.audit`, version `1.0.0`, through ModuleApis.
+Resolve `Contracts\AuditReads` for `runa.audit`, version `1.1.0`, through ModuleApis.
 All page/detail/metadata operations require trusted `runa.audit.read` authority and
 normal module availability. Installed Permissions supplies current native grants; the fallback authorizer denies protected reads when the integration is unavailable. There is no unauthenticated read, edit/delete operation,
-management endpoint or Audit UI. Consumers must not call the private Query directly.
+public mutation endpoint. The Admin viewer uses only this guarded read contract; consumers must not call the private Query directly.
 
 `page(AuditQuery): AuditPage` supports module, stable action, actor publicId/kind,
 exact AuditEntity reference, outcome, correlationId and inclusive UTC ISO-8601
@@ -232,7 +232,20 @@ pagination even when occurrence times tie; `nextBefore` is an opaque UUIDv7 even
 reference, never an internal bigint. Pass it as `before` with the same filters on
 the next call; concurrent appends do not move existing page boundaries. This is
 append order, not a transaction-wide historical snapshot across concurrent commits.
-Unknown cursors are rejected. No total count or unbounded offset/search is supplied.
+Unknown cursors are rejected. The owning reader supplies `AuditPage.total`, the
+exact filtered count before the cursor/limit, including entity and date filters.
+`AuditQuery` additionally accepts trailing `?string $sort = null, string $direction
+= 'asc'`. Sort accepts occurred_at, module, action, outcome, actor_kind,
+actor_public_id, actor_label or correlation_id; direction is asc/desc. Default
+append order remains unchanged. Explicit ordering runs in SQL before paging,
+places nulls last and breaks ties by internal append identity ascending without
+exposing that identity. Continue `before` with identical filters/order; changing
+them restarts paging. A sorted cursor outside the current filtered set refuses.
+`AuditPage::__construct(array $entries, ?string $nextBefore, ?int $total = null)`
+is an Audit-owned public result DTO under `backend/Contracts`, returned at runtime
+through guarded `AuditReads`; nullable totals represent unavailable source-authored
+counts. The supplied SQL reader always counts under the same read authority.
+No unbounded offset/search or cross-request snapshot is supplied.
 
 Page summaries contain immutable event/reference/actor/entity metadata and omit
 changes/context/execution trees. At most 100 summaries and 512 KiB encoded page

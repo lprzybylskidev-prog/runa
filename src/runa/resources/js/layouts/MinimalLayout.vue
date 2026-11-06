@@ -1,4 +1,10 @@
 <script setup lang="ts">
+import { inject } from 'vue';
+import { provideLocale } from '../composables/useLocale';
+import AppViewBoundary from '../components/AppViewBoundary.vue';
+import { useViewReadiness } from '../composables/useViewReadiness';
+import { applicationSessionOwner } from '../lib/applicationSession';
+const sessionOwned = inject(applicationSessionOwner, false);
 import { onMounted, ref, watch } from 'vue';
 import { useDisplayPreferences } from '../composables/useDisplayPreferences';
 import AppPreferenceFeedback from '../components/AppPreferenceFeedback.vue';
@@ -28,8 +34,13 @@ const props = withDefaults(defineProps<MinimalLayoutProps>(), {
 });
 const identity = useIdentity();
 const logoFailed = ref(false);
+const standaloneReadiness = useViewReadiness({
+  identity: 'layout',
+  required: true,
+});
 onMounted(() => {
-  if (!props.staticPreferences) initializePreferenceSession();
+  if (!props.readiness && !props.staticPreferences && !sessionOwned)
+    void initializePreferenceSession();
 });
 if (!props.staticPreferences)
   watch(
@@ -55,6 +66,7 @@ const {
   applyPreference,
   finishPreferenceChange,
 } = useDisplayPreferences(props.staticPreferences);
+provideLocale(locale);
 </script>
 
 <template>
@@ -127,10 +139,14 @@ const {
               v-if="!props.staticPreferences"
               :locale="locale"
             />
-            <slot name="content" :t="t"><slot :t="t" /></slot>
-            <div v-if="$slots.actions" class="mt-6 flex flex-wrap gap-3">
-              <slot name="actions" :t="t" />
-            </div>
+            <AppViewBoundary
+              :readiness="props.readiness ?? standaloneReadiness"
+            >
+              <slot name="content" :t="t"><slot :t="t" /></slot>
+              <div v-if="$slots.actions" class="mt-6 flex flex-wrap gap-3">
+                <slot name="actions" :t="t" />
+              </div>
+            </AppViewBoundary>
           </div>
           <div
             v-if="props.illustration"

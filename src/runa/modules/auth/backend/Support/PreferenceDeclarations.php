@@ -20,19 +20,32 @@ final readonly class PreferenceDeclarations
     /** @return array{PreferenceProvider, PreferenceDefinition} */
     public function resolve(PreferenceScope $scope): array
     {
-        if (! in_array($scope->application, ['runa', config('branding.application_id')], true)) {
+        foreach ($this->forModule($scope->application, $scope->module) as [$provider, $definition]) {
+            if ($definition->view === $scope->view && $definition->key === $scope->key) {
+                return [$provider, $definition];
+            }
+        }
+        throw new OperationRejected('preference_undeclared', 'runa.auth', 'preferences', 422);
+    }
+
+    /** Current, validated declarations for one read; never retained across operations.
+     * @return list<array{PreferenceProvider, PreferenceDefinition}>
+     */
+    public function forModule(string $application, string $module): array
+    {
+        if (! in_array($application, ['runa', config('branding.application_id')], true)) {
             throw new OperationRejected('preference_application_unknown', 'runa.auth', 'preferences', 422);
         }
-        $record = $this->registry->snapshot()->modules[$scope->module] ?? null;
-        if ($record === null || ! $this->availability->statuses($scope->module)[$scope->module]->available) {
+        $record = $this->registry->snapshot()->modules[$module] ?? null;
+        if ($record === null || ! $this->availability->statuses($module)[$module]->available) {
             throw new OperationRejected('preference_module_unavailable', 'runa.auth', 'preferences', 409);
         }
+        $result = [];
         foreach ($this->declarations->classes($record, 'settings') as $class) {
             $provider = $this->declarations->make($record, $class);
             if (! $provider instanceof PreferenceProvider) {
                 continue;
             }
-            $found = null;
             $seen = [];
             /** @var array<array-key, mixed> $preferences Native provider arrays are validated before use. */
             $preferences = $provider->preferences();
@@ -42,15 +55,11 @@ final readonly class PreferenceDeclarations
                 }
                 $seen[$definition->view.':'.$definition->key] = true;
                 $this->validate($provider, $definition, $definition->default);
-                if ($definition->view === $scope->view && $definition->key === $scope->key) {
-                    $found = $definition;
-                }
-            }
-            if ($found !== null) {
-                return [$provider, $found];
+                $result[] = [$provider, $definition];
             }
         }
-        throw new OperationRejected('preference_undeclared', 'runa.auth', 'preferences', 422);
+
+        return $result;
     }
 
     public function validate(PreferenceProvider $provider, PreferenceDefinition $definition, mixed $value): void

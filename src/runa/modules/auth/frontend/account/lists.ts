@@ -23,6 +23,7 @@ export function createAccountLists(
   const { tab, security, notice } = state;
   const pageLoading = ref(false),
     trustedLoading = ref(false);
+  const trustedLoaded = ref(false);
   const rows = ref<AccountRow[]>([]),
     cursor = ref<string | null>(null);
   const trustedRows = ref<AccountRow[]>([]),
@@ -129,6 +130,7 @@ export function createAccountLists(
           ? [...trustedRows.value, ...page.rows]
           : page.rows;
         trustedCursor.value = page.cursor;
+        trustedLoaded.value = true;
       }
     } finally {
       if (own === trustedReadEpoch) trustedLoading.value = false;
@@ -168,10 +170,12 @@ export function createAccountLists(
     trustedReadEpoch++;
     trustedRows.value = [];
     trustedCursor.value = null;
+    trustedLoaded.value = false;
   });
   return {
     pageLoading,
     trustedLoading,
+    trustedLoaded,
     rows,
     cursor,
     trustedRows,

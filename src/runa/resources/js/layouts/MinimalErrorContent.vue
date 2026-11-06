@@ -20,19 +20,20 @@ defineProps<{
   <p class="mt-4 text-sm leading-7 text-muted">{{ description }}</p>
   <div class="mt-6 flex flex-wrap gap-3 text-sm">
     <form action="/" method="get">
-      <AppButton type="submit">{{ home }}</AppButton>
+      <AppButton intent="neutral" type="submit">{{ home }}</AppButton>
     </form>
     <form v-if="[419, 429, 500, 503].includes(status)" method="get">
       <input type="hidden" name="lang" :value="locale" />
       <input type="hidden" name="theme" :value="theme" />
-      <AppButton type="submit">{{ retry }}</AppButton>
+      <AppButton intent="inspect" type="submit">{{ retry }}</AppButton>
     </form>
   </div>
   <p
     data-error-request-id="__RUNA_REQUEST_ID__"
     class="mt-8 break-words text-xs text-muted"
   >
-    Request ID: __RUNA_REQUEST_ID__
+    {{ locale === 'pl' ? 'Identyfikator żądania' : 'Request ID' }}:
+    __RUNA_REQUEST_ID__
   </p>
 </template>
 

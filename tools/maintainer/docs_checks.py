@@ -69,7 +69,7 @@ def validate(root: Path) -> None:
                 raise ValueError("Undocumented command: " + path.name)
     from tools.application import docs_checks as public
 
-    public.validate(root)
+    public.validate(root, owner_guidance=True)
     mapping = root / "docs/runa/maintainer/documentation-map.json"
     historical: set[str] = (
         set(json.loads(mapping.read_text())["immutable_sha256"]) if mapping.is_file() else set()

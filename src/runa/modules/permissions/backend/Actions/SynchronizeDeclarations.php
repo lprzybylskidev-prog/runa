@@ -92,10 +92,15 @@ final readonly class SynchronizeDeclarations
                     }
                     if ($table === 'roles') {
                         $connection->table('runa_permissions.role_permissions')->where('role_id', $id)->delete();
+                        $ids = $connection->table('runa_permissions.permissions')->whereIn('code', $change['members_after'])->whereNull('deleted_at')->pluck('id', 'code');
+                        $members = [];
                         foreach ($change['members_after'] as $permission) {
-                            $permissionId = $connection->table('runa_permissions.permissions')->where('code', $permission)->whereNull('deleted_at')->value('id')
+                            $permissionId = $ids->get($permission)
                                 ?? throw new \RuntimeException('Declared role permission missing.');
-                            $connection->table('runa_permissions.role_permissions')->insert(['role_id' => $id, 'permission_id' => $permissionId, 'created_at' => now('UTC'), 'updated_at' => now('UTC')]);
+                            $members[] = ['role_id' => $id, 'permission_id' => $permissionId, 'created_at' => now('UTC'), 'updated_at' => now('UTC')];
+                        }
+                        if ($members !== []) {
+                            $connection->table('runa_permissions.role_permissions')->insert($members);
                         }
                     }
                     // One bounded event per definition: large declarations cannot exceed Audit bounds.

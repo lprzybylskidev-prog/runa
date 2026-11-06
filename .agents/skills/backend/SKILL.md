@@ -5,7 +5,24 @@ description: 'Runa backend engineering guidance for application structure, failu
 
 # Runa Backend
 
+For opt-in Admin generation and independent App pages, follow
+`docs/runa/handbook/modules/admin/examples.md`. Review exact overwrite hashes,
+singular settings-provider ownership and generated business/presentation boundaries;
+generation never installs modules or grants permissions.
+
 Use this skill for backend architecture and implementation choices that are broader than Laravel syntax.
+
+For lists, metadata/bootstrap, authorization intersections and settings/preference
+snapshots, review repeated reads beyond Eloquent relations. Follow
+[read-path performance](../../../docs/runa/handbook/architecture/application-architecture.md#read-path-performance):
+measure query growth under real transaction nesting, inspect analogous consumers
+and repair demonstrated amplification within authorized scope. Preserve current
+authority, expiry and rollback/reused-worker freshness; do not defer a known
+in-scope defect or introduce persistent permission caches.
+
+For an explicitly application-wide review, inventory App/module, startup/HTTP,
+worker/scheduler/CLI and frontend read owners. Report source, measurement and
+regression coverage separately; selected Core pages are not whole-app evidence.
 
 Before acting:
 
@@ -19,6 +36,16 @@ For public API, internal dependency, generator or source-layout changes, follow
 Classify supported consumers and complete signatures before moving files; update
 public consumers and owner/customer guidance together. Frontend replacement uses
 supported facades/controllers without copied security logic.
+
+For Admin declarations, adapters or cross-module forms, consult
+[Admin contract status and ownership](../../../docs/runa/handbook/modules/admin/README.md)
+and its composition contract. Specification-only APIs are not delivered entrypoints.
+For owner work before platform 1.0.0, follow the standing change authorization in
+AGENTS: refactor owning APIs when that simplifies the design and update current
+consumers; do not preserve an old signature by adding a compatibility workaround.
+Optional page declarations and frozen App bootstrap registration follow the
+canonical declaration guide; registration grants no authority. Keep owning record
+Policies and guarded reads, and respect the documented write/rendering delivery status.
 
 ## References
 
@@ -36,3 +63,8 @@ Reusable test support and application tooling discovery are documented in `docs/
 
 Follow [shared skill workflow](../../../docs/runa/handbook/ai/skills-policy.md#shared-point-workflow)
 for source ownership, instruction-product assessment, supported commands and final-only broad verification.
+
+For standalone or aggregate module writes migrated to native phases, follow
+[owning module transactions](../../../docs/runa/handbook/architecture/module-transactions.md).
+Use the source-owned participant contract and current API versions; Admin does
+not wrap old whole writes or own foreign business validation/persistence.

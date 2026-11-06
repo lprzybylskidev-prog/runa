@@ -8,6 +8,9 @@ const props = withDefaults(
     description: '',
     size: 'md',
     busy: false,
+    loading: false,
+    loadingLabel: '',
+    loadingShape: 'form',
     error: '',
     closeOnEscape: true,
     closeOnOutside: true,
@@ -22,7 +25,7 @@ const emit = defineEmits<{
   acknowledge: [];
 }>();
 function accept() {
-  if (props.busy) return;
+  if (props.busy || props.loading) return;
   emit('acknowledge');
   emit('update:modelValue', false);
 }
@@ -34,12 +37,15 @@ function accept() {
     :initial-focus="initialFocus || '[data-dialog-accept]'"
     @update:model-value="emit('update:modelValue', $event)"
   >
+    <template v-if="$slots.loading" #loading><slot name="loading" /></template>
     <slot />
     <template #footer
       ><AppButton
+        intent="neutral"
         data-dialog-accept
-        variant="solid"
+        variant="outline"
         :busy="busy"
+        :disabled="loading"
         @click="accept"
         >{{
           acceptLabel || (locale === 'pl' ? 'Rozumiem' : 'Understood')

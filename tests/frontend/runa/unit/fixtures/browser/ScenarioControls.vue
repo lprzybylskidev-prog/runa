@@ -78,7 +78,7 @@ const selected = ref('day');
         :key="size"
         class="flex flex-wrap items-center gap-3"
       >
-        <Button :size="size" variant="solid" @click="activations++"
+        <Button :size="size" variant="outline" @click="activations++"
           ><Icon name="layers-intersect" :size="18" />{{ size }}</Button
         >
         <Button

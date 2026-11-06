@@ -1,6 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { withTableFilters } from '@/runa/ui';
+import { formatApplicationInstant, instantTimestamp } from '@/runa/ui';
+import { computed, ref, watch } from 'vue';
 import {
+  PageNavigation,
+  usePageResolver,
   Alert,
   Button,
   Checkbox,
@@ -17,6 +21,7 @@ import AuthAccountPreferences from './AuthAccountPreferences.vue';
 import { useDisplayPreferences } from '../../../resources/js/composables/useDisplayPreferences';
 import type { AccountRow } from './account';
 import type { TableColumn, TableQuery } from '@/runa/ui';
+import { trustedDeviceColumns } from './trustedDeviceColumns';
 import type { AccountTab, AccountTask } from './useAuthAccount';
 import { useAuthAccount } from './useAuthAccount';
 import AuthAccountEditor from './AuthAccountEditor.vue';
@@ -28,6 +33,10 @@ const presentation = useAuthPresentation();
 import AuthRecoveryCodesDialog from './AuthRecoveryCodesDialog.vue';
 const props = defineProps<{ accountId: string }>();
 const account = useAuthAccount(props.accountId);
+async function exportRows(signal: AbortSignal) {
+  await account.authorizeTableExport(signal);
+  return account.rows.value;
+}
 const modalFeedback = ref(false);
 const preferencesView = ref<InstanceType<typeof AuthAccountPreferences>>();
 const {
@@ -48,7 +57,6 @@ const {
   fields,
   errors,
   naming,
-  method,
   target,
   secret,
   codes,
@@ -59,10 +67,8 @@ const {
   caps,
   has,
   canAvatar,
-  proofMethods,
   tabs,
   fieldNames,
-  needsProof,
   form,
   heading,
   choose,
@@ -74,7 +80,6 @@ const {
   readPage,
   perform,
   refreshCsrf,
-  sendCode,
 } = account;
 const display = useDisplayPreferences();
 const feedbackAttempt = ref(0);
@@ -136,22 +141,26 @@ const taskTitle = computed(
       delete: text('Usuń konto', 'Delete account'),
     })[task.value],
 );
-const methodOptions = computed(() =>
-  proofMethods.value.map((value) => ({
-    value,
-    label:
-      value === 'totp'
-        ? text('Aplikacja', 'Authenticator')
-        : value === 'email'
-          ? 'E-mail'
-          : text('Kod odzyskiwania', 'Recovery code'),
-  })),
+const lifecycleTaskAvailable = computed(() =>
+  task.value === 'deactivate'
+    ? has('self_deactivate')
+    : task.value === 'delete'
+      ? has('self_delete')
+      : true,
 );
+watch(lifecycleTaskAvailable, (available) => {
+  if (!available) {
+    fields.current_password = '';
+    fields.code = '';
+    confirmed.value = false;
+  }
+});
 const formVisible = computed(
   () =>
-    ['details', 'security', 'addresses'].includes(tab.value) ||
-    (tab.value === 'avatar' && canAvatar.value) ||
-    (tab.value === 'trust' && proofMethods.value.length > 0),
+    lifecycleTaskAvailable.value &&
+    (['details', 'security', 'addresses'].includes(tab.value) ||
+      (tab.value === 'avatar' && canAvatar.value) ||
+      (tab.value === 'trust' && account.canTrustDevice.value)),
 );
 const visibleTabs = computed(() => {
   const visible = tabs.value.filter(
@@ -161,6 +170,59 @@ const visibleTabs = computed(() => {
   if (preferences >= 0) visible.splice(1, 0, ...visible.splice(preferences, 1));
   return visible;
 });
+const pageNavigation = usePageResolver(
+  [
+    {
+      href: window.location.pathname,
+      routeKey: 'account',
+      moduleKey: 'runa.auth',
+      serverRouteName: 'runa.auth.pages.account',
+      title: 'User panel',
+    },
+  ],
+  { beforeLeave: () => !busy.value },
+);
+function tabHref(item: AccountTab) {
+  const url = new URL(pageNavigation.href.value);
+  if (item === 'details') url.searchParams.delete('tab');
+  else url.searchParams.set('tab', item);
+  return url.pathname + url.search + url.hash;
+}
+const navigationEntries = computed(() =>
+  visibleTabs.value.map((item) => ({
+    key: item,
+    routeKey: 'account.' + item,
+    moduleKey: 'runa.auth',
+    label: titles.value[item],
+    href: tabHref(item),
+    availability: 'available' as const,
+  })),
+);
+const navigationCurrent = computed(() => ({
+  routeKey: 'account.' + tab.value,
+  moduleKey: 'runa.auth',
+  href: tabHref(tab.value),
+}));
+let appliedNavigation: string | undefined;
+watch([pageNavigation.href, ready, busy, visibleTabs], () => {
+  if (
+    !ready.value ||
+    busy.value ||
+    appliedNavigation === pageNavigation.href.value
+  )
+    return;
+  appliedNavigation = pageNavigation.href.value;
+  const requested = new URL(pageNavigation.href.value).searchParams.get('tab');
+  const next =
+    visibleTabs.value.find((item) => item === requested) ?? 'details';
+  if (next !== tab.value) {
+    query.value.page = 1;
+    void selectTab(next);
+  }
+});
+function navigateTab(href: string, event: MouseEvent) {
+  void pageNavigation.navigate(href, event);
+}
 const history = computed(() => tab.value.endsWith('History'));
 const query = ref<TableQuery>({
   page: 1,
@@ -168,20 +230,19 @@ const query = ref<TableQuery>({
   sort: null,
   filters: {},
 });
-function timestamp(value: string | undefined): number | null {
+function timestamp(value: string | null | undefined): number | null {
   if (!value) return null;
-  const time = new Date(
-    /[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z',
-  ).getTime();
+  const time = instantTimestamp(value);
   return Number.isNaN(time) ? null : time;
 }
-function date(value: string | undefined) {
+function date(value: string | null | undefined) {
   const time = timestamp(value);
-  return time === null
-    ? '—'
-    : new Date(time).toLocaleString(locale.value === 'pl' ? 'pl-PL' : 'en-GB');
+  return time === null ? '—' : formatApplicationInstant(time, locale.value);
 }
-function compareDates(a: string | undefined, b: string | undefined): number {
+function compareDates(
+  a: string | null | undefined,
+  b: string | null | undefined,
+): number {
   const first = timestamp(a),
     second = timestamp(b);
   if (first === second) return 0;
@@ -190,60 +251,64 @@ function compareDates(a: string | undefined, b: string | undefined): number {
   return first - second;
 }
 const columns = computed<TableColumn<AccountRow>[]>(() =>
-  history.value
-    ? [
-        {
-          key: 'date',
-          label: text('Data', 'Date'),
-          value: (r) => date(r.occurred_at),
-          compare: (a, b) => compareDates(a.occurred_at, b.occurred_at),
-        },
-        {
-          key: 'action',
-          label: text('Zdarzenie', 'Event'),
-          value: (r) => eventLabel(r.action),
-        },
-        {
-          key: 'outcome',
-          label: text('Wynik', 'Outcome'),
-          value: (r) =>
-            r.outcome === 'success'
-              ? text('Powodzenie', 'Success')
-              : r.outcome === 'refused'
-                ? text('Odmowa', 'Refused')
-                : text('Zarejestrowano', 'Recorded'),
-        },
-      ]
-    : [
-        {
-          key: 'created',
-          label: text('Utworzono', 'Created'),
-          value: (r) => date(r.authenticated_at ?? r.created_at),
-          compare: (a, b) =>
-            compareDates(
-              a.authenticated_at ?? a.created_at,
-              b.authenticated_at ?? b.created_at,
-            ),
-        },
-        {
-          key: 'expires',
-          label: text('Wygasa', 'Expires'),
-          value: (r) => date(r.expires_at),
-          compare: (a, b) => compareDates(a.expires_at, b.expires_at),
-        },
-        ...(tab.value === 'sessions'
-          ? [
-              {
-                key: 'current',
-                label: text('Sesja', 'Session'),
-                value: (r: AccountRow) =>
-                  r.current
-                    ? text('Bieżąca', 'Current')
-                    : text('Inna', 'Other'),
-              },
-            ]
-          : []),
-      ],
+  withTableFilters(
+    tab.value === 'trust'
+      ? trustedDeviceColumns<AccountRow>(locale.value, (row, key) => row[key])
+      : history.value
+        ? [
+            {
+              key: 'date',
+              label: text('Data', 'Date'),
+              value: (r) => date(r.occurred_at),
+              compare: (a, b) => compareDates(a.occurred_at, b.occurred_at),
+            },
+            {
+              key: 'action',
+              label: text('Zdarzenie', 'Event'),
+              value: (r) => eventLabel(r.action),
+            },
+            {
+              key: 'outcome',
+              label: text('Wynik', 'Outcome'),
+              value: (r) =>
+                r.outcome === 'success'
+                  ? text('Powodzenie', 'Success')
+                  : r.outcome === 'refused'
+                    ? text('Odmowa', 'Refused')
+                    : text('Zarejestrowano', 'Recorded'),
+            },
+          ]
+        : [
+            {
+              key: 'created',
+              label: text('Utworzono', 'Created'),
+              value: (r) => date(r.authenticated_at ?? r.created_at),
+              compare: (a, b) =>
+                compareDates(
+                  a.authenticated_at ?? a.created_at,
+                  b.authenticated_at ?? b.created_at,
+                ),
+            },
+            {
+              key: 'expires',
+              label: text('Wygasa', 'Expires'),
+              value: (r) => date(r.expires_at),
+              compare: (a, b) => compareDates(a.expires_at, b.expires_at),
+            },
+            ...(tab.value === 'sessions'
+              ? [
+                  {
+                    key: 'current',
+                    label: text('Sesja', 'Session'),
+                    value: (r: AccountRow) =>
+                      r.current
+                        ? text('Bieżąca', 'Current')
+                        : text('Inna', 'Other'),
+                  },
+                ]
+              : []),
+          ],
+  ),
 );
 function eventLabel(action?: string) {
   const exact = historyEventNames[action ?? ''];
@@ -301,6 +366,14 @@ const passwordHint = computed(() =>
     @retry="account.retryHistoryDetail"
   />
 
+  <PageNavigation
+    :entries="navigationEntries"
+    :current="navigationCurrent"
+    :label="text('Ustawienia konta', 'Account settings')"
+    :disabled="busy"
+    :loading="!ready && !failure"
+    @navigate="navigateTab"
+  />
   <component
     :is="presentation.accountLoading ?? AuthAccountLoading"
     v-if="!ready && !failure"
@@ -312,23 +385,6 @@ const passwordHint = computed(() =>
     :inert="display.changingPreference.value || undefined"
     @submit.capture="feedbackAttempt++"
   >
-    <nav
-      class="flex flex-wrap gap-2"
-      :aria-label="text('Ustawienia konta', 'Account settings')"
-    >
-      <Button
-        v-for="item in visibleTabs"
-        :key="item"
-        :variant="tab === item ? 'solid' : 'outline'"
-        :aria-current="tab === item ? 'page' : undefined"
-        :disabled="busy"
-        @click="
-          query.page = 1;
-          selectTab(item);
-        "
-        >{{ titles[item] }}</Button
-      >
-    </nav>
     <div
       class="flex flex-wrap items-center justify-between gap-3"
       data-account-heading
@@ -345,9 +401,9 @@ const passwordHint = computed(() =>
       </h2>
       <Button
         v-if="tab === 'preferences'"
+        intent="discard"
         size="sm"
         variant="outline"
-        tone="danger"
         :disabled="busy || !ready"
         data-preferences-reset
         @click="preferencesView?.beginReset()"
@@ -362,10 +418,12 @@ const passwordHint = computed(() =>
             'Unsaved values for this account were retained in memory.',
           )
         }}
-        <Button @click="restoreDraft">{{
+        <Button intent="inspect" @click="restoreDraft">{{
           text('Przywróć do przejrzenia', 'Restore for review')
         }}</Button>
-        <Button @click="draft = null">{{ text('Odrzuć', 'Discard') }}</Button>
+        <Button intent="discard" @click="draft = null">{{
+          text('Odrzuć', 'Discard')
+        }}</Button>
       </Alert>
       <AuthAccountEditor
         v-if="tab === 'details' && !['deactivate', 'delete'].includes(task)"
@@ -381,21 +439,24 @@ const passwordHint = computed(() =>
       >
         <Button
           v-if="has('self_deactivate')"
+          intent="caution"
           variant="outline"
-          tone="warning"
           @click="selectTask('deactivate')"
           >{{ text('Dezaktywuj konto', 'Deactivate account') }}</Button
         >
         <Button
           v-if="has('self_delete')"
+          intent="danger"
           variant="outline"
-          tone="danger"
           @click="selectTask('delete')"
           >{{ text('Usuń konto', 'Delete account') }}</Button
         >
-        <Button v-if="task !== 'details'" @click="selectTask('details')">{{
-          text('Wróć do danych konta', 'Back to account details')
-        }}</Button>
+        <Button
+          v-if="task !== 'details'"
+          intent="cancel"
+          @click="selectTask('details')"
+          >{{ text('Wróć do danych konta', 'Back to account details') }}</Button
+        >
       </div>
 
       <Form
@@ -429,12 +490,6 @@ const passwordHint = computed(() =>
                 label: text('Imię i nazwisko', 'First name and surname'),
               },
             ]"
-          />
-          <RadioGroup
-            v-if="needsProof"
-            v-model="method"
-            :label="text('Metoda weryfikacji', 'Verification method')"
-            :options="methodOptions"
           />
           <RadioGroup
             v-if="task === 'disable'"
@@ -482,9 +537,6 @@ const passwordHint = computed(() =>
               delete errors[name];
             "
           />
-          <Button v-if="needsProof && method === 'email'" @click="sendCode">{{
-            text('Wyślij kod', 'Send code')
-          }}</Button>
           <div
             v-if="secret"
             class="space-y-3 border-l-2 border-[var(--runa-primary-solid)] pl-4"
@@ -546,16 +598,16 @@ const passwordHint = computed(() =>
         </FormSection>
         <template #actions
           ><Button
+            :intent="
+              task === 'deactivate'
+                ? 'caution'
+                : destructive
+                  ? 'danger'
+                  : 'commit'
+            "
             type="submit"
             variant="outline"
             :busy="busy"
-            :tone="
-              task === 'deactivate'
-                ? 'warning'
-                : destructive
-                  ? 'danger'
-                  : 'primary'
-            "
             :disabled="task === 'details' && !fieldNames.length"
             >{{ text('Zatwierdź', 'Submit') }}</Button
           ></template
@@ -564,6 +616,10 @@ const passwordHint = computed(() =>
       <template v-if="tab === 'sessions' || tab === 'trust' || history">
         <Table
           v-model:query="query"
+          :export-allowed="account.tableExportAllowed.value"
+          :export-rows="exportRows"
+          :refresh="() => account.refresh()"
+          :refresh-disabled="busy"
           mode="client"
           :rows="rows"
           :loading="pageLoading"
@@ -571,20 +627,28 @@ const passwordHint = computed(() =>
           :row-key="(row) => row.public_id"
           :caption="titles[tab]"
           :english="locale === 'en'"
-          :searchable="false"
         >
+          <template v-if="history" #cell-outcome="{ row }">{{
+            row.outcome === 'success'
+              ? text('sukces', 'success')
+              : row.outcome === 'refused'
+                ? text('odmowa', 'refused')
+                : text('zarejestrowano', 'recorded')
+          }}</template>
           <template #actions="{ row }">
             <Button
               v-if="
                 tab === 'accountHistory' && !row.action?.startsWith('password.')
               "
+              intent="inspect"
               variant="outline"
               @click="account.openHistoryDetail(row.public_id)"
               >{{ text('Szczegóły', 'Details') }}</Button
             >
             <Button
               v-else-if="!history"
-              tone="danger"
+              intent="danger"
+              :busy="busy"
               :disabled="busy"
               @click="revoke(row.public_id)"
               >{{
@@ -597,6 +661,7 @@ const passwordHint = computed(() =>
         </Table>
         <Button
           v-if="cursor"
+          intent="inspect"
           :busy="busy"
           @click="perform(() => readPage(true))"
           >{{ text('Wczytaj starsze', 'Load older') }}</Button
@@ -626,11 +691,17 @@ const passwordHint = computed(() =>
     :locale="locale"
   >
     <template #actions>
-      <Button v-if="failure === 'csrf'" @click="refreshCsrf">{{
-        text('Odśwież zabezpieczenie', 'Renew form security')
-      }}</Button>
+      <Button
+        v-if="failure === 'csrf'"
+        intent="inspect"
+        :busy="busy"
+        @click="refreshCsrf"
+        >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
+      >
       <Button
         v-if="failure && (!ready || failure === 'refresh_failed')"
+        intent="inspect"
+        :busy="busy || account.refreshing.value"
         @click="!ready ? initialize() : account.refresh()"
         >{{ text('Spróbuj pobrać ponownie', 'Retry loading') }}</Button
       >

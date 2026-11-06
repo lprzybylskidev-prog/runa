@@ -6,6 +6,8 @@ import type { PreferenceStore } from '../../lib/preferenceStore';
 import type { MessageKey } from '../../locales/messages';
 
 export interface MinimalLayoutProps {
+  readiness?:
+    import('../../composables/useViewReadiness').ViewReadiness | undefined;
   footer?: FooterOptions | undefined;
   homeHref?: string;
   illustration?: boolean;
@@ -14,21 +16,28 @@ export interface MinimalLayoutProps {
   staticPreferences?: { locale: Locale; theme: Theme } | undefined;
 }
 export interface ApplicationLayoutProps {
+  readiness?:
+    import('../../composables/useViewReadiness').ViewReadiness | undefined;
+  /** Fixed presentation locale; does not update account language. */
+  locale?: Locale | undefined;
   navigation: readonly NavigationEntry[];
-  topNavigation?: readonly NavigationEntry[];
+  topNavigation?: readonly NavigationEntry[] | undefined;
+  navigationLoading?: boolean | undefined;
   current?: RouteContext | undefined;
   title: string;
-  description?: string;
-  sidebar?: boolean;
-  topbar?: boolean;
-  width?: 'contained' | 'fluid';
+  description?: string | undefined;
+  sidebar?: boolean | undefined;
+  topbar?: boolean | undefined;
+  width?: 'contained' | 'fluid' | undefined;
   footer?: FooterOptions | undefined;
-  homeHref?: string;
+  homeHref?: string | undefined;
   preferenceStore?: PreferenceStore | undefined;
-  userName?: string;
-  userInitials?: string;
-  userAvatar?: string;
-  userLoading?: boolean;
+  userName?: string | undefined;
+  userInitials?: string | undefined;
+  userAvatar?: string | undefined;
+  userAvatarImage?:
+    import('../../composables/useImageReadiness').ImageReadiness | undefined;
+  userLoading?: boolean | undefined;
 }
 export interface LayoutSlotContext {
   t: (key: MessageKey) => string;
@@ -42,6 +51,12 @@ export interface MinimalLayoutSlots {
   actions?(scope: LayoutSlotContext): VNode[];
   footer?(scope: LayoutSlotContext): VNode[];
 }
+export interface ApplicationBreadcrumbSlotContext extends LayoutSlotContext {
+  navigation?: readonly NavigationEntry[];
+  topNavigation?: readonly NavigationEntry[];
+  current?: RouteContext | undefined;
+  navigate?: (href: string, event: MouseEvent) => void;
+}
 export interface ApplicationLayoutSlots {
   default?(scope: LayoutSlotContext): VNode[];
   content?(scope: LayoutSlotContext): VNode[];
@@ -49,7 +64,7 @@ export interface ApplicationLayoutSlots {
   'user-menu'?(scope: LayoutSlotContext): VNode[];
   heading?(scope: LayoutSlotContext): VNode[];
   actions?(scope: LayoutSlotContext): VNode[];
-  breadcrumbs?(scope: LayoutSlotContext): VNode[];
+  breadcrumbs?(scope: ApplicationBreadcrumbSlotContext): VNode[];
   statistics?(scope: LayoutSlotContext): VNode[];
   toolbar?(scope: LayoutSlotContext): VNode[];
   supplementary?(scope: LayoutSlotContext): VNode[];

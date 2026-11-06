@@ -14,30 +14,31 @@ Verify real rendered normal/reduced behavior, rapid reversal, Escape, keyboard f
 
 Names below refer to `src/runa/resources/js/components/<name>.vue`. Every component is assigned once; inherited motion is deliberate and must stay in the shared source.
 
-| Components                                                                                                      | Decision                                                                                                                                                          |
-| --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| AppSelect                                                                                                       | Added 140ms popup entrance/exit, rotating chevron and option color transition; visible but inert exit.                                                            |
-| AppCollapse, AppAccordion, AppFormSection                                                                       | Added natural-height/opacity disclosure; retained DOM, immediate inert/aria-hidden. Noncollapsible sections stay static.                                          |
-| AppTabs, AppWizard, AppCalendarPicker, AppAsyncContent                                                          | Added brief retained-content reveal on tab/step/calendar/state change. No remount or deferred focus.                                                              |
-| AppFormField, AppOperationPanel                                                                                 | Added feedback appearance/disappearance; error/status text and accessibility update immediately.                                                                  |
-| AppFileInput, AppTagsInput                                                                                      | Added small item entrance/exit with stable identity; removed controls inert immediately, focus moves to surviving control/input. No positional reorder animation. |
-| AppPopover, AppTooltip                                                                                          | Retained accepted 140ms fade/travel; repaired exit visibility after floating readiness resets. Popover also restores interactivity on interrupted reopen.         |
-| AppDialog, AppToastViewport                                                                                     | Retained existing fade/scale/stack presentation; exiting roots inert immediately and interrupted enter restores interactivity.                                    |
-| AppDropdown                                                                                                     | Inherits Popover/Button motion; added rotating indicator.                                                                                                         |
-| AppTable                                                                                                        | Query changes show a centered spinner for at least 140ms; processing/requests start immediately. Widths/selection remain immediate, without moving rows.          |
-| AppButton, AppLinkButton, AppBooleanInput, AppSwitch, AppProgress, AppSkeleton, AppSpinner                      | Retained existing interaction/progress/loading transitions. Boolean background/border/color easing is shared; reduced motion retains static state cues.           |
-| AppCheckbox, AppRadioGroup                                                                                      | Inherit BooleanInput visual state easing.                                                                                                                         |
-| AppAlertDialog, AppConfirmDialog                                                                                | Inherit Dialog and action-control motion; no second entrance.                                                                                                     |
-| AppDateInput, AppDateRangeInput, AppDateTimeInput, AppTimeInput, AppTemporalInput, AppTimePicker, AppColorInput | Inherit field, Popover, CalendarPicker and control motion as composed; text/time/color input and pointer adjustment stay immediate.                               |
-| AppPickerSlider                                                                                                 | Pointer/keyboard position and value stay immediate; inherits shared control hover/focus feedback. No easing behind the pointer.                                   |
-| AppTextInput, AppNumberInput, AppMaskedInput                                                                    | Inherit shared field/control color and feedback motion. Typed values stay immediate.                                                                              |
-| AppButtonGroup, AppPagination, AppTableActions, AppTablePreferences, AppPreferenceControls                      | Inherit shared buttons/selects/popovers/dialogs and fields. No extra group animation or delayed action.                                                           |
-| AppToast, AppLoadingOverlay                                                                                     | Inherit viewport/spinner/feedback or established overlay behavior; retain existing loading delay and minimum-display contract.                                    |
-| AppNavigation, AppTopNavigation                                                                                 | Retain accepted dedicated shell disclosure/dropdown/indicator motion. Do not extract into public controls.                                                        |
-| AppAlert, AppBadge, AppStatus, AppEmptyState                                                                    | Static semantic content; the owning feedback/async container animates state changes when appropriate. Avoid duplicate entrances/announcements.                    |
-| AppCard, AppDivider, AppBreadcrumbs, AppStatistic, AppStatistics, AppFooter                                     | Static structure/content; links/controls retain shared interaction feedback. No count tween or decorative mount animation.                                        |
-| AppForm, AppHiddenInput, AppIdentityProvider                                                                    | Behavioral/identity/form contracts; no independent visual transition.                                                                                             |
-| AppIcon, RunaLogo, AppConstellation                                                                             | Static assets/backgrounds; preserve accepted artwork and geometry without decorative movement.                                                                    |
+| Components                                                                                                      | Decision                                                                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AppViewBoundary                                                                                                 | Static initial placeholder/error; retained content has no refresh entrance or focus change.                                                                                        |
+| AppSelect                                                                                                       | Added 140ms popup entrance/exit, rotating chevron and option color transition; visible but inert exit.                                                                             |
+| AppCollapse, AppAccordion, AppFormSection                                                                       | Added natural-height/opacity disclosure; retained DOM, immediate inert/aria-hidden. Noncollapsible sections stay static.                                                           |
+| AppTabs, AppWizard, AppCalendarPicker, AppAsyncContent                                                          | Added brief retained-content reveal on tab/step/calendar/state change; AsyncContent success/refreshing share a stable region without a new entrance. No remount or deferred focus. |
+| AppFormField, AppOperationPanel                                                                                 | Added feedback appearance/disappearance; error/status text and accessibility update immediately.                                                                                   |
+| AppFileInput, AppTagsInput                                                                                      | Added small item entrance/exit with stable identity; removed controls inert immediately, focus moves to surviving control/input. No positional reorder animation.                  |
+| AppPopover, AppTooltip                                                                                          | Retained accepted 140ms fade/travel; repaired exit visibility after floating readiness resets. Popover also restores interactivity on interrupted reopen.                          |
+| AppDialog, AppToastViewport                                                                                     | Retained existing fade/scale/stack presentation; exiting roots inert immediately and interrupted enter restores interactivity.                                                     |
+| AppDropdown                                                                                                     | Inherits Popover/Button motion; added rotating indicator.                                                                                                                          |
+| AppTable                                                                                                        | Query changes show a centered spinner for at least 140ms; processing/requests start immediately. Widths/selection remain immediate, without moving rows.                           |
+| AppButton, AppLinkButton, AppBooleanInput, AppSwitch, AppProgress, AppSkeleton, AppSpinner                      | Retained existing interaction/progress/loading transitions. Boolean background/border/color easing is shared; reduced motion retains static state cues.                            |
+| AppCheckbox, AppRadioGroup                                                                                      | Inherit BooleanInput visual state easing.                                                                                                                                          |
+| AppAlertDialog, AppConfirmDialog                                                                                | Inherit Dialog and action-control motion; no second entrance.                                                                                                                      |
+| AppDateInput, AppDateRangeInput, AppDateTimeInput, AppTimeInput, AppTemporalInput, AppTimePicker, AppColorInput | Inherit field, Popover, CalendarPicker and control motion as composed; text/time/color input and pointer adjustment stay immediate.                                                |
+| AppPickerSlider                                                                                                 | Pointer/keyboard position and value stay immediate; inherits shared control hover/focus feedback. No easing behind the pointer.                                                    |
+| AppTextInput, AppNumberInput, AppMaskedInput                                                                    | Inherit shared field/control color and feedback motion. Typed values stay immediate.                                                                                               |
+| AppButtonGroup, AppPagination, AppTableActions, AppTablePreferences, AppPreferenceControls                      | Inherit shared buttons/selects/popovers/dialogs and fields. No extra group animation or delayed action.                                                                            |
+| AppToast, AppLoadingOverlay                                                                                     | Inherit viewport/spinner/feedback or established overlay behavior; retain existing loading delay and minimum-display contract.                                                     |
+| AppNavigation, AppTopNavigation                                                                                 | Retain accepted dedicated shell disclosure/dropdown/indicator motion. Do not extract into public controls.                                                                         |
+| AppAlert, AppBadge, AppStatus, AppEmptyState                                                                    | Static semantic content; the owning feedback/async container animates state changes when appropriate. Avoid duplicate entrances/announcements.                                     |
+| AppCard, AppDivider, AppBreadcrumbs, AppStatistic, AppStatistics, AppFooter                                     | Static structure/content; links/controls retain shared interaction feedback. No count tween or decorative mount animation.                                                         |
+| AppForm, AppHiddenInput, AppIdentityProvider, AppPageNavigation                                                 | Behavioral/identity/form contracts; no independent visual transition.                                                                                                              |
+| AppIcon, RunaLogo, AppConstellation                                                                             | Static assets/backgrounds; preserve accepted artwork and geometry without decorative movement.                                                                                     |
 
 Layouts: ApplicationLayout keeps its accepted 140/160/180ms navigation rhythm. MinimalLayout keeps the accepted preference cover and loading feedback, plus sparse randomized constellation-point opacity pulses in its backdrop. ApplicationLayout uses the same backdrop with the effect disabled. Both inherit content motion through shared components; neither receives a page entrance animation. Email and native error output remain static, suitable for email/print and independent of the application runtime.
 
@@ -67,3 +68,35 @@ are pending. It inherits Skeleton's 1600ms pulse and reduced-motion/print fallba
 image/initials replacement is immediate without another fade or entrance.
 During loading the avatar has no steady backing fill, and the circular Skeleton
 uses the exact avatar bounds so its opacity pulse remains visible.
+
+Admin diagnostics keep the current cards mounted while a shared Spinner indicates
+refresh. Module cards use semantic status colors and 160ms border/background
+feedback; reduced motion keeps static cues. Module operations reuse Dialog's
+existing modal entrance/exit and Tabs' retained-panel motion, without a separate
+page animation or request delay.
+
+Modal diagnosis keeps its current panel and shows progress only in Diagnose now;
+its loading/result/error appears in the shared nested Dialog. An unlabelled action
+row places Optional lifecycle controls left and diagnosis right above module
+details. Lifecycle actions use the same Dialog for preview/confirmation, with local Skeleton
+loading and the existing nested focus/inert/scroll behavior. Let the dialog capture
+its enabled opener before entering the shared write lane, so cancellation restores
+focus. No extra entrance timing or confirmation layer is introduced.
+Task-history and operation-history reads use their own Button/Spinner feedback;
+confirmed empty tables keep the column frame. Refresh retains loaded rows and
+uses the same shared reduced-motion behavior without another content entrance.
+
+Breadcrumb discovery uses the shared Skeleton pulse in its own layout region,
+coordinated with initial shell/page navigation readiness. Reveal the complete path
+once ready; never animate partial hierarchy growth. The existing reduced-motion
+Skeleton fallback remains static.
+
+Initial language/theme controls share local Skeleton placeholders with shell
+navigation readiness; reveal hydrated icons/labels instead of animating a temporary
+system preference into the account value. Account-menu readiness settles with
+content, while background revalidation retains the existing presentation.
+
+Module-state filtering replaces the Admin card list with the shared pulsing block
+Skeletons while the latest read settles; it retains the selector and section frame.
+Ordinary same-filter refresh retains cards with local progress. Disabled module
+cards use a gray top accent and hover border through the same 160ms transition.

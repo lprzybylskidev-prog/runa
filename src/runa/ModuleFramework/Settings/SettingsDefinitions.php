@@ -16,8 +16,19 @@ final readonly class SettingsDefinitions
 {
     public function __construct(private ModuleDeclarations $declarations, private SettingTypes $types, private Factory $validator) {}
 
+    /** Retained values never authorize using changed or missing source. */
+    public function assertCurrentSource(ModuleRecord $record, string $provider, string $handler): void
+    {
+        try {
+            $this->declarations->inspect($record, $provider);
+            $this->declarations->inspect($record, $handler);
+        } catch (Throwable) {
+            throw new RuntimeException('Invalid settings declaration or defaults.');
+        }
+    }
+
     /** One provider owns cross-field validation and the reversible application boundary.
-     * @return array{array<string, SettingDefinition>, SettingsProvider, string}
+     * @return array{array<string, SettingDefinition>, SettingsProvider, class-string}
      */
     public function for(ModuleRecord $record): array
     {
@@ -45,7 +56,7 @@ final readonly class SettingsDefinitions
             }
             $this->validate($definitions, $provider, $defaults);
 
-            return [$definitions, $provider, $handler];
+            return [$definitions, $provider, $type->getName()];
         } catch (Throwable) {
             throw new RuntimeException('Invalid settings declaration or defaults.');
         }

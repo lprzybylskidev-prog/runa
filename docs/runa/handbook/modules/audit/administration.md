@@ -1,0 +1,86 @@
+# Audit administration viewer
+
+History from/until filters declare datetime and use the shared calendar/time picker
+in the application's timezone. Edited values reach the guarded reader as UTC
+instants; incomplete drafts remain local. Actor-kind/outcome choices use the same lowercase PL/EN labels in filter selects,
+history cells and immutable event details. Module/action/UUID identifiers and JSON
+payload fragments remain canonical; exports keep the original codes. The history
+table shares bounded pinned
+headers and a below-header horizontal scrollbar with other module views.
+
+Audit 1.1.0 supplies `runa.audit/history` Admin declarations, the private HistoryReader
+adapter and usable Polish/English defaults. Audit still has no backend dependency on Admin,
+Auth or Permissions. Admin requires current entry/password proof; every read also
+resolves AuditReads 1.1.0 under current `runa.audit.read` and owning availability.
+The source-only `admin_history` forward edge from 1.0.5 to 1.1.0 transforms no data
+and preserves immutable events. AuditReads 1.1.0 adds optional ordering through
+AuditQuery; the page DTO retains its optional total.
+
+`catalogue` accepts the owning opaque event cursor and limit 1–100, default append
+order and filters `module`, `action`, `actor_public_id`, `actor_kind`, `outcome`,
+`correlation_id`, UTC ISO-8601 `from`/`until`, and the complete three-field entity
+reference `entity_module`, `entity_type`, `entity_public_id`. Partial entity filters,
+unknown keys and malformed cursors refuse. One optional `asc|desc` sort on
+occurred_at, module, action, actor_public_id, actor_kind, actor_label, outcome or
+correlation_id orders in SQL before paging, with nulls last and append-ID ascending
+ties. Filter-only entity/date endpoints are not sort keys. The adapter forwards
+the exact filtered `AuditPage.total` from the owning guarded reader, counted before
+cursor/limit. Cursor navigation remains previous/next. There is no offset search
+or assumed historical snapshot. Summary rows contain occurrence time,
+module/action/outcome, actor UUID/kind/historical label and correlation only; changes,
+context, execution and entity graphs are available only through explicit detail.
+
+`detail` accepts an event public UUID and projects the same immutable metadata plus
+bounded JSON text for persisted redacted changes/context/execution and complete safe
+entity references. Payloads use aligned 4096-byte ASCII JSON fragments with an
+explicit payload_part label and payload_next cursor; request the next record cursor
+for the same event UUID to read the continuation. Empty fragments mean that tree
+has ended. This preserves the existing 64-KiB record limit without truncating native
+Audit history. Immutable event UUID binds every continuation; invalid part cursors
+refuse. The UI labels fragments and offers next/first part controls only for multipart payloads. Unknown events return a safe 404. General Audit read authority
+permits those already approved persisted payloads; no raw request, Auth session or
+foreign model is fetched. Historical labels remain historical; optional current
+Auth identity enrichment is deliberately omitted. No edit/delete/undo command exists.
+Grant removal hides the page and refuses future reads without payload disclosure.
+
+Details group event metadata and the historical actor. Correlation belongs to
+the Event group; filter-only from/until/entity inputs do not appear as empty
+event properties. The correlation value links to this table with only its
+`correlation_id` filter; the actor UUID links with only `actor_public_id`.
+Missing identifiers remain unlinked. The default has no separate technical-ID or
+related-entity card. Complete entity references remain available in the guarded
+detail projection for custom presentation, and entity-filter URLs remain supported.
+Links filter Audit reads; they do not navigate to current foreign records or grant
+access. URL filters are ordinary selectors, never trusted execution metadata.
+
+Correlation identifies one related execution chain, distinct from each Audit event's
+own UUID. HTTP initializes it from the request ID; downstream operations and queued
+work can retain it to connect Audit records with diagnostic logs. It does not identify
+a person or an audited business entity. Actor filtering instead selects actions by
+that historical actor, which may differ from the entity affected by the action.
+
+Changes/context/execution share a compact data card. Empty trees say No data;
+complete JSON is indented, syntax-colored using theme tokens and escaped Vue text.
+Long values use the public ValuePreview Show all/Collapse text link inside the
+preview, aligned to its right edge. Initial detail reads show a localized shared
+detail-shaped ContentLoading placeholder inside the modal until they settle; failures stop loading and offer Retry
+loading. A continuation read pulses the retained payload region through ContentLoading
+refreshing while keeping metadata/payload mounted. Reduced motion removes the pulse.
+Continuation parts remain independently bounded escaped text; expansion
+never fetches or concatenates later parts. No raw HTML is rendered.
+
+## Presentation and replacement
+
+Public `@/runa/audit` exports `AuditAdminHistory(AdminPageProps)` and
+`AuditAdminDetail(AdminSectionPresentationProps)`. Source lives under
+`src/runa/modules/audit/frontend/components`. The history default reuses public
+`AdminRecordBrowser` with declared filters; details reuse the shared read/form
+controller and resource continuation with escaped read-only values. Customer replacements use public Admin
+page/section presentation providers or these defaults in `src/app`, preserving
+Runa's shared session/read/reconciliation ownership. No private reader/query import
+or copied authorization is supported. See [Admin frontend](../admin/frontend.md).
+
+Focused privacy/interaction evidence is recorded in the active roadmap; complete
+rendered light/dark responsive acceptance and full suites remain final verification.
+
+History datetime from/until filters use one shared DateTimeRangeInput via the Admin table adapter. The endpoint picker commits both original keys together and preserves initial URL filters and open bounds.

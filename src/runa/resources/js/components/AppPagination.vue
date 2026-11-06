@@ -29,6 +29,7 @@ const visible = computed(() =>
 <template>
   <nav :aria-label="label" class="flex flex-wrap items-center gap-1">
     <AppButton
+      intent="neutral"
       :size="size ?? 'md'"
       :disabled="disabled || page === 1"
       :aria-label="previousLabel"
@@ -41,6 +42,7 @@ const visible = computed(() =>
         class="px-1 text-muted"
         >…</span
       ><AppButton
+        intent="neutral"
         :size="size ?? 'md'"
         :disabled="disabled"
         :aria-label="`${label}: ${value}`"
@@ -50,6 +52,7 @@ const visible = computed(() =>
         >{{ value }}</AppButton
       ></template
     ><AppButton
+      intent="neutral"
       :size="size ?? 'md'"
       :disabled="disabled || page === count"
       :aria-label="nextLabel"

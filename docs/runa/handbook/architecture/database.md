@@ -180,7 +180,18 @@ Retry only known transient deadlock/serialization conditions, and only when the 
 
 ## Migration policy
 
-For a rebuildable development model that has not been used with production data, migrations may be edited/cleaned; prefer one migration per database object/table where practical. Define logical PostgreSQL column order in the original migration, without MySQL-style after() concepts. Edit an uncommitted migration rather than adding a redundant correction.
+For a rebuildable development model that has not been used with production data,
+migrations may be edited, deleted and consolidated, including committed files.
+Owner decision, 2026-11-03: until Runa platform 1.0.0, an active roadmap already
+authorizes correcting original CREATE definitions and fully resetting/reseeding
+identified Runa development/test databases. Prefer that workflow over corrective
+ALTER/UPDATE migrations, data transfers or compatibility upgrades solely for
+unpublished intermediate development schemas and disposable data. Normally use
+one file per table with its complete current columns, indexes and constraints;
+a small cohesive table group is acceptable. Defining constraints/indexes alongside
+table creation is part of that CREATE definition, not a later corrective migration.
+Keep initial rows in seeders/initializers. Define logical PostgreSQL column order
+in the original migration, without MySQL-style after() concepts.
 
 Never edit a committed migration that may have run in production. Use new forward migrations for production schema changes. Changing an already applied file does not cause Laravel to execute it again; verify real old-to-new schema/data transitions during platform update acceptance. Migration decisions use the actual installation and data context.
 
@@ -276,7 +287,7 @@ The app role `runa` has no superuser, role-creation or database-creation privile
 
 Platform migrations live in `src/runa/database/migrations`; application migrations live in `src/app/database/migrations`. Native Artisan `migrate`, status, fresh, refresh, reset, rollback, wipe and seed commands select only the application. Platform paths/seed classes cannot be selected through application command options. Both owners use the identity repository implementation, with separate tables: existing `shared.migrations` remains Runa history; `shared.application_migrations` records only application batches. Existing Runa names/batches are preserved. Unknown/mixed legacy rows in the Runa repository block both scopes until the owner supplies an explicit reviewed transition; commands never silently reclassify history or delete data.
 
-`DatabaseScope::PLATFORM_TABLES` is the protected source inventory: `shared.migrations`, `shared.jobs`, `shared.failed_jobs`, `shared.platform_seed_runs`, `shared.module_registry_state`, `shared.modules`, `shared.module_transitions`, `shared.module_work` and `shared.module_update_steps`. The module tables hold framework registration/generation/transition/work metadata for both source owners, not module-domain data. Module health policy overrides/revisions and bounded replaceable observations are additional columns on `shared.modules`, not module-domain entities or a separate history store. Bounded non-sensitive optional integration values also live on `shared.modules`; their writes use the registry generation/lock protocol. Async subscriber work adds nullable listener/delivery-key columns on `shared.module_work`, with a paired-state constraint and unique delivery key for retained-work deduplication. No event business tables or cross-module FKs are introduced. Every platform table addition must update this inventory and the real-migration inventory test in the same change. Other non-system/non-extension tables belong to the application, including its repository and any app-owned technical tables in `shared`. A schema name alone does not establish ownership. Unowned tables in `public` block an application wipe for inspection.
+`DatabaseScope::PLATFORM_TABLES` is the protected source inventory: `shared.module_settings_snapshots`, `shared.application_settings`, `shared.migrations`, `shared.jobs`, `shared.failed_jobs`, `shared.platform_seed_runs`, `shared.module_registry_state`, `shared.modules`, `shared.module_transitions`, `shared.module_work` and `shared.module_update_steps`. The module tables hold framework registration/generation/transition/work metadata for both source owners, not module-domain data. Bounded replaceable health observations occupy `shared.modules.health_observations`; health policy is source-only, with no persisted overrides/revisions or separate health history store. Optional integration enabled/config values are source-only; no integration override column or runtime configuration store remains. Async subscriber work adds nullable listener/delivery-key columns on `shared.module_work`, with a paired-state constraint and unique delivery key for retained-work deduplication. No event business tables or cross-module FKs are introduced. Every platform table addition must update this inventory and the real-migration inventory test in the same change. Other non-system/non-extension tables belong to the application, including its repository and any app-owned technical tables in `shared`. A schema name alone does not establish ownership. Unowned tables in `public` block an application wipe for inspection.
 
 Claimed module schemas supplement this inventory: a matching `runa.module.v1:<module-id>` comment plus retained registry identity establishes module ownership. Claimed Runa-module tables remain platform-owned through disable, missing source and unregister; claimed app-module tables remain application-owned. Marker/registry disagreement or unclaimed `runa_` tables blocks wipe for inspection.
 
@@ -299,3 +310,33 @@ Forward migrations create only empty storage in every environment. Explicit guar
 local fixture contracts atomically fill it with the owned business writes and Audit;
 production initialization and ordinary startup never create fixture data. See the
 [development corpus](../data/seeding.md#explicit-module-development-contributors).
+
+## Application global settings
+
+The protected `shared.application_settings` singleton is platform-owned technical
+storage, independent of module settings and Admin installation. Its bigint identity
+is internal; singleton=1 is UNIQUE/CHECK, revision is positive, values is a JSONB
+object and timestamps are UTC. Forward platform installation creates revision 1
+and empty values before Core/App data steps; ordinary reopen/HTTP never initializes
+it. Application wipes and forward platform updates preserve values/revision.
+App owns source declarations, selected business/presentation values and assets.
+Public adapters enforce native grants, optimistic revision and explicit redacted
+Audit in the same default PostgreSQL transaction; see
+[global settings contracts](../modules/admin/operations.md#application-settings-contracts-and-storage).
+
+Application branding keeps three bounded binary PNG values on the existing
+shared.application_settings singleton: branding_logo (512 KiB), paired
+branding_logo_icon and independent branding_favicon (32 KiB each). Their forward
+migration is platform-owned. Values, images, revision and explicit Audit publish
+atomically; no filesystem cleanup ledger or business entity is introduced. Existing
+database backup/recovery covers these public assets.
+
+## Module settings snapshots
+
+`shared.module_settings_snapshots` is framework-owned technical storage for named,
+soft-deletable module/scope snapshots. Each row uses bigint identity and UUIDv7,
+source revision, definition fingerprint and encrypted non-sensitive values.
+Live names are unique per module/scope. Source-scoped guarded adapters serialize
+capture/deletion through the registry/authority lock and write Audit atomically.
+Snapshots do not replace settings revisions, publication history or recovery fences.
+See [named snapshots](../modules/admin/settings-snapshots.md).

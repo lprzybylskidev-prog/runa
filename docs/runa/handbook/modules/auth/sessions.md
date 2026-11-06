@@ -25,8 +25,8 @@ also coordinates simultaneous admissions with lifecycle/update operations. Logou
 revokes its bound row, records Audit and invalidates native cookie authentication.
 Lifecycle generation changes revoke operational sessions/trust atomically; later
 activation never restores them. Scheduled eligibility predicates still run at each
-ingress. Removing account expiry may restore eligibility, independently of revoked
-sessions, inactivity and absolute deadlines.
+ingress. Account access ends at scheduled deactivation. Session absolute deadlines,
+inactivity and revocation remain independent.
 
 Every relevant authenticated module/application ingress verifies current eligibility,
 security generation, stored public reference, session-ID hash, non-revocation and
@@ -72,8 +72,8 @@ Resolve protected `AuthSessions` 1.0.0 through ModuleApis for administrative
 `listFor(publicId, before = null)`, `revoke(publicId, sessionId)` and
 `revokeAll(publicId)`. The list is cursor-bounded to 100 safe rows. Every method
 requires `runa.auth.sessions.manage` and current availability/authority. Current
-Permissions grants are required; no admin HTTP page or
-bypass is supplied. Mutation Audit is synchronous, scoped to the subject, and
+Permissions grants are required. The [Users administration](administration.md)
+consumes these same guarded operations; it adds no bypass. Mutation Audit is synchronous, scoped to the subject, and
 rolls back revocation on persistence failure. Already revoked/foreign/absent IDs
 are harmless no-ops. Session revocation alone does not revoke trusted devices;
 account lifecycle and [password/2FA policies](security.md) govern both stores explicitly.

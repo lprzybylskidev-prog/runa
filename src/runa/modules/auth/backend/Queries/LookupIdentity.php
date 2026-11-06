@@ -50,6 +50,13 @@ final readonly class LookupIdentity implements AuthIdentities
         throw new \RuntimeException('Auth identifier policy unavailable.');
     }
 
+    /** Password setup is independent of activation; other security blockers still apply. */
+    public function mayAcceptInvitation(User $user, CarbonImmutable $now): bool
+    {
+        return $user->password === null
+            && array_diff($this->evaluate($user, $now)->blockers, ['inactive', 'before_activation']) === [];
+    }
+
     public function evaluate(User $user, CarbonImmutable $now): Eligibility
     {
         $blockers = [];
@@ -60,9 +67,6 @@ final readonly class LookupIdentity implements AuthIdentities
         if ($user->trashed()) {
             $blockers[] = 'deleted';
         }
-        if (! $user->approved) {
-            $blockers[] = 'approval_required';
-        }
         if ($user->activate_at !== null && $now->lt($user->activate_at)) {
             $blockers[] = 'before_activation';
         } elseif (! $user->active && ($user->activate_at === null || $now->lt($user->activate_at))) {
@@ -70,9 +74,6 @@ final readonly class LookupIdentity implements AuthIdentities
         }
         if ($user->deactivate_at !== null && $now->gte($user->deactivate_at)) {
             $blockers[] = 'deactivated';
-        }
-        if ($user->expires_at !== null && $now->gte($user->expires_at)) {
-            $blockers[] = 'expired';
         }
         if ($user->security_locked) {
             $blockers[] = 'security_locked';

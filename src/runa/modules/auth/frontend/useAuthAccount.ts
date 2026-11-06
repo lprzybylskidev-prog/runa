@@ -1,7 +1,12 @@
+import {
+  accountFailureMessages,
+  accountFailureField,
+} from './account/failures';
 import { createAccountProfile } from './account/profile';
 import { createAccountLists } from './account/lists';
 import { createAccountDelivery } from './account/delivery';
 import { createAccountValidation } from './account/validation';
+import { useOperationProof } from './useOperationProof';
 import { enrollmentQrCode } from './totpEnrollment';
 import { RequestCancelledError } from '../../../resources/js/lib/http';
 import {
@@ -23,7 +28,6 @@ import {
   data,
   decodeOptions,
   decodeSecurity,
-  factorMethods,
 } from './entry';
 import type { EntryOptions, SecurityOptions } from './entry';
 import {
@@ -42,6 +46,7 @@ export function useAuthAccount(accountId: string) {
     options = shallowRef<EntryOptions>();
   const tab = ref<AccountTab>('details'),
     task = ref<AccountTask>('details');
+  const refreshing = ref(false);
   const busy = ref(false),
     ready = ref(false),
     failure = ref(''),
@@ -50,11 +55,16 @@ export function useAuthAccount(accountId: string) {
   const form = ref<{ focusInvalid: () => void }>(),
     heading = ref<HTMLElement>(),
     feedback = ref<HTMLElement>();
+  const passwordAction = ref('runa.auth.self.password');
+  const operationPassword = useOperationProof({
+    identity: () => (ready.value ? accountId : undefined),
+    action: () => passwordAction.value,
+    requirement: () => 'password',
+  });
   const fields = reactive<Record<string, string>>({});
   const errors = reactive<Record<string, string>>({});
   const secondaryErrors = reactive<Record<string, string>>({});
   const naming = ref('single'),
-    method = ref('totp'),
     target = ref('totp');
   const secret = ref(''),
     qrCode = ref(''),
@@ -73,37 +83,54 @@ export function useAuthAccount(accountId: string) {
   const sectionFields = reactive<
     Record<AccountSection, Record<string, string>>
   >({
-    details: { current_password: '' },
+    details: {},
     avatar: {},
     password: {
-      current_password: '',
       password: '',
       password_confirmation: '',
-      code: '',
     },
-    security: { current_password: '', code: '', enrollment_code: '' },
+    security: { enrollment_code: '' },
   });
   const sectionErrors = reactive<
     Record<AccountSection, Record<string, string>>
   >({ details: {}, avatar: {}, password: {}, security: {} });
-  const overviewNeedsProof = computed(
-    () =>
-      proofMethods.value.length > 0 &&
-      (overviewAction.value !== 'none' ||
-        (Boolean(fields.password || fields.password_confirmation) &&
-          security.value?.password_change_factor === true)),
-  );
   const canTrustDevice = computed(
     () =>
       security.value?.trusted_devices_enabled === true &&
-      proofMethods.value.length > 0,
+      security.value?.trusted_device_eligible === true,
   );
+  watch([security, secret, qrCode, codes], () => {
+    const current = security.value;
+    if (!current) return;
+    if (!current.totp_enabled) {
+      secret.value = '';
+      qrCode.value = '';
+    }
+    if (
+      (!current.totp_enabled || !current.recovery_codes_enabled) &&
+      codes.value.length
+    )
+      codes.value = [];
+  });
   let refreshPromise: Promise<void> | undefined;
   let refreshAgain = false;
   let refreshingPreferenceSnapshot = false;
   const draft = shallowRef<Record<string, string> | null>(null);
   let draftEpoch = accountDraftEpoch();
   const abort = new AbortController();
+  const tableExportAllowed = ref(false);
+  async function authorizeTableExport(signal: AbortSignal) {
+    const result = data(await authGet('profile/table-export', signal));
+    if (!alive || result.allowed !== true) throw new Error('permission_denied');
+  }
+  async function refreshTableExportAuthority() {
+    try {
+      await authorizeTableExport(abort.signal);
+      if (alive) tableExportAllowed.value = true;
+    } catch {
+      tableExportAllowed.value = false;
+    }
+  }
   let alive = true;
   const lifetime = {
     accountId,
@@ -130,6 +157,7 @@ export function useAuthAccount(accountId: string) {
   const {
     pageLoading,
     trustedLoading,
+    trustedLoaded,
     rows,
     cursor,
     trustedRows,
@@ -160,23 +188,16 @@ export function useAuthAccount(accountId: string) {
       has('avatar_enabled') &&
       ['both', 'user'].includes(String(caps.value.avatar_editor)),
   );
-  const proofMethods = computed(() =>
-    security.value ? factorMethods(security.value) : [],
-  );
-  const { needsProof, fieldNames, validate, emailError } =
-    createAccountValidation({
-      task,
-      proofMethods,
-      security,
-      options,
-      naming,
-      method,
-      fields,
-      errors,
-      has,
-      cleanErrors,
-      text,
-    });
+  const { fieldNames, validate, emailError } = createAccountValidation({
+    task,
+    options,
+    naming,
+    fields,
+    errors,
+    has,
+    cleanErrors,
+    text,
+  });
   const tabs = computed<AccountTab[]>(() => [
     'details',
     'security',
@@ -189,13 +210,7 @@ export function useAuthAccount(accountId: string) {
     ...(has('own_account_history') ? ['accountHistory' as const] : []),
   ]);
   function cleanSecrets(clearFiles = true) {
-    for (const key of [
-      'current_password',
-      'password',
-      'password_confirmation',
-      'code',
-      'enrollment_code',
-    ])
+    for (const key of ['password', 'password_confirmation', 'enrollment_code'])
       fields[key] = '';
     if (clearFiles) files.value = [];
   }
@@ -230,7 +245,6 @@ export function useAuthAccount(accountId: string) {
         ? (profile.value?.email ?? '')
         : (address?.email ?? '');
     fields.address_id = address?.public_id ?? '';
-    method.value = proofMethods.value[0] ?? 'totp';
     target.value = security.value?.enrolled[0] ?? 'totp';
     if (next === 'details') fillDetails();
   }
@@ -259,8 +273,28 @@ export function useAuthAccount(accountId: string) {
     } catch (error) {
       if (!alive || error instanceof RequestCancelledError) return;
       const result = authFailure(error);
-      failure.value = result.code;
-      if (result.code === 'conflict') {
+      failure.value =
+        result.reason && Object.hasOwn(accountFailureMessages, result.reason)
+          ? result.reason
+          : result.code;
+      const accepted = acceptedFields ?? fieldNames.value;
+      const refusalField = accountFailureField(failure.value, accepted);
+      if (refusalField) {
+        const copy = accountFailureMessages[failure.value]!;
+        errors[refusalField] =
+          failure.value === 'identifier_conflict'
+            ? refusalField === 'login'
+              ? text(
+                  'Ten login jest już zajęty. Wybierz inny.',
+                  'This login is already in use. Choose another.',
+                )
+              : text(
+                  'Ten adres e-mail jest już zajęty. Wybierz inny.',
+                  'This email address is already in use. Choose another.',
+                )
+            : text(copy[0], copy[1]);
+      }
+      if (failure.value === 'conflict') {
         if (['avatar', 'avatarRemove'].includes(task.value))
           avatarConflict.value = true;
         try {
@@ -276,9 +310,10 @@ export function useAuthAccount(accountId: string) {
             (acceptedFields ?? fieldNames.value).includes(k) ||
             (task.value === 'avatar' && k === 'avatar'),
         )
-        .forEach(
-          (k) => (errors[k] = text('Sprawdź wartość.', 'Check this value.')),
-        );
+        .forEach((k) => {
+          if (!errors[k])
+            errors[k] = text('Sprawdź wartość.', 'Check this value.');
+        });
     } finally {
       if (alive) {
         busy.value = false;
@@ -294,8 +329,10 @@ export function useAuthAccount(accountId: string) {
   async function refreshAccount(duringOperation = false): Promise<void> {
     if (!alive || !ready.value || (busy.value && !duringOperation)) return;
     if (refreshPromise) return refreshPromise;
+    refreshing.value = true;
     refreshPromise = (async () => {
       await loadProfile();
+      await refreshTableExportAuthority();
       const next = decodeSecurity(await authGet('security', abort.signal));
       const entry = decodeOptions(await authGet('entry-options', abort.signal));
       if (!alive) return;
@@ -324,6 +361,7 @@ export function useAuthAccount(accountId: string) {
       await refreshPromise;
     } finally {
       refreshPromise = undefined;
+      refreshing.value = false;
       if (refreshAgain && alive && !busy.value) refreshVisible();
     }
   }
@@ -342,6 +380,7 @@ export function useAuthAccount(accountId: string) {
   async function initialize() {
     await perform(async () => {
       await loadProfile();
+      await refreshTableExportAuthority();
       const o = decodeOptions(await authGet('entry-options', abort.signal));
       const s = decodeSecurity(await authGet('security', abort.signal));
       if (!alive) return;
@@ -356,7 +395,6 @@ export function useAuthAccount(accountId: string) {
         await accountPreferences.connect(accountId).catch(() => {});
       fields.email = profile.value?.email ?? '';
       draft.value = takeAccountDraft(accountId);
-      method.value = proofMethods.value[0] ?? 'totp';
       if (s.trusted_devices_enabled) {
         try {
           await readTrustedDevices();
@@ -407,7 +445,9 @@ export function useAuthAccount(accountId: string) {
     await nextTick();
     heading.value?.focus();
   }
+  let confirmationCancelled = false;
   async function submitTask(preserveSecrets = false, quiet = false) {
+    confirmationCancelled = false;
     if (!ready.value || busy.value || codes.value.length) return;
     if (!validate()) {
       await nextTick();
@@ -442,7 +482,51 @@ export function useAuthAccount(accountId: string) {
     const input: Record<string, unknown> = Object.fromEntries(
       fieldNames.value.map((k) => [k, fields[k] ?? '']),
     );
-    if (needsProof.value) input.method = method.value;
+
+    const sensitive = [
+      'password',
+      'email',
+      'totpBegin',
+      'totpConfirm',
+      'emailEnable',
+      'disable',
+      'recoveryRotate',
+      'trustIssue',
+      'deactivate',
+      'delete',
+    ].includes(op);
+    if (sensitive) {
+      const suffix: Record<string, string> = {
+        trustIssue: 'trust_issue',
+        totpBegin: 'security.totp_begin',
+        totpConfirm: 'security.totp_confirm',
+        emailEnable: 'security.email_enable',
+        disable: 'security.disable',
+        recoveryRotate: 'security.recovery_rotate',
+      };
+      passwordAction.value = 'runa.auth.self.' + (suffix[op] ?? op);
+      const signature = JSON.stringify([
+        task.value,
+        profile.value?.version,
+        input,
+        target.value,
+      ]);
+      if (
+        !(await operationPassword.request()) ||
+        signature !==
+          JSON.stringify([
+            task.value,
+            profile.value?.version,
+            Object.fromEntries(
+              fieldNames.value.map((k) => [k, fields[k] ?? '']),
+            ),
+            target.value,
+          ])
+      ) {
+        confirmationCancelled = true;
+        return;
+      }
+    }
     let reauthenticating = false;
     const saved = await performTask(async () => {
       let path: string,
@@ -484,15 +568,6 @@ export function useAuthAccount(accountId: string) {
       } else if (op === 'password') path = 'password/change';
       else if (op === 'trustIssue') path = 'trusted-devices';
       else if (op === 'deactivate' || op === 'delete') {
-        await authPost(
-          'step-up',
-          {
-            action: `runa.auth.self.${op}`,
-            requirement: 'password',
-            current_password: String(input.current_password),
-          },
-          abort.signal,
-        );
         path = 'profile/lifecycle';
         body = { operation: op, version: profile.value!.version };
       } else {
@@ -755,8 +830,9 @@ export function useAuthAccount(accountId: string) {
           'Changes saved. Check your email to confirm the new address.',
         );
     } finally {
-      cleanSecrets(!section || section === 'avatar');
-      if (section)
+      if (!confirmationCancelled)
+        cleanSecrets(!section || section === 'avatar');
+      if (section && !confirmationCancelled)
         for (const key of Object.keys(sectionFields[section]))
           sectionFields[section][key] = '';
       confirmed.value = false;
@@ -898,34 +974,38 @@ export function useAuthAccount(accountId: string) {
     );
   }
   const failureText = computed(() =>
-    failure.value === 'conflict'
-      ? text(
-          'Nie zapisano zmian. Aktualne dane pobrano automatycznie; Twoje zmiany zostały zachowane.',
-          'Changes were not saved. Current data was loaded automatically; your edits were preserved.',
-        )
-      : failure.value === 'refresh_failed'
-        ? text(
-            'Nie udało się pobrać aktualnych danych. Twoje zmiany zostały zachowane.',
-            'Unable to load current data. Your edits were preserved.',
-          )
-        : failure.value === 'csrf'
+    failure.value === 'identifier_conflict' && (errors.email || errors.login)
+      ? (errors.email || errors.login)!
+      : Object.hasOwn(accountFailureMessages, failure.value)
+        ? text(...accountFailureMessages[failure.value]!)
+        : failure.value === 'conflict'
           ? text(
-              'Odśwież zabezpieczenie formularza i ponów zapis.',
-              'Renew form security and submit again.',
+              'Dane zmieniły się w międzyczasie. Sprawdź bieżące wartości przed zapisem.',
+              'Data changed in the meantime. Review the current values before saving.',
             )
-          : failure.value === 'confirmation'
-            ? text('Potwierdź operację.', 'Confirm the operation.')
-            : failure.value === 'file_required'
-              ? text('Wybierz obraz.', 'Choose an image.')
-              : failure.value === 'throttled'
-                ? text(
-                    'Zbyt wiele prób. Spróbuj później.',
-                    'Too many attempts. Try again later.',
-                  )
-                : text(
-                    'Nie udało się wykonać operacji. Sprawdź dane i spróbuj ponownie.',
-                    'The operation failed. Check your values and try again.',
-                  ),
+          : failure.value === 'refresh_failed'
+            ? text(
+                'Nie udało się pobrać aktualnych danych. Twoje zmiany zostały zachowane.',
+                'Unable to load current data. Your edits were preserved.',
+              )
+            : failure.value === 'csrf'
+              ? text(
+                  'Odśwież zabezpieczenie formularza i ponów zapis.',
+                  'Renew form security and submit again.',
+                )
+              : failure.value === 'confirmation'
+                ? text('Potwierdź operację.', 'Confirm the operation.')
+                : failure.value === 'file_required'
+                  ? text('Wybierz obraz.', 'Choose an image.')
+                  : failure.value === 'throttled'
+                    ? text(
+                        'Zbyt wiele prób. Spróbuj później.',
+                        'Too many attempts. Try again later.',
+                      )
+                    : text(
+                        'Nie udało się wykonać operacji. Sprawdź dane i spróbuj ponownie.',
+                        'The operation failed. Check your values and try again.',
+                      ),
   );
   watch(busy, (value) => {
     if (!value && refreshAgain) refreshVisible();
@@ -980,6 +1060,8 @@ export function useAuthAccount(accountId: string) {
     codes.value = [];
   });
   return {
+    tableExportAllowed,
+    authorizeTableExport,
     historyDetail,
     historyDetailOpen,
     historyDetailLoading,
@@ -995,8 +1077,10 @@ export function useAuthAccount(accountId: string) {
     tab,
     task,
     busy,
+    refreshing,
     pageLoading,
     trustedLoading,
+    trustedLoaded,
     ready,
     failure,
     failureText,
@@ -1005,7 +1089,6 @@ export function useAuthAccount(accountId: string) {
     fields,
     errors,
     naming,
-    method,
     target,
     secret,
     qrCode,
@@ -1018,10 +1101,8 @@ export function useAuthAccount(accountId: string) {
     caps,
     has,
     canAvatar,
-    proofMethods,
     tabs,
     fieldNames,
-    needsProof,
     form,
     heading,
     feedback,
@@ -1044,7 +1125,6 @@ export function useAuthAccount(accountId: string) {
     secondaryErrors,
     saveSecondary,
     overviewAction,
-    overviewNeedsProof,
     removeAvatar,
     revoke,
     saveDelivery,
@@ -1072,11 +1152,6 @@ export function useAuthAccount(accountId: string) {
           'Sprawdź pocztę, aby potwierdzić główny adres.',
           'Check your email to verify the primary address.',
         );
-      }),
-    sendCode: () =>
-      perform(async () => {
-        await authPost('security/email-send', {}, abort.signal);
-        notice.value = text('Kod został wysłany.', 'Code sent.');
       }),
   };
 }

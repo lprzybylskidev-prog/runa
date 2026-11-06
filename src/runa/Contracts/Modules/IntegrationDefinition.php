@@ -8,16 +8,16 @@ use Runa\Support\Modules\ModuleIdentity;
 
 final readonly class IntegrationDefinition
 {
-    /** Non-sensitive configuration only.
+    /** Source-owned non-sensitive configuration only.
      * @param  array<string, string>  $names
-     * @param  array<string, mixed>  $defaults
+     * @param  array<string, mixed>  $config
      */
-    public function __construct(public string $key, public string $target, public bool $defaultEnabled, public array $names, public array $defaults = [], public int $schemaVersion = 1)
+    public function __construct(public string $key, public string $target, public bool $enabled, public array $names, public array $config = [], public int $schemaVersion = 2)
     {
         new ApiOperation($key);
         new ModuleIdentity($target);
-        BoundaryValues::check($defaults, "\0");
-        if ($schemaVersion !== 1 || array_keys($names) !== ['pl', 'en'] || strlen(json_encode($defaults, JSON_THROW_ON_ERROR)) > 8192) {
+        BoundaryValues::check($config, "\0");
+        if ($schemaVersion !== 2 || array_keys($names) !== ['pl', 'en'] || strlen(json_encode($config, JSON_THROW_ON_ERROR)) > 8192) {
             throw new InvalidArgumentException('Invalid integration metadata.');
         }
         foreach ($names as $name) {

@@ -25,10 +25,13 @@ use Laravel\Fortify\Fortify;
 use Laravel\Fortify\FortifyServiceProvider;
 use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\AuthorityGuard;
+use Runa\Contracts\Modules\OperationAuthorizer;
+use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Contracts\Modules\WorkHandler;
 use Runa\Contracts\Modules\WorkPolicy;
 use Runa\ModuleFramework\Api\ModuleHttp;
+use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
@@ -56,6 +59,7 @@ use Runa\Modules\Auth\Actions\ScheduledLifecycle;
 use Runa\Modules\Auth\Actions\SecurityNotices;
 use Runa\Modules\Auth\Actions\SessionStore;
 use Runa\Modules\Auth\Actions\StepUp;
+use Runa\Modules\Auth\Contracts\AuthAdministration;
 use Runa\Modules\Auth\Contracts\AuthInvitations;
 use Runa\Modules\Auth\Contracts\AuthPolicies;
 use Runa\Modules\Auth\Contracts\AuthPreferences;
@@ -70,11 +74,14 @@ use Runa\Modules\Auth\Contracts\OperatorAuthority;
 use Runa\Modules\Auth\Contracts\PreferenceScope;
 use Runa\Modules\Auth\Contracts\PreferenceValue;
 use Runa\Modules\Auth\Contracts\SessionSelection;
+use Runa\Modules\Auth\Contracts\UserDirectoryQuery;
 use Runa\Modules\Auth\Definitions\EntryWork;
 use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\AccountHistory;
+use Runa\Modules\Auth\Support\BrowserDescription;
+use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\PolicyExceptions;
 use Runa\Support\Modules\Api\ModuleApis;
@@ -101,11 +108,12 @@ function entryPolicy(array $patch): void
 
 function entryUser(string $email, bool $password = true): User
 {
-    $identity = app(ChangeIdentity::class)->create(new NewIdentity($email, name: 'Test User', active: true, approved: true));
+    $identity = app(ChangeIdentity::class)->create(new NewIdentity($email, name: 'Test User', active: true));
     $user = User::where('public_id', $identity->publicId)->first();
     if ($password) {
         DB::transaction(function () use ($user): void {
             $user->password = Hash::make('a-long-test-password');
+            $user->password_changed_at = now();
             $user->save();
         });
     }
@@ -125,7 +133,7 @@ it('projects safe entry form options without exposing private settings or accoun
     entryUser('entry-options@example.test');
     entryLogin($this, ['identifier' => 'entry-options@example.test', 'password' => 'a-long-test-password'])->assertOk();
     $this->getJson('/api/runa/auth/security')->assertOk()->assertJsonPath('data.email_verified', false)
-        ->assertJsonPath('data.recovery_codes_enabled', true)->assertJsonPath('data.password_change_factor', false);
+        ->assertJsonPath('data.recovery_codes_enabled', true)->assertJsonMissingPath('data.password_change_factor');
 });
 
 it('registers exact named Auth entry pages without a wildcard or consuming GET token route', function (): void {
@@ -240,7 +248,7 @@ it('uses guarded named Auth endpoints without Fortify bypasses and rotates cooki
     $this->getJson('/api/runa/auth/session')->assertUnauthorized();
 });
 
-it('keeps registration opt-in generic and atomic with approval distinct from verification', function (): void {
+it('keeps registration opt-in generic and atomic with activation distinct from verification', function (): void {
     $payload = ['email' => 'register@example.test', 'name' => 'Registered', 'password' => 'a-long-test-password', 'password_confirmation' => 'a-long-test-password'];
     $this->postJson('/api/runa/auth/register', $payload)->assertForbidden();
     entryPolicy(['public_registration' => true]);
@@ -250,13 +258,19 @@ it('keeps registration opt-in generic and atomic with approval distinct from ver
         ->and(DB::table('runa_auth.entry_tokens')->count())->toBe(1)->and(DB::table('shared.module_work')->count())->toBe(1);
     $serialized = DB::table('runa_audit.events')->get()->toJson();
     expect($serialized)->not->toContain('register@example.test', 'a-long-test-password');
-    entryPolicy(['registration_approval' => 'administrator']);
+    expect(User::where('email', 'register@example.test')->first()->active)->toBeTrue();
+    entryPolicy(['registration_activation' => 'administrator']);
     $payload['email'] = 'pending@example.test';
+    $this->postJson('/api/runa/auth/register', [...$payload, 'active' => true])->assertUnprocessable();
     $this->postJson('/api/runa/auth/register', $payload)->assertAccepted();
-    expect(User::where('email', 'pending@example.test')->first()->approved)->toBeFalse()
+    expect(User::where('email', 'pending@example.test')->first()->active)->toBeFalse()
         ->and(DB::table('runa_auth.entry_tokens')->count())->toBe(1);
     entryLogin($this, ['identifier' => 'pending@example.test', 'password' => 'a-long-test-password'])
-        ->assertUnprocessable()->assertJsonPath('error.code', 'invalid_credentials');
+        ->assertUnprocessable()->assertJsonPath('error.code', 'account_inactive');
+    $pending = User::where('email', 'pending@example.test')->firstOrFail();
+    app(ChangeIdentity::class)->change($pending->public_id, $pending->version, new LifecycleChange('activate'));
+    entryLogin($this, ['identifier' => 'pending@example.test', 'password' => 'a-long-test-password'])
+        ->assertOk()->assertJsonPath('data.restrictions', ['email_verification_required']);
 });
 
 it('consumes invitation and verification tokens exactly once and fails closed when Audit cannot persist', function (): void {
@@ -283,10 +297,11 @@ it('consumes invitation and verification tokens exactly once and fails closed wh
     $this->postJson('/api/runa/auth/verification/complete', ['token' => $secret])->assertUnprocessable();
 });
 
-it('rechecks activation locks token invalidation and expiry without revealing them to anonymous login', function (): void {
+it('reports inactive accounts only after valid credentials and rechecks token invalidation and expiry', function (): void {
     $user = entryUser('scheduled@example.test');
     app(ChangeIdentity::class)->change($user->public_id, 1, new LifecycleChange('schedule_activation', now()->addHour()->utc()->format('Y-m-d\TH:i:s\Z')));
-    $bad = entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertUnprocessable()->json();
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertUnprocessable()->assertJsonPath('error.code', 'account_inactive');
+    $bad = entryLogin($this, ['identifier' => $user->email, 'password' => 'incorrect-password'])->assertUnprocessable()->assertJsonPath('error.code', 'invalid_credentials')->json();
     entryLogin($this, ['identifier' => 'absent@example.test', 'password' => 'a-long-test-password'])->assertUnprocessable()->assertExactJson($bad);
     $user = entryUser('rotate@example.test', false);
     $tokens = app(EntryTokens::class);
@@ -300,6 +315,40 @@ it('rechecks activation locks token invalidation and expiry without revealing th
     CarbonImmutable::setTestNow(CarbonImmutable::parse($two->expires_at));
     expect(fn () => $tokens->consume($secret, 'invitation', 'new-long-password'))->toThrow(OperationRejected::class);
 });
+
+it('delivers and accepts invitations before activation without granting account access', function (bool $scheduled): void {
+    $sent = 0;
+    app('events')->listen(MessageSending::class, function () use (&$sent): void {
+        $sent++;
+    });
+    $identity = app(ChangeIdentity::class)->create(new NewIdentity('waiting-invitation@example.test', name: 'Waiting user'));
+    if ($scheduled) {
+        $identity = app(ChangeIdentity::class)->change($identity->publicId, $identity->version,
+            new LifecycleChange('schedule_activation', now()->addHour()->utc()->format('Y-m-d\TH:i:s\Z')));
+    }
+    $tokens = app(EntryTokens::class);
+    expect($tokens->invite($identity->publicId, $identity->version))->toBeTrue();
+    $row = DB::table('runa_auth.entry_tokens')->where('purpose', 'invitation')->first();
+    $secret = Crypt::decryptString($row->delivery_secret);
+    app(DeliverEntryMail::class)->deliver($row->public_id);
+    expect($sent)->toBe(1)->and(DB::table('runa_auth.entry_tokens')->where('id', $row->id)->value('sent_at'))->not->toBeNull();
+    $this->postJson('/api/runa/auth/invitations/accept', ['token' => $secret,
+        'password' => 'waiting-user-password', 'password_confirmation' => 'waiting-user-password'])->assertOk();
+    $user = User::where('public_id', $identity->publicId)->firstOrFail();
+    expect($user->active)->toBeFalse()->and($user->email_verified_at)->not->toBeNull()
+        ->and(Hash::check('waiting-user-password', $user->password))->toBeTrue()
+        ->and(DB::table('runa_auth.sessions')->count())->toBe(0);
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'waiting-user-password'])
+        ->assertUnprocessable()->assertJsonPath('error.code', 'account_inactive');
+    expect(DB::table('runa_auth.sessions')->count())->toBe(0);
+    if ($scheduled) {
+        CarbonImmutable::setTestNow($user->activate_at->addSecond());
+    } else {
+        app(ChangeIdentity::class)->change($user->public_id, $user->version, new LifecycleChange('activate'));
+    }
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'waiting-user-password'])->assertOk();
+    expect(fn () => $tokens->consume($secret, 'invitation', 'waiting-user-password'))->toThrow(OperationRejected::class);
+})->with([false, true]);
 
 it('delivers each token once and suppresses actionable stale account mail and bounded reminders', function (): void {
     $user = entryUser('mail@example.test', false);
@@ -513,7 +562,7 @@ it('counts successful logins in source windows and restarts after the fixed lock
 it('caps remembered authentication by the general absolute policy at admission and on policy tightening', function (): void {
     CarbonImmutable::setTestNow('2026-10-23 12:00:00 UTC');
     entryPolicy(['session_remember_minutes' => 60, 'session_absolute_minutes' => 2, 'session_idle_minutes' => 10]);
-    $user = entryUser('absolute-remember@example.test');
+    $user = profileVerified('absolute-remember@example.test');
     $payload = ['identifier' => $user->email, 'password' => 'a-long-test-password', 'remember' => true];
     entryLogin($this, $payload)->assertOk();
     expect(CarbonImmutable::parse(DB::table('runa_auth.sessions')->value('expires_at'))->toIso8601String())->toBe('2026-10-23T12:02:00+00:00');
@@ -536,9 +585,15 @@ function credentialRequest(string $path, array $payload = []): Request
 
 function credentialEnroll($test, User $user): array
 {
+    if (app(CredentialPolicy::class)->restrictions($user, app(SessionStore::class)->current(credentialRequest('/'), $user)) === []) {
+        $test->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.security.totp_begin', 'current_password' => 'a-long-test-password'])->assertOk();
+    }
     $begin = $test->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'a-long-test-password'])->assertOk()->json('data');
     $counter = intdiv(CarbonImmutable::now('UTC')->getTimestamp(), 30);
     $code = app(Google2FA::class)->oathTotp($begin['secret'], $counter);
+    if (app(CredentialPolicy::class)->restrictions($user, app(SessionStore::class)->current(credentialRequest('/'), $user)) === []) {
+        $test->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.security.totp_confirm', 'current_password' => 'a-long-test-password'])->assertOk();
+    }
     $codes = $test->postJson('/api/runa/auth/security/totp-confirm', ['current_password' => 'a-long-test-password', 'enrollment_code' => $code])
         ->assertOk()->json('data.recovery_codes');
     expect($codes)->toHaveCount(8);
@@ -548,9 +603,10 @@ function credentialEnroll($test, User $user): array
 
 it('returns a locally rendered private TOTP QR alongside the manual key without activating the factor', function (): void {
     $this->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'a-long-test-password'])->assertUnauthorized();
-    $user = entryUser('qr-enrollment@example.test');
+    $user = profileVerified('qr-enrollment@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
-    $this->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'wrong-password'])->assertStatus(422);
+    $this->postJson('/api/runa/auth/security/totp-begin')->assertForbidden();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.security.totp_begin', 'current_password' => 'a-long-test-password'])->assertOk();
     $response = $this->postJson('/api/runa/auth/security/totp-begin', ['current_password' => 'a-long-test-password'])->assertOk();
     expect($response->headers->get('Cache-Control'))->toContain('no-store');
     $begin = $response->json('data');
@@ -602,6 +658,7 @@ it('rolls back factor enrollment and OTP consumption when synchronous Audit refu
     });
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
     [$secret, $codes] = credentialEnroll($this, $user);
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk()->assertJsonPath('data.restrictions', ['two_factor_required']);
     DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT factor_fixture_refusal CHECK (false) NOT VALID');
     $request = credentialRequest('/', ['method' => 'recovery', 'code' => $codes[0]]);
     expect(fn () => app(CredentialFactors::class)->handle($request, 'challenge'))->toThrow(AuditUnavailable::class);
@@ -611,20 +668,23 @@ it('rolls back factor enrollment and OTP consumption when synchronous Audit refu
 });
 
 it('requires current password and history and applies explicit password session policies atomically', function (): void {
-    $user = entryUser('password-policy@example.test');
+    $user = profileVerified('password-policy@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
     $payload = ['current_password' => 'wrong', 'password' => 'a-new-long-password', 'password_confirmation' => 'a-new-long-password'];
-    $this->postJson('/api/runa/auth/password/change', $payload)->assertUnprocessable();
+    $this->postJson('/api/runa/auth/password/change', $payload)->assertForbidden();
     $payload['current_password'] = 'a-long-test-password';
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.password', 'current_password' => 'a-long-test-password'])->assertOk();
     $this->postJson('/api/runa/auth/password/change', $payload)->assertOk();
     expect(DB::table('runa_auth.sessions')->whereNull('revoked_at')->count())->toBe(1)
         ->and(DB::table('runa_auth.password_history')->count())->toBe(1);
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.password', 'current_password' => 'a-new-long-password'])->assertOk();
     $this->postJson('/api/runa/auth/password/change', ['current_password' => 'a-new-long-password', 'password' => 'a-long-test-password', 'password_confirmation' => 'a-long-test-password'])->assertUnprocessable();
     expect(Hash::check('a-new-long-password', User::find($user->id)->password))->toBeTrue();
     DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT password_fixture_refusal CHECK (false) NOT VALID');
     $request = credentialRequest('/', ['current_password' => 'a-new-long-password', 'password' => 'another-long-password', 'sessions' => 'revoke_all']);
-    expect(fn () => app(Passwords::class)->change($request))->toThrow(AuditUnavailable::class);
+    app()->instance('request', $request);
+    expect(fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($user->public_id), fn () => app(Passwords::class)->change($request)))->toThrow(AuditUnavailable::class);
     expect(Hash::check('a-new-long-password', User::find($user->id)->password))->toBeTrue()
         ->and(DB::table('runa_auth.sessions')->whereNull('revoked_at')->count())->toBe(1);
 });
@@ -657,26 +717,25 @@ it('binds step up to identity session action and consumes every action proof ins
         $user->save();
     });
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.invoice.publish', 'requirement' => 'password', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.invoice.publish', 'current_password' => 'a-long-test-password'])->assertOk();
     $request = credentialRequest('/');
     app()->instance('request', $request);
     $scope = app(PrincipalScope::class);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthStepUp::class, '1.0.0');
-    $assert = fn ($action, $requirement, $every = false) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($user->public_id), fn () => $api->assertVerified($action, $requirement, everyAction: $every)));
-    expect(fn () => $assert('app.invoice.delete', 'password'))->toThrow(OperationRejected::class);
-    expect(fn () => $assert('app.invoice.publish', 'both'))->toThrow(OperationRejected::class);
-    expect($assert('app.invoice.publish', 'password'))->toBeTrue();
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthStepUp::class, '2.0.0');
+    $assert = fn ($action, $every = false) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($user->public_id), fn () => $api->assertVerified($action, everyAction: $every)));
+    expect(fn () => $assert('app.invoice.delete'))->toThrow(OperationRejected::class);
+    expect($assert('app.invoice.publish'))->toBeTrue();
     // A rollback returns consumption together with the business mutation.
     try {
         DB::transaction(function () use ($assert): void {
-            $assert('app.invoice.publish', 'password', true);
+            $assert('app.invoice.publish', true);
             throw new RuntimeException('business rollback');
         });
     } catch (RuntimeException $error) {
         expect($error->getMessage())->toBe('business rollback');
     }
-    expect($assert('app.invoice.publish', 'password', true))->toBeTrue();
-    expect(fn () => $assert('app.invoice.publish', 'password', true))->toThrow(OperationRejected::class);
+    expect($assert('app.invoice.publish', true))->toBeTrue();
+    expect(fn () => $assert('app.invoice.publish', true))->toThrow(OperationRejected::class);
 });
 
 it('never uses trusted device bypass for mandatory step up and revokes trust on password change', function (): void {
@@ -690,17 +749,68 @@ it('never uses trusted device bypass for mandatory step up and revokes trust on 
     $this->postJson('/api/runa/auth/trusted-devices', ['method' => 'totp', 'code' => '123456'])->assertUnprocessable();
     expect(DB::table('runa_auth.trusted_devices')->where('user_id', $user->id)->count())->toBe(0);
     [$secret, $codes] = credentialEnroll($this, $user);
-    $issued = $this->postJson('/api/runa/auth/trusted-devices', ['method' => 'recovery', 'code' => $codes[0]])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.trust_issue', 'current_password' => 'a-long-test-password'])->assertOk();
+    $issued = $this->postJson('/api/runa/auth/trusted-devices', [])->assertOk();
     $cookie = collect($issued->headers->getCookies())->first(fn ($cookie) => $cookie->getName() === 'runa_trust');
     expect($cookie->isHttpOnly())->toBeTrue();
     $this->withUnencryptedCookie('runa_trust', $cookie->getValue());
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk()->assertJsonPath('data.restrictions', []);
     $device = DB::table('runa_auth.trusted_devices')->first();
     expect($device->token_hash)->toHaveLength(64);
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.invoice.publish', 'requirement' => 'second_factor'])->assertUnprocessable();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.invoice.publish'])->assertUnprocessable();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.password', 'current_password' => 'a-long-test-password'])->assertOk();
     $this->postJson('/api/runa/auth/password/change', ['current_password' => 'a-long-test-password', 'password' => 'a-different-password', 'password_confirmation' => 'a-different-password', 'sessions' => 'keep_all'])->assertOk();
     expect(DB::table('runa_auth.trusted_devices')->value('revoked_at'))->not->toBeNull();
 });
+
+it('projects trusted browser metadata without secrets and tracks only successful use', function (): void {
+    entryPolicy(['trusted_devices_enabled' => true]);
+    $user = entryUser('device-metadata@example.test');
+    $foreign = entryUser('foreign-device@example.test');
+    DB::transaction(function () use ($user): void {
+        $user->email_verified_at = now();
+        $user->save();
+    });
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    [, $codes] = credentialEnroll($this, $user);
+    $this->withHeader('User-Agent', 'Mozilla/5.0 (Windows NT 10.0) Chrome/130.0 Safari/537.36 Edg/130.0');
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.trust_issue', 'current_password' => 'a-long-test-password'])->assertOk();
+    $issued = $this->postJson('/api/runa/auth/trusted-devices', [])->assertOk();
+    $cookie = collect($issued->headers->getCookies())->first(fn ($cookie) => $cookie->getName() === 'runa_trust');
+    $this->withUnencryptedCookie('runa_trust', $cookie->getValue());
+    $device = DB::table('runa_auth.trusted_devices')->where('user_id', $user->id)->first();
+    expect($device->browser)->toBe('Edge')->and($device->platform)->toBe('Windows');
+    $this->getJson('/api/runa/auth/trusted-devices')->assertOk()
+        ->assertJsonPath('data.0.browser', 'Edge')->assertJsonPath('data.0.platform', 'Windows')
+        ->assertJsonPath('data.0.current', true)->assertJsonPath('meta.next_cursor', null);
+    expect(DB::table('runa_auth.trusted_devices')->where('id', $device->id)->value('last_used_at'))->toBe($device->last_used_at);
+    expect(json_encode($this->getJson('/api/runa/auth/trusted-devices')->json()))->not->toContain('token_hash', 'factor_method', $device->token_hash, 'User-Agent');
+    $foreignId = (string) Str::uuid7();
+    DB::table('runa_auth.trusted_devices')->insert(['public_id' => $foreignId, 'user_id' => $foreign->id,
+        'token_hash' => hash('sha256', 'foreign-metadata-cookie'), 'security_version' => $foreign->security_version,
+        'factor_method' => 'totp', 'created_at' => now(), 'expires_at' => now()->addDay()]);
+    $this->postJson('/api/runa/auth/trusted-devices/revoke', ['public_id' => $foreignId])->assertOk();
+    expect(DB::table('runa_auth.trusted_devices')->where('public_id', $foreignId)->value('revoked_at'))->toBeNull();
+    CarbonImmutable::setTestNow(CarbonImmutable::now()->addMinutes(2));
+    $this->withHeader('User-Agent', 'unrecognized-client');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk()->assertJsonPath('data.restrictions', []);
+    expect(CarbonImmutable::parse(DB::table('runa_auth.trusted_devices')->where('id', $device->id)->value('last_used_at'))->greaterThan(CarbonImmutable::parse($device->last_used_at)))->toBeTrue();
+    $this->getJson('/api/runa/auth/trusted-devices')->assertOk()->assertJsonPath('data.0.browser', 'Edge');
+    $this->postJson('/api/runa/auth/trusted-devices/revoke', ['public_id' => $device->public_id])->assertOk();
+    $this->getJson('/api/runa/auth/trusted-devices')->assertOk()->assertJsonPath('data', []);
+    expect(DB::table('runa_audit.events')->where('action', 'trusted_device.revoked')->exists())->toBeTrue();
+});
+
+it('normalizes trusted browser hints to bounded labels', function (string $agent, ?string $browser, ?string $platform): void {
+    expect(BrowserDescription::fromUserAgent($agent))->toBe(['browser' => $browser, 'platform' => $platform]);
+})->with([
+    ['Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Version/18.0 Mobile Safari/604.1', 'Safari', 'iOS'],
+    ['Mozilla/5.0 (X11; Linux x86_64) Firefox/130.0', 'Firefox', 'Linux'],
+    ['Mozilla/5.0 (Linux; Android 14) Chrome/130.0 SamsungBrowser/25.0', 'Samsung Internet', 'Android'],
+    ['Mozilla/5.0 (Windows NT 10.0) Chrome/130.0 OPR/115.0', 'Opera', 'Windows'],
+    ['<script>alert(1)</script>', null, null],
+    [str_repeat('x', 2048).' Chrome/130.0', null, null],
+]);
 
 it('bounds email OTP attempts and enforces session binding expiry and one time use', function (): void {
     CarbonImmutable::setTestNow('2026-10-23 12:00:00 UTC');
@@ -711,7 +821,9 @@ it('bounds email OTP attempts and enforces session binding expiry and one time u
         $user->save();
     });
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.security.email_enable', 'current_password' => 'a-long-test-password'])->assertOk();
     $this->postJson('/api/runa/auth/security/email-enable', ['current_password' => 'a-long-test-password'])->assertOk();
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk()->assertJsonPath('data.restrictions', ['two_factor_required']);
     $this->postJson('/api/runa/auth/security/email-send')->assertOk();
     $token = DB::table('runa_auth.entry_tokens')->where('purpose', 'email_otp')->latest('id')->first();
     $code = Crypt::decryptString($token->delivery_secret);
@@ -730,6 +842,24 @@ it('bounds email OTP attempts and enforces session binding expiry and one time u
     $this->postJson('/api/runa/auth/security/challenge', ['method' => 'email', 'code' => $code])->assertUnprocessable();
     entryPolicy(['security_attempt_limit' => 1]);
     $this->postJson('/api/runa/auth/security/email-send')->assertUnprocessable();
+});
+
+it('defaults password lifetime to thirty days and expires exactly at its deadline', function (): void {
+    CarbonImmutable::setTestNow('2026-11-03T12:00:00Z');
+    expect(app(ModuleSettings::class)->value('runa.auth', 'password_expiry_days'))->toBe(30);
+    $user = entryUser('default-password-age@example.test');
+    $policy = app(CredentialPolicy::class);
+    DB::transaction(function () use ($user): void {
+        $user->password_changed_at = CarbonImmutable::now('UTC')->subDays(30)->addSecond();
+        $user->save();
+    });
+    expect($policy->passwordExpired($user))->toBeFalse();
+    CarbonImmutable::setTestNow('2026-11-03T12:00:01Z');
+    expect($policy->passwordExpired($user))->toBeTrue();
+    entryPolicy(['password_expiry_days' => 0]);
+    expect($policy->passwordExpired($user))->toBeFalse();
+    app(ChangeIdentity::class)->change($user->public_id, $user->version, new LifecycleChange('require_password_change', enabled: true));
+    expect(app(LookupIdentity::class)->eligibility($user->public_id)->restrictions)->toContain('password_change_required');
 });
 
 it('enforces password age on ingress and current complexity on newly chosen passwords', function (): void {
@@ -757,11 +887,11 @@ it('expires step up at the captured TTL and refuses a different trusted principa
         $user->save();
     });
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.invoice.publish', 'requirement' => 'password', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.invoice.publish', 'current_password' => 'a-long-test-password'])->assertOk();
     app()->instance('request', credentialRequest('/'));
     $proofs = app(StepUp::class);
     $scope = app(PrincipalScope::class);
-    $assert = fn ($id) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($id), fn () => $proofs->assertVerified('app.invoice.publish', 'password')));
+    $assert = fn ($id) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($id), fn () => $proofs->assertVerified('app.invoice.publish')));
     expect(fn () => $assert($other->public_id))->toThrow(OperationRejected::class);
     expect($assert($user->public_id))->toBeTrue();
     CarbonImmutable::setTestNow('2026-10-23 12:05:00 UTC');
@@ -791,7 +921,7 @@ it('serializes security proof consumption against another worker holding the acc
     }
 });
 
-it('keeps privileged factor recovery denied without authority and requires fresh both factor step up', function (): void {
+it('keeps privileged factor recovery denied without authority and requires fresh password confirmation', function (): void {
     entryPolicy(['two_factor_required' => 'totp']);
     $actor = entryUser('recovery-actor@example.test');
     $target = entryUser('recovery-target@example.test');
@@ -805,14 +935,13 @@ it('keeps privileged factor recovery denied without authority and requires fresh
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
     [$secret, $codes] = credentialEnroll($this, $actor);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthSecurity::class, '1.0.0');
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthSecurity::class, '1.2.0');
     expect(fn () => $api->resetFactors($target->public_id, 1))->toThrow(OperationRejected::class);
     $scope = app(PrincipalScope::class);
     $reset = fn () => $scope->run(new TrustedPrincipal($actor->public_id), fn () => app(ManageSecurity::class)->resetFactors($target->public_id, 1));
     app()->instance('request', credentialRequest('/'));
     expect(fn () => $reset())->toThrow(OperationRejected::class);
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.two_factor.reset', 'requirement' => 'both',
-        'current_password' => 'a-long-test-password', 'method' => 'recovery', 'code' => $codes[0]])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.two_factor.reset', 'current_password' => 'a-long-test-password'])->assertOk();
     app()->instance('request', credentialRequest('/'));
     expect($reset())->toBeTrue();
     expect(User::find($target->id)->totp_secret)->toBeNull()
@@ -830,7 +959,9 @@ it('delivers reset and email OTP once through private mail and suppresses expire
         $user->save();
     });
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.security.email_enable', 'current_password' => 'a-long-test-password'])->assertOk();
     $this->postJson('/api/runa/auth/security/email-enable', ['current_password' => 'a-long-test-password'])->assertOk();
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk()->assertJsonPath('data.restrictions', ['two_factor_required']);
     $this->postJson('/api/runa/auth/security/email-send')->assertOk();
     $token = DB::table('runa_auth.entry_tokens')->where('purpose', 'email_otp')->latest('id')->first();
     $code = Crypt::decryptString($token->delivery_secret);
@@ -854,28 +985,19 @@ it('delivers reset and email OTP once through private mail and suppresses expire
         ->and($messages[1]->getOriginalMessage()->getHtmlBody())->toContain('/auth/reset-password#token=', '#8650ba');
 });
 
-it('rejects an email step up proof after policy begins requiring TOTP even with a valid TOTP session', function (): void {
-    entryPolicy(['email_otp_enabled' => true]);
-    $user = entryUser('proof-policy@example.test');
-    DB::transaction(function () use ($user): void {
-        $user->email_verified_at = now();
-        $user->save();
-    });
+it('rejects factor-based operation proofs and confirms passwords without enrolling a login factor', function (): void {
+    $user = profileVerified('password-proof-only@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
-    [$secret, $codes] = credentialEnroll($this, $user);
-    $this->postJson('/api/runa/auth/security/email-enable', ['current_password' => 'a-long-test-password', 'method' => 'recovery', 'code' => $codes[0]])->assertOk();
-    $this->postJson('/api/runa/auth/security/challenge', ['method' => 'recovery', 'code' => $codes[1]])->assertOk();
-    $this->postJson('/api/runa/auth/security/email-send')->assertOk();
-    $token = DB::table('runa_auth.entry_tokens')->where('purpose', 'email_otp')->latest('id')->first();
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.invoice.publish', 'requirement' => 'both',
-        'current_password' => 'a-long-test-password', 'method' => 'email', 'code' => Crypt::decryptString($token->delivery_secret)])->assertOk();
-    entryPolicy(['two_factor_required' => 'totp']);
-    $this->getJson('/api/runa/auth/session')->assertOk()->assertJsonPath('data.restrictions', []);
+    foreach (['second_factor', 'both'] as $mode) {
+        $this->postJson('/api/runa/auth/step-up', ['action' => 'app.invoice.publish', 'requirement' => $mode, 'method' => 'email', 'code' => '123456', 'current_password' => 'a-long-test-password'])->assertUnprocessable();
+    }
+    expect(DB::table('runa_auth.step_up_proofs')->count())->toBe(0);
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.invoice.publish', 'current_password' => 'wrong-password'])->assertUnprocessable();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.invoice.publish', 'current_password' => 'a-long-test-password'])->assertOk();
+    expect(User::find($user->id)->totp_secret)->toBeNull();
     app()->instance('request', credentialRequest('/'));
-    $scope = app(PrincipalScope::class);
-    expect(fn () => DB::transaction(fn () => $scope->run(new TrustedPrincipal($user->public_id),
-        fn () => app(StepUp::class)->assertVerified('app.invoice.publish', 'both'))))->toThrow(OperationRejected::class);
-});
+    expect(DB::transaction(fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($user->public_id), fn () => app(StepUp::class)->assertVerified('app.invoice.publish', everyAction: true))))->toBeTrue();
+})->group('auth-password-confirmation');
 
 function profileVerified(string $email): User
 {
@@ -892,6 +1014,17 @@ function profileSecret(string $purpose): string
 {
     return Crypt::decryptString(DB::table('runa_auth.profile_mail')->where('purpose', $purpose)->latest('id')->value('delivery_secret'));
 }
+
+it('projects current module capability visibility without enabling forbidden profile writes', function (): void {
+    $user = profileVerified('capability-visibility@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->getJson('/api/runa/auth/profile')->assertOk()->assertJsonPath('data.capabilities.email_verification_enabled', true);
+    entryPolicy(['email_verification' => 'disabled', 'own_name_editable' => false, 'own_email_editable' => false, 'avatar_editor' => 'admin']);
+    $this->getJson('/api/runa/auth/profile')->assertOk()->assertJsonPath('data.capabilities.email_verification_enabled', false)
+        ->assertJsonPath('data.capabilities.own_name_editable', false)->assertJsonPath('data.capabilities.own_email_editable', false)
+        ->assertJsonPath('data.capabilities.avatar_editor', 'admin');
+    $this->patchJson('/api/runa/auth/profile', ['version' => $user->version, 'name' => 'Forbidden edit'])->assertForbidden();
+});
 
 it('keeps private profile edits versioned and self scoped with complete naming policy and safe history', function (): void {
     $user = profileVerified('private-profile@example.test');
@@ -924,8 +1057,9 @@ it('preserves the old primary until both email confirmations and atomically revo
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
     $firstSession = DB::table('runa_auth.sessions')->latest('id')->value('id');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
-    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => ' New-Primary@Example.test ', 'current_password' => 'wrong'])->assertUnprocessable();
-    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => ' New-Primary@Example.test ', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => ' New-Primary@Example.test '])->assertForbidden();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.email', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => ' New-Primary@Example.test '])->assertOk();
     $new = profileSecret('primary_new');
     $old = profileSecret('primary_old');
     expect(User::find($user->id)->email)->toBe('old-primary@example.test');
@@ -944,13 +1078,15 @@ it('preserves the old primary until both email confirmations and atomically revo
 it('arbitrates email completion conflicts and rolls back confirmations and notice when Audit fails', function (): void {
     $user = profileVerified('email-atomic@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
-    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => 'email-claimed@example.test', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.email', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => 'email-claimed@example.test'])->assertOk();
     $secret = profileSecret('primary_new');
     $other = entryUser('email-claimed@example.test');
     $this->postJson('/api/runa/auth/email/complete', ['token' => $secret])->assertConflict();
     expect(User::find($user->id)->email)->toBe($user->email)->and(DB::table('runa_auth.profile_mail')->where('purpose', 'primary_new')->value('consumed_at'))->toBeNull();
     // Rotate the request; the prior address token can no longer be redeemed.
-    $this->postJson('/api/runa/auth/profile/email', ['version' => 2, 'email' => 'email-free@example.test', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.email', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/email', ['version' => 2, 'email' => 'email-free@example.test'])->assertOk();
     $this->postJson('/api/runa/auth/email/complete', ['token' => $secret])->assertUnprocessable();
     $secret = profileSecret('primary_new');
     DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT profile_fixture_refusal CHECK (false) NOT VALID');
@@ -965,6 +1101,7 @@ it('keeps secondary addresses independently verified notification only and stops
     $user = profileVerified('secondary-owner@example.test');
     $other = profileVerified('secondary-other@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/secondary-emails', ['version' => 1, 'email' => $other->email])->assertConflict()->assertJsonPath('error.code', 'identifier_conflict');
     $add = $this->postJson('/api/runa/auth/profile/secondary-emails', ['version' => 1, 'email' => 'notice-only@example.test'])->assertOk()->json('data.public_id');
     $manager = app(ManageProfiles::class);
     expect($manager->notificationEmails($user->public_id))->toBe([]);
@@ -985,18 +1122,19 @@ it('keeps secondary addresses independently verified notification only and stops
     $this->postJson('/api/runa/auth/email/complete', ['token' => $secret])->assertUnprocessable();
 });
 
-it('requires dedicated permission fresh both factor proof and configured bypass for administrative email changes', function (): void {
+it('requires dedicated permission fresh password proof and configured bypass for administrative email changes', function (): void {
+    entryPolicy(['admin_email_verification_bypass' => false]);
     $actor = profileVerified('email-admin@example.test');
     $target = profileVerified('email-target@example.test');
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
     [$secret, $codes] = credentialEnroll($this, $actor);
-    $api = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '1.0.0');
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
     expect(fn () => $api->replaceVerifiedEmail($target->public_id, 1, 'bypass@example.test'))->toThrow(OperationRejected::class);
     app()->instance('request', credentialRequest('/'));
     $bypass = fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => app(ManageProfiles::class)->replaceVerifiedEmail($target->public_id, 1, 'bypass@example.test'));
     expect($bypass)->toThrow(OperationRejected::class);
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.email.admin_bypass', 'requirement' => 'both', 'current_password' => 'a-long-test-password', 'method' => 'recovery', 'code' => $codes[0]])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.email.admin_bypass', 'current_password' => 'a-long-test-password'])->assertOk();
     app()->instance('request', credentialRequest('/'));
     expect($bypass)->toThrow(OperationRejected::class);
     entryPolicy(['admin_email_verification_bypass' => true]);
@@ -1015,7 +1153,7 @@ it('forces immediate reverification on an existing session and restores only cur
     $targetStore = clone app('session')->driver();
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
     [$secret, $codes] = credentialEnroll($this, $actor);
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.email.require_verification', 'requirement' => 'both', 'current_password' => 'a-long-test-password', 'method' => 'recovery', 'code' => $codes[0]])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.email.require_verification', 'current_password' => 'a-long-test-password'])->assertOk();
     app()->instance('request', credentialRequest('/'));
     app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => app(ManageProfiles::class)->requireVerification($target->public_id, 1));
     $token = DB::table('runa_auth.entry_tokens')->where('user_id', $target->id)->where('purpose', 'verification')->latest('id')->first();
@@ -1106,7 +1244,7 @@ it('keeps self deactivation disabled by default and consumes step up atomically 
     $this->postJson('/api/runa/auth/profile/lifecycle', ['version' => 1, 'operation' => 'deactivate'])->assertForbidden();
     entryPolicy(['self_deactivate' => true]);
     $this->postJson('/api/runa/auth/profile/lifecycle', ['version' => 1, 'operation' => 'deactivate'])->assertForbidden();
-    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.deactivate', 'requirement' => 'password', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.deactivate', 'current_password' => 'a-long-test-password'])->assertOk();
     DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT self_fixture_refusal CHECK (false) NOT VALID');
     $this->postJson('/api/runa/auth/profile/lifecycle', ['version' => 1, 'operation' => 'deactivate'])->assertServiceUnavailable();
     expect(User::find($user->id)->active)->toBeTrue()->and(DB::table('runa_auth.step_up_proofs')->value('consumed_at'))->toBeNull();
@@ -1119,7 +1257,8 @@ it('keeps self deactivation disabled by default and consumes step up atomically 
 it('delivers private address links once and sends the completion notice only to the former primary', function (): void {
     $user = profileVerified('profile-mail-old@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
-    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => 'profile-mail-new@example.test', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.email', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => 'profile-mail-new@example.test'])->assertOk();
     $mail = DB::table('runa_auth.profile_mail')->where('purpose', 'primary_new')->first();
     $secret = profileSecret('primary_new');
     expect(DB::table('shared.jobs')->get()->toJson())->not->toContain($secret, 'profile-mail-new@example.test');
@@ -1132,7 +1271,8 @@ it('delivers private address links once and sends the completion notice only to 
         ->and($messages[0]->getOriginalMessage()->getHtmlBody())->toContain('/auth/confirm-address#token='.$secret, '#8650ba');
     $this->postJson('/api/runa/auth/email/complete', ['token' => $secret])->assertOk();
     $notice = DB::table('runa_auth.profile_mail')->where('purpose', 'notice')->first();
-    $this->postJson('/api/runa/auth/profile/email', ['version' => 3, 'email' => 'profile-mail-stale@example.test', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.email', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/email', ['version' => 3, 'email' => 'profile-mail-stale@example.test'])->assertOk();
     $stale = DB::table('runa_auth.profile_mail')->where('purpose', 'primary_new')->latest('id')->first();
     app(ChangeIdentity::class)->change($user->public_id, 4, new LifecycleChange('deactivate'));
     $delivery->deliver($notice->public_id);
@@ -1150,12 +1290,15 @@ it('expires address tokens exactly at their deadline and invalidates pending cha
     entryPolicy(['email_change_minutes' => 5]);
     $user = profileVerified('profile-expiry@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
-    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => 'profile-expired@example.test', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.email', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => 'profile-expired@example.test'])->assertOk();
     $expired = profileSecret('primary_new');
     CarbonImmutable::setTestNow('2026-10-23 12:05:00 UTC');
     $this->postJson('/api/runa/auth/email/complete', ['token' => $expired])->assertUnprocessable();
-    $this->postJson('/api/runa/auth/profile/email', ['version' => 2, 'email' => 'profile-password@example.test', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.email', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/email', ['version' => 2, 'email' => 'profile-password@example.test'])->assertOk();
     $secret = profileSecret('primary_new');
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.password', 'current_password' => 'a-long-test-password'])->assertOk();
     $this->postJson('/api/runa/auth/password/change', ['current_password' => 'a-long-test-password', 'password' => 'different-long-test-password', 'password_confirmation' => 'different-long-test-password'])->assertOk();
     $this->postJson('/api/runa/auth/email/complete', ['token' => $secret])->assertUnprocessable();
     expect(User::find($user->id)->email)->toBe('profile-expiry@example.test');
@@ -1179,7 +1322,8 @@ it('honors each captured primary email session policy without reviving trust', f
     $user = profileVerified('email-session-policy@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
-    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => 'email-session-changed@example.test', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.email', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => 'email-session-changed@example.test'])->assertOk();
     $this->postJson('/api/runa/auth/email/complete', ['token' => profileSecret('primary_new')])->assertOk();
     expect(DB::table('runa_auth.sessions')->where('user_id', $user->id)->whereNull('revoked_at')->count())->toBe($retained);
 })->with([['keep_all', 2], ['revoke_others', 1], ['revoke_all', 0]]);
@@ -1187,7 +1331,8 @@ it('honors each captured primary email session policy without reviving trust', f
 it('serializes primary confirmation against another worker holding the account row', function (): void {
     $user = profileVerified('address-row-lock@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
-    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => 'address-row-new@example.test', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.email', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/profile/email', ['version' => 1, 'email' => 'address-row-new@example.test'])->assertOk();
     $secret = profileSecret('primary_new');
     config()->set('database.connections.auth_entry_competitor', config('database.connections.pgsql'));
     $other = DB::connection('auth_entry_competitor');
@@ -1251,7 +1396,7 @@ it('persists declared own preferences with revision conflicts adoption reset and
     entryLogin($this, ['identifier' => $other->email, 'password' => 'a-long-test-password'])->assertOk();
     $this->postJson($endpoint, $base + ['operation' => 'snapshot'])->assertOk()->assertJsonPath('data.revision', 0)->assertJsonPath('data.values.1.value', 'system');
     app(PrincipalScope::class)->run(new TrustedPrincipal($other->public_id), function (): void {
-        $api = app(ModuleApis::class)->resolve('runa.auth', AuthPreferences::class, '1.0.0');
+        $api = app(ModuleApis::class)->resolve('runa.auth', AuthPreferences::class, '1.1.0');
         $scope = new PreferenceScope('runa', 'runa.auth', 'global', 'theme');
         expect($api->read($scope)['value'])->toBe('system');
         expect($api->write($scope, new PreferenceValue('dark'), 0)['value'])->toBe('dark');
@@ -1259,12 +1404,56 @@ it('persists declared own preferences with revision conflicts adoption reset and
     });
 });
 
+it('delivers useful new browser notices from captured safe context in both mail parts', function (string $locale, bool $recognized): void {
+    CarbonImmutable::setTestNow('2026-11-05 10:00:00 UTC');
+    entryPolicy(['email_verification' => 'disabled', 'notice_new_browser' => true]);
+    $user = entryUser('browser-notice@example.test');
+    DB::transaction(function () use ($user, $locale): void {
+        $user->email_verified_at = now();
+        $user->save();
+        DB::table('runa_auth.preferences')->insert(['user_id' => $user->id, 'scope' => 'runa:runa.auth:global:locale',
+            'module' => 'runa.auth', 'value' => json_encode($locale), 'definition_version' => 1, 'created_at' => now(), 'updated_at' => now()]);
+    });
+    $agent = $recognized ? 'Mozilla/5.0 (X11; Linux x86_64) Firefox/130.0' : '<script>unrecognized-client</script>';
+    $this->withHeader('User-Agent', $agent);
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $notice = DB::table('runa_auth.security_notices')->where('category', 'new_browser')->first();
+    expect($notice)->not->toBeNull()
+        ->and($notice->browser)->toBe($recognized ? 'Firefox' : null)
+        ->and($notice->platform)->toBe($recognized ? 'Linux' : null);
+    expect(json_encode(DB::table('shared.module_work')->get()))->not->toContain('Firefox', 'Linux', $agent);
+    expect(json_encode($notice))->not->toContain($agent, 'User-Agent');
+    CarbonImmutable::setTestNow('2026-11-05 10:30:00 UTC');
+    app(Request::class)->headers->set('User-Agent', 'different-delivery-worker');
+    app(SecurityNotices::class)->deliver($notice->public_id);
+    app(SecurityNotices::class)->deliver($notice->public_id);
+    $messages = app('mailer')->getSymfonyTransport()->messages();
+    expect($messages)->toHaveCount(1);
+    $mail = $messages->last()->getOriginalMessage();
+    $browser = $recognized ? 'Firefox' : ($locale === 'pl' ? 'Nieznana przeglądarka' : 'Unknown browser');
+    $platform = $recognized ? 'Linux' : ($locale === 'pl' ? 'Nieznany system' : 'Unknown system');
+    foreach ([$mail->getHtmlBody(), $mail->getTextBody()] as $body) {
+        expect($body)->toContain($browser, $platform, '2026-11-05 10:00:00', 'UTC',
+            $locale === 'pl' ? 'nie musisz nic robić' : 'no action is needed',
+            $locale === 'pl' ? 'zmień hasło' : 'change your password',
+            $locale === 'pl' ? 'administratorem aplikacji' : "application's administrator")
+            ->not->toContain('2026-11-05 10:30:00', 'different-delivery-worker', $agent, 'token_hash');
+    }
+    expect($mail->getHtmlBody())->toContain('lang="'.$locale.'"', $locale === 'pl' ? 'Oparte na Runa' : 'Powered by Runa');
+    expect(DB::table('runa_auth.security_notices')->where('id', $notice->id)->value('sent_at'))->not->toBeNull();
+    // Retain only fictional, credential-free rendering evidence for visual inspection.
+    $directory = base_path('../.runtime/artifacts/mail/new-browser');
+    File::ensureDirectoryExists($directory);
+    File::put($directory.'/'.$locale.($recognized ? '-known' : '-unknown').'.html', $mail->getHtmlBody());
+    File::put($directory.'/'.$locale.($recognized ? '-known' : '-unknown').'.txt', $mail->getTextBody());
+})->with([['pl', true], ['en', true], ['pl', false], ['en', false]]);
+
 it('protects mandatory routing and revalidates obsolete reminders with single SMTP attempts', function (): void {
-    entryPolicy(['email_verification' => 'disabled', 'notice_account_expiry' => true, 'notice_interval_minutes' => 1]);
+    entryPolicy(['email_verification' => 'disabled', 'notice_account_deactivation' => true, 'notice_interval_minutes' => 1]);
     $user = entryUser('notices@example.test');
     DB::transaction(function () use ($user): void {
         $user->email_verified_at = now();
-        $user->expires_at = now()->addDays(2);
+        $user->deactivate_at = now()->addDays(2);
         $user->save();
     });
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
@@ -1275,20 +1464,21 @@ it('protects mandatory routing and revalidates obsolete reminders with single SM
     $notices = app(SecurityNotices::class);
     $notices->reminders();
     $notices->reminders();
-    expect(DB::table('runa_auth.security_notices')->where('category', 'account_expiry')->count())->toBe(1);
-    $notice = DB::table('runa_auth.security_notices')->where('category', 'account_expiry')->first();
+    expect(DB::table('runa_auth.security_notices')->where('category', 'account_deactivation')->count())->toBe(1);
+    $notice = DB::table('runa_auth.security_notices')->where('category', 'account_deactivation')->first();
     $sent = 0;
     app('events')->listen(MessageSending::class, function () use (&$sent): void {
         $sent++;
     });
     // State changes between enqueue and execution make the reminder obsolete.
     DB::transaction(function () use ($user): void {
-        $user->expires_at = now()->addDays(30);
+        $user->deactivate_at = now()->addDays(30);
         $user->save();
     });
     $notices->deliver($notice->public_id);
     expect($sent)->toBe(0);
-    $this->postJson('/api/runa/auth/password/change', ['current_password' => 'a-long-test-password', 'password' => 'a-new-long-password', 'password_confirmation' => 'a-new-long-password'])
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.password', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/password/change', ['password' => 'a-new-long-password', 'password_confirmation' => 'a-new-long-password'])
         ->assertOk();
     $passwordNotice = DB::table('runa_auth.security_notices')->where('category', 'password_changed')->first();
     expect($passwordNotice)->not->toBeNull();
@@ -1335,7 +1525,8 @@ it('keeps settings history effects and Audit atomic and restores as a new versio
         ->and($settings->read('runa.auth')['revision'])->toBe($revision + 2)
         ->and(User::find($user->id)->password_change_required)->toBeTrue()
         ->and(DB::table('runa_auth.policy_versions')->count())->toBe(3);
-    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '1.0.0')->history())->toThrow(OperationRejected::class);
+    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '3.0.0')->history())->toThrow(OperationRejected::class);
+    expect(fn () => app(ModuleApis::class)->resolve('runa.auth', AuthPolicies::class, '3.0.0')->activeExceptions('01900000-0000-7000-8000-000000000001'))->toThrow(OperationRejected::class);
 })->group('auth-policy-operators');
 
 function operatorAuthorityFixture(): object
@@ -1353,6 +1544,11 @@ function operatorAuthorityFixture(): object
         public function isAdministrator(Connection $connection, string $publicId): bool
         {
             return in_array($publicId, $this->ids, true);
+        }
+
+        public function administrators(Connection $connection, array $publicIds): array
+        {
+            return array_values(array_intersect($publicIds, $this->ids));
         }
     };
     app()->instance(OperatorAuthority::class, $adapter);
@@ -1422,9 +1618,9 @@ it('operator command requires confirmation and privately hands off without stdou
     }
 })->group('auth-policy-operators');
 
-function policyStepUpProof($test, User $actor, string $action, string $code): void
+function policyStepUpProof($test, string $action): void
 {
-    $test->postJson('/api/runa/auth/step-up', ['action' => $action, 'requirement' => 'both', 'current_password' => 'a-long-test-password', 'method' => 'recovery', 'code' => $code])->assertOk();
+    $test->postJson('/api/runa/auth/step-up', ['action' => $action, 'current_password' => 'a-long-test-password'])->assertOk();
     app()->instance('request', credentialRequest('/'));
 }
 
@@ -1432,19 +1628,18 @@ it('expires and revalidates only allowlisted account exceptions with monotonic v
     $actor = profileVerified('exception-actor@example.test');
     $target = entryUser('exception-target@example.test');
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
-    [$secret, $codes] = credentialEnroll($this, $actor);
     $policies = app(Policies::class);
     $revision = app(ModuleSettings::class)->read('runa.auth')['revision'];
     $scope = app(PrincipalScope::class);
     $set = fn ($value, $version) => $scope->run(new TrustedPrincipal($actor->public_id), fn () => $policies->exception($target->public_id, 'session_idle_minutes', $value, 'Approved temporary extension', now()->addHours(1)->toIso8601String(), $version, $revision));
-    policyStepUpProof($this, $actor, 'runa.auth.policy.exception', $codes[0]);
+    policyStepUpProof($this, 'runa.auth.policy.exception');
     expect($set(240, 0)['version'])->toBe(1)
         ->and(app(PolicyExceptions::class)->value($target, 'session_idle_minutes'))->toBe(240);
-    policyStepUpProof($this, $actor, 'runa.auth.policy.exception', $codes[1]);
+    policyStepUpProof($this, 'runa.auth.policy.exception');
     expect($set(null, 1)['version'])->toBe(2);
-    policyStepUpProof($this, $actor, 'runa.auth.policy.exception', $codes[2]);
+    policyStepUpProof($this, 'runa.auth.policy.exception');
     expect($set(300, 2)['version'])->toBe(3);
-    policyStepUpProof($this, $actor, 'runa.auth.policy.exception', $codes[3]);
+    policyStepUpProof($this, 'runa.auth.policy.exception');
     expect(fn () => $set(400, 1))->toThrow(OperationRejected::class);
     expect(fn () => $policies->exception($target->public_id, 'two_factor_required', 1, 'Forbidden', now()->addHour()->toIso8601String(), 0, $revision))->toThrow(InvalidArgumentException::class);
     // Current global policy invalidates old exceptions without waiting for a scheduler.
@@ -1453,7 +1648,70 @@ it('expires and revalidates only allowlisted account exceptions with monotonic v
         ->and(DB::table('runa_auth.policy_exceptions')->whereNull('revoked_at')->count())->toBe(0);
 })->group('auth-policy-operators');
 
-it('rejects stale bulk revocation previews and rolls back proof and sessions with Audit', function (): void {
+it('supports indefinite and long dated rule overrides with native versions and revocation', function (string $key, bool $indefinite): void {
+    $actor = profileVerified('indefinite-actor@example.test');
+    $target = entryUser('indefinite-target@example.test');
+    entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
+    $policies = app(Policies::class);
+    $revision = app(ModuleSettings::class)->read('runa.auth')['revision'];
+    $scope = app(PrincipalScope::class);
+    $expiry = $indefinite ? null : now()->addDays(90)->toIso8601String();
+    $set = fn ($value, $version, $until) => $scope->run(new TrustedPrincipal($actor->public_id), fn () => $policies->exception($target->public_id, $key, $value, 'Approved rule override', $until, $version, $revision));
+    policyStepUpProof($this, 'runa.auth.policy.exception');
+    expect($set(240, 0, $expiry)['version'])->toBe(1);
+    $record = $policies->activeExceptions($target->public_id)[0];
+    expect($record['expires_at'] === null)->toBe($indefinite)
+        ->and(app(PolicyExceptions::class)->value($target, $key))->toBe(240)
+        ->and(User::query()->whereKey($target->id)->selectSub(app(PolicyExceptions::class)->queryFor($key, 'runa_auth.users.id'), 'effective')->first()->effective)->toBe(240);
+    // A date in the past remains invalid; null and dates beyond 30 days are valid.
+    expect(fn () => $set(240, 1, now()->subDay()->toIso8601String()))->toThrow(InvalidArgumentException::class);
+    policyStepUpProof($this, 'runa.auth.policy.exception');
+    expect($set(300, 1, null)['version'])->toBe(2)
+        ->and($policies->activeExceptions($target->public_id)[0]['expires_at'])->toBeNull();
+    policyStepUpProof($this, 'runa.auth.policy.exception');
+    expect($set(null, 2, null)['version'])->toBe(3)
+        ->and($policies->activeExceptions($target->public_id))->toBe([])
+        ->and(app(PolicyExceptions::class)->value($target, $key))->toBe(app(ModuleSettings::class)->integer('runa.auth', $key));
+})->with([
+    'indefinite password' => ['password_expiry_days', true],
+    'dated password' => ['password_expiry_days', false],
+    'indefinite session' => ['session_idle_minutes', true],
+    'dated session' => ['session_idle_minutes', false],
+])->group('auth-policy-operators');
+
+it('reads active account exceptions independently of bounded history and excludes invalidated rows', function (): void {
+    $target = entryUser('active-rule-target@example.test');
+    $other = entryUser('active-rule-other@example.test');
+    $revision = app(ModuleSettings::class)->read('runa.auth')['revision'];
+    $insert = function (User $user, string $key, array $changes = []) use ($revision): string {
+        $id = (string) Str::uuid7();
+        DB::table('runa_auth.policy_exceptions')->insert(array_replace([
+            'public_id' => $id, 'user_id' => $user->id, 'key' => $key, 'value' => 240,
+            'reason' => 'Read projection fixture', 'actor' => $user->public_id,
+            'version' => 1, 'policy_revision' => $revision,
+            'expires_at' => now()->addHour(), 'revoked_at' => null,
+            'created_at' => now(), 'updated_at' => now(),
+        ], $changes));
+
+        return $id;
+    };
+    $active = $insert($target, 'session_idle_minutes');
+    for ($i = 0; $i < 55; $i++) {
+        $insert($target, 'password_expiry_days', ['revoked_at' => now(), 'version' => $i + 2]);
+    }
+    $expired = $insert($target, 'password_expiry_days', ['expires_at' => now()->subSecond()]);
+    $insert($other, 'password_expiry_days');
+    $policies = app(Policies::class);
+    expect(array_column($policies->exceptions($target->public_id), 'public_id'))->not->toContain($active)
+        ->and(array_column($policies->activeExceptions($target->public_id), 'public_id'))->toBe([$active]);
+    DB::table('runa_auth.policy_exceptions')->where('public_id', $expired)->update(['expires_at' => now()->addHour(), 'policy_revision' => $revision + 1]);
+    expect(array_column($policies->activeExceptions($target->public_id), 'public_id'))->toBe([$active]);
+    $this->travel(2)->hours();
+    expect($policies->activeExceptions($target->public_id))->toBe([]);
+})->group('auth-policy-operators');
+
+it('rejects stale bulk revocation previews and rolls back sessions with Audit without another proof', function (): void {
+    operatorAuthorityFixture();
     app()->bind(BulkUserSelection::class, fn () => new class implements BulkUserSelection
     {
         public function authorize(SessionSelection $selection): void {}
@@ -1462,18 +1720,16 @@ it('rejects stale bulk revocation previews and rolls back proof and sessions wit
     $target = profileVerified('bulk-target@example.test');
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
-    [$secret, $codes] = credentialEnroll($this, $actor);
     $action = app(BulkSessions::class);
     $selection = new SessionSelection([$target->public_id]);
     $preview = $action->preview($selection);
     expect($preview['sessions'])->toBe(1);
-    policyStepUpProof($this, $actor, 'runa.auth.sessions.bulk_revoke', $codes[0]);
     $revoke = fn ($hash) => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $action->revoke($selection, false, $hash));
     expect(fn () => $revoke(str_repeat('0', 64)))->toThrow(OperationRejected::class);
     DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT bulk_fixture_refusal CHECK (false) NOT VALID');
     expect(fn () => $revoke($preview['fingerprint']))->toThrow(AuditUnavailable::class);
     expect(DB::table('runa_auth.sessions')->where('user_id', $target->id)->whereNull('revoked_at')->count())->toBe(1)
-        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.sessions.bulk_revoke')->value('consumed_at'))->toBeNull();
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.sessions.bulk_revoke')->exists())->toBeFalse();
     DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT bulk_fixture_refusal');
     expect($revoke($preview['fingerprint'])['sessions'])->toBe(1)
         ->and(DB::table('runa_auth.sessions')->where('user_id', $target->id)->whereNull('revoked_at')->count())->toBe(0);
@@ -1483,14 +1739,13 @@ it('consumes policy publication proof only with history and preserves scheduled 
     $actor = profileVerified('policy-publisher@example.test');
     $target = profileVerified('scheduled-target@example.test');
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
-    [$secret, $codes] = credentialEnroll($this, $actor);
     $settings = app(ModuleSettings::class);
     $state = $settings->read('runa.auth');
     $publish = fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => app(Policies::class)->publish(['notice_new_browser' => true], $state['revision'], $state['generation']));
     app()->instance('request', credentialRequest('/'));
     expect($publish)->toThrow(OperationRejected::class);
     expect($settings->read('runa.auth')['revision'])->toBe($state['revision']);
-    policyStepUpProof($this, $actor, 'runa.auth.policy.publish', $codes[0]);
+    policyStepUpProof($this, 'runa.auth.policy.publish');
     DB::statement('ALTER TABLE runa_auth.policy_versions ADD CONSTRAINT publication_history_refusal CHECK (false) NOT VALID');
     expect($publish)->toThrow(QueryException::class);
     expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.policy.publish')->value('consumed_at'))->toBeNull();
@@ -1516,27 +1771,31 @@ it('consumes policy publication proof only with history and preserves scheduled 
     expect(User::find($target->id)->active)->toBeFalse();
 })->group('auth-policy-operators');
 
-it('session cleanup and deadline projection respect unexpired account lifetime exceptions', function (): void {
+it('session cleanup and deadline projection respect dated and indefinite account rules', function (bool $indefinite): void {
     entryPolicy(['session_idle_minutes' => 1]);
     $actor = profileVerified('cleanup-actor@example.test');
     $target = profileVerified('cleanup-target@example.test');
     entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
     $session = DB::table('runa_auth.sessions')->where('user_id', $target->id)->first();
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
-    [$secret, $codes] = credentialEnroll($this, $actor);
     $revision = app(ModuleSettings::class)->read('runa.auth')['revision'];
-    policyStepUpProof($this, $actor, 'runa.auth.policy.exception', $codes[0]);
+    policyStepUpProof($this, 'runa.auth.policy.exception');
     app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => app(Policies::class)
-        ->exception($target->public_id, 'session_idle_minutes', 30, 'Temporary extension', now()->addMinutes(10)->toIso8601String(), 0, $revision));
+        ->exception($target->public_id, 'session_idle_minutes', 30, 'Session rule extension', $indefinite ? null : now()->addMinutes(10)->toIso8601String(), 0, $revision));
     CarbonImmutable::setTestNow(CarbonImmutable::now('UTC')->addMinutes(2));
     expect(app(SessionStore::class)->live($session))->toBeTrue();
     app(CleanupSessions::class)->run();
     expect(DB::table('runa_auth.sessions')->where('id', $session->id)->exists())->toBeTrue();
     CarbonImmutable::setTestNow(CarbonImmutable::now('UTC')->addMinutes(9));
+    expect(app(SessionStore::class)->live($session))->toBe($indefinite);
+    app(CleanupSessions::class)->run();
+    expect(DB::table('runa_auth.sessions')->where('id', $session->id)->exists())->toBe($indefinite);
+    // An indefinite override still cannot extend the session's captured absolute deadline.
+    CarbonImmutable::setTestNow(CarbonImmutable::parse($session->expires_at)->addSecond());
     expect(app(SessionStore::class)->live($session))->toBeFalse();
     app(CleanupSessions::class)->run();
     expect(DB::table('runa_auth.sessions')->where('id', $session->id)->exists())->toBeFalse();
-})->group('auth-policy-operators');
+})->with([true, false])->group('auth-policy-operators');
 
 it('persists welcome policy defaults and redirects only the public root through named sign-in', function (): void {
     $settings = app(ModuleSettings::class);
@@ -1791,8 +2050,10 @@ it('records concrete preference and factor changes with detailed resets without 
     expect($enabled)->toContain(['field' => 'authenticator_enabled', 'before' => false, 'after' => true])
         ->toContain(['field' => 'spare_codes_remaining', 'before' => 0, 'after' => 8]);
     expect(json_encode($enabled))->not->toContain($secret, $codes[0], 'totp_secret', 'recovery_hashes');
-    $this->postJson('/api/runa/auth/security/disable', ['current_password' => 'a-long-test-password', 'method' => 'recovery', 'code' => $codes[0], 'target' => 'totp'])->assertOk();
-    expect($read('two_factor.recovery_used'))->toContain(['field' => 'spare_codes_remaining', 'before' => 8, 'after' => 7]);
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.security.disable', 'current_password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/security/disable', ['current_password' => 'a-long-test-password', 'target' => 'totp'])->assertOk();
+    // Post-login password confirmation never consumes login recovery codes.
+    expect(DB::table('runa_audit.events')->where('action', 'two_factor.recovery_used')->exists())->toBeFalse();
     expect($read('two_factor.disable'))->toContain(['field' => 'authenticator_enabled', 'before' => true, 'after' => false]);
     $actions = array_column($this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries'), 'action');
     expect($actions)->toContain('preferences.changed', 'preferences.reset', 'delivery.preferences_reset', 'two_factor.totp_confirm', 'two_factor.disable');
@@ -1824,11 +2085,217 @@ it('shows concrete account lifecycle values through own history without exposing
     $user = profileVerified('lifecycle-detail@example.test');
     entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
     $deadline = CarbonImmutable::now('UTC')->addDays(10)->format('Y-m-d\TH:i:s\Z');
-    app(ChangeIdentity::class)->change($user->public_id, $user->version, new LifecycleChange('set_expiry', $deadline));
-    $event = DB::table('runa_audit.events')->where('action', 'identity.set_expiry')->latest('id')->value('public_id');
+    app(ChangeIdentity::class)->change($user->public_id, $user->version, new LifecycleChange('schedule_deactivation', $deadline));
+    $event = DB::table('runa_audit.events')->where('action', 'identity.schedule_deactivation')->latest('id')->value('public_id');
     $detail = $this->getJson('/api/runa/auth/profile/history/detail?event='.$event)->assertOk()->json('data.changes');
-    expect(array_column($detail, 'field'))->toBe(['expires_at'])->and($detail[0]['before'])->toBeNull()
+    expect(array_column($detail, 'field'))->toBe(['deactivate_at'])->and($detail[0]['before'])->toBeNull()
         ->and(CarbonImmutable::parse($detail[0]['after'])->format('Y-m-d\TH:i:s\Z'))->toBe($deadline);
     $actions = array_column($this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries'), 'action');
-    expect($actions)->toContain('identity.set_expiry');
+    expect($actions)->toContain('identity.schedule_deactivation');
+});
+
+it('renews protected section idle access without renewing credential freshness or another section', function (): void {
+    CarbonImmutable::setTestNow('2026-10-31 12:00:00 UTC');
+    $user = entryUser('section-activity@example.test');
+    DB::transaction(function () use ($user): void {
+        $user->email_verified_at = now();
+        $user->save();
+    });
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    foreach (['app.reports.enter', 'app.billing.enter'] as $action) {
+        $this->postJson('/api/runa/auth/step-up', ['action' => $action, 'current_password' => 'a-long-test-password'])->assertOk();
+    }
+    app()->instance('request', credentialRequest('/'));
+    $scope = app(PrincipalScope::class);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthStepUp::class, '2.0.0');
+    $call = fn (Closure $work) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($user->public_id), $work));
+    $original = DB::table('runa_auth.step_up_proofs')->where('action', 'app.reports.enter')->first();
+    CarbonImmutable::setTestNow('2026-10-31 12:04:00 UTC');
+    expect($call(fn () => $api->activity('app.reports.enter', renew: true))['remaining_seconds'])->toBe(300.0);
+    CarbonImmutable::setTestNow('2026-10-31 12:05:01 UTC');
+    expect($call(fn () => $api->assertActive('app.reports.enter')))->toBeTrue();
+    expect(fn () => $call(fn () => $api->assertVerified('app.reports.enter')))->toThrow(OperationRejected::class);
+    expect(fn () => $call(fn () => $api->activity('app.billing.enter', renew: true)))->toThrow(OperationRejected::class);
+    app(CleanupSessions::class)->run();
+    $kept = DB::table('runa_auth.step_up_proofs')->where('action', 'app.reports.enter')->first();
+    expect($kept->verified_at)->toBe($original->verified_at)->and($kept->expires_at)->toBe($original->expires_at);
+    CarbonImmutable::setTestNow('2026-10-31 12:09:00 UTC');
+    expect(fn () => $call(fn () => $api->activity('app.reports.enter', renew: true)))->toThrow(OperationRejected::class);
+});
+
+it('never renews protected section access on reads and rolls back activity with the owning transaction', function (): void {
+    CarbonImmutable::setTestNow('2026-10-31 12:00:00 UTC');
+    $user = entryUser('section-read@example.test');
+    DB::transaction(function () use ($user): void {
+        $user->email_verified_at = now();
+        $user->save();
+    });
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.reports.enter', 'current_password' => 'a-long-test-password'])->assertOk();
+    app()->instance('request', credentialRequest('/'));
+    $scope = app(PrincipalScope::class);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthStepUp::class, '2.0.0');
+    $call = fn (Closure $work) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($user->public_id), $work));
+    CarbonImmutable::setTestNow('2026-10-31 12:04:00 UTC');
+    expect($call(fn () => $api->activity('app.reports.enter'))['remaining_seconds'])->toBe(60.0);
+    expect(fn () => $call(function () use ($api): void {
+        $api->activity('app.reports.enter', renew: true);
+        throw new RuntimeException('rollback section activity');
+    }))->toThrow(RuntimeException::class, 'rollback section activity');
+    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'app.reports.enter')->value('activity_at'))->toBeNull();
+    expect(fn () => $call(fn () => $api->activity('app.billing.enter', renew: true)))->toThrow(OperationRejected::class);
+    // A stricter caller must not use activity to extend an already expired shorter window.
+    expect(fn () => $call(fn () => $api->activity('app.reports.enter', 60, true)))->toThrow(OperationRejected::class);
+    CarbonImmutable::setTestNow('2026-10-31 12:05:00 UTC');
+    expect(fn () => $call(fn () => $api->activity('app.reports.enter', renew: true)))->toThrow(OperationRejected::class);
+});
+
+it('bounds protected section renewal by current policy and refuses identity generation changes', function (): void {
+    CarbonImmutable::setTestNow('2026-10-31 12:00:00 UTC');
+    $user = entryUser('section-policy@example.test');
+    $other = entryUser('section-other@example.test');
+    DB::transaction(function () use ($user): void {
+        $user->email_verified_at = now();
+        $user->save();
+    });
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'app.reports.enter', 'current_password' => 'a-long-test-password'])->assertOk();
+    app()->instance('request', credentialRequest('/'));
+    $scope = app(PrincipalScope::class);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthStepUp::class, '2.0.0');
+    $call = fn (string $id) => DB::transaction(fn () => $scope->run(new TrustedPrincipal($id), fn () => $api->activity('app.reports.enter', renew: true)));
+    expect(fn () => $call($other->public_id))->toThrow(OperationRejected::class);
+    CarbonImmutable::setTestNow('2026-10-31 12:04:00 UTC');
+    expect($call($user->public_id)['remaining_seconds'])->toBe(300.0);
+    expect(fn () => DB::transaction(function () use ($user, $call): void {
+        DB::table('runa_auth.users')->where('id', $user->id)->increment('security_version');
+        expect(fn () => $call($user->public_id))->toThrow(OperationRejected::class);
+        throw new RuntimeException('restore test security generation');
+    }))->toThrow(RuntimeException::class, 'restore test security generation');
+    entryPolicy(['step_up_seconds' => 60]);
+    CarbonImmutable::setTestNow('2026-10-31 12:04:01 UTC');
+    expect($call($user->public_id)['remaining_seconds'])->toBe(60.0);
+    entryPolicy(['step_up_seconds' => 300]);
+    CarbonImmutable::setTestNow('2026-10-31 12:05:01 UTC');
+    expect(fn () => $call($user->public_id))->toThrow(OperationRejected::class);
+});
+
+it('counts filtered directory results before cursors and preserves deleted-read authority', function (): void {
+    $first = entryUser('directory-count-first@example.test', false);
+    entryUser('directory-count-second@example.test', false);
+    $deleted = entryUser('directory-count-deleted@example.test', false);
+    app(ChangeIdentity::class)->change($deleted->public_id, $deleted->version, new LifecycleChange('delete'));
+    app()->bind(OperationAuthorizer::class, fn () => new class implements OperationAuthorizer
+    {
+        public function allows(OperationContext $context, string $permission): bool
+        {
+            return $permission === 'runa.auth.users.read';
+        }
+    });
+    app()->forgetInstance(OperationGuard::class);
+    app()->forgetInstance(ModuleApis::class);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthAdministration::class, '2.1.0');
+    app(PrincipalScope::class)->run(new TrustedPrincipal($first->public_id), function () use ($api): void {
+        $page = $api->users(new UserDirectoryQuery(limit: 1, search: 'Test User'));
+        expect($page->items)->toHaveCount(1)->and($page->total)->toBe(2)->and($page->next)->not->toBeNull();
+        $last = $api->users(new UserDirectoryQuery($page->next, 1, 'Test User'));
+        expect($last->items)->toHaveCount(1)->and($last->total)->toBe(2)->and($last->next)->toBeNull();
+        expect($api->users(new UserDirectoryQuery(search: 'absent-name'))->total)->toBe(0);
+        expect(fn () => $api->users(new UserDirectoryQuery(state: 'deleted')))->toThrow(OperationRejected::class);
+        expect(fn () => $api->users(new UserDirectoryQuery(state: 'all')))->toThrow(OperationRejected::class);
+    });
+});
+
+it('administratively confirms existing primary email with guarded permission proof rollback and session revocation', function (): void {
+    entryPolicy(['admin_email_verification_bypass' => true]);
+    $target = profileVerified('existing-primary@example.test');
+    entryLogin($this, ['identifier' => $target->email, 'password' => 'a-long-test-password'])->assertOk();
+    $target->email_verified_at = null;
+    $target->verification_forced = true;
+    DB::transaction(fn () => $target->save());
+    $actor = profileVerified('existing-primary-admin@example.test');
+    entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
+    [, $codes] = credentialEnroll($this, $actor);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
+    $verify = fn (int $version = 1) => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $api->verifyEmail($target->public_id, $version));
+    app()->instance('request', credentialRequest('/'));
+    expect($verify)->toThrow(OperationRejected::class);
+    $verify = fn (int $version = 1) => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => app(ManageProfiles::class)->verifyEmail($target->public_id, $version));
+    app()->bind(OperationAuthorizer::class, fn () => new class implements OperationAuthorizer
+    {
+        public function allows(OperationContext $context, string $permission): bool
+        {
+            return $permission === 'runa.auth.emails.verify_bypass';
+        }
+    });
+    expect($verify)->toThrow(OperationRejected::class);
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.email.admin_bypass', 'current_password' => 'a-long-test-password'])->assertOk();
+    app()->instance('request', credentialRequest('/'));
+    entryPolicy(['admin_email_verification_bypass' => false]);
+    expect($verify)->toThrow(OperationRejected::class);
+    entryPolicy(['admin_email_verification_bypass' => true]);
+    expect(fn () => $verify(99))->toThrow(IdentityConflict::class);
+    DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT verification_fixture_refusal CHECK (false) NOT VALID');
+    expect($verify)->toThrow(AuditUnavailable::class);
+    expect($target->fresh()->email_verified_at)->toBeNull()
+        ->and($target->fresh()->version)->toBe(1)
+        ->and(DB::table('runa_auth.sessions')->where('user_id', $target->id)->whereNull('revoked_at')->count())->toBe(1);
+    DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT verification_fixture_refusal');
+    app()->forgetInstance(OperationGuard::class);
+    app()->forgetInstance(ModuleApis::class);
+    $allowedApi = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
+    expect(app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $allowedApi->verifyEmail($target->public_id, 1)))->toBeTrue();
+    expect($target->fresh()->email)->toBe($target->email)
+        ->and($target->fresh()->email_verified_at)->not->toBeNull()
+        ->and($target->fresh()->verification_forced)->toBeFalse()
+        ->and($target->fresh()->version)->toBe(2)
+        ->and(DB::table('runa_auth.sessions')->where('user_id', $target->id)->whereNull('revoked_at')->count())->toBe(0)
+        ->and(DB::table('runa_audit.events')->where('action', 'email.admin_verified')->count())->toBe(1);
+    expect(fn () => $verify(2))->toThrow(OperationRejected::class);
+});
+
+it('administratively confirms only current owned secondary addresses and invalidates links with atomic Audit', function (): void {
+    entryPolicy(['secondary_emails_enabled' => true, 'admin_email_verification_bypass' => true]);
+    $target = profileVerified('existing-secondary@example.test');
+    $other = profileVerified('existing-secondary-other@example.test');
+    $manager = app(ManageProfiles::class);
+    $address = $manager->addSecondary($target->public_id, 1, 'existing-notification@example.test');
+    $secret = profileSecret('secondary');
+    $foreign = $manager->addSecondary($other->public_id, 1, 'foreign-notification@example.test');
+    $actor = profileVerified('existing-secondary-admin@example.test');
+    entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
+    [, $codes] = credentialEnroll($this, $actor);
+    $api = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
+    app()->bind(OperationAuthorizer::class, fn () => new class implements OperationAuthorizer
+    {
+        public function allows(OperationContext $context, string $permission): bool
+        {
+            return $permission === 'runa.auth.emails.verify_bypass';
+        }
+    });
+    expect(fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $api->verifySecondary($target->public_id, 2, $address)))->toThrow(OperationRejected::class);
+    $verify = fn (string $id) => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $manager->verifySecondary($target->public_id, 2, $id));
+    app()->instance('request', credentialRequest('/'));
+    expect(fn () => $verify($address))->toThrow(OperationRejected::class);
+    $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.email.admin_bypass', 'current_password' => 'a-long-test-password'])->assertOk();
+    app()->instance('request', credentialRequest('/'));
+    expect(fn () => $verify($foreign))->toThrow(OperationRejected::class);
+    entryPolicy(['secondary_emails_enabled' => false]);
+    expect(fn () => $verify($address))->toThrow(OperationRejected::class);
+    entryPolicy(['secondary_emails_enabled' => true]);
+    DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT secondary_verify_fixture_refusal CHECK (false) NOT VALID');
+    expect(fn () => $verify($address))->toThrow(AuditUnavailable::class);
+    expect(DB::table('runa_auth.secondary_emails')->where('public_id', $address)->value('verified_at'))->toBeNull()
+        ->and($target->fresh()->version)->toBe(2);
+    DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT secondary_verify_fixture_refusal');
+    app()->forgetInstance(OperationGuard::class);
+    app()->forgetInstance(ModuleApis::class);
+    $allowedApi = app(ModuleApis::class)->resolve('runa.auth', AuthProfiles::class, '2.1.0');
+    expect(app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $allowedApi->verifySecondary($target->public_id, 2, $address)))->toBeTrue();
+    expect($manager->notificationEmails($target->public_id))->toBe(['existing-notification@example.test'])
+        ->and($target->fresh()->version)->toBe(3)
+        ->and(DB::table('runa_auth.profile_mail')->where('token_hash', hash('sha256', $secret))->value('consumed_at'))->not->toBeNull()
+        ->and(DB::table('runa_audit.events')->where('action', 'secondary.admin_verified')->count())->toBe(1);
+    $this->postJson('/api/runa/auth/email/complete', ['token' => $secret])->assertUnprocessable();
+    expect(fn () => $verify($address))->toThrow(OperationRejected::class);
 });

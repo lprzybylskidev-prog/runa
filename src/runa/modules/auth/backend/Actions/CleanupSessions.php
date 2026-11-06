@@ -22,7 +22,7 @@ final readonly class CleanupSessions
             $connection->table('runa_auth.security_notices')->whereIn('id', $noticeIds)->delete();
             $operatorIds = $connection->table('runa_auth.operator_tokens')->where('expires_at', '<=', $now)->orderBy('id')->limit(500)->pluck('id');
             $connection->table('runa_auth.operator_tokens')->whereIn('id', $operatorIds)->delete();
-            $proofIds = $connection->table('runa_auth.step_up_proofs')->where('expires_at', '<=', $now)->orderBy('id')->limit(500)->pluck('id');
+            $proofIds = $connection->table('runa_auth.step_up_proofs')->whereRaw('COALESCE(idle_expires_at, expires_at) <= ?', [$now])->orderBy('id')->limit(500)->pluck('id');
             $connection->table('runa_auth.step_up_proofs')->whereIn('id', $proofIds)->delete();
             $mailIds = $connection->table('runa_auth.profile_mail')->where('expires_at', '<=', $now)->orderBy('id')->limit(500)->pluck('id');
             $connection->table('runa_auth.profile_mail')->whereIn('id', $mailIds)->delete();
@@ -43,7 +43,7 @@ final readonly class CleanupSessions
                     if ($table === 'sessions') {
                         // The correlated owned exception retains valid extended sessions; all inputs are bound.
                         $revision = app('db')->connection()->table('shared.modules')->where('module_id', 'runa.auth')->value('settings_revision');
-                        $query->orWhereRaw("activity_at <= ?::timestamptz - make_interval(mins => COALESCE((SELECT value FROM runa_auth.policy_exceptions e WHERE e.user_id = runa_auth.sessions.user_id AND e.key = 'session_idle_minutes' AND e.revoked_at IS NULL AND e.expires_at > ?::timestamptz AND e.policy_revision = ?), ?))", [$now, $now, $revision, $this->settings->integer('runa.auth', 'session_idle_minutes')]);
+                        $query->orWhereRaw("activity_at <= ?::timestamptz - make_interval(mins => COALESCE((SELECT value FROM runa_auth.policy_exceptions e WHERE e.user_id = runa_auth.sessions.user_id AND e.key = 'session_idle_minutes' AND e.revoked_at IS NULL AND (e.expires_at IS NULL OR e.expires_at > ?::timestamptz) AND e.policy_revision = ?), ?))", [$now, $now, $revision, $this->settings->integer('runa.auth', 'session_idle_minutes')]);
                     }
                 });
                 $ids = $query->orderBy('id')->limit(500)->pluck('id');

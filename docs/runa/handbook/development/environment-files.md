@@ -9,7 +9,7 @@ recorded installation role. Do not copy another workstation's acquisition receip
 | ------------------ | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
 | .env               | Development prepare/setup; .env.dev.example                          | Laravel local runtime, application DB credentials, key and mail settings                            |
 | .env.testing       | Development prepare/setup; .env.test.example                         | Laravel/Pest/parallel testing, separate test role and DB, isolated mail/queue settings              |
-| .env.dev.local     | Development profile/prepare                                          | Compose and resource override, UID/GID, worker counts, optional CPU/CUDA selection; no DB secrets   |
+| .env.dev.local     | Development profile/prepare; private local edits                     | Compose resource profile, UID/GID, workers and CPU/CUDA; optional private development seed overlay  |
 | .env.dev.database  | Development prepare; .env.dev.database.example documents keys        | Compose PostgreSQL initialization: distinct POSTGRES_PASSWORD, APP_DB_PASSWORD and TEST_DB_PASSWORD |
 | .env.prod          | External production initialization; .env.prod.example documents keys | Production Laravel runtime application/key/DB/mail settings                                         |
 | .env.prod.database | External production initialization; .env.prod.database.example       | Compose PostgreSQL administrator initialization and non-superuser application password              |
@@ -56,5 +56,15 @@ is not evidence that a private file is disposable.
 Dev/test templates additionally document independent `DEV_SEED_AUTH_*` and
 `DEV_SEED_PERMISSIONS_*` count/random/seed options for the optional module corpus.
 They contain no default account password and are absent from production templates.
+The private `.env.dev.local` also accepts those documented seed keys plus
+`DEV_SEED_MODULES`, `DEV_SEED_ADMIN_EMAIL` and `DEV_SEED_ADMIN_PASSWORD`.
+Prepare/setup copies explicitly present seed entries into Laravel's local `.env`;
+the overlay takes precedence, including `false` and empty values. Omitted keys
+leave existing `.env` entries unchanged; clear an entry explicitly before removing
+its overlay. Profile/device changes preserve seed entries. These values are never
+included in the generated Compose resource overrides or profile output. Keep this
+overlay mode 600. Values use single-line dotenv syntax, copied verbatim; single
+quote passwords containing spaces, `#` or `$` to keep those characters literal.
+Preparation changes no existing account password and never runs seeds/migrations.
 Use the [private initial setup command](../data/seeding.md#explicit-module-development-contributors)
 inside an interactive development container terminal; repeat/reopen preserves it.

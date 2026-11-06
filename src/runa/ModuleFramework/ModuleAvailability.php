@@ -103,7 +103,7 @@ final readonly class ModuleAvailability
             $old = $snapshot->modules[$id] ?? null;
             $new = $current->modules[$id] ?? null;
             $healthExpired = $new !== null && $status->available && $this->health->inspect($new, $operation === '*' ? null : $operation)['blocked'];
-            if ($healthExpired || ($old !== null && ($new === null || $old->publicId !== $new->publicId || $old->registered !== $new->registered || $old->enabled !== $new->enabled || $old->sourcePresent !== $new->sourcePresent || $old->manifestHash !== $new->manifestHash || $old->healthRevision !== $new->healthRevision || $old->installedVersion !== $new->installedVersion || (isset($observed[$id]) && $observed[$id] != $new->healthObservations)) || $snapshot->fenced !== $current->fenced)) {
+            if ($healthExpired || ($old !== null && ($new === null || $old->publicId !== $new->publicId || $old->registered !== $new->registered || $old->enabled !== $new->enabled || $old->sourcePresent !== $new->sourcePresent || $old->manifestHash !== $new->manifestHash || $old->installedVersion !== $new->installedVersion || (isset($observed[$id]) && $observed[$id] != $new->healthObservations)) || $snapshot->fenced !== $current->fenced)) {
                 foreach ($memo as $key => $value) {
                     $memo[$key] = new ModuleStatus($value->moduleId, $value->publicId, $current->generation, $value->sourceVersion, $value->installedVersion, $value->registered, $value->enabled, $value->sourcePresent, 'unknown', false, [new GraphBlocker('availability_changed', [$key])]);
                 }

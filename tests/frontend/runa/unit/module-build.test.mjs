@@ -1,7 +1,9 @@
 import { test } from 'node:test';
+import { EventEmitter } from 'node:events';
 import assert from 'node:assert/strict';
 import {
   mkdtempSync,
+  readFileSync,
   mkdirSync,
   writeFileSync,
   rmSync,
@@ -9,8 +11,10 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 import {
   discoverModuleComponents,
+  discoverComponentBuilds,
   moduleComponentsPlugin,
 } from '../../../../src/runa/frontend/module-components.mjs';
 test('deterministic owned build keys, production development exclusion and opt-in loading', () => {
@@ -52,6 +56,109 @@ test('deterministic owned build keys, production development exclusion and opt-i
     );
     assert.throws(() => discoverModuleComponents(root), /symlink/);
   } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('component evidence binds owned source content and registry snapshot without exposing import paths', () => {
+  const root = mkdtempSync(join(tmpdir(), 'runa-component-evidence-'));
+  try {
+    const directory = join(root, 'app/resources/js/components/admin');
+    mkdirSync(directory, { recursive: true });
+    writeFileSync(join(directory, 'panel.vue'), '<template>Panel</template>');
+    const digest = (value) => createHash('sha256').update(value).digest('hex');
+    const manifest = discoverComponentBuilds(root);
+    assert.deepEqual(manifest.owners.app, {
+      manifest_hash: null,
+      build_id: digest(
+        'app\njs/components/admin/panel.vue:' +
+          digest('<template>Panel</template>') +
+          '\n',
+      ),
+      sources: {
+        'js/components/admin/panel.vue': digest('<template>Panel</template>'),
+      },
+      components: ['app.panel'],
+    });
+    assert.ok(!JSON.stringify(manifest).includes(root));
+    const plugin = moduleComponentsPlugin(root);
+    plugin.configResolved({ command: 'build', mode: 'production' });
+    const compiled = plugin.load('\0virtual:runa-module-components');
+    assert.ok(compiled.includes(JSON.stringify(manifest)));
+    const assets = [];
+    plugin.generateBundle.call({ emitFile: (value) => assets.push(value) });
+    assert.equal(assets[0].fileName, 'runa-components.json');
+    assert.deepEqual(JSON.parse(assets[0].source), manifest);
+    writeFileSync(join(directory, 'panel.vue'), '<template>Changed</template>');
+    assert.notEqual(
+      discoverComponentBuilds(root).owners.app.build_id,
+      manifest.owners.app.build_id,
+    );
+    assert.throws(
+      () => plugin.generateBundle.call({ emitFile() {} }),
+      /changed during build/,
+    );
+    rmSync(join(directory, 'panel.vue'));
+    symlinkSync(join(root, 'app/resources'), join(directory, 'panel.vue'));
+    assert.throws(() => discoverComponentBuilds(root), /symlink/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test('development evidence republishes source identity and invalidates the compiled registry', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'runa-dev-evidence-'));
+  const watcher = new EventEmitter();
+  const httpServer = new EventEmitter();
+  try {
+    const directory = join(root, 'app/resources/js/components/admin');
+    mkdirSync(directory, { recursive: true });
+    const file = join(directory, 'panel.vue');
+    writeFileSync(file, '<template>Before</template>');
+    const plugin = moduleComponentsPlugin(root);
+    let invalidated = false;
+    let changed;
+    const reloaded = new Promise((resolve) => {
+      changed = resolve;
+    });
+    const module = {};
+    plugin.configResolved({ command: 'serve', mode: 'development' });
+    plugin.configureServer({
+      watcher,
+      httpServer,
+      moduleGraph: {
+        getModuleById: () => module,
+        invalidateModule: (value) => {
+          assert.equal(value, module);
+          invalidated = true;
+        },
+      },
+      ws: { send: changed },
+    });
+    const asset = join(root, 'public/build/runa-components.json');
+    const before = JSON.parse(readFileSync(asset));
+    assert.deepEqual(before, discoverComponentBuilds(root, true));
+    writeFileSync(file, '<template>After</template>');
+    watcher.emit('change', file);
+    const signal = await Promise.race([
+      reloaded,
+      new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('No registry invalidation.')), 1000),
+      ),
+    ]);
+    assert.deepEqual(signal, { type: 'full-reload' });
+    assert.equal(invalidated, true);
+    const after = JSON.parse(readFileSync(asset));
+    assert.notEqual(after.owners.app.build_id, before.owners.app.build_id);
+    assert.ok(
+      plugin
+        .load('\0virtual:runa-module-components')
+        .includes(JSON.stringify(after)),
+    );
+    httpServer.emit('close');
+    assert.equal(watcher.listenerCount('change'), 0);
+  } finally {
+    httpServer.emit('close');
     rmSync(root, { recursive: true, force: true });
   }
 });

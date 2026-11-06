@@ -125,6 +125,8 @@ final readonly class DeliverEntryMail
             && ($token->purpose !== 'reset' || $user->password !== null)
             && ($token->purpose !== 'email_otp' || ($user->email_factor && $user->email_verified_at !== null
                 && $this->policy->permitted('email') && $this->liveEmailSession($user, $token)))
-            && $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate();
+            && ($token->purpose === 'invitation'
+                ? $this->identities->mayAcceptInvitation($user, CarbonImmutable::now('UTC'))
+                : $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate());
     }
 }

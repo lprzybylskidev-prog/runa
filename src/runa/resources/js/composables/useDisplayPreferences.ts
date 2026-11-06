@@ -1,20 +1,24 @@
 import { computed, nextTick, onScopeDispose, ref } from 'vue';
+import type { Ref } from 'vue';
 import { useLocale } from './useLocale';
 import { useTheme } from './useTheme';
 import type { Theme } from './useTheme';
 import { messages } from '../locales/messages';
 import type { Locale, MessageKey } from '../locales/messages';
 
-export function useDisplayPreferences(staticPreferences?: {
-  locale: Locale;
-  theme: Theme;
-}) {
+export function useDisplayPreferences(
+  staticPreferences?: {
+    locale: Locale;
+    theme: Theme;
+  },
+  scopedLocale?: Readonly<Ref<Locale | undefined>>,
+) {
   const { locale, t } = staticPreferences
     ? {
         locale: ref(staticPreferences.locale),
         t: (key: MessageKey) => messages[staticPreferences.locale][key],
       }
-    : useLocale();
+    : useLocale(scopedLocale);
   const { theme } = staticPreferences
     ? { theme: ref(staticPreferences.theme) }
     : useTheme();

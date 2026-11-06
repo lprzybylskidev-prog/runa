@@ -39,9 +39,11 @@ protected administrative contracts, technical trust storage and cleanup.
 Auth 0.4.0 adds [password recovery/2FA, trust issuance and step-up](security.md).
 
 Login verifies hashes before evaluating all independent account blockers, including
-scheduled activation. Unknown, incorrect, pending approval, inactive, deleted,
-expired or locked identities get the same 422 `invalid_credentials`; no lifecycle
-reason or account existence is returned. Absent/passwordless accounts perform the
+scheduled activation. Unknown, incorrect, deleted or security/attempt-locked
+identities get the same 422 `invalid_credentials`. After a correct password only,
+an account blocked solely by inactivity, future activation or reached deactivation
+receives 422 `account_inactive`; no session is issued. Incorrect credentials never
+reveal account activity. Abuse windows and secret-safe refusal Audit still apply. Absent/passwordless accounts perform the
 same expensive hashing work. Successful admission synchronously records Audit,
 invalidates the old session, logs in through the native guard, regenerates ID/CSRF
 and binds security_version. Login refusal is independently recorded without an
@@ -67,7 +69,7 @@ text is not rendered. Selected source-declared entry/proof operations use indepe
 (30/minute per operation), returning 429 with Retry-After. Ordinary account and
 preference requests do not consume those caps. See [targeted throttling and optional
 ownership](throttling.md). Login has configurable account/source windows and bounded
-temporary locks under the [session/abuse contract](sessions.md), with generic 422
+temporary locks under the [session/abuse contract](sessions.md), with secret-safe 422
 refusals and optional review escalation instead of permanent attacker-triggered locks.
 
 ## Named module endpoints
@@ -90,7 +92,7 @@ Input supports exactly the existing complete exclusive naming alternatives and
 identifier normalization. Registration and initial invitation passwords use the shared configurable
 [credential policy](security.md), defaulting to at least 12 characters and at most 72 UTF-8 bytes without NUL, protecting native
 bcrypt's input boundary. The shared policy also enforces configured complexity/history.
-Explicitly supplied activation/approval/verification flags are prohibited; unknown
+Explicitly supplied activation/verification flags are prohibited; unknown
 fields are never mass assigned. Known frontend validation and entry UI use the [screen contract](entry-ui.md). No management HTTP endpoints or placeholder pages are added.
 
 Registration passes the validated password and password_confirmation together to
@@ -102,28 +104,36 @@ value enters Audit or response projections.
 | Module setting              | Default   | Bounds/meaning                  |
 | --------------------------- | --------- | ------------------------------- |
 | public_registration         | false     | Explicit opt-in                 |
-| registration_approval       | automatic | automatic or administrator      |
+| registration_activation     | automatic | automatic or administrator      |
 | invitation_minutes          | 1440      | 5–10080 minutes                 |
 | verification_minutes        | 60        | 5–1440 minutes                  |
 | invitation_reminder_minutes | 0         | 0 disables, maximum 10080       |
 | invitation_reminder_count   | 0         | Maximum 10 per invitation chain |
 
 Enabled registration creates a new UUIDv7 identity, native hash and synchronous Audit
-atomically. Approval and verification stay independent. An approved registration
-queues primary-email verification when required; a pending approval sends no actionable message.
+atomically. Activation and verification stay independent. Automatic registration
+creates an active account and queues primary-email verification when required.
+Administrator-controlled registration creates an inactive account and sends no
+actionable message. Ordinary account activation subsequently allows login into
+the required verification flow; the user may request verification there.
 It issues no authenticated session. A uniqueness conflict returns the same 202
 accepted payload as a creation; PostgreSQL claims arbitrate races. Disabled
 registration returns 403 `registration_unavailable` independently of existence.
 Administrator creation still uses the existing guarded AuthLifecycle contract and
-common NewIdentity invariants; it creates no password.
+common NewIdentity invariants; optional IdentitySetup adds the
+[configured creation contract](administration.md#pages-and-independent-actions).
 
 Resolve `AuthInvitations` 1.0.0 through ModuleApis. `invite(publicId, expectedVersion)`
 issues or manually resends for an eligible passwordless identity; resend rotates
 and invalidates prior tokens. `invalidate(publicId, expectedVersion)` revokes pending
 invitations. Both require `runa.auth.invitations.manage`, current availability and
 the neutral authority participant backed by Permissions (denial when integration is unavailable).
-Neither returns a token, email, internal ID or model. Before activation/deactivation,
-expiry, locks, deletion or pending approval, issuance/delivery/consumption refuses.
+Neither returns a token, email, internal ID or model. Inactive and future-activation
+accounts can receive and accept an invitation immediately, set their first
+password and verify their email while waiting for activation. This never activates
+the account or authenticates it. Reached deactivation, deletion, security/attempt
+locks, operator recovery and token expiry/invalidation still refuse issuance,
+delivery and consumption. Explicit lifecycle changes retain generation invalidation.
 
 Random 256-bit secrets use SHA-256 equality hashes; only a pending private delivery
 copy is encrypted with the externally managed Laravel key. Never serialize these
@@ -133,7 +143,8 @@ before token, checks expiry/recipient/security generation/current eligibility an
 consumes it atomically with password setup or verification and Audit. Concurrent
 replay loses; failure rolls everything back. Initial password setup clears the
 password-change restriction and revokes older generations; completion never logs
-in or bypasses required 2FA. There is no administrator-visible temporary password.
+in or bypasses required 2FA. Stored passwords are never exposed to administrators; an optional administrator-
+supplied initial password is write-only through configured creation.
 
 ## Queue, mail and reminders
 
@@ -163,7 +174,8 @@ When enabled, it considers up to 100 sent pending invitations and rechecks curre
 policy, count, expiry, identity/recipient/security generation under the same lock
 order. Rotation consumes one reminder allowance and makes old actionable links
 invalid; repeated work sees the invalidated source token. It never reminds deleted,
-inactive, otherwise blocked, consumed, invalidated or expired invitations. Manual
+otherwise security-blocked, consumed, invalidated or expired invitations. Inactive
+and future-activation accounts remain eligible. Manual
 resend starts a new chain. No reminder is enabled by default.
 
 Full concurrency, cookie/browser, module update/acquisition, production image and

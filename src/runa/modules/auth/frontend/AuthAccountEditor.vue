@@ -10,11 +10,10 @@ import {
   Form,
   FormNotifications,
   FormConflict,
-  RadioGroup,
   TextInput,
 } from '@/runa/ui';
 import type { AccountSection, useAuthAccount } from './useAuthAccount';
-import AuthAccountProof from './AuthAccountProof.vue';
+import { AuthIdentityFields } from '@/runa/auth';
 import AuthAvatarCropper from './AuthAvatarCropper.vue';
 import AuthAccountSecurity from './AuthAccountSecurity.vue';
 import AuthSecondaryEmails from './AuthSecondaryEmails.vue';
@@ -49,9 +48,35 @@ const {
   resolveAvatar,
 } = props.account;
 const detailForm = ref<{ focusInvalid: () => void }>();
+const canEditDetails = computed(() =>
+  ['own_name_editable', 'own_login_editable', 'own_email_editable'].some(has),
+);
+const hasRightColumn = computed(
+  () =>
+    has('avatar_enabled') ||
+    props.account.security.value?.totp_enabled ||
+    props.account.security.value?.email_otp_enabled ||
+    props.account.security.value?.trusted_devices_enabled,
+);
+watch(canEditDetails, (allowed) => {
+  if (!allowed)
+    for (const key of Object.keys(sectionFields.details))
+      sectionFields.details[key] = '';
+});
 const avatarForm = ref<{ focusInvalid: () => void }>();
 const passwordForm = ref<{ focusInvalid: () => void }>();
 const originals = ref<readonly File[]>([]);
+watch(canAvatar, (allowed) => {
+  if (!allowed) {
+    originals.value = [];
+    files.value = [];
+    removeAvatar.value = false;
+    cropOpen.value = false;
+    removeOpen.value = false;
+    for (const key of Object.keys(sectionFields.avatar))
+      sectionFields.avatar[key] = '';
+  }
+});
 const cropOpen = ref(false);
 const removeOpen = ref(false);
 const secondaryModalOpen = ref(false);
@@ -97,14 +122,6 @@ const cropper = ref<InstanceType<typeof AuthAvatarCropper>>();
 const cropReady = ref(false),
   cropError = ref(''),
   cropping = ref(false);
-const identityFields = computed(() => [
-  ...(has('own_name_editable')
-    ? naming.value === 'single'
-      ? ['name']
-      : ['first_name', 'surname']
-    : []),
-  ...(has('own_login_editable') ? ['login'] : []),
-]);
 const labels = computed<Record<string, string>>(() => ({
   name: text('Nazwa wyświetlana', 'Display name'),
   first_name: text('Imię', 'First name'),
@@ -149,6 +166,7 @@ async function applyCrop() {
   cropping.value = true;
   try {
     const cropped = await cropper.value.crop();
+    if (!canAvatar.value || !cropOpen.value) return;
     files.value = [cropped];
     clearPreview();
     previewUrl.value = URL.createObjectURL(cropped);
@@ -172,7 +190,8 @@ function closeCrop(value: boolean) {
 <template>
   <div
     v-if="profile"
-    class="grid min-w-0 items-start gap-6 xl:grid-cols-2"
+    class="grid min-w-0 items-start gap-6"
+    :class="hasRightColumn ? 'xl:grid-cols-2' : undefined"
     :inert="codes.length > 0 || undefined"
   >
     <div class="min-w-0 space-y-6">
@@ -181,6 +200,7 @@ function closeCrop(value: boolean) {
           ><h3>{{ text('Dane konta', 'Account details') }}</h3></template
         >
         <Form
+          v-if="canEditDetails"
           ref="detailForm"
           data-account-section="details"
           :label="text('Dane konta', 'Account details')"
@@ -203,36 +223,37 @@ function closeCrop(value: boolean) {
             @accept="resolveDetails()"
             @keep="resolveDetails(true)"
           />
-          <RadioGroup
-            v-if="has('own_name_editable')"
-            v-model="naming"
-            :label="text('Sposób prezentacji nazwy', 'Name format')"
-            :options="[
-              { value: 'single', label: text('Jedna nazwa', 'Single name') },
-              {
-                value: 'full',
-                label: text('Imię i nazwisko', 'First name and surname'),
-              },
-            ]"
+          <AuthIdentityFields
+            v-if="
+              has('own_name_editable') ||
+              (has('own_login_editable') &&
+                options?.identifier_mode !== 'email')
+            "
+            :locale="locale"
+            :naming="naming"
+            :columns="
+              naming === 'single' &&
+              (!has('own_login_editable') ||
+                options?.identifier_mode === 'email')
+                ? 1
+                : 2
+            "
+            :values="fields"
+            :errors="sectionErrors.details"
+            :show-name="has('own_name_editable')"
+            :show-login="
+              has('own_login_editable') && options?.identifier_mode !== 'email'
+            "
+            :login-required="options?.identifier_mode === 'login'"
+            :disabled="busy"
+            @update:naming="naming = $event"
+            @field="
+              (key, value) => {
+                fields[key] = value ?? '';
+                delete sectionErrors.details[key];
+              }
+            "
           />
-          <div class="grid min-w-0 gap-5 md:grid-cols-2">
-            <TextInput
-              v-for="name in identityFields"
-              :key="name"
-              :model-value="fields[name] ?? ''"
-              :name="name"
-              :label="labels[name] ?? name"
-              :required="
-                name !== 'login' || options?.identifier_mode === 'login'
-              "
-              :error="sectionErrors.details[name] ?? ''"
-              autocomplete="off"
-              @update:model-value="
-                fields[name] = $event ?? '';
-                delete sectionErrors.details[name];
-              "
-            />
-          </div>
           <p
             v-if="!has('own_name_editable')"
             class="text-sm [overflow-wrap:anywhere]"
@@ -240,16 +261,16 @@ function closeCrop(value: boolean) {
             {{ profile.display_name }}
           </p>
           <TextInput
+            v-if="has('own_email_editable')"
             :model-value="fields.email ?? ''"
             name="email"
             type="email"
             autocomplete="email"
             :label="text('Adres e-mail', 'Email address')"
-            :readonly="!has('own_email_editable')"
             required
             :error="sectionErrors.details.email ?? ''"
             :helper="
-              profile.email_verified
+              profile.email_verified || !has('email_verification_enabled')
                 ? ''
                 : text('Adres niepotwierdzony.', 'Email not verified.')
             "
@@ -258,33 +279,45 @@ function closeCrop(value: boolean) {
               delete sectionErrors.details.email;
             "
           />
-          <Button
-            v-if="!profile.email_verified"
-            :busy="busy"
-            @click="sendVerification"
-            >{{
-              text('Wyślij wiadomość weryfikacyjną', 'Send verification email')
-            }}</Button
-          >
-          <AuthAccountProof
-            v-if="has('own_email_editable') && fields.email !== profile.email"
-            :account="account"
-            section="details"
-          />
+          <p v-else class="text-sm [overflow-wrap:anywhere]">
+            {{ profile.email }}
+          </p>
           <template #actions
-            ><Button
-              type="submit"
-              variant="outline"
-              :busy="busy"
-              :disabled="
-                !has('own_name_editable') &&
-                !has('own_login_editable') &&
-                !has('own_email_editable')
-              "
-              >{{ text('Zapisz dane', 'Save details') }}</Button
-            ></template
+            ><Button intent="commit" type="submit" :busy="busy">{{
+              text('Zapisz dane', 'Save details')
+            }}</Button></template
           >
         </Form>
+        <dl
+          v-else
+          class="space-y-3 text-sm [overflow-wrap:anywhere]"
+          data-account-readonly-details
+        >
+          <div>
+            <dt class="font-semibold">{{ text('Nazwa', 'Name') }}</dt>
+            <dd>{{ profile.display_name }}</dd>
+          </div>
+          <div>
+            <dt class="font-semibold">
+              {{ text('Adres e-mail', 'Email address') }}
+            </dt>
+            <dd>{{ profile.email }}</dd>
+          </div>
+          <div v-if="profile.login">
+            <dt class="font-semibold">Login</dt>
+            <dd>{{ profile.login }}</dd>
+          </div>
+        </dl>
+        <Button
+          v-if="has('email_verification_enabled') && !profile.email_verified"
+          intent="commit"
+          class="mt-5"
+          :busy="busy"
+          @click="sendVerification"
+          >{{
+            text('Wyślij wiadomość weryfikacyjną', 'Send verification email')
+          }}</Button
+        >
         <AuthSecondaryEmails
           :account="account"
           @feedback-modal="secondaryModalOpen = $event"
@@ -319,21 +352,21 @@ function closeCrop(value: boolean) {
               "
             />
           </div>
-          <AuthAccountProof :account="account" section="password" />
           <template #actions
-            ><Button type="submit" variant="outline" :busy="busy">{{
+            ><Button intent="commit" type="submit" :busy="busy">{{
               text('Zapisz hasło', 'Save password')
             }}</Button></template
           >
         </Form>
       </Card>
     </div>
-    <div class="min-w-0 space-y-6">
+    <div v-if="hasRightColumn" class="min-w-0 space-y-6">
       <Card v-if="has('avatar_enabled')">
         <template #header
           ><h3>{{ text('Zdjęcie profilowe', 'Profile image') }}</h3></template
         >
         <Form
+          v-if="canAvatar"
           ref="avatarForm"
           data-account-section="avatar"
           :label="text('Zdjęcie profilowe', 'Profile image')"
@@ -410,28 +443,40 @@ function closeCrop(value: boolean) {
             />
             <Button
               v-if="originals[0] && files.length"
+              intent="commit"
               @click="cropOpen = true"
               >{{ text('Popraw kadr', 'Adjust crop') }}</Button
             >
           </template>
           <template #actions
             ><Button
+              intent="commit"
               type="submit"
-              variant="outline"
               :busy="busy || cropping"
-              :disabled="!canAvatar || (!files.length && !removeAvatar)"
+              :disabled="!files.length && !removeAvatar"
               >{{ text('Zapisz zdjęcie', 'Save image') }}</Button
             >
             <Button
               v-if="canAvatar && profile.has_avatar"
+              intent="danger"
               variant="outline"
-              tone="danger"
               :disabled="busy || cropping || originals.length > 0"
               @click="removeOpen = true"
               >{{ text('Usuń avatar', 'Remove avatar') }}</Button
             ></template
           >
         </Form>
+        <div v-else class="flex justify-center" data-account-readonly-avatar>
+          <Avatar
+            :src="
+              profile.has_avatar
+                ? `/api/runa/auth/profile/avatar?v=${profile.version}`
+                : ''
+            "
+            :initials="profile.initials"
+            :size="80"
+          />
+        </div>
       </Card>
       <AuthAccountSecurity
         :account="account"
@@ -443,7 +488,7 @@ function closeCrop(value: boolean) {
     v-model="removeOpen"
     :title="text('Usunąć avatar?', 'Remove avatar?')"
     :confirm-label="text('Usuń avatar', 'Remove avatar')"
-    confirm-tone="danger"
+    confirm-intent="danger"
     :locale="locale"
     :busy="busy"
     @confirm="confirmRemoval"
@@ -482,9 +527,13 @@ function closeCrop(value: boolean) {
       :locale="locale"
     >
       <template #actions>
-        <Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button>
+        <Button
+          v-if="failure === 'csrf'"
+          intent="inspect"
+          :busy="busy"
+          @click="account.refreshCsrf"
+          >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
+        >
       </template>
     </FormNotifications>
   </ConfirmDialog>
@@ -507,11 +556,11 @@ function closeCrop(value: boolean) {
       @ready="cropReady = $event"
     />
     <template #footer>
-      <Button :disabled="cropping" @click="closeCrop(false)">{{
+      <Button intent="cancel" :disabled="cropping" @click="closeCrop(false)">{{
         text('Anuluj', 'Cancel')
       }}</Button>
       <Button
-        variant="outline"
+        intent="commit"
         :busy="cropping"
         :disabled="!cropReady"
         @click="applyCrop"

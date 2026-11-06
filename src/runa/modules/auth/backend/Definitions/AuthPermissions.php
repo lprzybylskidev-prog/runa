@@ -14,6 +14,11 @@ final class AuthPermissions implements ManagementEntityProvider
     public function permissions(): array
     {
         return [
+            new ManagementPermission('users.read', ['pl' => 'Odczyt katalogu i cyklu życia kont', 'en' => 'Read user directory and lifecycle'], ['pl' => 'Odczyt katalogu i cyklu życia kont.', 'en' => 'Read user directory and lifecycle.']),
+            new ManagementPermission('users.deleted.read', ['pl' => 'Odczyt usuniętych kont', 'en' => 'Read deleted accounts'], ['pl' => 'Odczyt usuniętych kont.', 'en' => 'Read deleted accounts.']),
+            new ManagementPermission('profiles.read', ['pl' => 'Odczyt profili administracyjnych', 'en' => 'Read administrative profiles'], ['pl' => 'Odczyt profili administracyjnych.', 'en' => 'Read administrative profiles.']),
+            new ManagementPermission('emails.read', ['pl' => 'Odczyt głównych adresów e-mail', 'en' => 'Read primary emails'], ['pl' => 'Odczyt głównych adresów e-mail.', 'en' => 'Read primary emails.']),
+            new ManagementPermission('secondary.read', ['pl' => 'Odczyt dodatkowych adresów e-mail', 'en' => 'Read secondary emails'], ['pl' => 'Odczyt dodatkowych adresów e-mail.', 'en' => 'Read secondary emails.']),
             new ManagementPermission('trust.manage', ['pl' => 'Zarządzanie zaufaniem', 'en' => 'Manage trusted devices'], ['pl' => 'Zarządzanie zaufanymi urządzeniami.', 'en' => 'Manage trusted devices.']),
             new ManagementPermission('secondary.manage', ['pl' => 'Zarządzanie adresami dodatkowymi', 'en' => 'Manage secondary emails'], ['pl' => 'Zarządzanie dodatkowymi adresami.', 'en' => 'Manage secondary emails.']),
             new ManagementPermission('avatars.manage', ['pl' => 'Zarządzanie awatarami', 'en' => 'Manage avatars'], ['pl' => 'Zarządzanie awatarami.', 'en' => 'Manage avatars.']),
@@ -32,6 +37,8 @@ final class AuthPermissions implements ManagementEntityProvider
             new ManagementPermission('emails.reverify', ['pl' => 'Wymaganie weryfikacji adresu', 'en' => 'Require email verification'], ['pl' => 'Wymaganie weryfikacji adresu.', 'en' => 'Require email verification.']),
             new ManagementPermission('addresses.read', ['pl' => 'Odczyt adresów odbiorców', 'en' => 'Read recipient addresses'], ['pl' => 'Odczyt adresów odbiorców.', 'en' => 'Read recipient addresses.']),
             new ManagementPermission('delivery.resolve', ['pl' => 'Rozstrzyganie dostarczania', 'en' => 'Resolve delivery'], ['pl' => 'Rozstrzyganie dostarczania.', 'en' => 'Resolve delivery.']),
+            new ManagementPermission('preferences.read', ['pl' => 'Odczyt preferencji użytkowników', 'en' => 'Read user preferences'], ['pl' => 'Odczyt preferencji wybranego konta.', 'en' => 'Read selected account preferences.']),
+            new ManagementPermission('preferences.manage', ['pl' => 'Edycja preferencji użytkowników', 'en' => 'Edit user preferences'], ['pl' => 'Zmiana preferencji i powiadomień wybranego konta.', 'en' => 'Edit selected account presentation and notification preferences.']),
             new ManagementPermission('preferences.reset', ['pl' => 'Resetowanie preferencji', 'en' => 'Reset preferences'], ['pl' => 'Resetowanie preferencji.', 'en' => 'Reset preferences.']),
             new ManagementPermission('policy.read', ['pl' => 'Odczyt polityki', 'en' => 'Read policy'], ['pl' => 'Odczyt polityki.', 'en' => 'Read policy.']),
             new ManagementPermission('policy.write', ['pl' => 'Zmiana polityki', 'en' => 'Write policy'], ['pl' => 'Zmiana polityki.', 'en' => 'Write policy.']),
@@ -49,23 +56,22 @@ final class AuthPermissions implements ManagementEntityProvider
                     $field('public_id', 'uuid', filter: true), $field('version', 'integer'),
                     new ManagementField('name', 'text', ['pl' => 'Nazwa', 'en' => 'Name'], ['pl' => 'Nazwa wyświetlana.', 'en' => 'Display name.'], writable: true, required: true, maxLength: 160),
                     new ManagementField('email', 'text', ['pl' => 'Adres główny', 'en' => 'Primary email'], ['pl' => 'Nowe konto; zmiana przez osobną operację.', 'en' => 'New identity only; changes require the dedicated email operation.'], writable: true, sensitive: true, required: true, maxLength: 254),
-                    $field('active', 'boolean', true, true), $field('approved', 'boolean', true, true),
-                    new ManagementField('operation', 'dictionary', ['pl' => 'Operacja', 'en' => 'Operation'], ['pl' => 'Jawna zmiana cyklu życia.', 'en' => 'Explicit lifecycle transition.'], writable: true, choices: ['activate', 'deactivate', 'approve', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_expiry', 'set_attempt_lock', 'set_security_lock', 'require_password_change']),
+                    $field('active', 'boolean', true, true),
+                    new ManagementField('operation', 'dictionary', ['pl' => 'Operacja', 'en' => 'Operation'], ['pl' => 'Jawna zmiana cyklu życia.', 'en' => 'Explicit lifecycle transition.'], writable: true, choices: ['activate', 'deactivate', 'delete', 'restore', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change']),
                     $field('at', 'datetime', true), $field('enabled', 'boolean', true),
                 ], [
-                    new ManagementOperation(new ApiOperation('identity.create', 'users.create'), ['name', 'email', 'active', 'approved'], revisionRequired: false),
+                    new ManagementOperation(new ApiOperation('identity.create', 'users.create'), ['name', 'email', 'active'], revisionRequired: false),
                     new ManagementOperation(new ApiOperation('identity.change', 'users.manage'), ['operation', 'at', 'enabled']),
                 ]),
             new ManagementEntity('session', 'sessions.manage', ['pl' => 'Sesje', 'en' => 'Sessions'],
                 ['pl' => 'Jawny wybór Permissions i atomowe unieważnienie; limit 100 kont.', 'en' => 'Explicit Permissions selection and atomic revocation; at most 100 accounts.'], [
                     new ManagementField('user_public_id', 'uuid', ['pl' => 'Konta', 'en' => 'Accounts'], ['pl' => 'Wybrane konta lub jawny tryb all.', 'en' => 'Selected accounts or explicit all mode.'], writable: true, referenceModule: 'runa.auth', referenceOperation: 'identity.read', multiple: true),
                     $field('all', 'boolean', true), $field('trust', 'boolean', true),
-                ], [new ManagementOperation(new ApiOperation('sessions.bulk_revoke', 'sessions.bulk_revoke'), ['user_public_id', 'all', 'trust'], 'both', previewRequired: true, bulk: true)]),
+                ], [new ManagementOperation(new ApiOperation('sessions.bulk_revoke', 'sessions.bulk_revoke'), ['user_public_id', 'all', 'trust'], previewRequired: true, bulk: true)]),
             new ManagementEntity('policy', 'policy.read', ['pl' => 'Polityka', 'en' => 'Policy'],
-                ['pl' => 'Bieżące ustawienia modułu i niezmienna historia; podgląd przed publikacją.', 'en' => 'Current ModuleSettings and immutable history; preview before publication.'], [
+                ['pl' => 'Bieżące ustawienia modułu i nazwane migawki; podgląd przed publikacją.', 'en' => 'Current module settings and named snapshots; preview before publication.'], [
                     $field('revision', 'integer', true), $field('generation', 'integer', true),
-                ], [new ManagementOperation(new ApiOperation('policy.publish', 'policy.write'), ['revision', 'generation'], 'both', previewRequired: true),
-                    new ManagementOperation(new ApiOperation('policy.restore', 'policy.write'), ['revision', 'generation'], 'both', previewRequired: true)]),
+                ], [new ManagementOperation(new ApiOperation('policy.publish', 'policy.write'), ['revision', 'generation'], 'password', previewRequired: true)]),
         ];
     }
 

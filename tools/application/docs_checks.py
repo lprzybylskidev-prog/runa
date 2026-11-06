@@ -84,7 +84,7 @@ def links(
                     )
 
 
-def validate(root: Path) -> None:
+def validate(root: Path, *, owner_guidance: bool = False) -> None:
     root = Path(root).resolve()
     for name in REQUIRED:
         path = root / name
@@ -126,7 +126,21 @@ def validate(root: Path) -> None:
             # Closed application records are immutable historical evidence.
             if not path.relative_to(root).as_posix().startswith("docs/app/roadmaps/closed/"):
                 paths.append(path)
-    links(root, paths)
+    owner_paths = (
+        [
+            path
+            for path in paths
+            if path == root / "AGENTS.md" or path.is_relative_to(root / ".agents")
+        ]
+        if owner_guidance
+        else []
+    )
+    if owner_guidance and (
+        receipt.exists() or receipt.is_symlink() or not (root / "docs/runa/maintainer").is_dir()
+    ):
+        raise ValueError("Owner guidance validation requires a receipt-free owner checkout.")
+    links(root, [path for path in paths if path not in owner_paths])
+    links(root, owner_paths, public=False)
     # Selected-scope application closure is checked on its owning branch. Existing
     # historical releases and unrelated branches retain immutable documentation.
     for path in (root / "docs/app/roadmaps/closed").glob("*.md"):

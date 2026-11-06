@@ -42,6 +42,13 @@ withDefaults(
       <rect x="9" y="10" width="6" height="5" rx="1" />
       <path d="M10 10V8a2 2 0 0 1 4 0v2" />
     </g>
+    <g v-if="name === 'refresh'">
+      <path d="M20 7v5h-5M4 17v-5h5" />
+      <path d="M6.1 7a7 7 0 0 1 11.6-1L20 9M4 15l2.3 3A7 7 0 0 0 17.9 17" />
+    </g>
+    <g v-if="name === 'filter-off'">
+      <path d="m3 3 18 18M10 3h11l-7 8v3M6 6l4 5v8l4 2v-3" />
+    </g>
     <g v-if="name === 'logout'">
       <path d="M9 5H5v14h4M13 8l4 4-4 4M9 12h11" />
     </g>

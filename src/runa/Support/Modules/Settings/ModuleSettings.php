@@ -20,10 +20,13 @@ use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Settings\NoSettingsParticipation;
 use Runa\ModuleFramework\Settings\SettingsDefinitions;
 use Runa\Support\Modules\ModuleRecord;
+use Runa\Support\Modules\RegistrySnapshot;
 use RuntimeException;
 use Throwable;
+use WeakMap;
 
 /** Trusted management service. No authorization fiction, HTTP writes or public secret projection.
+ *
  * @phpstan-type State object{settings_values: ?string, settings_revision: int}
  * @phpstan-type Operation object{public_id: string, intent: string, target: string, generation: int, payload: string, status: string, publication_generation: ?int}
  * @phpstan-type Payload array{old: ?string, candidate: string, revision: int, manifest: string, schema: string, handler: string, application: string, changes: array<string, array<string, mixed>>, actor: ?array{kind: string, id: string}, occurred_at: string}
@@ -34,12 +37,19 @@ final class ModuleSettings
 
     private ?int $runnerPid = null;
 
+    /** Validated runtime data only, keyed by the registry's locked transaction identity.
+     * @var WeakMap<RegistrySnapshot, array<string, array{definitions:array<string,SettingDefinition>,values:array<string,mixed>,revision:int,provider:class-string,handler:class-string}>>
+     */
+    private WeakMap $reads;
+
     public function __construct(
         private readonly Connection $connection, private readonly ModuleRegistry $registry,
         private readonly SettingsDefinitions $definitions, private readonly Encrypter $encrypter,
         private readonly SettingsObserver $observer,
         private readonly SettingsParticipant $participant = new NoSettingsParticipation,
-    ) {}
+    ) {
+        $this->reads = new WeakMap;
+    }
 
     /** Add source defaults during a transactional reserved module upgrade, preserving existing values.
      * Existing immediate definitions only: changed/removed keys need a separately designed migration.
@@ -89,20 +99,15 @@ final class ModuleSettings
      */
     public function read(string $module): array
     {
-        return $this->connection->transaction(function () use ($module): array {
-            $this->connection->table('shared.module_registry_state')->where('id', 1)->sharedLock()->first();
+        return $this->reading(function () use ($module): array {
             $snapshot = $this->registry->snapshot();
-            $record = $snapshot->modules[$module] ?? throw new RuntimeException('Unknown module.');
-            [$definitions, $provider] = $this->definitions->for($record);
-            $state = $this->state($module);
-            $values = $this->values($state->settings_values, $definitions);
-            $this->definitions->validate($definitions, $provider, $values);
+            ['definitions' => $definitions, 'values' => $values, 'revision' => $revision] = $this->currentValues($snapshot, $module);
             $settings = [];
             foreach ($definitions as $key => $definition) {
                 $settings[$key] = ['definition' => $definition, ...($definition->sensitive ? ['set' => $values[$key] !== null] : ['value' => $values[$key]])];
             }
 
-            return ['generation' => $snapshot->generation, 'revision' => $state->settings_revision, 'settings' => $settings];
+            return ['generation' => $snapshot->generation, 'revision' => $revision, 'settings' => $settings];
         });
     }
 
@@ -111,18 +116,56 @@ final class ModuleSettings
      */
     public function value(string $module, string $key): mixed
     {
-        return $this->connection->transaction(function () use ($module, $key): mixed {
-            $this->connection->table('shared.module_registry_state')->where('id', 1)->sharedLock()->first();
-            $record = $this->registry->snapshot()->modules[$module] ?? throw new RuntimeException('Unknown module.');
-            [$definitions, $provider] = $this->definitions->for($record);
+        return $this->reading(function () use ($module, $key): mixed {
+            ['definitions' => $definitions, 'values' => $values] = $this->currentValues($this->registry->snapshot(), $module);
             if (! isset($definitions[$key])) {
                 throw new RuntimeException('Unknown setting.');
             }
-            $values = $this->values($this->state($module)->settings_values, $definitions);
-            $this->definitions->validate($definitions, $provider, $values);
 
             return $values[$key];
         });
+    }
+
+    /** Anchor the read lock at the caller's level before entering a savepoint.
+     * Keep savepoint rollback isolation for failing provider/database reads.
+     *
+     *
+     * @template T
+     *
+     * @param  Closure():T  $read
+     * @return T
+     */
+    private function reading(Closure $read): mixed
+    {
+        if ($this->connection->transactionLevel() > 0) {
+            $this->registry->snapshot();
+        }
+
+        return $this->connection->transaction($read);
+    }
+
+    /** The registry lock blocks concurrent settings publication. Writes, rollback,
+     * replacement transactions and reconnect produce a new snapshot cache key.
+     *
+     * @return array{definitions:array<string,SettingDefinition>,values:array<string,mixed>,revision:int,provider:class-string,handler:class-string}
+     */
+    private function currentValues(RegistrySnapshot $snapshot, string $module): array
+    {
+        $record = $snapshot->modules[$module] ?? throw new RuntimeException('Unknown module.');
+        $cached = $this->reads[$snapshot][$module] ?? null;
+        if ($cached !== null) {
+            $this->definitions->assertCurrentSource($record, $cached['provider'], $cached['handler']);
+
+            return $cached;
+        }
+        [$definitions, $provider, $handler] = $this->definitions->for($record);
+        $state = $this->state($module);
+        $values = $this->values($state->settings_values, $definitions);
+        $this->definitions->validate($definitions, $provider, $values);
+        $result = ['definitions' => $definitions, 'values' => $values, 'revision' => $state->settings_revision, 'provider' => $provider::class, 'handler' => $handler];
+        $this->reads[$snapshot] = [...($this->reads[$snapshot] ?? []), $module => $result];
+
+        return $result;
     }
 
     /** Typed owning-module access; retains the same guard and declaration validation as value(). */
@@ -250,7 +293,8 @@ final class ModuleSettings
         return new TransitionResult($id, in_array($row->status, ['preparing', 'compensating'], true) ? 'pending' : $row->status, $row->publication_generation, [$row->target => $row->status === 'recovery_required' ? 'settings_compensation_required' : 'settings_'.$row->status]);
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function rollback(object $row, array $payload): TransitionResult
@@ -285,7 +329,8 @@ final class ModuleSettings
         return $this->status($row->public_id);
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function current(object $row, array $payload, bool $rollback = false): ModuleRecord
@@ -320,7 +365,8 @@ final class ModuleSettings
         });
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function context(object $row, array $payload): SettingsContext
@@ -330,7 +376,8 @@ final class ModuleSettings
         return new SettingsContext($row->public_id, $row->target, $payload['revision'], $payload['application'], $payload['changes'], $actor === null ? null : new SettingsActor($actor['kind'], $actor['id']), $payload['occurred_at']);
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function notify(object $row, array $payload, string $outcome): void
@@ -354,7 +401,8 @@ final class ModuleSettings
         return $row ?? throw new RuntimeException('Unknown module settings.');
     }
 
-    /** @param array<string, SettingDefinition> $definitions
+    /**
+     * @param  array<string, SettingDefinition>  $definitions
      * @return array<string, mixed>
      */
     private function values(?string $encrypted, array $definitions): array
@@ -382,7 +430,8 @@ final class ModuleSettings
         return $row ?? throw new RuntimeException('Unknown settings operation.');
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @return Payload
      */
     private function payload(object $row): array

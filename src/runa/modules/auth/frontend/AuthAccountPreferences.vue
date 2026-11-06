@@ -7,11 +7,12 @@ import {
   Form,
   FormNotifications,
   FormConflict,
-  RadioGroup,
-  Select,
   Skeleton,
-  Switch,
 } from '@/runa/ui';
+import {
+  AuthDisplayPreferenceFields,
+  AuthEmailPreferenceFields,
+} from '@/runa/auth';
 import type { useDisplayPreferences } from '../../../resources/js/composables/useDisplayPreferences';
 import type { useAuthAccount } from './useAuthAccount';
 type Choice = ReturnType<typeof useAuthAccount>['delivery']['value'][number];
@@ -133,6 +134,13 @@ function keep(choice: Choice) {
   if (failedKey.value === keyOf(choice) && failure.value === 'conflict')
     failure.value = '';
 }
+function setEnabled(choice: Choice, enabled: boolean) {
+  const draft = drafts[keyOf(choice)];
+  if (!draft) return;
+  draft.enabled = enabled;
+  if (!enabled && !draft.recipients.length) draft.recipients = ['primary'];
+  if (!enabled) delete recipientErrors[keyOf(choice)];
+}
 async function save(choice: Choice) {
   if (busy.value) return;
   const key = keyOf(choice),
@@ -204,7 +212,7 @@ defineExpose({ beginReset, reload });
 <template>
   <div
     v-if="profile"
-    class="grid min-w-0 items-start gap-6"
+    class="grid min-w-0 items-start gap-4"
     data-account-preferences
   >
     <Card data-preferences-display>
@@ -213,29 +221,14 @@ defineExpose({ beginReset, reload });
           {{ text('Wygląd i język', 'Appearance and language') }}
         </h3></template
       >
-      <fieldset :disabled="busy" class="min-w-0 space-y-6">
-        <RadioGroup
-          :model-value="display.locale.value"
-          name="preference-language"
-          :label="text('Język interfejsu', 'Interface language')"
-          :options="[
-            { value: 'pl', label: 'Polski' },
-            { value: 'en', label: 'English' },
-          ]"
-          @update:model-value="selectDisplay('language', $event)"
-        />
-        <RadioGroup
-          :model-value="display.theme.value"
-          name="preference-theme"
-          :label="text('Motyw', 'Theme')"
-          :options="[
-            { value: 'system', label: text('Systemowy', 'System') },
-            { value: 'light', label: text('Jasny', 'Light') },
-            { value: 'dark', label: text('Ciemny', 'Dark') },
-          ]"
-          @update:model-value="selectDisplay('theme', $event)"
-        />
-      </fieldset>
+      <AuthDisplayPreferenceFields
+        :locale="locale"
+        :language="display.locale.value"
+        :theme="display.theme.value"
+        :disabled="busy"
+        @update:language="selectDisplay('language', $event)"
+        @update:theme="selectDisplay('theme', $event)"
+      />
     </Card>
     <Card data-preferences-delivery>
       <template #header
@@ -266,6 +259,8 @@ defineExpose({ beginReset, reload });
           </p>
           <Button
             v-if="failure"
+            intent="inspect"
+            :busy="busy || account.refreshing.value"
             variant="outline"
             :disabled="busy"
             @click="reload()"
@@ -286,7 +281,7 @@ defineExpose({ beginReset, reload });
             :label="choice.names[locale]"
             :dirty="dirty(choice)"
             :busy="busy"
-            class="py-5 first:pt-0 last:pb-0"
+            class="py-3 first:pt-0 last:pb-0"
             :data-delivery-category="choice.key"
             @submit="save(choice)"
           >
@@ -309,34 +304,40 @@ defineExpose({ beginReset, reload });
               @accept="revert(choice)"
               @keep="keep(choice)"
             />
-            <div class="min-w-0 font-semibold [overflow-wrap:anywhere]">
-              <Switch
-                v-model="drafts[keyOf(choice)]!.enabled"
-                :label="choice.names[locale]"
-              />
-            </div>
-            <Select
-              v-model="drafts[keyOf(choice)]!.recipients"
-              :multiple="true"
-              size="sm"
-              :label="text('Wyślij na', 'Send to')"
-              :options="recipientOptions"
+            <AuthEmailPreferenceFields
               :locale="locale"
-              :disabled="!drafts[keyOf(choice)]!.enabled"
+              :label="choice.names[locale]"
+              :enabled="drafts[keyOf(choice)]!.enabled"
+              :recipients="drafts[keyOf(choice)]!.recipients"
+              :recipient-selection="
+                profile?.capabilities.secondary_emails_enabled === true
+              "
+              :options="recipientOptions"
               :error="recipientErrors[keyOf(choice)] ?? ''"
-              @update:model-value="delete recipientErrors[keyOf(choice)]"
+              :disabled="busy"
+              @update:enabled="setEnabled(choice, $event)"
+              @update:recipients="
+                drafts[keyOf(choice)]!.recipients = $event;
+                delete recipientErrors[keyOf(choice)];
+              "
             />
             <template v-if="dirty(choice)" #actions>
-              <Button type="submit" size="sm" variant="outline" :busy="busy">{{
+              <Button intent="commit" type="submit" size="sm" :busy="busy">{{
                 text('Zapisz', 'Save')
               }}</Button>
-              <Button size="sm" :disabled="busy" @click="revert(choice)">{{
-                text('Cofnij zmiany', 'Revert changes')
-              }}</Button>
+              <Button
+                intent="discard"
+                size="sm"
+                :disabled="busy"
+                @click="revert(choice)"
+                >{{ text('Cofnij zmiany', 'Revert changes') }}</Button
+              >
               <Button
                 v-if="
                   failure === 'refresh_failed' && failedKey === keyOf(choice)
                 "
+                intent="inspect"
+                :busy="busy || account.refreshing.value"
                 size="sm"
                 :disabled="busy"
                 @click="reload(keyOf(choice))"
@@ -354,7 +355,7 @@ defineExpose({ beginReset, reload });
       text('Przywrócić ustawienia domyślne?', 'Restore default settings?')
     "
     :confirm-label="text('Przywróć domyślne', 'Restore defaults')"
-    confirm-tone="danger"
+    confirm-intent="discard"
     :locale="locale"
     :busy="busy"
     @update:model-value="closeReset"
@@ -374,11 +375,16 @@ defineExpose({ beginReset, reload });
       :error="failure ? failureText : ''"
       :locale="locale"
       ><template #actions
-        ><Button v-if="failure === 'csrf'" @click="account.refreshCsrf">{{
-          text('Odśwież zabezpieczenie', 'Renew form security')
-        }}</Button
+        ><Button
+          v-if="failure === 'csrf'"
+          intent="inspect"
+          :busy="busy"
+          @click="account.refreshCsrf"
+          >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
         ><Button
           v-if="failure === 'refresh_failed'"
+          intent="inspect"
+          :busy="busy || account.refreshing.value"
           @click="account.refresh()"
           >{{ text('Spróbuj pobrać ponownie', 'Retry loading') }}</Button
         ></template

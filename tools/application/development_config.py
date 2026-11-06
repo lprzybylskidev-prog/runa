@@ -22,13 +22,28 @@ PRESETS = {
     "high": ("20", "16G", "12", "4"),
 }
 KEYS = ("DEV_CPU_LIMIT", "DEV_MEMORY_LIMIT", "TEST_WORKERS", "PLAYWRIGHT_WORKERS")
-ALLOWED = set(KEYS) | {
-    "DEV_PROFILE",
-    "RUNA_UID",
-    "RUNA_GID",
-    "EMBEDDINGS_DEVICE",
-    "EMBEDDINGS_CUDA",
-}
+SEED_KEYS = (
+    "DEV_SEED_MODULES",
+    "DEV_SEED_ADMIN_EMAIL",
+    "DEV_SEED_ADMIN_PASSWORD",
+    "DEV_SEED_AUTH_USERS_COUNT",
+    "DEV_SEED_AUTH_RANDOM",
+    "DEV_SEED_AUTH_SEED",
+    "DEV_SEED_PERMISSIONS_ROLES_COUNT",
+    "DEV_SEED_PERMISSIONS_RANDOM",
+    "DEV_SEED_PERMISSIONS_SEED",
+)
+ALLOWED = (
+    set(KEYS)
+    | {
+        "DEV_PROFILE",
+        "RUNA_UID",
+        "RUNA_GID",
+        "EMBEDDINGS_DEVICE",
+        "EMBEDDINGS_CUDA",
+    }
+    | set(SEED_KEYS)
+)
 
 
 @dataclass(frozen=True)
@@ -54,13 +69,13 @@ class DevelopmentConfig:
             EMBEDDINGS_DEVICE="auto",
             EMBEDDINGS_CUDA="0",
         )
-        if self.local.exists():
-            for line in self.local.read_text().splitlines():
+        if self.local.exists() or self.local.is_symlink():
+            for line in self.private_environment_text(self.local).splitlines():
                 if not line.strip() or line.lstrip().startswith("#"):
                     continue
                 key, sep, value = line.partition("=")
                 if not sep or key not in ALLOWED:
-                    raise ValueError(f"Unsupported local profile setting: {key}")
+                    raise ValueError("Unsupported local development setting.")
                 values[key] = value
         self.validate(values)
         return values
@@ -85,20 +100,26 @@ class DevelopmentConfig:
 
     def persist(self, values: Mapping[str, str]) -> None:
         self.validate(values)
-        self.local.write_text(
-            "".join(
-                f"{key}={values[key]}\n"
-                for key in (
-                    "DEV_PROFILE",
-                    *KEYS,
-                    "RUNA_UID",
-                    "RUNA_GID",
-                    "EMBEDDINGS_DEVICE",
-                    "EMBEDDINGS_CUDA",
+        if self.local.exists() or self.local.is_symlink():
+            self.private_environment_text(self.local)
+        descriptor = os.open(self.local, os.O_WRONLY | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+        with os.fdopen(descriptor, "w") as stream:
+            os.fchmod(stream.fileno(), 0o600)
+            stream.truncate()
+            stream.write(
+                "".join(
+                    f"{key}={values[key]}\n"
+                    for key in (
+                        "DEV_PROFILE",
+                        *KEYS,
+                        "RUNA_UID",
+                        "RUNA_GID",
+                        "EMBEDDINGS_DEVICE",
+                        "EMBEDDINGS_CUDA",
+                        *(key for key in SEED_KEYS if key in values),
+                    )
                 )
             )
-        )
-        self.local.chmod(0o600)
         # VS Code invokes Compose itself, so it needs the same resolved settings.
         service = {
             "cpus": float(values["DEV_CPU_LIMIT"]),
@@ -231,7 +252,7 @@ class DevelopmentConfig:
             else "Embeddings: CPU (CUDA disabled or unavailable)."
         )
 
-    def private_environment(self, path: Path) -> dict[str, str]:
+    def private_environment_text(self, path: Path) -> str:
         """Read local generated secrets without exposing values in diagnostics."""
         import stat
 
@@ -253,6 +274,10 @@ class DevelopmentConfig:
             text = stream.read(32769)
         if len(text) > 32768:
             raise ValueError("Development environment file exceeds supported size.")
+        return text
+
+    def private_environment(self, path: Path) -> dict[str, str]:
+        text = self.private_environment_text(path)
         return dict(
             line.split("=", 1)
             for line in text.splitlines()
@@ -260,6 +285,7 @@ class DevelopmentConfig:
         )
 
     def environment_files(self) -> None:
+        values = self.load()
         # A dangling link reports exists=False; reject it before any secret creation.
         for name in (".env", ".env.dev.database", ".env.testing"):
             path = self.workspace.root / name
@@ -316,3 +342,25 @@ class DevelopmentConfig:
             raise ValueError(
                 "Testing and database initialization credentials differ. Preserve files and reconcile the existing testing role explicitly; passwords are never silently rotated."
             )
+        # Preserve dotenv syntax verbatim: only explicitly configured local seed
+        # entries override Laravel's .env. No Docker env, secret argv or seeding.
+        seeds = {key: values[key] for key in SEED_KEYS if key in values}
+        if seeds:
+            original = self.private_environment_text(env)
+            lines = original.splitlines(keepends=True)
+            remaining = dict(seeds)
+            updated: list[str] = []
+            for line in lines:
+                key = line.partition("=")[0]
+                if key in seeds:
+                    if key in remaining:
+                        updated.append(f"{key}={remaining.pop(key)}\n")
+                else:
+                    updated.append(line)
+            content = "".join(updated)
+            if remaining:
+                if content and not content.endswith("\n"):
+                    content += "\n"
+                content += "".join(f"{key}={value}\n" for key, value in remaining.items())
+            if content != original:
+                env.write_text(content)

@@ -8,6 +8,8 @@ export type IconName =
   | 'file-type-pdf'
   | 'printer'
   | 'adjustments-horizontal'
+  | 'refresh'
+  | 'filter-off'
   | 'logout'
   | 'clipboard-list'
   | 'key'

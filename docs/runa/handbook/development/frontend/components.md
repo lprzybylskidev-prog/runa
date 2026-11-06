@@ -2,17 +2,36 @@
 
 Search this catalogue and the source before introducing a new control. First-use page-local elements are allowed; on second use, extract the common application element into `src/app/resources/js/components/`, migrate both consumers and document the local application contract in the same task. Consume platform exports through `@/runa/ui`; platform extension requires a Runa owner release. Keep entries limited to implemented components. Public imports use `@/runa/ui`: Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo map to their existing App-prefixed/RunaLogo implementations. No layout/router installation is required; load the application theme CSS in the consuming entry. IdentityProvider, MinimalLayout and Footer are also public; navigation and preferences now have resolver/storage implementations; bounded CSV/XLSX/PDF engines, printing and operation/provider contracts are available.
 
+## Localized defaults
+
+Shared feedback/loading controls, PageNavigation, Footer and TagsInput resolve
+omitted copy through the application locale scope and preferences (Polish by
+default, English secondary). Explicit copy props remain authoritative. FileInput,
+NumberInput, ColorInput and temporal fields use their existing locale prop for
+default errors and actions. Language changes update visible errors without
+discarding invalid numeric/temporal drafts or pending tags. ModulePage localizes
+its unavailable fallback using its locale prop. MinimalLayout publishes its locale
+to descendants, including browser-independent static error rendering.
+
 ## Motion composition
 
 All components have been reviewed for purposeful motion; see `motion.md` for the complete inventory, timing and accessibility rules. Internal AppCollapse (`src/runa/resources/js/components/AppCollapse.vue`) preserves disclosure DOM/drafts while clipping natural height and applying immediate inert/aria-hidden. It is not a public facade export. Internal useContentMotion (`src/runa/resources/js/composables/useContentMotion.ts`) reveals retained Wizard/CalendarPicker/AsyncContent updates without remounting; `src/runa/resources/js/lib/motion.ts` owns immediate exit deactivation and interrupted-entry restoration. Consumers inherit shared behavior instead of adding duplicate page entrances. Point-21 motion was accepted on 2026-10-19.
 
 ## AppSelect
 
+Admin consumers can use public `AdminField` through `@/runa/admin` to compose these
+shared controls from authorized field metadata, including optional bounded lookup
+providers. Generated Admin forms compose shared drafts and explicit owning writes. See the exact
+[Admin field contract](../../modules/admin/frontend.md#delivered-field-composition)
+for replacement precedence, props/events and remaining form delivery.
+
 - Source: `src/runa/resources/js/components/AppSelect.vue`; public `Select`, `SelectOption`, `SelectionProvider`, `SelectionPage`.
+- Auth grouped bulk modals reuse Select for operation choices; native command reviews/proofs stay in the Auth/Admin controllers. See [Auth bulk presentation](../../modules/auth/administration.md#native-bulk-user-operations).
 - All selection modes use the shared themed floating dialog/listbox, including simple single selection. Searchable adds a search field; multiple changes the value contract. No browser-owned option popup is used. String values are stable IDs; multiple=true uses string[]. Disabled options cannot be chosen. FormField supplies label/helper/warning/errors and required semantics; disabled/readonly block edits, clearable is explicit.
 - Search is locale-aware for local options; provider queries debounce (250ms default), abort prior requests and ignore stale responses even if a provider ignores cancellation. Loading/error/retry/empty states remain distinct. Escape restores trigger focus, outside pointer dismisses, arrows/Home/End move over enabled options and Enter selects; IME composition is preserved. Multiple selection stays open until Done.
 - Rendering is bounded to one page (40 default, at most 100). Local pages offer previous/next; remote providers receive query/cursor/limit/AbortSignal and return options/nextCursor. Remote next replaces the visible page; the provider owns cursor semantics, transport, ordering and authorization, without whole-dataset fetching. No automatic request on selection changes.
 - selectedOptions supplies labels for initial/off-page values. Labels for selected remote options survive page/query changes; unknown IDs remain visible as IDs. Selection events expose option snapshots; IDs remain the model. Keep durable option labels in caller state when unmounting. locale defaults to pl; pass en for English presentation. All closed selection modes share the same CSS chevron anchored 16px from the control’s right edge, independent of selected-label length. Closed controls retain normalized field styling; readonly controls never open the option panel.
+- providerSearch defaults true. Set false for a cursor provider whose contract has no search parameter: it keeps bounded next-page selection and keyboard navigation without inventing a filter or displaying a nonfunctional search field.
 
 ## AppForm
 
@@ -34,6 +53,11 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 - Exactly two buttons (44px md in MinimalLayout, 36px sm in ApplicationLayout): language cycles PL/EN, theme cycles system/light/dark with corresponding icons. Accessible names describe current/next values; short application tooltips identify the action. Both controls use AppButton. Existing composables preserve preferences. No select or submit step.
 
 ## AppTooltip
+
+Tooltip accepts `placement?: 'bottom' | 'right'` (bottom default) and
+`align?: 'start' | 'end'` (end default). Its root is the measured anchor; use a
+content-sized wrapper such as w-fit when composing it in a stretching grid.
+Viewport clamping and collision fallback remain active.
 
 - Source: `src/runa/resources/js/components/AppTooltip.vue`; public `Tooltip`. Existing `text`, optional bottom/right placement and scoped `descriptionId` remain compatible. The description ID is present only while shown.
 - Pointer and keyboard-focus states are separate. A short 80ms bridge allows entering teleported content; pointer leave from both trigger/content dismisses unless keyboard focus remains. Click, Escape, outside pointer and document scroll dismiss; rapid enter/leave and preference transitions do not retain stale hover state. Escape stays suppressed until a new hover/focus session; a repeated pointerenter while the anchor is still hovered, or a delayed first pointerenter during the same keyboard focus, does not reopen a dismissed tooltip. Leave reschedules a single hover-bridge timer and dismissal cancels it, preventing obsolete callbacks from disturbing later interactions.
@@ -77,21 +101,65 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 ## AppButton
 
 - Source: `src/runa/resources/js/components/AppButton.vue`; public `Button`. Native attributes/listeners inherit; safe default `type="button"`. No shell dependency.
-- `variant`: neutral (compatible default), solid, outline, soft, ghost. `tone`: primary, secondary, success, danger, warning, info, accent. `size`: sm (36px), md (44px), lg (52px). Use md for usual touch actions.
-- `busy` disables activation and exposes aria-busy plus a decorative spinner; slot text supplies context. `disabled` uses native semantics. `aria-pressed` supports toggle feedback. `iconOnly` (or compatible `compact`) makes a square; provide an accessible name. Tooltip is separate.
+- `variant`: neutral, solid, outline, soft, ghost. `tone`: neutral, primary, secondary, success, danger, warning, info, accent. Public `ButtonIntent` supplies action meaning; `ButtonTone` includes neutral. `size`: sm (36px), md (44px), lg (52px). Use md for usual touch actions.
+- `busy?: boolean` disables activation and exposes aria-busy plus a decorative spinner; slot text supplies context. When omitted, a `type="submit"` Button inherits the nearest public Form's busy state; other buttons and standalone submit buttons default to false. Explicit true/false overrides this local default. The private form-activity injection is UI implementation, not another public entrypoint. `disabled` uses native semantics. `aria-pressed` supports toggle feedback. `iconOnly` (or compatible `compact`) makes a square; provide an accessible name. Tooltip is separate.
+- Intent overrides a low-level tone. With no explicit variant, every colored intent uses outline; neutral uses neutral. Shipped views use no solid action fills, including main Save and confirmation actions. The low-level solid variant remains available for explicit custom presentation; it is not the default visual language. Without intent/tone, the button is neutral. Busy preserves the action color and blocks activation; unavailable controls use disabled tokens.
 - Colors use finite CSS token mappings, without inline styles so build-time native error rendering retains its CSP contract. Reduced motion preserves the static busy indicator.
 - Used by MinimalLayout preferences and ApplicationLayout preferences, sidebar/drawer controls and profile trigger. Shell disclosures/navigation and modal backdrop remain specialized internal compositions.
+
+### Action button semantics
+
+Owner-approved defaults apply across application and module views. Pass explicit
+`intent` from source-owned operation metadata; never infer it from translated text,
+HTTP verb, feedback ancestors or password confirmation requirements.
+
+| Intent  | Meaning and examples                               | Token role       |
+| ------- | -------------------------------------------------- | ---------------- |
+| commit  | Save, apply, create, activate                      | success / green  |
+| cancel  | Safe Cancel, Close, Back                           | neutral          |
+| discard | Discard unsaved work, restore defaults             | warning / yellow |
+| inspect | Load, refresh, preview, export                     | info / blue      |
+| caution | Deactivate, set a lock, cancel running work        | warning / yellow |
+| danger  | Delete stored data, revoke sessions/devices/access | danger / red     |
+| mixed   | Tool combining operations with different effects   | primary / purple |
+| neutral | Navigation, selection, disclosure, acknowledgment  | neutral          |
+
+Use quiet outlines with semantic text and borders for action buttons, including the
+main Save. Do not introduce solid fills for emphasis. Soft/ghost remain suitable
+for selection/navigation and compact controls; their hover stays subtle. Keep the
+same semantic role on hover, pressed and busy states in both themes. Labels and
+focus indicators remain required; color alone never identifies an action.
+
+Color describes the intended effect even when clicking first opens a modal or
+requests password proof. Create/edit/save tools are green, deletion/revocation red
+and deactivation/default-reset yellow. Blue is for actual reads, refresh and preview,
+not a general modal-opening color. A tool combining different effects (activation /
+deactivation, deletion / restoration, set / clear lock) uses mixed / purple until
+an option is selected. Its final confirmation uses that concrete effect's color.
+Several choices with the same effect retain that effect's color. Restrict mixed
+to the currently offered choices and source-owned parameter alternatives.
+
+Password proof does not turn a green save red. Safe cancellation remains neutral
+even inside a danger alert/dialog; discarding an edited draft is yellow.
+
+`ConfirmDialog.confirmIntent?: ButtonIntent` defaults to commit and its Cancel is
+neutral. Controllers that ask about destructive changes or discarded drafts must
+supply the corresponding intent in their confirmation projection. Public
+`BulkProvider.actions` may declare `intent?: ButtonIntent`; omission means neutral.
+Declare its effect or mixed intent explicitly; the Admin adapter can derive known
+destructive/save/create effects from its native command metadata. A mutation tool
+retains that meaning while opening its review. The separate Preview control is blue. These are presentation contracts and grant no backend authority.
 
 ## AppButtonGroup
 
 - Source: `src/runa/resources/js/components/AppButtonGroup.vue`; public `ButtonGroup`. Required `label` names the group; slotted native buttons retain Tab navigation and caller-owned pressed state.
-- Joined outer corners and overlapping borders create a single divider without gaps. Soft buttons now change to their semantic solid/foreground pair on hover.
+- Joined outer corners and overlapping borders create a single divider without gaps. Soft buttons retain a subtle semantic background on hover.
 - Action-list/split buttons remain absent until an actual application need appears. The current Auth profile requirement uses public Avatar for shared image/initials presentation; ApplicationLayout retains its dedicated profile disclosure control.
 
 ## AppFooter
 
 - Source: `src/runa/resources/js/components/AppFooter.vue`.
-- `poweredByLabel` defaults to English `Powered by` for standalone use. MinimalLayout passes the current translation (`Oparte na` in Polish), reusing its existing locale state.
+- `poweredByLabel` defaults to the current translation (`Oparte na` / `Powered by`). MinimalLayout also supplies its current translation.
 - Public `Footer` consumes `useIdentity()`: `ApplicationName vX.Y.Z | Powered by Runa vA.B.C`; versions default to the independent application and platform manifests.
 - `options: FooterOptions` independently controls visible/application/platform/copyright/repository; optional copyrightText/repositoryUrl/repositoryLabel customize content. URL validation rejects unsafe links. Copyright and GitHub remain default supplemental elements. Removed obsolete versionLabel prop.
 - Layout footer slots can replace the footer; layout footer.visible hides the entire region. Canonical use: MinimalLayout.
@@ -148,6 +216,40 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 - Horizontal group labels are disclosure buttons. Their dropdown card is teleported to body outside the scroll container, positioned under the trigger/header and clamped to the viewport. Header stays 64px when open; sidebar groups retain inline expansion. The panel reuses AppNavigation for its child links.
 - Escape, outside click, route change, document scroll and resize dismiss it; nav scrolling updates its anchor position; focus returns on Escape. Tab boundaries connect the popup back to normal navigation order. General tooltip/popover floating behavior is implemented in point 9; route navigation retains its specialized anchoring and keyboard contract.
 
+## PageNavigation
+
+Public `PageNavigation` from `@/runa/ui` publishes subview links to its nearest
+ApplicationLayout top bar without a duplicate content menu. A custom App layout
+uses `usePageNavigationHost`; independent composition retains labeled controlled
+buttons (including available child destinations). Props, events, host lifetime
+and URL/guard behavior are defined in [page layouts](page-layouts.md#page-level-navigation-composition).
+Sidebar entries select areas/modules; page-level navigation belongs in the top
+bar. Forms and record/operation actions remain in content.
+
+## Horizontal scrolling
+
+Supplied Table, Tabs (including modal tabs) and ApplicationLayout top navigation
+share horizontal wheel handling and decorative dotted left/right edge cues.
+Cues appear only toward hidden content, update on scrolling, resizing and content
+changes, and disappear when content fits. They ignore pointer input and respect
+reduced motion. Keep this behavior consistent in future horizontal viewports.
+
+Over an overflowing menu/tab strip or table header/scroll rail, the dominant wheel
+axis moves content horizontally; pixel, line and page deltas are supported. At an
+endpoint the gesture remains within that horizontal control. Ctrl+wheel preserves
+native zoom. Content that fits retains normal vertical scrolling. Table body rows
+also retain vertical wheel scrolling. Native touch/trackpad/scrollbar access and
+existing keyboard/focus semantics remain available.
+
+Ownership is Runa UI; public consumption remains Table/Tabs/ApplicationLayout from
+`@/runa/ui` with their existing props/events/slots. Their private
+useHorizontalScroll implementation and runa-horizontal-frame styling are delivered
+runtime internals, not a new customer helper API. Customers compose the supplied
+components or implement the same behavior in their own presentation; they do not
+import the private composable. Vertical dialogs, popovers, tooltips, selects and
+toasts use their existing wrapping/height constraints, not horizontal wheel
+conversion for ordinary vertical content.
+
 ## Content containers and navigation
 
 - Public `Card`, `Divider`, `Accordion`, `Tabs`, `Dropdown`, `Breadcrumbs`, `Pagination` map to `src/runa/resources/js/components/App*.vue`; types `TabItem`/`BreadcrumbItem` come from `@/runa/ui`. No shell, router or global installation is required.
@@ -160,12 +262,12 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## Loading and asynchronous content
 
-- Public `Spinner`, `Skeleton`, `Progress`, `EmptyState`, `AsyncContent` map to `src/runa/resources/js/components/App*.vue`. `AsyncContentState` is loading/error/empty/success. No fetch/provider lifecycle is hidden in these primitives.
+- Public `Spinner`, `Skeleton`, `Progress`, `EmptyState`, `AsyncContent` map to `src/runa/resources/js/components/App*.vue`. `AsyncContentState` is loading/refreshing/error/empty/success. Refreshing retains the success subtree and exposes aria-busy; see [view readiness](loading.md). No fetch/provider lifecycle is hidden in these primitives.
 - Spinner requires localized label; sm/md/lg are 14/24/44px. Standalone uses role=status; decorative removes announcement for an already named parent. Button busy state and LoadingOverlay now compose this shared spinner, preserving overlay timing/focus/color capture. Reduced motion removes rotation.
 - Skeleton is decorative/aria-hidden, with text (1–10 lines, default 3), block or circle geometry. Callers provide the loading status; reduced motion removes pulsing. Skeletons do not fetch identity data or imply actual data progress.
 - Progress requires localized label; value null/absent/nonfinite is indeterminate. Finite value is clamped to 0..max (positive finite max, otherwise 100). ARIA uses actual value/max units; visible percentage is derived only for determinate progress. Optional valueText supplies a localized meaningful equivalent. FeedbackTone selects neutral/success/info/warning/danger; reduced motion stops travel/transition while leaving the status visible. The caller owns completion/failure/cancellation.
 - EmptyState requires title, optional description/icon; icon and actions slots support composition. It is static by default. AsyncContent announces its default empty state through role=status.
-- AsyncContent requires controlled state and offers loading/error/empty/success slots, with default slot as success fallback. Defaults compose Spinner, Alert and EmptyState; all text is configurable (English standalone defaults; application callers supply PL/EN). Optional retryLabel exposes a retry button and retry event; custom error slot receives retry(). Retry never invents success or fetches data. Only the active state is mounted, so hoist form/draft state if it must survive switching; network cancellation and stale-response handling belong to the caller. aria-busy reflects loading; custom slots own their appropriate accessible status semantics.
+- AsyncContent requires controlled state and offers loading/error/empty/success slots, with default slot as success fallback. Defaults compose ContentLoading, Alert and EmptyState; omitted copy follows the current application language and all text remains configurable. Optional retryLabel exposes a retry button and retry event; custom error slot receives retry(). Retry never invents success or fetches data. Only the active state is mounted (success/refreshing share one subtree), so hoist form/draft state if it must survive switching; network cancellation and stale-response handling belong to the caller. aria-busy reflects loading/refreshing; custom slots own their appropriate accessible status semantics.
 
 ## Statistics and per-view modes
 
@@ -182,9 +284,9 @@ All components have been reviewed for purposeful motion; see `motion.md` for the
 
 ## Date, logical, file and additional fields
 
-Public facade exports DateInput, TimeInput, DateTimeInput, DateRangeInput, Checkbox, Switch, RadioGroup, FileInput, ColorInput, HiddenInput and TagsInput from their App-prefixed components. AppTemporalInput/AppBooleanInput are internal compositions; AppCalendarPicker, AppTimePicker and AppPickerSlider are internal picker controls. All fields reuse FormField and established theme/state styles; native checkbox/radio keyboard semantics remain intact. Checkbox supports boolean/null (indeterminate), Switch boolean, RadioGroup string/null with disabled options and isolated group names. Readonly blocks edits, disabled removes interaction. Custom label slots replace the default FormField label.
+Public facade exports DateInput, TimeInput, DateTimeInput, DateRangeInput, DateTimeRangeInput, Checkbox, Switch, RadioGroup, FileInput, ColorInput, HiddenInput and TagsInput from their App-prefixed components. AppTemporalInput/AppTemporalRangeInput/AppBooleanInput are internal compositions; AppCalendarPicker, AppTimePicker and AppPickerSlider are internal picker controls. All fields reuse FormField and established theme/state styles; native checkbox/radio keyboard semantics remain intact. Checkbox supports boolean/null (indeterminate), Switch boolean, RadioGroup string/null with disabled options and isolated group names. Readonly blocks edits, disabled removes interaction. Custom label slots replace the default FormField label.
 
-DateInput/TimeInput use canonical string/null values; DateRangeInput uses { start, end } date-only strings/null with chronological validation. DateTimeInput requires timeZone and stores an explicit-offset instant normalized to UTC on edit. Date/time/color use application-owned Popover panels and text inputs, never native date/time/datetime-local/color pickers. Date fields display DD.MM.YYYY in PL and YYYY-MM-DD in EN; moment fields add 24-hour time. Calendar supports month/year selection, Monday-first roving day navigation, Home/End and PageUp/Down (Shift for years). Time panels expose scrollable hour/minute lists with arrow/Home/End navigation, preserving explicit seconds/fractions from text. The inline color trigger is frameless, retaining its keyboard focus indicator; the field border and color chip remain. Color panels expose an HSV plane, three keyboard/pointer sliders and a palette, with six-digit hex text entry. Escape/outside/Done dismiss; focus returns on Escape/Done. See forms.md for draft and DST contracts. FileInput uses readonly File[] with accept/count/size UX validation and localized messages; it never uploads. Its application-styled dropzone is a real keyboard/touch picker button, with file-drag feedback, accepted types/limits, selected count/total size and metadata rows with extension icons, size and remove actions. Multiple selections/drops append batches; single selection replaces the previous value. Invalid/over-limit files remain visible for correction; readonly hides editing controls and disabled/busy fieldsets block drops. Removal restores focus to the next removal action or chooser. Optional locale formats sizes and dropzone/metadata copy; existing choose/remove/error labels remain caller-localized. ColorInput accepts null or #RRGGBB and retains invalid text drafts. HiddenInput is a native hidden serialization field, never a security boundary. TagsInput commits trimmed entries with Enter (outside IME), rejects duplicates/limits, clears drafts with Escape and supports removal; it exposes validity and focus().
+DateInput/TimeInput/DateTimeInput accept optional size sm/md (md default); the input and picker trigger share 36px/44px heights. DateInput/TimeInput use canonical string/null values; DateRangeInput uses { start, end } date-only strings/null with chronological validation. DateTimeInput defaults to the application timezone (optional explicit timeZone for a domain-specific zone), omits timezone annotations and stores an explicit-offset instant normalized to UTC on edit. Date/time/color use application-owned Popover panels and text inputs, never native date/time/datetime-local/color pickers. Date fields display DD.MM.YYYY in PL and YYYY-MM-DD in EN; moment fields add 24-hour time. Calendar supports month/year selection, Monday-first roving day navigation, Home/End and PageUp/Down (Shift for years). Time panels expose scrollable hour/minute lists with arrow/Home/End navigation, preserving explicit seconds/fractions from text. The inline color trigger is frameless, retaining its keyboard focus indicator; the field border and color chip remain. Color panels expose an HSV plane, three keyboard/pointer sliders and a palette, with six-digit hex text entry. Escape/outside/Done dismiss; focus returns on Escape/Done. See forms.md for draft and DST contracts. FileInput uses readonly File[] with accept/count/size UX validation and localized messages; it never uploads. Its application-styled dropzone is a real keyboard/touch picker button, with file-drag feedback, accepted types/limits, selected count/total size and metadata rows with extension icons, size and remove actions. Multiple selections/drops append batches; single selection replaces the previous value. Invalid/over-limit files remain visible for correction; readonly hides editing controls and disabled/busy fieldsets block drops. Removal restores focus to the next removal action or chooser. Optional locale formats sizes, dropzone/metadata copy and default choose/remove/error labels; explicit copy props override these defaults. ColorInput accepts null or #RRGGBB and retains invalid text drafts. HiddenInput is a native hidden serialization field, never a security boundary. TagsInput commits trimmed entries with Enter (outside IME), rejects duplicates/limits, clears drafts with Escape and supports removal; it exposes validity and focus().
 
 ## MaskedInput, Wizard and advanced form composables
 
@@ -197,22 +299,25 @@ DateInput/TimeInput use canonical string/null values; DateRangeInput uses { star
 
 - Sources: AppDialog.vue, AppAlertDialog.vue, AppConfirmDialog.vue; internal useModalLayer.ts, lib/layers.ts and lib/scrollLock.ts. Public DialogProps/ConfirmDialogProps/DialogSize/DialogCloseReason types accompany the component exports.
 - All use controlled boolean v-model and a required visible title; description and error are optional. Sizes sm/md/lg/xl/full cap at 380/560/800/1120px/viewport respectively, always fitting narrow screens. Body scrolls independently; header/footer stay available. A title-only header centers the title against the close button; a header with description keeps top alignment. Content and footer slots compose existing controls.
+- Dialog error feedback uses FormNotifications inside the modal portal, with dismissible persistent failure feedback and no inline duplicate.
 - initialFocus accepts a selector in the panel; by default custom Dialog focuses its first content control or panel, ConfirmDialog focuses Cancel and AlertDialog focuses acknowledgment. Modal focus traps Tab/Shift+Tab, contains programmatic focus and restores the invoking control after close. Nested dialogs and their floating Select/Popover/Tooltip panels share dismissal ownership; one Escape dismisses only the newest layer.
 - Escape defaults on, backdrop dismissal defaults on (closeOnOutside=false selects close-button-only pointer dismissal) and requires down/up on the backdrop. closable=false disables user dismissal; busy blocks closing and disables contained native fields. close emits close/escape/outside reason plus update:modelValue(false); parent-owned model changes remain authoritative. Prior inert/scroll state is restored on close/unmount, including dynamic body siblings and nested locks.
-- ConfirmDialog supplies localized cancel/confirm buttons, configurable labels/tone and emits confirm while staying open. Caller owns busy, error, retry and success closure; never close before a failed operation can be recovered. Cancel and initial focus favor the nondestructive action. AlertDialog uses role=alertdialog and emits acknowledge before requesting close. locale defaults pl; pass en for English.
+- ConfirmDialog supplies localized cancel/confirm buttons, configurable labels/confirmIntent and emits confirm while staying open. Caller owns busy, error, retry and success closure; never close before a failed operation can be recovered. Cancel and initial focus favor the nondestructive action. AlertDialog uses role=alertdialog and emits acknowledge before requesting close. locale defaults pl; pass en for English.
 - The accepted application drawer remains specialized; it only reuses the scroll-lock primitive. No provisional dialog composition exists in either layout. The isolated advanced-form scenario uses ConfirmDialog without changing useDirtyGuard’s application-owned confirmation seam.
 
 ### Table
+
+`Table` includes shared icon-only refresh/reset controls, compact dictionary filters, default in-memory column/views controls and explicitly authorized bounded export/print adapters; see the exact optional props in [tables.md](tables.md).
 
 `Table` (`src/runa/resources/js/components/AppTable.vue`) and `useTable` provide client/server processing, controlled query and cross-page explicit/all-matching row selection, column render/filter/sort adapters (sorting defaults on with explicit `sortable: false` opt-out and server capability gating), async/retry states and accessible horizontal scrolling. Public types and provider integration are documented in [tables.md](tables.md). `Checkbox` accepts `hideLabel` for an accessible visually hidden label in compact table cells.
 
 ### Nested semantic colors
 
-Alert (including Toast/AsyncContent errors), Badge, Status, Progress and Statistic establish a reactive semantic tone context for descendants. An omitted child tone inherits the closest context; explicit tones override it and establish a new context. Buttons in a colored context default to that tone and the outline variant; explicit variants/tones remain authoritative. A neutral context restores neutral feedback and neutral button defaults. Standalone defaults are unchanged. This applies through wrapper components and slots without shell dependencies; use component props rather than descendant CSS overrides. Ordinary form input validation and dedicated shell navigation retain their own contracts.
+Alert (including Toast/AsyncContent errors), Badge, Status, Progress and Statistic establish a reactive semantic tone context for nested feedback. Omitted feedback tones inherit; explicit tones establish a new context and neutral resets it. Button never inherits feedback tone. Its explicit action intent follows [action button semantics](#action-button-semantics), including blue AsyncContent retry and neutral dismissal. This works through wrappers and slots without descendant CSS overrides. Ordinary input validation and shell navigation retain their own contracts.
 
 ### TablePreferences and useTableViews
 
-`src/runa/resources/js/components/AppTablePreferences.vue` supplies a sm icon-only ghost settings button with a localized accessible name/Tooltip, matching export settings, plus the optional sm Available views selector (Default view first) and shared Dialog for column visibility, drag/keyboard order, a compact numeric width/px field with measured initial value and automatic reset; named views support create/select/update/rename/delete/default/reset. `useTableViews` owns scoped persistence, schema migration/reconciliation and controlled query snapshots. Import both through `@/runa/ui`; connect its columns to Table's optional columnState. See [tables.md](tables.md) for the public contract and example. No existing layout has provisional table settings to replace.
+`src/runa/resources/js/components/AppTablePreferences.vue` supplies a sm icon-only ghost settings button with a localized accessible name/Tooltip, matching export settings, plus the optional sm Available views selector (Default view first) and shared Dialog for column visibility, drag/keyboard order, a compact numeric width/px field with measured initial value and automatic reset; named views support create/select/update/rename/delete/default/reset. View-operation outcomes use FormNotifications inside the preferences dialog; width errors remain beside their fields. `useTableViews` owns scoped persistence, schema migration/reconciliation and controlled query snapshots. Import both through `@/runa/ui`; connect its columns to Table's optional columnState. See [tables.md](tables.md) for the public contract and example. No existing layout has provisional table settings to replace.
 
 ### Small field controls
 
@@ -274,10 +379,25 @@ and cancels the old flow. See [entry screens](../../modules/auth/entry-ui.md) fo
 exact routes, public form constraints, server restrictions, safe returns and
 in-memory one-time material. Account management/session-expiry UI uses AuthApplication below.
 
+`AuthOperationProofPage` reuses the public password-only useOperationProof
+controller for action-bound confirmation. The shared Auth shell hosts its standalone
+MinimalLayout presentation and preserves operation drafts. Inline/modal credential
+forms are retired. See [proof contracts](../../modules/auth/entry-ui.md#operation-proof-composition).
+
+### Retained presentation visibility
+
+UI owns public providePresentationVisibility(visible:MaybeRefOrGetter<boolean>):void,
+implemented in resources/js/composables/usePresentationVisibility and exported from
+@/runa/ui. A child inherits its parent's visibility; Dialog portals hide and release
+focus/scroll ownership while false, retaining mounted content and controlled drafts.
+Auth uses it when the full password-confirmation page temporarily owns presentation.
+It grants no access and never clears protected data; the owning session/controller
+still handles identity loss. It ships with the ordinary frontend runtime.
+
 ## LinkButton and Auth application composition
 
 `LinkButton` maps to `AppLinkButton.vue`: a native anchor with required href and
-existing button variants/tone, preserving open-in-new-tab and keyboard semantics.
+existing button variants/tone (neutral by default), preserving open-in-new-tab and keyboard semantics.
 Use Button for mutations and LinkButton for styled navigation; it inherits the
 shared control focus/color/motion without duplicating local button markup. Auth
 welcome and application dropdown/entry use it. It does not authorize a destination.
@@ -338,15 +458,17 @@ disabled fieldsets/inert ancestors block edits.
 Public Avatar from `@/runa/ui` renders a decorative circular image with initials
 fallback and object-fit cover. Props: initials (required), src (default empty),
 size in px (default 40), loading (default false) for pending identity metadata.
-A shared circular Skeleton pulses while metadata or the image is loading; initials
-appear only after no image is known or an image fails. Source changes restart image
-readiness. Reduced motion/print inherit Skeleton's static fallback.
-The parent owns the accessible name, identity authorization and safe image URL.
-No fetching/profile storage or global state lives in this primitive.
-During loading the Avatar background is transparent and the animated Skeleton
-fills its exact bounds, so the entire placeholder visibly pulses like content.
-ApplicationLayout accepts optional userAvatar (default empty) and userLoading
-(default false) alongside userName/userInitials; the shell trigger, Auth dropdown and account preview share Avatar.
+A shared circular Skeleton pulses while metadata or the first image is pending.
+Image loading includes download and decode, with a 2.5-second bound and initials
+fallback on error/timeout. Same-identity replacements retain the decoded image
+while loading; explicit removal clears it. Optional image: ImageReadiness shares
+one prepared image owner between multiple avatars. Source/identity fencing,
+timeouts and composition are documented in [view readiness](loading.md).
+Reduced motion/print inherit Skeleton's static fallback. The parent owns the
+accessible name, authorization and safe image URL; no profile storage or global
+private image cache lives in this primitive. During initial loading its background
+is transparent and Skeleton fills its exact bounds. ApplicationLayout accepts
+userAvatar, userLoading and userAvatarImage alongside userName/userInitials.
 
 ## Form conflict decisions
 
@@ -367,7 +489,7 @@ not an authorization or server-routing decision.
 
 ## Account history detail
 
-AuthHistoryDetail composes public Dialog, Spinner, Alert and Button for an explicit
+AuthHistoryDetail composes public Dialog with loading placeholders, Alert and Button for an explicit
 read-only event modal, PL/EN before/after pairs and legacy/security explanations.
 The controller fences overlapping/closed reads and supports retry. Public presentation
 replacement and exported types are documented in the
@@ -379,3 +501,145 @@ Public replacement and controller types are listed in
 Auth, layout, module page/slot and static-error contracts through their respective
 facades. Supplied components consume the same prop/slot/event declarations;
 customer wrappers need no private source imports.
+
+## Admin shell and replacement
+
+Public `@/runa/admin` supplies AdminApplication, AdminLayout, AdminLoading,
+AdminEntryProof and AdminPresentationProvider, useAdmin/useAdminPage,
+useAdminPresentation and resolveAdminComponent. Shell state and entry proof remain
+platform-owned; nested providers inherit omitted overrides. Compiled owner/build
+identity is checked before choosing an owned module loader or explicitly registered
+App component. Missing/mismatched components show safe isolated unavailable states.
+Generated field/form/table/action components remain specified for subsequent points;
+follow the exact [Admin runtime status and contracts](../../modules/admin/frontend.md).
+ApplicationSessionShell is exported by `@/runa/auth` for both Auth and Admin
+composition; its account menu is a dedicated shell seam, not a business control.
+
+Auth administrative defaults `AuthAdminUsers` / `AuthAdminSection` are exported
+through `@/runa/auth`; Admin section dispatch/failure boundary and cancellable read
+composition remain under `@/runa/admin`. See the complete
+[administration presentation contract](../../modules/auth/administration.md#presentation-and-application-consumption).
+
+`AdminRecordBrowser` is the public catalogue/detail composition from `@/runa/admin`,
+with shared subject selection and dirty guards. Permissions page/section defaults
+are exported by `@/runa/permissions`; Audit history/detail defaults by `@/runa/audit`.
+Use the exact [record-browser contract](../../modules/admin/frontend.md#record-browser)
+and owning [Permissions](../../modules/permissions/administration.md) /
+[Audit](../../modules/audit/administration.md) presentation signatures.
+
+Admin operational defaults `AdminOperations` and
+`AdminOperationResult` plus `useAdminOperations` are exported by `@/runa/admin`.
+Their typed props/slots/controller and replacement keys are documented in
+[operational dashboard composition](../../modules/admin/frontend.md#operational-dashboard-and-replacements).
+They reuse shared controls and retain native lifecycle, settings and cooperative
+work outcomes; no copied session/proof or foreign engine logic belongs in App views.
+
+Application settings reuse those primitives through public `AdminApplicationSettings`
+and `useAdminApplicationSettings`, with per-field authority, source reset and dirty
+read reconciliation. Replace `AdminPresentation.applicationSettings` using the
+[controller contract](../../modules/admin/frontend.md#application-global-settings-and-runtime-branding).
+The shared shell's public presentation loader and IdentityProvider apply runtime
+branding without changing canonical identity.
+
+Admin defaults and their Auth/Permissions/Audit sections follow the shared PL/EN
+application preference. Public useAdminLocale/adminText handle localized AdminText
+metadata and App presentation messages; use them in replacements and pass the
+reactive locale to shared controls. See [Admin localization](../../modules/admin/frontend.md#polish-and-english-presentation).
+
+## View readiness
+
+Public useViewReadiness, ViewBoundary and useImageReadiness separate initial
+reveal from background reads and local writes. Their complete signatures, identity
+invalidation, bounded image fallback and supplied view audit are in the canonical
+[view readiness guide](loading.md). They add no session owner or authorization.
+
+## Source module presentation
+
+UI owns `ModulePresentation`, `moduleCatalogue: readonly ModulePresentation[]`
+and `getModulePresentation(id: string): ModulePresentation` exported by `@/runa/ui`.
+The complete shape is `{readonly id: string; readonly name: {pl:string;en:string};
+readonly description: {pl:string;en:string}; readonly icon: IconName}`. Source home
+is `src/runa/resources/js/runa/ui/modulePresentation.ts`, delivered in the frontend
+runtime. Names/descriptions come from validated platform/App module manifests;
+platform icons use one source-owned map and unknown modules use layers-intersect
+with their ID as the name. Welcome filters this catalogue to platform modules;
+Admin applies it only to already authorized owners/diagnostic results. This source
+catalogue does not describe installation, health, enabled state or access.
+
+Application branding reuses FileInput, Select, fields and Button. Image draft/Canvas
+behavior belongs to the public [settings presentation](../../modules/admin/frontend.md#application-display-defaults-image-drafts-and-page-headings).
+Public useApplicationDisplayDefaults/formatApplicationInstant provides shared
+display defaults and instant formatting; explicit user preferences win.
+
+## Protected-section activity composition
+
+Public `useProtectedActivity` from `@/runa/auth` composes the caller's admitted
+session and owning section root without another session owner. Its `refresh`
+reads status without renewal; scoped trusted input renews still-valid access.
+Keep it mounted with replacement presentation, including relevant portals, and
+clear protected content through `onExpired`. Complete signatures, server endpoint
+preconditions and examples belong to the
+[Auth idle-access contract](../../modules/auth/security.md#protected-section-idle-access).
+
+### Value preview
+
+`ValuePreview` is a UI-owned, shell-independent escaped read-only value renderer
+for application/module consumers. Import `ValuePreview` and `ValuePreviewProps`
+from `@/runa/ui`; implementation lives in
+`src/runa/resources/js/components/AppValuePreview.vue` and ships in development
+and production assets. Props: `text: string`, `format?: 'text'|'json'` (default
+`text`), `locale?: 'pl'|'en'` (default `pl`). It has no events or remote reads.
+
+The collapsed preview shows at most eight source lines and 480 Unicode code
+points; collapsed JSON ends with a distinct ellipsis on its own line. Longer text has a right-aligned localized Show all/Collapse text link inside the preview
+with aria-expanded and aria-controls. Activating it preserves the URL and keyboard
+focus. Expansion displays the complete supplied value; replacement
+text resets expansion. JSON mode formats complete JSON without reserializing its
+numeric/string tokens or duplicate keys. Syntax highlighting renders key, string,
+number, literal and punctuation spans through Vue text interpolation using existing
+light/dark theme colors; forced-colors uses system text. Incomplete/invalid JSON
+parts retain their escaped text and receive best-effort token coloring. Plain-text
+mode remains uncolored. Formatting never infers dates or translates payload values. Authors retain
+server authorization, redaction, continuation and record-lifecycle ownership;
+collapse is presentation, not a security boundary.
+
+### Content loading defaults
+
+Use public `ContentLoading` for localized pulsing text/form/detail/image/navigation
+geometry and retained-content refresh. `AsyncContent` and `ViewBoundary` select
+this default automatically. `Dialog` accepts loading/loadingLabel/loadingShape
+and an optional loading slot; ConfirmDialog/AlertDialog cannot confirm/acknowledge
+unfinished content. Busy is separate mutation progress. Full signatures, ownership,
+source placement, lifecycle and allowed circular-indicator owners live in the
+[loading guide](loading.md#content-loading-presentation). Do not implement another
+view-local animation or attach a global HTTP counter to the presentation.
+
+DateRangeInput and DateTimeRangeInput now present one compact labelled field and
+one range summary. Their shared popup contains From/Until temporal editors,
+Clear/Cancel/Apply, open-end support and atomic valid-value publication. The public
+TemporalRangeInputProps/DateRangeValue, reset/focus handles and precise datetime
+zone/draft contract are documented in [forms](forms.md#compact-temporal-ranges).
+Filters use size sm; ordinary forms retain md. Input layout no longer expands
+into two labelled fields in its surrounding grid.
+
+## Readonly boolean facts
+
+Public `BooleanBadge` from `@/runa/ui` is owned by the platform component system
+(`resources/js/components/AppBooleanBadge.vue`), delivered as frontend assets and
+supported for App/module composition. Props: `value: boolean|null`,
+`locale?: 'pl'|'en'` (pl), `tone?: BadgeTone`, `size?: 'sm'|'md'` (sm); no events
+or slots. It renders localized Yes/No (Tak/Nie), null as an em dash, true as
+success and false as neutral unless tone overrides it. Reuse it for readonly facts
+and table boolean cells; filters and editable booleans retain their controls.
+Admin exports `adminBooleanTone(key: string, value: boolean): BadgeTone` from
+`@/runa/admin` for its shared account-risk mapping; see the Admin frontend guide.
+
+### External control labels
+
+Select accepts `hideLabel?: boolean`. Checkbox/Switch (BooleanInputProps), temporal
+inputs (TemporalInputProps) and TagsInput accept `id?: string`; temporal inputs and
+TagsInput also accept `hideLabel?: boolean`. These compose the existing TextInput,
+NumberInput and FormField label presentation. Use an explicit stable ID for a
+visible external label; hideLabel keeps the built-in label visually hidden.
+The Admin module settings editor uses this contract for its compact rows; see
+[named settings](../../modules/admin/settings-snapshots.md#localized-setting-identity-and-compact-presentation).

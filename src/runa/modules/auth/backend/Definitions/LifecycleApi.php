@@ -13,7 +13,7 @@ final class LifecycleApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(AuthLifecycle::class, LifecycleProxy::class, ChangeIdentity::class, '1.0.0', [
+        return new ApiDefinition(AuthLifecycle::class, LifecycleProxy::class, ChangeIdentity::class, '2.1.0', [
             'create' => new ApiOperation('identity.create', 'runa.auth.users.create'),
             'change' => new ApiOperation('identity.change', 'runa.auth.users.manage'),
         ]);

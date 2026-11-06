@@ -42,8 +42,8 @@ export interface SecurityOptions {
   totp_enabled: boolean;
   email_otp_enabled: boolean;
   recovery_codes_enabled: boolean;
-  password_change_factor: boolean;
   trusted_devices_enabled: boolean;
+  trusted_device_eligible: boolean;
 }
 export function record(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -122,8 +122,8 @@ export function decodeSecurity(value: unknown): SecurityOptions {
     totp_enabled: boolean(v.totp_enabled),
     email_otp_enabled: boolean(v.email_otp_enabled),
     recovery_codes_enabled: boolean(v.recovery_codes_enabled),
-    password_change_factor: boolean(v.password_change_factor),
     trusted_devices_enabled: boolean(v.trusted_devices_enabled),
+    trusted_device_eligible: boolean(v.trusted_device_eligible),
   };
 }
 export function factorMethods(
@@ -188,6 +188,7 @@ export async function authPost(
 export function authFailure(error: unknown): {
   code: string;
   fields: string[];
+  reason?: string;
 } {
   if (!(error instanceof ApiError)) return { code: 'unavailable', fields: [] };
   let body: Record<string, unknown> = {};
@@ -197,6 +198,11 @@ export function authFailure(error: unknown): {
     /* Unknown errors stay generic. */
   }
   return {
+    ...(error.status < 500 &&
+    typeof body.code === 'string' &&
+    /^[a-z][a-z0-9_]{0,127}$/.test(body.code)
+      ? { reason: body.code }
+      : {}),
     code:
       error.status >= 500
         ? 'unavailable'

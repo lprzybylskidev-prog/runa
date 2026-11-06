@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="Multiple extends boolean = false">
 import { computed, nextTick, onScopeDispose, ref, watch } from 'vue';
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
+import AppContentLoading from './AppContentLoading.vue';
 import AppFormField from './AppFormField.vue';
 import AppButton from './AppButton.vue';
 import { useFloatingLayer } from '../composables/useFloatingLayer';
@@ -9,6 +10,7 @@ defineOptions({ inheritAttrs: false });
 const props = withDefaults(
   defineProps<{
     label: string;
+    hideLabel?: boolean | undefined;
     size?: 'sm' | 'md';
     modelValue: Multiple extends true ? string[] : string;
     multiple?: Multiple | undefined;
@@ -16,6 +18,7 @@ const props = withDefaults(
     selectedOptions?: readonly SelectOption[];
     provider?: SelectionProvider | undefined;
     searchable?: boolean;
+    providerSearch?: boolean;
     clearable?: boolean;
     disabled?: boolean;
     readonly?: boolean;
@@ -30,11 +33,13 @@ const props = withDefaults(
   }>(),
   {
     size: 'md',
+    hideLabel: false,
     multiple: undefined,
     provider: undefined,
     options: () => [],
     selectedOptions: () => [],
     searchable: false,
+    providerSearch: true,
     clearable: false,
     disabled: false,
     readonly: false,
@@ -284,6 +289,7 @@ onScopeDispose(cancel);
   <AppFormField
     :id="id"
     :label="label"
+    :hide-label="hideLabel"
     :helper="helper"
     :warning="warning"
     :error="error"
@@ -314,6 +320,7 @@ onScopeDispose(cancel);
         </button>
         <AppButton
           v-if="clearable && values.length"
+          intent="neutral"
           :size="size"
           :disabled="disabled || readonly"
           :aria-label="text('Wyczyść wybór', 'Clear selection')"
@@ -341,7 +348,7 @@ onScopeDispose(cancel);
             @keydown="keyboard"
           >
             <input
-              v-if="searchable || provider"
+              v-if="searchable || (provider && providerSearch)"
               ref="search"
               v-model="query"
               :data-size="size"
@@ -361,31 +368,41 @@ onScopeDispose(cancel);
               :aria-label="label"
               :aria-multiselectable="multiple || undefined"
               :aria-busy="loading"
-              :tabindex="searchable || provider ? undefined : 0"
+              :tabindex="
+                searchable || (provider && providerSearch) ? undefined : 0
+              "
               :aria-activedescendant="
                 active >= 0 ? `${controlId}-option-${active}` : undefined
               "
               class="max-h-60 overflow-auto"
             >
-              <div
-                v-for="(option, index) in shown"
-                :id="`${controlId}-option-${index}`"
-                :key="option.value"
-                role="option"
-                :aria-selected="values.includes(option.value)"
-                :aria-disabled="option.disabled || undefined"
-                :data-active="active === index"
-                class="selection-option"
-                @pointerdown.prevent
-                @click="choose(option)"
+              <AppContentLoading
+                :loading="loading && !shown.length"
+                :refreshing="loading && !!shown.length"
+                :label="text('Ładowanie opcji', 'Loading options')"
+                :lines="3"
+                :class="loading && !shown.length ? 'p-2' : ''"
               >
-                <span aria-hidden="true">{{
-                  values.includes(option.value) ? '✓' : '·'
-                }}</span>
-                {{ option.label }}
-              </div>
+                <div
+                  v-for="(option, index) in shown"
+                  :id="`${controlId}-option-${index}`"
+                  :key="option.value"
+                  role="option"
+                  :aria-selected="values.includes(option.value)"
+                  :aria-disabled="option.disabled || undefined"
+                  :data-active="active === index"
+                  class="selection-option"
+                  @pointerdown.prevent
+                  @click="choose(option)"
+                >
+                  <span aria-hidden="true">{{
+                    values.includes(option.value) ? '✓' : '·'
+                  }}</span>
+                  {{ option.label }}
+                </div>
+              </AppContentLoading>
             </div>
-            <p role="status" class="p-2 text-xs text-muted">
+            <p v-if="!loading" role="status" class="p-2 text-xs text-muted">
               {{
                 loading
                   ? text('Ładowanie…', 'Loading…')
@@ -402,12 +419,14 @@ onScopeDispose(cancel);
             <div class="flex flex-wrap gap-2">
               <AppButton
                 v-if="failed"
+                intent="inspect"
                 :size="size"
                 @click="load(retryAppend)"
                 >{{ text('Ponów', 'Retry') }}</AppButton
               >
               <AppButton
                 v-if="!provider && offset > 0"
+                intent="neutral"
                 :size="size"
                 @click="
                   offset = Math.max(0, offset - limit);
@@ -417,12 +436,13 @@ onScopeDispose(cancel);
               >
               <AppButton
                 v-if="canMore"
+                intent="inspect"
                 :size="size"
                 :disabled="loading"
                 @click="more"
                 >{{ text('Kolejne wyniki', 'More results') }}</AppButton
               >
-              <AppButton :size="size" @click="close(true)">{{
+              <AppButton intent="neutral" :size="size" @click="close(true)">{{
                 text('Gotowe', 'Done')
               }}</AppButton>
             </div>

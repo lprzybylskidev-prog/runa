@@ -1,0 +1,52 @@
+<?php
+
+namespace Runa\Integration\Core;
+
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Http\Request;
+use Runa\Contracts\Modules\ApiOperation;
+use Runa\ModuleFramework\Api\ModuleDeclarations;
+use Runa\ModuleFramework\Api\OperationGuard;
+use Runa\ModuleFramework\ModuleRegistry;
+use Runa\Support\Modules\Api\OperationRejected;
+
+/** Lazy fixed dispatcher: a cold/retained registry must not load module code at route boot. */
+final readonly class AdminBootstrapController
+{
+    public function __construct(private Container $container, private ModuleRegistry $registry,
+        private ModuleDeclarations $declarations, private OperationGuard $guard) {}
+
+    public function __invoke(Request $request): mixed
+    {
+        $operation = match ($request->route()?->getName()) {
+            'runa.admin.operations.read' => 'operations.read',
+            'runa.admin.operations.execute' => 'operations.execute',
+            'runa.admin.entry' => 'entry',
+            'runa.admin.activity.show', 'runa.admin.activity.renew' => 'activity',
+            'runa.admin.page.read' => 'page',
+            'runa.admin.section.read' => 'read',
+            'runa.admin.command.preview' => 'previewCommand',
+            'runa.admin.command' => 'command',
+            'runa.admin.preview' => 'preview',
+            'runa.admin.save' => 'save',
+            default => 'bootstrap',
+        };
+        $context = $this->guard->enter('runa.admin', new ApiOperation($operation === 'previewCommand' ? 'command.preview' : $operation, $operation === 'entry' ? null : 'runa.admin.enter'));
+        $record = $this->registry->snapshot()->modules['runa.admin']
+            ?? throw new OperationRejected('module_unavailable', 'runa.admin', 'bootstrap');
+        $controller = $this->declarations->make($record, 'Runa\\Modules\\Admin\\Http\\Controllers\\'.match ($operation) {
+            'operations.read', 'operations.execute' => 'OperationController',
+            'activity' => 'ActivityController', 'entry' => 'EntryController', 'page' => 'PageController', 'read' => 'SectionController',
+            'command', 'previewCommand' => 'CommandController', 'preview', 'save' => 'AggregateController',
+            default => 'BootstrapController',
+        });
+        $this->guard->assertCurrent($context);
+
+        $callback = [$controller, '__invoke'];
+        if (! is_callable($callback)) {
+            throw new \LogicException('Invalid Admin dispatcher.');
+        }
+
+        return $this->container->call($callback);
+    }
+}

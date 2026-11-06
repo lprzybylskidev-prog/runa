@@ -5,7 +5,6 @@ namespace Runa\Modules\Auth\Actions;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Models\User;
@@ -14,7 +13,8 @@ use Runa\Modules\Auth\Support\Identifiers;
 use Runa\Modules\Auth\Support\SecurityContext;
 use Runa\Support\Modules\Api\OperationRejected;
 
-/** @phpstan-import-type MailRow from ProfileMail
+/**
+ * @phpstan-import-type MailRow from ProfileMail
  * @phpstan-import-type SessionRow from SessionStore */
 final readonly class EmailAddresses
 {
@@ -26,13 +26,11 @@ final readonly class EmailAddresses
      */
     public function ownPrimary(Request $request): array
     {
-        return $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request): ?array {
+        return $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request): array {
             if (! $this->profiles->value('own_email_editable')) {
                 $this->refuse('email_edit_disabled');
             }
-            if (! Hash::check($request->string('current_password')->toString(), $user->password ?? '')) {
-                return null;
-            }
+            app(StepUp::class)->assertVerified('runa.auth.self.email', everyAction: true);
             $this->profiles->version($user, $request->integer('version'));
             $sessionHash = $session->session_hash;
             $this->startLocked($connection, $user, $request->string('email')->toString(), false, $sessionHash);
@@ -137,6 +135,46 @@ final readonly class EmailAddresses
         $connection->table('runa_auth.email_changes')->where('user_id', $user->id)->whereNull('completed_at')->whereNull('cancelled_at')->update(['cancelled_at' => now()]);
         $this->mail->issueLocked($connection, $user, 'notice', $old);
         $this->transactions->record($admin ? 'email.admin_changed' : 'email.changed', $user, ['email' => ['old' => $old, 'new' => $email], 'verified' => ['old' => $wasVerified, 'new' => true]]);
+    }
+
+    public function verifyPrimaryLocked(Connection $connection, User $user): void
+    {
+        if ($user->email_verified_at !== null) {
+            $this->refuse('email_unchanged');
+        }
+        $this->available($connection, $user, $user->email, true);
+        $user->email_verified_at = CarbonImmutable::now('UTC');
+        $user->verification_forced = false;
+        $user->remember_token = null;
+        $user->version++;
+        $user->security_version++;
+        $this->sessions->revokeUser($connection, $user);
+        $user->save();
+        $connection->table('runa_auth.entry_tokens')->where('user_id', $user->id)->whereNull('consumed_at')->whereNull('invalidated_at')->update(['invalidated_at' => now(), 'delivery_secret' => null]);
+        $connection->table('runa_auth.step_up_proofs')->where('user_id', $user->id)->delete();
+        $connection->table('runa_auth.email_changes')->where('user_id', $user->id)->whereNull('completed_at')->whereNull('cancelled_at')->update(['cancelled_at' => now()]);
+        $this->transactions->record('email.admin_verified', $user, ['email' => ['old' => $user->email, 'new' => $user->email], 'verified' => ['old' => false, 'new' => true]]);
+    }
+
+    public function verifySecondaryLocked(Connection $connection, User $user, string $addressId): void
+    {
+        if (! $this->profiles->value('secondary_emails_enabled')) {
+            $this->refuse('secondary_disabled');
+        }
+        /** @var (\stdClass&object{id:int,email:string,verified_at:string|null})|null $row */
+        $row = $connection->table('runa_auth.secondary_emails')->where('user_id', $user->id)->where('public_id', $addressId)->whereNull('deleted_at')->lockForUpdate()->first();
+        if ($row === null) {
+            $this->refuse('secondary_missing');
+        }
+        if ($row->verified_at !== null) {
+            $this->refuse('email_unchanged');
+        }
+        $this->available($connection, $user, $row->email, false, $row->id);
+        $connection->table('runa_auth.secondary_emails')->where('id', $row->id)->update(['verified_at' => now(), 'updated_at' => now()]);
+        $connection->table('runa_auth.profile_mail')->where('secondary_id', $row->id)->whereNull('consumed_at')->update(['consumed_at' => now(), 'delivery_secret' => null]);
+        $user->version++;
+        $user->save();
+        $this->transactions->record('secondary.admin_verified', $user, ['email' => ['old' => $row->email, 'new' => $row->email], 'verified' => ['old' => false, 'new' => true]]);
     }
 
     /**

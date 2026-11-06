@@ -4,29 +4,39 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\Contracts\Modules\UpgradeContext;
 use Runa\Integration\Core\DenyAuthorityChanges;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
+use Runa\Modules\Auth\Actions\BulkUsers;
 use Runa\Modules\Auth\Actions\ChangeIdentity;
 use Runa\Modules\Auth\Actions\PolicyHistory;
 use Runa\Modules\Auth\Contracts\AuthIdentities;
 use Runa\Modules\Auth\Contracts\AuthLifecycle;
+use Runa\Modules\Auth\Contracts\BulkUserChange;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\LifecycleChange;
 use Runa\Modules\Auth\Contracts\NewIdentity;
+use Runa\Modules\Auth\Contracts\OperatorAuthority;
+use Runa\Modules\Auth\Contracts\SessionSelection;
+use Runa\Modules\Auth\InitializeAuth;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
+use Runa\Support\Modules\Data\ModuleSchema;
 use Runa\Support\Modules\Development\ModuleContractSuite;
+use Runa\Support\Modules\ModuleIdentity;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Tests\Fixtures\CoreModuleStorage;
 
@@ -39,19 +49,17 @@ beforeEach(function (): void {
     }
     $this->permissionsStorageAbsent = true;
     app(ModuleRegistry::class)->synchronize('runa');
-    foreach (['audit' => 'events', 'auth' => 'identities'] as $code => $table) {
-        $migration = require base_path('runa/modules/'.$code.'/database/migrations/2026_10_23_000001_runa_'.$code.'_'.$table.'.php');
-        $migration->up();
+    foreach (['audit', 'auth'] as $code) {
+        foreach (glob(base_path('runa/modules/'.$code.'/database/migrations/*.php')) as $path) {
+            (require $path)->up();
+        }
         $this->authSchemas[] = 'runa_'.$code;
         DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => app(ModuleRegistry::class)->snapshot()->modules['runa.'.$code]->sourceVersion]);
     }
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000002_runa_auth_entry_tokens.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000003_runa_auth_sessions.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000004_runa_auth_credentials.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000005_runa_auth_profiles.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_23_000006_runa_auth_preferences.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_24_000007_runa_auth_policy.php'))->up();
-    (require base_path('runa/modules/auth/database/migrations/2026_10_24_000017_runa_auth_development_fixtures.php'))->up();
+    (new InitializeAuth)->run(new UpgradeContext(
+        (string) Str::uuid7(), 'runa.auth', null, '3.0.0', 'initialize', DB::connection(),
+        new ModuleSchema(DB::connection(), new ModuleIdentity('runa.auth')),
+    ));
     // This fixture intentionally exercises Audit/Auth without installed Permissions.
     CoreModuleStorage::removePermissions();
     DB::transaction(fn () => app(PolicyHistory::class)->baseline(DB::connection()));
@@ -93,6 +101,7 @@ afterEach(function (): void {
 });
 
 it('normalizes Auth names and identifiers and enforces PostgreSQL naming and claim invariants', function (): void {
+    expect(Schema::hasColumn('runa_auth.users', 'approved'))->toBeFalse();
     $actions = app(ChangeIdentity::class);
     $one = $actions->create(new NewIdentity('  One@Example.test ', name: 'One Person', login: ' First.Login '));
     $two = $actions->create(new NewIdentity('two@example.test', firstName: 'Druga', surname: 'Osoba'));
@@ -126,22 +135,21 @@ it('evaluates independent Auth predicates at exact UTC boundaries without schedu
     $actions = app(ChangeIdentity::class);
     $identity = $actions->create(new NewIdentity('states@example.test', name: 'States'));
     $lookup = app(LookupIdentity::class);
-    expect($lookup->eligibility($identity->publicId)->blockers)->toBe(['approval_required', 'inactive']);
+    expect($lookup->eligibility($identity->publicId)->blockers)->toBe(['inactive']);
+    expect(fn () => new LifecycleChange('approve'))->toThrow(InvalidArgumentException::class);
+    expect(fn () => new BulkUserChange('approve'))->toThrow(InvalidArgumentException::class);
     $change = function (LifecycleChange $change) use (&$identity, $actions): void {
         $identity = $actions->change($identity->publicId, $identity->version, $change);
     };
-    $change(new LifecycleChange('approve'));
     $change(new LifecycleChange('schedule_activation', '2026-10-23T11:00:00Z'));
     $change(new LifecycleChange('schedule_deactivation', '2026-10-23T13:00:00Z'));
-    $change(new LifecycleChange('set_expiry', '2026-10-23T12:00:00Z'));
     $change(new LifecycleChange('set_security_lock', enabled: true));
     $change(new LifecycleChange('set_attempt_lock', '2026-10-23T11:30:00Z'));
     $change(new LifecycleChange('require_password_change', enabled: true));
     expect($lookup->eligibility($identity->publicId)->blockers)->toBe(['before_activation', 'security_locked', 'attempt_locked']);
     CarbonImmutable::setTestNow('2026-10-23T12:00:00Z');
-    expect($lookup->eligibility($identity->publicId)->blockers)->toBe(['expired', 'security_locked']);
+    expect($lookup->eligibility($identity->publicId)->blockers)->toBe(['security_locked']);
     $change(new LifecycleChange('set_security_lock', enabled: false));
-    $change(new LifecycleChange('set_expiry'));
     expect($lookup->eligibility($identity->publicId)->mayAuthenticate())->toBeTrue()
         ->and($lookup->eligibility($identity->publicId)->restrictions)->toBe(['email_verification_required', 'password_change_required'])
         ->and($lookup->eligibility($identity->publicId)->mayOperate())->toBeFalse();
@@ -200,7 +208,7 @@ it('keeps Auth lifecycle and revocation atomic when Audit fails even inside a ca
 it('denies Auth public reads and writes before Permissions and denies lifecycle without a trusted invariant participant', function (): void {
     $apis = app(ModuleApis::class);
     $identities = $apis->resolve('runa.auth', AuthIdentities::class, '1.0.0');
-    $lifecycle = $apis->resolve('runa.auth', AuthLifecycle::class, '1.0.0');
+    $lifecycle = $apis->resolve('runa.auth', AuthLifecycle::class, '2.1.0');
     $identity = app(ChangeIdentity::class)->create(new NewIdentity('private@example.test', name: 'Private'));
     expect(fn () => $identities->identity($identity->publicId))->toThrow(OperationRejected::class)
         ->and(fn () => $identities->eligibility($identity->publicId))->toThrow(OperationRejected::class)
@@ -222,7 +230,7 @@ it('denies Auth public reads and writes before Permissions and denies lifecycle 
     app(PrincipalScope::class)->run(new TrustedPrincipal($identity->publicId), function () use ($identities, $identity): void {
         $projection = $identities->identity($identity->publicId);
         expect($projection)->toEqual($identity)
-            ->and($identities->eligibility($identity->publicId)->blockers)->toBe(['approval_required', 'inactive']);
+            ->and($identities->eligibility($identity->publicId)->blockers)->toBe(['inactive']);
         expect(fn () => $projection->displayName = 'forged')->toThrow(Error::class);
         expect(json_encode($projection))->not->toContain('private@example.test');
     });
@@ -269,3 +277,51 @@ it('initializes Audit then Auth exactly once through the real fenced module upda
     $record = app(ModuleRegistry::class)->snapshot()->modules['runa.auth'];
     expect($record->installedVersion)->toBe($record->sourceVersion)->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
 });
+
+it('resolves mixed bulk binary inversions into locked native plans with real impact and Audit', function (string $operation): void {
+    app()->instance(OperatorAuthority::class, new class implements OperatorAuthority
+    {
+        public function initialize(Connection $connection, string $publicId): void
+        {
+            throw new LogicException('Not an operator fixture.');
+        }
+
+        public function isAdministrator(Connection $connection, string $publicId): bool
+        {
+            return false;
+        }
+
+        public function administrators(Connection $connection, array $publicIds): array
+        {
+            return [];
+        }
+    });
+    $actions = app(ChangeIdentity::class);
+    $one = $actions->create(new NewIdentity('invert-one@example.test', name: 'One', active: true));
+    $two = $actions->create(new NewIdentity('invert-two@example.test', name: 'Two'));
+    if ($operation === 'toggle_deletion') {
+        $two = $actions->change($two->publicId, $two->version, new LifecycleChange('delete'));
+    }
+    if ($operation === 'toggle_security_lock') {
+        $one = $actions->change($one->publicId, $one->version, new LifecycleChange('set_security_lock', enabled: true));
+    }
+    $owner = app(BulkUsers::class);
+    $selection = new SessionSelection([$one->publicId, $two->publicId]);
+    $change = new BulkUserChange($operation);
+    DB::transaction(function () use ($owner, $selection, $change): void {
+        app(AuthorityLock::class)->acquire(DB::connection());
+        $users = $owner->lock($selection);
+        $plans = $owner->prepare(DB::connection(), $users, $change);
+        expect($owner->snapshot(DB::connection(), $users, $change, $plans)['affected_accounts'])->toBe(2);
+        $owner->apply(DB::connection(), $plans, $change);
+    });
+    $first = User::withTrashed()->where('public_id', $one->publicId)->firstOrFail();
+    $second = User::withTrashed()->where('public_id', $two->publicId)->firstOrFail();
+    match ($operation) {
+        'toggle_activation' => expect($first->active)->toBeFalse()->and($second->active)->toBeTrue(),
+        'toggle_deletion' => expect($first->trashed())->toBeTrue()->and($second->trashed())->toBeFalse()->and($second->active)->toBeFalse(),
+        'toggle_security_lock' => expect($first->security_locked)->toBeFalse()->and($second->security_locked)->toBeTrue(),
+    };
+    expect(DB::table('runa_audit.events')->where('action', 'like', 'identity.%')->count())->toBeGreaterThanOrEqual(4);
+    expect(fn () => new BulkUserChange($operation, enabled: true))->toThrow(InvalidArgumentException::class);
+})->with(['toggle_activation', 'toggle_deletion', 'toggle_security_lock']);

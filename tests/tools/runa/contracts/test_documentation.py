@@ -79,6 +79,20 @@ class DocumentationOwnership(unittest.TestCase):
         )
         self.track()
 
+    def test_owner_guidance_validation_preserves_the_customer_document_boundary(self) -> None:
+        self.copy_owner_inputs()
+        with self.assertRaises(ValueError):
+            docs_checks.validate(self.root, owner_guidance=True)
+        self.receipt.unlink()
+        self.write("AGENTS.md", "[Owner guide](docs/runa/maintainer/internal.md)\n")
+        with contextlib.redirect_stdout(io.StringIO()):
+            docs_checks.validate(self.root, owner_guidance=True)
+        self.write(
+            "docs/app/README.md", "[Forbidden owner guide](../runa/maintainer/internal.md)\n"
+        )
+        with self.assertRaisesRegex(ValueError, "owner-only"):
+            docs_checks.validate(self.root, owner_guidance=True)
+
     def test_actual_public_projection_has_complete_docs_skills_empty_roadmaps_and_no_owner_history(
         self,
     ) -> None:

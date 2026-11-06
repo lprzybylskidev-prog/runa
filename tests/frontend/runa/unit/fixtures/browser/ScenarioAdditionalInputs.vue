@@ -137,8 +137,6 @@ const fileLabels = computed(() => ({
             v-model="instant"
             :label="text('Termin', 'Scheduled time')"
             :locale="locale"
-            time-zone="Europe/Warsaw"
-            :zone-label="text('Strefa czasowa', 'Time zone')"
             :disambiguation="disambiguation"
             :invalid-message="
               text(
@@ -329,7 +327,7 @@ const fileLabels = computed(() => ({
       </div></Card
     >
     <template #actions
-      ><Button type="submit" variant="solid">{{
+      ><Button type="submit" variant="outline">{{
         text('Pokaż wartości', 'Show values')
       }}</Button></template
     ></Form

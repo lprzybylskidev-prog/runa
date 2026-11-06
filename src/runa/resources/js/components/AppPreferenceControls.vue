@@ -9,6 +9,7 @@ withDefaults(
   defineProps<{
     size?: ControlSize;
     navigation?: boolean;
+    fixedLocale?: boolean;
     locale: Locale;
     theme: Theme;
     themeLabel: string;
@@ -24,9 +25,10 @@ const emit = defineEmits<{
 <template>
   <div :aria-label="t('preferences')" class="flex gap-2" role="group">
     <template v-if="navigation">
-      <form method="get">
+      <form v-if="!fixedLocale" method="get">
         <input type="hidden" name="theme" :value="theme" />
         <AppButton
+          intent="neutral"
           :size="size"
           type="submit"
           compact
@@ -39,6 +41,7 @@ const emit = defineEmits<{
       <form method="get">
         <input type="hidden" name="lang" :value="locale" />
         <AppButton
+          intent="neutral"
           :size="size"
           type="submit"
           compact
@@ -62,9 +65,10 @@ const emit = defineEmits<{
       </form>
     </template>
     <template v-else>
-      <AppTooltip :text="t('changeLanguage')">
+      <AppTooltip v-if="!fixedLocale" :text="t('changeLanguage')">
         <template #default="{ descriptionId }">
           <AppButton
+            intent="neutral"
             :size="size"
             compact
             :aria-label="languageLabel"
@@ -78,6 +82,7 @@ const emit = defineEmits<{
       <AppTooltip :text="t('changeTheme')">
         <template #default="{ descriptionId }">
           <AppButton
+            intent="neutral"
             :size="size"
             compact
             :aria-label="themeLabel"

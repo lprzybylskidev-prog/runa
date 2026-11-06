@@ -229,17 +229,48 @@ failure; a completed earlier contributor remains valid if a later one fails. Rep
 that failure and rerun. These ledgers are technical metadata, not an alternative
 identity/grant store. Neither production updates nor normal reopen invoke them.
 
+### Optional automatic development administrator
+
+For local development, set `DEV_SEED_MODULES=true`, `DEV_SEED_ADMIN_EMAIL` and
+`DEV_SEED_ADMIN_PASSWORD` in the ignored private `.env.dev.local` overlay.
+Development prepare/setup preserves these entries and materializes them into
+local `.env`; explicit overlay entries override `.env`, while omitted entries
+preserve runtime configuration. See [environment file responsibilities](../development/environment-files.md)
+for quoting and clearing values. The supplied application DatabaseSeeder then includes the module
+development graph in ordinary `db:seed` and `migrate:fresh --seed`. Prepare the
+Core modules first; an application-only fresh command does not rebuild protected
+platform/module storage. Run the complete scoped rebuild before default seeding
+when recreating all Runa data. Ordinary reopen never seeds automatically.
+
+Auth's DevelopmentAdministratorSeeder depends on AuthDevelopmentSeeder and uses
+its administrator provenance and the real operator-created protected
+superadministrator role. It initializes only an absent password for the configured
+fixture email, verifies the email, consumes pending operator tokens and records
+Audit in the same transaction. Repeats preserve credentials and later account/grant
+changes. Foreign administrators are never adopted. With no configured credentials,
+the existing private interactive initial setup remains available.
+
+The owner explicitly permits an 8–72 byte initial fixture password here, independently
+of the ordinary minimum-12-character policy. This exception exists only in the
+guarded development seeder; runtime password creation/change/recovery keeps full
+validation. Production and recorded-production installations refuse direct execution,
+even with force/local overrides. Local env inputs are not read into testing or
+production defaults; tests configure synthetic fixtures explicitly. Credentials
+never belong in examples, source, Audit, command arguments or output. Retire the
+exception together with this optional fixture when that development capability is
+removed; it must never be reused as a runtime password-validation switch.
+
 ### Supplied scenarios and independent tuning
 
-| Scenario                                | Initial purpose                                                     |
-| --------------------------------------- | ------------------------------------------------------------------- |
-| administrator                           | Real protected role; private initial setup; ordinary security steps |
-| reader / direct                         | Separate ordinary role grant and direct permission                  |
-| pending / unverified                    | Approval refusal and email verification flow                        |
-| password_change / second_factor         | Forced password change and enrolled email factor                    |
-| sessions                                | Real tracked session row with undistributed random browser material |
-| inactive / locked / expired / scheduled | Independent lifecycle/time restrictions                             |
-| extra_N                                 | Small incremental ordinary account corpus                           |
+| Scenario                                    | Initial purpose                                                     |
+| ------------------------------------------- | ------------------------------------------------------------------- |
+| administrator                               | Real protected role; private initial setup; ordinary security steps |
+| reader / direct                             | Separate ordinary role grant and direct permission                  |
+| pending / unverified                        | Approval refusal and email verification flow                        |
+| password_change / second_factor             | Forced password change and enrolled email factor                    |
+| sessions                                    | Real tracked session row with undistributed random browser material |
+| inactive / locked / deactivated / scheduled | Independent lifecycle/time restrictions                             |
+| extra_N                                     | Small incremental ordinary account corpus                           |
 
 Permissions also supplies a custom reader role with `runa.audit.read`, a preset
 containing that role plus direct `runa.permissions.introspection.read`, and empty
@@ -291,7 +322,7 @@ this is explicit local preparation, never an automatic reopen step.
 Before handing a frontend to an owner/customer for manual review, explicitly
 prepare the actual development environment: forward-install/update mandatory Core
 modules, publish current frontend/error assets, run the module development corpus
-and privately initialize the administrator password. Ordinary reopen remains
+and initialize the administrator password through the configured local seeder or private interactive setup. Ordinary reopen remains
 nondestructive and does not run seeds. Core modules are mandatory/enabled after
 normal initialization; an absent registry or stale assets is not a reason to ask
 the reviewer to enable Core manually or memorize a login URL.
@@ -299,21 +330,22 @@ the reviewer to enable Core manually or memorize a login URL.
 Verify the real served guest welcome, conditional registration, normal sign-in,
 profile and sign-out before handing over the URL and privately supplied development
 credentials. Keep passwords out of source, documentation, argv, logs and screenshots;
-preserve established credentials on repeats. Local public registration may be
-explicitly enabled through audited revision-checked settings for a requested
-manual scenario; production defaults do not change. Read current readiness from
-the running application, not from owner fixtures or an old verification result.
-For a full user-panel appearance review, use the same audited Auth settings
-command to enable `secondary_emails_enabled`, `own_login_history`,
-`own_account_history`, `email_otp_enabled`, `trusted_devices_enabled`,
-`self_deactivate` and `self_delete`. Keep editing/add/change/remove capabilities
-allowed, both avatar editors available, TOTP/recovery codes enabled and required
-2FA optional. `session_remember_minutes=10080` exposes remembered sign-in. Enable
-all six `notice_*` categories to review delivery preferences; expiry notices still
-require a real applicable expiry. Do not force account enrollment or password
-expiry merely to expose controls. Preserve last-superadministrator protection.
-Audit and Permissions have no independent settings declarations for these user
-views; verify their mandatory Core availability and current grants instead.
+preserve established credentials on repeats. The explicit module development seeder applies an idempotent full Auth review
+preset through audited revision/generation-checked ModuleSettings before account
+fixtures. It enables welcome/registration, own identity edits, secondary addresses
+and their edits, both avatar editors, both account histories, self-deactivation/
+deletion, TOTP/email OTP/recovery/trust/session extension, administrative email
+verification and all six notice categories. Identifier mode is `either`, required
+2FA stays optional, and remembered sign-in is 10080 minutes.
+
+This preset runs only through guarded local/testing development seeding, including
+explicit `runa:seed:development --modules`; ordinary reopen never applies it.
+Production defaults are unchanged. Repeats preserve credentials, account state and
+factor enrollment, and unchanged settings create no additional revision/Audit event.
+Do not force enrollment or password expiry merely to expose controls. Preserve
+last-superadministrator protection. Audit and Permissions have no independent
+settings declarations for these user views; verify Core availability and grants.
+Read readiness from the running application, not an old verification result.
 
 Additional addresses appear inside **Konto i zabezpieczenia → Dane konta**, below
 the primary-email form; there is no separate address tab in the default panel. After verification,
@@ -321,8 +353,8 @@ they are selectable under **Preferencje** for categories that allow secondary
 recipients. Mandatory/sensitive security categories remain primary-only. Trusted
 device issuance and recovery-code controls depend on actual enrolled factors;
 mutually exclusive states must be reviewed with the documented fixture accounts
-and actual guarded flows, rather than bypassing security. These are explicit local
-review settings, not changed production defaults or automatic reopen behavior.
+and actual guarded flows, rather than bypassing security. The shared recipient selector is omitted whenever secondary addresses are disabled
+or only one eligible address exists, in both own and administrative preferences.
 
 This targeted operational preparation does not constitute full integrated
 browser/installation acceptance or the owner's visual acceptance.

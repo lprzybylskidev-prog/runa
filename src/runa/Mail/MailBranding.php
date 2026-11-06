@@ -4,6 +4,8 @@ namespace Runa\Mail;
 
 use Illuminate\Mail\Events\MessageSending;
 use Runa\Identity\ApplicationIdentity;
+use Runa\Settings\SettingStore;
+use Runa\Support\Settings\ApplicationPresentation;
 use Symfony\Component\Mime\Part\DataPart;
 
 final class MailBranding
@@ -12,12 +14,20 @@ final class MailBranding
 
     public function name(): string
     {
-        return app(ApplicationIdentity::class)->applicationName;
+        return app(ApplicationPresentation::class)->read()['name'];
     }
 
     public function logo(): ?string
     {
+        if ($this->uploadedLogo() !== null) {
+            return 'cid:'.self::LOGO_CID;
+        }
         $url = config('branding.mail_logo_url');
+        $selected = app(ApplicationPresentation::class)->read()['logo'];
+        $source = app(ApplicationIdentity::class)->logo;
+        if ($selected !== $source && $url === ($source['src'] ?? null)) {
+            $url = null;
+        }
         if (is_string($url) && $url !== '') {
             $parts = parse_url($url);
 
@@ -37,15 +47,42 @@ final class MailBranding
         if (! is_string($html) || ! str_contains($html, 'cid:'.self::LOGO_CID)) {
             return;
         }
+        $uploaded = $this->uploadedLogo();
+        if ($uploaded !== null) {
+            $event->message->addPart((new DataPart($uploaded, 'logo.png', 'image/png'))->asInline()->setContentId(self::LOGO_CID));
+
+            return;
+        }
         $path = $this->logoPath();
         if ($path !== null) {
             $event->message->addPart(DataPart::fromPath($path)->asInline()->setContentId(self::LOGO_CID));
         }
     }
 
+    private function uploadedLogo(): ?string
+    {
+        $src = app(ApplicationPresentation::class)->read()['logo']['src'] ?? null;
+
+        return is_string($src) && preg_match('~\A/api/presentation/assets/logo/([a-f0-9]{64})[.]png\z~D', $src, $match)
+            ? app(SettingStore::class)->asset('logo', $match[1]) : null;
+    }
+
     private function logoPath(): ?string
     {
         $path = config('branding.mail_logo_path');
+        $presentation = app(ApplicationPresentation::class)->read();
+        $identity = app(ApplicationIdentity::class);
+        $src = $presentation['logo']['src'] ?? null;
+        if ($path === base_path('runa/resources/images/runa-mail-logo.png') && is_string($src) && $presentation['logo'] !== $identity->logo) {
+            $candidate = public_path(ltrim($src, '/'));
+            $resolved = realpath($candidate);
+            $public = realpath(public_path());
+            // Source-catalogued assets still cannot escape the served public tree.
+            if ($resolved !== false && $public !== false && str_starts_with($resolved, $public.'/') && is_readable($resolved)
+                && in_array((new \finfo(FILEINFO_MIME_TYPE))->file($resolved), ['image/png', 'image/jpeg'], true)) {
+                $path = $resolved;
+            }
+        }
         if (! is_string($path) || ! is_file($path) || ! is_readable($path)) {
             return null;
         }

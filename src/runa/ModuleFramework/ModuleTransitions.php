@@ -8,6 +8,7 @@ use Illuminate\Database\Connection;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\AdministrativePreview;
 use Runa\Contracts\Modules\LifecyclePlan;
+use Runa\Contracts\Modules\OperationalParticipant;
 use Runa\Contracts\Modules\TransitionContext;
 use Runa\Contracts\Modules\TransitionResult;
 use Runa\Support\Modules\Work\ModuleWork;
@@ -15,6 +16,7 @@ use RuntimeException;
 use Throwable;
 
 /** Durable reservations surround reversible hooks; only short transactions publish registry state.
+ *
  * @phpstan-type Progress array{state: string, token: ?string, code: string}
  * @phpstan-type Payload array{plans: array<string, array{revision: string, blocked: bool, code: string}>, changes: array<string, bool>, progress: array<string, Progress>, terminal: string}
  * @phpstan-type Operation object{public_id: string, intent: string, target: string, generation: int, affected: string, payload: string, status: string, publication_generation: ?int}
@@ -32,6 +34,7 @@ final class ModuleTransitions
         private readonly Encrypter $encrypter,
         private readonly string $platformVersion,
         private readonly ModuleHealth $health,
+        private readonly OperationalParticipant $history = new NoOperationalParticipation,
     ) {}
 
     public function preview(string $intent, string $target): AdministrativePreview
@@ -111,6 +114,7 @@ final class ModuleTransitions
                     $this->connection->table('shared.module_work')->whereIn('module_id', $this->connection->table('shared.modules')->whereIn('module_id', $preview->graph->affected)->select('id'))
                         ->whereIn('status', ModuleWork::ACTIVE)->update(['cancel_requested' => true, 'updated_at' => now()]);
                 }
+                $this->history->recording($this->connection, $preview->graph->target, 'module.transition.reserved', ['operation' => $id, 'intent' => $preview->graph->intent, 'generation' => $preview->graph->generation]);
                 $this->bump(); // Publish fence and cooperative work signals with unchanged flags.
             });
 
@@ -219,7 +223,8 @@ final class ModuleTransitions
         return $this->status($id);
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function assertPreparationCurrent(object $row, array $payload): void
@@ -230,7 +235,8 @@ final class ModuleTransitions
         }
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function compensate(object $row, array $payload, string $terminal): TransitionResult
@@ -270,7 +276,8 @@ final class ModuleTransitions
         return $this->status($row->public_id);
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function context(object $row, string $module, array $payload): TransitionContext
@@ -296,7 +303,15 @@ final class ModuleTransitions
     private function save(string $id, string $status, array $payload): void
     {
         $this->assertRunner();
-        $this->connection->table('shared.module_transitions')->where('public_id', $id)->update(['status' => $status, 'payload' => $this->encode($payload), 'updated_at' => now()]);
+        $this->connection->transaction(function () use ($id, $status, $payload): void {
+            /** @var (\stdClass&object{target:string,intent:string})|null $row */
+            $row = $this->connection->table('shared.module_transitions')->where('public_id', $id)->lockForUpdate()->first();
+            if ($row === null) {
+                throw new RuntimeException('Unknown module transition.');
+            }
+            $this->connection->table('shared.module_transitions')->where('public_id', $id)->update(['status' => $status, 'payload' => $this->encode($payload), 'updated_at' => now()]);
+            $this->history->recording($this->connection, $row->target, 'module.transition.'.$status, ['operation' => $id, 'intent' => $row->intent]);
+        });
     }
 
     /** @param Payload $payload */

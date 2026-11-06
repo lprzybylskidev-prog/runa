@@ -13,13 +13,11 @@ const copy = computed(() =>
     ? {
         title: 'Moduł referencyjny',
         load: 'Sprawdź połączenie',
-        busy: 'Sprawdzanie…',
         failed: 'Nie udało się odczytać odpowiedzi. Spróbuj ponownie.',
       }
     : {
         title: 'Reference module',
         load: 'Check connection',
-        busy: 'Checking…',
         failed: 'The response could not be read. Try again.',
       },
 );
@@ -60,8 +58,8 @@ async function load() {
       ><h2>{{ copy.title }}</h2></template
     >
     <div class="flex flex-col items-start gap-4" :aria-busy="busy">
-      <Button :disabled="busy" @click="load">{{
-        busy ? copy.busy : copy.load
+      <Button intent="inspect" :busy="busy" @click="load">{{
+        copy.load
       }}</Button>
       <p role="status" class="break-words text-muted">
         {{ failed ? copy.failed : message }}

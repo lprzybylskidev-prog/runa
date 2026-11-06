@@ -7,3 +7,13 @@ For screen/controller replacement read [frontend adoption](../../../../docs/runa
 for exact module behavior follow its linked public guide. Maintain contracts and
 examples there, with application-specific patterns in local App guidance.
 Customer composition never authorizes protected platform edits or copied security logic.
+
+For supplied Admin module views, review Auth/Permissions/Audit together when a
+shared table defect is reported; follow the canonical Admin frontend contract.
+Customer implementations consume public fixes and never edit protected platform
+sources. Custom table export/print requires separate server-enforced export
+permission in addition to owning read authority; UI visibility alone is insufficient.
+
+Review each supplied consumer against the public guide’s shared-capability contract,
+including actual server sort/filter support and local withTableFilters composition.
+Keep query/export scope explicit; a rendered Table alone does not complete integration.

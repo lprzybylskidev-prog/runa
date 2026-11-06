@@ -1,0 +1,88 @@
+<?php
+
+namespace {{namespace}}\Definitions;
+
+use {{namespace}}\Contracts\{{name}}Tools;
+use {{namespace}}\Management\{{name}}Adapter;
+use Runa\Contracts\Modules\{ApiOperation, ManagementAction, ManagementApiTarget, ManagementBinding,
+    ManagementCommandDefinition, ManagementComponent, ManagementContribution, ManagementEntity,
+    ManagementEntityProvider, ManagementField, ManagementFieldAccess, ManagementOperation,
+    ManagementPage, ManagementPageProvider, ManagementPermission, ManagementSection, ManagementWidget};
+
+final class {{name}}Management implements ManagementPageProvider, ManagementEntityProvider
+{
+    public function permissions(): array
+    {
+        return [new ManagementPermission('{{key}}.use', ['pl' => 'Narzędzie tekstowe', 'en' => 'Text tool'],
+            ['pl' => 'Odczyt i obliczenia tekstowe.', 'en' => 'Read and calculate text values.'])];
+    }
+
+    public function actions(): array
+    {
+        return [new ManagementAction('{{key}}.normalize', '{{key}}.use',
+            ['pl' => 'Normalizuj tekst', 'en' => 'Normalize text'],
+            ['pl' => 'Obliczenie bez zapisu danych.', 'en' => 'Calculate without persisting data.'])];
+    }
+
+    public function components(): array
+    {
+        return [new ManagementComponent('{{key}}.section', '{{id}}.{{key}}_section', '{{key}}.use')];
+    }
+
+    private function field(): ManagementField
+    {
+        return new ManagementField('text', 'text', ['pl' => 'Tekst', 'en' => 'Text'],
+            ['pl' => 'Tekst do obliczenia.', 'en' => 'Text to calculate.'], writable: true, maxLength: 160);
+    }
+
+    private function safety(): ManagementOperation
+    {
+        return new ManagementOperation(new ApiOperation('{{key}}.normalize', '{{id}}.{{key}}.use'), ['text']);
+    }
+
+    public function entities(): array
+    {
+        return [new ManagementEntity('{{key}}', '{{key}}.use', ['pl' => 'Tekst', 'en' => 'Text'],
+            ['pl' => 'Bezstanowe narzędzie tekstowe.', 'en' => 'Stateless text tool.'], [$this->field()],
+            [new ManagementOperation(new ApiOperation('{{key}}.normalize', '{{key}}.use'), ['text'])])];
+    }
+
+    private function section(string $key = '{{key}}', bool $readonly = false): ManagementSection
+    {
+        $permission = '{{id}}.{{key}}.use';
+
+        return new ManagementSection($key, 'Text tool', $permission, $readonly ? null : $permission,
+            '{{key}}', [new ManagementFieldAccess($this->field(), $permission, $readonly ? null : $permission)],
+            $readonly ? [] : [new ManagementCommandDefinition('normalize', 'Normalize text (no storage)', $this->safety(), '{{key}}')],
+            component: $readonly ? null : '{{id}}.{{key}}_section');
+    }
+
+    public function pages(): array
+    {
+        $permission = '{{id}}.{{key}}.use';
+
+        return [new ManagementPage('{{key}}', '{{name}} text tools', $permission, [
+            $this->section(),
+            new ManagementSection('{{key}}_table', 'Configured text', $permission, null, '{{key}}',
+                [new ManagementFieldAccess($this->field(), $permission)], view: 'table'),
+        ], group: 'Tools', default: true)];
+    }
+
+    public function bindings(): array
+    {
+        return [new ManagementBinding('{{key}}', {{name}}Adapter::class,
+            [new ManagementApiTarget('{{id}}', {{name}}Tools::class, '1.0.0', ['normalize'])])];
+    }
+
+    public function contributions(): array
+    {
+        // An owned cross-page section: does not modify the host's data or commands.
+        return [new ManagementContribution('{{key}}.summary', '{{id}}.{{key}}.{{key}}',
+            $this->section('{{key}}_summary', true))];
+    }
+
+    public function widgets(): array
+    {
+        return [new ManagementWidget('{{key}}', '{{name}} text tool', '{{id}}.{{key}}.use', '{{key}}')];
+    }
+}

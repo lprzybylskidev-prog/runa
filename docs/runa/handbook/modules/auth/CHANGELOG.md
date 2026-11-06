@@ -1,5 +1,185 @@
 # Auth module changelog
 
+## 5.0.0 — Unreleased
+
+- Retain in-progress authenticator enrollment when refreshed actions replace Begin with Confirm. Retain the shared full-page password-confirmation flow.
+
+- Align protected-authority bulk tools with existing aggregate counts and omitted-account warnings; remove individual change listings and place Superadministrator last in both action toolbars.
+
+- Replace the Auth user superadministrator checkbox section with grouped grant/revoke actions for one account or up to 100 explicitly selected accounts. Add guarded PermissionsAuthorityBatch 1.0.0 with complete-set lockout protection, stale review refusal, one password proof and atomic per-target Audit; preserve ordinary Auth bulk exclusions.
+
+- Simplify Permissions to a readonly permission catalogue, roles and presets; combine details/editing in one dialog. Move account copy/preset and separately granted protected-authority workflows to Auth user details. Reuse guarded search, compact member selection, native source fingerprints, reviewed password-confirmed writes and atomic Audit; remove obsolete access/effective page adapters and exports.
+
+- Use quiet outlined action buttons, including Save and confirmations. Preserve operation colors before modal admission and use purple for mixed-effect tools; final confirmation reflects the selected operation. Document the shared policy for future views.
+
+- Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/previews, purple mixed-effect tools and red destructive effects, independent of feedback context or password proof.
+
+- Simplify module settings Save to a confirmation question; omit the repeated differences and policy consequence messages while preserving native validation, password proof and Audit.
+
+- Use the full workspace width for module settings and pack group cards in independent responsive columns, removing large gaps below shorter groups.
+
+- Compact the shared module settings editor into bounded label/control rows and responsive group columns; widen the snapshot selector. Preserve source technical keys and separate PL/EN names/descriptions through authorized Admin projection, with keyboard/touch-accessible help. Clarify Auth descriptions and units without changing setting behavior.
+
+- Remove guarded revision-history restore (AuthPolicies 3.0.0) and the local policy history viewer. Use framework-owned named settings snapshots with committed-value capture, draft preview/cancel, password-confirmed deletion and transactional Audit. Group Auth settings semantically and publish the full policy once.
+
+- Remove redundant selected-user rule instructions and the local change-history panel; retain active rules and Account status, with history available through Audit.
+
+- Auth 4.0.0 / AuthStepUp 2.0.0: use password-only confirmation for sensitive operations and protected places. Reserve factor challenges for login; retain new-authenticator enrollment validation. Remove factor proof modes/storage and password_change_factor. Share the existing Auth page across Admin and own account, preserving cancelled drafts, native proof consumption and Audit. Trusted-device issuance reuses the factor verified at login.
+
+- Auth 4.0.0 / AuthPolicies 2.0.0: allow optional account-rule expiry, with null meaning indefinite and no maximum horizon for a future date. Update effective policy reads, session cleanup, status/history and Audit handling; correct the original pre-1.0 schema and current Auth consumer constraints. Space operation fields and show explicit optional/indefinite copy.
+
+- Move selected-user rules into User with named bounded editors, separate active/history presentation and live custom rules in Account status. Add guarded AuthPolicies 2.0.0 active exception reads independent of the latest-50 history cap; preserve native proof, revisions and Audit.
+
+- Keep directory filter controls aligned within each responsive row when field labels wrap.
+
+- Complete own/Admin security table capabilities: chronological session sorting, local search/column filters, and separately authorized bounded Admin exports/print. Extend AuthAdministration to 2.1.0 with authorized directory ordering before cursor paging, nulls last, stable UUID ties and query-bound cursors.
+
+- Enrich new-browser sign-in notices in Polish/English with captured safe browser/system labels, event time and guidance for unrecognized activity, preserving native multipart mail and reference-only delivery.
+
+- Auth 4.0.0: identify trusted browsers with allowlisted browser/system labels, cookie-bound current-device state and last successful use. Share columns in Admin and the inline own-account table, including empty results. Extend AuthSecurity to 1.2.0 and correct the original pre-1.0 development migration.
+
+- Present selected-user sessions and trusted devices with the shared account Table, authorized dates, remembered sign-in and native revocation; rename Trust to Trusted devices and retain bounded cursor navigation.
+
+- Hide single/bulk action separators at wrapped row starts while preserving same-row separators and unclipped keyboard focus.
+
+- Refine single/bulk action grouping into inline buttons with vertical separators, accessible category names and no visible group headings.
+
+- Auth 4.0.0: share thematic single/bulk action grouping, ordered account-status groups and compact own/Admin preference defaults. Add AuthProfiles 2.1.0 existing-address confirmation with native bypass configuration/grants, both-factor proof, ownership/version checks and atomic Audit.
+
+- Auth 4.0.0: share secondary-email list/inline editing through public AuthSecondaryEmailFields. Preserve occupied identifier and password-reset refusal codes, distinguish business refusals from stale revisions, and give actionable account/preference/proof feedback while retaining anonymous non-enumeration.
+
+- Remove generic operation-scope filler, show factor-discovery skeletons and explicit action progress, and expose account refreshing for retained read feedback.
+
+- Preserve inactive name drafts, show selected-avatar bytes/initials, consolidate account facts and rebuild email management. Hide recipient selectors with disabled secondary addresses and apply the complete review preset during explicit development seeding.
+
+- Auth 4.0.0: align selected-user details with creation, bulk action tones and own-account identity/preferences/avatar cropping; export shared presentation fields with independent controller ownership.
+- Auth 4.0.0: rebuild user details around User and Security with named user rules; add permissioned target preference reads/atomic edits and individual all-device/exception revocation. Preferences API advances additively to 1.1.0, Security to 1.2.0 and Policies to 2.0.0; preserve self-service binding, native proofs, delivery constraints and Audit.
+
+- Omit operational editors for configuration-disabled capabilities. Keep authorized account facts read-only, hide disabled verification/factor/avatar editors and notification recipients, and dismiss withdrawn editors without losing unrelated drafts. Document the shared visibility rule in owner/customer frontend guidance. Preserve native backend enforcement.
+
+- Simplify account creation copy and remove its optional security controls. Keep a concise outcome summary. Enable administrative email verification by default, retain its editable Auth policy control and omit creation verification entirely when unavailable. Preserve native permissions, stronger proof and Audit.
+
+- Deliver comprehensive atomic account creation through AuthLifecycle 2.1.0 with initial password/invitation choices, independent activation/deactivation schedules, administrative email verification, initial locks and forced password change. Supply a conditional PL/EN form and access/delivery summary. Send and accept invitations before activation without issuing a session; show account_inactive only after correct login credentials. Preserve owning policy/grants/proofs, Audit and token security guards.
+
+- Exclude all protected superadministrators from every Auth bulk user/session/trust action, including inactive or locked members. Show skipped counts, mutate only ordinary targets and fingerprint current protected membership through a bounded trusted Permissions read. Retire blocked-whole-batch preview flags. Advance AuthBulkSessions to 2.0.0 and update current consumers; individual native last-administrator guards remain unchanged.
+
+- Refine bulk modals with compact width, paired selection/impact counts, localized loading and right-aligned confirmation.
+
+- Group related Auth bulk controls into primary outlined buttons with explicit modal operation selection. Add atomic per-account activity/deletion/security-lock inversion with native grants, review fingerprints, Audit and deletion password proof; rename the one-way bulk action to Force password change. No periodic-policy column or account opt-out is added.
+
+- Default Auth password expiry to 30 days on fresh initialization; retain zero as explicit disabling and preserve the independent one-time forced-change action.
+
+- Remove independent account approval: current activity and scheduled activation/deactivation govern lifecycle admission. Remove approved/approve from storage, eligibility, creation, directory and administration; registration_activation selects automatic activation or inactive accounts awaiting ordinary administrator activation. Preserve historical Audit reads. Update the unreleased Auth 3.0.0 and Lifecycle/Administration/BulkUsers 2.0.0 contracts and all current consumers.
+
+- Add optional locally configured automatic superadministrator fixture seeding after database rebuilds. Keep credentials outside Git, preserve existing passwords, enforce production guards and retain normal runtime password validation; only the initial development fixture permits an owner-approved shorter password.
+
+- Remove independent account expiry in favor of scheduled deactivation, remove users.expires_at and its command/fact/filter, and preserve historical Audit reads. Reminder mail/settings/categories now use scheduled deactivation, including administrator-copy routing. Consolidate unpublished platform, Audit, Auth and Permissions migrations into final per-table CREATE definitions; initialize technical rows through seeds/initializers and recreate the disposable development database. Remove the unnecessary expiry conversion migration and settings rename machinery. Auth moves to 3.0.0 and Lifecycle/Administration/BulkUsers APIs to 2.0.0; current dependent constraints/consumers are synchronized.
+
+## 2.1.0 — 2026-10-31
+
+- Extend AuthBulkUsers to 1.1.0 with actual affected-account counts. Refine bulk parameter/review/password-step presentation, translate session revocation and apply semantic action order/colors. Owner-approved batch policy requires fresh password proof only for delete/restore, password/2FA reset and exception revocation; other batches retain native review, grants and Audit without extra proof. Replace the state column with deleted-row colors and a default Not deleted filter.
+
+- Match Auth Users filters to Audit compact controls, shorten account/security labels and expose each authorized bulk command as its own button below filters. Retain selected targets and native reviews/proofs.
+
+- Consolidate date/datetime ranges into one labelled compact field with a shared endpoint popup, valid atomic Apply and Clear/Cancel. Replace expanded Auth range filters and Audit from/until controls; preserve wire keys, timezone/DST and open endpoints.
+
+- Publish guarded AuthAdministration 1.1.0 field-authorized account facts and AuthBulkUsers 1.0.0 with immutable BulkUserChange. Update all exact-version consumers and the source public API boundary catalogue.
+
+- Complete Users filters across authorized facts and date ranges; show effective 2FA/enrollment/recovery, retained activity, invitation and credential state. Move creation into the directory header and all native reviewed bulk user operations below filters. Share locked owning phases, enforce current grants/features, atomic Audit/proof rollback and safe restore subject locks.
+
+- Complete configuration-aware Users administration: authorized account/session/security dates and state, accessible detail tabs, native avatar editing, and exact table-selected session/trust revocation. Remove the separate bulk-session page and retain native grants, proofs, Audit and shared Save.
+
+- Replace standalone content circles in history details, image cropping, entry forms and welcome navigation with shared content placeholders. Preserve specialized account geometry and Table loading.
+
+- Hide premature empty collection messages while modal record details load; shared Admin sections supply animated loading feedback.
+
+- Collapse long bounded collection values with the shared escaped ValuePreview; preserve explicit pagination and timestamp formatting.
+
+- Use the shared lowercase localized choice presentation for directory account states and read-only administrative dictionaries; keep wire/export codes unchanged. Align own login/account-history outcome labels with lowercase PL/EN presentation in rows and safe details.
+
+- Return the authorized filtered directory total before cursor/limit and forward it to Admin; retain deleted-state and profile-search authority.
+
+- Use shared timezone-independent epoch parsing for account/session/device dates and session deadlines; format known history date changes through the application timezone. Remove misleading UTC wording from datetime field labels.
+
+- Add guarded AuthStepUp 1.1.0 protected-section idle assertion/activity, with
+  independent server-owned deadlines, session/action/security/factor isolation,
+  atomic rollback and expiry-safe cleanup. Preserve fixed-age and consumed proofs.
+- Deliver public useProtectedActivity with scoped trusted input, bounded event
+  batching, visible-document handling, server expiry rechecks and disposal/identity
+  fencing. Section owners retain current endpoint authorization and presentation.
+- Add the forward section_activity edge and nullable technical timestamps without
+  resetting existing credentials, identities, sessions or development data.
+
+## 2.0.0 — 2026-10-30
+
+- Reuse validated settings inside the current locked read for entry/security,
+  password rules, session and profile projections. Batch selected session/trust
+  inventories and reminder history/exception reads while retaining per-account
+  Audit, current dispatch authority, limits and deadline/fingerprint checks.
+
+- Delete successfully cleaned avatar candidates in one bounded metadata write;
+  retain failed storage candidates and the current linked avatar.
+
+- Batch own-account presentation preferences and delivery categories instead of
+  querying/revalidating every entry independently. Preserve current declarations,
+  account isolation, migrations/defaults and mandatory recipient restrictions.
+
+- Keep reset beside filter fields in the shared filter region. Render declared
+  event timestamps and known Auth entry dates through the application locale/
+  timezone formatter, preserving canonical instants in transport and exports.
+
+- Use shared table refresh/reset icons with Tooltips, compact automatic filters
+  and dictionary Selects; open Details in guarded dialogs. Supply bounded
+  CSV/XLSX/PDF/Print behind the shared `runa.permissions.tables.export` grant
+  and current owning read authorization.
+
+- Use shared FormNotifications for operation proof, history-detail/sign-in-option reads, session operation failures and administrative collection errors; retain session expiry and admission state displays.
+
+- Consume application defaults without overwriting account/browser choices; format supplied account/session/history instants in the application timezone and reuse the public raster container inspection helper.
+
+- Include bounded initial Admin-entry advertisement in shared shell readiness; keep content/menu coherent with account preference hydration and hide temporary theme/language controls until navigation settles. Preserve background menu revalidation and identity fences.
+
+- Compose shared breadcrumbs from the active layout page context, with linked area/module ancestors and the current Admin/account subview, including query navigation.
+
+- Share Welcome module presentation through the public UI source catalogue and correct the shared session shell's Admin breadcrumbs for dashboard and owner pages.
+
+- Publish account navigation loading in the top bar, remove obsolete content tab placeholders and expose shell contentLoading/navigationLoading for initial page discovery.
+
+- Move account subview navigation into the shared top bar via UI PageNavigation, with query deep links, browser history and pending-write protection. Keep standalone presentation usable. Included in the existing unreleased candidate; no migration or version-only upgrade edge.
+
+- Coordinate initial application content/avatar placeholder completion inside the immediately rendered layout; retain the readiness latch across background reads and bound image failures/timeouts.
+
+- Render layout frames immediately and keep loading placeholders local to dependent content/avatar elements; public branding and profile/image reads never hide the page frame.
+
+- Share identity-scoped initial view/image readiness, bounded decoded-avatar fallback and nondestructive same-session refresh through the public UI contract.
+
+- Keep the known Admin menu advertisement during same-session revalidation, ignore unchanged activity observations and hide on denial/failure or immediate identity invalidation. Preserve stale-response fencing without a second session or polling loop.
+
+- Match operation-proof page heading focus to existing Auth screens and give shared proof cancellation its red danger/error outline button. Preserve reading focus and normal keyboard indicators on controls.
+
+- Follow the shared application language in administrative defaults and entry proof, retain translated policy setting names, and notify guest preference subscribers after write/reset so all mounted locale consumers stay synchronized.
+
+- Supply replaceable AuthOperationProofPage in MinimalLayout and PL/EN inline/page controls/errors; share the existing proof controller, support password/factor/both, and fence aborted factor reads even for an unchanged identity. Expose typed presentation contracts and an optional session-shell admission slot without starting another session.
+
+- Name the account-menu Admin entry `Panel administratora` / `Administrator panel` consistently with the Admin catalogue.
+
+- Supply private source-declared ProfilePage/ProfileEditor for native atomic naming/login replacement. Default record reads select the actor; explicit authorized reads use public UUIDs. Add complete Auth-owned Users, policy/history/restore and selected/all session administration. Supply guarded AuthAdministration 1.0.0 with bounded cursor directory, grant-filtered profile and lifecycle reads; preserve native independent action/Audit/proof protocols. Include these additive changes in the unreleased 2.0.0 candidate without a new migration or version-only upgrade edge.
+
+- Add public useOperationProof/AuthOperationProof for source-declared administrative action proof. Reuse native security/step-up/email-code endpoints and current eligible methods; erase password/code on settlement/invalidation and never replay an owning business write. The caller retains session admission and lifecycle identity.
+- Extract public ApplicationSessionShell; AuthApplication accepts a shared session plus typed navigation/current/locale/account-menu inputs without another session/activity owner.
+- Retain account/loading replacement and native session security; advertise Admin entry only in the account dropdown through the fixed proof-free availability read.
+- Expose authorityRevision for successful session refreshes and share the application language with Admin controls. The unreleased 2.0.0 target keeps its existing native_transactions edge; no extra version or migration is introduced.
+
+- Use native owner lock/validate/apply phases for standalone and shared transactions; all owner reviews validate before any business write.
+- Intentionally replace ambient nesting of AuthProfiles.edit with source-owned ModuleTransactions composition; the guarded write API version is 2.0.0 and standalone calls require no ambient transaction. Other guarded API versions remain unchanged.
+- Require platform >=0.7.0 <0.8.0 for the new framework protocol. Preserve strong action proof, current native authority and same-transaction Audit; add a retained-source native_transactions forward edge with no schema change.
+
+## 1.1.5 — 2026-10-30
+
+- Widen platform compatibility to <0.8.0, preserving the >=0.4.2 lower bound and existing API contracts.
+- Append the source-only admin_platform forward edge; no schema or data transformation.
+- Include Admin in the manifest-owned welcome catalogue with the existing adjustments icon; rendered acceptance remains pending.
+
 ## 1.1.4 — 2026-10-28
 
 - Preserve registration privacy and session behavior while completing typed request, model, settings and mail contracts; handle nullable profile names safely.

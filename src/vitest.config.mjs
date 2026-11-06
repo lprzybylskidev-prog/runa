@@ -1,12 +1,16 @@
 import { testAliases } from './runa/Testing/frontend-runtime.mjs';
 import { defineConfig } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
+import { moduleComponentsPlugin } from './runa/frontend/module-components.mjs';
 import { fileURLToPath } from 'node:url';
 import { playwright } from '@vitest/browser-playwright';
 
 export default defineConfig({
   cacheDir: '../.runtime/frontend/vitest/application',
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    moduleComponentsPlugin(fileURLToPath(new URL('.', import.meta.url))),
+  ],
   resolve: {
     alias: [
       ...testAliases,

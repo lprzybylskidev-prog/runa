@@ -1,0 +1,66 @@
+<?php
+
+namespace App\Management\FIXTURE_NAMESPACE;
+
+use Runa\Contracts\Modules\ManagementResourceReader;
+use Runa\Contracts\Modules\ManagementOptionsReader;
+use Runa\Contracts\Modules\ManagementWidgetReader;
+use Runa\Contracts\Modules\ManagementWriter;
+use Runa\Contracts\Modules\ManagementOptionsRead;
+use Runa\Contracts\Modules\ManagementWidgetResult;
+use Runa\Contracts\Modules\ManagementRead;
+use Runa\Contracts\Modules\ManagementRecord;
+use Runa\Contracts\Modules\ManagementPageResult;
+use Runa\Contracts\Modules\ManagementOptions;
+use Runa\Contracts\Modules\ManagementWrite;
+use Runa\Contracts\Modules\ManagementReview;
+use Runa\Contracts\Modules\ManagementOutcome;
+use Runa\Support\Modules\Api\OperationRejected;
+
+final class Handler implements ManagementResourceReader, ManagementOptionsReader, ManagementWidgetReader, ManagementWriter
+{
+    public static int $calls = 0;
+    public static bool $rawSecret = false;
+    public static bool $changed = false;
+    public static bool $failure = false;
+    public static ?string $optionField = null;
+    public static ?string $observedAt = null;
+    public static ?string $expiresAt = null;
+    public static ?ManagementRead $lastRead = null;
+    public static bool $writing = false;
+    public static int $writes = 0;
+    public static int $writeTransactionLevel = -1;
+    public static string $revision = 'revision-1';
+    public static string $name = 'Visible';
+    public static ?ManagementWrite $lastWrite = null;
+    public function read(ManagementRead $input): ManagementRecord
+    {
+        self::$lastRead = $input;
+        self::$calls++;
+        if (self::$changed) { \Illuminate\Support\Facades\DB::table('shared.module_registry_state')->where('id', 1)->increment('generation'); }
+        if (self::$failure) { throw new \RuntimeException('private-exception-marker'); }
+        return new ManagementRecord($input->publicId, self::$revision, ['name' => self::$name, 'hidden' => 'private-value-marker', 'unlisted' => 'unlisted-marker', 'token' => self::$rawSecret ? 'private-secret-marker' : ['set' => true]]);
+    }
+    public function page(ManagementRead $input): ManagementPageResult { return new ManagementPageResult([$this->read($input)], null); }
+    public function options(ManagementOptionsRead $input): ManagementOptions { self::$calls++; return new ManagementOptions(self::$optionField ?? $input->field, [['value' => 'private-option', 'label' => 'Private option']], null); }
+    public function widget(ManagementRead $input): ManagementWidgetResult
+    {
+        if (self::$failure) { throw new \RuntimeException('private-exception-marker'); }
+        return new ManagementWidgetResult(['count' => 3], self::$observedAt, self::$expiresAt);
+    }
+    public function preview(ManagementWrite $input): ManagementReview {
+        if (!self::$writing) { throw new OperationRejected('admin_operation_unavailable', 'runa.admin', 'preview', 404); }
+        return new ManagementReview('review-'.hash('sha256', json_encode($input->values)), $input->values, 'none', false);
+    }
+    public function execute(ManagementWrite $input): ManagementOutcome {
+        if (!self::$writing) { throw new OperationRejected('admin_operation_unavailable', 'runa.admin', 'command', 404); }
+        self::$writeTransactionLevel = \Illuminate\Support\Facades\DB::transactionLevel();
+        self::$lastWrite = $input;
+        if ($input->revision !== self::$revision) { throw new OperationRejected('stale_revision', 'runa.admin', 'command', 409); }
+        if (($input->values['name'] ?? null) === 'Invalid') { throw \Illuminate\Validation\ValidationException::withMessages(['name' => ['private-validation-marker'], 'hidden' => ['private-denied-marker']]); }
+        self::$writes++;
+        self::$name = $input->values['name'] ?? self::$name;
+        self::$revision = 'revision-'.(self::$writes + 1);
+        return new ManagementOutcome('committed', $this->read(new ManagementRead($input->publicId)));
+    }
+}

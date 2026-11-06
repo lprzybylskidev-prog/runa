@@ -44,16 +44,51 @@ final readonly class SessionStore
 
     public function liveRows(Connection $connection, User $user): Builder
     {
+        return $this->liveRowsForUsers($connection, [$user]);
+    }
+
+    /** @param list<User> $users */
+    public function liveRowsForUsers(Connection $connection, array $users): Builder
+    {
+        $now = CarbonImmutable::now('UTC');
+        $idle = app(PolicyExceptions::class)->values($users, 'session_idle_minutes');
+
+        return $this->liveQuery($connection)
+            ->where(function (Builder $query) use ($users, $idle, $now): void {
+                if ($users === []) {
+                    $query->whereRaw('1 = 0');
+                }
+                foreach ($users as $user) {
+                    $query->orWhere(fn (Builder $q) => $q->where('user_id', $user->id)
+                        ->where('security_version', $user->security_version)
+                        ->where('activity_at', '>', $now->subMinutes($idle[$user->id])));
+                }
+            });
+    }
+
+    /** Private directory aggregate uses the same deadlines as native session reads. */
+    public function liveDirectoryRows(Connection $connection): Builder
+    {
+        $idle = app(PolicyExceptions::class)->queryFor('session_idle_minutes', 'session_user.id');
+
+        /** @var non-falsy-string&literal-string $deadline Fixed owning policy SQL; all runtime values are bound. */
+        $deadline = 'runa_auth.sessions.activity_at > ?::timestamptz - COALESCE(('.$idle->toSql()."), ?) * INTERVAL '1 minute'";
+
+        return $this->liveQuery($connection)->join('runa_auth.users as session_user', 'session_user.id', '=', 'runa_auth.sessions.user_id')
+            ->whereColumn('runa_auth.sessions.security_version', 'session_user.security_version')
+            ->whereRaw($deadline, [CarbonImmutable::now('UTC'), ...$idle->getBindings(), $this->settings->integer('runa.auth', 'session_idle_minutes')]);
+    }
+
+    private function liveQuery(Connection $connection): Builder
+    {
         $now = CarbonImmutable::now('UTC');
 
-        return $connection->table('runa_auth.sessions')->where('user_id', $user->id)->whereNull('revoked_at')
-            ->where('security_version', $user->security_version)->where('expires_at', '>', $now)
-            ->where('authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_absolute_minutes')))
-            ->where('activity_at', '>', $now->subMinutes(app(PolicyExceptions::class)->value($user, 'session_idle_minutes')))
-            ->where(function (Builder $query) use ($now): void {
-                $query->where(fn (Builder $q) => $q->where('remembered', false)->where('authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_absolute_minutes'))))
-                    ->orWhere(fn (Builder $q) => $q->where('remembered', true)->where('authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_remember_minutes'))));
-            });
+        return $connection->table('runa_auth.sessions')->whereNull('runa_auth.sessions.revoked_at')
+            ->where('runa_auth.sessions.expires_at', '>', $now)
+            ->where('runa_auth.sessions.authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_absolute_minutes')))
+            ->where(fn (Builder $query) => $query->where('runa_auth.sessions.remembered', false)
+                ->orWhere(fn (Builder $q) => $q->where('runa_auth.sessions.remembered', true)
+                    ->where('runa_auth.sessions.authenticated_at', '>', $now->subMinutes($this->settings->integer('runa.auth', 'session_remember_minutes')))));
     }
 
     /** @return SessionRow|null */
@@ -94,7 +129,8 @@ final readonly class SessionStore
         }
     }
 
-    /** @param SessionRow $row
+    /**
+     * @param  SessionRow  $row
      * @return array{public_id: string, current: bool, remembered: bool, authenticated_at: string, activity_at: string, expires_at: string}
      */
     public function projection(object $row, bool $current = false): array

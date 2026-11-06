@@ -9,7 +9,7 @@ entity metadata. The [Audit store, events, automatic capture and authorized read
 
 ## Delivery status and scope
 
-The schema-version-1 manifest validator, deterministic owner-scoped discovery, persistent registry, generation-aware snapshots, local module autoloading, graph-only lifecycle previews, durable atomic administrative transitions, module-owned health observations, effective availability, independent maintenance reasons, PostgreSQL/storage boundaries, availability-aware typed PHP/HTTP adapters, managed database-queue work, classified Artisan/schedule adapters, independent public events, optional integration toggles and typed encrypted settings with controlled reinitialization, versioned trusted management projections and opt-in frontend pages/named slots are delivered. Owner-scoped install/update orchestration, nonmutating target plans and tracked upgrade chains, development generators, independent module version checks and a reusable contract suite are delivered. Managed operations use the declared PHP/HTTP/job/command/schedule/event boundaries; other module entrypoints remain unsupported. Ordinary application PHP/Vue and independent frontends remain supported.
+The schema-version-1 manifest validator, deterministic owner-scoped discovery, persistent registry, generation-aware snapshots, local module autoloading, graph-only lifecycle previews, durable atomic administrative transitions, module-owned health observations, effective availability, independent maintenance reasons, PostgreSQL/storage boundaries, availability-aware typed PHP/HTTP adapters, managed database-queue work, classified Artisan/schedule adapters, independent public events, source-owned optional integrations and typed encrypted settings with controlled reinitialization, versioned trusted management projections and opt-in frontend pages/named slots are delivered. Owner-scoped install/update orchestration, nonmutating target plans and tracked upgrade chains, development generators, independent module version checks and a reusable contract suite are delivered. Managed operations use the declared PHP/HTTP/job/command/schedule/event boundaries; other module entrypoints remain unsupported. Ordinary application PHP/Vue and independent frontends remain supported.
 
 Modules share the existing Laravel application and container. They are trusted local code, not sandboxed plugins or independently downloaded Composer packages. The framework enforces declared boundaries; static checks and PostgreSQL schema conventions cannot sandbox deliberately malicious code.
 
@@ -55,15 +55,15 @@ Localized names are at most 160 characters, descriptions at most 2000. Collectio
 
 Version components are decimal integers without leading zeros, at most nine digits each. Version constraints reuse `Runa\Support\VersionCompatibility`: exact or `=`, `>`, `>=`, `<`, `<=`, `^`, `~` against complete stable triples; whitespace is AND and `||` is OR, maximum 256 characters. Wildcards, partial versions, prereleases and build metadata are unsupported in v1 compatibility evaluation and fail explicitly. Do not use the dev-only transitive Composer SemVer package at runtime. Module versions and framework API versions are independent of platform VERSION; the initial framework API contract is `1.0.0` when delivered.
 
-Every category below is required in `declarations`; an unused category is `[]`, except that `lifecycle` always has exactly one descriptor. Its descriptor classes return typed immutable source definitions, not free-form executable manifest payloads. The `health` category has zero or one `HealthPolicy` descriptor; it groups the module’s checks and validated operational overrides. Source descriptors use category-specific interfaces; unsupported descriptor revisions fail validation. The declaration envelope and boundaries are frozen here; each feature point supplies its detailed PHP types and executable validation before it can be used.
+Every category below is required in `declarations`; an unused category is `[]`, except that `lifecycle` always has exactly one descriptor. Its descriptor classes return typed immutable source definitions, not free-form executable manifest payloads. The `health` category has zero or one `HealthPolicy` descriptor; it groups the module’s source-only checks and operational policy. Source descriptors use category-specific interfaces; unsupported descriptor revisions fail validation. The declaration envelope and boundaries are frozen here; each feature point supplies its detailed PHP types and executable validation before it can be used.
 
 | Category       | Source declaration contract                                                                                                |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `apis`         | Public interface, contract version, owned implementation binding and operation IDs; consumers receive guarded gateways     |
-| `health`       | Module-owned check definitions, severity, default mode, timing, operation applicability and allowed operational overrides  |
+| `health`       | Module-owned check definitions, severity, default mode, timing, operation applicability; all policy values are source-only |
 | `lifecycle`    | Exactly one module-owned transition/work policy descriptor, including explicit stateless/no-work behavior where applicable |
 | `settings`     | Typed/localized definitions, defaults, backend validation, sensitivity and application handler                             |
-| `integrations` | Target module/public contract, own toggle/default/config and required operations                                           |
+| `integrations` | Target module/public contract, source enabled/config and required operations                                               |
 | `http`         | Owned `HttpProvider` business endpoints, stable operation IDs and explicit public/permission boundary                      |
 | `commands`     | CommandProvider with stable operation ID, diagnostic/operational classification and owned handler/job target               |
 | `jobs`         | Job class, stable operation ID and module work-policy reference                                                            |
@@ -74,7 +74,7 @@ Every category below is required in `declarations`; an unused category is `[]`, 
 | `management`   | Declarative actions, permission identifiers and optional safe custom-component keys                                        |
 | `upgrades`     | Stable upgrade step IDs, from/to versions, prerequisites, transactional/idempotency and recovery declarations              |
 
-Descriptor identity is `(module_id, category, key)` with nonempty English snake_case keys. Each descriptor exposes integer `schema_version: 1`. Contract versions and required version ranges are separate from descriptor schema revisions. References to other descriptors use these stable keys, never DB-supplied class strings. Class reflection validates namespace, actual source ownership and expected interface before instantiation. Descriptor construction/provider registration must not mutate data, start work or perform external I/O. Providers bind implementation collaborators; adapters register declared entrypoints. Unclassified module entrypoints are contract violations.
+Descriptor identity is `(module_id, category, key)` with nonempty English snake_case keys. Descriptors use schema revision 1 except HealthPolicy, whose schemaVersion() returns 2 for its source-only definition. Contract versions and required version ranges are separate from descriptor schema revisions. References to other descriptors use these stable keys, never DB-supplied class strings. Class reflection validates namespace, actual source ownership and expected interface before instantiation. Descriptor construction/provider registration must not mutate data, start work or perform external I/O. Providers bind implementation collaborators; adapters register declared entrypoints. Unclassified module entrypoints are contract violations.
 
 Example identity manifest for a future application module, not a shipped module:
 
@@ -113,7 +113,7 @@ Example identity manifest for a future application module, not a shipped module:
 
 ## State and dependency contracts
 
-The registry snapshot separates `registered`, `source_present`, administrative `enabled`, `source_version`, `installed_version`, own health and derived availability. Snapshot `generation` changes invalidate cached effective state; persisted settings/health-policy revisions additionally identify their own changes. A module without successfully installed compatible data cannot operate. Discovery never sets installed version merely because source exists and never runs during ordinary request boot.
+The registry snapshot separates `registered`, `source_present`, administrative `enabled`, `source_version`, `installed_version`, own health and derived availability. Snapshot `generation` changes invalidate cached effective state; persisted settings revisions additionally identify their own changes. A module without successfully installed compatible data cannot operate. Discovery never sets installed version merely because source exists and never runs during ordinary request boot.
 
 Own health is `healthy`, `degraded`, `unhealthy` or `unknown`. Effective availability is `available` or `blocked` with independent structured reasons: disabled, missing source, incompatible contract/data, transition/recovery fence, own critical check, required dependency or platform maintenance. Warning observations may degrade an available module. Root causes contain safe codes, module/check IDs, timestamps and dependency paths; no raw exception, secret or business payload.
 
@@ -134,11 +134,31 @@ Each call scans exactly one owner and validates all of its manifests before publ
 
 Synchronization locks the existing singleton row, validates/discovers trusted local files and atomically publishes the selected owner's metadata plus generation. Optional records start disabled; Core records start enabled. Repeated identical synchronization changes neither timestamps nor generation. Existing enabled flags, public IDs and installed versions survive source updates and disappearance/restoration. Missing records retain their last validated source metadata. A kind change fails instead of reinterpreting retained data. Sync does not migrate module data, infer installed versions or activate modules. Unregister and explicit re-registration preserve retained provenance through the delivered lifecycle adapter.
 
-`ModuleRegistry::snapshot()` returns immutable `RegistrySnapshot`/`ModuleRecord` values ordered by full ID. It checks the persisted generation on each call, reuses unchanged cached records and takes a read lock while rebuilding so records and generation remain consistent. Callers must reacquire a snapshot to observe changes; a retained immutable value describes its original generation. Snapshot reads and normal application/request boot never synchronize or write registration. The module autoloader consults this snapshot only for a module namespace; registry migrations and synchronization must precede use of module classes. It rejects a source hash change pending explicit synchronization. Class loading alone is not an operational API; use the guarded public PHP/HTTP adapters below.
+`ModuleRegistry::snapshot()` returns immutable `RegistrySnapshot`/`ModuleRecord`
+values ordered by full ID. Outside a transaction it checks the persisted generation
+on each call and reuses unchanged records. A rebuild holds the singleton read lock
+while loading records, active transitions and the update reservation consistently.
+Inside a caller-owned transaction, subsequent reads and read-only child savepoints
+reuse that locked snapshot. Connection callbacks invalidate it before writes or
+conservative raw statements, even with database events suppressed; leaving its
+owning transaction/savepoint, starting a replacement transaction or changing the
+PDO session also invalidates it. Rolled-back generations cannot label reused rows.
+This stores registry records, not permission decisions or time-dependent health
+results; availability/eligibility checks still evaluate their current conditions.
+
+Callers must reacquire a snapshot to observe changes; a retained immutable value
+describes its original generation. Snapshot reads and normal application/request
+boot never synchronize or write registration. The module autoloader consults this
+snapshot only for a module namespace; registry migrations and synchronization must
+precede use of module classes. It rejects a source hash change pending explicit
+synchronization. Class loading alone is not an operational API; use the guarded
+public PHP/HTTP adapters below.
 
 The forward Runa preparation primitive and external updater explicitly invoke the Runa-owned update contract below. Application deployment code explicitly invokes the same contract for app modules; the platform updater never installs them implicitly. The retained development-only `app.reference` example is the only supplied module source; there are no production Core registrations.
 
-Required dependencies form the activation/availability graph. Optional dependencies only constrain an explicitly enabled integration's usable contract; absence or failure cannot disable the independent module. Required and optional references must still respect ownership direction and version grammar. A future Admin-shaped fixture requires Audit, while unrelated fixtures may configure optional Audit integration. Audit supplies the store, automatic/manual event and authorized read contracts; Auth supplies identity/lifecycle and cookie/CSRF entry transport; operational sessions, credentials, profiles, preferences and policy/operator contracts are also delivered; [Permissions dictionaries, declarations and current authorization](../modules/permissions/README.md) are delivered; ordinary assignment/custom-role/preset/copy APIs are delivered; [protected authority and last-superadministrator participation](../modules/permissions/authority.md) and [operator bootstrap](../modules/auth/policies-and-operators.md) are delivered. Admin and generic management rendering remain deferred.
+Required dependencies form the activation/availability graph. Optional dependencies only constrain an explicitly enabled integration's usable contract; absence or failure cannot disable the independent module. Required and optional references must still respect ownership direction and version grammar. A future Admin-shaped fixture requires Audit, while unrelated fixtures may declare optional Audit integration in source. Audit supplies the store, automatic/manual event and authorized read contracts; Auth supplies identity/lifecycle and cookie/CSRF entry transport; operational sessions, credentials, profiles, preferences and policy/operator contracts are also delivered; [Permissions dictionaries, declarations and current authorization](../modules/permissions/README.md) are delivered; ordinary assignment/custom-role/preset/copy APIs are delivered; [protected authority and last-superadministrator participation](../modules/permissions/authority.md) and [operator bootstrap](../modules/auth/policies-and-operators.md) are delivered. The [Admin shell and declaration/read contracts](../modules/admin/README.md) are
+delivered under active 0.7.0 development; generated business forms and management
+writes remain in progress.
 
 ### Delivered dependency graph and lifecycle previews
 
@@ -155,7 +175,9 @@ Blockers contain only a stable code, complete root-to-failure path and optional 
 
 `optionalBlockers($consumer, $dependency)` inspects one declared optional edge's presence/source/version compatibility without recursive activation, including when optional references form cycles. An undeclared edge returns `optional_not_declared`. These diagnostics do not change the consumer's required graph. Both-side operational availability and integration toggles are checked by ModuleIntegrations; an empty optional blocker list does not establish operational readiness.
 
-The transition publisher constructs a new graph from a fresh snapshot under the registry publication lock and calls `assertCurrent($preview)`. This recomputes and compares the complete DTO, rejecting changed generations, altered cascades and blocked graphs. Calling it on a retained old graph only validates that old generation and cannot certify freshness. The lifecycle publisher adds module-owned policy revisions, installed-data compatibility, preparation readiness and durable ingress fences before flags can change. PHP/HTTP/queue work adapters enforce health and fences; classified command/schedule adapters use managed queue dispatch; event adapters enforce owned subscriptions and optional integration state. `graphReady()` reports graph validity alone; null installed versions do not become installed data through a preview. The graph planner itself executes no transitions. Management HTTP endpoints are not exposed.
+The transition publisher constructs a new graph from a fresh snapshot under the registry publication lock and calls `assertCurrent($preview)`. This recomputes and compares the complete DTO, rejecting changed generations, altered cascades and blocked graphs. Calling it on a retained old graph only validates that old generation and cannot certify freshness. The lifecycle publisher adds module-owned policy revisions, installed-data compatibility, preparation readiness and durable ingress fences before flags can change. PHP/HTTP/queue work adapters enforce health and fences; classified command/schedule adapters use managed queue dispatch; event adapters enforce owned subscriptions and optional integration state. `graphReady()` reports graph validity alone; null installed versions do not become installed data through a preview. The graph planner itself executes no transitions. Admin exposes the fixed authorized operational catalogue documented in
+[Admin operations](../modules/admin/operations.md); no generic management engine
+endpoint exists.
 
 ### Delivered administrative transitions and retained data
 
@@ -177,7 +199,7 @@ Normal discovery never revives a tombstone. `ModuleRegistry::registerAgain($id)`
 
 ## Module-owned health policy
 
-Each module supplies its check handlers, critical/warning classification, `on_use`/`scheduled`/`hybrid` defaults, intervals, timeouts, expiry and applicability to public operations. Its definition specifies which operational values administrators may change in DB and their validation bounds. The base has no global business health cadence or inferred policy. Modules without special checks are healthy when source, installed data and required conditions are satisfied.
+Each module supplies its check handlers, critical/warning classification, `on_use`/`scheduled`/`hybrid` mode, intervals, timeouts, expiry and applicability to public operations exclusively in source code. Administrators cannot override health policy through the database, HTTP or CLI. The base has no global business health cadence or inferred policy. Modules without special checks are healthy when source, installed data and required conditions are satisfied.
 
 The framework implements shared meanings: expired critical observations become unknown/blocking; warning failures/staleness remain diagnostic. `on_use` runs applicable checks on each public operation; `hybrid` also schedules them. Fresh cached results cannot replace required per-use checks. Single-flight deduplication can join genuinely overlapping checks but cannot silently skip a later operation's check. A guarded nested call is another public operation under the callee's policy. Pure internal helper calls do not create extra public-operation boundaries. Use controllable clocks and bounded execution, without claiming a generic timeout can safely terminate arbitrary PHP/external effects.
 
@@ -185,15 +207,13 @@ Scheduled diagnostics and explicit recovery checks can run while business work i
 
 ### Delivered health services
 
-Declare zero or one source-owned `Runa\Contracts\Modules\HealthPolicy` in `declarations.health`. Its `schemaVersion()` is 1; `definition($overrides)` returns immutable `HealthDefinition`/`HealthCheck` values and rejects every unsupported override. `check($checkId, HealthContext)` returns a boolean, never a raw upstream payload. Definition revisions cover all module-owned decision inputs. An empty health declaration supplies no special checks and no editable health overrides.
+Declare zero or one source-owned `Runa\Contracts\Modules\HealthPolicy` in `declarations.health`. Its `schemaVersion(): int` returns 2; `definition(): HealthDefinition` returns immutable `HealthDefinition`/`HealthCheck` values from source only. This platform-owned public extension lives in `src/runa/Contracts/Modules/HealthPolicy.php`, is implemented by module authors in their owned backend declarations and runs in the module runtime. `check(string $check, HealthContext $context): bool` and `schemaVersion(): int` complete the interface. `check($checkId, HealthContext)` returns a boolean, never a raw upstream payload. Definition revisions cover all module-owned decision inputs. An empty health declaration supplies no special checks and no health-policy editor.
 
-`HealthDefinition` selects `on_use`, `scheduled` or `hybrid`. Each named check supplies `critical` or `warning` severity, integer timeout/interval/expiry seconds and an optional list of exact public operation keys (empty means every operation). Structural safety limits are 64 checks, timeout 1–60 seconds with at most 60 seconds of declared check time per module evaluation, interval 1–86400 seconds, expiry at least interval and at most 604800 seconds. These are infrastructure bounds; actual defaults, permitted overrides and cadence belong to the module. The scheduler polls due scheduled/hybrid checks once per minute; sub-minute intervals require an explicit diagnostic invocation for that resolution.
-
-`ModuleHealth::configure($id, $overrides, $expectedGeneration)` is a trusted management contract. It validates against the owned source policy, locks the registry state, refuses stale generations/unresolved transitions, increments the policy revision and generation and clears previous observations atomically. No deployment or flag change occurs. The JSON override document is bounded; it cannot select executable classes. Validated source manifests remain the only descriptor authority.
+`HealthDefinition` selects `on_use`, `scheduled` or `hybrid`. Each named check supplies `critical` or `warning` severity, integer timeout/interval/expiry seconds and an optional list of exact public operation keys (empty means every operation). Structural safety limits are 64 checks, timeout 1–60 seconds with at most 60 seconds of declared check time per module evaluation, interval 1–86400 seconds, expiry at least interval and at most 604800 seconds. These are infrastructure bounds; actual policy values and cadence belong to the module. The scheduler polls due scheduled/hybrid checks once per minute; sub-minute intervals require an explicit diagnostic invocation for that resolution.
 
 `ModuleHealth::diagnose($id)` explicitly evaluates all checks, including for a disabled module before enablement; `php artisan runa:modules:health <module-id>` exposes this to trusted CLI callers. With no module argument the command evaluates due checks for enabled source-present scheduled/hybrid modules, including unavailable ones. The technical scheduler runs this recovery command even during maintenance. Missing/invalid source fails closed without loading a database-supplied handler. Enable previews require nonblocking observations for every affected module; a critical unknown needs explicit diagnosis first. Disable/unregister never require healthy business dependencies.
 
-Observations live in `shared.modules.health_observations`; `health_overrides` and `health_revision` are separate from source, installed-data version and administrative flags. Each bounded result contains a policy/source fingerprint, UTC epoch check/expiry instants, a boolean outcome and an engine-selected safe code. Exceptions, messages, credentials and upstream responses are neither persisted nor returned. Every publication advances registry generation under the singleton lock. Policy/source/registration changes discard late results. Expiry is checked against the current clock on every read; effective availability is memoized only inside one evaluation, never cached across time or generations.
+Observations live in `shared.modules.health_observations`, separately from source, installed-data version and administrative flags. There is no persisted health configuration or policy revision; source identity and the complete definition fingerprint invalidate older observations. Each bounded result contains a policy/source fingerprint, UTC epoch check/expiry instants, a boolean outcome and an engine-selected safe code. Exceptions, messages, credentials and upstream responses are neither persisted nor returned. Every publication advances registry generation under the singleton lock. Policy/source/registration changes discard late results. Expiry is checked against the current clock on every read; effective availability is memoized only inside one evaluation, never cached across time or generations.
 
 PostgreSQL session advisory locks serialize evaluations per module across processes and release on connection death. A competing or recursive per-use evaluation fails closed with `health_busy`; it never substitutes a fresh cache for a required per-use check. Check code runs outside database transactions. Linux `pcntl` interrupts blocking checks, restores the previous signal state, and refuses to replace an already active process alarm. Missing deadline support blocks evaluation. Check handlers are trusted, read-only code and must also honor `HealthContext::deadline` in network/IO clients; the signal boundary is not a sandbox or a guarantee that arbitrary external effects can be cancelled.
 
@@ -269,6 +289,12 @@ Parameters/returns use explicit named scalar/array types, module-owned readonly 
 
 ### Delivered HTTP registration and errors
 
+HTTP/page route registration and command/schedule registration each use a short
+registry-locked metadata scan. Autoloading descriptors reuses that scan's snapshot
+instead of polling/reloading it per class. Registration invokes no business
+controller, command or scheduled callback; actual execution still reacquires
+current source, availability and authority through its owning gateway.
+
 List owned schema-version-1 `HttpProvider` classes in `declarations.http`. They return bounded lists of `HttpEndpoint(method, path, operation, controller)`. Methods are GET (also HEAD), POST, PUT, PATCH or DELETE. Paths are bounded relative plural/kebab-case resource segments with optional required named parameters, such as `entries/{public_id}`; no expressions, arbitrary prefixes, traversal or optional/wildcard parameters. A module may declare at most 128 endpoints and one endpoint per operation key. Use distinct keys for read/write actions.
 
 Uncached routing registers all source-present declarations, including disabled Optional modules, under `/api/<owner>/<code>/...`, with names `<owner>.<code>.<operation>`. No discovery, synchronization, settings write or migration runs on request boot. Registration rejects duplicate names and exact method/path collisions before publishing healthy routes. Laravel route caching preserves the framework dispatcher, middleware and identity defaults. Middleware re-resolves the current source descriptor and compares its path/method/controller/permission to the cached identity; unavailable/stale/removed entries fail closed without invoking old controllers.
@@ -297,6 +323,12 @@ The existing updater migration/seeder phases now include an owner-scoped module 
 
 ### Delivered queue and active-work protocol
 
+Work lists fetch bounded safe status columns together, without encrypted payloads
+or private lease tokens. Source job capabilities are validated once per module
+for that list. Selected expired running leases are conditionally moved to
+`recovery_required` in one update and the selected statuses are reread; a renewed
+lease is never overwritten. Listing does not replay work or authorize execution.
+
 Declare source-owned `JobProvider` classes in `declarations.jobs`. Each returns unique schema-version-1 `JobDefinition` entries: operation key, owned `WorkHandler` and `WorkPolicy` classes, maximum attempts (1–100), minimum retry delay (1–86400 seconds), lease (10–3600 seconds), explicit cancellation capability, a safe limitation code and optional permission. Protected operations deny by default through the existing authorizer. Descriptor construction must remain free of I/O/effects. A null permission explicitly allows the job when module/platform admission succeeds; it does not carry or fabricate a user identity.
 
 Dispatch from ordinary application code or another module through:
@@ -314,7 +346,7 @@ For business transactions with per-use health, call `prepareDispatch(module, ope
 
 Before a handler is constructed, worker admission rechecks maintenance, effective dependencies/health, authorization, cancellation and registry generation under the same short singleton lock used by lifecycle reservation. A central payload hook rejects direct module jobs, and `JobProcessing` deletes unmanaged namespace-classified payloads before Laravel command deserialization. The framework envelope also validates diagnostic identity. Metadata/namespace checks protect managed contracts, not deliberately malicious trusted PHP, forged raw payloads or a direct call to an owned implementation. Contract checks for other entrypoints follow their own roadmap points.
 
-`shared.module_work` stores bigint internal identity/FK to the retained registry (RESTRICT both ways), UUIDv7 work ID, admitted generation, correlation, bounded encrypted input, attempts, cancellation intent, safe progress and lease evidence. No module-domain FK or schema is created. States are `pending`, `running`, `succeeded`, `cancelled`, `refused`, `failed`, `recovery_required`. Diagnostics expose `WorkStatus` schema version 1, with accepted/current generations, attempts, cancellation intent, observed lease/progress and the module's declared capability/limitation code. Missing source preserves evidence and reports unknown capability. `active(module, limit)` is a bounded oldest-first view (default 100, maximum 1000); failed and expired attempts remain unresolved work. Administrative previews include per-module state counts without mutating work. Obtain complete counts from the preview and individual records by work ID; a bounded list is not proof that no other work exists.
+`shared.module_work` stores bigint internal identity/FK to the retained registry (RESTRICT both ways), UUIDv7 work ID, admitted generation, correlation, bounded encrypted input, attempts, cancellation intent, safe progress and lease evidence. No module-domain FK or schema is created. States are `pending`, `running`, `succeeded`, `cancelled`, `refused`, `failed`, `recovery_required`. Diagnostics expose `WorkStatus` schema version 1, with accepted/current generations, attempts, cancellation intent, observed lease/progress and the module's declared capability/limitation code. Missing source preserves evidence and reports unknown capability. `active(module, limit)` is a bounded oldest-first view (default 100, maximum 1000); failed and expired attempts remain unresolved work. `history(module, limit)` provides a bounded newest-first list including retained terminal work, default 100 and maximum 1000, through the same WorkStatus projection; it never decrypts payloads. The implementation and public adapter remain ModuleWork. Admin uses history for its task table; lifecycle fences retain active-only reads. Administrative previews include per-module state counts without mutating work. Obtain complete counts from the preview and individual records by work ID; a bounded list is not proof that no other work exists.
 
 Disable/unregister reservation atomically fences affected ingress and signals existing work before module preparation, preserving all prior enabled flags while waiting. A pending cancelled job consults its module policy without running per-use health that could invalidate its own transition generation. The lifecycle policy can query work and return ready/waiting/refused; only the module decides when the whole cascade is safe. Cancellation intent survives a failed/compensated disable or later enable; pending old work cannot silently resurrect. Never clear it merely because availability recovered.
 
@@ -407,11 +439,28 @@ Workers re-resolve the exact publisher/event version, subscriber binding, option
 
 After-commit publication is an in-process callback, not a durable transactional relay: process loss between origin commit and callback/enqueue can leave a fact undelivered. Enqueued managed work is durable. For a use case requiring stronger delivery guarantees, establish an explicit owner-side coordinated/persisted fact contract before relying on events; never retry the origin just because a subscriber is unavailable.
 
-Declare `IntegrationProvider` classes under `declarations.integrations`, returning up to 128 `IntegrationDefinition(key, target, defaultEnabled, names, defaults)` values and a pure `validConfiguration(key, completeConfig)` validator. Each target must be a declared optional dependency. PL/EN names and non-sensitive JSON defaults/config describe the integration; defaults and every stored configuration are validated by the owner. Configurations are bounded to 8192 encoded bytes each. Secret configuration belongs to the settings/encryption contract, not these public values. Required dependencies, such as the future Admin → Audit edge, remain required graph edges and cannot be weakened by an optional integration toggle. The Core Audit module is supplied independently; this optional integration boundary grants no Audit bypass.
+The platform owns the public module extension `Runa\Contracts\Modules\IntegrationProvider`
+(`src/runa/Contracts/Modules/IntegrationProvider.php`, runtime). Module authors implement
+`integrations(): array` returning up to 128 `IntegrationDefinition` values and pure
+`validConfiguration(string $key, array $config): bool`. Register providers under
+`declarations.integrations`; each target must be a declared optional dependency.
+`IntegrationDefinition(string $key, string $target, bool $enabled, array $names,
+array $config = [], int $schemaVersion = 2)` is the source-owned descriptor in
+`src/runa/Contracts/Modules/IntegrationDefinition.php`. PL/EN names and non-sensitive
+configuration are validated, including an 8192-byte encoded limit. Sensitive values
+belong to the settings/encryption contract. Enabled state and configuration come
+exclusively from source: no runtime override, database configuration, Admin grant,
+editor or management write exists. Changes follow the owning module's source/version
+publication workflow. Required dependencies remain required and cannot be weakened
+by optional integration declarations; the Audit boundary grants no bypass.
 
-Trusted management code uses `ModuleIntegrations::metadata(module)` and `configure(module, key, enabled, config, expectedGeneration)`. Operational values live in bounded `shared.modules.integration_values`; source sync, disable/unregister and explicit re-registration preserve them. Writes serialize through the registry singleton, reject stale generations/unresolved transitions and publish a new generation. They never enable or disable either module, run business hooks or expose a management HTTP endpoint. Until real authorization exists, callers own the trusted CLI boundary.
+Internal `ModuleIntegrations::metadata(module)` projects validated source values;
+`requireConfigured(module, key)` and `requireAvailable(module, key)` preserve version
+and both-side operational admission. They never activate either module. The forward
+migration removes obsolete `shared.modules.integration_values`, preserving module
+flags, settings, installed versions, retained work and Audit history.
 
-Call `requireAvailable(module, key)` at an optional integration operation boundary. It checks the toggle, configuration, declared optional version constraint, both modules' effective availability and platform maintenance. It returns the declared target identity for a guarded public API call. Do not retain an availability result as authorization for a later operation. Event listeners naming `integration` automatically repeat this check at sync invocation, async admission and worker start; the integration must target that event's publisher. Optional absence/incompatibility/unhealth never changes ordinary module enabled state or its unrelated required graph. Cyclic optional references do not recurse through activation. Registered Core failure still causes platform maintenance for these operations.
+Call `requireAvailable(module, key)` at an optional integration operation boundary. It checks the source enabled state and configuration, declared optional version constraint, both modules' effective availability and platform maintenance. It returns the declared target identity for a guarded public API call. Do not retain an availability result as authorization for a later operation. Event listeners naming `integration` automatically repeat this check at sync invocation, async admission and worker start; the integration must target that event's publisher. Optional absence/incompatibility/unhealth never changes ordinary module enabled state or its unrelated required graph. Cyclic optional references do not recurse through activation. Registered Core failure still causes platform maintenance for these operations.
 
 ## Delivered declarative settings
 
@@ -420,6 +469,15 @@ Declare one owned `SettingsProvider` under `declarations.settings` when a module
 Built-in types are strict `string`, `integer`, `decimal`, `boolean`, `enum` and `array`; no coercion occurs. Exact decimal values are canonical decimal strings, never binary floats. Enum `options.choices` is a nonempty list with strict value comparison. Laravel rules enforce additional constraints; integer/decimal min/max use numeric semantics. Defaults and every complete candidate/stored value pass the same type, rule and cross-field checks. JSON values are bounded to 32 KiB with no objects/resources or nonfinite numbers. Register additional trusted `SettingType` implementations through `Settings\SettingTypes::register(key, implementation)` at application bootstrap; built-ins cannot be replaced. This extends backend acceptance; future Admin supplies renderers separately. Infrastructure connections and the encryption key remain Laravel environment/config inputs.
 
 Sensitive definitions require a nullable null default. Supply real secrets through trusted writes, never manifests/defaults/options, source or command arguments. `Settings\ModuleSettings::read(module)` returns registry generation, settings revision and localized definitions with non-sensitive values or sensitive `set` booleans only. It never returns plaintext or ciphertext for sensitive values. `value(module, key)` is an explicit private backend read for trusted owning-module code, including initialization/compensation. The typed `integer(module, key)`, `boolean(module, key)` and nullable `text(module, key)` helpers retain that same owning-module guard and reject a mismatched declared value without coercion. Never expose or log its result; operational consumers still require the normal availability gateway. These helpers are not a PHP sandbox against hostile trusted code.
+
+Within a locked registry snapshot, settings reads reuse the already validated
+declarations, complete stored values and revision. A caller-owned read anchors
+that snapshot before its child savepoint, retaining database-error rollback
+isolation without reloading every key. The snapshot identity changes on writes,
+rollback/replacement transactions and reconnection; runtime values cannot be
+reused under a new identity. Every reuse still verifies current source. Sensitive
+values remain private runtime data; management reads always project set-state.
+No actor eligibility, permission decision or time-dependent exception is cached.
 
 `ModuleSettings::upgradeDefaults(UpgradeContext)` deliberately adds missing immediate
 source defaults to a stored complete value set during a reserved transactional
@@ -446,7 +504,7 @@ Manifest `docs` references are documentation metadata, not executable paths. App
 
 ## Delivered management descriptors
 
-`Runa\ModuleFramework\Management\ModuleManagement::read(moduleId)` returns the schema-version-1 `Runa\Contracts\Modules\ModuleManagement` DTO. Trusted CLI `php artisan runa:modules:management app.example` prints the same JSON. It combines the current administrative/effective status and safe root-cause paths, localized identity, required/optional dependency constraints, redacted settings with types/defaults/validation/application/revisions, integration toggle/config metadata, bounded active work and source-owned permission/action/custom-component descriptors. Settings without a provider are null. Sensitive settings expose only set-state; private payloads, lease tokens, executable classes and provider exception text are excluded. Integration configuration is non-sensitive by contract. Missing source preserves status/dependencies/retained work and reports `declaration_source_unavailable`. Known invalid declarations/settings/integrations produce explicit safe diagnostic codes and omit the affected section; metadata errors never change enabled flags. CLI exits 1 for those incomplete views or unknown modules; unavailable business state alone does not fail a complete metadata read.
+`Runa\ModuleFramework\Management\ModuleManagement::read(moduleId)` returns the schema-version-1 `Runa\Contracts\Modules\ModuleManagement` DTO. Trusted CLI `php artisan runa:modules:management app.example` prints the same JSON. It combines the current administrative/effective status and safe root-cause paths, localized identity, required/optional dependency constraints, redacted settings with types/defaults/validation/application/revisions, source-owned integration enabled/config metadata, bounded active work and source-owned permission/action/custom-component descriptors. Settings without a provider are null. Sensitive settings expose only set-state; private payloads, lease tokens, executable classes and provider exception text are excluded. Integration configuration is non-sensitive by contract. Missing source preserves status/dependencies/retained work and reports `declaration_source_unavailable`. Known invalid declarations/settings/integrations produce explicit safe diagnostic codes and omit the affected section; metadata errors never change enabled flags. CLI exits 1 for those incomplete views or unknown modules; unavailable business state alone does not fail a complete metadata read.
 
 Declare pure owned `ManagementProvider` classes under `declarations.management`. They return lists of schema-version-1 `ManagementPermission(key, names, descriptions)`, `ManagementAction(key, permission, names, descriptions, renderer: 'action', rendererVersion: 1)` and `ManagementComponent(key, component, permission, renderer: 'panel', rendererVersion: 1)`. Permission/action metadata requires bounded PL/EN text; future Admin selects English. Keys follow the public operation dot/snake_case grammar. Keys must be unique within each collection; each collection is limited to 128 entries. Action/component permission references must resolve to the same module's permission declarations. Permission identity is scoped by the owning module ID. An action and component may share a local key without hiding either permission reference.
 
@@ -481,7 +539,11 @@ Each page uses a stable snake_case key, PL/EN names, optional area, supported Ta
 
 `GET /api/modules/frontend` (`api.modules.frontend`) returns an explicitly unwrapped JsonResource with schemaVersion, coherent generation, safe pages/slots and diagnostic codes. It does not return settings, work, registry public IDs, source paths or exception text. Current manifest hashes are public build identity, not secret data. The endpoint evaluates cached health only and performs no registration, health recovery or management write. Disabled pages have hidden navigation; enabled unavailable pages remain disabled diagnostic navigation. Explicit public descriptors use null permission; protected pages/contributions consult the existing request-scoped OperationAuthorizer and deny by default. UI visibility is presentation; all business API operations still require their server guards.
 
-The supplied Vite `moduleComponentsPlugin` exposes `virtual:runa-module-components` only when imported. It scans canonical local `app/modules/<code>/frontend/components/<key>.vue` and corresponding Runa paths deterministically; symlinks and unsafe component filenames are rejected. Keys are `<owner>.<code>.<key>`. Lazy loaders include each manifest's SHA-256 identity. Production mapping excludes development probe/reference names; normal production packaging also excludes their source. Restart Vite or rebuild after manifest/component discovery changes. No database value becomes executable code. Management component descriptors may reference the same registry; a future authorized Admin renderer must still enforce its own permissions and renderer contract.
+The supplied Vite `moduleComponentsPlugin` exposes `virtual:runa-module-components` only when imported. It scans canonical local `app/modules/<code>/frontend/components/<key>.vue` and corresponding Runa paths deterministically; symlinks and unsafe component filenames are rejected. Keys are `<owner>.<code>.<key>`. Lazy loaders include each manifest's SHA-256 identity. Production mapping excludes development probe/reference names; normal production packaging also excludes their source. The same plugin emits source-bound `runa-components.json` build evidence and a
+`builds` named virtual export for Admin projection; see the [component identity
+contract](../modules/admin/declarations.md#component-identity-and-binding-availability).
+Compiled Admin resolution and development-server evidence publication remain
+planned in point 4. Restart Vite or rebuild after manifest/component discovery changes. No database value becomes executable code. Management component descriptors may reference the same registry; a future authorized Admin renderer must still enforce its own permissions and renderer contract.
 
 ```ts
 import loaders from 'virtual:runa-module-components';
@@ -539,7 +601,7 @@ $updates->apply('app', $exactCustomerCommit, function (string $module, string $s
 });
 ```
 
-`apply` requires an exact 40-character source commit, no ambient transaction and a nonblocking PostgreSQL session advisory lock. It preflights again, synchronizes exactly the selected owner's source under the existing publication lock, then reserves the same source/owner/fingerprint durably. That reservation fences module ingress and prevents lifecycle/settings publication and ordinary sync/re-registration until completion. It is operational evidence linked to the caller's source journal, not another installation state machine. Resume requires the same owner, source commit and source fingerprint. New Optional registrations remain disabled; existing enabled/settings/integration state is retained.
+`apply` requires an exact 40-character source commit, no ambient transaction and a nonblocking PostgreSQL session advisory lock. It preflights again, synchronizes exactly the selected owner's source under the existing publication lock, then reserves the same source/owner/fingerprint durably. That reservation fences module ingress and prevents lifecycle/settings publication and ordinary sync/re-registration until completion. It is operational evidence linked to the caller's source journal, not another installation state machine. Resume requires the same owner, source commit and source fingerprint. New Optional registrations remain disabled; existing enabled/settings state is retained; integrations follow published source.
 
 For each dependency-ordered module, run sorted anonymous Laravel migrations first, then the explicit upgrade chain. Migrations must return `Migration` instances with `up()`, use the registry connection, support PostgreSQL transactions and contain no external effects. Names use `YYYY_MM_DD_HHMMSS_<owner>_<code>_<name>.php`. The framework claims the owned schema and checks RESTRICT/same-module foreign keys; trusted raw SQL still requires review. Design the schema phase to accept all supported historical data versions before data upgrades. Upgrade handlers receive `UpgradeContext` with source operation, module, from/to/key, the connection and `ModuleSchema`. Never use enabled toggles to migrate or seed. Loose module seed files are not discovered/executed; invoke explicit required initialization from an upgrade handler.
 
@@ -564,3 +626,30 @@ DevelopmentContributor map, module-ID dependencies and development ManagedSeeder
 They are opt-in local tooling, separate from native application production seeding,
 module required initialization and loose seed files. See [the fixture contract](../data/seeding.md#explicit-module-development-contributors)
 for safe public references, production refusal, idempotence, private setup and tuning.
+
+## Additive Admin page declarations
+
+Optional ManagementPageProvider extends the retained ManagementProvider without
+changing legacy metadata schema 1. Its pages/sections/field access, explicit
+API/handler bindings, widgets and editable contributions follow the evolving
+[Admin declaration contract](../modules/admin/declarations.md). Admin owns the
+authorized projection, including owned component/build identities. Compiled
+component resolution remains point 4.
+Owners keep their guarded business APIs and record Policies.
+No provider boot grants permissions, installs data or starts a business handler.
+Independent App pages use the frozen AdminRegistry bootstrap contract without a
+module manifest. Rendering, writes and atomic participation retain their explicit
+[delivery status](../modules/admin/README.md#delivery-status-and-acceptance-ownership).
+
+### Operational Audit participation
+
+Framework `OperationalParticipant` is reserved integration, not a customer event
+writer. The fixed Core adapter resolves installed Audit participation at the actual
+default PostgreSQL transaction. Durable lifecycle
+reservation/progress/publication/compensation and first cooperative cancellation
+requests include required Audit there. Failure rolls back that boundary; installed
+Audit/source failure cannot silently degrade to the framework-only no-op default.
+Contexts contain technical identities/revisions only; never values, runner tokens
+or work payloads. Settings retain SettingsParticipant publication/restore history.
+Work cancellation checks declared cancellability and current active state under
+registry/work locks, remains idempotent and does not assert terminal cancellation.

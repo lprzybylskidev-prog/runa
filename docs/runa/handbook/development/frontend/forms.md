@@ -1,11 +1,23 @@
 # Form Patterns
 
+Admin's public `AdminField` composes these controls with source-projected field
+metadata, static hints, owner errors and customer replacements. See its exact
+[field composition and delivery contract](../../modules/admin/frontend.md#delivered-field-composition).
+Default Admin forms use useAdminForm/AdminForm/AdminSection for field-bound lookups,
+controlled drafts, safe errors, dirty guards and automatic reconciliation without
+replay or remounting. Independent writes are delivered; native multi-owner Save
+execution retains roadmap point 6. Public formValuesEqual compares finite JSON
+values independently of object key order for feature reconciliation.
+
 Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. Auth entry/restricted and own-account forms consume these controls with guarded backend writes; see the [Auth entry contract](../../modules/auth/entry-ui.md). Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. the isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
 
 ## Container and field composition
 
 When several Cards have independent forms, keep their drafts, validation and submit
-boundaries separate. Keep submit actions visually attached to their fields: use
+boundaries separate. Repeated controls behind presentation/failure boundaries need
+real layout wrappers or a gap-based container: display-contents wrappers do not
+provide sibling margins. Keep labels spaced from the preceding control in
+operation dialogs as well as ordinary forms. Keep submit actions visually attached to their fields: use
 spacing without a horizontal separator above the actions. Reserve separators for
 independent sections or operations. The shared Form actions slot supplies this
 default for account, Preferences and other forms. For two columns with uneven card heights, use independent
@@ -96,8 +108,16 @@ conservative local review. A removed target cannot be retained as a valid edit.
 `current`, `locale`, `busy`, `allowKeep` props and `accept`/`keep` events. The feature
 owns merging, resolution, token advancement and subsequent explicit submission.
 
-On HTTP 409, automatically fetch current data without replaying the write. Report
-that the rejected change was not saved; retain its draft. Cancel older queued
+On a stale-revision HTTP 409, automatically fetch current data without replaying
+the write. Report the version conflict and retain its draft. HTTP status alone
+is insufficient: business refusals can also use 409. Preserve their stable reason
+through owner adapters and aggregate coordinators, and show reviewed localized
+copy for that reason instead of claiming a stale revision or successful refresh.
+Known field-specific refusals belong beside the affected control as well as the
+operation outcome. Never claim highlighted fields when no field was identified.
+Unknown exceptions/network failures retain a safe fallback; never echo raw server
+messages, submitted identifiers, SQL errors or unreviewed reason strings.
+Anonymous entry keeps its non-enumerating responses. Cancel older queued
 mutation intents after a failed mutation rather than rebasing them implicitly.
 Fence late responses by account/view/request generation; cancel and unsubscribe
 on disposal/logout. Refresh must not steal focus, clear validation unnecessarily,
@@ -106,13 +126,43 @@ and server authorization remain authoritative.
 
 ## Additional field values and incomplete drafts
 
-DateInput stores YYYY-MM-DD/null; TimeInput stores local HH:mm with optional seconds/fractions/null. DateRangeInput stores { start, end }, permits open/null endpoints and rejects reversed/invalid dates. formatDateOnly formats PL/EN without timezone conversion. DateTimeInput requires an IANA timeZone; toLocalDateTime displays an explicit-offset instant in that zone and resolveLocalDateTime commits UTC ISO values. Nonexistent DST wall times reject; repeated times reject by default, requiring an explicit earlier/later disambiguation policy. Never silently select an occurrence or shift a date-only value through UTC.
+### Dates, times and application timezone
 
-Temporal inputs preserve incomplete text drafts independently of committed values. Fields are type=text; no native date/time picker opens. PL accepts DD.MM.YYYY, EN uses YYYY-MM-DD; canonical dates are accepted in both. Moments append a space or T and 24-hour HH:mm with optional seconds/fractions. Invalid/impossible text remains visible and no partial or normalized date is silently committed. Calendar and time choices share this same validation path, including DST rejection. Consume validity to block submission of a stale last-valid model, and use reset() when deliberately discarding an incomplete draft (including when the model itself did not change). Their focus() method supports recovery. DateRangeInput combines endpoint and order validity. Supply localized invalidMessage/zoneLabel and linked helper text. TagsInput likewise reports validity=false while a nonempty draft awaits Enter; prevent submission or deliberately commit/discard it. ColorInput retains invalid drafts in its string/null model and emits validity. Compose these flags into Form.valid; feature rules still validate required/domain constraints.
+The platform-owned runtime helpers and inputs are consumed through `@/runa/ui`.
+Use `formatApplicationInstant(value: string | number | Date, locale: 'pl' | 'en')`
+for displayed moments and `instantTimestamp(value: string | number | Date): number`
+for epoch comparisons. Their implementation homes are `runa/ui/displayDefaults.ts`
+and `lib/temporal.ts` under `src/runa/resources/js`; both are public consumption
+contracts. The latter accepts Date/epoch milliseconds, ISO moments with an offset (including PostgreSQL hour-only offsets),
+and backend timestamp strings without an offset (defined as UTC), and returns NaN
+for invalid/date-only text. Never parse an unzoned backend timestamp in browser-local
+time. Canonical new transport values use explicit offsets/UTC.
+
+`useApplicationDisplayDefaults()` owns the reactive application timezone hydrated
+from public presentation. Default moment displays, DateTimeInput and calendar
+"today" use it, independently of browser timezone and application language. Changing
+settings refreshes presentation in place. Use DateTimeInput without a timeZone prop
+for ordinary application/module forms and filters; `timeZone?: string` remains the
+explicit domain-zone override. There is no zoneLabel prop or automatic timezone
+helper/picker text. A timezone selector in application settings remains available.
+All conversion and DST handling uses the shared temporal helpers below; do not
+reimplement parsing/formatting in individual views. Review sibling consumers and
+calendar defaults when repairing a temporal defect.
+
+Storage, API moments, operational/security deadlines and canonical exports remain
+UTC/epoch based. A timezone setting changes presentation and local input conversion,
+not the duration or expiry of a session/job/token. Date-only and time-only values
+retain their independent semantics; never pass calendar dates to the instant
+formatter or shift them through UTC. Technical CLI/log/recovery evidence remains
+canonical; arbitrary JSON diagnostics are not heuristically rewritten as dates.
+
+DateInput stores YYYY-MM-DD/null; TimeInput stores local HH:mm with optional seconds/fractions/null. DateRangeInput stores { start, end }, permits open/null endpoints and rejects reversed/invalid dates. formatDateOnly formats PL/EN without timezone conversion. DateTimeInput defaults to the configured application timezone; an explicit IANA timeZone is reserved for a domain-specific zone; toLocalDateTime displays an explicit-offset instant in that zone and resolveLocalDateTime commits UTC ISO values. Nonexistent DST wall times reject; repeated times reject by default, requiring an explicit earlier/later disambiguation policy. Never silently select an occurrence or shift a date-only value through UTC.
+
+Temporal inputs preserve incomplete text drafts independently of committed values. Fields are type=text; no native date/time picker opens. PL accepts DD.MM.YYYY, EN uses YYYY-MM-DD; canonical dates are accepted in both. Moments append a space or T and 24-hour HH:mm with optional seconds/fractions. Invalid/impossible text remains visible and no partial or normalized date is silently committed. Calendar and time choices share this same validation path, including DST rejection. Consume validity to block submission of a stale last-valid model, and use reset() when deliberately discarding an incomplete draft (including when the model itself did not change). Their focus() method supports recovery. Range inputs validate both endpoint drafts and ordering inside their picker; Apply publishes only a complete valid range. Their outer validity describes the committed model. Default invalidMessage follows the field locale; an explicit localized override and linked helper text remain available. Language changes preserve invalid numeric/temporal drafts. Inputs and picker panels omit timezone annotations. TagsInput likewise reports validity=false while a nonempty draft awaits Enter; prevent submission or deliberately commit/discard it. ColorInput retains invalid drafts in its string/null model and emits validity. Compose these flags into Form.valid; feature rules still validate required/domain constraints.
 
 FileInput stores File objects in separate shallowRef state, outside useForm's finite-JSON snapshots. Its issues event exposes count/size/type failures without truncating selection. Its dropzone accepts local file drops as well as keyboard/touch activation of the native operating-system chooser. Multiple batches append (without silent deduplication/truncation), single selection replaces; an empty/cancelled chooser preserves the current model. The UI shows limits, selection totals and file rows, never fake upload progress/success. Disabled, readonly and disabled ancestor fieldsets block mutation. Reset/removal is controlled through the model; clearing the native picker after selection allows choosing the same file again. Names/MIME/accept are untrusted UX hints: backend upload authorization, type/content/size validation and storage remain feature-owned. No file reads, previews, object URLs or uploads occur in the primitive.
 
-Checkbox supports an indeterminate null value; Switch uses boolean. RadioGroup uses explicit string option identities and native arrow navigation. Color is six-digit hexadecimal without alpha. Its application panel has an HSV plane for pointer/touch and equivalent named Hue/Saturation/Brightness sliders for keyboard access, plus palette buttons; there is no native color input. Temporal panels open from their labelled trigger or Alt+Down in the text field; clear commits null, Done/Escape closes without rolling back already committed choices. Tags are plain trimmed strings, with caller-owned limits and localization; there is no remote suggestion provider. HiddenInput does not protect its value from modification.
+Checkbox supports an indeterminate null value; Switch uses boolean. RadioGroup uses explicit string option identities and native arrow navigation. Color is six-digit hexadecimal without alpha. Its application panel has an HSV plane for pointer/touch and equivalent named Hue/Saturation/Brightness sliders for keyboard access, plus palette buttons; there is no native color input. Temporal panels open from their labelled trigger or Alt+Down in the text field; clear commits null, Done/Escape closes without rolling back already committed choices. Tags are plain trimmed strings, with caller-owned limits, application-localized defaults and optional copy overrides; there is no remote suggestion provider. HiddenInput does not protect its value from modification.
 
 ## Selection fields
 
@@ -130,7 +180,7 @@ useWizard accepts stable keyed steps, validate(key), submit() and optional disab
 
 For modal confirmation, render ConfirmDialog under the owning screen and resolve useDirtyGuard’s confirmLeave promise on confirm/cancel. Set modelValue false after resolving; Escape/X/cancel must resolve false so a pending navigation never hangs. Async form confirmations keep the dialog open while the caller sets busy/error, reporting failures through FormNotifications inside the modal focus boundary and closing only after success. Dialog’s content fieldset disables native inputs while busy; external operations still enforce their own write guards.
 
-TextInput/NumberInput/Select expose optional size=sm for compact table/filter/toolbars (36px, matching small Buttons); their default md form size stays 44px. Select popup controls/options follow its size. TextInput hideLabel forwards to FormField's associated visually hidden label, keeping compact inline width controls accessible without a visible repeated heading. Form fields keep validation semantics and browser autofill in either size; do not shrink whole ordinary forms merely to demonstrate the variant.
+TextInput/NumberInput/Select/DateInput/TimeInput/DateTimeInput expose optional size=sm for compact table/filter/toolbars (36px, matching small Buttons); their default md form size stays 44px. Select popup controls/options follow its size; temporal input text and calendar/time trigger share the selected height. TemporalInputProps.size is the optional public `sm|md` descriptor in `src/runa/resources/js/runa/ui/forms.ts`, consumed by these public controls from `@/runa/ui` (default md). TextInput hideLabel forwards to FormField's associated visually hidden label, keeping compact inline width controls accessible without a visible repeated heading. Form fields keep validation semantics and browser autofill in either size; do not shrink whole ordinary forms merely to demonstrate the variant.
 
 Account reauthentication preserves only explicitly safe name/login fields in memory,
 bound to the same account. Offer explicit restoration/review; never replay a write.
@@ -165,3 +215,67 @@ validate first, respect each proof/version, stop on failure and report partial
 success without replay. The [account editor](../../modules/auth/account-ui.md)
 supplies this pattern through its public controller; customer code does not copy
 orchestration.
+
+### Compact temporal ranges
+
+UI owns `DateTimeRangeInput` exported from `@/runa/ui`, implemented by
+AppDateTimeRangeInput.vue over the private AppTemporalRangeInput.vue. Its public
+props are `{modelValue: DateRangeValue, label: string, startLabel?: string,
+endLabel?: string, locale?: 'pl'|'en', size?: 'sm'|'md', helper?: string,
+error?: string, invalidMessage?: string, disabled?: boolean, readonly?: boolean,
+timeZone?: string, disambiguation?: TimeDisambiguation}`. It emits
+`update:modelValue(DateRangeValue)` and `validity(boolean)` and exposes `reset()`
+and `focus()`. Defaults use Polish, md sizing, application timezone and rejection
+of ambiguous times. Values are nullable explicit-offset instants; date-only
+DateRangeInput uses the same presentation with YYYY-MM-DD values and its existing
+labels/props plus optional size/helper. No server contract is changed.
+
+One labelled field displays the formatted range. Its accessible popup edits two
+endpoints through existing temporal controls. Apply commits the whole valid range
+once; incomplete, reversed and DST-invalid drafts never publish a filter. Clear
+commits both endpoints null. Cancel, Escape or outside dismissal discard the local
+picker draft and retain the committed range. Reset discards draft state and closes
+the panel. Open-ended ranges are supported. No duplicate endpoint heading appears
+in the surrounding form/filter grid; endpoint labels belong inside the panel.
+
+## Specialized collection editors
+
+High-cardinality domain interactions can require a dedicated editor rather than a
+stack of generic fields. Reuse existing tokens, field/choice chrome, loading,
+feedback and guarded controllers within that editor; reuse does not require a
+form assembled from unrelated visible controls. Keep search, scope, rows and page
+operations in one compact workspace. Avoid duplicating assigned entries above the
+same selectable catalogue. Use bounded server search/pages for large remote sets,
+preserve choices outside the visible result, and keep search Enter independent of
+form submission. Follow the Permissions-owned
+[access editor](../../modules/permissions/README.md#searchable-assignment-catalogue)
+for the supplied roles/direct-permission use case.
+
+## Concise form composition
+
+Reuse the owning module's established labels, controls and task layout. Omit
+redundant explanatory copy that adds no decision or action; do not repeat facts
+in separate summary cards. Consolidate related readonly status in one place and
+keep technical revisions/IDs in the controller. Apply the
+[capability visibility contract](customization.md#configuration-based-capability-visibility)
+to dependent fields as well as whole forms, including recipient selectors whose
+secondary-address feature is unavailable. Native authorization, concurrency,
+security proof and required feedback remain with their owning controllers.
+
+## Visible operation progress
+
+Set Form busy from its owning operation. Public submit Buttons inherit that local
+state when their busy prop is omitted; Cancel and other button actions do not.
+Explicit busy remains available for a different owner. Independent async actions
+(review, refresh, send code, row-status reads) bind their own Button busy state.
+Use ContentLoading for dependent reads and retained-content refresh, including
+factor-method discovery; keep drafts/focus mounted once content is available.
+Do not replace progress with generic scope statements or fast-changing status
+sentences. Keep stable action labels, actionable failures, meaningful consequences
+and durable pending/recovery states. No global HTTP counter or artificial request
+delay is introduced. Reduced motion uses the existing static progress cues.
+
+Shared export operations also preserve allowlisted HTTP refusal codes such as
+`export_limit` and `selection_stale`, alongside local provider errors. Unknown
+HTTP/server failures retain the safe export fallback; no payload message is shown.
+Table-view name validation and the 50-view limit have separate recovery messages.

@@ -33,22 +33,49 @@ final readonly class ReadEvents implements AuditReads
         if ($query->until !== null) {
             $builder->where('occurred_at', '<=', $query->until);
         }
-        if ($query->before !== null) {
-            $cursor = $this->events()->where('public_id', $query->before)->value('id');
-            if ($cursor === null) {
-                throw new \InvalidArgumentException('Unknown Audit page cursor.');
-            }
-            $builder->where('id', '<', $cursor);
-        }
         if ($query->entity !== null) {
             $entity = $query->entity;
             $builder->whereExists(fn (Builder $related) => $related->selectRaw('1')->from('runa_audit.entities')
                 ->whereColumn('event_id', 'runa_audit.events.id')->where('module', $entity->module)
                 ->where('entity_type', $entity->type)->where('entity_public_id', $entity->publicId));
         }
+        // Count the authorized filtered dataset before applying a page cursor.
+        $total = (clone $builder)->count();
+        if ($query->sort === null) {
+            if ($query->before !== null) {
+                $cursor = $this->events()->where('public_id', $query->before)->value('id');
+                if ($cursor === null) {
+                    throw new \InvalidArgumentException('Unknown Audit page cursor.');
+                }
+                $builder->where('id', '<', $cursor);
+            }
+            $builder->orderByDesc('id');
+        } else {
+            $column = $query->sort;
+            if ($query->before !== null) {
+                $pivot = (clone $builder)->where('public_id', $query->before)->first(['id', $column]);
+                if ($pivot === null) {
+                    throw new \InvalidArgumentException('Unknown Audit page cursor.');
+                }
+                $value = $pivot->{$column};
+                $builder->where(function (Builder $where) use ($column, $value, $pivot, $query): void {
+                    if ($value === null) {
+                        $where->whereNull($column)->where('id', '>', $pivot->id);
+                    } else {
+                        $where->where($column, $query->direction === 'asc' ? '>' : '<', $value)
+                            ->orWhereNull($column)
+                            ->orWhere(fn (Builder $tie) => $tie->where($column, $value)->where('id', '>', $pivot->id));
+                    }
+                });
+            }
+            // AuditQuery validates both identifiers before SQL composition.
+            /** @var non-falsy-string&literal-string $order Validated source-owned Audit sort and direction. */
+            $order = '"'.$column.'" '.$query->direction.' NULLS LAST';
+            $builder->orderByRaw($order)->orderBy('id');
+        }
         // Summary selection never fetches potentially large change/context/execution trees.
         /** @var list<EventRow> $rows */
-        $rows = $builder->orderByDesc('id')->limit($query->limit + 1)->get([
+        $rows = $builder->limit($query->limit + 1)->get([
             'id', 'public_id', 'occurred_at', 'module', 'action', 'outcome', 'actor_kind', 'actor_public_id', 'actor_label', 'correlation_id',
         ])->all();
         $more = count($rows) > $query->limit;
@@ -67,7 +94,7 @@ final readonly class ReadEvents implements AuditReads
             $bytes += $size;
         }
 
-        return new AuditPage($entries, $more && $entries !== [] ? $entries[array_key_last($entries)]->reference->publicId : null);
+        return new AuditPage($entries, $more && $entries !== [] ? $entries[array_key_last($entries)]->reference->publicId : null, $total);
     }
 
     public function detail(string $publicId): ?AuditEntry
@@ -81,7 +108,7 @@ final readonly class ReadEvents implements AuditReads
 
     public function metadata(): array
     {
-        return ['version' => 1, 'order' => 'append_desc', 'max_page_size' => 100, 'max_page_bytes' => 524288, 'payloads' => 'detail_only',
+        return ['version' => 1, 'order' => 'append_desc', 'sort' => ['occurred_at', 'module', 'action', 'outcome', 'actor_kind', 'actor_public_id', 'actor_label', 'correlation_id'], 'max_page_size' => 100, 'max_page_bytes' => 524288, 'payloads' => 'detail_only',
             'filters' => ['module', 'action', 'actorPublicId', 'actorKind', 'entity', 'outcome', 'correlationId', 'from', 'until', 'before']];
     }
 
@@ -90,7 +117,8 @@ final readonly class ReadEvents implements AuditReads
         return $this->database->connection()->table('runa_audit.events');
     }
 
-    /** @param list<int> $ids
+    /**
+     * @param  list<int>  $ids
      * @return array<int, list<AuditEntity>>
      */
     private function entities(array $ids): array
@@ -104,7 +132,8 @@ final readonly class ReadEvents implements AuditReads
         return $result;
     }
 
-    /** @param EventRow $row
+    /**
+     * @param  EventRow  $row
      * @param  list<AuditEntity>  $entities
      */
     private function entry(object $row, array $entities, bool $detail = false): AuditEntry

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useHorizontalScroll } from '../composables/useHorizontalScroll';
 import { computed, ref, useId } from 'vue';
 import type { TabItem } from '../runa/ui/containers';
 const props = defineProps<{
@@ -9,6 +10,7 @@ const props = defineProps<{
 const emit = defineEmits<{ 'update:modelValue': [value: string] }>();
 const id = useId();
 const list = ref<globalThis.HTMLElement>();
+const { edges, wheel } = useHorizontalScroll(list);
 const active = computed(
   () =>
     props.items.find(
@@ -42,34 +44,43 @@ function keydown(event: globalThis.KeyboardEvent) {
 <template>
   <div>
     <div
-      ref="list"
-      role="tablist"
-      :aria-label="label"
-      class="flex gap-1 overflow-x-auto border-b border-line"
-      @keydown="keydown"
+      class="runa-horizontal-frame"
+      :class="{
+        'has-overflow-left': edges.left,
+        'has-overflow-right': edges.right,
+      }"
     >
-      <button
-        v-for="(item, index) in items"
-        :id="`${id}-tab-${index}`"
-        :key="item.id"
-        type="button"
-        role="tab"
-        :data-tab="item.id"
-        :data-tab-index="index"
-        :disabled="item.disabled"
-        :aria-selected="active?.id === item.id"
-        :aria-controls="`${id}-panel-${index}`"
-        :tabindex="active?.id === item.id ? 0 : -1"
-        class="min-h-11 shrink-0 border-b-2 px-4 text-sm transition-colors hover:bg-[var(--runa-surface-hover)] focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)] disabled:opacity-50 motion-reduce:transition-none"
-        :class="
-          active?.id === item.id
-            ? 'border-primary text-primary'
-            : 'border-transparent text-muted'
-        "
-        @click="emit('update:modelValue', item.id)"
+      <div
+        ref="list"
+        role="tablist"
+        :aria-label="label"
+        class="flex gap-1 overflow-x-auto border-b border-line"
+        @keydown="keydown"
+        @wheel="wheel"
       >
-        {{ item.label }}
-      </button>
+        <button
+          v-for="(item, index) in items"
+          :id="`${id}-tab-${index}`"
+          :key="item.id"
+          type="button"
+          role="tab"
+          :data-tab="item.id"
+          :data-tab-index="index"
+          :disabled="item.disabled"
+          :aria-selected="active?.id === item.id"
+          :aria-controls="`${id}-panel-${index}`"
+          :tabindex="active?.id === item.id ? 0 : -1"
+          class="min-h-11 shrink-0 border-b-2 px-4 text-sm transition-colors hover:bg-[var(--runa-surface-hover)] focus-visible:outline-2 focus-visible:outline-[var(--runa-focus-ring)] disabled:opacity-50 motion-reduce:transition-none"
+          :class="
+            active?.id === item.id
+              ? 'border-primary text-primary'
+              : 'border-transparent text-muted'
+          "
+          @click="emit('update:modelValue', item.id)"
+        >
+          {{ item.label }}
+        </button>
+      </div>
     </div>
     <section
       v-for="(item, index) in items"

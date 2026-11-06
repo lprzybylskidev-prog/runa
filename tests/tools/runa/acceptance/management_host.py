@@ -88,6 +88,7 @@ def main() -> None:
         (root / ".env.dev.local").write_text(
             "DEV_PROFILE=low\nEMBEDDINGS_DEVICE=cpu\nEMBEDDINGS_CUDA=0\n"
         )
+        (root / ".env.dev.local").chmod(0o600)
         common: dict[str, JsonValue] = {
             "image": report["management_tag"],
             "pull_policy": "never",

@@ -57,6 +57,7 @@ use Runa\Mail\MailBranding;
 use Runa\ModuleFramework\Console\ModuleConsole;
 use Runa\ModuleFramework\Work\ModuleQueueGuard;
 use Runa\Runtime\RuntimeHeartbeat;
+use Runa\Settings\SettingRegistry;
 use Runa\Support\Logging\LogContext;
 use RuntimeException;
 
@@ -82,6 +83,8 @@ final class RunaServiceProvider extends ServiceProvider
                 $config->set($key, array_replace_recursive($defaults, $overrides));
             }
         }
+        $this->app->singleton(SettingRegistry::class);
+        $this->app->booted(fn () => $this->app->make(SettingRegistry::class)->freeze());
         $this->app->singleton(LogContext::class);
         $this->app->singleton(ConsoleLogContext::class);
         $this->app->singleton(QueueLogContext::class);

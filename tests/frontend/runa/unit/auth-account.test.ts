@@ -1,7 +1,8 @@
+/* eslint-disable vue/one-component-per-file -- Shared password host and independent account controller fixtures. */
 import type { Profile } from '../../../../src/runa/modules/auth/frontend/account';
 import AuthRecoveryCodesDialog from '../../../../src/runa/modules/auth/frontend/AuthRecoveryCodesDialog.vue';
 import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
-import { defineComponent, type ComponentPublicInstance } from 'vue';
+import { h, defineComponent, type ComponentPublicInstance } from 'vue';
 import AuthAccountEditor from '../../../../src/runa/modules/auth/frontend/AuthAccountEditor.vue';
 import AuthAccountPreferences from '../../../../src/runa/modules/auth/frontend/AuthAccountPreferences.vue';
 import { useDisplayPreferences } from '../../../../src/runa/resources/js/composables/useDisplayPreferences';
@@ -10,6 +11,7 @@ import AuthAvatarCropper from '../../../../src/runa/modules/auth/frontend/AuthAv
 import {
   Avatar,
   ApplicationLayout,
+  providePresentationVisibility,
   Button,
   Dialog,
   FileInput,
@@ -29,7 +31,13 @@ import {
 import AuthAccount from '../../../../src/runa/modules/auth/frontend/AuthAccount.vue';
 import AuthWelcome from '../../../../src/runa/modules/auth/frontend/AuthWelcome.vue';
 import { useAuthAccount } from '../../../../src/runa/modules/auth/frontend/useAuthAccount';
+import {
+  AuthOperationProofPage,
+  providePasswordConfirmation,
+  ApplicationSessionShell,
+} from '@/runa/auth';
 import AuthApplication from '../../../../src/runa/modules/auth/frontend/AuthApplication.vue';
+import { useAuthWelcome } from '../../../../src/runa/modules/auth/frontend/useAuthWelcome';
 import { useApplicationSession } from '../../../../src/runa/modules/auth/frontend/useApplicationSession';
 import {
   accountDraftEpoch,
@@ -44,6 +52,45 @@ type MultiSelectInstance = ComponentPublicInstance<
   Parameters<typeof Select<true>>[0]
 >;
 
+const AccountFixture = defineComponent({
+  props: { accountId: { type: String, required: true } },
+  setup(props) {
+    const host = providePasswordConfirmation();
+    providePresentationVisibility(() => !host.active.value);
+    return () =>
+      h('div', [
+        h(AuthAccount, { accountId: props.accountId }),
+        host.active.value
+          ? h(AuthOperationProofPage, {
+              controller: host.active.value,
+              locale: 'pl',
+              onConfirmed: () => host.complete(),
+              onCancel: () => host.cancel(),
+            })
+          : null,
+      ]);
+  },
+});
+async function submitAccount(form: {
+  element: Element;
+  trigger(event: string): Promise<unknown>;
+}) {
+  await form.trigger('submit');
+  await flushPromises();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await flushPromises();
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const input = document.querySelector<HTMLInputElement>(
+      'input[name=current_password]',
+    );
+    if (!input) break;
+    await new DOMWrapper(input).setValue('a-long-test-password');
+    await new DOMWrapper(input.closest('form')!).trigger('submit');
+    await flushPromises();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await flushPromises();
+  }
+}
 enableAutoUnmount(afterEach);
 const id = '01900000-0000-7000-8000-000000000001';
 const other = '01900000-0000-7000-8000-000000000002';
@@ -67,7 +114,7 @@ const security = {
   totp_enabled: true,
   email_otp_enabled: true,
   recovery_codes_enabled: true,
-  password_change_factor: false,
+  trusted_device_eligible: false,
   trusted_devices_enabled: false,
 };
 const profile: Profile = {
@@ -87,6 +134,7 @@ const profile: Profile = {
     own_name_editable: true,
     own_login_editable: true,
     own_email_editable: true,
+    email_verification_enabled: true,
     secondary_emails_enabled: false,
     secondary_email_limit: 5,
     avatar_enabled: true,
@@ -130,6 +178,7 @@ let write: (
   body: Record<string, unknown>,
 ) => Response | Promise<Response>;
 beforeEach(() => {
+  window.history.replaceState({}, '', '/account');
   accountPreferences.disconnect();
   clearAccountDraft();
   localStorage.clear();
@@ -147,6 +196,7 @@ beforeEach(() => {
     );
   vi.spyOn(window, 'fetch').mockImplementation(async (input, init) => {
     const path = String(input).split('?')[0]!;
+    if (path.endsWith('/step-up')) return json({ confirmed: true });
     if (path.endsWith('/preferences'))
       return json({
         account: sessionAccount,
@@ -199,6 +249,112 @@ async function loaded(w: ReturnType<typeof mount>) {
   await flushPromises();
 }
 
+it('disabled module capabilities omit account editors while retaining authorized facts and password changes', async () => {
+  Object.assign(currentProfile.capabilities, {
+    own_name_editable: false,
+    own_login_editable: false,
+    own_email_editable: false,
+    email_verification_enabled: false,
+    avatar_editor: 'admin',
+  });
+  currentProfile.email_verified = false;
+  Object.assign(currentSecurity, {
+    totp_enabled: false,
+    email_otp_enabled: false,
+    trusted_device_eligible: false,
+    trusted_devices_enabled: false,
+    recovery_codes_enabled: false,
+  });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await loaded(w);
+  expect(w.find('[data-account-section=details]').exists()).toBe(false);
+  expect(w.find('[data-account-section=avatar]').exists()).toBe(false);
+  expect(w.find('[data-account-security]').exists()).toBe(false);
+  expect(w.find('[data-account-section=password]').exists()).toBe(true);
+  expect(w.get('[data-account-readonly-details]').text()).toContain(
+    'test@example.test',
+  );
+  expect(w.find('[data-account-readonly-avatar]').exists()).toBe(true);
+  expect(
+    w
+      .findAll('button')
+      .some((button) => button.text() === 'Wyślij wiadomość weryfikacyjną'),
+  ).toBe(false);
+  expect(writes).toHaveLength(0);
+});
+
+it('disabled module capability changes close factor forms and clear their secrets without discarding unrelated drafts', async () => {
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await loaded(w);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  await w.get('input[name="name"]').setValue('Unrelated draft');
+  await w
+    .get('[data-account-security]')
+    .findAll('button')
+    .find((button) => button.text() === 'Skonfiguruj')!
+    .trigger('click');
+  await flushPromises();
+  state.sectionFields.security.enrollment_code = 'private-proof';
+  Object.assign(currentSecurity, {
+    totp_enabled: false,
+    email_otp_enabled: false,
+    trusted_device_eligible: false,
+    trusted_devices_enabled: false,
+  });
+  await state.refresh();
+  await vi.waitFor(() =>
+    expect(w.find('[data-account-section=security]').exists()).toBe(false),
+  );
+  expect(w.find('[data-account-security]').exists()).toBe(false);
+  expect(state.sectionFields.security.enrollment_code).toBe('');
+  state.secret.value = 'late-enrollment-secret';
+  state.qrCode.value = 'late-private-image';
+  await flushPromises();
+  expect(state.secret.value).toBe('');
+  expect(state.qrCode.value).toBe('');
+  expect(w.get('input[name="name"]').element).toHaveProperty(
+    'value',
+    'Unrelated draft',
+  );
+  expect(writes).toHaveLength(0);
+});
+
+it('disabled module editing capabilities remove forms and proof state on a live profile refresh', async () => {
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await loaded(w);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.sectionFields.password.password = 'unrelated-password-draft';
+  currentProfile = {
+    ...currentProfile,
+    version: 6,
+    capabilities: {
+      ...currentProfile.capabilities,
+      own_name_editable: false,
+      own_login_editable: false,
+      own_email_editable: false,
+      avatar_enabled: false,
+    },
+  };
+  await state.refresh();
+  await vi.waitFor(() =>
+    expect(w.find('[data-account-section=details]').exists()).toBe(false),
+  );
+  expect(w.find('[data-account-section=avatar]').exists()).toBe(false);
+  expect(state.sectionFields.password.password).toBe(
+    'unrelated-password-draft',
+  );
+  expect(writes).toHaveLength(0);
+});
+
 it('loads session rows once with a centered spinner and no visible loading text', async () => {
   const original = vi.mocked(window.fetch).getMockImplementation()!;
   let reads = 0;
@@ -217,7 +373,10 @@ it('loads session rows once with a centered spinner and no visible loading text'
     }
     return original(input, init);
   });
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   const button = w
     .findAll('nav button')
@@ -287,13 +446,16 @@ it('account boundary diagnostic: preserves only safe drafts for the same account
 });
 it('account boundary diagnostic: saves with the current revision and refuses stale writes without replay', async () => {
   write = () => json('identity_stale', 409);
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   await w.get('input[name="name"]').setValue('Changed name');
-  await w.get('form').trigger('submit');
+  await submitAccount(w.get('form'));
   await vi.waitFor(() =>
     expect(w.text() + document.body.textContent).toContain(
-      'Aktualne dane pobrano automatycznie',
+      'Dane zmieniły się w międzyczasie.',
     ),
   );
   expect(writes).toHaveLength(1);
@@ -311,7 +473,10 @@ it('account boundary diagnostic: saves with the current revision and refuses sta
 });
 it('account boundary diagnostic: restores a draft only after explicit review and never submits on login', async () => {
   rememberAccountDraft(id, { name: 'Recovered name' });
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   expect((w.get('input[name="name"]').element as HTMLInputElement).value).toBe(
     'Test User',
@@ -385,7 +550,12 @@ it('account boundary diagnostic: welcome exposes registration only when enabled 
   expect(w.find('a[href="/auth/register"]').exists()).toBe(false);
   expect(
     w.findAll('main [role=img]').map((icon) => icon.attributes('aria-label')),
-  ).toEqual(['Audyt', 'Uwierzytelnianie', 'Uprawnienia']);
+  ).toEqual([
+    'Panel administratora',
+    'Audyt',
+    'Uwierzytelnianie',
+    'Uprawnienia',
+  ]);
   expect(w.find('header a[href="/auth/login"]').exists()).toBe(true);
   expect(w.find('main a[href="/auth/login"]').exists()).toBe(false);
   w.unmount();
@@ -440,7 +610,10 @@ it('edits secondary addresses in account details with identity, revision and exp
     verified_at: null,
   };
   Object.assign(currentProfile, { secondary_emails: [address] });
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   expect(w.find('nav').text()).not.toContain('Dodatkowe adresy e-mail');
   const section = w.get('[data-secondary-emails]');
@@ -456,7 +629,7 @@ it('edits secondary addresses in account details with identity, revision and exp
     currentProfile = { ...currentProfile, version: 6 };
     return json({ accepted: true });
   };
-  await form.trigger('submit');
+  await submitAccount(form);
   await vi.waitFor(() => expect(writes).toHaveLength(1));
   await vi.waitFor(() =>
     expect(
@@ -491,7 +664,10 @@ it('edits secondary addresses in account details with identity, revision and exp
   expect(writes[1]?.body).toMatchObject({ address_id: other, version: 6 });
 });
 it('optional TOTP setup retains its private key only until confirmation and requires saved-code acknowledgement', async () => {
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   await w
     .get('[data-account-security]')
@@ -510,12 +686,9 @@ it('optional TOTP setup retains its private key only until confirmation and requ
         ? { secret: 'ABCDEFGHIJKLMNOP', qr_code: qrImage }
         : { recovery_codes: ['a'.repeat(32)] },
     );
-  await new DOMWrapper(document.body)
-    .get('[data-account-section=security] input[name="current_password"]')
-    .setValue('a-long-test-password');
-  await new DOMWrapper(document.body)
-    .get('[data-account-section=security]')
-    .trigger('submit');
+  await submitAccount(
+    new DOMWrapper(document.body).get('[data-account-section=security]'),
+  );
   await flushPromises();
   expect(
     new DOMWrapper(document.body).get('[data-enrollment-secret]').text(),
@@ -527,21 +700,16 @@ it('optional TOTP setup retains its private key only until confirmation and requ
     new DOMWrapper(document.body).get('[data-enrollment-qr]').attributes('alt'),
   ).toContain('Kod QR');
   expect(
-    (
-      new DOMWrapper(document.body).get(
-        '[data-account-section=security] input[name="current_password"]',
-      ).element as HTMLInputElement
-    ).value,
-  ).toBe('');
-  await new DOMWrapper(document.body)
-    .get('[data-account-section=security] input[name="current_password"]')
-    .setValue('a-long-test-password');
+    document.querySelector(
+      '[data-account-section] input[name=current_password]',
+    ),
+  ).toBeNull();
   await new DOMWrapper(document.body)
     .get('input[name="enrollment_code"]')
     .setValue('123456');
-  await new DOMWrapper(document.body)
-    .get('[data-account-section=security]')
-    .trigger('submit');
+  await submitAccount(
+    new DOMWrapper(document.body).get('[data-account-section=security]'),
+  );
   await flushPromises();
   expect(
     new DOMWrapper(document.body).find('[data-enrollment-secret]').exists(),
@@ -567,14 +735,14 @@ it('optional TOTP setup retains its private key only until confirmation and requ
   expect(w.find('[data-recovery-code]').exists()).toBe(false);
 });
 it('known password errors stop submission and a CSRF renewal does not replay the write', async () => {
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
-  await w
-    .get('[data-account-section=password] input[name="current_password"]')
-    .setValue('a-long-test-password');
   await w.get('input[name="password"]').setValue('short');
   await w.get('input[name="password_confirmation"]').setValue('different');
-  await w.get('[data-account-section=password]').trigger('submit');
+  await submitAccount(w.get('[data-account-section=password]'));
   await flushPromises();
   expect(writes).toHaveLength(0);
   await w.get('input[name="password"]').setValue('a-new-long-password');
@@ -582,7 +750,7 @@ it('known password errors stop submission and a CSRF renewal does not replay the
     .get('input[name="password_confirmation"]')
     .setValue('a-new-long-password');
   write = () => json('csrf_token_mismatch', 419);
-  await w.get('[data-account-section=password]').trigger('submit');
+  await submitAccount(w.get('[data-account-section=password]'));
   await flushPromises();
   expect(writes).toHaveLength(1);
   const retry = Array.from(
@@ -659,7 +827,10 @@ it('customization: account replacement consumes the public controller with curre
 });
 
 it('account cards validate their changes before writing and stops after a partial failure without replay', async () => {
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   expect(w.findAll('form')).toHaveLength(3);
   expect(
@@ -671,15 +842,6 @@ it('account cards validate their changes before writing and stops after a partia
   expect(w.findComponent(AuthAccountEditor).exists()).toBe(true);
   await w.get('input[name="name"]').setValue('Edited name');
   await w.get('input[name="email"]').setValue('next@example.test');
-  await w.get('form').trigger('submit');
-  await flushPromises();
-  expect(writes).toHaveLength(0);
-  expect(
-    w.get('input[name="current_password"]').attributes('aria-invalid'),
-  ).toBe('true');
-  await w
-    .get('input[name="current_password"]')
-    .setValue('a-long-test-password');
   write = (path, body) => {
     if (path.endsWith('/profile')) {
       currentProfile = {
@@ -691,7 +853,7 @@ it('account cards validate their changes before writing and stops after a partia
     }
     return json('identity_stale', 409);
   };
-  await w.get('form').trigger('submit');
+  await submitAccount(w.get('form'));
   await flushPromises();
   await vi.waitFor(() =>
     expect(writes.map((item) => item.path)).toEqual([
@@ -709,11 +871,13 @@ it('account cards validate their changes before writing and stops after a partia
     ),
   );
   expect(w.text() + document.body.textContent).toContain(
-    'Aktualne dane pobrano automatycznie',
+    'Dane zmieniły się w międzyczasie.',
   );
   expect(
-    (w.get('input[name="current_password"]').element as HTMLInputElement).value,
-  ).toBe('');
+    document.querySelector(
+      '[data-account-section] input[name=current_password]',
+    ),
+  ).toBeNull();
   await flushPromises();
   expect(writes).toHaveLength(2);
 });
@@ -734,7 +898,10 @@ async function cropImageFile() {
 }
 it('account avatar card crops and saves independently without clearing other card drafts or replaying removal', async () => {
   currentProfile.has_avatar = true;
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   await w.get('input[name="name"]').setValue('Changed name');
   await w.get('input[name="password"]').setValue('unsaved-new-password');
@@ -761,7 +928,7 @@ it('account avatar card crops and saves independently without clearing other car
     currentProfile = { ...currentProfile, version: 6 };
     return json({ accepted: true });
   };
-  await w.get('[data-account-section=avatar]').trigger('submit');
+  await submitAccount(w.get('[data-account-section=avatar]'));
   await flushPromises();
   await vi.waitFor(() => expect(writes).toHaveLength(1));
   await vi.waitFor(() =>
@@ -781,7 +948,10 @@ it('account avatar card crops and saves independently without clearing other car
   ).toBeGreaterThan(0);
 });
 it('account password card submits independently of invalid account details', async () => {
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   await w
     .get('[data-account-security]')
@@ -791,12 +961,11 @@ it('account password card submits independently of invalid account details', asy
   await w.get('input[name="name"]').setValue('');
   await w.get('input[name="email"]').setValue('invalid');
   const form = w.get('[data-account-section=password]');
-  await form.get('[name=current_password]').setValue('a-long-test-password');
   await form.get('[name=password]').setValue('a-new-long-password');
   await form
     .get('[name=password_confirmation]')
     .setValue('a-new-long-password');
-  await form.trigger('submit');
+  await submitAccount(form);
   await flushPromises();
   expect(writes.map((item) => item.path)).toEqual([
     '/api/runa/auth/password/change',
@@ -849,7 +1018,10 @@ it('avatar cropper exports the selected square and refuses invalid or oversized 
 });
 
 it('avatar crop modal cancels without upload and preserves an accepted crop when readjustment is canceled', async () => {
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   const picker = w.getComponent(FileInput);
   picker.vm.$emit('update:modelValue', [await cropImageFile()]);
@@ -956,6 +1128,15 @@ it('shell avatar follows guarded profile reads immediately on replacement/remova
   );
   const shell = w.getComponent(ApplicationLayout);
   await vi.waitFor(() => expect(shell.props('userAvatar')).toContain('v=5'));
+  await vi.waitFor(
+    () =>
+      expect(
+        w.get('button[aria-label^="Menu użytkownika"]').attributes('disabled'),
+      ).toBeUndefined(),
+    {
+      timeout: 4000,
+    },
+  );
   await w.get('button[aria-label^="Menu użytkownika"]').trigger('click');
   await vi.waitFor(() => expect(w.findAllComponents(Avatar)).toHaveLength(2));
   expect(
@@ -1003,16 +1184,15 @@ it('shared avatar falls back on image errors and retries only when its source ch
     props: { src: '/missing-avatar-one.png', initials: 'TU', size: 40 },
   });
   expect(w.find('.avatar-skeleton').exists()).toBe(true);
-  expect(w.text()).toBe('');
-  await w.get('img').trigger('error');
-  expect(w.find('.avatar-skeleton').exists()).toBe(false);
+  await vi.waitFor(() => expect(w.text()).toBe('TU'));
   expect(w.find('img').exists()).toBe(false);
-  expect(w.text()).toBe('TU');
-  await w.setProps({ src: '/missing-avatar-two.png' });
-  expect(w.get('img').attributes('src')).toBe('/missing-avatar-two.png');
+  const src =
+    'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+  await w.setProps({ src });
+  await vi.waitFor(() => expect(w.find('img').exists()).toBe(true));
+  expect(w.get('img').attributes('src')).toBe(src);
+  expect(w.text()).toBe('');
   expect(w.get('img').attributes('alt')).toBe('');
-  expect(w.find('.avatar-skeleton').exists()).toBe(true);
-  await w.get('img').trigger('load');
   expect(w.find('.avatar-skeleton').exists()).toBe(false);
   expect(w.get('img').isVisible()).toBe(true);
 });
@@ -1048,7 +1228,10 @@ it('optional shell profile read never blocks the session and cannot restore pres
 
 it('avatar removal requires confirmation, cancel preserves the image and confirmation submits only deletion', async () => {
   currentProfile.has_avatar = true;
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   const remove = () =>
     w
@@ -1091,9 +1274,9 @@ it('avatar removal requires confirmation, cancel preserves the image and confirm
 });
 
 it('two-factor method controls open isolated email setup dialogs and cancel private drafts', async () => {
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await loaded(w);
   const card = w.get('[data-account-security]');
@@ -1106,9 +1289,6 @@ it('two-factor method controls open isolated email setup dialogs and cancel priv
   let form = new DOMWrapper(document.body).get(
     '[data-account-section=security]',
   );
-  await form
-    .get('[name=current_password]')
-    .setValue('discard-this-security-draft');
   await form
     .findAll('button')
     .find((button) => button.text() === 'Anuluj')!
@@ -1125,10 +1305,11 @@ it('two-factor method controls open isolated email setup dialogs and cancel priv
     .trigger('click');
   form = new DOMWrapper(document.body).get('[data-account-section=security]');
   expect(
-    (form.get('[name=current_password]').element as HTMLInputElement).value,
-  ).toBe('');
-  await form.get('[name=current_password]').setValue('a-long-test-password');
-  await form.trigger('submit');
+    document.querySelector(
+      '[data-account-section] input[name=current_password]',
+    ),
+  ).toBeNull();
+  await submitAccount(form);
   await vi.waitFor(() =>
     expect(writes.map((item) => item.path)).toEqual([
       '/api/runa/auth/security/email-enable',
@@ -1138,7 +1319,10 @@ it('two-factor method controls open isolated email setup dialogs and cancel priv
 
 it('failed avatar deletion keeps confirmation open and reports one modal error before an explicit retry', async () => {
   currentProfile.has_avatar = true;
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   await w
     .get('[data-account-section=avatar]')
@@ -1166,9 +1350,12 @@ it('failed avatar deletion keeps confirmation open and reports one modal error b
   await vi.waitFor(() => expect(dialog.props('modelValue')).toBe(false));
   expect(writes).toHaveLength(2);
 });
-it('two-factor disable acts on the chosen enrolled method and retains current-factor proof', async () => {
+it('two-factor disable acts on the chosen enrolled method and uses password confirmation without current-factor proof', async () => {
   currentSecurity = { ...security, enrolled: ['totp', 'email'] };
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   const card = w.get('[data-account-security]');
   await card
@@ -1178,16 +1365,12 @@ it('two-factor disable acts on the chosen enrolled method and retains current-fa
   const form = new DOMWrapper(document.body).get(
     '[data-account-section=security]',
   );
-  await form.get('[name=current_password]').setValue('a-long-test-password');
-  await form.get('[name=code]').setValue('123456');
-  await form.trigger('submit');
+  await submitAccount(form);
   await vi.waitFor(() => expect(writes).toHaveLength(1));
   expect(writes[0]).toMatchObject({
     path: '/api/runa/auth/security/disable',
     body: {
       target: 'email',
-      code: '123456',
-      current_password: 'a-long-test-password',
     },
   });
 });
@@ -1199,7 +1382,10 @@ it('TOTP QR accepts only bounded local image data and cancellation clears both e
     'data:image/svg+xml;base64,' + 'A'.repeat(131072),
   ])
     expect(() => enrollmentQrCode(image)).toThrow();
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   const card = w.get('[data-account-security]');
   await card
@@ -1214,8 +1400,7 @@ it('TOTP QR accepts only bounded local image data and cancellation clears both e
       secret: 'ABCDEFGHIJKLMNOP',
       qr_code: 'data:image/svg+xml;base64,PHN2Zy8+',
     });
-  await form.get('[name=current_password]').setValue('a-long-test-password');
-  await form.trigger('submit');
+  await submitAccount(form);
   await vi.waitFor(() =>
     expect(
       new DOMWrapper(document.body).find('[data-enrollment-qr]').exists(),
@@ -1243,8 +1428,15 @@ it('TOTP QR accepts only bounded local image data and cancellation clears both e
 });
 
 it('recovery-code replacement uses a guarded modal and requires explicit saved acknowledgement', async () => {
-  currentSecurity = { ...security, enrolled: ['totp'] };
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  currentSecurity = {
+    ...security,
+    enrolled: ['totp'],
+    trusted_device_eligible: true,
+  };
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   const card = w.get('[data-account-security]');
   await card
@@ -1255,9 +1447,7 @@ it('recovery-code replacement uses a guarded modal and requires explicit saved a
     '[data-account-section=security]',
   );
   write = () => json({ recovery_codes: ['c'.repeat(32), 'd'.repeat(32)] });
-  await form.get('[name=current_password]').setValue('a-long-test-password');
-  await form.get('[name=code]').setValue('123456');
-  await form.trigger('submit');
+  await submitAccount(form);
   await vi.waitFor(() =>
     expect(document.querySelectorAll('[data-recovery-code]')).toHaveLength(2),
   );
@@ -1297,7 +1487,10 @@ it('secondary additions validate locally and preserve unrelated identity, passwo
     secondary_self_change: true,
     secondary_self_remove: true,
   });
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   await w
     .get('[data-account-section=details] [name=name]')
@@ -1313,7 +1506,7 @@ it('secondary additions validate locally and preserve unrelated identity, passwo
   controller.files.value = [image];
   const form = w.get('[data-account-section=secondary]');
   await form.get('[name=secondary_email]').setValue('invalid');
-  await form.trigger('submit');
+  await submitAccount(form);
   await flushPromises();
   expect(writes).toHaveLength(0);
   expect(form.get('[name=secondary_email]').attributes('aria-invalid')).toBe(
@@ -1339,7 +1532,7 @@ it('secondary additions validate locally and preserve unrelated identity, passwo
         resolve(json({ accepted: true }));
       };
     });
-  await form.trigger('submit');
+  await submitAccount(form);
   await vi.waitFor(() => expect(finish).toBeDefined());
   expect(
     (
@@ -1393,7 +1586,10 @@ it('secondary address controls honor feature permissions, limit and verified sta
       },
     ],
   });
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   const section = w.get('[data-secondary-emails]');
   expect(section.text()).toContain('Potwierdzony');
@@ -1417,7 +1613,10 @@ it('secondary verification reissue preserves an unsent new-address draft and use
       { public_id: other, email: 'pending@example.test', verified_at: null },
     ],
   });
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   await w.get('[name=secondary_email]').setValue('unsent@example.test');
   await w
@@ -1439,14 +1638,17 @@ it('secondary verification reissue preserves an unsent new-address draft and use
 it('secondary address conflicts keep both drafts and never replay the write automatically', async () => {
   currentProfile.capabilities.secondary_emails_enabled = true;
   Object.assign(currentProfile.capabilities, { secondary_self_add: true });
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   await w
     .get('[data-account-section=details] [name=name]')
     .setValue('Unsaved identity');
   await w.get('[name=secondary_email]').setValue('pending@example.test');
   write = () => json('conflict', 409);
-  await w.get('[data-account-section=secondary]').trigger('submit');
+  await submitAccount(w.get('[data-account-section=secondary]'));
   await vi.waitFor(() =>
     expect(
       w.getComponent(AuthAccountEditor).props('account').failure.value,
@@ -1471,7 +1673,10 @@ it('secondary deletion failure stays in its confirmation modal with one error an
       { public_id: other, email: 'keep@example.test', verified_at: null },
     ],
   });
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   await w.get('[aria-label="Usuń adres: keep@example.test"]').trigger('click');
   const modal = w
@@ -1517,9 +1722,9 @@ it('account session sorting uses instants across month boundaries and concise En
       );
     return fetcher(input, init);
   });
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await loaded(w);
   await w
@@ -1542,9 +1747,9 @@ it('account session sorting uses instants across month boundaries and concise En
 
 it('trusted devices live inside two-factor settings and cannot be enabled without an enrolled factor', async () => {
   currentSecurity = { ...security, trusted_devices_enabled: true };
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await loaded(w);
   const nav = w.get('nav[aria-label="Ustawienia konta"]');
@@ -1562,15 +1767,25 @@ it('trusted devices live inside two-factor settings and cannot be enabled withou
   expect(writes).toHaveLength(0);
   expect(state.failure.value).toBe('unavailable');
   state.overviewAction.value = 'none';
-  state.security.value = { ...state.security.value!, enrolled: ['email'] };
+  state.security.value = {
+    ...state.security.value!,
+    enrolled: ['email'],
+    trusted_device_eligible: true,
+  };
   await flushPromises();
-  expect(trigger.attributes('disabled')).toBeUndefined();
+  expect(
+    card
+      .findAll('button')
+      .find((button) => button.text() === 'Zaufaj tej przeglądarce')!
+      .attributes('disabled'),
+  ).toBeUndefined();
 });
 
-it('trust issuance requires a fresh factor in its modal and leaves unrelated account drafts intact', async () => {
+it('trust issuance uses the shared password page after a factor-verified login and leaves unrelated account drafts intact', async () => {
   currentSecurity = {
     ...security,
     enrolled: ['email'],
+    trusted_device_eligible: true,
     trusted_devices_enabled: true,
   };
   const fetcher = vi.mocked(window.fetch).getMockImplementation()!;
@@ -1585,9 +1800,9 @@ it('trust issuance requires a fresh factor in its modal and leaves unrelated acc
       );
     return fetcher(input, init);
   });
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await loaded(w);
   await w.get('input[name=name]').setValue('Unsaved identity');
@@ -1604,14 +1819,11 @@ it('trust issuance requires a fresh factor in its modal and leaves unrelated acc
   );
   expect(form.element.closest('[role=dialog]')).not.toBeNull();
   expect(form.find('[name=current_password]').exists()).toBe(false);
-  await form.trigger('submit');
-  expect(writes).toHaveLength(0);
-  await form.get('[name=code]').setValue('123456');
-  await form.trigger('submit');
+  await submitAccount(form);
   await vi.waitFor(() => expect(writes).toHaveLength(1));
   expect(writes[0]).toMatchObject({
     path: '/api/runa/auth/trusted-devices',
-    body: { method: 'email', code: '123456' },
+    body: {},
   });
   await vi.waitFor(() =>
     expect(
@@ -1628,13 +1840,14 @@ it('trust issuance requires a fresh factor in its modal and leaves unrelated acc
     ).value,
   ).toBe('unsaved-password');
   const state = w.getComponent(AuthAccountEditor).props('account');
-  expect(state.sectionFields.security.code).toBe('');
+  expect(state.sectionFields.security.enrollment_code).toBe('');
 });
 
 it('trusted device management keeps isolated cursor rows and confirms revocation inside a dialog', async () => {
   currentSecurity = {
     ...security,
     enrolled: ['email'],
+    trusted_device_eligible: true,
     trusted_devices_enabled: true,
   };
   const fetcher = vi.mocked(window.fetch).getMockImplementation()!;
@@ -1652,6 +1865,10 @@ it('trusted device management keeps isolated cursor rows and confirms revocation
             : [
                 {
                   public_id: url.searchParams.has('before') ? other : id,
+                  browser: 'Firefox',
+                  platform: 'Linux',
+                  current: true,
+                  last_used_at: '2026-10-02T12:00:00Z',
                   created_at: '2026-10-01T12:00:00Z',
                   expires_at: '2026-11-01T12:00:00Z',
                 },
@@ -1665,43 +1882,42 @@ it('trusted device management keeps isolated cursor rows and confirms revocation
       );
     return fetcher(input, init);
   });
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await loaded(w);
   const state = w.getComponent(AuthAccountEditor).props('account');
   state.rows.value = [{ public_id: other, current: true }];
-  await w
-    .get('[data-trusted-devices]')
-    .findAll('button')
-    .find((button) => button.text() === 'Zarządzaj urządzeniami')!
-    .trigger('click');
   await vi.waitFor(() =>
-    expect(document.querySelectorAll('[role=dialog] tbody tr')).toHaveLength(1),
+    expect(w.findAll('[data-trusted-devices] tbody tr')).toHaveLength(1),
   );
   await vi.waitFor(() => expect(state.busy.value).toBe(false));
+  expect(w.get('[data-trusted-devices]').text()).toContain('Firefox · Linux');
+  expect(w.get('[data-trusted-devices]').text()).toContain('Ta przeglądarka');
   const body = new DOMWrapper(document.body);
-  await body
-    .findAll('[role=dialog] button')
+  await w
+    .findAll('[data-trusted-devices] button')
     .find((button) => button.text() === 'Wczytaj starsze')!
     .trigger('click');
   await vi.waitFor(() => expect(state.trustedRows.value).toHaveLength(2));
   expect(state.rows.value).toEqual([{ public_id: other, current: true }]);
-  await body.get('[role=dialog] tbody button').trigger('click');
+  await state.loadTrustedDevices();
+  await vi.waitFor(() => expect(state.trustedRows.value).toHaveLength(1));
+  await w.get('[data-trusted-devices] tbody button').trigger('click');
   await vi.waitFor(() =>
-    expect(document.querySelectorAll('[role=dialog]')).toHaveLength(2),
+    expect(document.querySelectorAll('[role=dialog]')).toHaveLength(1),
   );
   expect(writes).toHaveLength(0);
   write = () => json('csrf_token_mismatch', 419);
-  const confirmation = body.findAll('[role=dialog]')[1]!;
+  const confirmation = body.findAll('[role=dialog]')[0]!;
   await confirmation
     .findAll('button')
     .find((button) => button.text() === 'Unieważnij')!
     .trigger('click');
   await vi.waitFor(() => expect(writes).toHaveLength(1));
   await vi.waitFor(() => expect(state.failure.value).toBe('csrf'));
-  expect(state.trustedRows.value).toHaveLength(2);
+  expect(state.trustedRows.value).toHaveLength(1);
   await vi.waitFor(() =>
     expect(
       body
@@ -1728,17 +1944,13 @@ it('trusted device management keeps isolated cursor rows and confirms revocation
     path: '/api/runa/auth/trusted-devices/revoke',
     body: { public_id: id },
   });
-  await vi.waitFor(() =>
-    expect(state.trustedRows.value.map((row) => row.public_id)).toEqual([
-      other,
-    ]),
-  );
+  await vi.waitFor(() => expect(state.trustedRows.value).toEqual([]));
 });
 
 it('factor dialogs keep failures inside their focus boundary and never replay after CSRF renewal', async () => {
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await loaded(w);
   const setup = w
@@ -1747,11 +1959,10 @@ it('factor dialogs keep failures inside their focus boundary and never replay af
     .find((button) => button.text() === 'Skonfiguruj')!;
   await setup.trigger('click');
   const body = new DOMWrapper(document.body);
-  let form = body.get('[data-account-section=security]');
+  const form = body.get('[data-account-section=security]');
   expect(form.element.closest('[role=dialog]')).not.toBeNull();
   write = () => json('csrf', 419);
-  await form.get('[name=current_password]').setValue('a-long-test-password');
-  await form.trigger('submit');
+  await submitAccount(form);
   await vi.waitFor(() =>
     expect(
       w.getComponent(AuthAccountEditor).props('account').failure.value,
@@ -1772,7 +1983,6 @@ it('factor dialogs keep failures inside their focus boundary and never replay af
   await renewal.trigger('click');
   await flushPromises();
   expect(writes).toHaveLength(1);
-  await form.get('[name=current_password]').setValue('discard-on-escape');
   document.dispatchEvent(
     new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
   );
@@ -1783,16 +1993,26 @@ it('factor dialogs keep failures inside their focus boundary and never replay af
   );
   expect(
     w.getComponent(AuthAccountEditor).props('account').sectionFields.security
-      .current_password,
+      .enrollment_code,
   ).toBe('');
   await setup.trigger('click');
-  form = body.get('[data-account-section=security]');
+  expect(body.find('[data-account-section=security]').exists()).toBe(true);
   expect(
-    (form.get('[name=current_password]').element as HTMLInputElement).value,
-  ).toBe('');
+    document.querySelector(
+      '[data-account-section] input[name=current_password]',
+    ),
+  ).toBeNull();
 });
 
 function preferenceDeliveryFixture() {
+  currentProfile.capabilities.secondary_emails_enabled = true;
+  currentProfile.secondary_emails = [
+    {
+      public_id: other,
+      email: 'secondary@example.test',
+      verified_at: '2026-10-01T00:00:00Z',
+    },
+  ];
   let revision = 3;
   const categories = [
     {
@@ -1877,9 +2097,9 @@ async function openPreferences(w: ReturnType<typeof mount>) {
 
 it('preferences expose header reset and explicit language/theme options with inline delivery', async () => {
   preferenceDeliveryFixture();
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await openPreferences(w);
   const labels = w
@@ -1896,8 +2116,8 @@ it('preferences expose header reset and explicit language/theme options with inl
     'Przywróć domyślne',
   );
   expect(
-    w.get('[data-preferences-display]').findAll('input[type=radio]'),
-  ).toHaveLength(5);
+    w.get('[data-preferences-display]').findAll('button[aria-haspopup=dialog]'),
+  ).toHaveLength(2);
   expect(w.find('[data-required-delivery]').exists()).toBe(false);
   expect(w.find('[data-delivery-category=required]').exists()).toBe(false);
   expect(w.get('[data-account-preferences]').classes()).not.toContain(
@@ -1919,6 +2139,30 @@ it('preferences expose header reset and explicit language/theme options with inl
   expect(writes).toHaveLength(0);
 });
 
+it('disabled module notification options omit recipient controls and remain explicitly re-enableable', async () => {
+  preferenceDeliveryFixture();
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await openPreferences(w);
+  const row = w.get('[data-delivery-category=optional]');
+  const select = row.getComponent<MultiSelectInstance>(Select);
+  select.vm.$emit('update:modelValue', []);
+  await flushPromises();
+  await row.get('input[role=switch]').setValue(false);
+  expect(row.findComponent(Select).exists()).toBe(false);
+  expect(row.find('input[role=switch]').exists()).toBe(true);
+  await row.trigger('submit');
+  await vi.waitFor(() => expect(writes).toHaveLength(1));
+  expect(writes[0]?.body).toMatchObject({
+    enabled: false,
+    recipients: ['primary'],
+  });
+  await row.get('input[role=switch]').setValue(true);
+  expect(row.findComponent(Select).exists()).toBe(true);
+});
+
 it('inline delivery drafts validate recipients, revert one row and preserve another unsaved row after a revisioned save', async () => {
   const categories = preferenceDeliveryFixture();
   categories.push({
@@ -1935,9 +2179,9 @@ it('inline delivery drafts validate recipients, revert one row and preserve anot
     },
     { public_id: 'pending', email: 'pending@example.test', verified_at: null },
   ];
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await openPreferences(w);
   const state = w.getComponent(AuthAccountPreferences).props('account');
@@ -2001,16 +2245,16 @@ it('inline delivery drafts validate recipients, revert one row and preserve anot
 
 it('inline delivery conflicts refresh automatically and preserve the draft without replay', async () => {
   const categories = preferenceDeliveryFixture();
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await openPreferences(w);
   const row = w.get('[data-delivery-category=optional]');
-  await row.get('input[role=switch]').setValue(false);
   row
     .getComponent<MultiSelectInstance>(Select)
     .vm.$emit('update:modelValue', ['primary', other]);
+  await row.get('input[role=switch]').setValue(false);
   await flushPromises();
   categories[0]!.recipients = [other];
   write = () => json('version_conflict', 409);
@@ -2038,9 +2282,9 @@ it('header preference reset requires confirmation and cancel never resets the ac
     .mockImplementation(async () => {
       categories[0]!.enabled = true;
     });
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await openPreferences(w);
   const row = w.get('[data-delivery-category=optional]');
@@ -2107,9 +2351,9 @@ it('preference categories recover from failed reads without losing their card or
     }
     return fetcher(input, init);
   });
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await loaded(w);
   await w
@@ -2130,7 +2374,10 @@ it('preference categories recover from failed reads without losing their card or
 });
 
 it('account refresh merges untouched fields and preserves dirty identity, password and avatar drafts', async () => {
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   const state = w.getComponent(AuthAccountEditor).props('account');
   state.fields.name = 'My unsaved name';
@@ -2152,9 +2399,9 @@ it('account refresh merges untouched fields and preserves dirty identity, passwo
 });
 
 it('overlapping identity refresh requires a local decision before a versioned save and never replays writes', async () => {
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await loaded(w);
   const state = w.getComponent(AuthAccountEditor).props('account');
@@ -2183,9 +2430,9 @@ it('overlapping identity refresh requires a local decision before a versioned sa
 
 it('preference refresh merges disjoint delivery changes without replacing local switches', async () => {
   const categories = preferenceDeliveryFixture();
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await openPreferences(w);
   const row = w.get('[data-delivery-category=optional]');
@@ -2194,6 +2441,8 @@ it('preference refresh merges disjoint delivery changes without replacing local 
   await w.getComponent(AuthAccountPreferences).props('account').refresh();
   await flushPromises();
   expect(row.getComponent(Switch).props('modelValue')).toBe(false);
+  expect(row.findComponent(Select).exists()).toBe(false);
+  await row.get('input[role=switch]').setValue(true);
   expect(
     row.getComponent<MultiSelectInstance>(Select).props('modelValue'),
   ).toEqual([other]);
@@ -2203,9 +2452,9 @@ it('preference refresh merges disjoint delivery changes without replacing local 
 
 it('inline delivery rejection refreshes reads without replay or a reload action', async () => {
   preferenceDeliveryFixture();
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await openPreferences(w);
   const row = w.get('[data-delivery-category=optional]');
@@ -2232,7 +2481,10 @@ it('secondary address refresh preserves dirty email and resolves only that edito
       { public_id: other, email: 'before@example.test', verified_at: null },
     ],
   });
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   await w
     .get('button[aria-label="Edytuj adres: before@example.test"]')
@@ -2264,8 +2516,40 @@ it('secondary address refresh preserves dirty email and resolves only that edito
   expect(state.fields.name).toBe('Unsaved identity');
 });
 
+it('disabled module secondary editing closes the existing draft without changing other sections', async () => {
+  Object.assign(currentProfile.capabilities, {
+    secondary_emails_enabled: true,
+    secondary_self_add: false,
+    secondary_self_change: true,
+  });
+  currentProfile.secondary_emails = [
+    { public_id: other, email: 'before@example.test', verified_at: null },
+  ];
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await loaded(w);
+  await w
+    .get('button[aria-label="Edytuj adres: before@example.test"]')
+    .trigger('click');
+  await w.get('[name=secondary_email]').setValue('private-draft@example.test');
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  state.fields.name = 'Keep my name';
+  currentProfile.capabilities.secondary_self_change = false;
+  await state.refresh();
+  await flushPromises();
+  expect(w.find('[data-account-section="secondary"]').exists()).toBe(false);
+  expect(w.text()).toContain('before@example.test');
+  expect(state.fields.name).toBe('Keep my name');
+  expect(writes).toHaveLength(0);
+});
+
 it('account refresh retains a trailing focus invalidation while an earlier read is pending', async () => {
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   const state = w.getComponent(AuthAccountEditor).props('account');
   state.fields.name = 'My pending draft';
@@ -2282,18 +2566,20 @@ it('account refresh retains a trailing focus invalidation while an earlier read 
     return original(input, init);
   });
   const first = state.refresh();
+  expect(state.refreshing.value).toBe(true);
   await vi.waitFor(() => expect(release).toBeDefined());
   currentProfile = { ...currentProfile, version: 6, name: 'Remote update' };
   window.dispatchEvent(new Event('focus'));
   release!(json(profile));
   await first;
   await vi.waitFor(() => expect(state.profile.value?.version).toBe(6));
+  expect(state.refreshing.value).toBe(false);
   expect(state.fields.name).toBe('My pending draft');
   expect(state.detailConflicts.name).toBe('Remote update');
   expect(writes).toHaveLength(0);
 });
 
-it('trusted management appears only while an active device exists and disappears after refresh', async () => {
+it('trusted management keeps its inline table when the last device disappears after refresh', async () => {
   currentSecurity = { ...security, trusted_devices_enabled: true };
   let active = true;
   const original = vi.mocked(window.fetch).getMockImplementation()!;
@@ -2318,64 +2604,70 @@ it('trusted management appears only while an active device exists and disappears
         )
       : original(input, init),
   );
-  const w = mount(AuthAccount, { props: { accountId: id } });
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
   await loaded(w);
   const card = w.get('[data-account-security]');
-  expect(card.text()).toContain('Zarządzaj urządzeniami');
+  expect(card.find('[data-trusted-devices] table').exists()).toBe(true);
+  expect(card.text()).toContain('Nieznana przeglądarka');
   expect(card.text()).not.toContain('Zaufana przeglądarka pomija kod');
   active = false;
   await w.getComponent(AuthAccountEditor).props('account').refresh();
   await flushPromises();
-  expect(card.text()).not.toContain('Zarządzaj urządzeniami');
+  expect(card.find('[data-trusted-devices] table').exists()).toBe(true);
+  expect(card.text()).toContain('Brak wyników');
 });
 
-it('shell waits for optional profile metadata before showing avatar initials', async () => {
+it('shell renders immediately and synchronizes content with profile readiness while retaining background drafts', async () => {
   const implementation = vi.mocked(window.fetch).getMockImplementation()!;
   let releaseProfile!: () => void;
-  const profileGate = new Promise<void>((resolve) => {
+  let profileGate = new Promise<void>((resolve) => {
     releaseProfile = resolve;
   });
   vi.mocked(window.fetch).mockImplementation(async (input, init) => {
     if (String(input).endsWith('/profile')) await profileGate;
     return implementation(input, init);
   });
-  const w = mount(AuthApplication, { props: { account: true } });
-  const shell = w.getComponent(ApplicationLayout);
-  await vi.waitFor(() => expect(w.find('.account-menu').exists()).toBe(false));
-  await vi.waitFor(() =>
-    expect(
-      w.find('button[aria-label^="Menu użytkownika"]').attributes('aria-label'),
-    ).toContain('Test User'),
-  );
-  expect(shell.props('userLoading')).toBe(true);
+  const w = mount(AuthApplication, {
+    slots: { default: '<input aria-label="Draft" />' },
+    attachTo: document.body,
+  });
+  await flushPromises();
+  expect(w.findComponent(ApplicationLayout).exists()).toBe(true);
+  expect(w.find('input[aria-label="Draft"]').exists()).toBe(false);
   expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(true);
-  expect(
-    w.get('nav[aria-label="Ścieżka nawigacji"] a[href="/app"]').text(),
-  ).toBe('Aplikacja');
-  expect(
-    w.get('nav[aria-label="Ścieżka nawigacji"] [aria-current="page"]').text(),
-  ).toBe('Panel użytkownika');
-  await w.get('button[aria-label^="Menu użytkownika"]').trigger('click');
-  await vi.waitFor(() => expect(w.findAllComponents(Avatar)).toHaveLength(2));
-  expect(
-    w
-      .findAllComponents(Avatar)
-      .every((a) => a.find('.avatar-skeleton').exists()),
-  ).toBe(true);
   releaseProfile();
-  await vi.waitFor(() => expect(shell.props('userLoading')).toBe(false));
-  expect(
-    w
-      .findAllComponents(Avatar)
-      .every((a) => !a.find('.avatar-skeleton').exists()),
-  ).toBe(true);
+  await vi.waitFor(() =>
+    expect(w.findComponent(ApplicationLayout).exists()).toBe(true),
+  );
+  const shell = w.getComponent(ApplicationLayout).element;
+  await vi.waitFor(() =>
+    expect(w.find('input[aria-label="Draft"]').exists()).toBe(true),
+  );
+  const draft = w.get('input[aria-label="Draft"]');
+  await draft.setValue('Keep my work');
+  (draft.element as HTMLInputElement).focus();
+  profileGate = new Promise<void>((resolve) => {
+    releaseProfile = resolve;
+  });
+  document.dispatchEvent(new Event('visibilitychange'));
+  await flushPromises();
+  expect(w.getComponent(ApplicationLayout).element).toBe(shell);
+  expect(w.get('input[aria-label="Draft"]').element).toBe(draft.element);
+  expect(document.activeElement).toBe(draft.element);
+  releaseProfile();
+  await flushPromises();
+  expect((draft.element as HTMLInputElement).value).toBe('Keep my work');
+  expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(false);
 });
 
 it('reads delivery once per preference tab entry or account refresh while retaining external invalidation', async () => {
   preferenceDeliveryFixture();
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   const reads = () =>
     vi
@@ -2461,9 +2753,9 @@ it('account history opens safe detail changes, handles retry and never restores 
       });
     return original(input, init);
   });
-  const w = mount(AuthAccount, {
-    props: { accountId: id },
+  const w = mount(AccountFixture, {
     attachTo: document.body,
+    props: { accountId: id },
   });
   await loaded(w);
   await w
@@ -2489,6 +2781,12 @@ it('account history opens safe detail changes, handles retry and never restores 
     w.findAll('button').filter((button) => button.text() === 'Szczegóły'),
   ).toHaveLength(1);
   const modal = document.body.querySelector('[role=dialog]')!;
+  expect(w.get('tbody').text()).toContain('sukces');
+  expect(
+    [...modal.querySelectorAll('dd')].some(
+      (entry) => entry.textContent?.trim() === 'sukces',
+    ),
+  ).toBe(true);
   expect(modal.textContent).toContain('Przed');
   expect(modal.textContent).toContain('Po');
   expect(modal.textContent).toContain('Tak');
@@ -2511,8 +2809,8 @@ it('account history opens safe detail changes, handles retry and never restores 
     ),
   );
   fail = false;
-  [...document.body.querySelectorAll('[role=dialog] button')]
-    .find((button) => button.textContent === 'Ponów')!
+  [...document.body.querySelectorAll('button')]
+    .find((button) => button.textContent?.trim() === 'Ponów')!
     .dispatchEvent(new MouseEvent('click', { bubbles: true }));
   await vi.waitFor(() =>
     expect(
@@ -2694,4 +2992,303 @@ it('account orchestration: disposal aborts trusted reads and cannot repopulate a
   expect(replacement.profile.value?.public_id).toBe(other);
   expect(replacement.trustedRows.value).toEqual([]);
   expect(writes).toHaveLength(0);
+});
+
+it('welcome revalidation retains confirmed options while a background read fails', async () => {
+  const { state } = mountController(useAuthWelcome);
+  await vi.waitFor(() => expect(state.loading.value).toBe(false));
+  const previous = state.options.value;
+  let finish!: (value: Response) => void;
+  const fetch = vi.mocked(window.fetch).mockImplementation(
+    () =>
+      new Promise<Response>((resolve) => {
+        finish = resolve;
+      }),
+  );
+  fetch.mockClear();
+  const pending = state.load();
+  expect(state.loading.value).toBe(false);
+  expect(state.refreshing.value).toBe(true);
+  expect(state.options.value).toBe(previous);
+  await state.load();
+  expect(fetch).toHaveBeenCalledTimes(1);
+  finish(json('unavailable', 503));
+  await pending;
+  expect(state.failed.value).toBe(true);
+  expect(state.options.value).toBe(previous);
+  expect(state.refreshing.value).toBe(false);
+});
+
+it.each(['decoded', 'error', 'timeout'] as const)(
+  'shell completes content and avatar placeholders together after image %s',
+  async (outcome) => {
+    currentProfile.has_avatar = true;
+    const images: ControlledImage[] = [];
+    class ControlledImage {
+      src = '';
+      decoding = '';
+      naturalWidth = 1;
+      onload: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      finishDecode!: () => void;
+      decode = () =>
+        new Promise<void>((resolve) => {
+          this.finishDecode = resolve;
+        });
+      constructor() {
+        images.push(this);
+      }
+    }
+    vi.stubGlobal('Image', ControlledImage);
+    if (outcome === 'timeout') vi.useFakeTimers();
+    const w = mount(AuthApplication, {
+      slots: { default: '<input aria-label="Coordinated draft" />' },
+      attachTo: document.body,
+    });
+    try {
+      const frame = w.getComponent(ApplicationLayout).element;
+      await vi.waitFor(() => expect(images).toHaveLength(1));
+      expect(w.find('input[aria-label="Coordinated draft"]').exists()).toBe(
+        false,
+      );
+      expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(
+        true,
+      );
+      if (outcome === 'decoded') {
+        images[0]!.onload!();
+        await flushPromises();
+        expect(w.find('input[aria-label="Coordinated draft"]').exists()).toBe(
+          false,
+        );
+        expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(
+          true,
+        );
+        images[0]!.finishDecode();
+      } else if (outcome === 'error') images[0]!.onerror!();
+      else {
+        await vi.advanceTimersByTimeAsync(2500);
+        vi.useRealTimers();
+      }
+      await vi.waitFor(() =>
+        expect(w.find('input[aria-label="Coordinated draft"]').exists()).toBe(
+          true,
+        ),
+      );
+      expect(w.getComponent(ApplicationLayout).element).toBe(frame);
+      expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(
+        false,
+      );
+      const input = w.get('input[aria-label="Coordinated draft"]');
+      await input.setValue('Keep this draft');
+      (input.element as HTMLInputElement).focus();
+      if (outcome === 'decoded') {
+        currentProfile.version++;
+        const session = w
+          .getComponent(ApplicationSessionShell)
+          .props('session');
+        await session.refresh();
+        await vi.waitFor(() => expect(images).toHaveLength(2));
+        expect(w.get('input[aria-label="Coordinated draft"]').element).toBe(
+          input.element,
+        );
+        expect(document.activeElement).toBe(input.element);
+        expect(w.getComponent(Avatar).find('.avatar-skeleton').exists()).toBe(
+          false,
+        );
+        expect(w.getComponent(Avatar).get('img').attributes('src')).toContain(
+          'v=5',
+        );
+      }
+    } finally {
+      w.unmount();
+      vi.useRealTimers();
+      vi.unstubAllGlobals();
+    }
+  },
+);
+
+it('account subviews use the top navigation with URL selection and browser history', async () => {
+  preferenceDeliveryFixture();
+  const w = mount(AuthApplication, {
+    props: { account: true },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(
+      w.find('header .shell-top-nav a[href*="tab=preferences"]').exists(),
+    ).toBe(true),
+  );
+  expect(w.find('main nav[aria-label="Ustawienia konta"]').exists()).toBe(
+    false,
+  );
+  const frame = w.getComponent(ApplicationLayout).element;
+  await w
+    .get('header .shell-top-nav a[href*="tab=preferences"]')
+    .trigger('click');
+  await vi.waitFor(() =>
+    expect(w.findComponent(AuthAccountPreferences).exists()).toBe(true),
+  );
+  expect(new URL(window.location.href).searchParams.get('tab')).toBe(
+    'preferences',
+  );
+  await vi.waitFor(() =>
+    expect(w.get('header .shell-top-nav a[aria-current="page"]').text()).toBe(
+      'Preferencje',
+    ),
+  );
+  window.history.back();
+  await vi.waitFor(() =>
+    expect(w.findComponent(AuthAccountEditor).exists()).toBe(true),
+  );
+  expect(w.get('header .shell-top-nav a[aria-current="page"]').text()).toBe(
+    'Konto i zabezpieczenia',
+  );
+  expect(w.getComponent(ApplicationLayout).element).toBe(frame);
+});
+it('account subview deep links initialize the requested available tab', async () => {
+  preferenceDeliveryFixture();
+  window.history.replaceState({}, '', '/account?tab=preferences');
+  const w = mount(AuthApplication, { props: { account: true } });
+  await vi.waitFor(() =>
+    expect(w.findComponent(AuthAccountPreferences).exists()).toBe(true),
+  );
+  await vi.waitFor(() =>
+    expect(w.get('header .shell-top-nav a[aria-current="page"]').text()).toBe(
+      'Preferencje',
+    ),
+  );
+});
+
+it('hides recipient selection when secondary email capability is off even with stale address choices', async () => {
+  preferenceDeliveryFixture();
+  currentProfile.capabilities.secondary_emails_enabled = false;
+  const wrapper = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await openPreferences(wrapper);
+  expect(
+    wrapper
+      .get('[data-delivery-category=optional]')
+      .findComponent(Select)
+      .exists(),
+  ).toBe(false);
+  expect(
+    wrapper
+      .get('[data-delivery-category=optional]')
+      .find('input[role=switch]')
+      .exists(),
+  ).toBe(true);
+  expect(writes).toHaveLength(0);
+});
+
+it('retains both own identity drafts when switching name formats without submitting', async () => {
+  const wrapper = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await loaded(wrapper);
+  const identity = wrapper.get(
+    '[data-account-section=details] [data-auth-identity-fields]',
+  );
+  await identity.get('input[value=full]').setValue();
+  await identity.get('input[name=first_name]').setValue('Ada');
+  await identity.get('input[name=surname]').setValue('Nowak');
+  await identity.get('input[value=single]').setValue();
+  expect(identity.get<HTMLInputElement>('input[name=name]').element.value).toBe(
+    'Test User',
+  );
+  await identity.get('input[value=full]').setValue();
+  expect(
+    identity.get<HTMLInputElement>('input[name=first_name]').element.value,
+  ).toBe('Ada');
+  expect(
+    identity.get<HTMLInputElement>('input[name=surname]').element.value,
+  ).toBe('Nowak');
+  expect(writes).toHaveLength(0);
+});
+
+it.each(['identifier_conflict', 'secondary_limit'])(
+  'secondary address refusal %s preserves the draft and explains the business reason',
+  async (reason) => {
+    Object.assign(currentProfile.capabilities, {
+      secondary_emails_enabled: true,
+      secondary_self_add: true,
+    });
+    const w = mount(AccountFixture, {
+      attachTo: document.body,
+      props: { accountId: id },
+    });
+    await loaded(w);
+    const form = w.get('[data-account-section=secondary]');
+    await form.get('[name=secondary_email]').setValue('occupied@example.test');
+    write = () => json(reason, reason === 'identifier_conflict' ? 409 : 422);
+    await submitAccount(form);
+    await vi.waitFor(() => expect(writes).toHaveLength(1));
+    await flushPromises();
+    expect(
+      (form.get('[name=secondary_email]').element as HTMLInputElement).value,
+    ).toBe('occupied@example.test');
+    expect(document.body.textContent).not.toContain('Aktualne dane pobrano');
+    if (reason === 'identifier_conflict') {
+      expect(form.text()).toContain(
+        'Ten adres e-mail jest już zajęty. Wybierz inny.',
+      );
+      expect(
+        form.get('[name=secondary_email]').attributes('aria-invalid'),
+      ).toBe('true');
+    } else {
+      expect(document.body.textContent).toContain(
+        'Osiągnięto limit dodatkowych adresów',
+      );
+    }
+  },
+);
+
+it('occupied login has an inline error while an actual stale profile still reconciles', async () => {
+  const { state } = mountController(() => useAuthAccount(id));
+  await vi.waitFor(() => expect(state.ready.value).toBe(true));
+  state.fields.login = 'occupied.login';
+  write = () => json('identifier_conflict', 409);
+  await state.submit();
+  expect(state.errors.login).toBe('Ten login jest już zajęty. Wybierz inny.');
+  expect(state.failure.value).toBe('identifier_conflict');
+  expect(state.fields.login).toBe('occupied.login');
+  write = () => json('identity_stale', 409);
+  await state.submit();
+  expect(state.failure.value).toBe('conflict');
+  expect(state.fields.login).toBe('occupied.login');
+});
+
+it('cancelling password confirmation retains the new-password draft and performs no account write', async () => {
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await loaded(w);
+  const form = w.get('[data-account-section=password]');
+  await form.get('input[name=password]').setValue('draft-new-password');
+  await form
+    .get('input[name=password_confirmation]')
+    .setValue('draft-new-password');
+  await form.trigger('submit');
+  await flushPromises();
+  expect(document.querySelector('input[name=current_password]')).not.toBeNull();
+  const page = new DOMWrapper(document.body)
+    .get('input[name=current_password]')
+    .element.closest('form')!;
+  await new DOMWrapper(page)
+    .findAll('button')
+    .find((button) => button.text() === 'Anuluj')!
+    .trigger('click');
+  await flushPromises();
+  expect(document.querySelector('input[name=current_password]')).toBeNull();
+  expect(writes).toHaveLength(0);
+  expect(
+    (form.get('input[name=password]').element as HTMLInputElement).value,
+  ).toBe('draft-new-password');
+  expect(
+    (form.get('input[name=password_confirmation]').element as HTMLInputElement)
+      .value,
+  ).toBe('draft-new-password');
 });

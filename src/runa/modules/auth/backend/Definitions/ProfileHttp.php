@@ -20,6 +20,7 @@ final class ProfileHttp implements HttpProvider
         return [
             new HttpEndpoint('POST', 'delivery-preferences', new ApiOperation('delivery.own'), Http\DeliveryController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'preferences', new ApiOperation('preferences.own'), Http\PreferencesController::class, HttpAccess::Authenticated),
+            new HttpEndpoint('GET', 'profile/table-export', new ApiOperation('tables.export', 'runa.permissions.tables.export'), Http\TableExportAuthorityController::class, HttpAccess::Authenticated),
             new HttpEndpoint('GET', 'profile', new ApiOperation('profile.show'), Http\ProfileShowController::class, HttpAccess::Authenticated),
             new HttpEndpoint('PATCH', 'profile', new ApiOperation('profile.edit'), Http\ProfileEditController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'profile/lifecycle', new ApiOperation('profile.self_lifecycle'), Http\SelfLifecycleController::class, HttpAccess::Authenticated),
@@ -32,6 +33,7 @@ final class ProfileHttp implements HttpProvider
             new HttpEndpoint('GET', 'profile/avatar', new ApiOperation('avatar.read'), Http\AvatarReadController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'profile/avatar', new ApiOperation('avatar.upload'), Http\AvatarUploadController::class, HttpAccess::Authenticated),
             new HttpEndpoint('DELETE', 'profile/avatar', new ApiOperation('avatar.remove'), Http\AvatarRemoveController::class, HttpAccess::Authenticated),
+            new HttpEndpoint('GET', 'users/avatar', new ApiOperation('avatar.admin_read', 'runa.auth.avatars.manage'), Http\AvatarReadController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'users/avatar', new ApiOperation('avatar.admin_upload', 'runa.auth.avatars.manage'), Http\AdminAvatarUploadController::class, HttpAccess::Authenticated),
             new HttpEndpoint('DELETE', 'users/avatar', new ApiOperation('avatar.admin_remove', 'runa.auth.avatars.manage'), Http\AdminAvatarRemoveController::class, HttpAccess::Authenticated),
             new HttpEndpoint('POST', 'email/complete', new ApiOperation('email.complete'), Http\EmailCompleteController::class, HttpAccess::Public),

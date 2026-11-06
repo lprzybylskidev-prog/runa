@@ -4,6 +4,7 @@ namespace Tests\Fixtures;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Runa\Database\RequiredSeeds;
 use RuntimeException;
 use Symfony\Component\Process\Process;
 
@@ -135,6 +136,8 @@ CODE);
 
     public function remove(): void
     {
+        // Rebuild cases restore required initializers before the next test boot.
+        RequiredSeeds::run(app(), str_repeat('0', 40));
         File::deleteDirectory($this->root);
     }
 }

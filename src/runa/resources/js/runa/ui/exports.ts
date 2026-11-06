@@ -1,3 +1,4 @@
+import type { ButtonIntent } from './controls';
 export type ExportFormat = 'csv' | 'xlsx' | 'pdf';
 export type ExportCell = string | number | boolean | null;
 
@@ -20,13 +21,14 @@ export type RowSelection<Query> =
 
 export type ExportScope<Query> =
   | { readonly kind: 'all' }
+  | { readonly kind: 'page'; readonly query: Query }
   | { readonly kind: 'filtered'; readonly query: Query }
   | { readonly kind: 'selected'; readonly selection: RowSelection<Query> };
 
 export interface ExportCapabilities {
   readonly execution?: 'client' | 'server';
   readonly formats: readonly ExportFormat[];
-  readonly scopes: readonly ('all' | 'filtered' | 'selected')[];
+  readonly scopes: readonly ('all' | 'filtered' | 'selected' | 'page')[];
   readonly cancellation: boolean;
 }
 
@@ -119,7 +121,11 @@ export interface BulkRequest<Query> {
   readonly operationKey: string;
 }
 export interface BulkProvider<Query> {
-  readonly actions: readonly { key: string; label: string }[];
+  readonly actions: readonly {
+    key: string;
+    label: string;
+    intent?: ButtonIntent;
+  }[];
   readonly cancellation: boolean;
   start(
     request: BulkRequest<Query>,

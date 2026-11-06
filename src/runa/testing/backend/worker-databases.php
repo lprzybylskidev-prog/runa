@@ -28,18 +28,36 @@ try {
         ORDER BY d.datname
         SQL);
     fwrite(STDOUT, 'Scoped worker database cleanup: '.json_encode(array_column($workers, 'datname'), JSON_THROW_ON_ERROR).PHP_EOL);
-    // Refuse the complete cleanup before deleting anything when another user of a
-    // worker is visible. DROP DATABASE also refuses a connection racing this query.
+    // Validate every owner before waiting or deleting. A worker can have exited
+    // while PostgreSQL is still finishing its connection teardown.
     foreach ($workers as $worker) {
         if ($worker->owner !== 'runa_test') {
             $failure = 'Foreign-owned test worker database preserved: '.$worker->datname;
             throw new RuntimeException($failure);
         }
-        if ((int) $worker->connections !== 0) {
+    }
+    $disconnectDeadline = hrtime(true) + 1_000_000_000;
+    foreach ($workers as $worker) {
+        $connections = (int) $worker->connections;
+        while ($connections !== 0 && hrtime(true) < $disconnectDeadline) {
+            usleep(50_000);
+            /** @var object{connections:int|string}|null $activity */
+            $activity = DB::selectOne(
+                'SELECT count(*) AS connections FROM pg_stat_activity WHERE datname = ?',
+                [$worker->datname],
+            );
+            if ($activity === null) {
+                throw new RuntimeException('Worker activity could not be verified.');
+            }
+            $connections = (int) $activity->connections;
+        }
+        if ($connections !== 0) {
             $failure = 'Active test worker database preserved: '.$worker->datname;
             throw new RuntimeException($failure);
         }
     }
+    // No deletion occurs until every candidate is inactive. Ordinary DROP still
+    // refuses a connection racing the final activity check; never force or kill.
     foreach ($workers as $worker) {
         if (! preg_match('/\Aruna_test_test_[1-9][0-9]{0,4}\z/D', $worker->datname)) {
             throw new RuntimeException('Unexpected worker database identity.');

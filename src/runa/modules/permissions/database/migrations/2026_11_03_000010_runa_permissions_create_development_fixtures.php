@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Runa\Support\Modules\Data\ModuleSchema;
+use Runa\Support\Modules\ModuleIdentity;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        $connection = DB::connection();
+        $schema = new ModuleSchema($connection, new ModuleIdentity('runa.permissions'));
+        $schema->create('development_fixtures', function (Blueprint $table): void {
+            $table->text('scenario')->unique();
+            $table->uuid('subject');
+            $table->timestampTz('created_at', 6);
+        }, exposed: false);
+    }
+
+    public function down(): void
+    {
+        throw new RuntimeException('Permissions table recovery requires an explicit plan.');
+    }
+};

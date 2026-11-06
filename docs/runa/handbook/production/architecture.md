@@ -77,6 +77,12 @@ preserved and image-build time includes dependency preparation within those laye
 ## Runtime parity
 
 Capabilities required by application code must exist compatibly in both development and production.
+The PHP runtime includes the platform Settings registry/store alongside its public
+adapters: cold configuration, application presentation and Admin settings resolve
+these services even before required database preparation completes. The image also
+includes the raster validation implementation used by the public image adapter.
+The immutable runtime probe loads the settings services and exercises invalid-image
+rejection before application/database startup.
 
 Dev-only tools such as Xdebug, local RAG, Qdrant, embedding service, Mailpit, and development diagnostics are intentionally absent.
 

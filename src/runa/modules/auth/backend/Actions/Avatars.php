@@ -12,26 +12,44 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\File;
 use Runa\Contracts\Modules\AuthorityGuard;
+use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Api\OperationScope;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Models\User;
-use Runa\Modules\Auth\Support\AvatarImageContent;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\SecurityContext;
+use Runa\Support\Images\RasterImageContent;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Storage\ModuleStorage;
 
 final readonly class Avatars
 {
     public function __construct(private SecurityContext $context, private Profiles $profiles, private EntryTransaction $transactions,
-        private ModuleStorage $storage, private AuthorityGuard $authority) {}
+        private ModuleStorage $storage, private AuthorityGuard $authority, private OperationAuthorizer $authorizer, private OperationScope $scope) {}
 
     /**
      * @return array{contents: string|null, type: string|null}
      */
-    public function read(Request $request): array
+    public function read(Request $request, bool $admin = false): array
     {
-        return $this->context->run($request, function (Connection $connection, User $user): array {
+        if ($admin) {
+            Validator::make($request->query(), ['public_id' => ['required', 'uuid:7']])->validate();
+        }
+
+        return $this->context->run($request, function (Connection $connection, User $user) use ($request, $admin): array {
+            if ($admin) {
+                $context = $this->scope->current();
+                if ($context === null || $context->moduleId !== 'runa.auth' || ! $this->authorizer->allows($context, 'runa.auth.avatars.manage')
+                    || ! in_array($this->profiles->value('avatar_editor'), ['admin', 'both'], true)) {
+                    $this->refuse('permission_denied');
+                }
+                $target = User::withTrashed()->where('public_id', $request->string('public_id')->toString())->first();
+                if ($target === null || ($target->trashed() && ! $this->authorizer->allows($context, 'runa.auth.users.deleted.read'))) {
+                    $this->refuse('avatar_missing', 404);
+                }
+                $user = $target;
+            }
             if (! $this->profiles->value('avatar_enabled') || $user->avatar_path === null) {
                 $this->refuse('avatar_missing', 404);
             }
@@ -57,7 +75,7 @@ final readonly class Avatars
         }
         $contents = $file->getContent();
         $type = $file->getMimeType();
-        if (! is_string($type) || ! AvatarImageContent::safe($contents, $type)) {
+        if (! is_string($type) || ! RasterImageContent::safe($contents, $type)) {
             $this->refuse('avatar_invalid', 422);
         }
         $extension = match ($type) {
@@ -106,16 +124,7 @@ final readonly class Avatars
             throw new \LogicException('Avatar removal requires a root operation.');
         }
         $result = $this->target($request, $admin, function (Connection $connection, User $user): array {
-            if ($user->avatar_path !== null) {
-                $connection->table('runa_auth.avatar_files')->where('path', $user->avatar_path)->update(['available_at' => now()]);
-                $user->avatar_path = null;
-                $user->avatar_type = null;
-                $user->version++;
-                $user->save();
-                $this->transactions->record('avatar.removed', $user, ['has_avatar' => ['old' => true, 'new' => false]]);
-            }
-
-            return ['updated' => true, 'version' => $user->version];
+            return $this->removeLocked($connection, $user);
         });
         try {
             $this->cleanup();
@@ -125,20 +134,40 @@ final readonly class Avatars
         return $result;
     }
 
+    /** Private metadata/Audit phase; durable cleanup owns storage after commit.
+     * @return array{updated:bool,version:int} */
+    public function removeLocked(Connection $connection, User $user): array
+    {
+        if ($user->avatar_path !== null) {
+            $connection->table('runa_auth.avatar_files')->where('path', $user->avatar_path)->update(['available_at' => now()]);
+            $user->avatar_path = null;
+            $user->avatar_type = null;
+            $user->version++;
+            $user->save();
+            $this->transactions->record('avatar.removed', $user, ['has_avatar' => ['old' => true, 'new' => false]]);
+        }
+
+        return ['updated' => true, 'version' => $user->version];
+    }
+
     public function cleanup(): void
     {
         $this->transactions->run(function (Connection $connection): void {
             $this->transactions->lockAuthority($connection);
             $rows = $connection->table('runa_auth.avatar_files')->where('available_at', '<=', now())->whereNotExists(fn (Builder $q) => $q->selectRaw('1')->from('runa_auth.users')->whereColumn('avatar_path', 'runa_auth.avatar_files.path'))
                 ->orderBy('id')->limit(100)->get();
-            /** @var \stdClass&object{path: string} $row */
+            $deleted = [];
+            /** @var \stdClass&object{id:int,path: string} $row */
             foreach ($rows as $row) {
                 try {
                     $this->storage->disk('runa.auth')->delete($row->path);
                 } catch (\Throwable) {
                     continue;
                 } // Keep the exact durable candidate for the existing cleanup schedule.
-                $connection->table('runa_auth.avatar_files')->where('id', $row->id)->delete();
+                $deleted[] = $row->id;
+            }
+            if ($deleted !== []) {
+                $connection->table('runa_auth.avatar_files')->whereIn('id', $deleted)->delete();
             }
         });
     }

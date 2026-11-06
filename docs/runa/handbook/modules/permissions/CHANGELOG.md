@@ -1,5 +1,76 @@
 # Permissions module changelog
 
+## 2.1.0 — Unreleased
+
+- Retain the required eligible administrator during bulk superadministrator removal and apply the remaining reviewed changes. Reuse the existing protected-account warning/count, fingerprint the retained set and preserve native single-write lockout protection, password proof and atomic Audit.
+
+- Align protected-authority bulk tools with existing aggregate counts and omitted-account warnings; remove individual change listings and place Superadministrator last in both action toolbars.
+
+- Replace the Auth user superadministrator checkbox section with grouped grant/revoke actions for one account or up to 100 explicitly selected accounts. Add guarded PermissionsAuthorityBatch 1.0.0 with complete-set lockout protection, stale review refusal, one password proof and atomic per-target Audit; preserve ordinary Auth bulk exclusions.
+
+- Keep the access import mode selected by omitting its clear action. Add optional AdminField.clearable presentation control, retaining existing defaults for other fields.
+
+- Open selected-user copy/preset tools in separate shared dialogs and remove the redundant source/system readonly notice from Permissions details. Preserve native review, proof, drafts and definition protection.
+
+- Simplify Permissions to a readonly permission catalogue, roles and presets; combine details/editing in one dialog. Move account copy/preset and separately granted protected-authority workflows to Auth user details. Reuse guarded search, compact member selection, native source fingerprints, reviewed password-confirmed writes and atomic Audit; remove obsolete access/effective page adapters and exports.
+
+- Adopt shared action button intents: green commit, neutral safe cancellation, yellow discard/caution, blue reads/previews, purple mixed-effect tools and red destructive effects, independent of feedback context or password proof.
+
+- Use fresh password confirmation for all ordinary access, assignment, definition and protected-authority mutations. Consume AuthStepUp 2.0.0 with the existing grants, reviews, revisions, last-administrator checks and atomic Audit. The unreleased 2.1.0 candidate retains its public Permissions signatures.
+
+- Extend PermissionsAccess to 2.2.0 with allowlisted definition ordering and literal code/name filters before cursor paging. Show both localized names and full catalogue table controls.
+
+- Complete access-editor interaction states: pointer/hover/pressed/focus on custom buttons, inherited checkbox cursors and truthful disabled row/page affordances.
+
+- Polish assignment-editor visuals with the shared small search field, bounded desktop width, natural category widths and quiet aligned filters, counts and page controls.
+
+- Replace the expanded assignment lists with a dedicated compact catalogue editor, integrated search/assigned scope, retained category queries/pages, dense rows and bounded pagination. Preserve readonly browsing, unavailable-assignment removal and native proof/review.
+
+- Show assignment-submit and retry progress through shared controls in Auth user details.
+
+- Add public searchable PermissionsAssignments presentation and bounded server definition search/selected-ID hydration through PermissionsAccess 2.1.0; preserve native grants, proof, revision and transactional Audit.
+
+- Reuse the Permissions field catalogue for Auth account assignments, preserving native UUID lookups/grants while providing Polish Role/Uprawnienia labels.
+
+- Accept Auth 3.0.0 after account-expiry retirement; Permissions behavior and guarded API contracts remain unchanged.
+
+- Reuse shared Admin long-value and JSON review previews without changing definition locks or confirmation/proof protocols.
+
+- Return exact non-deleted definition totals before cursor/limit and forward them to Admin without changing read authority.
+
+- Batch role-deletion recipient assignment/revision reads and identical reference
+  snapshots within one preview. Bulk-write assignment/definition/declaration
+  pivots while preserving current eligibility, per-recipient limits, fingerprints,
+  protected authority and mandatory aggregate Audit.
+
+- Keep the shared reset control beside filter fields; definition
+  tables contain no timestamp columns requiring date formatting.
+
+- Declare the shared `runa.permissions.tables.export` permission for authorized
+  exports/printing across all Runa tables; retain owning reads and record Policies.
+  Forward `table_exports` preparation synchronizes declarations transactionally.
+- Open definition details in guarded dialogs; share compact filters, refresh,
+  reset, column preferences and bounded current-page exports.
+
+## 2.0.0 — 2026-10-30
+
+- Use shared FormNotifications for effective-permission read errors.
+
+- Localize administrative labels/actions/effective-permission columns through the shared Admin PL/EN presentation contract without changing grants, definition values or native action semantics.
+
+- Deliver source-owned Admin roles/presets/permission dictionaries, reviewed add/replace/copy/preset access and effective reads, dedicated protected authority and confirmed force-delete sections with native proof/Audit protocols.
+
+- Supply private AssignmentContribution/AssignmentEditor for ordinary reviewed user access in the Auth profile aggregate, guarded field lookups, exact owner revision and native both-factor action proof. Protected authority and bulk workflows remain independent.
+
+- Use native owner lock/validate/apply phases for standalone and shared transactions; all owner reviews validate before any business write.
+- Intentionally replace ambient nesting of PermissionsAccess.applyAssignments with source-owned ModuleTransactions composition; the guarded write API version is 2.0.0 and standalone calls require no ambient transaction. Other guarded API versions remain unchanged.
+- Require platform >=0.7.0 <0.8.0 for the new framework protocol. Preserve strong action proof, current native authority and same-transaction Audit; add a retained-source native_transactions forward edge with no schema change.
+
+## 1.0.5 — 2026-10-30
+
+- Widen platform compatibility to <0.8.0, preserving the >=0.4.2 lower bound and existing API contracts.
+- Append the source-only admin_platform forward edge; no schema or data transformation.
+
 ## 1.0.4 — 2026-10-28
 
 - Complete typed declaration and assignment contracts; serialize every role permission group as a JSON list.

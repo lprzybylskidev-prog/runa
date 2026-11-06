@@ -3,6 +3,7 @@
 namespace Runa\Integration\Core;
 
 use Illuminate\Database\Connection;
+use Runa\Contracts\Modules\OperationalParticipant;
 use Runa\Contracts\Modules\PreparationContext;
 use Runa\Contracts\Modules\PreparationParticipant;
 use Runa\Contracts\Modules\SettingsAuthorization;
@@ -13,12 +14,25 @@ use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\ModuleRegistry;
 
 /** Framework-only reserved adapter; ordinary ingress always uses ModuleApis. */
-final readonly class AuditParticipation implements PreparationParticipant, SettingsAuthorization, SettingsParticipant
+final readonly class AuditParticipation implements OperationalParticipant, PreparationParticipant, SettingsAuthorization, SettingsParticipant
 {
-    public function __construct(private ModuleRegistry $registry, private ModuleDeclarations $declarations) {}
+    public function __construct(private ModuleRegistry $registry, private ModuleDeclarations $declarations, private AdminOperationalAuthority $operations) {}
+
+    public function recording(Connection $connection, string $module, string $operation, array $context): void
+    {
+        $this->operations->assertCurrent();
+        $participant = $this->participant($connection);
+        if ($participant !== null) {
+            if (! $participant instanceof OperationalParticipant) {
+                throw new \RuntimeException('Required Audit operational participation unavailable.');
+            }
+            $participant->recording($connection, $module, $operation, $context);
+        }
+    }
 
     public function authorizing(Connection $connection, SettingsContext $context): void
     {
+        $this->operations->assertCurrent();
         if ($context->module !== 'runa.auth') {
             return;
         }
@@ -36,6 +50,7 @@ final readonly class AuditParticipation implements PreparationParticipant, Setti
 
     public function publishing(Connection $connection, SettingsPublication $publication): void
     {
+        $this->operations->assertCurrent();
         $participant = $this->participant($connection);
         if ($participant !== null) {
             if (! $participant instanceof SettingsParticipant) {

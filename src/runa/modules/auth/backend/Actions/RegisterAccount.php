@@ -33,13 +33,13 @@ final readonly class RegisterAccount
                 if ($this->settings->value('runa.auth', 'identifier_mode') === 'login' && $identity->login === null) {
                     throw new OperationRejected('login_required', 'runa.auth', 'register', 422);
                 }
-                $approved = $this->settings->value('runa.auth', 'registration_approval') === 'automatic';
+                $active = $this->settings->value('runa.auth', 'registration_activation') === 'automatic';
                 $this->transactions->lockAuthority($connection);
                 $user = new User;
                 $user->forceFill(['name' => $identity->name, 'first_name' => $identity->firstName, 'surname' => $identity->surname,
                     'email' => $identity->email, 'email_claim' => $identity->email, 'login' => $identity->login, 'login_claim' => $identity->login,
                     'verification_required' => $this->settings->value('runa.auth', 'email_verification') !== 'disabled',
-                    'password' => $password, 'password_changed_at' => now(), 'active' => true, 'approved' => $approved, 'version' => 1, 'security_version' => 1]);
+                    'password' => $password, 'password_changed_at' => now(), 'active' => $active, 'version' => 1, 'security_version' => 1]);
                 try {
                     app(EmailAddresses::class)->available($connection, $user, $identity->email, true);
                 } catch (IdentityConflict) {
@@ -47,7 +47,7 @@ final readonly class RegisterAccount
                 }
                 $user->save();
                 $this->transactions->record('registration.completed', $user);
-                if ($approved && $user->verification_required) {
+                if ($active && $user->verification_required) {
                     $this->tokens->issueLocked($connection, $user, 'verification');
                 }
 

@@ -1,5 +1,6 @@
 import { RequestCancelledError } from '../../../resources/js/lib/http';
 import { computed, onMounted, onScopeDispose, ref, shallowRef } from 'vue';
+import { instantTimestamp } from '@/runa/ui';
 import { observeRequests } from '../../../resources/js/lib/http';
 import { accountPreferences } from './preferences/session';
 import {
@@ -25,7 +26,7 @@ export interface ActivitySession extends EntrySession {
   };
 }
 function timestamp(value: string) {
-  return Date.parse(/[zZ]|[+-]\d\d:?\d\d$/.test(value) ? value : value + 'Z');
+  return instantTimestamp(value);
 }
 export function activityResponse(value: unknown): ActivitySession {
   const identity = decodeSession(value),
@@ -56,8 +57,10 @@ export function useApplicationSession(
 ) {
   const session = shallowRef<ActivitySession>();
   const profile = shallowRef<Profile>();
+  const authorityRevision = ref(0);
   const paused = ref(false),
     loading = ref(true),
+    refreshing = ref(false),
     profileLoading = ref(false),
     welcomeEnabled = ref(false),
     failure = ref(''),
@@ -66,7 +69,6 @@ export function useApplicationSession(
   let epoch = 0,
     alive = true,
     lastActivity = 0,
-    refreshing = false,
     presentationRead = 0;
   let abort = new AbortController();
   const remaining = computed(() =>
@@ -91,6 +93,8 @@ export function useApplicationSession(
   function suspend() {
     if (paused.value) return;
     paused.value = true;
+    refreshing.value = false;
+    loading.value = false;
     profileLoading.value = false;
     profile.value = undefined;
     epoch++;
@@ -124,19 +128,26 @@ export function useApplicationSession(
     }
   });
   async function refresh() {
-    if (refreshing || paused.value) return;
-    refreshing = true;
+    if (refreshing.value || paused.value) return;
+    refreshing.value = true;
     const own = epoch;
     try {
       await authGet('csrf', abort.signal);
       const next = activityResponse(await authGet('session', abort.signal));
       if (!alive || own !== epoch) return;
-      if (session.value && session.value.public_id !== next.public_id)
+      if (
+        session.value &&
+        (session.value.public_id !== next.public_id ||
+          session.value.session.public_id !== next.session.public_id)
+      ) {
         clearAccountDraft();
+        profileLoading.value = true;
+      }
       if (profile.value?.public_id !== next.public_id)
         profile.value = undefined;
       session.value = next;
       failure.value = '';
+      authorityRevision.value++;
       if (next.restrictions.length) suspend();
       else {
         const read = ++presentationRead;
@@ -153,7 +164,10 @@ export function useApplicationSession(
           });
         // Optional presentation read; its failure must not invalidate a valid session.
         profileLoading.value = !profile.value;
-        void authGet('profile', abort.signal)
+        void authGet(
+          'profile',
+          AbortSignal.any([abort.signal, AbortSignal.timeout(5000)]),
+        )
           .catch(() => {
             /* Initials remain available; optional presentation never blocks the shell. */
           })
@@ -168,13 +182,18 @@ export function useApplicationSession(
         else failure.value = 'unavailable';
       }
     } finally {
-      refreshing = false;
-      if (alive) loading.value = false;
+      if (alive && own === epoch) {
+        refreshing.value = false;
+        loading.value = false;
+      }
     }
   }
   async function authenticated(identity: EntrySession) {
     if (session.value?.public_id !== identity.public_id) clearAccountDraft();
     epoch++;
+    abort.abort();
+    abort = new AbortController();
+    refreshing.value = false;
     paused.value = false;
     session.value = undefined;
     profile.value = undefined;
@@ -279,11 +298,13 @@ export function useApplicationSession(
   });
   return {
     session,
+    authorityRevision,
     profile,
     profileLoading,
     welcomeEnabled,
     paused,
     loading,
+    refreshing,
     failure,
     pending,
     warning,

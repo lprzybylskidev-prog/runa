@@ -143,7 +143,7 @@ final readonly class AccessState
         $result = [];
         /** @var \stdClass&object{module_id: string|null, code: string} $row */
         foreach ($rows as $row) {
-            $available = $row->module_id === null || ($availability[$row->module_id] ??= $this->availability->statuses($row->module_id, 'access.preview')[$row->module_id]->available);
+            $available = $row->module_id === null || ($availability[$row->module_id] ??= $this->availability->statuses($row->module_id)[$row->module_id]->available);
             if ($available) {
                 $result[] = $row->code;
             }

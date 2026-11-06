@@ -21,6 +21,7 @@ use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Settings\SettingTypes;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Support\Modules\Settings\ModuleSettings;
 use Tests\Fixtures\ModuleSources;
 use Tests\Fixtures\SettingsCalls;
@@ -45,7 +46,7 @@ beforeEach(function (): void {
     $loader = new ModuleAutoloader($this->sources->root, $this->registry, true);
     app()->instance(ModuleRegistry::class, $this->registry);
     app()->instance(ModuleDeclarations::class, new ModuleDeclarations($this->sources->root, app(), $loader, true));
-    $health = new ModuleHealth(DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
+    $health = new ModuleHealth(app(HealthAdmissions::class), DB::connection(), $this->registry, new HealthPolicies($this->sources->root, app(), $loader, true), new HealthDeadline);
     app()->instance(ModuleAvailability::class, new ModuleAvailability($this->registry, $health, new LifecyclePolicies($this->sources->root, app(), $loader, true), '0.4.0'));
     $this->registry->synchronize('app');
     app()->forgetInstance(ModuleIntegrations::class);
@@ -197,7 +198,7 @@ it('projects bounded entity extensions and refuses undeclared entity permissions
         return [new \Runa\Contracts\Modules\ManagementEntity(
             'entry', self::$entityPermission, ['pl' => 'Wpis', 'en' => 'Entry'], ['pl' => 'Opis', 'en' => 'Description'],
             [new \Runa\Contracts\Modules\ManagementField('name', 'text', ['pl' => 'Nazwa', 'en' => 'Name'], ['pl' => 'Opis', 'en' => 'Description'])],
-            [new \Runa\Contracts\Modules\ManagementOperation(new \Runa\Contracts\Modules\ApiOperation('inspect', 'probe.inspect'), stepUp: 'both', previewRequired: true)],
+            [new \Runa\Contracts\Modules\ManagementOperation(new \Runa\Contracts\Modules\ApiOperation('inspect', 'probe.inspect'), stepUp: 'password', previewRequired: true)],
         )];
     }
 METHOD;
