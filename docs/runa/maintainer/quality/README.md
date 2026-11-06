@@ -49,7 +49,7 @@ accepts backend test execution as PASS when a confirmed worker SIGSEGV/139 is it
 only failure and guarded cleanup succeeds. Preserve the failed native/coordinator
 reports and disclose the policy assessment separately. It does not waive any
 other failed or unexecuted gate, including at all-group milestones. No retry loop,
-automatic state rewrite or new command is introduced by this documentation policy.
+automatic state rewrite or new command is introduced by this documentation policy. Final closure/publication applies the canonical separate evidence disposition without another owner approval; an all-green-only validator cannot revoke the standing exception. Do not repeat an already accepted backend solely for version metadata. Remove this summary when the canonical exception is retired.
 
 ## Manual group selection
 

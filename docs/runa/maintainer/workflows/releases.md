@@ -184,6 +184,18 @@ Use these fields as a checked projection of existing sources, not as a second so
 
 `doctor docs` checks this block and command documentation coverage. `doctor release` invokes the same documentation checks in addition to release metadata checks, so final verification covers documentation even without a documentation impact area. Arbitrary capability prose still requires the recorded roadmap review. Offline contracts are `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_docs.py` and `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_release.py`.
 
+## Temporary owner backend SIGSEGV disposition
+
+Apply the standing [owner testing policy](../testing/strategy.md#backend-sigsegv-owner-acceptance)
+during closure and publication without renewed approval. Its separate evidence
+assessment governs the narrow case where the release validator requires an
+all-green coordinator that cannot represent accepted native worker SIGSEGV/139.
+Preserve failed native/validator reports, complete every other selected check and
+real prerequisite, and disclose the exception in release evidence. The validator
+limitation does not cancel owner authorization; it does not waive unrelated
+failures or authorize fake PASS, repeated backend execution or runtime validator
+patches. Remove this section with the canonical exception retirement.
+
 ## Selected-scope evidence
 
 New roadmaps record `quality_groups` (comma-separated names or `all`) and a nonempty

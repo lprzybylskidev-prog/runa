@@ -8988,3 +8988,24 @@ installation/update checks cover the exact module version and upgrade chain;
 source/delivery checks cover its public contracts. These heavy groups remain
 justified by the mandatory new Core module and actual customer install/update
 paths; unrelated production/image/knowledge-runtime groups remain excluded.
+
+### Standing SIGSEGV release clarification — 2026-11-06
+
+The owner explicitly requests durable enforcement of the existing temporary
+SIGSEGV policy and immediate publication of the authorized version. Confirmed
+worker 139 with successful cleanup and no ordinary failure is accepted throughout
+closure/merge/publication without renewed approval, full-backend retries or crash
+diagnosis. An all-green-only validator cannot revoke that decision. Preserve raw
+FAILED reports and separately account for every other real required result.
+Version/upgrade metadata alone does not justify repeating accepted backend tests.
+Retire the rule only after established corrected PHP/runtime verification passes
+without the exception; remove the owner summary and linked procedure together.
+
+Updated owner AGENTS and canonical maintainer testing/release/quality guidance.
+Customer instructions and application runtime policy are unaffected: the exception
+is owner release authority only. No skill needs a duplicated workflow. These
+owner-guidance edits do not change the verified application/runtime contracts and
+do not trigger another full backend or complete graph solely for this clarification.
+The final coordinator's native failed state remains intact. PHP static analysis
+failed for stale local source registration, then passed in full after supported
+runa:modules:sync runa; this independent repaired result is retained separately.
