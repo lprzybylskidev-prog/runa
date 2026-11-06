@@ -21,28 +21,31 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — renewed Gate B approved, 2026-11-06
+## Current execution state — point-9 correction and rollback, 2026-11-07
 
-**Gate B: APPROVED — ORDERED IMPLEMENTATION RESUMED.**
+**Gate B remains approved. Points 1–8 are complete; point 9 is open and execution
+is deferred at the owner's explicit request.** Do not continue point 9, move to
+point 10, start final verification or prepare a release during this correction.
+The roadmap lifecycle remains active; this is not a lifecycle pause or closure.
 
-The owner explicitly accepted the renewed baseline as adequate for continuing
-with its documented limitations and approved RA-01–RA-07. Point 7 subsequently
-exposed the Admin/hybrid-health transaction premise documented at the end:
-the owner has now approved its exact-call repair design and instructed continued
-implementation. Point 7 is now complete with the reconciliation recorded below;
-point 8 is complete and point 9 is current.
-The latest owner clarification supersedes the proposed point-9 startup adapter:
-correct/restructure the owning Runa test integration without adapters or
-workarounds. Preserving its current startup is not a pre-1.0 requirement; D-02
-and its evidence/security/cleanup invariants remain in scope.
-Gate B remains approved and roadmap lifecycle stays active. The complete
-[renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
-is retained verbatim. Points 1–8 are complete; point 9 is current. Points 2–6 require
-individual renewed reconciliation, approved corrections and completion records;
-their original completion declarations do not restore acceptance automatically.
-Continue in order through the existing implementation, owner manual acceptance
-and final verification workflow. No release preparation or final PASS follows
-from the baseline approval.
+The owner clarified that SIGSEGV handling is an agent operating procedure, not
+an automation project. Both proposed alternatives (dependency crash-reporting
+changes and Runa worker supervision) are rejected for this requirement. There is
+no pending architecture question. The complete
+[owner clarification](../../reviews/RM-2026-017-point-9-owner-correction.md)
+and the dated correction/rollback record at the end govern earlier conflicting
+point-9 proposals and checkpoint claims. Historical investigations remain evidence
+of the rejected direction, not current implementation instructions.
+
+Point-9 campaign/resume code, case tracing, attempt recording and associated tests
+and delivery claims are withdrawn in this correction. The general pre-1.0 owner
+policy remains valid. Independently justified durable quality evidence remains a
+separate requirement to assess with existing tools and explicit authorization;
+this does not authorize restoring the withdrawn implementation.
+
+The [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
+remains historical approval for the other roadmap work. Feature/0.8.0 and the
+owner manual acceptance/final verification order are unchanged.
 
 Owner scope amendment, 2026-11-06: explicitly include the supplied reference
 module's visual alignment and modularity showcase completion in point 7, with its documentation in
@@ -174,8 +177,8 @@ runtime behavior, schema, configuration or version.
   performance and test value comprehensively but proportionately.
 - Review existing development tooling, dependencies, configuration, Docker,
   Dev Container and optional development-only knowledge retrieval.
-- Extend existing test/quality infrastructure with durable, explicitly validated
-  evidence reuse and controlled owner SIGSEGV coverage recovery.
+- Document agent-directed SIGSEGV handling and preservation of valid verification
+  results; assess independent durable-evidence needs separately using existing tools.
 - Improve retained roadmap reporting, manual acceptance preparation and safe cleanup.
 - Deliver synchronized guidance, meaningful regressions, owner acceptance and
   complete selected-area final verification before release finalization.
@@ -480,6 +483,10 @@ features or significant expansion return to the owner.
 
 ### Approved process decisions and existing-policy differences
 
+Historical Gate A interpretation: D-01–D03 implementation wording below is
+superseded by the 2026-11-07 owner clarification and corrected point 9. It does
+not authorize SIGSEGV automation or a new persistent orchestration system.
+
 The owner resolved these differences at Gate A on 2026-11-06. This table records
 the accepted implementation direction, not a claim that canonical tools or
 instruction products have already changed. D-04 governs the planned audit after
@@ -566,7 +573,11 @@ referenced code/assets, context cost, Vue applicability and conflict analysis ar
 required for selected adaptations. Preserve useful existing provenance such as the
 frontend skill's Sablier research pin; do not relabel it as newly reviewed.
 
-### Approved verification direction and implementation design
+### Historical verification implementation design — rejected/superseded
+
+Retained verbatim as the earlier interpretation. The 2026-11-07 owner
+clarification rejects its programmatic SIGSEGV design and withdraws the current
+campaign implementation. Follow the corrected direction below, not this section.
 
 Extend `QualityService`/planner/executor/evidence and `TestService`; do not introduce
 a parallel runner or infer groups automatically. Owner selection stays explicit.
@@ -649,6 +660,40 @@ release validation must consume the separate owner disposition without rewriting
 the native coordinator to passed. Background launch still ends the agent turn and
 uses supported status; resumption after context loss is explicit, never log-tail
 guessing or hidden detached orchestration.
+
+### Corrected verification direction — 2026-11-07
+
+Point 9 will define an agent-directed procedure in canonical owner guidance.
+No new recovery engine, retry script, worker attribution protocol, test-attempt
+ledger, dependency patch/update or automatic acceptance/skip is authorized.
+
+- Preserve native reports and valid completed unrelated checks. Use existing
+  supported commands for unresolved scope; rerun evidence invalidated by relevant
+  source, dependency, environment/configuration or prerequisite changes.
+- Inspect existing output/reports to identify a SIGSEGV-interrupted test reliably.
+  Do not infer identity from a progress dot or classify unknown coverage as a
+  confirmed crash. If identity is uncertain, record the limitation and use safe
+  existing selections, broader backend scope only where necessary.
+- The agent initiates at most two additional attempts for a reliably identified
+  interrupted test. Record the original crash and each result. Stop retrying
+  after success or an ordinary failure; native failed runs stay failed.
+- Continue remaining safely executable backend tests; consolidate ordinary
+  failures before repairs. Insert fix points and run complete affected-area
+  verification in the failing mode where required. A filtered PASS is insufficient.
+  Preserve unrelated still-valid evidence instead of restarting the entire graph.
+- Exhausted confirmed SIGSEGV interruptions require explicit owner acceptance
+  before release. Unknown/unexecuted coverage, unsafe cleanup and ordinary
+  failures remain blocking. No owner tolerance is extended to customers.
+- Retire the temporary SIGSEGV procedure/exception after the PHP correction and
+  confirmation of stability under the canonical removal condition. The general
+  rule against needlessly repeating valid verification remains.
+
+The original D-01 durable-evidence objective remains separate for assessment.
+Use existing mechanisms first; establish independently necessary scope and
+existing owner authorization before proposing any tooling implementation.
+No `--resume`, campaign schema or closure-validator integration is presumed.
+Point 9 remains unstarted after rollback; canonical instruction changes below
+are future deliverables, not completed work in this correction.
 
 ## Implementation plan
 
@@ -868,32 +913,34 @@ below are retained as historical records only.
     sources before incremental indexing; no automatic knowledge bootstrap for
     navigation. Scope any required host transition in Execution handoff first.
 
-- [ ] 9. Deliver resumable quality and controlled owner SIGSEGV recovery.
-  - **Objective:** replace repeated orchestration work with honest durable evidence.
-  - **Preconditions:** explicit D-01–D-06 dispositions at Gate A, Gate B acceptance
-    of exact state/command/input validity design, owning tooling changes identified.
-  - **Deliverables:** existing TestService/quality integration, case/attempt/cleanup
-    accounting, resume preview/execution/status, owner acceptance evidence and
-    release-validator support; synchronized canonical roadmap/report/cleanup rules.
-    Shared neutral mechanics and private owner policy stay separately composed.
-  - **Boundaries:** implement the specification above without a new runner,
-    automatic group classifier, history service, runtime retries or manufactured
-    native PASS. Preserve locks, worker guards, honest exit codes, exact fixture
-    phase identities, process cleanup and source/customer boundaries.
-  - **Acceptance/evidence:** author deterministic fixture contracts for bounded
-    retries, precise/dataset and ambiguous identity, mixed ordinary/crash failures,
-    remaining coverage, interruption/context recovery, exhausted attempt budget,
-    cleanup refusal, concurrent resume, stale/changed inputs, graph/config changes,
-    tampered/missing evidence, real prerequisite invalidation and owner/customer
-    policy isolation. Small synthetic checks may resolve implementation uncertainty;
-    complete tooling/backend/live acceptance stays at point 12. A live SIGSEGV
-    need not be induced to prove classification; native crash evidence is retained.
-  - **Documentation/approval:** update owner/public quality/testing/commands only
-    for their respective audience; owner AGENTS, templates, roadmap/release guides,
-    gates and customer bundle in one coherent change. Explicitly replace obsolete
-    full-restart/no-retry claims where approved, retain customer policy elsewhere.
-    Record temporary exception retirement, background handoff and detailed retained
-    reporting/cleanup. Discuss any unresolved behavioral premise before coding.
+- [ ] 9. Document agent-directed verification continuity and temporary SIGSEGV handling.
+  - **Execution boundary:** deferred by the owner on 2026-11-07. Do not begin
+    this point or subsequent implementation without renewed direction to continue.
+  - **Objective:** prevent unnecessary repeated verification while maximizing
+    useful backend coverage through agent decisions and existing supported commands.
+  - **Deliverables:** one canonical owner procedure and concise entrypoint links;
+    coherent owner AGENTS, testing/quality, roadmap/release/template references
+    and relevant skills. Assess customer products without extending owner tolerance.
+  - **Procedure:** follow the corrected verification direction above: preserve
+    valid unrelated results, inspect existing evidence, initiate at most two
+    additional exact-test attempts when reliable, continue remaining backend
+    coverage, consolidate ordinary failures, perform required affected-area runs
+    and obtain explicit owner acceptance of exhausted confirmed SIGSEGV cases.
+  - **Independent evidence requirement:** assess existing preservation/inspection
+    capabilities and any genuine durable session-evidence need separately. Do
+    not assume that the rejected campaign code or additional orchestration is
+    required or authorized. Record actual limitations without fabricating PASS.
+  - **Prohibited:** custom/replacement runners, Runa-managed workers, automatic
+    retries/acceptance/skips, per-worker crash infrastructure, attempt ledgers,
+    SIGSEGV state machines, Pest/ParaTest changes and scripts automating decisions.
+  - **Acceptance/evidence:** bounded hypothetical walkthrough covering unrelated
+    completed groups, success within two additional attempts, exhausted confirmed
+    crashes, uncertain identity, consolidated ordinary failures and invalidated
+    evidence. Necessary focused documentation/contract checks only; do not induce
+    SIGSEGV or run broad suites to demonstrate instructions.
+  - **Retirement:** remove the temporary PHP exception/procedure after confirmed
+    correction and stability; retain the general valid-evidence continuity rule.
+    Preserve native failures, history, data/cleanup and security safeguards.
 
 - [ ] 10. Final qualitative review, test-value reconciliation and runtime readiness.
   - **Objective:** compare delivered scope to the approved baseline and prepare
@@ -948,8 +995,8 @@ below are retained as historical records only.
   - **Objective:** verify the complete agreed affected-area scope and finalize 0.8.0.
   - **Preconditions:** all implementation and explicit owner acceptance complete;
     clean committed candidate, exact final quality_groups/quality_rationale recorded,
-    supported graph preview reviewed, resume mechanism implemented and prerequisites
-    ready. Reconcile baseline/order/module versions and any prepared candidate.
+    supported graph preview reviewed, corrected agent procedure documented and
+    prerequisites ready. Reconcile baseline/order/module versions and any prepared candidate.
   - **Deliverables:** complete selected suites/checks and native browser matrix,
     actual current-state docs/instruction review, final evidence validity/coverage
     assessment, detailed retained report, scoped cleanup and release metadata.
@@ -957,17 +1004,21 @@ below are retained as historical records only.
     keep active, insert fix points before manual acceptance, consolidate area repairs,
     run complete affected-area checks in the failing mode, receive results before
     committing fixes, repeat affected owner acceptance, and resume/revalidate the
-    final graph under the delivered approved policy. No stale PASS or skipped gate.
+    unresolved final scope under the documented agent procedure, retaining valid
+    unrelated evidence and rerunning invalidated checks and real prerequisites. No stale PASS or skipped gate.
   - **Reference verification:** cover the actual changed showcase contracts and
     visual behavior through their supported owning entrypoints, including relevant
     application-owned backend/frontend tests and real shared prerequisites.
     Account for reference coverage separately from owner-only suites. Justify
     migration, delivery and infrastructure checks by actual changed contracts;
     a styling-only part does not automatically require them.
-  - **SIGSEGV:** preserve native failures, case coverage and cleanup; controlled
-    recovery plus separate owner disposition may accept confirmed 139 only. Other
-    hard failures remain blocking. Do not restart unrelated valid results, diagnose
-    the runtime or demand renewed acceptance merely for the known exception.
+  - **SIGSEGV:** the agent follows completed point-9 guidance using existing
+    commands. Preserve native failures and cleanup evidence; attempt a reliably
+    identified interrupted test at most twice more, continue remaining backend
+    coverage and request explicit owner acceptance of exhausted confirmed crashes
+    before release. Unknown/unexecuted coverage and ordinary failures remain
+    blocking. No automation or root-cause investigation; retain valid unrelated
+    results and rerun only invalidated/affected scope and real prerequisites.
   - **Report:** retain objectives, original/final state, delivered work/findings,
     decisions/rejected alternatives, inserted repairs, unresolved limitations,
     tests/coverage/exceptions, measured or example-supported improvements, skills/
@@ -1011,7 +1062,7 @@ rendered scenarios do not imply every combinatorial state was tested.
 | Tooling/dependencies/config       | Recent refactor boundaries, duplicate/unused helpers, process/exit/report consistency; PHP/JS/development dependency usage/security; framework/module/App/env/test/prod/examples/Compose input consumers and ownership.                                                                                                                                           | 1, 8–9              |
 | Docker/Dev Container              | Build/service/health/network/volume/dependency inputs, host/container transport and isolation; demonstrated defects only, no rebuild during planning/audit.                                                                                                                                                                                                       | 1, 8, 12 if changed |
 | Knowledge/Boost                   | Freshness, chunk/document identity, move/delete/orphans/locks, current versus superseded retrieval, skill discovery, golden queries and customer exclusion, independent optional startup and production absence.                                                                                                                                                  | 1, 8, 12            |
-| Verification/workflow             | Persistent evidence/resume/invalidation, complete backend coverage, bounded crash retries and safe fallback, roadmap decisions/context/report/manual gates, release truth and cleanup ownership.                                                                                                                                                                  | 1, 9–12             |
+| Verification/workflow             | Agent-directed evidence validity/continuity, remaining backend coverage, bounded manual crash retries and safe fallback, roadmap decisions/context/report/manual gates, release truth and cleanup ownership.                                                                                                                                                      | 1, 9–12             |
 
 ### Skill effectiveness scenarios
 
@@ -1049,8 +1100,9 @@ are existing entrypoints, not commands run during drafting:
   selection; exact final graph/rationale must be recorded before running it.
 - `python3 tools/maintainer/quality-roadmap --background` with the same selected
   groups launches the supported final roadmap handoff. End the turn; report
-  `python3 tools/maintainer/quality-status`. Resume syntax is future point-9 work
-  and must be documented before use; do not invent an existing `--resume` flag.
+  `python3 tools/maintainer/quality-status`. Continuation uses existing supported
+  selections and documented evidence; no `--resume` flag is delivered or presumed
+  as a point-9 requirement.
 - Supported focused suites are `python3 tools/maintainer/test-backend`,
   `test-frontend`, `test-e2e`, `test-python`; `python3 tools/maintainer/test`
   aggregates backend/frontend/tooling. Keep actual supported prefixes when issuing
@@ -1067,7 +1119,7 @@ Provisional final group candidates, deliberately not an executed or final
 
 | Groups                                                 | Why / final selection condition                                                                                                                                                                                                                                                                                                       |
 | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| docs, tooling                                          | Documentation/instruction validators, persistent test/quality mechanics and their complete Python contracts/analysis are directly changed.                                                                                                                                                                                            |
+| docs, tooling                                          | Documentation/instruction validators and earlier changed tooling contracts require final checks; the withdrawn point-9 campaign implementation does not itself justify additional scope.                                                                                                                                              |
 | backend, frontend, e2e                                 | Owning behavior/contracts and full supplied rendered experience are within the approved corrections; preserve complete native scopes and actual browser/console/network evidence.                                                                                                                                                     |
 | database                                               | Select for changed schema/query/integrity/migration behavior; source review alone is not database acceptance. Gate B determines actual changes.                                                                                                                                                                                       |
 | knowledge                                              | Instruction/doc reorganization and retrieval correctness require strict freshness/doctor/evals and Boost; source selection alone is not live RAG evidence.                                                                                                                                                                            |
@@ -1097,9 +1149,9 @@ assistive-technology limits honestly; screenshots alone do not prove interaction
 - Persistent evidence reuse is a correctness boundary. Under-invalidation could
   accept stale checks; over-invalidation wastes work. Prefer conservative explicit
   input/dependency validation and fail closed for uncertainty.
-- Parallel test crash attribution may be incomplete. Resolve the adapter design
-  before promising exact per-case retries; retained unknowns are more honest than
-  inferred identities. Failed cleanup remains blocking.
+- Existing reports may not identify the interrupted backend test reliably.
+  Record uncertainty and use safe supported selections; do not add attribution
+  infrastructure or infer a case identity. Failed cleanup remains blocking.
 - Module ranges exclude 0.8.0 today. Do not recreate RM-016's stale version/build
   readiness failures or clear maintenance as a workaround. Candidate preparation
   requires its own recorded owner authorization.
@@ -3399,3 +3451,52 @@ No runtime/configuration/dependency changes, tests, broad verification, live cra
 experiments, data operations or resource deletion ran in this continuation.
 Existing native evidence is preserved. Instruction products need no change for
 this unresolved engineering assessment; customer policy remains unchanged.
+
+## Point-9 owner correction and implementation withdrawal — 2026-11-07
+
+The owner explicitly rejected the automated interpretation and supplied the
+[complete corrected requirement](../../reviews/RM-2026-017-point-9-owner-correction.md).
+The latest instruction narrows immediate work to roadmap reconciliation and
+withdrawal of changes already introduced under point 9; do not execute point 9
+now. No new feasibility point is needed: the dependency-versus-worker-management
+question and its investigation are obsolete for this requirement. All previous
+approval/investigation/checkpoint records above remain historical evidence.
+
+### Exact withdrawal scope
+
+Restore these tracked sources to the point-8 checkpoint `644f34ab`:
+
+- Shared quality executor, models, service and state; remove `quality_campaign.py`
+  and its dedicated contract tests. This withdraws the incomplete resume/proof/
+  archive implementation from `777b07b9`, including its otherwise independent
+  D-01 mechanics, because the owner requested withdrawal of point-9 implementation.
+  The independent evidence objective remains for assessment, not implicit reapproval.
+- Shared TestService, its runner unit tests, owner/application PHPUnit XML;
+  remove CaseEvents, CaseEvidence and CaseExtension from `76f51886`. No per-case
+  trace, attempt/JUnit reservation or extra recovery infrastructure remains.
+- Public testing/command guides and maintainer quality guide: remove point-9
+  delivery claims and the rejected campaign implementation specification. Remove
+  its unreleased changelog claim; earlier roadmap entries preserve the design.
+
+Keep root AGENTS and the canonical release guide's general pre-1.0 no-workaround
+policy from `629e73e5`: it is reusable owner policy, not SIGSEGV implementation.
+Keep points 1–8, meaningful commits, native reports, runtime archives, data and all
+existing resources. No reset, history rewrite or resource cleanup is performed.
+Both dated native-evidence analyses remain available unchanged as historical
+investigations of a rejected direction, not a pending architecture decision.
+
+### Instruction products and remaining work
+
+The corrected checklist and final-verification point describe the intended agent
+workflow and explicit owner acceptance. Canonical root/testing/quality/roadmap/
+release/template and relevant skill synchronization belongs to the deferred
+point 9; it is not performed or claimed complete here. Customer instructions and
+skills need no edit for this withdrawal: restored shared tooling introduces no
+new consumer contract, and the corrected temporary exception is owner-only.
+Independent module versions and platform/app versions do not change.
+
+Verification of this withdrawal uses exact source equality against the committed
+point-8 baseline, removed-symbol/reference inspection, diff whitespace checks and
+mandatory commit hooks. No backend/frontend/tooling suite, quality campaign,
+live SIGSEGV, image build or scanner pipeline is run. Knowledge is refreshed for
+changed durable sources before commit. Point 9 stays unchecked and deferred.

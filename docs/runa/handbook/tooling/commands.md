@@ -435,14 +435,3 @@ Knowledge search accepts explicit `--intent=legacy|current|history|audit` and
 `--per-source=1..10`, retaining existing filters/top-k/explain. See
 [retrieval intent](../development/knowledge.md#retrieval-intent-and-evidence-limits)
 for ranking factors, single-source expansion and interpretation limits.
-
-### Planned campaign resume interfaces
-
-RM-2026-017 point 9 is implementing optional `--resume` on existing quality plan,
-roadmap and final operations, with existing group/all/background arguments.
-These are specification-only until the owning implementation is complete.
-Plan previews validity; execution rechecks it under the same lock and preserves
-native attempts. Backend discovery/events and any supplemental coverage continue
-through the existing test entrypoint. Customer native failures remain failures;
-private owner release tolerance is not customer policy. No new runner, automatic
-quality-group selection or application-runtime retry is proposed.

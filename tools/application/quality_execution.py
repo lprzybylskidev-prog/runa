@@ -44,11 +44,6 @@ class QualityExecutor:
 
     def execute(self, directory: Path, state: RunRecord) -> int:
         definitions = {key: QualityStep.parse(node) for key, node in state["steps"].items()}
-        for node in state["steps"].values():
-            if node.get("reused_from"):
-                # Fresh mandatory prerequisites still gate reuse in this attempt.
-                node["status"] = "pending"
-                node["pid"] = None
         running: dict[str, tuple[subprocess.Popen[bytes], TextIO]] = {}
         started: dict[str, float] = {}
         run_started = time.monotonic()
@@ -105,9 +100,6 @@ class QualityExecutor:
                     if any(s in ("failed", "blocked", "interrupted") for s in deps):
                         node["status"] = "blocked"
                     elif all(s == "passed" for s in deps) and len(running) < 4:
-                        if node.get("reused_from"):
-                            node["status"] = "passed"
-                            continue
                         group = definition.exclusive_group
                         if group and group in groups:
                             continue

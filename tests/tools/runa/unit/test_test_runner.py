@@ -191,24 +191,3 @@ def test_cached_php_configuration_does_not_skip_independent_frontend_or_tooling(
     assert service.execute(Selection()) == 1
     assert [row["status"] for row in results(tmp_path)] == ["blocked", "passed", "passed"]
     assert len(runner.calls) == 2
-
-
-def test_backend_attempt_reserves_identity_preserves_native_signal_and_cleanup(
-    tmp_path: Path,
-) -> None:
-    service, runner = fixture(tmp_path, (0, -11, 0))
-    assert service.execute(Selection(("backend",), ("--parallel", "--processes=1"))) == -11
-    recorded = results(tmp_path)[0]
-    attempt = recorded["evidence"]
-    assert isinstance(attempt, str)
-    directory = tmp_path / ".runtime/tests/backend/application" / attempt
-    reservation = json.loads((directory / "attempt.json").read_text())
-    native = json.loads((directory / "native.json").read_text())
-    assert reservation["state"] == "reserved"
-    assert native == {"schema_version": 1, "exit_code": -11, "cleanup_exit_code": 0}
-    assert runner.calls[1].env["RUNA_TEST_ATTEMPT"] == attempt
-    assert runner.calls[1].env["RUNA_TEST_OWNER"] == "application"
-    assert "RUNA_TEST_ATTEMPT" not in runner.calls[0].env
-    assert "RUNA_TEST_ATTEMPT" not in runner.calls[2].env
-    assert len(runner.calls) == 3  # Native crash remains failure; no customer retry.
-    assert any(arg.startswith("--log-junit=") for arg in runner.calls[1].argv)
