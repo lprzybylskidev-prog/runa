@@ -8965,3 +8965,26 @@ implementation changed during this backend repair. Owner/customer guidance alrea
 owns these invariants and needs no duplicated new rule. Existing native reports
 and the separate exception assessment remain intact. Final verification/release
 point 12 stays open and must run from the beginning on the committed candidate.
+
+### Final candidate and module creation version preparation — 2026-11-06
+
+The backend repair is committed as 1f3043262. The owner explicitly repeated manual
+acceptance of tables/TOTP and requested closure. Prepare Admin 1.0.0 before the
+final graph so its required first stable creation version, module changelog and
+current public guide are covered by that graph. Its explicit creation_release
+edge completes development 0.2.0 history using the existing initializer; it adds
+no application storage or business mutation. Update planner expectations together.
+This is the creation version already required by the agreed roadmap, not a
+platform 1.0 promotion or a new public contract. Platform remains the prepared
+0.7.0 feature candidate; Auth 5.0.0, Audit 1.1.0 and Permissions 2.1.0 remain the
+assessed independent versions and existing dependent ranges admit them.
+
+No presentation/security/business behavior changes after owner acceptance. Review
+of README, Admin ownership/composition/source versions, current public API and
+testing guides removes development-only current delivery claims before the final
+graph. Owner and customer instruction products retain their existing version,
+public-boundary and testing rules without duplicated guidance. Final native
+installation/update checks cover the exact module version and upgrade chain;
+source/delivery checks cover its public contracts. These heavy groups remain
+justified by the mandatory new Core module and actual customer install/update
+paths; unrelated production/image/knowledge-runtime groups remain excluded.

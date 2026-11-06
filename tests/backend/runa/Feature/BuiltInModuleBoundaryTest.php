@@ -26,7 +26,7 @@ final class BuiltInModuleBoundaryTest extends TestCase
         // The retained pre-Admin installation upgrades into the declared 0.7 target.
         $input = ['platform' => '0.7.0', 'modules' => $modules, 'module_steps' => $baseline['module_steps']];
         $expected = [
-            'runa.admin' => ['initialize', 'standalone_participants'],
+            'runa.admin' => ['initialize', 'standalone_participants', 'creation_release'],
             'runa.auth' => ['execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts', 'admin_platform', 'native_transactions', 'section_activity', 'user_details', 'settings_snapshots'],
             'runa.audit' => ['platform_delivery', 'verification_contracts', 'admin_platform', 'admin_history'],
             'runa.permissions' => ['platform_delivery', 'verification_contracts', 'admin_platform', 'native_transactions', 'table_exports'],

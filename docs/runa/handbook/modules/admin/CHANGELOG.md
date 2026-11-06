@@ -1,6 +1,8 @@
 # Admin module changelog
 
-## 0.2.0 — Unreleased
+## 1.0.0 — Unreleased
+
+- Complete the first stable Admin creation release with guarded PL/EN administration, owning module declarations and application presentation extensions. Record the explicit creation-release upgrade boundary after development 0.2.0; no application tables or business data changes.
 
 - Reconcile externally supplied table column state without refetching rows; preserve transient pagination when unchanged preferences notify their own view controller.
 

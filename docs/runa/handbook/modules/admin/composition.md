@@ -145,7 +145,7 @@ ordinary implementation. Excluded cases are not reported as PASS.
 
 ## Standalone participant forms
 
-Admin 0.2.0 also admits an atomic command through its section `/preview` and
+Admin 1.0.0 also admits an atomic command through its section `/preview` and
 `/commands` routes when the source-owned binding implements `ManagementWriter`.
 It runs that native standalone writer after entry admission ends, retaining the
 same projected inputs, grants, revisions, review, destructive confirmation and

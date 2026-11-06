@@ -67,19 +67,18 @@ classes, methods, SQL, component imports, file paths or authorization definition
 
 ## Current candidate versions and release plan
 
-Released platform baseline is 0.6.2. The 0.7.0 candidate includes deliberate
-pre-1.0 native transaction changes approved by the owner on 2026-10-30. Current
-source versions below are not a claim of completed release acceptance.
+Admin 1.0.0 targets platform 0.7.0 and includes the native transaction changes
+approved by the owner on 2026-10-30. Source versions and contracts are listed below.
 
-| Owner         | Current source / target                   | Contract disposition                                                                                                                                                                                                                          |
-| ------------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Platform      | Prepared 0.7.0 candidate, feature         | Owner-approved runtime metadata permits manual frontend acceptance; published baseline remains 0.6.2 until verified closure.                                                                                                                  |
-| Admin         | Development 0.2.0; creation release 1.0.0 | Requires Audit ^1.0.0, Auth ^5.0.0 and Permissions ^2.0.0; no unpublished 0.2.0 compatibility edge.                                                                                                                                           |
-| Auth          | 5.0.0                                     | AuthProfiles API 2.1.0; AuthAdministration API 2.1.0; AuthPolicies API 3.0.0; AuthStepUp API 2.0.0; other current guarded interfaces retain their declared versions. Administrative reads and owning Admin adapters are delivered in point 7. |
-| Permissions   | 2.1.0                                     | PermissionsAccess API 2.2.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions.                                                                                                       |
-| Audit         | Current 1.1.0 candidate                   | AuditReads API 1.1.0; AuditRecords stays at 1.0.0; point 8 supplies the guarded read-only viewer.                                                                                                                                             |
-| Framework API | 1.0.0                                     | New trusted transaction extension; constructor changes remain internal.                                                                                                                                                                       |
-| App scaffold  | 0.0.0                                     | Its supplied Runa range is >=0.2.1 <0.8.0; customer ranges remain application-owned.                                                                                                                                                          |
+| Owner         | Current source / target | Contract disposition                                                                                                                                                                                                                          |
+| ------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Platform      | 0.7.0, feature          | Platform versioning remains independent of the Admin module version.                                                                                                                                                                          |
+| Admin         | 1.0.0, creation release | Requires Audit ^1.0.0, Auth ^5.0.0 and Permissions ^2.0.0; explicit creation-release history follows development 0.2.0.                                                                                                                       |
+| Auth          | 5.0.0                   | AuthProfiles API 2.1.0; AuthAdministration API 2.1.0; AuthPolicies API 3.0.0; AuthStepUp API 2.0.0; other current guarded interfaces retain their declared versions. Administrative reads and owning Admin adapters are delivered in point 7. |
+| Permissions   | 2.1.0                   | PermissionsAccess API 2.2.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions.                                                                                                       |
+| Audit         | 1.1.0                   | AuditReads API 1.1.0; AuditRecords stays at 1.0.0; point 8 supplies the guarded read-only viewer.                                                                                                                                             |
+| Framework API | 1.0.0                   | New trusted transaction extension; constructor changes remain internal.                                                                                                                                                                       |
+| App scaffold  | 0.0.0                   | Its supplied Runa range is >=0.2.1 <0.8.0; customer ranges remain application-owned.                                                                                                                                                          |
 
 Auth/Permissions and Admin require platform `>=0.7.0 <0.8.0`. Audit now requires the same target platform range for its supplied Admin defaults. Do not rewrite customer manifests automatically. Retain
 actually published migration/upgrade identities and append required forward
@@ -91,10 +90,12 @@ implied by these candidate module versions.
 
 ## Delivery status and acceptance ownership
 
-Admin 0.2.0 is Core and requires Audit `^1.0.0`, Auth `^5.0.0` and Permissions `^2.0.0`. Its platform
+Admin 1.0.0 is Core and requires Audit `^1.0.0`, Auth `^5.0.0` and Permissions `^2.0.0`. Its platform
 range is `>=0.7.0 <0.8.0`: source checkout at released 0.6.2 does not authorize
 installing it there. Explicit platform installation/update at the target version
-registers it and records `upgrade:initialize:install:0.1.0` after its prerequisites.
+registers it and records `upgrade:initialize:install:0.1.0`,
+`upgrade:standalone_participants:0.1.0:0.2.0` and
+`upgrade:creation_release:0.2.0:1.0.0` after its prerequisites.
 There are no Admin tables or request-time migrations. Existing preparation
 participation synchronizes its declared grants and transactional Audit; installation
 assigns no grants or users. Request boot never installs or registers Admin.
@@ -173,10 +174,9 @@ The owner approved direct native Auth/Permissions/framework refactoring on
 supersedes the earlier unchanged-API composition proposal. AuthProfiles 2.1.0 and
 PermissionsAccess 2.2.0 ship with independent Auth 5.0.0 and Permissions 2.1.0; standalone
 writes have a root boundary, while source composition joins native phases.
-Auth/Permissions require platform >=0.7.0 <0.8.0. Audit develops as independent 1.1.0 with optional guarded read ordering; record signatures remain unchanged.
-The native path and Admin aggregate dispatch are implemented; complete owning
-read/operation coverage retains its roadmap points. No
-intermediate unpublished Admin 0.2.0 update path is retained.
+Auth/Permissions require platform >=0.7.0 <0.8.0. Audit ships as independent 1.1.0 with optional guarded read ordering; record signatures remain unchanged.
+The native path and Admin aggregate dispatch are implemented. The first stable
+Admin creation release records its explicit final upgrade boundary to 1.0.0.
 
 Admin entry uses the Auth [protected-section idle contract](../auth/security.md#protected-section-idle-access),
 not fixed-age operation proof. Its document/controller includes navigation and
