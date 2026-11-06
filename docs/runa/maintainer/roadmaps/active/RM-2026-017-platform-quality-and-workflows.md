@@ -21,6 +21,69 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
+## Current execution state — owner restart decision, 2026-11-06
+
+**Gate B: APPROVAL WITHDRAWN — BASELINE AUDIT INCOMPLETE.**
+
+The owner rejected the completeness of the original baseline audit and explicitly
+withdrew the preceding Gate B approval. Point 1 is the current task again.
+Implementation authorization is suspended until a new explicit Gate B decision.
+Points 2–6 await renewed evidence-based verification and acceptance; points 7–12
+are blocked. Release preparation and closure are not authorized at this stage.
+
+The agent acknowledged that the frontend audit was substantially incomplete:
+rendered inspection covered root/login, while authenticated functionality was
+represented by source/history/test-source correlation. That evidence did not
+justify comprehensive frontend conclusions or closing point 6. The short findings
+list was not proof of platform consistency. Completeness of other areas must also
+be reexamined, without presuming that their implementations are defective.
+
+The original Gate B approval, findings, completion records, implementation commits
+and native test results below remain historical evidence, not current acceptance.
+No commits are reverted, reset, deleted or rewritten. Current source is audited
+as it stands, with existing changes treated as candidates. In particular,
+`e9f866d8`'s passing targeted A-08 regression remains valid evidence for that case,
+not acceptance of the full shared frontend.
+
+This is an in-place correction of an active roadmap under the owner's explicit
+decision, not a new activation, pause, second roadmap or closed-record edit.
+Canonical lifecycle frontmatter remains `status: active`; the ordered checklist
+is reopened. No unsupported lifecycle value or validator bypass is introduced.
+Gate A and the accepted feature/0.8.0 projection remain historical decisions;
+the withdrawal does not prepare or publish that version.
+
+### Renewed audit obligations
+
+- Inventory actual scope before completing an area. Trace every relevant
+  component/capability to inspection method, requirements/states, evidence,
+  conclusion, unknowns, additional work and justified exclusions. File counts
+  and inherited tests/acceptance alone are insufficient.
+- Reaudit frontend components/layouts and all view families, backend/contracts,
+  PostgreSQL objects/migrations and actual consumers, security, backend/frontend/
+  E2E test quality and redundancy, owner/customer instructions/skills/docs,
+  tooling/dependencies/configuration, Docker/Dev Container, Qdrant/retrieval,
+  verification/SIGSEGV resilience and roadmap/release workflows.
+- Prioritize real authenticated browser observations and meaningfully different
+  shared consumers. Assess distinct complex interactions separately. Sample
+  states/locales/themes/viewports/permissions by risk; source review cannot
+  certify rendered behavior. D-04 boundaries still apply. Explicit access/runtime
+  limitations remain open evidence gaps, not a substitute source-review PASS.
+- No implementation corrections, new dependencies, resets, broad suites,
+  complete browser matrices, quality graph, expensive scanners or infrastructure
+  acceptance during this audit. Do not investigate SIGSEGV root causes.
+- After renewed inspection, map existing points 2–6 changes to verified findings;
+  identify valid work, missing work, premature closure and reconsiderations.
+  Propose evidence-based reconciliation of points 2–12 without needless rework.
+- Commit detailed evidence and prepare a new Gate B report: actual condition,
+  area inventory/coverage, confirmed findings versus hypotheses, severity/impact/
+  effort, supporting evidence, missing functionality/consistency, corrections,
+  proposed plan, prior-work assessment, owner decisions and explicit limitations.
+  Stop for new owner approval; the agent cannot restore Gate B itself.
+
+The complete owner decision is retained in
+[the restart decision record](../../reviews/RM-2026-017-restart-decision.md).
+The renewed audit is not yet complete. No area is accepted by this state correction.
+
 ## Overview
 
 ### What and why
@@ -535,12 +598,15 @@ assessment and recorded necessary focused evidence. No routine suite/check runs
 are implied by a point ending. Broad tests, static analysis, integration/browser
 matrices, images and scanners remain in point 12. Mandatory hooks stay in force.
 Dependencies below refer to completed points, not approval inferred from time.
+The restart decision above currently suspends points 2–12; prior completion
+statements below are retained as historical records only.
 
-- [x] 1. Comprehensive baseline audit and owner approval (Gate B).
+- [ ] 1. Comprehensive baseline audit and owner approval (Gate B).
   - **Objective:** establish the complete source-grounded baseline before changes.
   - **Preconditions:** Gate A metadata/process dispositions, explicit activation,
     correct roadmap branch and refreshed knowledge availability/freshness. Gate A
-    and separate activation are approved; Gate B accepted on 2026-11-06.
+    and separate activation remain recorded; prior Gate B acceptance was withdrawn.
+    Renewed comprehensive audit and explicit owner approval are required.
   - **Deliverables:** complete area inventories and decision-to-consumer ledger;
     concise owner summary and full technical findings retained in this roadmap;
     severity/effort/risk/dependency ranking and finite proposed correction list.
@@ -567,7 +633,7 @@ Dependencies below refer to completed points, not approval inferred from time.
     Stop and receive explicit owner approval of findings/selected scope and any
     new architecture. Record rejected/deferred recommendations and reasons.
 
-- [x] 2. Establish Runa UI/UX standards and selective frontend skill guidance.
+- [ ] 2. Establish Runa UI/UX standards and selective frontend skill guidance.
   - **Objective:** make accepted behavior discoverable before conformity repairs.
   - **Preconditions:** approved point-1 findings and decision ledger; external
     candidates rechecked as needed before actual adaptation.
@@ -586,7 +652,7 @@ Dependencies below refer to completed points, not approval inferred from time.
     SOURCE.md/upstream index and customer counterpart together. New visual or
     interaction premises beyond approved findings require owner disposition.
 
-- [x] 3. Consolidate agent guidance and define documentation conventions/checks.
+- [ ] 3. Consolidate agent guidance and define documentation conventions/checks.
   - **Objective:** remove contradictory/duplicated instructions while preserving
     essential authority and effective guidance.
   - **Preconditions:** points 1–2; approved constitution changes only where relevant.
@@ -609,7 +675,7 @@ Dependencies below refer to completed points, not approval inferred from time.
     warnings, relative links/anchors, metadata and audience boundaries. Record
     unaffected-product reasons; discuss any new constitutional premise first.
 
-- [x] 4. Reconcile current documentation and developer journeys.
+- [ ] 4. Reconcile current documentation and developer journeys.
   - **Objective:** make documentation accurate and usable by a new developer.
   - **Preconditions:** points 1–3; owning code/contract facts identified.
   - **Deliverables:** reviewed document inventory and per-document disposition;
@@ -629,8 +695,8 @@ Dependencies below refer to completed points, not approval inferred from time.
     historical interpretation; record consolidation map and knowledge move/delete
     obligations. No approval needed for already agreed editorial corrections.
 
-- [x] 5. Correct approved backend, module and PostgreSQL findings.
-  - **Completed 2026-11-06:** retained the Gate B no-business/schema-repair
+- [ ] 5. Correct approved backend, module and PostgreSQL findings.
+  - **Historical completion declaration, acceptance withdrawn 2026-11-06:** retained the Gate B no-business/schema-repair
     disposition after bounded owner/consumer and database review. Corrected two
     obsolete source delivery comments (A-09); see the point-5 record and
     [backend review](../../reviews/RM-2026-017-backend.md).
@@ -659,8 +725,8 @@ Dependencies below refer to completed points, not approval inferred from time.
     data rebuild or significant new architecture/behavior/security premise stops
     for owner discussion. No blanket module version increments.
 
-- [x] 6. Correct shared frontend controls, layouts and asynchronous behavior.
-  - **Completed 2026-11-06:** corrected A-08 in the shared notification owner;
+- [ ] 6. Correct shared frontend controls, layouts and asynchronous behavior.
+  - **Historical completion declaration, acceptance withdrawn 2026-11-06:** corrected A-08 in the shared notification owner;
     Chromium locale-only regression passes with stable identity/focus. Consumer
     coverage and retained contracts are recorded in the point-6 evidence below.
   - **Objective:** repair approved shared causes before migrating view consumers.
