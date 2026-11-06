@@ -375,7 +375,8 @@ Read `docs/runa/handbook/ai/skills-policy.md` and `docs/runa/handbook/ai/knowled
 ## Documentation maintenance
 
 Synchronize affected current-state docs and durable guidance in the owning point,
-preserving historical evidence. Follow [documentation ownership](docs/README.md)
+preserving historical evidence. Follow [documentation ownership](docs/README.md),
+[authoring conventions](docs/runa/handbook/development/documentation.md)
 and [guidance editing](docs/runa/handbook/ai/skills-policy.md#editing-reusable-guidance):
 replace obsolete rules, remove duplication and keep procedures in their canonical
 home. Current instructions exclude task chatter, speculation, abandoned ideas and
@@ -426,7 +427,9 @@ When preparing release `1.0.0` or a later update to the stable application, load
 
 ## Documentation ownership
 
-This root owner contract governs receipt-free Runa maintenance; customer application instructions are authored separately and substituted at delivery. Runa roadmaps, release metadata, quality definitions, dependency review records and maintenance reports live under docs/runa/maintainer. Read the public placement rules in docs/README.md; do not deliver this directory to customer installations. Closed roadmap contents and dated audit evidence remain immutable when relocated.
+Follow [placement rules](docs/README.md). Owner roadmap/release/quality/engineering
+records stay private under docs/runa/maintainer; customer instructions are a
+separate product substituted at delivery. Preserve closed and dated evidence.
 
 ## Instruction product maintenance
 

@@ -586,7 +586,7 @@ Dependencies below refer to completed points, not approval inferred from time.
     SOURCE.md/upstream index and customer counterpart together. New visual or
     interaction premises beyond approved findings require owner disposition.
 
-- [ ] 3. Consolidate agent guidance and define documentation conventions/checks.
+- [x] 3. Consolidate agent guidance and define documentation conventions/checks.
   - **Objective:** remove contradictory/duplicated instructions while preserving
     essential authority and effective guidance.
   - **Preconditions:** points 1–2; approved constitution changes only where relevant.
@@ -1575,3 +1575,101 @@ acceptance, full tests, build, scanners, data operation or resource cleanup was
 needed for these guidance-only edits. Preserve the audit artifacts, inherited
 endpoint journal, all application/test data and shared caches. Mandatory hooks
 and incremental staged-source indexing apply to this point's commit.
+
+## Point 3 — Guidance ownership and documentation checks — 2026-11-06
+
+Delivered the public `development/documentation.md` authoring guide within the
+existing handbook structure. It owns document types/audiences, current versus
+historical truth, headings/format-specific metadata, English technical prose,
+complete API signatures and examples, tables/warnings, command context, relative
+links/anchors and evidence limits. Ordinary guides gain no invented frontmatter.
+Docs placement remains owned by docs/README; reusable instruction editing remains
+in skills-policy. Both root instruction products route to those owners instead of
+duplicating the authoring procedure. CLAUDE files retain their thin @AGENTS routing.
+
+The existing documentation validator now composes internal stdlib Markdown-source
+helpers for leading metadata, fenced examples, comments, inline/reference targets,
+ATX/setext headings, Unicode/formatting-aware slugs, duplicate suffixes and explicit
+HTML targets. Local Markdown fragments are validated; percent encoding is decoded
+before path/anchor checks. Installed customer-template maps select their actual
+customer headings, including self/peer links, rather than reading owner AGENTS at
+the corresponding root path. Public owner-only/escape guards remain authoritative,
+including links inside indented lists. Fenced examples are the authoring contract;
+this is not a full CommonMark renderer or an external-URL checker.
+
+Current documentation is required to have one nonempty leading H1 outside metadata/
+examples. Existing required-source and format-specific metadata readers remain;
+there is no new metadata registry or semantic writing gate. Private composition
+retains immutable/closed/evidence exclusions and validates customer logical paths.
+No closed record, publication tag or native verification report was rewritten.
+The new helper is internal delivered tooling, not a public customer extension API;
+its composition/status is documented in the Python and quality guides. No new
+entrypoint or dependency. A-06 is implemented; broad current-doc reconciliation
+and actual complete documentation checks remain points 4 and 12 respectively.
+
+Source review also found that the maintainer README still projected `Active roadmap:
+none` after activation. Synchronized that bounded projection to RM-2026-017 without
+changing VERSION. This is a current-state documentation correction within A-02's
+owning scope; other stale version/delivery claims remain for point 4.
+
+### Instruction authority, triggers and assessment
+
+| Product / pair             | Authority and reference selection                                                                                                                    | Source-walk rating / limits                                                                                                                                             |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Root owner AGENTS / CLAUDE | Receipt-free owner constraints and minimum domain routing; CLAUDE delegates to AGENTS. Docs ownership summaries route to placement/authoring guides. | Preserve constitution, quality timing, protected data and owner-only policy. No new always-loaded checklist.                                                            |
+| Customer AGENTS / CLAUDE   | App scope and protected-platform boundary; public guides only; separately authored templates stay product data.                                      | Same docs routing without owner commands/acceptance policy.                                                                                                             |
+| frontend                   | Every frontend change; explicit copy/control/layout/forms/table/loading/motion/performance selectors from point 2.                                   | GOOD / GOOD for point-2 positive/negative walks; rendered revalidation remains pending.                                                                                 |
+| vue                        | Vue-specific components, account-bound reactivity and disposal; routing/async reference and canonical preference/form owners.                        | GOOD / GOOD after removing unconditional route lazy-loading. Preserve current architecture; split only justified heavy/isolated boundaries. No router dependency added. |
+| tailwind                   | Installed-version styling, static classes, theme/layout or class-verification references.                                                            | GOOD / GOOD; SQL-only work does not select this skill. No token/UI dependency invention.                                                                                |
+| backend                    | Nontrivial use cases, failure/transaction/dependency/performance references and public boundary.                                                     | GOOD / GOOD; copy-only work does not select backend or duplicate Admin business logic.                                                                                  |
+| laravel                    | Actual framework routes/validation/ORM/jobs; installed-version Boost and relevant framework references.                                              | GOOD / GOOD; no Vue styling trigger or inferred Blade UI.                                                                                                               |
+| postgresql                 | Schema/query/concurrency, database guide and selected indexing/operations references.                                                                | GOOD / GOOD; UI-only task grants no reset or mechanical indexing.                                                                                                       |
+| security                   | Auth/proof/grants/Audit/secrets and real trust boundaries, baseline and focused review references.                                                   | GOOD / GOOD; never exports owner 139 acceptance or invents operator authority.                                                                                          |
+| docker                     | Actual service/lifecycle/image/Compose concern; context/ownership and relevant references.                                                           | GOOD / GOOD; documentation work alone does not rebuild or prune.                                                                                                        |
+| rag                        | Development-only ingestion/retrieval/freshness; source/evidence and selected metadata/evaluation references.                                         | GOOD / GOOD; no optional-AI application startup dependency or receipt scope expansion.                                                                                  |
+
+Ratings incorporate point-1 source walks and point-2 frontend corrections, not nine
+new independent agent runs. Reviewed Vue's corrected route-splitting instruction
+against canonical architecture performance and the existing minimal App composition;
+its negative case preserves native routing. Added equivalent customer reference
+routing and local SOURCE provenance without changing original upstream pins.
+Remaining seven skills need no wording edits: they already select domain references
+and link shared workflow/skills-policy, which now routes authoring centrally.
+No skill was declared REDUNDANT/BROKEN from frontmatter alone, and no distinct new
+skill workflow was demonstrated. Practical final re-evaluation stays in point 10.
+
+Measured root owner before/after: 32,207 → 32,042 UTF-8 bytes, 4,031 → 3,998 words;
+customer 30,078 → 29,480 bytes, 3,742 → 3,667 words. Owner Vue routing reference
+2,996 → 3,145 bytes: the qualified instruction is longer but avoids an incorrect
+universal requirement. These source-context measurements supplement point 2 and
+are not performance, token or correctness scores. No size cap was applied.
+
+### Focused evidence, synchronization and remaining work
+
+Knowledge status was current at point start. Bounded current-intent ownership
+retrieval led to skills-policy and the knowledge applicability contract; originals
+were already opened and the relevant ownership source refreshed. No bootstrap,
+rebuild or live AI gate. Used backend/skill-creator guidance for the internal
+parser/refactoring and existing instruction products; no Laravel/database behavior
+or public framework API needed guessing.
+
+Necessary focused ambiguity check:
+`python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_documentation.py --filter=DocumentationMarkdown`
+returned **6 PASS / 13 deselected**, native exit 0, cleanup 0, approximately 0.05s;
+report `.runtime/python/reports/runa-pytest.xml`. Cases cover absent/Unicode/formatted
+anchors, duplicate/setext headings, longer/mismatched fence examples and unclosed
+fences, metadata/comment/inline examples, customer self/peer projection, indented
+private-link refusal, encoded paths/reference destinations and single-title
+structure. The initial command supplied the repository-relative path instead of
+the documented owner-suite-relative --path and was refused before execution;
+corrected after inspecting the dedicated Python adapter. No failed test is hidden.
+The same six focused fixtures were rerun after preserving indented-list link
+checks; no broad suite or unrelated area ran.
+
+Existing Prettier/Ruff formatting and mandatory hooks apply. Full tooling/static/
+documentation/delivery/knowledge checks remain final; the fixture result is not
+all-document PASS. No module/API version bump, application runtime/config change,
+migration, data operation, Docker resource creation or cleanup was needed. Preserve
+application/base test data, inherited endpoint state, shared caches and reports.
+Owner/public quality docs and the Python guide describe actual new source-check
+behavior; root owner/customer and Vue counterparts are synchronized in this point.

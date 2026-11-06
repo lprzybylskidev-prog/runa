@@ -335,18 +335,18 @@ Read `docs/runa/handbook/ai/skills-policy.md` and `docs/runa/handbook/ai/knowled
 
 ## Documentation ownership
 
-Classify every new or changed document by reader and task:
-
-- `docs/app`: application-specific domain/architecture/operations, decisions, dependency notes and application roadmaps.
-- `docs/runa/handbook`: every customer-facing Runa procedure, including application development/testing, security, quality, agent workflows, Boost, knowledge, public contracts and supplied templates.
-- `docs/runa/maintainer`: owner-only platform engineering, Runa roadmaps/releases, internal quality definitions, maintenance and historical audit evidence. This directory is not delivered to customers or indexed in their corpus.
-
-Never create `src/app/docs`, duplicate owner guidance into public instructions, or link a customer procedure to undelivered owner files/commands. Split mixed documents by purpose while retaining one authority for each rule. Preserve closed roadmaps and dated evidence byte-for-byte when moving them. Maintain relevant existing skill/pattern references in the same point. Check placement/public links with `php artisan runa:doctor:docs`, and refresh staged durable knowledge incrementally before commit. See `docs/README.md`.
+Follow [placement rules](docs/README.md): application guidance belongs in docs/app,
+delivered Runa procedures in the handbook and private owner records in maintainer.
+Keep customer documents usable without owner files/commands. Do not create
+src/app/docs or module-local documentation directories. Split mixed procedures
+and preserve closed/dated evidence; canonical placement and checking procedures
+remain in docs/README.md and the public authoring guide below.
 
 ## Documentation maintenance
 
 Synchronize affected current-state docs and durable guidance in the owning point,
-preserving historical evidence. Follow [documentation ownership](docs/README.md)
+preserving historical evidence. Follow [documentation ownership](docs/README.md),
+[authoring conventions](docs/runa/handbook/development/documentation.md)
 and [guidance editing](docs/runa/handbook/ai/skills-policy.md#editing-reusable-guidance):
 replace obsolete rules, remove duplication and keep procedures in their canonical
 home. Current instructions exclude task chatter, speculation, abandoned ideas and

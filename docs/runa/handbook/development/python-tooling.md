@@ -311,3 +311,13 @@ The frozen official Pyright package runs through its index.js entrypoint so its
 bundled standard-library types resolve independently of the working directory.
 Setup readiness requires that entrypoint; invoking its internal dist script
 directly bypasses the upstream resource-root initialization.
+
+## Documentation source checks
+
+The delivered docs checker composes internal `tools.application.documentation_markdown`
+helpers for fenced examples, headings and local targets. It is a source checker,
+not a rendering package or a public application extension API. The owner composes
+it with private historical exclusions and installed customer-template mappings.
+[Documentation authoring](documentation.md) owns supported syntax, structure and
+evidence limits. Required metadata/current-state schemas retain their existing
+readers; no Python dependency or executable Markdown input is introduced.

@@ -460,3 +460,9 @@ acceptance and repository-container-scan use real runtime absence/retained-ident
 checks and the operator module diagnostic. See the [consumer matrix](../architecture/api-boundary/README.md#public-consumer-and-final-quality-matrix).
 All retain existing prerequisites/severity/resource ownership; no duplicated node
 or earlier implementation gate is needed. RM-2026-012 final selection remains all.
+
+Documentation source checks include local Markdown heading anchors, duplicate
+heading suffixes, fenced-example exclusion, required sources and a single leading
+title. Customer instruction links resolve against their installed logical paths;
+owner-only links remain refused in public projection. See the public
+[authoring conventions](../../handbook/development/documentation.md). These checks do not replace semantic review or external-link verification.

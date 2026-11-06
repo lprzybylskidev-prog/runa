@@ -82,6 +82,7 @@ def validate(root: Path) -> None:
         and "/roadmaps/closed/" not in p.relative_to(root).as_posix()
         and "/customer-agent/" not in p.relative_to(root).as_posix()
     ]
+    public.structure(current)
     public.links(root, current, public=False)
     product = root / "docs/runa/maintainer/customer-agent"
     if product.exists():
@@ -94,6 +95,7 @@ def validate(root: Path) -> None:
             )
             for p in product.rglob("*.md")
         }
+        public.structure(list(mapping))
         public.links(root, list(mapping), public=True, logical_paths=mapping)
     print(
         "PASS: README version/active-roadmap state and public command documentation; prose review is separate."

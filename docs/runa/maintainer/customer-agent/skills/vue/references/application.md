@@ -13,3 +13,8 @@ Maintain application-specific patterns in local guidance/docs/app. Ordinary App
 code and optional app modules are supported; copied owner files or a Contracts
 namespace never authorize platform/internal APIs. Preserve installed local
 extensions during reviewed updates. This default contains no owner-only procedure.
+
+For route/component splitting, follow the frontend architecture performance
+contract: isolate genuinely heavy areas when measured costs justify it. Preserve
+the current routing/composition model rather than adding a router or splitting
+every component by default.

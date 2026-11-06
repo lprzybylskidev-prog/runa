@@ -10,6 +10,9 @@ The root README describes the delivered application workflow. In the owner check
 
 ## Maintenance rules
 
+Use the [documentation authoring guide](runa/handbook/development/documentation.md)
+for document types, structure, examples, links and evidence. This page owns placement.
+
 Use English. Follow the authority hierarchy in AGENTS.md. Update affected current-state documentation with implementation, replace obsolete claims and preserve historical evidence. Never persist chat transcripts, task chatter, temporary debug notes or speculation as durable knowledge.
 
 Closed roadmaps and dated reports retain their original contents when moved. Their old paths and dates describe historical source layout; do not rewrite them to claim current behavior. Current procedures and live tools use the paths above. Full roadmap verification includes a source review of current guidance; deterministic link/state checks supplement that review.

@@ -5,6 +5,9 @@ from __future__ import annotations
 import re
 from collections.abc import Mapping, Sequence
 from pathlib import Path
+from urllib.parse import unquote
+
+from tools.application.documentation_markdown import anchors, headings, link_targets
 
 REQUIRED = (
     ".agents/README.md",
@@ -20,6 +23,7 @@ REQUIRED = (
     "docs/runa/handbook/workflows/roadmap-template.md",
     "docs/runa/handbook/quality/README.md",
     "docs/runa/handbook/testing/strategy.md",
+    "docs/runa/handbook/development/documentation.md",
     "docs/runa/handbook/security/baseline.md",
     "docs/runa/handbook/ai/knowledge-system.md",
     "docs/runa/handbook/ai/laravel-boost.md",
@@ -46,42 +50,53 @@ def links(
     logical_paths: Mapping[Path, Path] | None = None,
 ) -> None:
     root = Path(root).resolve()
+    anchor_cache: dict[Path, set[str]] = {}
+    projected = {logical.resolve(): actual for actual, logical in (logical_paths or {}).items()}
     for path in paths:
-        fence = None
-        for line in path.read_text().splitlines():
-            marker = re.match(r"^\s*(`{3,}|~{3,})", line)
-            if marker:
-                if fence is None:
-                    fence = marker[1][0]
-                elif marker[1][0] == fence:
-                    fence = None
+        for target in link_targets(path.read_text()):
+            if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", target):
                 continue
-            if fence:
-                continue
-            for match in re.finditer(r'!?\[[^\]]*\]\((<[^>]+>|[^\s)]+)(?:\s+"[^"]*")?\)', line):
-                target = match[1].strip("<>").split("#", 1)[0]
-                if not target or re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", target):
-                    continue
-                logical = (logical_paths or {}).get(path, path)
-                destination = (logical.parent / target).resolve()
-                if not destination.is_relative_to(root):
+            filename, _, fragment = target.partition("#")
+            logical = (logical_paths or {}).get(path, path)
+            destination = (
+                (logical.parent / unquote(filename)).resolve() if filename else logical.resolve()
+            )
+            if not destination.is_relative_to(root):
+                raise ValueError(
+                    "Documentation link escapes checkout: " + str(path.relative_to(root))
+                )
+            relative = destination.relative_to(root).as_posix()
+            if public and relative.startswith(
+                ("docs/runa/maintainer/", "tools/maintainer/", "distribution/")
+            ):
+                raise ValueError("Customer documentation links to owner-only material: " + relative)
+            source = projected.get(destination, destination)
+            if not source.exists():
+                raise ValueError(
+                    "Broken documentation link: " + str(path.relative_to(root)) + " -> " + target
+                )
+            if fragment and destination.suffix.lower() == ".md":
+                if destination not in anchor_cache:
+                    anchor_cache[destination] = anchors(source.read_text())
+                if unquote(fragment) not in anchor_cache[destination]:
                     raise ValueError(
-                        "Documentation link escapes checkout: " + str(path.relative_to(root))
-                    )
-                relative = destination.relative_to(root).as_posix()
-                if public and relative.startswith(
-                    ("docs/runa/maintainer/", "tools/maintainer/", "distribution/")
-                ):
-                    raise ValueError(
-                        "Customer documentation links to owner-only material: " + relative
-                    )
-                if not destination.exists():
-                    raise ValueError(
-                        "Broken documentation link: "
+                        "Broken documentation anchor: "
                         + str(path.relative_to(root))
                         + " -> "
                         + target
                     )
+
+
+def structure(paths: Sequence[Path]) -> None:
+    for path in paths:
+        records = headings(path.read_text())
+        if (
+            not records
+            or records[0][0] != 1
+            or not records[0][1].strip()
+            or sum(level == 1 for level, _ in records) != 1
+        ):
+            raise ValueError("Documentation needs one leading level-one title: " + str(path))
 
 
 def validate(root: Path, *, owner_guidance: bool = False) -> None:
@@ -139,6 +154,7 @@ def validate(root: Path, *, owner_guidance: bool = False) -> None:
         receipt.exists() or receipt.is_symlink() or not (root / "docs/runa/maintainer").is_dir()
     ):
         raise ValueError("Owner guidance validation requires a receipt-free owner checkout.")
+    structure(paths)
     links(root, [path for path in paths if path not in owner_paths])
     links(root, owner_paths, public=False)
     # Selected-scope application closure is checked on its owning branch. Existing

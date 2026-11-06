@@ -7,7 +7,7 @@ Owner-only platform engineering, lifecycle and release records. Platform work fo
 <!-- runa:current-state -->
 
 - Current version: `0.7.0`
-- Active roadmap: `none`
+- Active roadmap: `RM-2026-017`
 
 <!-- /runa:current-state -->
 

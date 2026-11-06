@@ -3,7 +3,7 @@
 1. Treat route params/query as explicit inputs rather than reading deep router global state everywhere.
 2. Route components must react correctly when params change without assuming Vue Router remounts the component.
 3. Navigation guards are for navigation concerns, not unrelated business logic.
-4. Lazy-load route components.
+4. Split/lazy-load genuinely heavy or isolated routes when the current routing architecture and measured costs justify it; do not add a router or split every component by default.
 5. `v-for` uses stable semantic keys. Do not use array index when the item has its own identity.
 6. Never use array index as the key for editable or reorderable lists.
 7. Do not place `v-if` and `v-for` on the same element; filter/computed or wrap intentionally.
