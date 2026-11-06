@@ -35,6 +35,12 @@ Continue in order through the existing implementation, owner manual acceptance
 and final verification workflow. No release preparation or final PASS follows
 from the baseline approval.
 
+Owner scope amendment, 2026-11-06: explicitly include the supplied reference
+module's Admin presentation alignment in point 7, with its documentation in
+points 4/7, shared-consumer review in point 6 and readiness/manual/final acceptance
+in points 10–12. See the dated scope amendment at the end. This does not reopen
+Gate B or authorize new unrelated business capabilities.
+
 - RH-01: retain `runa_auth.users.remember_token` for deliberate Laravel integration
   compatibility. Current non-use is not sufficient dead-schema evidence. Document
   the rationale in the owning Auth/database guidance in point 5. Retaining the
@@ -804,6 +810,14 @@ below are retained as historical records only.
     definitions/access contributions; Audit history/details; root/App/reference,
     native error/mail presentation where shared standards apply. Remove justified
     filler in both locales and complete missing meaningful behavior within scope.
+  - **Reference module:** explicitly bring `app.reference` Admin-facing views,
+    contributions and existing example interactions into the current Runa UI/UX
+    contracts. Inventory the real Admin integration and its application panel
+    before editing; distinguish legacy descriptor-only declarations from rendered
+    functionality. Use current public Admin/UI composition, shared feedback,
+    readiness/reconciliation, navigation, action semantics and PL/EN copy. Keep
+    the example development-only and optional; synchronize its README/changelog,
+    relevant test consumers and independent module-version assessment in this point.
   - **Boundaries:** preserve current source-configuration visibility and ordinary
     App versus module options, reviewed bulk effects, source-only health/integrations,
     Audit read-only history and native owning business rules. No new module/features.
@@ -886,6 +900,11 @@ below are retained as historical records only.
     gain. Prepare working application, real authorized access and current data/
     assets after final formatting. Inspect actual pages/API responses and source/build
     identities; 503/stale assets are blockers, not owner acceptance readiness.
+  - **Reference readiness:** prepare the opted-in development reference example
+    through supported nondestructive procedures so its actual Admin views and
+    relevant APIs are usable with current assets. Preserve disabled-by-default
+    delivery, existing data and production exclusion. Do not call a missing or
+    unavailable example ready for owner acceptance.
   - **Documentation/approval:** prepare a concrete acceptance sheet with current
     base URL, resolved routes, source/build and scenarios. Core platform ranges
     may require early 0.8.0 candidate preparation; obtain explicit owner approval
@@ -901,6 +920,9 @@ below are retained as historical records only.
     grants/configuration, data/error/dirty/loading states, viewport, theme and PL/EN
     scenarios. At most five representative views for each changed shared-component
     class; include every directly changed distinct behavior beyond that sample.
+  - **Reference acceptance:** include concrete URLs and scenarios for the directly
+    changed reference Admin presentation and its relevant states; shared-component
+    sampling does not omit these distinct example behaviors.
   - **Acceptance/evidence:** owner explicitly accepts the tested source/environment.
     Agent screenshots, automated PASS and silence are insufficient. Record feedback,
     revisions and accepted limits in history. Insert repairs before this point and
@@ -923,6 +945,11 @@ below are retained as historical records only.
     run complete affected-area checks in the failing mode, receive results before
     committing fixes, repeat affected owner acceptance, and resume/revalidate the
     final graph under the delivered approved policy. No stale PASS or skipped gate.
+  - **Reference verification:** include affected reference-module source/runtime,
+    application-owned tests and rendered Admin scenarios through their supported
+    owning entrypoints, plus the real shared prerequisites. An owner-only suite
+    result does not automatically cover application-owned reference tests. Verify
+    the example's optional/development-only delivery boundary where changed.
   - **SIGSEGV:** preserve native failures, case coverage and cleanup; controlled
     recovery plus separate owner disposition may accept confirmed 139 only. Other
     hard failures remain blocking. Do not restart unrelated valid results, diagnose
@@ -2484,3 +2511,75 @@ procedure. Customer templates remain product data with installed logical-link
 boundaries; no owner commands/policy were added. Broader current-document editing
 and RA-03/RA-06 remain point 4. No runtime, schema, dependency, Docker or application
 state changed. Commit this repair/reconciliation and mark point 3 complete.
+
+## Owner scope amendment — Reference module Admin UI/UX — 2026-11-06
+
+The owner explicitly requested adding the reference module's Admin views to this
+roadmap because their alignment with current Runa UI/UX was missed in the previous
+roadmap. This is an authorized addition to the existing supplied-view conformity
+work, not a new module, separate roadmap or agent-inferred expansion of business
+features. Gate B, feature/0.8.0, point order and existing completed points remain.
+Point 4 is still current; this planning amendment does not start point-7 runtime
+implementation or reinstate any historical acceptance claim.
+
+### Source-grounded scope and boundaries
+
+Focused inspection used the frontend skill, current knowledge and original public
+page/presentation ownership guidance. The source map is:
+
+- `src/app/modules/reference/module.json`: optional development-only example,
+  independent version 0.2.0, source management/frontend/slot declarations.
+- `backend/Definitions/ReferenceManagement.php` under that module: inspect
+  permission/action metadata, an explicitly future administrative-action
+  description and an empty components list. This is not evidence of a complete
+  current owned Admin page or executable inspect workflow.
+- `backend/Definitions/ReferenceFrontend.php` and `frontend/components/panel.vue`:
+  declared public frontend page/slot and a public HTTP ping consumer with local
+  request state. Do not conflate this standalone panel with all Admin presentation.
+- `docs/app/modules/reference/README.md` and `CHANGELOG.md`, with central
+  application-owned reference tests: owning example documentation and evidence.
+
+Point 7 must establish the real current Admin entrypoints and compare every
+existing reference view/contribution with the accepted shared patterns. Align the
+existing example behavior with current supported Admin/UI contracts, including
+any necessary replacement of legacy declaration/presentation wiring. Record the
+owner/audience/entrypoint and complete supported signatures before changing them;
+consume guarded public adapters rather than private platform internals. A genuinely
+new business capability or significant unresolved architectural premise returns
+for discussion; ordinary conformity work is already authorized by this request.
+
+Review page hierarchy/breadcrumbs, layout/density, controls and action meaning,
+form-wide versus field feedback, initial/refresh/error/empty states, cancellation,
+dirty state where applicable, permission/configuration visibility, keyboard/focus,
+PL/EN and both themes at usable desktop/tablet/mobile sizes. Do not add fake forms,
+filters, counts, generic settings/health editors or empty sections merely to make
+the example resemble a larger business module. Keep technical policy source-owned,
+current security/session orchestration shared and the shipped App scaffold minimal.
+
+### Owning-point and acceptance mapping
+
+- Point 4 accounts explicitly for the reference README/developer journey and
+  distinguishes today's delivered behavior from planned alignment. Point 7 updates
+  changed examples/signatures/instructions and the module changelog with its code.
+- Point 5 handles only a necessary already-agreed owning contract dependency;
+  point 6 includes reference as an analogous consumer of modified shared controls.
+  Neither treats the example as accepted merely because Core consumers work.
+- Point 7 owns actual Admin/panel conformity, meaningful regressions and independent
+  module/API version assessment. Do not change platform/App/module versions now
+  merely to record this scope amendment.
+- Point 10 prepares a usable opted-in development example with current assets/data,
+  preserving existing state through supported operations. Point 11 includes the
+  changed reference Admin behavior in the explicit owner handoff, even if a shared
+  control already has its representative sample elsewhere.
+- Point 12 selects the actual affected source/runtime and application-owned test
+  scopes plus rendered scenarios and real prerequisites. Complete verification
+  remains last; no broad checks or browser matrix are introduced earlier.
+
+Instruction-product assessment: implementation must assess the public module/Admin
+example guides and customer-facing reference documentation together. This amendment
+itself changes only the owner plan; root/skill/customer defaults need no new rule.
+The example remains optional and excluded from production. No runtime/config/schema,
+version, dependency, application data or resource changed for this planning request.
+The prior audit synthesis remains dated evidence; this explicit owner amendment
+supplements its finite scope without rewriting historical findings or claiming
+that the reference Admin views were already rendered/accepted.
