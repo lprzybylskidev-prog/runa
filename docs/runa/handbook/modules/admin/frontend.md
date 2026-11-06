@@ -2,7 +2,7 @@
 
 # Admin frontend contract
 
-Admin 1.0.0 supplies the PL/EN session shell, guarded reads and independent
+Admin 1.0.1 supplies the PL/EN session shell, guarded reads and independent
 commands, compiled component resolution, presentation providers, generated record
 forms and cursor tables. Public facade `@/runa/admin` exports AdminApplication,
 AdminLayout, AdminPage, AdminSection, AdminForm, AdminField, AdminAction,
@@ -413,7 +413,13 @@ frontend and delivery is bundled presentation. The signatures above are the
 complete public contract. One creating Vue scope owns the controller per page;
 later consumers receive the same controller, with no competing draft/read lane.
 The default page uses autoRead=false: mounted default/custom record sections join
-with activateSection(key). Headless consumers default to automatic reads. Required
+with activateSection(key). Lazy activation belongs to the selected subject/editor:
+selectSubject and identity/access withdrawal clear it, and closeSection removes
+that section's activation. Mount the intended subject's sections again (or call
+activateSection explicitly) after selecting it. Previously opened creation or
+other-subject sections never join the next refresh automatically. Presentation-only
+tab changes retain active siblings and their drafts within the same subject.
+Headless consumers default to automatic reads. Required
 editable sections that have not joined, failed reads and unavailable declared
 field/section builds block aggregate Save. setAvailable(identity,available) joins
 custom boundaries to that contract; default boundaries report failures themselves.

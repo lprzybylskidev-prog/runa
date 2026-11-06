@@ -28,7 +28,7 @@ impact_areas:
 The owner explicitly accepted the renewed baseline as adequate for continuing
 with its documented limitations and approved RA-01–RA-07. The complete
 [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
-is retained verbatim. Points 1–5 are complete; point 6 is current. Points 2–6 require
+is retained verbatim. Points 1–6 are complete; point 7 is current. Points 2–6 require
 individual renewed reconciliation, approved corrections and completion records;
 their original completion declarations do not restore acceptance automatically.
 Continue in order through the existing implementation, owner manual acceptance
@@ -777,7 +777,7 @@ below are retained as historical records only.
     data rebuild or significant new architecture/behavior/security premise stops
     for owner discussion. No blanket module version increments.
 
-- [ ] 6. Correct shared frontend controls, layouts and asynchronous behavior.
+- [x] 6. Correct shared frontend controls, layouts and asynchronous behavior.
   - **Historical completion declaration, acceptance withdrawn 2026-11-06:** corrected A-08 in the shared notification owner;
     Chromium locale-only regression passes with stable identity/focus. Consumer
     coverage and retained contracts are recorded in the point-6 evidence below.
@@ -2845,3 +2845,74 @@ reusable rule, supported capability or consumer signature needs duplicated AGENT
 or skill text; both instruction products require no edit. Stage intended durable
 sources and refresh knowledge incrementally before the mandatory commit hooks.
 Point 5 is complete with this reconciliation commit; point 6 is next.
+
+## Point 6 — Renewed shared frontend reconciliation — 2026-11-06
+
+Reconciled candidate e9f866d8 against approved RA-02, shared RA-05 and RH-02.
+Retain A-08's in-place translation and focus/identity behavior. The renewed
+baseline's component inventory and explicit unknowns remain authoritative;
+the historical no-other-shared-repair statement above is superseded.
+
+Point-start knowledge was current (216 documents / 12,213 chunks). Bounded
+current-intent retrieval selected component feedback, readiness and reconciliation;
+opened the original catalogue, forms/loading and Admin frontend ownership sources.
+Loaded frontend/Vue/Tailwind selectors and only relevant form, component,
+reactivity and theme/layout references. Tailwind 4.3.3 is the installed declaration;
+this correction uses established static utilities without a new token/dependency.
+
+### Shared owners and analogous consumer dispositions
+
+| Owner / approved finding     | Correction and actual source consumers                                                                                                                                                                                                                                                                                                   | Evidence / remaining boundary                                                                                                                                                                                                                                       |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AppWizard / RA-02            | Remove border-t/border-line from action row, retain spacing and the existing flex wrap, buttons, step focus, progress and slot contracts. No supplied live business Wizard consumer was found; public export and advanced-forms fixture remain supported.                                                                                | Source contradiction resolved against canonical form action spacing. No fabricated real-page visual reproduction; keyboard/mobile/theme/reduced-motion acceptance remains final/manual scope.                                                                       |
+| AppFormNotifications / RH-02 | Preserve the local current ID even after dismissal/expiry. Locale-driven text changes cannot reopen it while attempt/invalid outcome stay unchanged. A new attempt or subsequent outcome can announce. Retain visible-message replacement in place and local useToasts ownership.                                                        | Chromium exercises visible PL/EN identity/focus, dismissed caller-owned translated errors and deliberate reannouncement. All shared/Admin/Auth/Permissions/Audit consumers continue through the same public facade; no per-view duplicate feedback or global store. |
+| useAdminForm / RA-05         | Clear activated sections with erase on accepted subject/page/access withdrawal; remove a section's lazy activation on explicit close. Existing erase cancels resources/lookups/proofs, clears protected data and fences late responses. Failed dirty confirmation returns before erase; same-subject tab/refresh retains sibling drafts. | Mounted public-controller regression: activate creation, select existing subject, activate profile, refresh, close/reopen. No creation read carries the new public_id; closed profile stops reading. Automatic headless reads remain unchanged.                     |
+| Auth users / RA-05 consumer  | Source walk through admin_users selecting placeholder, selectSubject, creation/details/bulk mode filters, atomic participant activation and lazy Auth section owners confirms why retained creation activation crossed context. No backend CreationSection guard changes.                                                                | Real create-close-details/copy/Security scenario and any local bulk/close repair remain point 7, after nondestructive runtime update/current assets. Controller PASS is not real-consumer acceptance.                                                               |
+| Other lazy consumers         | Reviewed AdminSection, AdminRecordBrowser/TableSection, settings/snapshots, Auth emails/status/policy/detail sections and PermissionsAssignments. Explicit editor open/close and subject selection retain their owning API.                                                                                                              | Public guide now states reactivation/remount after selecting a subject; within-subject tabs retain active state. Generated/custom consumers use the same controller, with no generated signature change. Per-view lifecycle/readiness inspection stays point 7.     |
+
+The component-to-consumer inventory and renewed frontend matrix retain all other
+controls/layouts, navigation, temporal formatting, tables, local loading, async,
+accessibility and public replacement seams. No additional shared repair was
+selected from those reviewed families; their preserved tests and final/manual
+obligations are not a blanket fresh PASS. RA-07 and view-local RA-05/reference
+showcase changes belong to point 7. No new interaction premise was required.
+
+### Focused evidence
+
+To resolve dismissal/state-lifetime uncertainty, ran only:
+
+```bash
+python3 tools/maintainer/test-frontend tests/frontend/runa/unit/feedback.test.ts tests/frontend/runa/unit/admin-forms.test.ts --filter='updates the mounted invalid form notification|keeps dismissed form outcomes|Admin lazy sections end'
+```
+
+**Chromium PASS: 3 tests, 2 files, native exit 0, cleanup 0**; 41 unselected cases
+were skipped, not passing coverage. Retained A-08 DOM/focus assertions and the new
+PL→EN→PL dismissal/new-attempt regression both pass. The controller test confirms
+no wrong-context creation read or closed-section refresh and deliberate reopening.
+Vite retains its generated Vitest-runner dynamic-import analysis warning; it did
+not prevent this diagnostic. No broad frontend suite/browser matrix/build/static
+analysis/scanner ran. Existing dirty/conflict/identity/pending-response scenarios
+remain required final suite coverage. No Docker endpoint/resource was created
+or removed; inherited endpoints, reports/model caches and all app/test data remain.
+
+### Versions and synchronized guidance
+
+Admin independently advances 1.0.0 → **1.0.1**, a compatible correction to lazy
+editor lifetime. Add a new explicit editor_scopes forward edge with no data/schema
+transformation; historical edges/handlers remain unchanged. The source planner
+expectation and module/central changelogs follow it. Guarded AdminAccess signatures
+and API 1.0.0 are unchanged; dependents accepting ^1.0.0 remain compatible. Shared
+Wizard/notification owners belong to the platform; Auth source and its owning APIs
+are unchanged by this point, retaining point 5's 5.0.1. No blanket module bump,
+new dependency, migration or runtime data mutation. Final version/source/runtime
+checks and normal development module update/build-identity preparation remain
+later obligations; no current-assets acceptance is inferred.
+
+Updated the owning forms/component and Admin frontend contracts, current Admin
+version matrix and changelogs. Both instruction products' frontend/forms selectors
+already route to those canonical guides; no new global rule, duplicate procedure,
+new prop or separate customer instruction is needed. Generated/default/custom
+consumers retain the same public methods and document their scope. Owner and
+customer AGENTS/skills therefore require no edit for these localized repairs.
+Stage intended sources and refresh knowledge before mandatory hooks. Point 6 is
+complete with this reconciliation commit; point 7 is next.

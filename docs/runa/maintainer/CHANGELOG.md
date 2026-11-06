@@ -4,6 +4,10 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Admin 1.0.1: scope lazy record-section activation to its selected editor subject;
+  stop closed sections from refreshing. Keep dismissed form outcomes absent across
+  language changes and align Wizard actions with the shared spacing standard.
+
 - Auth 5.0.1: bound synchronous admission and policy reads without retaining
   authorization/eligibility decisions. Group trusted permission evaluation and
   management declaration discovery under their existing registry lock contract;

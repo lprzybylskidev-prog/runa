@@ -477,3 +477,29 @@ it('keeps modal form notifications and their recovery buttons inside the active 
   expect(button.closest('[inert]')).toBeNull();
   await wrapper.setProps({ modelValue: false });
 });
+
+it('keeps dismissed form outcomes absent across PL EN translation until a deliberate new attempt', async () => {
+  const wrapper = mount(FormNotifications, {
+    props: { invalid: true, locale: 'pl', error: 'Nie zapisano.' },
+  });
+  await settle();
+  wrapper
+    .getComponent(AppToast)
+    .vm.$emit('close', wrapper.getComponent(AppToast).props('message').id);
+  await settle();
+  expect(document.querySelectorAll('.app-toast')).toHaveLength(0);
+  for (const locale of ['en', 'pl'] as const) {
+    await wrapper.setProps({
+      locale,
+      error: locale === 'en' ? 'Not saved.' : 'Nie zapisano.',
+    });
+    await settle();
+    expect(document.querySelectorAll('.app-toast')).toHaveLength(0);
+  }
+  await wrapper.setProps({ attempt: 1 });
+  await settle();
+  expect(document.querySelectorAll('.app-toast')).toHaveLength(1);
+  expect(document.querySelector('.app-toast')?.textContent).toContain(
+    'Nie zapisano.',
+  );
+});

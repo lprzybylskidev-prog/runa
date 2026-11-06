@@ -371,6 +371,7 @@ export function useAdminForm(
     overlaps.value = {};
     errors.value = {};
     editors.value = {};
+    activated.value = new Set();
     failures.value = new Set();
     clearReviews();
     error.value = undefined;
@@ -545,6 +546,9 @@ export function useAdminForm(
     lanes.get(key)?.scope.stop();
     lanes.delete(key);
     delete editors.value[key];
+    activated.value = new Set(
+      [...activated.value].filter((active) => active !== key),
+    );
     return true;
   }
   async function beforeSectionLeave(key: string): Promise<boolean> {

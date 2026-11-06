@@ -91,7 +91,7 @@ useContentMotion(content, () => props.modelValue);
       <slot :step="steps[modelValue]" :index="modelValue" />
     </fieldset>
     <slot name="feedback" />
-    <div class="flex flex-wrap gap-3 border-t border-line pt-5">
+    <div class="flex flex-wrap gap-3 pt-5">
       <AppButton
         intent="cancel"
         :disabled="busy || modelValue <= 0"

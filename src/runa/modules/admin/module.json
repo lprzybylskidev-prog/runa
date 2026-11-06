@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "runa.admin",
   "kind": "core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "platform": ">=0.7.0 <0.8.0",
   "framework_api": "^1.0.0",
   "name": {

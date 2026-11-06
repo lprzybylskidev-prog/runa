@@ -5,6 +5,7 @@ namespace Runa\Modules\Admin\Definitions;
 use Runa\Contracts\Modules\UpgradeDefinition;
 use Runa\Contracts\Modules\UpgradeProvider;
 use Runa\Modules\Admin\InitializeAdmin;
+use Runa\Modules\Admin\UpgradeEditorScopes;
 
 final class AdminUpgrades implements UpgradeProvider
 {
@@ -14,6 +15,7 @@ final class AdminUpgrades implements UpgradeProvider
             new UpgradeDefinition('initialize', null, '0.1.0', InitializeAdmin::class),
             new UpgradeDefinition('standalone_participants', '0.1.0', '0.2.0', InitializeAdmin::class),
             new UpgradeDefinition('creation_release', '0.2.0', '1.0.0', InitializeAdmin::class),
+            new UpgradeDefinition('editor_scopes', '1.0.0', '1.0.1', UpgradeEditorScopes::class),
         ];
     }
 

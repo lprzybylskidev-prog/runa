@@ -1133,3 +1133,44 @@ it('settings snapshot preview preserves a dirty draft and cancellation never pub
   expect(form.dirty.value).toBe(true);
   expect(writes).toHaveLength(0);
 });
+
+it('Admin lazy sections end their activation at subject changes and explicit close', async () => {
+  const data = descriptor();
+  const profile = data.sections[0]!;
+  data.sections = [
+    { ...profile, key: 'creation', required: false, commands: [], fields: [] },
+    { ...profile, required: false },
+  ];
+  const reads: string[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    reads.push(url.pathname + url.search);
+    return respond({
+      data: record({
+        public_id: url.pathname.endsWith('/creation')
+          ? null
+          : url.searchParams.get('public_id'),
+        values: url.pathname.endsWith('/creation')
+          ? {}
+          : { name: 'Other account', enabled: false, token: { set: true } },
+      }),
+    });
+  });
+  const { form } = harness(data, { autoRead: false });
+  await form.activateSection('creation');
+  expect(reads).toHaveLength(1);
+  expect(form.records.value.creation?.public_id).toBeNull();
+  expect(await form.selectSubject(otherId)).toBe(true);
+  await form.activateSection('profile');
+  await form.refresh();
+  expect(reads.filter((url) => url.includes('/creation'))).toHaveLength(1);
+  expect(form.records.value.creation).toBeUndefined();
+  expect(form.records.value.profile?.public_id).toBe(otherId);
+  expect(await form.closeSection('profile')).toBe(true);
+  const count = reads.length;
+  await form.refresh();
+  expect(reads).toHaveLength(count);
+  expect(form.sections.value).toHaveLength(0);
+  await form.activateSection('profile');
+  expect(reads).toHaveLength(count + 1);
+});

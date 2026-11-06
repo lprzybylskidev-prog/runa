@@ -23,7 +23,7 @@ watch(
       props.attempt,
       props.locale,
     ] as const,
-  ([error, success, invalid, , locale]) => {
+  ([error, success, invalid, attempt, locale], previous) => {
     const result =
       error || invalid
         ? {
@@ -48,6 +48,16 @@ watch(
     ) {
       // Replace the current outcome in place, without a second entering/exiting toast.
       messages.value = [{ ...result, id: current }];
+    } else if (
+      current &&
+      previous &&
+      previous[4] !== locale &&
+      previous[3] === attempt &&
+      previous[2] === invalid
+    ) {
+      // Localized caller text can change with locale too. A dismissed/expired
+      // outcome stays absent until a new outcome or deliberate submit attempt.
+      return;
     } else current = show(result);
   },
   { immediate: true },

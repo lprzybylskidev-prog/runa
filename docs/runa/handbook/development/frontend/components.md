@@ -93,7 +93,9 @@ Viewport clamping and collision fallback remain active.
 - Changing locale updates the default invalid summary and viewport/close labels
   in place, preserving the current notification identity and keyboard focus.
   Explicit error/success strings remain owned and localized by the caller; changing
-  language requires no form/controller remount or new submit attempt.
+  language requires no form/controller remount or new submit attempt. Dismissed or
+  expired outcomes stay absent across locale changes, including translated caller
+  strings; increment attempt for a deliberate new submission.
 - Bind state owned by the form; increment attempt on each explicit submit so a
   dismissed identical validation failure is reported again. One current result
   replaces its predecessor. The actions slot supplies explicit recovery buttons.
