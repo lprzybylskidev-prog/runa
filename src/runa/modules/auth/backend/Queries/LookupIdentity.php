@@ -3,6 +3,7 @@
 namespace Runa\Modules\Auth\Queries;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Auth\Contracts\AuthIdentities;
 use Runa\Modules\Auth\Contracts\Eligibility;
@@ -58,6 +59,11 @@ final readonly class LookupIdentity implements AuthIdentities
     }
 
     public function evaluate(User $user, CarbonImmutable $now): Eligibility
+    {
+        return DB::connection()->transaction(fn (): Eligibility => $this->evaluateCurrent($user, $now));
+    }
+
+    private function evaluateCurrent(User $user, CarbonImmutable $now): Eligibility
     {
         $blockers = [];
         $restrictions = [];

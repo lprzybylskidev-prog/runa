@@ -1,6 +1,6 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` is delivered at independent version `5.0.0` for
+Core `runa.auth` is delivered at independent version `5.0.1` for
 platform >=0.7.0 <0.8.0, requiring
 `runa.audit ^1.0.0` and framework API `^1.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.

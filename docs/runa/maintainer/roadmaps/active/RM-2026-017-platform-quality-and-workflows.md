@@ -28,7 +28,7 @@ impact_areas:
 The owner explicitly accepted the renewed baseline as adequate for continuing
 with its documented limitations and approved RA-01–RA-07. The complete
 [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
-is retained verbatim. Points 1–4 are complete; point 5 is current. Points 2–6 require
+is retained verbatim. Points 1–5 are complete; point 6 is current. Points 2–6 require
 individual renewed reconciliation, approved corrections and completion records;
 their original completion declarations do not restore acceptance automatically.
 Continue in order through the existing implementation, owner manual acceptance
@@ -747,7 +747,7 @@ below are retained as historical records only.
     historical interpretation; record consolidation map and knowledge move/delete
     obligations. No approval needed for already agreed editorial corrections.
 
-- [ ] 5. Correct approved backend, module and PostgreSQL findings.
+- [x] 5. Correct approved backend, module and PostgreSQL findings.
   - **Historical completion declaration, acceptance withdrawn 2026-11-06:** retained the Gate B no-business/schema-repair
     disposition after bounded owner/consumer and database review. Corrected two
     obsolete source delivery comments (A-09); see the point-5 record and
@@ -2698,3 +2698,150 @@ No runtime/config/schema/API/module/platform version or dependency changed. No
 Docker resource or application/test data was created, reset or removed; existing
 reports, model caches and operation evidence remain preserved. Commit this
 reconciliation and mark point 4 complete; point 5 owns the next implementation.
+
+## Point 5 — Renewed RA-01 pre-code design — 2026-11-06
+
+Owning scope: Auth's private synchronous account-admission computation, identity
+eligibility evaluation, factor restrictions and session-lifetime evaluation. Each
+computation groups its existing settings reads in a default-connection transaction;
+when already inside an owning operation it uses a child savepoint. No transaction
+spans the HTTP request, owning handler, external I/O or another operation. The
+registry shared lock acquired by the first settings read ends with that computation
+or remains owned by its existing ancestor. No authority/user lock is acquired in
+this read scope; existing mutation lock order and Audit publication are unchanged.
+
+Reuse is limited to ModuleSettings' existing WeakMap keyed by the locked
+RegistrySnapshot. ModuleRegistry's conservative connection callbacks, PDO identity,
+root/savepoint rollback and replacement-root invalidation remain unchanged. No new
+cache of users, sessions, grants, exceptions, availability or eligibility is added.
+Time-dependent checks execute on every computation. Within account admission, the
+freshly loaded user is evaluated directly, and one current-session/restriction
+result is consumed synchronously without an intervening callback or write. The
+next admission performs all reads again. Denial still clears the cookie session;
+no database business mutation is moved into this scope.
+
+PolicyExceptions remains a current SQL read, including revision/revocation/expiry.
+OperationGuard and ModuleAvailability retain their current checks. Existing
+transactional EntryOptions, SessionResource, SecurityContext/profile and Admin
+operation paths need no broader wrapping. Analogous standalone policy/lifetime
+computations receive the same bounded treatment. Public signatures, guarded API
+versions, generators and customer entrypoints remain unchanged; implementation
+helpers stay private under runa.auth/backend. Auth owns these runtime computations;
+no new supported application API is introduced.
+
+Focused evidence: rerun the same four admitted HTTP-kernel GETs used by the renewed
+audit, with identical principal/fixture/payload and SQL templates without bindings,
+retaining new before/after files under .runtime/artifacts/playwright/
+RM-2026-017-point5. This measures kernel SQL, not FPM latency. Add regressions for
+bounded supplied admission, repeated-operation revocation/restrictions and local
+policy reads with same-connection writes, rollback and reused computations. Existing
+registry/settings reconnect and suppressed-event cases remain required final
+coverage. No broad suite or matrix runs during this point.
+
+The first comparable pass reduced SQL to 372/94/60/474 but retained registry
+generation amplification in PermissionAuthorizer::allows and scalar settings
+reads while collecting management declarations. Extend the same design to one
+trusted permission decision and one declaration discovery: default-connection
+transaction, registry shared lock anchored before nested evaluation, no cached
+decision and no handler invocation. Management discovery calls source declaration
+providers only; widgets/resource/write handlers stay outside its scope. These are
+private framework/integration computations, with unchanged supported signatures.
+Each allows call still rereads current grants/identity/expiry and availability.
+This is the same approved bounded owning-read repair, not request-wide reuse.
+
+## Point 5 — Renewed backend reconciliation and completion — 2026-11-06
+
+Retain candidate 1c01d885's two accurate A-09 comment corrections. The renewed
+RA-01 repair supersedes the historical no-backend-repair conclusion without
+reopening business/schema design. The pre-code scope above was recorded before
+implementation, then extended from measured residual registry amplification.
+
+Auth now groups account ingress, eligibility, factor restrictions and session
+lifetime computations. Admission anchors the registry shared lock before nested
+reads, evaluates the fresh user directly and consumes its current session once.
+The trusted PermissionAuthorizer similarly anchors one decision; ManagementPages
+collects pure source declarations in one read transaction. No owning handler is
+wrapped by declaration discovery and no grant/eligibility result survives its
+computation. Existing registry/settings invalidators, current permission queries,
+health/expiry, operation fences, native mutation locks/proofs and Audit stay in
+place. No persistent authorization cache or security check removal was introduced.
+
+### Comparable SQL evidence and limits
+
+Reused the renewed audit's same local principal, four fixed admitted GETs, browser
+login/password-confirmation path and HTTP-kernel diagnostic. SQL evidence contains
+only templates/counts/timings, never bindings/cookies/credentials. New artifacts
+are retained under `.runtime/artifacts/playwright/RM-2026-017-point5/`; original
+restart evidence remains untouched. Counts reproduced the original baseline
+exactly. Measurement ran before the final manifest patch bump, with 5.0.0 runtime
+metadata on both sides and the corrected PHP implementation on the after side.
+
+| HTTP-kernel GET            | Status before/after | Queries before → after | Registry inventories before → after | Settings row reads before → after |
+| -------------------------- | ------------------- | ---------------------- | ----------------------------------- | --------------------------------- |
+| /api/admin                 | 200 / 200           | 479 → 309              | 36 → 17                             | 26 → 8                            |
+| /api/runa/auth/profile     | 200 / 200           | 131 → 94               | 15 → 9                              | 11 → 6                            |
+| /api/runa/auth/security    | 200 / 200           | 112 → 60               | 14 → 5                              | 11 → 3                            |
+| /api/admin/runa.auth/users | 200 / 200           | 581 → 411              | 36 → 17                             | 26 → 8                            |
+
+Bootstrap/page generation lookups fell from 165 to 80. Remaining separately
+admitted decisions retain fresh grant/account/exception/availability reads; no
+absolute endpoint query ceiling or latency gain is claimed. No relation-row N+1,
+lock-wait, FPM latency, full payload equivalence, concurrent publication or complete
+runtime performance certification follows from these samples. Complete backend,
+security/concurrency and supplied-consumer verification stays in point 12.
+
+### Focused regression evidence
+
+The supported scoped command was:
+
+```bash
+python3 tools/maintainer/test-backend --parallel --processes=1 --filter='bounds synchronous account admission|bounds standalone Auth policy reads|bounds one trusted permission decision|discovers only available module declarations without constructing business handlers'
+```
+
+Final result: **4 tests PASS, 62 assertions, native exit 0, cleanup 0**. Three new
+cases plus the expanded existing discovery case exercise bounded inventory/settings
+reads, one current-session lookup, denial after revocation, fresh grants changed
+through another connection, same-generation availability loss, nested rollback,
+suppressed database events, reconnect and time-dependent session expiration. They
+also assert return to the caller's transaction level and no business-handler
+construction during discovery. Existing registry/settings and native transactional
+regressions remain required final coverage; no broad suite ran here.
+
+The first serial focused run refused preexisting Core schemas in base runa_test;
+no data/schema was removed to clear it. The supported one-worker parallel mode
+provides isolated runner-owned storage. Intermediate focused failures corrected
+an assertion that counted legitimate policy-revision reads as settings reloads and
+an exception assertion that incorrectly expected the safe message to contain the
+reason. The final run passed. Its disposable runa_test_test_1 was removed by the
+supported runner under its lock; base runa_test, development data and all existing
+reports/caches remain preserved. No new Docker resources were created or removed.
+
+### Versions, documentation and instruction products
+
+Auth independently advances 5.0.0 → **5.0.1**: compatible internal performance
+correction, unchanged guarded interfaces/settings/data and a new explicit empty
+read_scopes forward edge. Its historical handlers/edges remain unchanged. Updated
+the current module matrix, owning guides, module/central changelogs and source
+planner expectation. Audit 1.1.0, Permissions 2.1.0 and Admin 1.0.0 retain their
+versions; their implementation/signatures are unchanged. Dependent ^5.0.0 ranges
+accept 5.0.1. Framework API and platform VERSION stay unchanged; feature/0.8.0
+candidate range/release preparation remains later work. No generator or public
+signature changed, and no compatibility adapter is needed.
+
+RH-01: retain remember_token and document its Laravel integration purpose in
+Auth sessions and the database guide. Current non-use does not establish dead
+schema; alternative recaller integration must preserve all Auth guarantees.
+No migration, data reset, grant mutation or dependency change was made. The
+existing table/index/constraint purpose dispositions remain retained, with no new
+catalog repair selected. Final module source/runtime/version checks and a normal
+nondestructive development forward module update/build identity refresh remain
+runtime-readiness obligations before rendered consumer work/manual acceptance;
+the SQL samples do not claim the final version metadata is already installed.
+
+The architecture guide owns the bounded private-read explanation and links Auth's
+session contract. Both owner and customer backend/SQL/security selectors already
+route to those public contracts and the read-path performance procedure. No new
+reusable rule, supported capability or consumer signature needs duplicated AGENTS
+or skill text; both instruction products require no edit. Stage intended durable
+sources and refresh knowledge incrementally before the mandatory commit hooks.
+Point 5 is complete with this reconciliation commit; point 6 is next.

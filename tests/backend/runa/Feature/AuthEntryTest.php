@@ -25,6 +25,7 @@ use Laravel\Fortify\Fortify;
 use Laravel\Fortify\FortifyServiceProvider;
 use PragmaRX\Google2FA\Google2FA;
 use Runa\Contracts\Modules\AuthorityGuard;
+use Runa\Contracts\Modules\HttpAccess;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\TrustedPrincipal;
@@ -80,6 +81,7 @@ use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
 use Runa\Modules\Auth\Support\AccountHistory;
+use Runa\Modules\Auth\Support\AccountPolicy;
 use Runa\Modules\Auth\Support\BrowserDescription;
 use Runa\Modules\Auth\Support\CredentialPolicy;
 use Runa\Modules\Auth\Support\EntryTransaction;
@@ -2298,4 +2300,85 @@ it('administratively confirms only current owned secondary addresses and invalid
         ->and(DB::table('runa_audit.events')->where('action', 'secondary.admin_verified')->count())->toBe(1);
     $this->postJson('/api/runa/auth/email/complete', ['token' => $secret])->assertUnprocessable();
     expect(fn () => $verify($address))->toThrow(OperationRejected::class);
+});
+
+it('bounds synchronous account admission and rereads revocation on the next admission', function (): void {
+    entryPolicy(['email_verification' => 'disabled']);
+    $user = entryUser('bounded-admission@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $request = Request::create('/api/runa/auth/session');
+    $request->setLaravelSession(app('session')->driver());
+    $policy = app(AccountPolicy::class);
+    $db = DB::connection();
+    $db->flushQueryLog();
+    $db->enableQueryLog();
+    try {
+        expect($policy->principal($request, 'runa.auth', 'session', HttpAccess::Restricted)?->publicId)->toBe($user->public_id);
+        $queries = array_column($db->getQueryLog(), 'query');
+        // One registry inventory and one settings row for the complete admission,
+        // independent of the number of scalar policy reads and nested scopes.
+        expect(count(array_filter($queries, static fn (string $sql): bool => str_starts_with($sql, 'select * from "shared"."modules"'))))->toBe(1);
+        expect(count(array_filter($queries, static fn (string $sql): bool => str_starts_with($sql, 'select "settings_values", "settings_revision"'))))->toBe(1);
+        expect(count(array_filter($queries, static fn (string $sql): bool => str_contains($sql, '"runa_auth"."sessions"'))))->toBe(1);
+        expect($db->transactionLevel())->toBe(0);
+    } finally {
+        $db->disableQueryLog();
+    }
+    $db->table('runa_auth.sessions')->where('user_id', $user->id)->update(['revoked_at' => now()]);
+    expect(fn () => $policy->principal($request, 'runa.auth', 'session', HttpAccess::Restricted))
+        ->toThrow(fn (OperationRejected $error) => expect($error->reason)->toBe('authentication_required'));
+    expect($db->transactionLevel())->toBe(0);
+});
+
+it('bounds standalone Auth policy reads and discards rolled back settings and expired lifetimes', function (): void {
+    entryPolicy(['email_verification' => 'disabled', 'session_idle_minutes' => 2]);
+    $user = entryUser('bounded-policy@example.test');
+    entryLogin($this, ['identifier' => $user->email, 'password' => 'a-long-test-password'])->assertOk();
+    $row = DB::table('runa_auth.sessions')->sole();
+    $credentials = app(CredentialPolicy::class);
+    $identities = app(LookupIdentity::class);
+    $sessions = app(SessionStore::class);
+    $db = DB::connection();
+    foreach ([fn () => $credentials->restrictions($user, $row),
+        fn () => $identities->evaluate($user, CarbonImmutable::now('UTC')),
+        fn () => $sessions->live($row)] as $read) {
+        $db->flushQueryLog();
+        $db->enableQueryLog();
+        try {
+            $read();
+            $queries = array_column($db->getQueryLog(), 'query');
+            expect(count(array_filter($queries, static fn (string $sql): bool => str_contains($sql, '"shared"."modules"'))))->toBeLessThanOrEqual(3);
+        } finally {
+            $db->disableQueryLog();
+        }
+        expect($db->transactionLevel())->toBe(0);
+    }
+    $stored = app(ModuleSettings::class)->read('runa.auth')['settings'];
+    $values = array_map(static fn (array $entry): mixed => $entry['value'] ?? null, $stored);
+    $dispatcher = $db->getEventDispatcher();
+    $db->unsetEventDispatcher();
+    $db->beginTransaction();
+    try {
+        expect($credentials->restrictions($user, $row))->toBe([]);
+        $db->beginTransaction();
+        $values['two_factor_required'] = 'totp';
+        $values['email_verification'] = 'all';
+        $db->table('shared.modules')->where('module_id', 'runa.auth')->update([
+            'settings_values' => app('encrypter')->encrypt(json_encode($values, JSON_THROW_ON_ERROR), false),
+        ]);
+        expect($credentials->restrictions($user, $row))->toBe(['two_factor_enrollment_required'])
+            ->and($identities->evaluate($user, CarbonImmutable::now('UTC'))->restrictions)->toContain('email_verification_required');
+        $db->rollBack();
+        expect($credentials->restrictions($user, $row))->toBe([])
+            ->and($identities->evaluate($user, CarbonImmutable::now('UTC'))->restrictions)->toBe([]);
+    } finally {
+        $db->rollBack(0);
+        if ($dispatcher !== null) {
+            $db->setEventDispatcher($dispatcher);
+        }
+    }
+    $db->disconnect();
+    expect($credentials->restrictions($user, $row))->toBe([])->and($sessions->live($row))->toBeTrue();
+    CarbonImmutable::setTestNow(CarbonImmutable::parse($row->activity_at)->addMinutes(2));
+    expect($sessions->live($row))->toBeFalse();
 });

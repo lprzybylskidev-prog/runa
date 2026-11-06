@@ -65,7 +65,17 @@ it('discovers only available module declarations without constructing business h
     expect($this->pages->discover()['owners'])->not->toHaveKey($this->id);
     DB::table('shared.modules')->where('module_id', $this->id)->update(['enabled' => true]);
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
-    $found = $this->pages->discover();
+    $db = DB::connection();
+    $db->flushQueryLog();
+    $db->enableQueryLog();
+    try {
+        $found = $this->pages->discover();
+        $queries = array_column($db->getQueryLog(), 'query');
+        expect(count(array_filter($queries, static fn (string $sql): bool => str_starts_with($sql, 'select * from "shared"."modules"'))))->toBe(1);
+        expect($db->transactionLevel())->toBe(0);
+    } finally {
+        $db->disableQueryLog();
+    }
     expect($found['owners'][$this->id]['pages'])->toHaveKey('index')->and($found['diagnostics'])->toBe([])
         ->and(array_keys($found['owners'][$this->id]['title']))->toBe(['pl', 'en'])
         ->and(ApiCalls::$constructed)->toBe(0)->and(ApiCalls::$executed)->toBe(0);

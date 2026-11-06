@@ -2,6 +2,7 @@
 
 namespace Runa\ModuleFramework\Management;
 
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Runa\Contracts\Modules\ApiProvider;
 use Runa\Contracts\Modules\ManagementBinding;
@@ -38,6 +39,12 @@ final readonly class ManagementPages
 
     /** @return Discovery */
     public function discover(): array
+    {
+        return DB::connection()->transaction(fn (): array => $this->discoverCurrent());
+    }
+
+    /** @return Discovery */
+    private function discoverCurrent(): array
     {
         $snapshot = $this->registry->snapshot();
         $statuses = $this->availability->statuses();

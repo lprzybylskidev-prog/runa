@@ -50,6 +50,28 @@ remembered sessions. Native file/cookie lifetime is a 30-day storage ceiling; it
 not an authorization deadline. Ordinary cookies remain expire-on-close; remembered
 cookies have an expiry. Old cookie replay cannot restore a removed/revoked row.
 
+### Laravel remember-token compatibility
+
+`runa_auth.users.remember_token` is deliberately retained for Laravel authentication
+integration. The inherited Authenticatable contract exposes that field even though
+Runa's current remembered-session flow does not consume a recaller. Current non-use
+is not evidence that the column is obsolete. Keeping it alone does not guarantee
+compatibility with an alternative authentication configuration: any such integration
+must preserve tracked sessions, current eligibility, security generation, revocation,
+expiry and the remaining Auth guarantees. No schema removal is implied.
+
+### Bounded policy reads
+
+Auth groups one synchronous account-admission computation and standalone eligibility,
+factor-restriction and session-lifetime evaluations in short default-connection
+transactions. The registry shared lock stabilizes settings during each computation;
+existing outer operations retain ownership when the read nests in a savepoint.
+Admission consumes one freshly loaded user and current session locally and ends
+before the owning handler runs. Each later operation rereads account/session state,
+policy exceptions and time-dependent deadlines. No request/worker eligibility or
+authorization cache is introduced. Writes, rollback, a new root transaction and
+reconnection retain the existing registry/settings invalidation behavior.
+
 ## Activity and own APIs
 
 All paths are under `/api/runa/auth/`, named `runa.auth.<operation>`, use the existing

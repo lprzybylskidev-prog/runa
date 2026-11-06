@@ -1161,3 +1161,38 @@ it('rolls back the configured development administrator password when Audit refu
         DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT refuse_dev_password');
     }
 });
+
+it('bounds one trusted permission decision and rechecks grants rollback and availability between decisions', function (): void {
+    $permission = ($this->directPermission)('runa.audit.read');
+    ($this->asPermissionUser)(function () use ($permission): void {
+        $authorizer = app(OperationAuthorizer::class);
+        $context = new OperationContext('runa.audit', 'history.test', 'test', 'test', app(ModuleRegistry::class)->snapshot()->generation);
+        $db = DB::connection();
+        $db->flushQueryLog();
+        $db->enableQueryLog();
+        try {
+            expect($authorizer->allows($context, 'runa.audit.read'))->toBeTrue();
+            $queries = array_column($db->getQueryLog(), 'query');
+            expect(count(array_filter($queries, static fn (string $sql): bool => str_starts_with($sql, 'select * from "shared"."modules"'))))->toBe(1);
+            expect($db->transactionLevel())->toBe(0);
+        } finally {
+            $db->disableQueryLog();
+        }
+        $db->beginTransaction();
+        try {
+            $db->table('runa_permissions.user_permissions')->where('permission_id', $permission)->delete();
+            expect($authorizer->allows($context, 'runa.audit.read'))->toBeFalse();
+        } finally {
+            $db->rollBack();
+        }
+        expect($authorizer->allows($context, 'runa.audit.read'))->toBeTrue();
+        config()->set('database.connections.permissions_competitor', config('database.connections.pgsql'));
+        DB::connection('permissions_competitor')->table('runa_permissions.user_permissions')->where('permission_id', $permission)->delete();
+        expect($authorizer->allows($context, 'runa.audit.read'))->toBeFalse();
+        ($this->directPermission)('runa.audit.read');
+        expect($authorizer->allows($context, 'runa.audit.read'))->toBeTrue();
+        $db->table('shared.modules')->where('module_id', 'runa.audit')->update(['source_present' => false]);
+        // Same generation is insufficient: current availability must still deny.
+        expect($authorizer->allows($context, 'runa.audit.read'))->toBeFalse();
+    });
+});

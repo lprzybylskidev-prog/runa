@@ -1,5 +1,14 @@
 # Auth module changelog
 
+## 5.0.1 — Unreleased
+
+- Group synchronous admission, eligibility, factor-restriction and session-lifetime
+  settings reads under short registry-locked transactions. Reuse the current
+  admission's user/session locally; recheck every subsequent operation, expiry,
+  revocation and rollback. Public guarded APIs and data remain compatible.
+- Retain the Laravel remember-token column deliberately; Runa's remembered
+  sessions continue to use the tracked operational session.
+
 ## 5.0.0 — Unreleased
 
 - Retain in-progress authenticator enrollment when refreshed actions replace Begin with Confirm. Retain the shared full-page password-confirmation flow.

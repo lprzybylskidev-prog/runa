@@ -69,7 +69,7 @@ composition. Module and guarded API versions are listed separately below.
 | ------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Platform      | 0.7.0, feature          | Platform versioning remains independent of the Admin module version.                                                                                                                                                               |
 | Admin         | 1.0.0, creation release | Requires Audit ^1.0.0, Auth ^5.0.0 and Permissions ^2.0.0; explicit creation-release history follows development 0.2.0.                                                                                                            |
-| Auth          | 5.0.0                   | AuthProfiles API 2.1.0; AuthAdministration API 2.1.0; AuthPolicies API 3.0.0; AuthStepUp API 2.0.0; other current guarded interfaces retain their declared versions. Administrative reads and owning Admin adapters are delivered. |
+| Auth          | 5.0.1                   | AuthProfiles API 2.1.0; AuthAdministration API 2.1.0; AuthPolicies API 3.0.0; AuthStepUp API 2.0.0; other current guarded interfaces retain their declared versions. Administrative reads and owning Admin adapters are delivered. |
 | Permissions   | 2.1.0                   | PermissionsAccess API 2.2.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions.                                                                                            |
 | Audit         | 1.1.0                   | AuditReads API 1.1.0; AuditRecords stays at 1.0.0; the guarded read-only viewer is delivered.                                                                                                                                      |
 | Framework API | 1.0.0                   | New trusted transaction extension; constructor changes remain internal.                                                                                                                                                            |
@@ -167,7 +167,7 @@ the administrative behavior and boundaries.
 The owner approved direct native Auth/Permissions/framework refactoring on
 2026-10-30. The [phased transaction contract](../../architecture/module-transactions.md)
 supersedes the earlier unchanged-API composition proposal. AuthProfiles 2.1.0 and
-PermissionsAccess 2.2.0 ship with independent Auth 5.0.0 and Permissions 2.1.0; standalone
+PermissionsAccess 2.2.0 ship with independent Auth 5.0.1 and Permissions 2.1.0; standalone
 writes have a root boundary, while source composition joins native phases.
 Auth/Permissions require platform >=0.7.0 <0.8.0. Audit ships as independent 1.1.0 with optional guarded read ordering; record signatures remain unchanged.
 The native path and Admin aggregate dispatch are implemented. The first stable

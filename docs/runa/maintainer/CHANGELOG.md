@@ -2,6 +2,15 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## Unreleased — RM-2026-017
+
+- Auth 5.0.1: bound synchronous admission and policy reads without retaining
+  authorization/eligibility decisions. Group trusted permission evaluation and
+  management declaration discovery under their existing registry lock contract;
+  retain current availability, expiry, grants, rollback and reconnect checks.
+- Preserve `runa_auth.users.remember_token` for deliberate Laravel integration
+  compatibility while retaining Runa's operational session/revocation guarantees.
+
 ## [0.7.0] - 2026-11-06
 
 Feature release — RM-2026-016. Core Admin 1.0.0 with source-owned administration, native security/Audit and customer presentation contracts. Backend accepted under the standing owner SIGSEGV/139 exception; retained native failures and interrupted coverage remain disclosed.

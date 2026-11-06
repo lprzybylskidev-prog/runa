@@ -150,6 +150,15 @@ changed architectural/security premise through the applicable roadmap workflow.
    cases for authorization-related changes. Follow the normal verification phase
    rules; this review does not authorize early broad suites or new infrastructure.
 
+The framework's trusted PermissionAuthorizer groups a single decision in a short
+default-connection transaction and anchors the registry lock before nested Auth
+reads. It still rereads current grants and availability for every decision. Internal
+management discovery similarly groups source declaration collection without running
+resource, widget or write handlers. Both retain their existing signatures and private
+runtime ownership; neither is an application extension API or a request-wide cache.
+Auth's [bounded policy reads](../modules/auth/sessions.md#bounded-policy-reads)
+follow the same lock-lifetime rule. No additional request is introduced.
+
 Include frontend request counts and server-to-application payload size in that
 review. Coalesce overlapping read triggers while retaining a trailing invalidation
 for later focus/publication changes. Keep independent prerequisites explicit;

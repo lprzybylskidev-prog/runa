@@ -3,6 +3,7 @@
 namespace Runa\Modules\Auth\Support;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Runa\Modules\Auth\Models\User;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
@@ -58,6 +59,14 @@ final readonly class CredentialPolicy
      * @return list<string>
      */
     public function restrictions(User $user, ?object $session): array
+    {
+        return DB::connection()->transaction(fn (): array => $this->currentRestrictions($user, $session));
+    }
+
+    /** @param SessionRow|null $session
+     * @return list<string>
+     */
+    private function currentRestrictions(User $user, ?object $session): array
     {
         if (! $this->needsFactor($user)) {
             return [];

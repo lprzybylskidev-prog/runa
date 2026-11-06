@@ -295,6 +295,15 @@ Wipe/fresh removes only selected-owner tables in one transactional `DROP TABLE .
 
 Ordinary setup/reopen never runs migrations or seeds. Explicit customer clone initialization and local preparation run the narrow forward platform primitive before native application migrations/DatabaseSeeder; destructive platform commands remain owner-only. External first installation uses the same forward primitive. Forward platform migrations and their repository records run in one PostgreSQL transaction; keep platform migrations transactional and free of external side effects. Required seeds and their `(release_sha, seeder)` completion record in `shared.platform_seed_runs` commit in one database transaction, so failure rolls back both and successful resume skips duplicates. This operational record is neither a source-integrity baseline nor a production-history flag. Customer deployment runs forward Runa migrations/required seeds/module upgrades before application migrations and its explicit DatabaseSeeder, preserving separate histories and both owners' data. Loose platform seeders remain explicitly selectable by owner tooling. See [seeding](../data/seeding.md).
 
+## Laravel authentication compatibility
+
+Auth deliberately retains the nullable `runa_auth.users.remember_token` column
+used by Laravel's Authenticatable contract. Runa's remembered sessions use their
+own tracked operational rows; current non-use does not justify deleting this
+compatibility field. Alternative Laravel authentication integration must still
+preserve Auth's session, eligibility, revocation and security guarantees; column
+presence alone is insufficient. See [Auth sessions](../modules/auth/sessions.md#laravel-remember-token-compatibility).
+
 ## Module settings persistence
 
 The protected `shared.modules` row retains encrypted operational settings and a monotonic nonnegative settings revision across disable/missing/unregister. Null encrypted storage selects validated source defaults. Settings recovery reuses `shared.module_transitions` and its single active-operation constraint, registry generation and availability fence; terminal operations discard private recovery snapshots. Application-owned wipes preserve these platform objects. See [declarative settings](module-framework.md#delivered-declarative-settings); infrastructure credentials/key configuration remain external.

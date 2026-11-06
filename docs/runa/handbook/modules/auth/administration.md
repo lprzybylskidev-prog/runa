@@ -2,7 +2,7 @@
 
 # Auth administration
 
-Auth 5.0.0 supplies source-owned administration declarations and adapters, consumed
+Auth 5.0.1 supplies source-owned administration declarations and adapters, consumed
 by Admin without a reverse backend dependency. Business behavior remains available
 through the owning guarded APIs without Admin. These contracts are delivered with
 platform 0.7.0; the interface versions below are independent of the module version.
