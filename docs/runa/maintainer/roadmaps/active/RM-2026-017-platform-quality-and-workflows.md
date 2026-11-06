@@ -3290,3 +3290,44 @@ processes in a disposable Git fixture, confirms unchanged frontend evidence reus
 and backend-only invalidation, and keeps original native results. Further focused
 fresh-prerequisite checks are recorded with their received result before commit.
 The actual backend event adapter, crash attribution and bounded recovery are next.
+
+### Point-9 native evidence checkpoint and design stop — 2026-11-06
+
+The fresh-prerequisite/resume focused fixtures pass **2 selected, 8 deselected,
+native exit 0, cleanup 0**. Commit `777b07b9` preserves that campaign foundation;
+catalogue/report/closure/recovery integration is still pending, not delivered PASS.
+
+Neutral TestService now reserves an independent backend attempt before native
+execution and preserves its command, JUnit and native/cleanup result. Configured
+PHPUnit case tracing records worker identity, exact case/dataset/filter names and
+preparation/outcome/completion without assertion or exception payloads. It is
+inactive outside the supported attempt lifecycle. No customer retry/acceptance is
+introduced; independent module versions are unaffected by testing infrastructure.
+The public testing guide documents current evidence and its limitations. Existing
+owner/customer instruction products already require honest native results and
+preserved evidence; no new duplicated rule is needed for this neutral checkpoint.
+
+The installed Pest source invalidates the assumed parent adapter seam: handlers
+overwrite --runner, and parent dispatch is sealed before extension bootstrap.
+The first two focused native diagnostics each execute **1 passing test / 5
+assertions but return native exit 1, cleanup 0** because registration in that
+already sealed parent is refused. These failed reports remain untouched.
+Explicitly mark that unavailable parent tracing and keep worker tracing through
+its supported extension API; the same selected native diagnostic then passes
+**1 test / 5 assertions, native exit 0, cleanup 0**. It proves worker events only,
+not actual crash attribution. Remove the ineffective experimental runner override.
+Supported runner fixtures for failure propagation/cleanup pass **2 selected,
+12 deselected, native exit 0, cleanup 0**; the reservation/native-signal fixture
+passes **1 selected, 14 deselected, native exit 0, cleanup 0**. No SIGSEGV was induced or its
+root cause investigated. Scoped runner cleanup removed its worker database and
+preserved the base test/development data; no Docker resources were created.
+
+This changes a significant accepted implementation premise. **Stop the native
+startup/recovery implementation and return to owner discussion**, keeping the
+roadmap active and point 9 open. The concrete
+[adapter design and alternative](../../reviews/RM-2026-017-native-evidence-adapter-design.md)
+explain the installed-source evidence and proposed constrained native startup
+adapter. Asked the owner whether to authorize that adjustment; do not infer
+approval from the prior high-level D-02 decision, elapsed time or the worker
+trace PASS. No output-text 139 heuristic, private reflection, vendor patch,
+alternate scheduler or silent D-02 deferral is implemented.

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import uuid
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -109,6 +110,7 @@ class ScopeResult:
     status: Literal["passed", "failed", "empty", "blocked", "interrupted"]
     exit_code: int
     cleanup_exit_code: int = 0
+    evidence: str | None = None
 
 
 @dataclass(frozen=True)
@@ -119,12 +121,20 @@ class TestService:
     environment: Mapping[str, str]
     report: Callable[[str], None] = print
 
-    def process(self, command: tuple[str, ...], *, source: bool = True) -> int:
+    def process(
+        self, command: tuple[str, ...], *, source: bool = True, evidence: str | None = None
+    ) -> int:
+        environment = dict(self.environment, APP_ENV="testing", TEST_TOKEN="")
+        # Ignore inherited attempt identities; only this locked lifecycle prepares one.
+        environment.pop("RUNA_TEST_ATTEMPT", None)
+        environment.pop("RUNA_TEST_OWNER", None)
+        if evidence is not None:
+            environment.update(RUNA_TEST_ATTEMPT=evidence, RUNA_TEST_OWNER=self.layout.owner)
         return self.runner.run(
             ProcessSpec(
                 command,
                 self.workspace.root / "src" if source else self.workspace.root,
-                dict(self.environment, APP_ENV="testing", TEST_TOKEN=""),
+                environment,
                 stdin=InputMode.INHERIT,
             )
         ).returncode
@@ -258,20 +268,52 @@ class TestService:
             if before:
                 return ScopeResult(scope, "blocked", before)
         cleanup = 0
+        attempt: str | None = None
+        evidence_store: JsonStore | None = None
+        if scope == "backend":
+            attempt = uuid.uuid4().hex
+            attempt_directory = (
+                self.workspace.runtime("tests") / "backend" / self.layout.owner / attempt
+            )
+            evidence_store = JsonStore(
+                StateDirectory(attempt_directory, private=False, anchor=self.workspace.root)
+            )
+            if not any(
+                arg == "--log-junit" or arg.startswith("--log-junit=")
+                for arg in selection.arguments
+            ):
+                command = (*command, "--log-junit=" + str(attempt_directory / "junit.xml"))
+            evidence_store.write(
+                "attempt.json",
+                {
+                    "schema_version": 1,
+                    "owner": self.layout.owner,
+                    "attempt": attempt,
+                    "command": list(command),
+                    "state": "reserved",
+                },
+            )
         try:
             if scope == "e2e":
                 built = self.process(("php", "runa/build/errors/build.php"))
                 if built:
                     return ScopeResult(scope, "blocked", built)
-            status = self.process(command, source=scope != "tooling")
+            status = self.process(command, source=scope != "tooling", evidence=attempt)
         finally:
             if scope == "backend":
                 try:
                     cleanup = self.process(cleanup_command)
                 except (OSError, SafeFailure):
                     cleanup = 127
+        if evidence_store is not None:
+            evidence_store.write(
+                "native.json",
+                {"schema_version": 1, "exit_code": status, "cleanup_exit_code": cleanup},
+            )
         # pytest 5 is a collection/filter failure, never a successful empty scope.
-        return ScopeResult(scope, "passed" if status == cleanup == 0 else "failed", status, cleanup)
+        return ScopeResult(
+            scope, "passed" if status == cleanup == 0 else "failed", status, cleanup, attempt
+        )
 
     def execute(self, selection: Selection) -> int:
         ownership_roots = (
@@ -333,6 +375,7 @@ class TestService:
                                 "status": r.status,
                                 "exit_code": r.exit_code,
                                 "cleanup_exit_code": r.cleanup_exit_code,
+                                "evidence": r.evidence,
                             }
                             for r in results
                         ],

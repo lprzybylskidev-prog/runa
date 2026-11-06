@@ -2,6 +2,24 @@
 
 Tests protect behavior and meaningful regressions. Use feature tests for Laravel/application boundaries and unit tests for isolated logic. Cover success, known validation, authorization, conflicts, cancellation and relevant failure paths; avoid arbitrary coverage goals and tests that mirror implementation.
 
+## Native backend attempt evidence
+
+The supported shared test lifecycle reserves an independent attempt under
+`.runtime/tests/backend/<application|runa>/<attempt-id>` before backend execution.
+It preserves the literal native command, per-process case identity/outcome events,
+native JUnit output and native/cleanup exit results. Runtime configuration,
+assertion values and exception payloads are excluded from the event stream.
+An interrupted reservation without a final native report remains incomplete.
+Reports are not replaced by a subsequent attempt or counted as passing retries.
+
+The PHPUnit extension is inactive outside this lifecycle. In the installed Pest
+parallel parent its event facade is already sealed, so evidence explicitly marks
+parent tracing unavailable; worker events remain separate. Worker completion alone
+does not establish a successful suite or identify a crashed worker. Native exit
+and successful cleanup remain required. The current checkpoint adds no automatic
+customer retry or crash acceptance. Preserve these reports during recovery and
+cleanup, following the owning roadmap's verification timing.
+
 ## Central test layout
 
 All authored suites and their private fixtures live below repository-root `tests`

@@ -4,6 +4,10 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Preserve quality attempts and explicit input proofs; record separate backend
+  attempt/JUnit/worker case evidence without changing native failures. Complete
+  campaign/recovery integration remains pending the point-9 native startup design.
+
 - Keep Vite caches under workspace `.runtime`; invalidate development setup after
   shared/module frontend, registry or native error build changes while preserving
   nondestructive reopen. Add hash-bound RM-016 decision retrieval cases without
