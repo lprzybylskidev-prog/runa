@@ -63,6 +63,18 @@ guidance in the owning roadmap point, and remove superseded implementation. Do
 not add adapters, duplicate models, frozen-signature gates, special execution
 orders or exclusions solely to keep an old interface unchanged.
 
+Owner clarification, 2026-11-06: this applies to corrective architecture as well
+as signature compatibility. Do not add adapters, decorators, startup shims or
+workarounds to preserve an existing Runa implementation or execution path,
+including integrations constrained by third-party tooling. Correct or redesign
+the owning Runa integration, update current consumers and remove its superseded
+path. Judge the design by correct behavior and maintainability, not by retaining
+today's launch sequence or minimizing changes. An external dependency limitation
+must be assessed explicitly; it does not itself authorize an adapter, private
+hook, heuristic or bypass. This does not require renaming/removing existing
+documented public integration entrypoints solely because they are called adapters.
+New dependencies or dependency updates retain their separate approval policy.
+
 This is standing change authorization, not authorization to weaken security,
 ignore business invariants, discard durable data, rewrite published tags/closed
 records or skip roadmap/final verification. New architectural/behavioral/security

@@ -31,6 +31,10 @@ exposed the Admin/hybrid-health transaction premise documented at the end:
 the owner has now approved its exact-call repair design and instructed continued
 implementation. Point 7 is now complete with the reconciliation recorded below;
 point 8 is complete and point 9 is current.
+The latest owner clarification supersedes the proposed point-9 startup adapter:
+correct/restructure the owning Runa test integration without adapters or
+workarounds. Preserving its current startup is not a pre-1.0 requirement; D-02
+and its evidence/security/cleanup invariants remain in scope.
 Gate B remains approved and roadmap lifecycle stays active. The complete
 [renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
 is retained verbatim. Points 1–8 are complete; point 9 is current. Points 2–6 require
@@ -3331,3 +3335,36 @@ adapter. Asked the owner whether to authorize that adjustment; do not infer
 approval from the prior high-level D-02 decision, elapsed time or the worker
 trace PASS. No output-text 139 heuristic, private reflection, vendor patch,
 alternate scheduler or silent D-02 deferral is implemented.
+
+### Point-9 owner clarification — correct the owner, no adapters — 2026-11-06
+
+The owner initially approved the native evidence adapter proposal, then explicitly
+stopped further work and questioned why an adapter was needed before platform
+1.0.0. Clarified that the demonstrated constraint belongs to external Pest/ParaTest,
+not a Runa backward-compatibility requirement. The owner then directed this to be
+recorded and applied: before Runa 1.0.0, use a coherent source-owned correction,
+without adapters or workarounds. The earlier adapter approval is superseded;
+its retained design now clearly identifies the proposal as historical.
+
+Correct or restructure the owning Runa test integration and update current
+consumers/tests/docs. The current startup, internal APIs and class structure are
+not compatibility constraints. Do not layer a startup adapter/decorator/shim over
+that path, preserve an obsolete path in parallel or silently defer D-02. External
+library constraints remain real and must be assessed, but do not authorize a
+bypass, private hook or heuristic. Existing native result honesty, complete
+coverage accounting, bounded retry budgets, cleanup, data protection and customer
+policy separation remain required. Dependency additions/updates retain their
+explicit approval policy. Record the next concrete integration design under this
+standing direction; no repeated permission for necessary Runa API changes.
+
+Synchronize the root owner contract and canonical pre-1.0 release policy, current
+quality specification and changelog. Existing backend skill already routes to the
+owner pre-1.0 rule and needs no copied procedure. Customer instruction products
+remain unchanged: this is owner-only Runa maintenance authority and does not grant
+customers permission to edit protected platform source. Do not remove or rename
+existing supported integration entrypoints merely because their names use
+"adapter"; this decision rejects an adapter/workaround repair strategy.
+
+This checkpoint records the decision only: no runtime/source implementation,
+dependency change, test execution, data operation, release or roadmap closure.
+Point 9 remains open/current; the approved D-01–D03 outcomes remain pending.

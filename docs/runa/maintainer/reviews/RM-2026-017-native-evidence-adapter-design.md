@@ -2,8 +2,18 @@
 
 ## Status and demonstrated constraint
 
-**Proposed; owner decision required before changing native startup.** Point 9
-remains open. D-02 approved bounded recovery through the existing engine; it did
+**Superseded by the owner clarification of 2026-11-06; do not implement this
+startup-adapter proposal.** The owner initially approved it, then stopped work,
+questioned the adapter premise and explicitly directed source-owned correction
+without adapters or workarounds before Runa 1.0.0. Both that initial approval and
+its supersession are retained here. Point 9 remains open; its next design must
+correct/restructure Runa's owning test integration rather than preserve the
+current startup through a shim. See the
+[current owner policy](../workflows/releases.md#pre-10-compatibility).
+
+The remaining proposal and observations are historical discussion evidence, not
+current implementation instructions or an unresolved adapter-approval request.
+D-02 approved bounded recovery through the existing engine; it did
 not approve an alternate backend engine, duplicated scheduling or vendor patch.
 Root AGENTS requires discussion when implementation reveals a significant changed
 architectural/behavioral premise.
@@ -40,7 +50,7 @@ nor interpreting every absent completion as a crash is acceptable. Existing
 standing manual owner disposition remains available only for confirmed native
 SIGSEGV evidence; this checkpoint grants no new automatic acceptance.
 
-## Proposed implementation for approval
+## Historical startup-adapter proposal — superseded
 
 Keep TestService, its supported owner command, selection, suite lock, worker guards,
 cleanup and native return codes. Add a small development-only PHP **startup adapter**
@@ -79,7 +89,7 @@ extension plus `--runner` decoration can observe the existing Pest parent. It ma
 require a deliberately version-bound startup composition instead. Approval would
 authorize developing that seam, not bypassing any refusal if it proves unavailable.
 
-## Alternative within the unchanged startup boundary
+## Historical unchanged-startup alternative — not selected
 
 Retain the current native launch and neutral worker events, add separate supported
 selected-case discovery, and expose only coverage plus explicit unknown crash
@@ -97,6 +107,9 @@ reports are a separate checkpoint, with no automatic recovery enabled. Both owne
 and application entrypoints retain native failure behavior. The experimental
 unused runner decorator was removed rather than shipping an ineffective override.
 
-The requested decision is whether to authorize the constrained native startup
-adapter above, or retain startup and defer the unavailable automatic D-02 portion.
-No release, full suite, image build, reset, dependency or policy exception follows.
+The earlier adapter/deferral choice is superseded. The owner directed a coherent
+correction of the owning Runa test integration; preserving the current startup
+is not a requirement, and D-02 is not silently deferred. No startup adapter was
+implemented. Existing neutral worker evidence remains partial evidence, not
+proof of complete parent crash attribution. No release, full suite, image build,
+reset, dependency or policy exception follows.

@@ -27,6 +27,14 @@ adding adapters, duplicate APIs or execution workarounds solely to preserve old
 interfaces. An independent Core module's 1.x version does not override this
 platform-development decision.
 
+For corrective work before platform 1.0.0, do not introduce adapters, decorators,
+startup shims or workarounds to preserve the current implementation or execution
+path, including around dependency integrations. Correct or redesign the owning
+Runa integration and update its current consumers. An external dependency's
+limitation is a constraint to assess, not permission to add an adapter or bypass.
+Follow the canonical owner policy below; significant new premises and dependency
+changes still require their applicable discussion or approval.
+
 Assess and record module/API versions honestly. This authorization does not waive
 security/business invariants, data protection, roadmap discussion of significant
 new architectural/behavioral assumptions, or final verification. Published tags

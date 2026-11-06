@@ -476,6 +476,13 @@ Point-9 pre-code design, approved D-01–D-03 execution scope. This section reco
 **planned, not yet delivered** interfaces until the point's completion record.
 It does not change command availability or current release acceptance by itself.
 
+Owner clarification, 2026-11-06: implement point 9 by correcting or restructuring
+the owning Runa test integration. The current native startup sequence is not a
+compatibility requirement. The separate startup-adapter proposal is superseded;
+do not implement it or preserve this path through decorators, shims or workarounds.
+Retain the native engine's truthful results, supported selection, worker isolation
+and cleanup invariants. Follow [pre-1.0 owner policy](../workflows/releases.md#pre-10-compatibility).
+
 Owner signatures retain explicit groups:
 
 ```text
