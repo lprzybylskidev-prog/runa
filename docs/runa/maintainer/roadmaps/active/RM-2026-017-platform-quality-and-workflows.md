@@ -659,7 +659,10 @@ Dependencies below refer to completed points, not approval inferred from time.
     data rebuild or significant new architecture/behavior/security premise stops
     for owner discussion. No blanket module version increments.
 
-- [ ] 6. Correct shared frontend controls, layouts and asynchronous behavior.
+- [x] 6. Correct shared frontend controls, layouts and asynchronous behavior.
+  - **Completed 2026-11-06:** corrected A-08 in the shared notification owner;
+    Chromium locale-only regression passes with stable identity/focus. Consumer
+    coverage and retained contracts are recorded in the point-6 evidence below.
   - **Objective:** repair approved shared causes before migrating view consumers.
   - **Preconditions:** standards, instruction/docs work and any required point-5
     contract changes; relevant frontend/Vue/Tailwind/security skills selected.
@@ -1786,3 +1789,67 @@ instruction products need no new reusable rule; the review records the assessmen
 No Docker resources were created or removed. Application/test data, inherited
 endpoint state, reports and caches remain preserved. Point 6 can now address the
 approved shared frontend A-08 correction under the existing standards.
+
+## Point 6 — Shared frontend notification locale — 2026-11-06
+
+Corrected approved finding A-08 in `AppFormNotifications.vue`: locale is now an
+explicit watcher dependency, and the default invalid summary uses that watched
+value. A mounted notification follows PL→EN→PL through the existing in-place
+replacement path. No controller/form remount, new submit attempt, second queue or
+consumer-specific translation workaround is required. The public props/slot
+signature and caller ownership of explicit error/success strings are retained.
+
+### Component-to-consumer coverage and retained behavior
+
+Source inspection found 38 template instances in 30 Vue consumers; all bind locale.
+The public `@/runa/ui` export resolves directly to the corrected shared owner.
+
+| Area        | Consumers / instances | Disposition                                                                                                                                   |
+| ----------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Shared      | 4 / 4                 | Dialog, preference feedback, table and table preferences retain their local feedback owner and locale binding.                                |
+| Admin       | 6 / 10                | Forms, settings, operations/history and resource table inherit the shared correction.                                                         |
+| Audit       | 1 / 1                 | Administrative detail retains caller-localized read errors.                                                                                   |
+| Auth        | 16 / 20               | Entry, account/security, profile/avatar, secondary emails, history, proof, session shell and administrative consumers inherit the same owner. |
+| Permissions | 3 / 3                 | Assignments, import and definition feedback retain their existing bindings.                                                                   |
+| App         | 0 / 0                 | Minimal scaffold has no direct instance; public consumers receive the corrected export.                                                       |
+
+Gate B selected no other shared layout, table, temporal, modal, loading or
+navigation repair. Their existing contracts remain applicable; this point does
+not manufacture redesign or claim fresh acceptance of unaffected behavior.
+Existing feedback regressions retain persistent errors, repeated dismissed
+attempts, recovery actions and modal focus boundaries. Broader dirty-draft,
+identity/access-loss, empty/conflict, loading, slow-image, mobile/theme and reduced
+motion scenarios remain in their existing owning suites and final/manual
+acceptance scope; this narrow correction changes no such mechanism or styling.
+
+### Grounding, focused evidence and instruction products
+
+Knowledge was current at point start (212 documents / 11,747 chunks). Bounded
+current-intent retrieval was followed by the original component/forms guides,
+frontend selector and Vue reactivity reference. Tailwind/security skills were not
+needed: no styling, guarded operation or security orchestration changed.
+
+Added a public-export regression in `tests/frontend/runa/unit/feedback.test.ts`.
+The supported diagnostic command was
+`python3 tools/maintainer/test-frontend --filter='updates the mounted invalid form notification'`.
+It reproduced the stale Polish title before the correction (exit 1, cleanup 0),
+then passed in Chromium after the correction (1 test passed, 539 skipped;
+exit 0, cleanup 0). It exercises locale-only PL→EN→PL, one persistent notification,
+the same DOM node/message ID, localized close labels and retained keyboard focus.
+This is a targeted behavioral diagnostic, not the complete frontend gate.
+Vite reported a dynamic-import analysis warning in its generated Vitest runner;
+the test completed successfully. Failure screenshot/report artifacts remain
+preserved; no broad suite, build, scanner or infrastructure acceptance ran.
+
+The public component catalogue now documents live default-summary translation and
+caller-owned explicit text. Both instruction products already select that owning
+catalogue and require shared feedback/reuse; no new AGENTS/skill rule or customer
+template change is needed. Forms/loading/motion/replacement guides retain valid
+contracts and need no duplicate locale procedure. No Core module implementation
+or public API signature changed, so independent module versions/changelogs remain
+unchanged. Staged incremental knowledge synchronization and mandatory hooks apply
+to the point commit.
+
+No Docker resources were created or removed. Existing application/test data,
+endpoints, caches and verification evidence remain preserved. Point 7 retains its
+approved per-view review/disposition scope.

@@ -420,6 +420,36 @@ it('shows one top-right form result, keeps failures persistent with recovery act
   await settle();
   expect(document.querySelectorAll('.app-toast')).toHaveLength(1);
 });
+it('updates the mounted invalid form notification on locale-only changes without replacing its identity or focus', async () => {
+  vi.useFakeTimers();
+  const wrapper = mount(FormNotifications, {
+    props: { invalid: true, locale: 'pl' },
+  });
+  await settle();
+  const toast = document.querySelector<HTMLElement>('.app-toast')!;
+  const close = toast.querySelector<HTMLButtonElement>('button')!;
+  const id = wrapper.getComponent(AppToast).props('message').id;
+  close.focus();
+  for (const locale of ['en', 'pl'] as const) {
+    await wrapper.setProps({ locale });
+    await settle();
+    expect(toast.textContent).toContain(
+      locale === 'pl'
+        ? 'Sprawdź zaznaczone pola formularza.'
+        : 'Check the highlighted form fields.',
+    );
+    expect(close.getAttribute('aria-label')).toBe(
+      locale === 'pl' ? 'Zamknij' : 'Close',
+    );
+    expect(document.querySelectorAll('.app-toast')).toHaveLength(1);
+    expect(document.querySelector('.app-toast')).toBe(toast);
+    expect(wrapper.getComponent(AppToast).props('message').id).toBe(id);
+    expect(document.activeElement).toBe(close);
+  }
+  close.blur();
+  await vi.advanceTimersByTimeAsync(10000);
+  expect(document.querySelector('.app-toast')).toBe(toast);
+});
 it('keeps modal form notifications and their recovery buttons inside the active modal focus boundary', async () => {
   const wrapper = mount(Dialog, {
     attachTo: document.body,

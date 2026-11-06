@@ -90,6 +90,10 @@ Viewport clamping and collision fallback remain active.
   error/success strings, invalid boolean, locale (pl default) and attempt (0 default).
   Error wins over success; simultaneous partial success is included as description.
   Errors/invalid summaries are persistent, successes use the standard timeout.
+- Changing locale updates the default invalid summary and viewport/close labels
+  in place, preserving the current notification identity and keyboard focus.
+  Explicit error/success strings remain owned and localized by the caller; changing
+  language requires no form/controller remount or new submit attempt.
 - Bind state owned by the form; increment attempt on each explicit submit so a
   dismissed identical validation failure is reported again. One current result
   replaces its predecessor. The actions slot supplies explicit recovery buttons.

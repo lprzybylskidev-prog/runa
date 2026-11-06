@@ -15,14 +15,21 @@ const props = withDefaults(
 const { messages, show, dismiss } = useToasts();
 let current: string | undefined;
 watch(
-  () => [props.error, props.success, props.invalid, props.attempt] as const,
-  ([error, success, invalid]) => {
+  () =>
+    [
+      props.error,
+      props.success,
+      props.invalid,
+      props.attempt,
+      props.locale,
+    ] as const,
+  ([error, success, invalid, , locale]) => {
     const result =
       error || invalid
         ? {
             title:
               error ||
-              (props.locale === 'pl'
+              (locale === 'pl'
                 ? 'Sprawdź zaznaczone pola formularza.'
                 : 'Check the highlighted form fields.'),
             description: error && success ? success : '',
