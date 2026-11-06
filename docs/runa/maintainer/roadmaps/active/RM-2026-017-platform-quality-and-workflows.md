@@ -21,7 +21,47 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — owner restart decision, 2026-11-06
+## Current execution state — renewed Gate B approved, 2026-11-06
+
+**Gate B: APPROVED — ORDERED IMPLEMENTATION RESUMED.**
+
+The owner explicitly accepted the renewed baseline as adequate for continuing
+with its documented limitations and approved RA-01–RA-07. The complete
+[renewed Gate B decision](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
+is retained verbatim. Point 1 is complete; point 2 is current. Points 2–6 require
+individual renewed reconciliation, approved corrections and completion records;
+their original completion declarations do not restore acceptance automatically.
+Continue in order through the existing implementation, owner manual acceptance
+and final verification workflow. No release preparation or final PASS follows
+from the baseline approval.
+
+- RH-01: retain `runa_auth.users.remember_token` for deliberate Laravel integration
+  compatibility. Current non-use is not sufficient dead-schema evidence. Document
+  the rationale in the owning Auth/database guidance in point 5. Retaining the
+  column does not guarantee arbitrary alternative authentication compatibility;
+  all session, authentication, revocation and security guarantees still apply.
+  No schema removal or migration is authorized for this finding.
+- RH-02: a visible notification translates in place with relevant identity/focus
+  preserved; an explicitly dismissed outcome stays dismissed on locale changes.
+  A deliberate new operation/submission may announce a new outcome. Preserve A-08,
+  add the dismissal PL/EN regression, and keep local notification ownership.
+- RA-01: before code, define the exact owning read scope and transaction/freshness
+  design. Preserve current authorization/availability, transactions/locks,
+  rollback, same-connection invalidation, reconnect, long-lived worker safety,
+  Audit and security. Compare SQL evidence and author meaningful regressions.
+  No persistent authorization/eligibility cache or removed security check; a
+  significant architectural change or unresolved correctness risk returns to
+  the owner before implementation.
+
+The original approval, its withdrawal, restart, renewed evidence and candidate
+commits remain in history. The following restart state is historical and is
+superseded only by this explicit renewed owner decision. Baseline approval is not
+runtime/security/a11y/performance/test-suite certification; all named unknowns
+remain with their assigned implementation/final checks. Feature/0.8.0, manual
+frontend acceptance and final verification remain unchanged. No dependency,
+reset, candidate-version preparation or production deployment approval is inferred.
+
+## Historical execution state — owner restart decision, 2026-11-06
 
 **Gate B: APPROVAL WITHDRAWN — BASELINE AUDIT INCOMPLETE.**
 
@@ -98,13 +138,14 @@ accepted identity and architecture; correct demonstrated problems and complete
 justified gaps in existing capabilities. This is a platform quality milestone,
 not a new business-module programme or a wholesale redesign.
 
-**Active roadmap; baseline audit authorized.** On 2026-11-06 the owner approved Gate A,
+**Active roadmap; renewed Gate B approved, ordered implementation authorized.** On 2026-11-06 the owner approved Gate A,
 including `release_type: feature`, `proposed_version: 0.8.0`, the 12-point planning
 baseline and D-01–D-06 with the D-04 modification recorded below. The initial approval explicitly withheld activation and implementation authorization.
 On 2026-11-06 the owner separately instructed activation and execution of point 1.
-The roadmap is now active on its declared branch. This authorizes the bounded
-baseline audit only; Gate B still requires explicit approval before corrections
-or point 2. Runtime behavior, schemas, configuration and versions remain unchanged.
+The roadmap is now active on its declared branch. Activation initially authorized the bounded
+baseline audit only. The later renewed Gate B decision above now authorizes
+ordered implementation of the accepted scope. Activation itself changed no
+runtime behavior, schema, configuration or version.
 
 ### Scope
 
@@ -602,10 +643,11 @@ assessment and recorded necessary focused evidence. No routine suite/check runs
 are implied by a point ending. Broad tests, static analysis, integration/browser
 matrices, images and scanners remain in point 12. Mandatory hooks stay in force.
 Dependencies below refer to completed points, not approval inferred from time.
-The restart decision above currently suspends points 2–12; prior completion
-statements below are retained as historical records only.
+The renewed Gate B decision restores ordered implementation. Points 2–6 remain
+open until individually reconciled and completed; prior completion statements
+below are retained as historical records only.
 
-- [ ] 1. Comprehensive baseline audit and owner approval (Gate B).
+- [x] 1. Comprehensive baseline audit and owner approval (Gate B).
   - **Objective:** establish the complete source-grounded baseline before changes.
   - **Preconditions:** Gate A metadata/process dispositions, explicit activation,
     correct roadmap branch and refreshed knowledge availability/freshness. Gate A
@@ -2289,3 +2331,27 @@ session/history, caches/model/Qdrant volumes, backups, inherited endpoint recove
 state and every prior report. No reusable instruction/customer rule changes are
 needed for this audit-only record; accepted repairs assess them in their owning
 points. Commit this evidence and stop for the new explicit owner decision.
+
+### Renewed Gate B owner approval — 2026-11-06
+
+The owner explicitly approved the renewed synthesis as an adequate evidence-based
+baseline with its limitations and authorized ordered execution beginning at point 2.
+The complete [decision record](../../reviews/RM-2026-017-renewed-gate-b-decision.md)
+is preserved verbatim. RA-01–RA-07 are approved for their owning points; original
+findings and D-01–D-06 remain. No runtime/security/a11y/performance/test-suite
+certification or automatic reacceptance of points 2–6 follows.
+
+RH-01 is resolved as retention with an architectural compatibility rationale,
+not merely deferred removal. RH-02 is approved with visible in-place translation,
+identity/focus preservation, persistent explicit dismissal across locale changes,
+and deliberate-new-attempt reannouncement. RA-01 requires the exact current,
+locked read-scope design before code and preserves every listed freshness,
+transaction, invalidation and worker invariant. Significant architecture or
+unresolved correctness risks still require owner discussion.
+
+Point 1 is now complete by the owner's decision. Resume point 2, reconcile each
+existing candidate in order, add the approved corrections and preserve meaningful
+tests/evidence. Do not manufacture extra changes or revert correct work. The
+mandatory penultimate owner manual acceptance and final verification stay in place.
+This decision-record commit changes owner roadmap/review records only; current
+root/skill/customer products need no update until their owning reusable changes.
