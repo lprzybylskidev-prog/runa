@@ -82,7 +82,11 @@ the withdrawal does not prepare or publish that version.
 
 The complete owner decision is retained in
 [the restart decision record](../../reviews/RM-2026-017-restart-decision.md).
-The renewed audit is not yet complete. No area is accepted by this state correction.
+The renewed evidence package and proposed point reconciliation are now prepared
+for a new Gate B decision; see the final renewed handoff below and
+[the consolidated report](../../reviews/RM-2026-017-renewed-audit-synthesis.md).
+Point 1 stays open pending that explicit decision. No area or prior implementation
+point is accepted by this state correction or by the agent's report.
 
 ## Overview
 
@@ -2121,3 +2125,167 @@ states. Existing A-08 results are preserved; the dismissed-locale sequence remai
 RH-02. Authentication/activity and preferences POSTs are disclosed native effects;
 method/path alone does not distinguish preference snapshots from writes. No
 account, definition, access or settings Save/Apply was submitted.
+
+### Renewed audit synthesis and new Gate B handoff — 2026-11-06
+
+**New Gate B decision pending.** The
+[consolidated renewed audit report](../../reviews/RM-2026-017-renewed-audit-synthesis.md)
+is the current handoff, together with the detailed renewed evidence above and
+[dialog/parser evidence](../../reviews/RM-2026-017-renewed-dialogs-and-documentation.md).
+It records the actual condition, component/capability and table-consumer inventories,
+inspection methods/states, verified findings, hypotheses, explicit limits,
+prior-work assessment and proposed reconciliation of points 2–12. It supersedes
+neither the withdrawal nor immutable historical results. Point 1 remains unchecked
+until the owner explicitly accepts the renewed report and selected scope.
+
+Inspection used clean candidate `3f7afe51`; runtime source did not change.
+Knowledge was current at entry: 214 documents/11,985 chunks, no drift, missing or
+orphan chunks or interrupted write. Bounded audit retrieval led to original
+component action, database snapshot and module-integration contracts. Relevant
+frontend/Vue/Tailwind/backend/Laravel/PostgreSQL/security/Docker/RAG selectors were
+read; the customer instruction bundle remained product data. No upstream skill,
+new dependency or new architecture was adopted.
+
+#### Additional real observations and their limits
+
+Purpose-scoped Chromium diagnostics reused existing `http://nginx:8080`. Normal
+login and full-page Admin password confirmation retained their normal native
+session/activity/history effects. No business form or administrative command was
+submitted. Browser contexts/processes closed in finally blocks.
+
+- Opened the real Auth module dialog at 1440×1000 and 390×844. Dependencies,
+  operation/task history and diagnostic opener rendered without document overflow.
+  Core correctly omitted optional-module disable/unregister controls. No diagnose,
+  lifecycle, cancellation or recovery command ran.
+- Opened Auth policy's Save snapshot dialog. Its committed-only explanation,
+  initially focused name input and disabled empty-name Save were visually inspected.
+  No snapshot was captured, loaded, deleted or applied.
+- Sorted the real populated Audit table: after settlement `aria-sort=ascending`.
+  Opened the temporal range popup and inspected From/Until and Clear/Cancel/Apply.
+  No range was applied. At 390 px the actual horizontal scroll region measured
+  client 298/content 1,986 px with no document overflow. This establishes a scrollable
+  region, not complete pinned-header/row/export acceptance.
+- Inspected real Audit detail. A diagnostic searching for a `Rozwiń` button was
+  inappropriate: ValuePreview uses a `Pokaż wszystko` link. Zero matches must not
+  become evidence that long-value expansion is absent or correct. Long JSON stays
+  a distinct final scenario.
+- Repeated the exact creation → close → user detail → nested copy/Security sequence
+  with response metadata. A creation-section GET containing a selected public_id
+  returns 422 and produces the visible generic failure. RA-05 below replaces
+  RH-03's unexplained status for this reproduced sequence; it does not establish
+  the cause of every historical toast.
+- At 390 px inspected guest registration/recovery in English/light through the
+  actual guest language control, and native 404 in English/dark. No overflow or
+  pageerror in these samples. SPA query parameters alone did not select its locale;
+  native error query parameters did. No authenticated preference Save occurred.
+  Registration copy revealed RA-07 below.
+
+Evidence: `completion-browser.mjs/json`, versioned first/second observations,
+`completion-*.png`, `guest-completion.mjs/json` and its initial observation under
+`.runtime/artifacts/playwright/RM-2026-017-restart/`. Initial captures before
+settling table loading/enter transitions are preserved as transition samples.
+The corrected observation waits for content and table indicators and allows
+300 ms for the inspected transition. An initial selector timeout is diagnostic
+failure, not a reproduced application defect. No full browser matrix was run.
+
+#### Confirmed additions and refinement
+
+| ID               | Severity / owner / exact evidence                                                                                                                                                                                                                                                                                                      | Impact, correction, effort/risk and proposed stage                                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RA-01 refinement | Medium; ModuleRegistry::snapshot/loadSnapshot, ModuleSettings::reading/currentValues, AccountPolicy/LookupIdentity/CredentialPolicy/PolicyExceptions and guarded admission. Earlier four admitted read-path query counts remain 479/131/112/581.                                                                                       | Independent scalar settings reads open fresh roots; registry invalidation and lock-scoped settings snapshots explain repeated work. Batch current owning inputs or use a demonstrably locked read scope; preserve writes/rollback/reconnect, expiry/revocation and reused-worker freshness. No persistent grant/eligibility cache or claimed latency gain. M/L effort, moderate/high regression risk, point 5 with pre-code design check. |
+| RA-05            | Medium; live creation-close-details sequence issues GET `/api/admin/runa.auth/users/sections/creation` with `kind` and `public_id`, returns 422 and shows a false failure. Same 422 in two observations. useAdminForm retains activated sections across subject selection; CreationSection::read correctly rejects a non-null subject. | Repair the owning active/editor lifetime and analogous create/record/bulk consumers. Do not suppress 422 or weaken backend validation. Add controller and real-consumer regressions. M effort, shared-scope risk, points 6/7. No account mutation needed to reproduce.                                                                                                                                                                    |
+| RA-06            | Low; maintainer quality README manual-selection section calls the current series 0.6.x, while VERSION is 0.7.0.                                                                                                                                                                                                                        | Correct stale present-tense context, retain the agreed 0.10.0 all-group cadence. S effort/low risk, point 4.                                                                                                                                                                                                                                                                                                                              |
+| RA-07            | Low; Auth frontend messages.ts::registerHelp retains administrator approval wording in PL/EN; English narrow capture confirms rendered copy. RegisterAccount and IdentitySettings implement administrator activation through active/registration_activation.                                                                           | Align copy with current activation terminology; this is not evidence of a separate runtime approval gate. S effort/low risk, point 7.                                                                                                                                                                                                                                                                                                     |
+
+RA-02–RA-04 remain confirmed with their preceding evidence. RH-01 remains an
+unproven removal/retention question: inherited Authenticatable exposes the token
+contract, current Runa login uses false and logoutCurrentDevice does not rotate it.
+No benefit or complete removal justification established; retain without migration.
+RH-02 remains source-derived: locale-only watcher execution can recreate dismissed
+invalid feedback. Proposed owner decision is to translate visible feedback while
+preserving dismissal; a deliberate new attempt may announce again. Preserve A-08's
+existing mounted identity/focus correction. No new interaction rule implemented.
+
+#### Complete-scope disposition and retained unknowns
+
+The synthesis maps shared controls and wrappers, complex pickers/files/wizard,
+forms/reconciliation, dialogs/floating layers, feedback, tables/operations/values,
+loading, layout/navigation, identity/assets/status and public module composition.
+It separately covers supplied entry/account/user/Permissions/Audit/Admin/settings/
+App/error/mail families. Grouping is by actual shared behavior, with separate
+unknowns and native scenarios for distinct interactions. Source observations and
+inherited regression assertions never become rendered PASS.
+
+All 46 catalog table names map to owning consumers, including dynamic Permissions
+membership names, separate framework/App ledgers, module lifecycle/work/settings,
+Auth delivery/cursor/cleanup and immutable Audit storage. `table-source-map.json`
+is a literal-reference inventory, supplemented by manual dynamic-consumer tracing;
+it is not a static dead-code proof. Complete catalog columns/indexes/constraints
+are retained in the original inventory. Similar index columns can serve different
+uniqueness/reverse-lookup contracts. No index or column is declared useless without
+query/contract evidence; workload selectivity and migration replay remain unknown.
+
+The engineering review distinguishes backend tests, mounted controllers/components,
+mocked browser transport and real integration reads. Keep distinct boundary coverage;
+no count/label-driven deletion. Add parser code/comment interaction and section
+context-transition coverage after approval. Existing registry-cache tests protect
+locked reuse and same-connection invalidation; RA-01 needs supplied-read correlation.
+Current test/dataset discovery and all complete native results remain final-stage
+obligations, not the historical RM-016 case count.
+
+Current documentation journeys were re-correlated with command registries,
+DevelopmentSetup/Dev Container, guarded module adapters, current shared components,
+catalog/migrations, production Compose/copy allowlists and knowledge corpus/startup/
+indexer. RA-03/RA-06 show why prior repeated per-document “retain” reasons cannot
+certify editorial correctness. Point 4 must replace those reasons with specific
+owning procedure/source checks; no claim of flawless untouched prose is made.
+Nine skill pairs retain distinct positive/negative routing and prior source-scenario
+assessments, with frontend/Vue improvements useful candidates, not independently
+executed agent trials or unconditional GOOD scores. No new skill is justified.
+
+Dependency usage/config ownership, host/container commands, Docker/Dev Container,
+production isolation, source allowlisting/index deletion/pending writes, verification
+state, owner/customer SIGSEGV boundaries, manual acceptance and release/cleanup
+were reassessed through their owning sources. No advisory scan, image/restart/
+installation acceptance or full AI evaluation is claimed. Knowledge freshness is
+source agreement, not factual currency. Live host Docker identities remain unknown;
+the inherited journal is not deletion authority. Final strict security/AI gates,
+real permission/config/state matrices and assistive-technology/contrast limitations
+remain explicit rather than accepted by exclusion.
+
+#### Proposed point reconciliation and owner decisions
+
+Retain useful point-2 standards/selectors, point-3 authoring/checker direction,
+point-4 accurate current-state corrections, point-5 comment corrections and point-6
+A-08. Their earlier blanket completion claims remain withdrawn. After new approval:
+
+- Point 3 repairs RA-04 before relying on general link evidence.
+- Point 4 repairs RA-03/RA-06 and replaces unsupported ledger dispositions.
+- Point 5 includes RA-01; the former no-backend-repair conclusion is superseded by
+  measured read work. Check exact safe scope/lifetime before code; no schema reset.
+- Points 6/7 handle RA-02/RA-05, the proposed RH-02 policy if accepted, and RA-07.
+  Inspect analogous consumers rather than redesign all views or restore retired UI.
+- Point 8 retains development/configuration/knowledge review with no evidenced
+  infrastructure rewrite or dependency upgrade.
+- Point 9 retains D-01–D-03 and exact state/command/input/adapter reliability checks
+  before implementation. Proposed resume commands are still not delivered commands.
+- Points 10–12 retain qualitative/test-value reconciliation, working owner acceptance
+  preparation, explicit penultimate manual acceptance, and complete selected-area
+  final verification/release last. Final groups remain provisional.
+
+**Requested Gate B decision:** accept or amend original retained scope plus
+RA-01–RA-07 and the point reconciliation; accept RA-01's correctly locked owning
+read-scope boundary subject to its pre-code check; decide RH-02's dismissal rule;
+accept or require additional evidence for the explicit audit limits. Defer RH-01
+removal for absent benefit/contract justification. Gate A feature/0.8.0 is unchanged
+and needs no reconfirmation. No dependency, reset, candidate-version preparation
+or production deployment is requested. The agent does not approve this handoff.
+
+Only owner audit records changed. No implementation repair, broad suite, quality
+graph, scanner, image build or SIGSEGV investigation ran. All diagnostic browser
+processes/contexts closed; evidence remains under `.runtime`. Removed containers,
+networks, tags and volumes: none. Preserve application/base test data, normal
+session/history, caches/model/Qdrant volumes, backups, inherited endpoint recovery
+state and every prior report. No reusable instruction/customer rule changes are
+needed for this audit-only record; accepted repairs assess them in their owning
+points. Commit this evidence and stop for the new explicit owner decision.
