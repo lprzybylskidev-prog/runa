@@ -1919,3 +1919,174 @@ to the point commit.
 No Docker resources were created or removed. Existing application/test data,
 endpoints, caches and verification evidence remain preserved. Point 7 retains its
 approved per-view review/disposition scope.
+
+## Renewed point 1 — Audit execution ledger — 2026-11-06
+
+**In progress; not a new Gate B report or an acceptance declaration.**
+The restart baseline is commit `e336cf5f`, retaining implementation through
+`e9f866d8`. The initial file/hash inventory is
+`.runtime/artifacts/playwright/RM-2026-017-restart/source-inventory.json`, SHA-256
+`b1c37f22ac1e4bbdc76d6eda897d66e2e9b601b638607affb3d1dedc158f0314`.
+It includes 2,115 tracked paths, initially marked pending renewed disposition;
+this is a scope census, not evidence those paths were inspected. Generated/vendor
+content is excluded from first-party inventory; authored configuration, locked
+manifests, fixtures, public APIs and trusted tooling remain included. Historical
+records are evidence and must retain their bytes.
+
+### Area inventory and completeness obligations
+
+| Area / census grouping                                  | Current renewed status                                                     | Required disposition before completion                                                                                                                                                                                            |
+| ------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend: 353 resource/module files                     | Partial source and real-browser inspection                                 | All Vue components, composables, public exports, supplied/default/replacement views, CSS/assets and supporting modules mapped to behavior groups; shared consumers and distinct complex interactions; risk-based rendered states. |
+| Backend/config/dependencies: 844 files                  | Pending renewed capability mapping                                         | App, Foundation, HTTP, Core, module framework, settings, work/events, storage, logging, console, queue/scheduler and public/trusted/private contracts, with actual consumers and refusal/transaction boundaries.                  |
+| Database: 46 migration files                            | Catalog inventory obtained; consumer review pending                        | Every current table/column/index/constraint and migration mapped to purpose and real read/write/cleanup consumers; do not infer obsolescence from age or empty data.                                                              |
+| Backend tests: 130 files                                | Prior claims under review                                                  | Assertions versus requirements, fixtures, failure/rollback/concurrency and isolation, duplication and missing cross-boundary coverage; no broad run.                                                                              |
+| Frontend/E2E tests: 107 files                           | Focused feedback and mocked browser transport source inspected             | Distinguish real application/API integration, fixture rendering, mocked contracts and unit evidence; review meaningful assertions and gaps, not counts.                                                                           |
+| Tooling tests: 98 files                                 | Pending renewed inspection                                                 | Native process modes, evidence validity, isolation/cleanup/error handling, meaningful contracts versus implementation mirrors.                                                                                                    |
+| Owner instructions: 50 files; customer product: 30      | Restart and skill selection inspected; remainder pending                   | All entrypoints/references and negative triggers; authority/constitution and customer boundary; practical task routing, correctness and duplicate rules.                                                                          |
+| Documentation: 184 files                                | Previous per-document dispositions reopened                                | Handbook/App/maintainer journey correctness tied to source; all previous point-4 no-change decisions require adequate renewed evidence. Historical/proposal classification remains separate.                                      |
+| Infrastructure: 21 files                                | Pending source/available runtime inspection                                | Compose/dev/prod stages, Dev Container and native Linux transport, data/cache ownership and production isolation. No expensive rebuild or host acceptance.                                                                        |
+| Knowledge: 20 dedicated tooling files plus PHP adapters | Status current at restart; other obligations pending                       | Allowlist/parser/locks/incremental lifecycle/retrieval/goldens, applicability, source freshness, receipt/customer exclusions, independent startup and production absence.                                                         |
+| Tooling/workflows: 183 files                            | Supported test transport and restart workflow inspected; remainder pending | Command registry/transports, setup/update/distribution/release, quality/evidence/resumption and exact SIGSEGV accounting/recovery proposal; no root-cause investigation.                                                          |
+| Root/assets/configuration: 49 files                     | Pending reconciliation with owners                                         | Every remaining first-party tracked path assigned to an above capability or justified exclusion; includes direct dependencies and configuration roots.                                                                            |
+
+These mutually exclusive census buckets are navigation aids. Cross-cutting
+security, localization, accessibility, performance and public consumption require
+explicit capability-level evidence across buckets. No area is complete yet.
+
+### Previous audit completeness reassessment
+
+The earlier root/login observations did not cover the majority authenticated
+frontend. The previous backend review explicitly used bounded source walks, and
+its table-purpose descriptions were partly derived from migration names/guides;
+that does not establish actual consumers for every column/index. The documentation
+ledger repeats broad reasons across many retained documents; the rows alone do
+not show the individual source-to-procedure checks needed here. The existing
+findings and test source remain useful leads, not substitutes for renewed review.
+
+### Access and first authenticated observations
+
+The owner authorized checking the existing account/local access without password
+reset or account creation. Public seeding guidance identifies the private local
+configuration inputs; a local-only process read those configured values directly
+into browser memory. No credentials, cookies, session storage state or response
+bodies were printed or persisted. No account, role, settings or data reset was
+performed. Ordinary login and Admin password confirmation create their native
+session/security/Audit records; these are disclosed audit side effects and remain
+preserved. Repeated exploratory contexts were closed, not silently deleted from
+server history. No production/customer endpoint was contacted.
+
+The existing `http://nginx:8080` development endpoint accepts normal login and
+Admin full-page password confirmation. No guard was bypassed. The earlier absence
+of authenticated inspection was therefore not an established access impossibility.
+Source census and a scoped browser diagnostic replace neither final E2E execution
+nor the owner's manual acceptance.
+
+Artifacts live under `.runtime/artifacts/playwright/RM-2026-017-restart/`:
+`browser.mjs`, `browser-summary.log`, `admin-navigation.json`, `responses.json`,
+page/detail screenshots and read-only catalog inventory/scripts. Initial
+exploratory screenshots containing unsettled placeholders are transition samples,
+not final appearance evidence; later detail captures wait for visible loading
+regions to settle and use viewport captures to avoid full-page modal stitching.
+Browser diagnostics use installed Playwright directly because no supported suite
+selects these live read-only observations without launching its broader mocked
+fixture acceptance. No test suite or application route was added.
+
+| Observation                           | Actual evidence                                                                                                                                                                                      | Remaining inspection                                                                                                                                      |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/app`                                | Existing account enters the minimal application shell after normal login; screenshot inspected. Empty App content is intentional minimal scaffold source, not a missing business module.             | Shell drawer/menu/keyboard and default/replacement composition, loading/error variants.                                                                   |
+| `/account` and four subviews          | Real account/security, preferences, active sessions, login history and account history opened. Recorded headings/query navigation, screenshots and no document horizontal overflow in these samples. | Settled visual review of every captured subview, changes-in-place/draft retention, nested/security operations, alternate role/state and language samples. |
+| `/admin`                              | Guarded full-page password confirmation followed by real module dashboard; normal side navigation and module cards appear after readiness settlement.                                                | Application settings, module detail/settings/health/work/recovery history, slow/failing admission.                                                        |
+| `/admin/runa.audit/history`           | Real populated history table and detail. Detail focus remains inside modal; Escape closes and restores the initiating Details button. Screenshot visually inspected.                                 | Filtering/temporal/JSON expansion, error/empty and alternate presentation samples.                                                                        |
+| `/admin/runa.auth/users`              | Real directory with dense filter/action/table composition and populated user detail. Detail/escape focus observed. Final detail headings include profile/status/emails/policies/access/preferences.  | Creation, native action groups/bulk review, access editor, security tab, independent forms/loading/drafts and other account states.                       |
+| `/admin/runa.permissions/permissions` | Real definition table and read-only detail; detail/escape focus observed. Screenshot visually inspected.                                                                                             | Roles/presets, custom-definition editing, high-cardinality assignments/import and native protected-authority presentation.                                |
+| 390px dark/reduced-motion account     | Actual `data-theme=dark`, no document horizontal overflow; snapshot includes ongoing initial dependency loading.                                                                                     | Settled screenshot and actual focus/drawer/motion behavior; media emulation alone does not certify motion/a11y.                                           |
+
+Recorded API non-success statuses in this observation are guest session 401 and
+Admin admission 403 before explicit password confirmation. They are expected
+boundary observations, not application defects. All other recorded API responses
+in this sample were successful; this says nothing about unvisited endpoints.
+
+### Read-only PostgreSQL inventory
+
+Configured development identity is database `runa`, role `runa`. Catalog queries
+returned 46 ordinary tables plus their 46 sequences, 419 columns, 131 indexes,
+565 constraints and no functions in the selected public/shared/Core schemas.
+No views/materialized views/foreign tables were present in that selected object
+inventory. Every existing `id` column reports identity; all inventoried foreign
+keys explicitly retain update/delete RESTRICT. This is catalog evidence only.
+`database-inventory.json` retains exact definitions. Actual consumers, redundant
+indexes/columns, query growth and migration-source/runtime alignment are still
+open; no schema has a renewed no-change disposition from this inventory alone.
+
+### Existing implementation candidates
+
+| Prior point / commit | Evidence retained                                       | Renewed disposition                                                                                                                                                 |
+| -------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2 / `79c533a0`       | Standards/guidance changes and research references      | Pending source/provenance/usability and rendered correlation.                                                                                                       |
+| 3 / `86b01c65`       | Documentation checker and instruction changes/tests     | Pending parser-contract/fixture/negative-case and product-boundary review.                                                                                          |
+| 4 / `00da181d`       | Current-document edits and per-document ledger          | Pending individual source/procedure correlation; repeated retain reasons are insufficient alone.                                                                    |
+| 5 / `1c01d885`       | Bounded backend/catalog report and two comment changes  | Pending capability/consumer completeness review; no runtime repair implied by reopened status.                                                                      |
+| 6 / `e9f866d8`       | A-08 source change and native Chromium red/green result | Retain case-specific result; full shared-component acceptance withdrawn. Inspect dismissal/repeated-attempt/language behavior as well as mounted-title translation. |
+
+No new correction or renewed completion is authorized by this ledger. Final Gate B
+summary and decisions remain pending completion of the actual audit above.
+
+### Additional renewed observations and candidate findings
+
+The scoped `deep-browser.mjs` observation opened real Auth policy, Permissions
+roles/presets and application settings (`/admin?section=application`). Their
+headings/control inventories and screenshots are retained in `deep-browser.json`.
+Desktop samples reported no document horizontal overflow. The account-name draft
+survived a window-focus refresh and was restored locally without submission.
+The narrow dark/reduced-motion user-directory sample at 390px also reported no
+document overflow. Screenshot collection is not equivalent to visual review of
+every region, all states or every interaction; remaining observations stay open.
+
+The backend, Laravel, PostgreSQL, Docker and RAG skills were selected as their
+owning areas were reached. Boost confirmed installed PHP 8.4, Laravel 13.37.0 and
+PostgreSQL. Version-aware authentication documentation and installed framework
+source distinguish native recaller tokens from Runa's captured session persistence.
+The composed/direct manifests, Compose dev/prod files, Dev Container, Docker
+production-copy/exclusion paths, quality lifecycle/evidence code, native test
+command composition, knowledge source discovery/startup, Auth admission, guarded
+module APIs/operation fences, permission queries and selected persistence/cleanup
+owners were inspected. These are specific source walks; the area table remains
+open until its capability mapping is complete.
+
+| ID / classification                                     | Evidence and practical impact                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | Recommendation / effort / remaining work                                                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| RA-01 / Confirmed repeated read work, Medium            | A scoped local HTTP-kernel observation using normal encrypted browser cookies obtained HTTP 200 for `/api/admin` (479 queries), `/api/runa/auth/profile` (131), `/api/runa/auth/security` (112), and `/api/admin/runa.auth/users` (581). Admin bootstrap repeated the generation SELECT 165 times and the full registry snapshot's three SELECTs 36 times each. Directory repeated settings-revision and single-subject policy-exception templates 56 times each, plus the user-public-ID lookup 46 times. This is substantial repeated work on supplied read paths, missed by the earlier bounded no-repair disposition. | Trace/batch owning read inputs and reuse only a demonstrably current, correctly locked evaluation scope. Preserve revocation, settings/health expiry, write fences and reused-worker freshness; no persistent permission cache. Medium/large effort; architecture details and analogous consumers require further inspection before the Gate B proposal. Counts do not establish row-dependent N+1 or FPM latency. |
+| RA-02 / Confirmed source-to-guidance inconsistency, Low | `AppWizard.vue`'s action wrapper has `border-t border-line pt-5`; the canonical forms guide's container/field section explicitly requires spacing without a horizontal separator above form actions. Shared `AppForm` follows that rule.                                                                                                                                                                                                                                                                                                                                                                                  | Reconcile Wizard's common action presentation with the accepted standard; small effort. Source contradiction established; an actual rendered Wizard consumer remains required before claiming a visual reproduction. No correction made.                                                                                                                                                                           |
+| RH-01 / Retention hypothesis, Low if confirmed          | `runa_auth.users.remember_token` exists. Repository search found only null assignments in owning credential/lifecycle changes and an inherited Authenticatable trait. `AuthenticateSession::login` explicitly calls Laravel login with `false`; Runa persistence uses SessionStore and SessionPersistence.                                                                                                                                                                                                                                                                                                                | Check the complete framework/operator/customer contract before proposing removal or explicit retention. Do not delete a credential boundary from an identifier search alone. No column or clearing write changed.                                                                                                                                                                                                  |
+| RH-02 / Behavioral hypothesis, severity pending         | Adding locale to the A-08 watcher also invokes the existing `show()` branch if the notification was dismissed while invalid state remains true. The retained regression covers a mounted notification, not dismissed feedback.                                                                                                                                                                                                                                                                                                                                                                                            | Determine/render the intended dismissal-versus-new-attempt behavior on language change; preserve original A-08 red/green result and avoid reverting a working mounted-title fix. No new defect/interaction decision is asserted yet.                                                                                                                                                                               |
+
+`query-observations.json` preserves SQL templates/counts and database-only timings,
+without bindings, credentials, session cookies or response bodies. The diagnostic
+uses the actual Laravel HTTP middleware/controllers with the existing authenticated
+session, in a local CLI kernel rather than Nginx/PHP-FPM. It performs four selected
+GETs, not a benchmark, full test or exhaustive performance audit. Native session
+processing may perform its normal session-file updates. The first transport
+attempt passed URL-encoded browser cookies without PHP's normal cookie decoding
+and was refused with 401; retained separately as
+`query-observations-unadmitted.json`. It is not authenticated-path evidence. The
+corrected diagnostic applies ordinary cookie decoding and the same guards; all
+four admitted results above are 200. No guard, account state or runtime source
+was modified to obtain them.
+
+Source correlation for RA-01 includes `MaintenanceState::reasons`,
+`ModuleAvailability::statuses`, `ModuleRegistry::snapshot/loadSnapshot`,
+`OperationGuard::enter/assertCurrent`, Auth `AccountPolicy::principal`,
+`Administration::users`, `ResolvePermissions::allows`, `CredentialPolicy` and
+`PolicyExceptions::values`. `UserDirectory` projects selected rows without an
+obvious per-row PHP lookup loop; therefore the current observation must not be
+misreported as proven row-count N+1. Distinguish repeated admission/declaration
+checks from row projection before selecting a repair.
+
+Test-quality inspection has also established a boundary requiring explicit
+coverage accounting: `auth-entry.spec.ts`, `auth-account.spec.ts` and
+`admin-shell.spec.ts` use browser route fulfillment for Auth/Admin API responses.
+Their UI assertions remain valuable; they do not prove real backend/browser
+integration. The present live observations add that missing evidence for visited
+reads only. Whole-suite redundancy/gaps and other real integration owners remain
+unreviewed; no test deletion or new test policy is proposed from this sample.
