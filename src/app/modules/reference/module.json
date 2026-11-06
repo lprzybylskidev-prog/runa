@@ -4,7 +4,7 @@
   "kind": "optional",
   "version": "0.3.0",
   "platform": ">=0.7.0 <1.0.0",
-  "framework_api": "^1.0.0",
+  "framework_api": "^1.1.0",
   "name": {
     "pl": "Modu\u0142 referencyjny",
     "en": "Reference module"

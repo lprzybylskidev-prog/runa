@@ -4,6 +4,8 @@ namespace Tests\Fixtures;
 
 final class ApiCalls
 {
+    public static ?\Closure $onExists = null;
+
     public static int $constructed = 0;
 
     public static int $executed = 0;

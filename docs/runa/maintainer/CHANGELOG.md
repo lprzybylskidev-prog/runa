@@ -4,13 +4,18 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Add Framework API 1.1.0 exact-call Admin read-health planning, preserving separate
+  on-use checks before the locked read, current grants/proof/Policies and consumed
+  source/expiry/rollback/reconnect evidence. Update the reference and generated
+  customer example without changing Ping/AdminAccess guarded signatures.
+
 - Align the application import rule with the already public Admin facade; keep
   private Admin implementation imports refused.
 
 - Prepare app.reference 0.3.0's read-only Admin page/widget using its existing
   guarded Ping API; align panel feedback/read retention and document customer
-  capability reproduction. Native integration is pending the documented health
-  admission design decision. Keep optional development-only source and stored data.
+  capability reproduction. Native integration uses the owner-approved exact-call health preparation; final
+  runtime/browser acceptance remains pending. Keep optional development-only source and stored data.
 - Auth: clear closed user-dialog state before later reads/bulk editing and use
   administrator activation terminology in Polish and English registration copy.
 

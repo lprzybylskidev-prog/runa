@@ -1,6 +1,7 @@
 # Admin authoring and consumer examples
 
-These examples consume the delivered 0.7.0 contracts. Source and focused
+These examples consume the current source contracts, including additive Framework
+API 1.1.0 read-health planning. Source and focused
 consumer checks do not establish final browser, installation or release acceptance.
 Keep application implementations in `src/app`, application documentation in
 `docs/app` and tests in the owning central `tests` roots. The supplied application
@@ -26,7 +27,9 @@ is at most 48 bytes. It generates a guarded owning `DocumentTools` API 1.0.0,
 handler/proxy/API declaration, ManagementPageProvider/ManagementEntityProvider,
 resource/widget/command adapter, immediate settings provider, custom section Vue
 component, central test and module guide. It registers `apis`, `management` and
-`settings` and adds the guide to the manifest. A module has one settings provider;
+`settings` and adds the guide to the manifest. Its management provider declares an
+exact normalize call for each read/page/widget; the reviewed manifest requires
+framework_api ^1.1.0. The generated business API remains usable without Admin. A module has one settings provider;
 if one already belongs to another class, generation refuses. Extend that provider
 and author declarations deliberately rather than overwrite its validation/recovery.
 Generation retains the module version/dependencies: assess versions, source
@@ -79,9 +82,10 @@ API. Its source dictionary declares `app.reference.reference.inspect`; native Ad
 entry is still required separately. It deliberately has no settings editor or
 foreign-record write. When the example is selected, follow its application-owned
 `docs/app/modules/reference/README.md` for capability reproduction and composition.
-Native reference/Admin acceptance is pending an explicit resolution of hybrid
-health checks inside Admin's read transaction; the example guide records that
-limitation. Do not treat the source declarations as a working native acceptance.
+Reference declares one Ping occurrence through ManagementReadPlanProvider. Native
+focused regressions cover its authorized section/widget and revoked access; final
+runtime/browser acceptance remains separate. See the
+[read-health source contract](declarations.md#read-health-plans).
 The clean scaffold keeps the generator examples below without installing reference.
 
 ## Independent application page

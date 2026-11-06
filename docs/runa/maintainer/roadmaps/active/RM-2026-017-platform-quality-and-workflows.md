@@ -3068,3 +3068,88 @@ approved and the roadmap active. Point 7 remains current/open until its full
 implementation, documentation, necessary focused evidence and commits are done.
 Platform feature/0.8.0 and points 8–12, including owner manual acceptance and final
 verification last, are unchanged. This is not release, dependency or reset approval.
+
+### Point-7 exact-call health prerequisite implemented — 2026-11-06
+
+Implemented the approved source-plan extension and private read coordination;
+point 7 remains open for its remaining supplied-view work/readiness dispositions.
+Framework API **1.1.0** is centralized in private FrameworkApi and used by graph,
+availability, upgrade planning and generation. Admin 1.0.1 and reference 0.3.0
+require ^1.1.0. Audit 1.1.0, Auth 5.0.1 and Permissions 2.1.0 retain their versions
+and compatible ^1.0.0 framework ranges. AdminAccess 1.0.0/Ping 1.0.0 signatures,
+historical upgrade handlers/edges and platform VERSION are unchanged; source-only
+reference admin_showcase/Admin editor_scopes edges already cover these unreleased
+module versions. No dependency, migration or reset was needed.
+
+ManagementReadPlanProvider/ManagementReadCall are framework-owned public source
+extensions; exact signatures/limits/ownership are documented in Admin declarations.
+Private ManagementPages retains binding-to-provider planning without serializing
+provider state into discovery fingerprints. ApiDefinitions shares the existing
+full typed API descriptor validation between guarded invocation and preparation,
+without constructing business implementations. Existing ModuleApis consumers keep
+their public methods; constructor changes remain private framework composition.
+
+AdminRead first selects authorized source/input, prepares separate occurrences
+outside transactions and then reauthorizes source/plan/generation/principal/proof
+inside the existing locked default-connection entry root. Business readers run
+only there. Each prepared occurrence is consumable once; repeated/nested public
+calls get separate evidence/frames. Source/policy/API mapping, expiry, rollback,
+PDO/reconnect and final result fences remain current. Rollback callbacks and a
+weak connection observer work with database events suppressed; unbalanced child
+transactions are refused and unwound to the handler's entry level. Scope state
+always clears in finally. Native mutation admission is not replaced.
+
+Empty-plan reads retain a single entry transaction. Pure declaration/input
+selection is shared only within that same admitted computation; final selection
+is rebuilt after independent preparation. No decision crosses those phases.
+The supplied Core health declarations are empty; their fixed entry/proof calls
+retain the owning guarded checks, including a new final proof-expiry assertion.
+No request-wide authorization/eligibility/health cache was introduced.
+
+Widget refinement required by the existing Permissions contract: an isolated
+reader/plan failure while the owner remains available renders an empty unavailable
+widget and preserves other bootstrap content. A critical owner health failure
+withdraws its effective source grants too, so the widget is omitted. Do not bypass
+owner availability to retain a diagnostic. Source/flag/principal/root authority
+changes still refuse the response. Native regression covers both dispositions.
+
+Focused supported diagnostic:
+
+```bash
+python3 tools/maintainer/test-backend --parallel --processes=1 --filter='validates exact read plans|distinct Admin read occurrences|extra prepared Admin read|invalidates prepared Admin read|guards the reference Admin showcase|generates opt-in Admin consumers|refuses Admin read results'
+```
+
+**10 PASS, 147 assertions, native exit 0, cleanup 0.** This resolves call-count,
+constructor-before-refusal, nested/repeated invocation, time/policy/reconnect,
+suppressed-event rollback, pure plan/target validation, reference section/widget,
+revocation between selection/preparation, widget failure, late proof expiry and
+exact generated-consumer uncertainty. Intermediate failures corrected an identity
+validator inappropriate for repeated call occurrences and test fixtures assuming
+Connection::withoutEvents, a nonexistent counter and an uninstalled Mockery
+package. No dependency was installed; the read-failure fixture uses existing
+Monolog support. Initial widget expectation was aligned to effective-grant
+withdrawal rather than bypassing availability. Native failures remain failures.
+
+The supported runner removed its owned runa_test_test_1 after each diagnostic;
+base runa_test, development data, existing endpoints, reports/model caches remain.
+No Docker resource was created/deleted and no development data update/build/reset
+ran in this prerequisite. Broader backend/frontend/source/version/consumer checks
+remain final obligations; this selected diagnostic is not full suite acceptance.
+
+Synchronized Admin/health/public-boundary and example guides, public allowlist,
+generator, reference/customer reproduction and changelogs. Both backend instruction
+selectors now route exact-call readers to the canonical declarations guide; owner
+and customer products preserve their distinct scope. Root AGENTS needs no duplicate
+rule. No new security exception or workaround was introduced. Commit this cohesive
+prerequisite before continuing the remaining point-7 inventory/readiness work.
+
+The reference's owned Admin section additionally composes the real public
+useAdminForm/AdminSection controller in Chromium, preserving its old readonly
+response while an explicit refresh is pending and binding only that button's busy
+state. Supported targeted command:
+`php src/artisan runa:test:frontend ../tests/frontend/app/unit/modules/reference/presentation.test.ts --filter='reference Admin section'`
+— **1 PASS, 3 skipped, exit 0, cleanup 0**. Existing panel/widget cases remain
+separate retained evidence, not rerun coverage. The generated Vitest dynamic-import
+warning persists without blocking this diagnostic. No runtime-version or asset
+readiness claim follows; the bounded real consumer observation still needs a
+normal nondestructive development preparation and current dev assets/HMR.

@@ -225,6 +225,10 @@ it('generates opt-in Admin consumers with a working independent business API and
         ->and($provider->widgets())->toHaveCount(1)
         ->and($provider->contributions())->toHaveCount(1)
         ->and($provider->entities())->toHaveCount(1);
+    $calls = $provider->readPlan('text', 'widget', new ManagementRead);
+    expect($calls)->toHaveCount(1)->and($calls[0]->method)->toBe('normalize')
+        ->and($calls[0]->module)->toBe($this->id)
+        ->and($source->manifest->definition['framework_api'])->toBe('^1.1.0');
     $settings = new ($prefix.'Definitions\\TextSettings');
     expect($settings->valid(['text_text' => 'Default']))->toBeTrue()
         ->and($settings->valid(['text_text' => "bad\nvalue"]))->toBeFalse();

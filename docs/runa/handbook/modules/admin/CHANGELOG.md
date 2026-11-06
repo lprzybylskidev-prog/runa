@@ -2,6 +2,13 @@
 
 ## 1.0.1 — Unreleased
 
+- Prepare separately declared read-health occurrences outside locks, then retain
+  current entry/proof/authority and owning reads inside the existing transaction.
+  Cover record/page/options/widget adapters, per-call consumption, expiry/source/
+  rollback/reconnect fences and optional widget failure isolation. Guarded AdminAccess
+  1.0.0 signatures and native mutations are unchanged. Framework API 1.1.0 owns
+  the additive source-plan extension.
+
 - End lazy form section activation when selecting another subject, withdrawing
   access or explicitly closing that editor. Prevent creation sections from reading
   an existing subject after an editor-context change. Preserve automatic headless

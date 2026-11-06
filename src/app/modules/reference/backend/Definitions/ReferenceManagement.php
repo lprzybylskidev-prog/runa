@@ -10,13 +10,16 @@ use Runa\Contracts\Modules\ManagementBinding;
 use Runa\Contracts\Modules\ManagementComponent;
 use Runa\Contracts\Modules\ManagementField;
 use Runa\Contracts\Modules\ManagementFieldAccess;
+use Runa\Contracts\Modules\ManagementOptionsRead;
 use Runa\Contracts\Modules\ManagementPage;
-use Runa\Contracts\Modules\ManagementPageProvider;
 use Runa\Contracts\Modules\ManagementPermission;
+use Runa\Contracts\Modules\ManagementRead;
+use Runa\Contracts\Modules\ManagementReadCall;
+use Runa\Contracts\Modules\ManagementReadPlanProvider;
 use Runa\Contracts\Modules\ManagementSection;
 use Runa\Contracts\Modules\ManagementWidget;
 
-final class ReferenceManagement implements ManagementPageProvider
+final class ReferenceManagement implements ManagementReadPlanProvider
 {
     public function permissions(): array
     {
@@ -54,6 +57,12 @@ final class ReferenceManagement implements ManagementPageProvider
     public function contributions(): array
     {
         return [];
+    }
+
+    public function readPlan(string $binding, string $capability, ManagementRead|ManagementOptionsRead $input): array
+    {
+        return $binding === 'inspect' && in_array($capability, ['read', 'page', 'widget'], true)
+            ? [new ManagementReadCall('app.reference', Ping::class, '1.0.0', 'read')] : [];
     }
 
     public function widgets(): array

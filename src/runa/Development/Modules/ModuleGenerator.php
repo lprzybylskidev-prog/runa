@@ -4,6 +4,7 @@ namespace Runa\Development\Modules;
 
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Runa\ModuleFramework\FrameworkApi;
 use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleManifest;
 use Runa\Support\Modules\ModuleIdentity;
@@ -43,7 +44,7 @@ final readonly class ModuleGenerator
             }
             $manifest = [
                 'schema_version' => 1, 'id' => $id, 'kind' => 'optional', 'version' => '0.1.0',
-                'platform' => '^'.$platform['version'], 'framework_api' => '^1.0.0',
+                'platform' => '^'.$platform['version'], 'framework_api' => '^'.FrameworkApi::VERSION,
                 'name' => ['pl' => $module->code, 'en' => $module->code],
                 'description' => ['pl' => 'Moduł '.$module->code, 'en' => 'Module '.$module->code],
                 'dependencies' => ['required' => (object) [], 'optional' => (object) []],
@@ -118,6 +119,9 @@ final readonly class ModuleGenerator
                 }
                 if (! is_array($manifest['docs'] ?? null)) {
                     throw new RuntimeException('Invalid module documentation declarations.');
+                }
+                if ($type === 'admin') {
+                    $manifest['framework_api'] = '^'.FrameworkApi::VERSION;
                 }
                 if ($type === 'admin' && ! in_array($docs.'/'.$name.'Admin.md', $manifest['docs'], true)) {
                     $manifest['docs'][] = $docs.'/'.$name.'Admin.md';

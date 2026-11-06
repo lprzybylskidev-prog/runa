@@ -1,8 +1,19 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import { AdminSection, useAdminLocale } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
 import { Button, Card } from '@/runa/ui';
-defineProps<AdminSectionPresentationProps>();
+const props = defineProps<AdminSectionPresentationProps>();
+const refreshing = ref(false);
+async function refresh() {
+  if (refreshing.value || props.controller.busy.value) return;
+  refreshing.value = true;
+  try {
+    await props.controller.refresh();
+  } finally {
+    refreshing.value = false;
+  }
+}
 const { t } = useAdminLocale();
 </script>
 
@@ -15,8 +26,8 @@ const { t } = useAdminLocale();
       <Button
         intent="inspect"
         size="sm"
-        :busy="controller.busy.value"
-        @click="controller.refresh"
+        :busy="refreshing || controller.busy.value"
+        @click="refresh"
       >
         {{ t({ pl: 'Odśwież', en: 'Refresh' }) }}
       </Button>

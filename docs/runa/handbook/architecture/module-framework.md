@@ -55,7 +55,7 @@ Source roots, manifest files and referenced files must remain inside the owning 
 
 Localized names are at most 160 characters, descriptions at most 2000. Collections are bounded to 256 items per category; class names and relative paths to 256 characters. Required/optional dependency maps must be disjoint, cannot reference self, and Runa modules cannot depend on application modules through either map. A required cycle is invalid; optional integration references never become enablement edges.
 
-Version components are decimal integers without leading zeros, at most nine digits each. Version constraints reuse `Runa\Support\VersionCompatibility`: exact or `=`, `>`, `>=`, `<`, `<=`, `^`, `~` against complete stable triples; whitespace is AND and `||` is OR, maximum 256 characters. Wildcards, partial versions, prereleases and build metadata are unsupported in v1 compatibility evaluation and fail explicitly. Do not use the dev-only transitive Composer SemVer package at runtime. Module versions and framework API versions are independent of platform VERSION; the initial framework API contract is `1.0.0` when delivered.
+Version components are decimal integers without leading zeros, at most nine digits each. Version constraints reuse `Runa\Support\VersionCompatibility`: exact or `=`, `>`, `>=`, `<`, `<=`, `^`, `~` against complete stable triples; whitespace is AND and `||` is OR, maximum 256 characters. Wildcards, partial versions, prereleases and build metadata are unsupported in v1 compatibility evaluation and fail explicitly. Do not use the dev-only transitive Composer SemVer package at runtime. Module versions and framework API versions are independent of platform VERSION; the current framework API contract is `1.1.0`, including additive Admin read-health planning. Existing ^1.0.0 consumers remain compatible.
 
 Every category below is required in `declarations`; an unused category is `[]`, except that `lifecycle` always has exactly one descriptor. Its descriptor classes return typed immutable source definitions, not free-form executable manifest payloads. The `health` category has zero or one `HealthPolicy` descriptor; it groups the module’s source-only checks and operational policy. Source descriptors use category-specific interfaces; unsupported descriptor revisions fail validation. The declaration envelope and boundaries are frozen here; each feature point supplies its detailed PHP types and executable validation before it can be used.
 
@@ -165,7 +165,7 @@ are delivered with platform 0.7.0.
 
 ### Delivered dependency graph and lifecycle previews
 
-`Runa\ModuleFramework\ModuleGraph` takes a `RegistrySnapshot`, the running platform version and framework API version (default `1.0.0`). Records expose validated required/optional maps and platform/framework constraints from the persisted manifest in the same locked snapshot as flags and generation. Planning reads no source files, executes no descriptors and writes nothing.
+`Runa\ModuleFramework\ModuleGraph` takes a `RegistrySnapshot`, the running platform version and framework API version (default `1.1.0`). Records expose validated required/optional maps and platform/framework constraints from the persisted manifest in the same locked snapshot as flags and generation. Planning reads no source files, executes no descriptors and writes nothing.
 
 ```php
 $graph = new ModuleGraph($registry->snapshot(), $platformVersion);
@@ -205,6 +205,13 @@ Normal discovery never revives a tombstone. `ModuleRegistry::registerAgain($id)`
 Each module supplies its check handlers, critical/warning classification, `on_use`/`scheduled`/`hybrid` mode, intervals, timeouts, expiry and applicability to public operations exclusively in source code. Administrators cannot override health policy through the database, HTTP or CLI. The base has no global business health cadence or inferred policy. Modules without special checks are healthy when source, installed data and required conditions are satisfied.
 
 The framework implements shared meanings: expired critical observations become unknown/blocking; warning failures/staleness remain diagnostic. `on_use` runs applicable checks on each public operation; `hybrid` also schedules them. Fresh cached results cannot replace required per-use checks. Single-flight deduplication can join genuinely overlapping checks but cannot silently skip a later operation's check. A guarded nested call is another public operation under the callee's policy. Pure internal helper calls do not create extra public-operation boundaries. Use controllable clocks and bounded execution, without claiming a generic timeout can safely terminate arbitrary PHP/external effects.
+
+Admin transactional reads preserve per-call health evaluation through the
+[read-plan contract](../modules/admin/declarations.md#read-health-plans):
+source-declared occurrences are checked independently before locks, consumed once
+by their exact guarded calls inside the read and fenced again before returning
+values. Repeated and nested calls require distinct occurrences. This does not
+permit reusing one health check for a whole request or skipping a later operation.
 
 Scheduled diagnostics and explicit recovery checks can run while business work is blocked. Required dependency failures propagate effective blocking and safe root-cause paths. Recovery recalculates availability, not administrative state. Infrastructure protection may reject invalid/unbounded configuration; it must not substitute a global policy for module-owned rules.
 

@@ -16,7 +16,7 @@ final readonly class ModuleGraph
     public function __construct(
         private RegistrySnapshot $snapshot,
         private string $platformVersion,
-        private string $frameworkApiVersion = '1.0.0',
+        private string $frameworkApiVersion = FrameworkApi::VERSION,
     ) {}
 
     public function preview(string $intent, string $target): LifecyclePreview

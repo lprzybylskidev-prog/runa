@@ -7,9 +7,9 @@ use {{namespace}}\Management\{{name}}Adapter;
 use Runa\Contracts\Modules\{ApiOperation, ManagementAction, ManagementApiTarget, ManagementBinding,
     ManagementCommandDefinition, ManagementComponent, ManagementContribution, ManagementEntity,
     ManagementEntityProvider, ManagementField, ManagementFieldAccess, ManagementOperation,
-    ManagementPage, ManagementPageProvider, ManagementPermission, ManagementSection, ManagementWidget};
+    ManagementPage, ManagementReadPlanProvider, ManagementRead, ManagementOptionsRead, ManagementReadCall, ManagementPermission, ManagementSection, ManagementWidget};
 
-final class {{name}}Management implements ManagementPageProvider, ManagementEntityProvider
+final class {{name}}Management implements ManagementReadPlanProvider, ManagementEntityProvider
 {
     public function permissions(): array
     {
@@ -79,6 +79,12 @@ final class {{name}}Management implements ManagementPageProvider, ManagementEnti
         // An owned cross-page section: does not modify the host's data or commands.
         return [new ManagementContribution('{{key}}.summary', '{{id}}.{{key}}.{{key}}',
             $this->section('{{key}}_summary', true))];
+    }
+
+    public function readPlan(string $binding, string $capability, ManagementRead|ManagementOptionsRead $input): array
+    {
+        return $binding === '{{key}}' && in_array($capability, ['read', 'page', 'widget'], true)
+            ? [new ManagementReadCall('{{id}}', {{name}}Tools::class, '1.0.0', 'normalize')] : [];
     }
 
     public function widgets(): array

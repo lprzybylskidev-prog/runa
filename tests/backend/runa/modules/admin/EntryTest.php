@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Reference\Contracts\Ping;
+use App\Modules\Reference\Definitions\ReferenceHealthPolicy;
 use App\Settings\PointTenFixture\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Encryption\Encrypter;
@@ -10,7 +11,13 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Monolog\Handler\AbstractProcessingHandler;
+use Monolog\LogRecord;
+use Runa\Contracts\Modules\HealthContext;
+use Runa\Contracts\Modules\HealthDefinition;
+use Runa\Contracts\Modules\HealthPolicy;
 use Runa\Contracts\Modules\ManagementRead;
 use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\Preparation;
@@ -19,6 +26,7 @@ use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Http\HttpErrorPage;
 use Runa\Identity\ApplicationIdentity;
 use Runa\Integration\Core\AdminDiagnostics;
+use Runa\Integration\Core\AdminEntry;
 use Runa\Integration\Core\AdminHttpGuard;
 use Runa\Integration\Core\AdminOperationalAuthority;
 use Runa\Mail\MailBranding;
@@ -2705,11 +2713,83 @@ it('guards the reference Admin showcase independently from public Ping and withd
         $widget = collect($bootstrap['dashboard']['widgets'])->firstWhere('id', 'app.reference.response');
         expect($widget['diagnostic'])->toBeNull()->and($widget['values'])->toBe(['message' => 'reference'])
             ->and($widget['observed_at'])->toBeNull();
+        // Revoke during independent health preparation, after initial selection.
+        app()->bind(ReferenceHealthPolicy::class, fn () => new class($this->adminUser->public_id) implements HealthPolicy
+        {
+            public function __construct(private string $actor) {}
+
+            public function schemaVersion(): int
+            {
+                return 2;
+            }
+
+            public function definition(): HealthDefinition
+            {
+                return (new ReferenceHealthPolicy)->definition();
+            }
+
+            public function check(string $check, HealthContext $context): bool
+            {
+                expect(DB::connection()->transactionLevel())->toBe(0);
+                $permission = DB::table('runa_permissions.permissions')->where('code', 'app.reference.reference.inspect')->value('id');
+                DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->actor)->where('permission_id', $permission)->delete();
+
+                return true;
+            }
+        });
+        $this->getJson($path.'/sections/response?kind=record')->assertNotFound()->assertJsonMissingPath('data');
+        app()->bind(ReferenceHealthPolicy::class, ReferenceHealthPolicy::class);
+        ($this->adminGrant)('app.reference.reference.inspect');
         $permission = DB::table('runa_permissions.permissions')->where('code', 'app.reference.reference.inspect')->value('id');
         DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)
             ->where('permission_id', $permission)->delete();
         $this->getJson($path.'/sections/response?kind=record')->assertNotFound()->assertJsonMissingPath('data');
         $this->getJson('/api/admin')->assertOk()->assertJsonMissing(['id' => 'app.reference']);
+        // Reader failure keeps an available, currently granted widget diagnostic local.
+        ($this->adminGrant)('app.reference.reference.inspect');
+        $logger = Log::channel()->getLogger();
+        $handlers = $logger->getHandlers();
+        $logger->pushHandler(new class extends AbstractProcessingHandler
+        {
+            protected function write(LogRecord $record): void
+            {
+                if ($record->message === 'Reference public API observed.') {
+                    throw new RuntimeException('Controlled read failure.');
+                }
+            }
+        });
+        try {
+            $failedRead = $this->getJson('/api/admin')->assertOk()->json('data');
+            $widget = collect($failedRead['dashboard']['widgets'])->firstWhere('id', 'app.reference.response');
+            expect($widget['diagnostic'])->toBe('admin_widget_unavailable')->and($widget['values'])->toBe([]);
+        } finally {
+            $logger->setHandlers($handlers);
+        }
+        // Critical health failure withdraws the owner's effective grants: omit its widget.
+
+        app()->bind(ReferenceHealthPolicy::class, fn () => new class implements HealthPolicy
+        {
+            public function schemaVersion(): int
+            {
+                return 2;
+            }
+
+            public function definition(): HealthDefinition
+            {
+                return (new ReferenceHealthPolicy)->definition();
+            }
+
+            public function check(string $check, HealthContext $context): bool
+            {
+                expect(DB::connection()->transactionLevel())->toBe(0);
+
+                return false;
+            }
+        });
+        $failed = $this->getJson('/api/admin')->assertOk()->json('data');
+        $widget = collect($failed['dashboard']['widgets'])->firstWhere('id', 'app.reference.response');
+        expect($widget)->toBeNull()->and($failed)->toHaveKeys(['presentation', 'activity', 'owners']);
+
     } finally {
         // Only this test's newly installed reference module in the isolated worker database.
         $id = DB::table('shared.modules')->where('module_id', 'app.reference')->value('id');
@@ -2720,4 +2800,16 @@ it('guards the reference Admin showcase independently from public Ping and withd
         DB::statement('DROP SCHEMA IF EXISTS app_reference RESTRICT');
         DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     }
+});
+
+it('refuses Admin read results after entry proof expires during the locked read', function (): void {
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    expect(fn () => app(AdminEntry::class)->read(function (): array {
+        CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds(301));
+
+        return ['protected' => 'Never returned'];
+    }))->toThrow(OperationRejected::class);
+    expect(DB::connection()->transactionLevel())->toBe(0);
 });

@@ -76,14 +76,13 @@ spinner implementation is needed.
 
 ## Admin integration status
 
-The unreleased 0.3.0 Admin composition is implemented in source but not ready for
-use: a focused native regression confirms that reading Ping inside Admin returns 503. The existing hybrid health policy requires an independent check boundary,
-while Admin invokes the adapter inside its entry transaction. Standalone Ping and
-presentation-component diagnostics do not establish native Admin acceptance.
-Preserve the existing health/security policy; resolution requires an agreed
-platform design. The journey below describes the intended composition and must
-be verified after that repair. No development data/runtime update has been applied
-for this candidate.
+The unreleased 0.3.0 source includes exact-call health planning (Framework API
+^1.1.0). Focused native regressions cover the guarded inspect page/widget and access
+revocation, including withdrawal between selection and health preparation. Health
+checks run before the locked business read; the hybrid policy is unchanged. Final
+development runtime alignment and rendered/manual acceptance remain roadmap work,
+not a claim from these focused tests. No development data update/reset follows
+from source tests alone.
 
 ## Admin customer journey and replacement contracts
 
@@ -122,6 +121,14 @@ security logic. Mount a ModulePage for `app.reference.panel` or a ModuleSlot for
 its declared host in an opted-in application composition. Do not recursively
 mount a host inside its own panel contribution.
 
+`ReferenceManagement::readPlan` returns one ManagementReadCall for Ping::read
+for each read/page/widget invocation. It uses the existing binding targets and
+contains no arguments, results or proof. Customers extending the reader follow the
+[public read-health contract](../../../runa/handbook/modules/admin/declarations.md#read-health-plans),
+including separate occurrences for repeated/nested public calls. A critical owner
+health failure withdraws its effective grants and hides its widget; an isolated
+reader failure while still available shows an empty unavailable diagnostic.
+
 ## Capability reproduction and deliberate exclusions
 
 | Capability                                | Runnable source / reproduction                                                                                                                                                                                                                                                                           |
@@ -142,5 +149,5 @@ Application frontend regressions live in
 `php artisan runa:test:frontend ../tests/frontend/app/unit/modules/reference/presentation.test.ts`
 from the development PHP terminal. They cover retained reads, duplicate requests,
 dismissed localized failures, replacement response markup, cancellation and
-unavailable widget content. Private owner suites additionally exercise native Admin
+unavailable widget content and public Admin section refresh retention/busy feedback. Private owner suites additionally exercise native Admin
 grants and adapter availability; they are not customer dependencies.

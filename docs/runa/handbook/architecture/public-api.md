@@ -113,6 +113,12 @@ keeps its separate Fortify/HTTP provider. Platform boot retains logging, queue
 admission and heartbeat ordering. Composer excludes module source from classmap
 scanning; the guarded module loader remains responsible for module classes.
 
+Framework API 1.1.0 adds public ManagementReadPlanProvider/ManagementReadCall
+source extensions for [Admin read-health preparation](../modules/admin/declarations.md#read-health-plans).
+Implementation planning/discovery, ApiDefinitions, AdminRead and consumable health
+frames remain private. ModuleApis retains its supported resolve/invoke behavior;
+its constructor is framework composition, not an application extension seam.
+
 ## Frontend composition and replacement
 
 Use public `@/runa/ui`, `@/runa/auth`, `@/runa/http`, `@/runa/modules` and their

@@ -96,6 +96,9 @@ final readonly class AdminEntry
                 $current = $this->guard->enter('runa.admin', new ApiOperation('enter', 'runa.admin.enter'));
                 $this->guard->assertCurrent($current);
             } else {
+                // A long read cannot return protected values after entry proof expires.
+                $this->apis->resolve('runa.auth', AuthStepUp::class, '2.0.0')
+                    ->assertActive('runa.admin.enter', 300);
                 $this->guard->assertCurrent($context);
             }
 

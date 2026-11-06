@@ -6,6 +6,7 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Runa\Contracts\Modules\UpgradeDefinition;
 use Runa\ModuleFramework\Data\ModuleDataPaths;
+use Runa\ModuleFramework\FrameworkApi;
 use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\Support\Modules\ModuleRecord;
 use Runa\Support\VersionCompatibility;
@@ -48,7 +49,7 @@ final readonly class ModuleUpdatePlanner
             $manifest = $source->manifest;
             $platform = $manifest->definition['platform'];
             $api = $manifest->definition['framework_api'];
-            if (! is_string($platform) || ! is_string($api) || ! $compatibility->supports($platform, $this->platform) || ! $compatibility->supports($api, '1.0.0')) {
+            if (! is_string($platform) || ! is_string($api) || ! $compatibility->supports($platform, $this->platform) || ! $compatibility->supports($api, FrameworkApi::VERSION)) {
                 throw new RuntimeException('Module platform or framework contract is incompatible.');
             }
             /** @var array{required: array<string, string>} $dependencies */

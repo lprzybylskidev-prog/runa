@@ -10,6 +10,11 @@ For opt-in Admin generation and independent App pages, follow
 singular settings-provider ownership and generated business/presentation boundaries;
 generation never installs modules or grants permissions.
 
+For Admin readers using on-use/hybrid APIs, select the exact-call read-plan
+contract in `docs/runa/handbook/modules/admin/declarations.md#read-health-plans`.
+Keep planning in owned source and consume normal guarded APIs; no private engine
+imports or cached authority/availability substitutes.
+
 Use this skill for backend architecture and implementation choices that are broader than Laravel syntax.
 
 For lists, metadata/bootstrap, authorization intersections and settings/preference

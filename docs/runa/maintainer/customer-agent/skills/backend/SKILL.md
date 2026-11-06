@@ -10,6 +10,11 @@ For opt-in Admin generation and independent application pages, follow
 review exact file overwrite hashes and preserve the owning settings provider.
 Generation does not install modules, assign grants or authorize protected edits.
 
+For Admin readers using on-use/hybrid APIs, select the exact-call read-plan
+contract in `docs/runa/handbook/modules/admin/declarations.md#read-health-plans`.
+Keep planning in owned source and consume normal guarded APIs; no private engine
+imports or cached authority/availability substitutes.
+
 Load for application use cases, transactions, public integrations and failure handling. Read the active application roadmap, query available local knowledge and inspect analogous App code. Project rules override generic advice. Load references/application.md only when needed. Preserve protected platform source.
 
 For lists, metadata/bootstrap, authorization intersections and settings/preference

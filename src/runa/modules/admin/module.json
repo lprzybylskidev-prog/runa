@@ -4,7 +4,7 @@
   "kind": "core",
   "version": "1.0.1",
   "platform": ">=0.7.0 <0.8.0",
-  "framework_api": "^1.0.0",
+  "framework_api": "^1.1.0",
   "name": {
     "pl": "Panel administratora",
     "en": "Administrator panel"

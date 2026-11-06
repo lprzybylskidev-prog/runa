@@ -4,9 +4,9 @@
 
 - Prepare a read-only Admin page and dashboard widget through the existing
   guarded Ping 1.0.0 API, with an explicit inspect grant and replaceable localized
-  presentation. Remove the future-action placeholder. Native integration remains
-  blocked by the existing hybrid-health/Admin read-transaction boundary; source
-  and component diagnostics are not native acceptance.
+  presentation. Remove the future-action placeholder. Use Framework API ^1.1.0 exact-call read-health planning for native section/widget
+  execution without changing hybrid policy. Focused source/native/component
+  diagnostics remain distinct from final runtime/browser acceptance.
 - Align panel spacing/actions and localized outcomes with shared Form/Card/Button
   contracts; retain the last response during refresh, expose response markup and
   cancel unmounted reads. Add customer capability reproduction and regressions.

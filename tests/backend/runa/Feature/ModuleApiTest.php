@@ -14,6 +14,7 @@ use Runa\Contracts\Modules\OperationContext;
 use Runa\Contracts\Modules\Preparation;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Integration\Core\DenyProtectedOperations;
+use Runa\ModuleFramework\Api\ApiDefinitions;
 use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\Api\ModuleHttp;
 use Runa\ModuleFramework\Api\OperationGuard;
@@ -72,7 +73,7 @@ beforeEach(function (): void {
     $this->scope = new OperationScope;
     app()->instance(OperationScope::class, $this->scope);
     $this->guard = new OperationGuard($this->registry, $this->availability, $this->maintenance, new DenyProtectedOperations, app(), $this->scope);
-    $this->apis = new ModuleApis($this->registry, $this->declarations, $this->guard, $this->scope);
+    $this->apis = new ModuleApis(new ApiDefinitions($this->registry, $this->declarations), $this->declarations, $this->guard, $this->scope, app(HealthAdmissions::class));
     $this->http = new ModuleHttp($this->registry, $this->declarations, app('router'), DB::connection());
     app()->instance(ModuleDeclarations::class, $this->declarations);
     app()->instance(ModuleRegistry::class, $this->registry);
@@ -81,6 +82,7 @@ beforeEach(function (): void {
     app()->instance(MaintenanceState::class, $this->maintenance);
     HealthPolicy::$definitions = [$this->id => ['mode' => 'on_use', 'severity' => 'critical']];
     HealthPolicy::$checks = HealthPolicy::$calls = [];
+    ApiCalls::$onExists = null;
     ApiCalls::$constructed = ApiCalls::$executed = 0;
     ApiCalls::$schema = 1;
     ApiCalls::$version = '1.0.0';
@@ -215,6 +217,7 @@ it('enforces disabled state through serialized compiled routes and rejects dupli
     $compiled = unserialize(serialize($routes->compile()));
     app('router')->setCompiledRoutes($compiled);
     $this->getJson($this->url)->assertOk();
+    ApiCalls::$onExists = null;
     ApiCalls::$constructed = ApiCalls::$executed = 0;
     ($this->setState)(['enabled' => false]);
     $this->getJson($this->url)->assertStatus(503)->assertJsonPath('error.code', 'module_unavailable');
@@ -452,3 +455,89 @@ it('rejects null principals on authenticated descriptors and stale cached access
     $this->getJson($this->url)->assertStatus(503)->assertJsonPath('error.code', 'http_contract_changed');
     expect(ApiCalls::$constructed)->toBe(0);
 });
+
+it('prepares distinct Admin read occurrences for repeated and nested guarded calls without checking under locks', function (): void {
+    $admissions = app(HealthAdmissions::class);
+    $api = $this->apis->resolve($this->id, $this->contract, '1.0.0');
+    HealthPolicy::$calls[$this->id] = 0;
+    HealthPolicy::$checks[$this->id] = static function (): bool {
+        expect(DB::connection()->transactionLevel())->toBe(0);
+
+        return true;
+    };
+    $calls = [];
+    foreach (['exists' => 'read', 'describe' => 'read_detail'] as $method => $operation) {
+        $calls[$method] = fn () => $admissions->prepareRead([$this->id, $this->contract, '1.0.0', $method], function () use ($operation): void {
+            expect($this->availability->statuses($this->id, $operation)[$this->id]->available)->toBeTrue();
+        });
+    }
+    $prepared = [$calls['exists'](), $calls['describe'](), $calls['exists']()];
+    expect(HealthPolicy::$calls[$this->id])->toBe(3)->and(ApiCalls::$constructed)->toBe(0);
+    $nested = false;
+    ApiCalls::$onExists = function () use ($api, &$nested): void {
+        expect(DB::connection()->transactionLevel())->toBe(1);
+        if (! $nested) {
+            $nested = true;
+            expect($api->describe($this->publicId)->publicId)->toBe($this->publicId);
+        }
+    };
+    DB::transaction(fn () => $admissions->read($prepared, DB::connection(), function () use ($api): void {
+        expect($api->exists($this->publicId))->toBeTrue();
+        expect($api->exists($this->publicId))->toBeTrue();
+    }));
+    expect(HealthPolicy::$calls[$this->id])->toBe(3)->and(ApiCalls::$constructed)->toBe(3);
+    ApiCalls::$onExists = null;
+    expect($api->exists($this->publicId))->toBeTrue()->and(HealthPolicy::$calls[$this->id])->toBe(4)
+        ->and(DB::connection()->transactionLevel())->toBe(0);
+});
+
+it('refuses an extra prepared Admin read occurrence before constructing its implementation and clears the failed scope', function (): void {
+    $admissions = app(HealthAdmissions::class);
+    $api = $this->apis->resolve($this->id, $this->contract, '1.0.0');
+    $call = $admissions->prepareRead([$this->id, $this->contract, '1.0.0', 'exists'], function (): void {
+        expect($this->availability->statuses($this->id, 'read')[$this->id]->available)->toBeTrue();
+    });
+    expect(fn () => DB::transaction(fn () => $admissions->read([$call], DB::connection(), function () use ($api): void {
+        expect($api->exists($this->publicId))->toBeTrue();
+        $api->exists($this->publicId);
+    })))->toThrow(OperationRejected::class);
+    expect(ApiCalls::$constructed)->toBe(1)->and(ApiCalls::$executed)->toBe(1);
+    expect($api->exists($this->publicId))->toBeTrue()->and(ApiCalls::$executed)->toBe(2);
+});
+
+it('invalidates prepared Admin read evidence after expiry policy change rollback or reconnect', function (string $change): void {
+    $admissions = app(HealthAdmissions::class);
+    $api = $this->apis->resolve($this->id, $this->contract, '1.0.0');
+    $call = $admissions->prepareRead([$this->id, $this->contract, '1.0.0', 'exists'], function (): void {
+        expect($this->availability->statuses($this->id, 'read')[$this->id]->available)->toBeTrue();
+    });
+    if ($change === 'expiry') {
+        $this->travel(21)->seconds();
+    }
+    if ($change === 'policy') {
+        HealthPolicy::$definitions[$this->id]['interval'] = 11;
+    }
+    if ($change === 'reconnect') {
+        DB::reconnect();
+    }
+    expect(fn () => DB::transaction(fn () => $admissions->read([$call], DB::connection(), function () use ($api, $change): void {
+        if ($change === 'rollback') {
+            $connection = DB::connection();
+            $events = $connection->getEventDispatcher();
+            $connection->unsetEventDispatcher();
+            try {
+                DB::beginTransaction();
+                DB::select('SELECT 1');
+                DB::rollBack();
+            } finally {
+                $connection->setEventDispatcher($events);
+            }
+        }
+        $api->exists($this->publicId);
+    })))->toThrow(OperationRejected::class);
+    expect(ApiCalls::$constructed)->toBe(0)->and(ApiCalls::$executed)->toBe(0)
+        ->and(DB::connection()->transactionLevel())->toBe(0);
+    $this->travelBack();
+    unset(HealthPolicy::$definitions[$this->id]['interval']);
+    expect($api->exists($this->publicId))->toBeTrue();
+})->with(['expiry', 'policy', 'rollback', 'reconnect']);

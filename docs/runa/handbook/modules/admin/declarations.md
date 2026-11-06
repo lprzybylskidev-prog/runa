@@ -215,6 +215,74 @@ entirely; read-only/unknown submitted keys are refused, never silently ignored.
 Sensitive fields expose `{set:boolean}` only and never a stored secret. Required
 participation becoming unavailable blocks Save; independent pages remain usable.
 
+<a id="read-health-plans"></a>
+
+## Read health plans — Framework API 1.1.0
+
+Framework-owned public source extensions live in `Runa\Contracts\Modules`:
+
+```php
+interface ManagementReadPlanProvider extends ManagementPageProvider
+{
+    /** @return list<ManagementReadCall> */
+    public function readPlan(string $binding, string $capability,
+        ManagementRead|ManagementOptionsRead $input): array;
+}
+final readonly class ManagementReadCall
+{
+    public function __construct(public string $module, public string $contract,
+        public string $version, public string $method) {}
+}
+```
+
+Trusted module authors implement this optional provider in owned backend definitions
+under existing `declarations.management`. Independent App providers use the same
+interface through frozen AdminRegistry registration. Select framework_api ^1.1.0
+when using it. This is metadata planning, not a new business API or HTTP input.
+The existing ManagementPageProvider and guarded AdminAccess 1.0.0 signatures stay
+supported; handlers without a plan retain reads that need no on-use preparation.
+
+The binding belongs to that provider. Capability is read, page, options or widget;
+only options receives ManagementOptionsRead. Return a list of at most 128 exact
+public invocation occurrences in execution order. Duplicates are separate calls,
+each with its own health evaluation. Every tuple must match that binding's declared
+ManagementApiTarget. Plans contain no arguments, results, credentials, callback or
+proof. Planning is pure and input-based: never execute a business handler/API, IO
+or mutations from readPlan. An unplanned/excess health-sensitive guarded call is
+refused before its implementation runs; there is no wildcard or implicit guess
+from a binding's other methods. Include nested public calls that require on-use
+checks; ordinary owning private helpers create no additional public invocation.
+
+Admin first admits current entry/proof/section/fields and validates input in a
+short transaction, selecting source metadata without constructing the business
+handler. It ends that transaction, prepares applicable on-use/hybrid checks for
+separate occurrences, then reenters its existing locked default-connection root.
+The principal, source/plan/generation, current grants and password proof are checked
+again. Real reads and owning record Policies execute under those locks. Health
+checks never execute inside that transaction. Each occurrence is consumable once;
+a nested call cannot borrow its parent's evidence. Expiry, policy/source/API mapping,
+rollback and reconnect fences remain current, including the final response fence.
+No authorization/eligibility result or health admission survives the read.
+Without a nonempty plan or plan error, Admin keeps the original single entry
+transaction. Selected source declarations and input/field selection are reused
+only within that locked computation, never across preparation phases or requests.
+A final entry-proof check also refuses results when proof expires during a read.
+
+Widget plans are separate: a reader/plan failure retains that currently authorized
+widget's unavailable diagnostic and empty values without failing unrelated bootstrap
+content. If critical health withdraws the owner's availability, Permissions also
+withdraws its effective source grants; omit that widget entirely. Do not bypass
+availability to show protected metadata. Hidden/unavailable owners retain independent
+scheduler/CLI recovery; read planning does not load them or perform broad diagnosis.
+
+The private coordinator is `Runa\Integration\Core\AdminRead`; source/API resolution
+and consumable health frames stay under ModuleFramework. Customers implement the
+public plan and use normal guarded APIs, never these private engines. Native
+mutation health admission, independent writers, aggregate Save, entry advertisement
+and metadata-only pages retain their owning protocols. Post-write outcome projection
+only projects supplied results; a later data reread uses this guarded read path,
+without replaying the write.
+
 ## App registration and guarded Admin API
 
 AdminAccess reads, independent command/previewCommand, native aggregate preview/save

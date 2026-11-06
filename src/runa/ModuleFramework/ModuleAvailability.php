@@ -58,7 +58,7 @@ final readonly class ModuleAvailability
                     $blocked = true;
                     $reasons[] = new GraphBlocker('transition_fenced', [$id]);
                 }
-                foreach ([[$record->platformConstraint, $this->platformVersion], [$record->frameworkApiConstraint, '1.0.0']] as [$constraint, $version]) {
+                foreach ([[$record->platformConstraint, $this->platformVersion], [$record->frameworkApiConstraint, FrameworkApi::VERSION]] as [$constraint, $version]) {
                     if (! (new VersionCompatibility)->supports($constraint, $version)) {
                         $blocked = true;
                         $reasons[] = new GraphBlocker('runtime_version', [$id]);

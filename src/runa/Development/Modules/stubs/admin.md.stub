@@ -43,3 +43,11 @@ registration, atomic participation, testing and limitations.
 Run the generated owning test using `{{test_command}}`. Add application-specific
 record-policy, denial, dirty-draft, rollback and rendered replacement scenarios
 when extending the example. Delivery/update must preserve these application files.
+
+
+The source provider implements ManagementReadPlanProvider (Framework API ^1.1.0).
+It declares one normalize invocation for each record/page/widget read. If you add
+nested or repeated health-sensitive API calls, update its exact input-based plan
+and targets. Health preparation runs before the locked Admin read; grants, proof,
+record Policies and current source/expiry still apply inside it. Follow
+`docs/runa/handbook/modules/admin/declarations.md#read-health-plans`.

@@ -52,6 +52,8 @@
     "Runa\\Contracts\\Modules\\ManagementPermission",
     "Runa\\Contracts\\Modules\\ManagementProvider",
     "Runa\\Contracts\\Modules\\ManagementRead",
+    "Runa\\Contracts\\Modules\\ManagementReadCall",
+    "Runa\\Contracts\\Modules\\ManagementReadPlanProvider",
     "Runa\\Contracts\\Modules\\ManagementRecord",
     "Runa\\Contracts\\Modules\\ManagementResourceReader",
     "Runa\\Contracts\\Modules\\ManagementReview",

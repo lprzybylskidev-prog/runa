@@ -138,6 +138,14 @@ final class ModuleHealth
         }
     }
 
+    /** Pure source identity for a final prepared-read fence; executes no check. */
+    public function fingerprint(ModuleRecord $record): string
+    {
+        $definition = $this->policies->resolve($record)?->definition() ?? new HealthDefinition('none', 'scheduled', []);
+
+        return hash('sha256', json_encode([$record->manifestHash, $definition], JSON_THROW_ON_ERROR));
+    }
+
     private function samePolicy(ModuleRecord $old, ModuleRecord $new): bool
     {
         return $new->registered && $new->sourcePresent && $new->publicId === $old->publicId && $new->manifestHash === $old->manifestHash;
