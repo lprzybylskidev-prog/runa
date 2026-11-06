@@ -36,7 +36,7 @@ and final verification workflow. No release preparation or final PASS follows
 from the baseline approval.
 
 Owner scope amendment, 2026-11-06: explicitly include the supplied reference
-module's Admin presentation alignment in point 7, with its documentation in
+module's visual alignment and modularity showcase completion in point 7, with its documentation in
 points 4/7, shared-consumer review in point 6 and readiness/manual/final acceptance
 in points 10–12. See the dated scope amendment at the end. This does not reopen
 Gate B or authorize new unrelated business capabilities.
@@ -810,17 +810,21 @@ below are retained as historical records only.
     definitions/access contributions; Audit history/details; root/App/reference,
     native error/mail presentation where shared standards apply. Remove justified
     filler in both locales and complete missing meaningful behavior within scope.
-  - **Reference module:** explicitly bring `app.reference` Admin-facing views,
-    contributions and existing example interactions into the current Runa UI/UX
-    contracts. Inventory the real Admin integration and its application panel
-    before editing; distinguish legacy descriptor-only declarations from rendered
-    functionality. Use current public Admin/UI composition, shared feedback,
-    readiness/reconciliation, navigation, action semantics and PL/EN copy. Keep
-    the example development-only and optional; synchronize its README/changelog,
-    relevant test consumers and independent module-version assessment in this point.
+  - **Reference module — customer modularity showcase:** align `app.reference`
+    Admin presentation with current Runa visuals and review its coverage of delivered
+    modularity capabilities. Complete justified missing working examples, including
+    the current metadata-only Admin integration, through existing public contracts.
+    Use the reference module's existing capabilities/data for a coherent example;
+    include documented customer reproduction and meaningful behavior/visual coverage.
+    Review layout, controls, feedback/readiness, desktop/tablet/mobile, PL/EN and
+    light/dark. Necessary module-owned declarations, adapters and frontend work are
+    included; new platform mechanisms or unrelated business features require
+    separate discussion. Preserve optional development-only delivery and data.
   - **Boundaries:** preserve current source-configuration visibility and ordinary
     App versus module options, reviewed bulk effects, source-only health/integrations,
-    Audit read-only history and native owning business rules. No new module/features.
+    Audit read-only history and native owning business rules. No new modules or
+    unrelated business capabilities; the approved reference showcase demonstrates
+    existing delivered platform features.
   - **Acceptance/evidence:** full view/state inventory has corrected or justified
     no-change entries; translations and accessible names are complete; permitted
     filters/sort/page/tab state survives intended navigation without sensitive
@@ -945,11 +949,12 @@ below are retained as historical records only.
     run complete affected-area checks in the failing mode, receive results before
     committing fixes, repeat affected owner acceptance, and resume/revalidate the
     final graph under the delivered approved policy. No stale PASS or skipped gate.
-  - **Reference verification:** include affected reference-module source/runtime,
-    application-owned tests and rendered Admin scenarios through their supported
-    owning entrypoints, plus the real shared prerequisites. An owner-only suite
-    result does not automatically cover application-owned reference tests. Verify
-    the example's optional/development-only delivery boundary where changed.
+  - **Reference verification:** cover the actual changed showcase contracts and
+    visual behavior through their supported owning entrypoints, including relevant
+    application-owned backend/frontend tests and real shared prerequisites.
+    Account for reference coverage separately from owner-only suites. Justify
+    migration, delivery and infrastructure checks by actual changed contracts;
+    a styling-only part does not automatically require them.
   - **SIGSEGV:** preserve native failures, case coverage and cleanup; controlled
     recovery plus separate owner disposition may accept confirmed 139 only. Other
     hard failures remain blocking. Do not restart unrelated valid results, diagnose
@@ -2539,41 +2544,65 @@ page/presentation ownership guidance. The source map is:
 - `docs/app/modules/reference/README.md` and `CHANGELOG.md`, with central
   application-owned reference tests: owning example documentation and evidence.
 
-Point 7 must establish the real current Admin entrypoints and compare every
-existing reference view/contribution with the accepted shared patterns. Align the
-existing example behavior with current supported Admin/UI contracts, including
-any necessary replacement of legacy declaration/presentation wiring. Record the
-owner/audience/entrypoint and complete supported signatures before changing them;
-consume guarded public adapters rather than private platform internals. A genuinely
-new business capability or significant unresolved architectural premise returns
-for discussion; ordinary conformity work is already authorized by this request.
+The owner first clarified that visual alignment is the main immediate concern,
+then explicitly authorized completing missing examples: the reference module must
+show customers Runa's modularity capabilities. The effective scope includes both
+current visual conformity and justified functional completeness of the example.
+The intermediate styling-only restriction is superseded. Metadata saying "future
+action" remains an incomplete demonstration, not delivered functionality.
 
-Review page hierarchy/breadcrumbs, layout/density, controls and action meaning,
-form-wide versus field feedback, initial/refresh/error/empty states, cancellation,
-dirty state where applicable, permission/configuration visibility, keyboard/focus,
-PL/EN and both themes at usable desktop/tablet/mobile sizes. Do not add fake forms,
-filters, counts, generic settings/health editors or empty sections merely to make
-the example resemble a larger business module. Keep technical policy source-owned,
-current security/session orchestration shared and the shipped App scaffold minimal.
+Point 7 first creates a capability-to-example ledger against delivered public
+modularity/Admin guides and actual reference source. For each capability record a
+working runnable demonstration, an intentional source/CLI-only demonstration with
+reproduction, a justified exclusion or a missing example to implement. Cover module
+identity/lifecycle/availability, owned data, guarded API/HTTP, settings, CLI/work/
+scheduling/events, frontend pages/slots and Admin composition. This inventory
+selects useful representative examples; it is not an instruction to reproduce
+all possible framework combinations in one screen.
+
+The already observed concrete gap is `ReferenceManagement`: it supplies action
+metadata with a future-action description and no owned Admin presentation. Add a
+usable module-owned Admin example using current delivered public authoring and
+UI contracts. Reuse the existing reference scenario/data/API where appropriate;
+keep owning validation, permissions and Audit for meaningful mutations. Include
+other demonstrated gaps identified by the ledger when they improve the customer
+showcase. Module-owned declarations, adapters, tests, navigation and presentation
+changes needed for these examples are authorized. Record complete supported
+signatures/ownership and assess independent module versions when contracts change.
+New platform mechanisms, unrelated business domains or significant architectural
+premises still return for discussion before implementation.
+
+Match current Runa layout, spacing/density, typography, colors, borders, control
+sizes/alignment and feedback/loading/empty/error presentation. Review actual
+rendering across desktop/tablet/mobile, Polish/English and light/dark themes, with
+usable focus/keyboard behavior. Demonstrations should form a coherent customer
+journey and preserve the existing example's useful working capabilities.
+
+Keep the example optional and development-only. Technical health/integration
+policy remains source-owned; demonstrate the supported source/CLI contract rather
+than restoring rejected generic editors. Use shared guarded session/security
+orchestration and preserve example data. Do not add decorative/fake functionality
+or silently make the reference module part of every customer application.
 
 ### Owning-point and acceptance mapping
 
-- Point 4 accounts explicitly for the reference README/developer journey and
-  distinguishes today's delivered behavior from planned alignment. Point 7 updates
-  changed examples/signatures/instructions and the module changelog with its code.
-- Point 5 handles only a necessary already-agreed owning contract dependency;
-  point 6 includes reference as an analogous consumer of modified shared controls.
-  Neither treats the example as accepted merely because Core consumers work.
-- Point 7 owns actual Admin/panel conformity, meaningful regressions and independent
-  module/API version assessment. Do not change platform/App/module versions now
-  merely to record this scope amendment.
+- Point 4 accounts for the reference developer journey and clearly distinguishes
+  working capabilities from placeholders. Point 7 synchronizes runnable examples,
+  public signatures, customer reproduction and the module changelog with its code.
+- Point 5 supplies any actual prerequisite from already-approved shared contract
+  repairs; point 6 includes reference as an analogous shared-control consumer.
+- Point 7 owns visual alignment and the approved showcase completion, including
+  module-owned backend adapters/declarations where needed, meaningful regression
+  coverage and independent module/API version assessment. No versions change
+  merely to record this planning amendment.
 - Point 10 prepares a usable opted-in development example with current assets/data,
   preserving existing state through supported operations. Point 11 includes the
   changed reference Admin behavior in the explicit owner handoff, even if a shared
   control already has its representative sample elsewhere.
-- Point 12 selects the actual affected source/runtime and application-owned test
-  scopes plus rendered scenarios and real prerequisites. Complete verification
-  remains last; no broad checks or browser matrix are introduced earlier.
+- Point 12 selects complete checks for actual changed reference backend/frontend
+  contracts and rendered examples, plus real prerequisites. Pure styling does not
+  alone justify database/installation/image acceptance; functional changes receive
+  their actual affected-area checks. Complete verification stays last.
 
 Instruction-product assessment: implementation must assess the public module/Admin
 example guides and customer-facing reference documentation together. This amendment
@@ -2583,3 +2612,24 @@ version, dependency, application data or resource changed for this planning requ
 The prior audit synthesis remains dated evidence; this explicit owner amendment
 supplements its finite scope without rewriting historical findings or claiming
 that the reference Admin views were already rendered/accepted.
+
+### Owner clarification — visual scope, 2026-11-06
+
+The owner first clarified that the reference-module request is primarily visual.
+The amendment was temporarily narrowed to existing-view appearance and responsive
+presentation, preserving functionality. No runtime implementation was made under
+that intermediate interpretation. The subsequent complete-showcase decision below
+establishes the effective scope, including justified missing working examples;
+the point-7 deliverable and acceptance mapping above now reflect that final scope.
+History remains preserved, including initial amendment commit `b4a424e4`.
+
+### Owner clarification — complete customer showcase, 2026-11-06
+
+The owner subsequently clarified that justified missing functionality should also
+be added: reference is the customer's demonstration of Runa modularity. This
+supersedes the intermediate styling-only restriction above. Point 7 now includes
+a source-grounded capability/example inventory and completion of meaningful missing
+examples through delivered public contracts, with visual alignment retained.
+The observed metadata-only Admin declaration is an explicit completion target;
+this does not authorize inventing new platform mechanisms or unrelated domains.
+This planning update changes no runtime, data, dependencies or versions.
