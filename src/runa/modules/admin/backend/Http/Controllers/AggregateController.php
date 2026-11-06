@@ -8,7 +8,7 @@ use Runa\Modules\Admin\Http\Requests\AggregateRequest;
 use Runa\Modules\Admin\Http\Resources\AdminResource;
 use Runa\Support\Modules\Api\ModuleApis;
 
-/** Transport only; native multi-owner execution is supplied by roadmap point 6. */
+/** Transport only; the guarded Admin API coordinates native owning mutations. */
 final readonly class AggregateController
 {
     public function __construct(private ModuleApis $apis) {}

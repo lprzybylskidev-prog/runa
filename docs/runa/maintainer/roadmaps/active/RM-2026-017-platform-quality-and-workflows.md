@@ -629,7 +629,11 @@ Dependencies below refer to completed points, not approval inferred from time.
     historical interpretation; record consolidation map and knowledge move/delete
     obligations. No approval needed for already agreed editorial corrections.
 
-- [ ] 5. Correct approved backend, module and PostgreSQL findings.
+- [x] 5. Correct approved backend, module and PostgreSQL findings.
+  - **Completed 2026-11-06:** retained the Gate B no-business/schema-repair
+    disposition after bounded owner/consumer and database review. Corrected two
+    obsolete source delivery comments (A-09); see the point-5 record and
+    [backend review](../../reviews/RM-2026-017-backend.md).
   - **Objective:** repair demonstrated correctness/security/performance/maintenance
     problems without reconstructing working architecture.
   - **Preconditions:** Gate B approved backend list; points 2–4 standards where
@@ -1737,3 +1741,48 @@ so incremental indexing replaces changed passages without a collection rebuild o
 move/delete recovery. Owning future implementation points must synchronize current
 prose again when behavior/versions change. No Docker resources were created or
 removed; existing development/test data, caches and reports remain preserved.
+
+## Point 5 — Backend, modules and PostgreSQL dispositions — 2026-11-06
+
+The [backend review](../../reviews/RM-2026-017-backend.md) records bounded walks
+through native transaction coordination, Auth/Permissions owners, Admin HTTP and
+aggregate composition, Audit persistence/reads, maintenance/worker identity,
+logging/CLI context and minimal App/reference consumers. Gate B selected no
+backend business/schema repair; this point found no evidence requiring one.
+Existing native owners, guards, proof/eligibility separation, canonical locks,
+optimistic revisions and atomic Audit remain the design. No speculative
+refactoring, cache, index removal or compatibility adapter was introduced.
+
+Added bounded low-severity editorial finding **A-09**: AggregateController's comment
+still described native execution as future roadmap point 6; AuditActorResolver's
+comment described Auth enrichment as future although CoreIntegrationServiceProvider
+already binds AuthAuditActor. Corrected those two owning comments after inspecting
+the actual implementations. No executable behavior, signature, dependency,
+configuration, migration or data changed. Admin 1.0.0, Audit 1.1.0, Auth 5.0.0,
+Permissions 2.1.0 and their independent guarded API versions remain unchanged;
+comment-only corrections require no semantic version/changelog entry. Candidate
+0.8.0 range/version preparation remains with the later release work.
+
+Knowledge was current at point start (211 documents / 11,715 chunks); bounded
+current-intent retrieval was followed by original sources. Boost confirmed the
+installed PHP 8.4 / Laravel 13.37.0 / PostgreSQL context. Read-only catalog
+inspection retained the 46-table baseline, with no public/Admin relation returned.
+Four bounded diagnostics found zero FK RESTRICT, bigint identity, existing
+public_id required/unique or Core cross-schema FK deviations. The review maps
+every catalog table to a retained purpose and distinguishes technical/pivot rows
+from the 19 tables with public_id. These observations do not certify UUIDv7 row
+contents, migration replay, complete index selectivity or runtime concurrency.
+
+Existing regression assertions cover aggregate rollback in both owning Audit
+failure directions, proof rollback, stale revisions, independent lock competition,
+last authority, maintenance heartbeat and context redaction. They remain source
+evidence until the supported complete backend execution in point 12. No duplicate
+comment-text tests, broad suites, scanners, images, installation/update acceptance
+or benchmark were run here. Mandatory formatting/hooks and staged incremental
+knowledge synchronization apply to this commit.
+
+Current public guides already describe the retained behavior correctly. Both
+instruction products need no new reusable rule; the review records the assessment.
+No Docker resources were created or removed. Application/test data, inherited
+endpoint state, reports and caches remain preserved. Point 6 can now address the
+approved shared frontend A-08 correction under the existing standards.
