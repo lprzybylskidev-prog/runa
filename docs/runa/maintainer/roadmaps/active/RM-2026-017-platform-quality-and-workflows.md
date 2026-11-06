@@ -3257,3 +3257,36 @@ configuration map are synchronized; existing owner/customer selectors already
 cover these rules and need no duplicated policy. No module contract/version
 change follows. Preserve all data/reports/caches; no Docker resource was created
 or removed. Point 8 is complete in this commit; point 9 is next.
+
+## Point 9 — Campaign foundation checkpoint — 2026-11-06
+
+**Point 9 remains open.** Before code, recorded the planned complete signatures,
+state/provenance, source declarations, native/coverage/owner separation and bounded
+recovery in the existing quality and command guides. Relevant current/audit local
+retrieval selected the active D-01–D-03 design, whose original section was read;
+knowledge was current after the point-8 incremental refresh.
+
+The first implementation extends the existing QualityService, models and executor:
+explicit validated source/env input declarations, shared harness/lock/runtime
+fingerprints, retained attempts and hashed state/log proofs. Starting another
+execution no longer deletes the previous quality directory. Current native attempt
+state is copied to its own archive, unknown files stay preserved, and a resume
+preview does not modify evidence. Default/unknown/external input boundaries rerun;
+changed graph, source, command, environment or prerequisite proof invalidates reuse.
+Private config values are digested, never serialized. Tampered/missing evidence,
+symlinked paths and substituted in-memory native state are refused.
+
+The same coordinator accepts the internal optional resume argument; catalogue
+activation, public command integration, native report capture, final closure proof
+and backend recovery remain unfinished. Do not advertise a complete supported
+resume or owner crash disposition yet. Reused nodes wait for fresh prerequisites;
+a new mandatory failure blocks them instead of inheriting an earlier PASS.
+No real campaign, complete suite or owner SIGSEGV acceptance ran during this work.
+
+Focused synthetic fixture evidence: the first eight input/archive cases passed
+(native exit 0, cleanup 0); the real service preview/resume case then passed
+(1 selected, 8 deselected, native exit 0, cleanup 0). It uses tiny true/print
+processes in a disposable Git fixture, confirms unchanged frontend evidence reuse
+and backend-only invalidation, and keeps original native results. Further focused
+fresh-prerequisite checks are recorded with their received result before commit.
+The actual backend event adapter, crash attribution and bounded recovery are next.

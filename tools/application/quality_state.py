@@ -28,6 +28,7 @@ class StepRecord(TypedDict):
     started_at: NotRequired[str | None]
     finished_at: NotRequired[str | None]
     duration_seconds: NotRequired[float | None]
+    reused_from: NotRequired[str]
 
 
 class RunRecord(TypedDict):
@@ -45,6 +46,8 @@ class RunRecord(TypedDict):
     started_at: NotRequired[str | None]
     finished_at: NotRequired[str | None]
     duration_seconds: NotRequired[float | None]
+    campaign_id: NotRequired[str]
+    resumed_from: NotRequired[str]
 
 
 def timing(record: Mapping[str, object]) -> None:
@@ -80,7 +83,16 @@ def run_record(value: object) -> RunRecord:
     if decoded.get("status") not in ("running", "passed", "failed", "interrupted"):
         raise ValueError("Invalid quality run status.")
     timing(decoded)
-    for key in ("mode", "roadmap", "branch", "commit", "last_step", "run_id"):
+    for key in (
+        "mode",
+        "roadmap",
+        "branch",
+        "commit",
+        "last_step",
+        "run_id",
+        "campaign_id",
+        "resumed_from",
+    ):
         if key in decoded and not isinstance(decoded[key], str):
             raise ValueError("Invalid quality run identity.")
     if decoded.get("rationale") is not None and not isinstance(decoded["rationale"], str):
@@ -112,5 +124,10 @@ def run_record(value: object) -> RunRecord:
         code = step.get("exit_code")
         if code is not None and type(code) is not int:
             raise ValueError("Invalid quality child exit code.")
+        if "reused_from" in step and (
+            not isinstance(step["reused_from"], str)
+            or not re.fullmatch(r"[a-f0-9]{32}", step["reused_from"])
+        ):
+            raise ValueError("Invalid retained quality attempt identity.")
         timing(step)
     return cast(RunRecord, decoded)

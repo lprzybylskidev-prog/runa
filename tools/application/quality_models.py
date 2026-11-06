@@ -9,6 +9,12 @@ from typing import Literal, NotRequired, TypeAlias, TypedDict, cast
 from tools.core.state import JsonValue, json_value
 
 
+class ReuseInputs(TypedDict):
+    paths: list[str]
+    environment: list[str]
+    always_run: NotRequired[bool]
+
+
 class QualityNode(TypedDict):
     id: str
     command: str
@@ -18,6 +24,7 @@ class QualityNode(TypedDict):
     exclusive_group: NotRequired[str | None]
     depends_on_if_selected: NotRequired[list[str]]
     command_if_selected: NotRequired[dict[str, str]]
+    reuse: NotRequired[ReuseInputs]
 
 
 class QualityDefinition(TypedDict):
@@ -113,6 +120,33 @@ def quality_nodes(value: JsonValue) -> list[QualityNode]:
         if not isinstance(item, dict):
             raise ValueError("Quality step must be a mapping.")
         QualityStep.parse(item)
+        if "reuse" in item:
+            declaration = item["reuse"]
+            if (
+                not isinstance(declaration, dict)
+                or not {"paths", "environment"} <= set(declaration)
+                or set(declaration) - {"paths", "environment", "always_run"}
+            ):
+                raise ValueError("Invalid quality reuse declaration.")
+            if "always_run" in declaration and type(declaration["always_run"]) is not bool:
+                raise ValueError("Invalid quality reuse freshness declaration.")
+            paths = string_list(declaration["paths"])
+            environment = string_list(declaration["environment"])
+            if (
+                not paths
+                or any(
+                    not path
+                    or path.startswith(("/", ".runtime/"))
+                    or ".." in path.split("/")
+                    or "\\" in path
+                    or "\0" in path
+                    for path in paths
+                )
+                or any(not re.fullmatch(r"[A-Z][A-Z0-9_]*", key) for key in environment)
+            ):
+                raise ValueError(
+                    "Quality reuse requires explicit owned paths and environment keys."
+                )
         if "depends_on_if_selected" in item:
             dependencies = string_list(item["depends_on_if_selected"])
             if any(not re.fullmatch(r"[a-z0-9-]+", dependency) for dependency in dependencies):
