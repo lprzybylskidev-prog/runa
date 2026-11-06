@@ -13,7 +13,9 @@ final readonly class ModuleOperationHistory
 {
     public function __construct(private Connection $connection) {}
 
-    /** @param list<string> $intents @return array{operations: list<array<string,mixed>>, next_cursor: ?string} */
+    /**
+     * @param list<string> $intents
+     * @return array{operations: list<array<string,mixed>>, next_cursor: ?string} */
     public function read(string $module, array $intents, ?string $cursor = null, int $limit = 25): array
     {
         if ($limit < 1 || $limit > 100 || $intents === [] || array_diff($intents, ['enable', 'disable', 'unregister', 'settings']) !== []) {

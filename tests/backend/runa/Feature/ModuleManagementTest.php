@@ -198,7 +198,7 @@ it('projects bounded entity extensions and refuses undeclared entity permissions
         return [new \Runa\Contracts\Modules\ManagementEntity(
             'entry', self::$entityPermission, ['pl' => 'Wpis', 'en' => 'Entry'], ['pl' => 'Opis', 'en' => 'Description'],
             [new \Runa\Contracts\Modules\ManagementField('name', 'text', ['pl' => 'Nazwa', 'en' => 'Name'], ['pl' => 'Opis', 'en' => 'Description'])],
-            [new \Runa\Contracts\Modules\ManagementOperation(new \Runa\Contracts\Modules\ApiOperation('inspect', 'probe.inspect'), stepUp: 'both', previewRequired: true)],
+            [new \Runa\Contracts\Modules\ManagementOperation(new \Runa\Contracts\Modules\ApiOperation('inspect', 'probe.inspect'), stepUp: 'password', previewRequired: true)],
         )];
     }
 METHOD;

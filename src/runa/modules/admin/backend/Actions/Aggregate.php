@@ -8,6 +8,7 @@ use Runa\Contracts\Modules\TransactionalMutation;
 use Runa\Integration\Core\AdminEntry;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Admin\Queries\Projection;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Support\Modules\Api\OperationRejected;
@@ -19,7 +20,8 @@ final readonly class Aggregate
     public function __construct(private AdminEntry $entry, private Projection $projection,
         private ModuleTransactions $transactions, private PrincipalScope $principals, private OperationGuard $guard) {}
 
-    /** @param array<string,mixed> $input
+    /**
+     * @param  array<string,mixed>  $input
      * @return array<string,mixed>
      */
     public function run(string $owner, string $page, array $input, bool $preview = false): array
@@ -53,7 +55,8 @@ final readonly class Aggregate
         $this->guard->enter('runa.admin', new ApiOperation('save', 'runa.admin.enter'));
     }
 
-    /** @param array<string,mixed> $input
+    /**
+     * @param  array<string,mixed>  $input
      * @return array{fingerprint:string,parts:list<AggregatePart>,mutations:list<TransactionalMutation>,reviews:list<array<string,mixed>>}
      */
     public function plan(string $owner, string $page, array $input, bool $preview = false): array
@@ -92,7 +95,7 @@ final readonly class Aggregate
         }
         $fingerprint = hash('sha256', serialize([$owner, $page, $this->principals->current()?->publicId, $selection['revision'], $signatures]));
         $expected = ! $preview && $requiresReview ? $fingerprint : $selection['revision'];
-        if (! hash_equals($expected, $input['revision']) && ($preview || $requiresReview || ! hash_equals($fingerprint, $input['revision']))) {
+        if (! hash_equals($expected, Values::string($input['revision'])) && ($preview || $requiresReview || ! hash_equals($fingerprint, Values::string($input['revision'])))) {
             throw new OperationRejected('admin_revision_stale', 'runa.admin', 'save', 409);
         }
 

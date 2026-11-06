@@ -83,6 +83,7 @@ final class AdministrationPages implements ManagementPageProvider
         return [];
     }
 
+    /** @param list<string> $choices */
     public static function field(string $key, string $title, string $type = 'text', ?string $write = null, bool $multiple = false, array $choices = [], bool $table = false): ManagementFieldAccess
     {
         $text = ['pl' => self::FIELD_NAMES[$title] ?? $title, 'en' => $title];
@@ -106,6 +107,7 @@ final class AdministrationPages implements ManagementPageProvider
         }, ['search', 'language', 'selected']);
     }
 
+    /** @param list<string> $inputs */
     public static function command(string $key, string $title, string $operation, array $inputs, string $binding, string $permission = 'access.manage', bool $destructive = false, bool $review = true, ?string $participant = null): ManagementCommandDefinition
     {
         return new ManagementCommandDefinition($key, ['pl' => self::FIELD_NAMES[$title] ?? $title, 'en' => $title], new ManagementOperation(new ApiOperation($operation, 'runa.permissions.'.$permission), $inputs, 'password', previewRequired: $review), $binding,

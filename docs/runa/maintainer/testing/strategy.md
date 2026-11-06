@@ -394,3 +394,5 @@ image-loading assertions. This tolerance addresses browser arithmetic, not layou
 regressions or permission to skip failed cases.
 
 Private owner browser preparation clears inherited development environment keys before booting the isolated testing identity, using the existing test environment selector. Preparation errors return nonzero and prevent browser startup; a rendered 503 is never accepted as a prepared application.
+
+Backend worker cleanup follows the public [test resource lifecycle](../../handbook/testing/strategy.md#test-resource-lifecycle), including its bounded disconnect grace period. Native cleanup failures remain failures; the grace period never terminates sessions or authorizes force-drop.

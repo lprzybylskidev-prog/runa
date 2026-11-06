@@ -41,6 +41,7 @@ final readonly class Administration implements AuthAdministration
             'verification_required' => $user->verification_forced || $verification === 'all' || ($verification === 'new' && $user->verification_required)] : null;
         $secondary = [];
         if ($this->allows('secondary.read')) {
+            /** @var \stdClass&object{public_id:string,email:string,verified_at:?string} $row */
             foreach (app('db')->connection()->table('runa_auth.secondary_emails')->where('user_id', $user->id)->whereNull('deleted_at')->orderBy('public_id')->limit(100)->get(['public_id', 'email', 'verified_at']) as $row) {
                 $secondary[] = ['public_id' => $row->public_id, 'email' => $row->email, 'verified' => $row->verified_at !== null];
             }

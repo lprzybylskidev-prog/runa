@@ -3,6 +3,7 @@
 namespace Runa\Contracts\Modules;
 
 use Runa\ModuleFramework\Management\DeclarationRules as Rules;
+use Runa\ModuleFramework\Management\InputValues as Values;
 
 final readonly class ManagementApiTarget
 {
@@ -14,11 +15,12 @@ final readonly class ManagementApiTarget
             throw new \InvalidArgumentException('Invalid management API target.');
         }
         Rules::className($contract);
-        if (! array_is_list($methods) || $methods === [] || count($methods) > 128 || count(array_unique($methods)) !== count($methods)) {
+        Values::strings($methods);
+        if ($methods === [] || count($methods) > 128 || count(array_unique($methods)) !== count($methods)) {
             throw new \InvalidArgumentException('Invalid target methods.');
         }
         foreach ($methods as $method) {
-            if (! is_string($method) || preg_match('/\A[a-zA-Z][a-zA-Z0-9_]{0,127}\z/D', $method) !== 1) {
+            if (preg_match('/\A[a-zA-Z][a-zA-Z0-9_]{0,127}\z/D', $method) !== 1) {
                 throw new \InvalidArgumentException('Invalid target method.');
             }
         }

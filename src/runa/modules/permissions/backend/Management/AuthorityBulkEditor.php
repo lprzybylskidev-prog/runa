@@ -10,6 +10,7 @@ use Runa\Contracts\Modules\ManagementResourceReader;
 use Runa\Contracts\Modules\ManagementReview;
 use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Permissions\Contracts\AuthorityBatchPreview;
 use Runa\Modules\Permissions\Contracts\PermissionsAuthorityBatch;
 use Runa\Modules\Permissions\Contracts\UserSelection;
@@ -36,7 +37,7 @@ final readonly class AuthorityBulkEditor implements ManagementResourceReader, Ma
             throw $this->invalid();
         }
         try {
-            return $this->api()->previewBatch(new UserSelection($input->values['public_ids']), $input->command === 'grant_superadmin');
+            return $this->api()->previewBatch(new UserSelection(Values::strings($input->values['public_ids'])), $input->command === 'grant_superadmin');
         } catch (\InvalidArgumentException|\TypeError) {
             throw $this->invalid();
         }

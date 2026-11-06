@@ -22,7 +22,7 @@ final readonly class AuthorityEditor implements ManagementResourceReader, Manage
 
     public function read(ManagementRead $input): ManagementRecord
     {
-        $id = $input->publicId ?? $this->principals->current()?->publicId ?? throw $this->invalid();
+        $id = $input->publicId ?? $this->principals->current()->publicId ?? throw $this->invalid();
         $state = $this->api()->previewAuthority($id, false);
 
         return new ManagementRecord($id, (string) $state->revision, ['grant' => $state->current, 'review_summary' => null]);

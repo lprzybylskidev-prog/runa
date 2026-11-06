@@ -29,7 +29,7 @@ final class ModuleRegistry
             $instance = $registry->get();
             // A read-only child retains its ancestor's lock. A new root or a
             // child entered after rolling back the cached level must reload.
-            if ($connection->transactionLevel() === 0 || ($instance?->cachedLevel ?? 0) > $connection->transactionLevel()) {
+            if ($connection->transactionLevel() === 0 || ($instance->cachedLevel ?? 0) > $connection->transactionLevel()) {
                 $instance?->forgetSnapshot();
             }
         });

@@ -6,6 +6,7 @@ use Runa\Contracts\Modules\ManagementPageResult;
 use Runa\Contracts\Modules\ManagementRead;
 use Runa\Contracts\Modules\ManagementRecord;
 use Runa\Contracts\Modules\ManagementResourceReader;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Audit\Contracts\AuditEntity;
 use Runa\Modules\Audit\Contracts\AuditEntry;
 use Runa\Modules\Audit\Contracts\AuditQuery;
@@ -60,9 +61,9 @@ final readonly class HistoryReader implements ManagementResourceReader
             if ($entity !== [] && count($entity) !== 3) {
                 throw new \InvalidArgumentException('Complete entity reference required.');
             }
-            $query = new AuditQuery($f['module'] ?? null, $input->limit, $f['action'] ?? null, $f['actor_public_id'] ?? null, $f['actor_kind'] ?? null,
-                $entity === [] ? null : new AuditEntity($f['entity_module'], $f['entity_type'], $f['entity_public_id']),
-                $f['outcome'] ?? null, $f['correlation_id'] ?? null, $f['from'] ?? null, $f['until'] ?? null, $input->cursor, $input->sort[0]['key'] ?? null, $input->sort[0]['direction'] ?? 'asc');
+            $query = new AuditQuery(Values::nullableString($f['module'] ?? null), $input->limit, Values::nullableString($f['action'] ?? null), Values::nullableString($f['actor_public_id'] ?? null), Values::nullableString($f['actor_kind'] ?? null),
+                $entity === [] ? null : new AuditEntity(Values::string($f['entity_module']), Values::string($f['entity_type']), Values::string($f['entity_public_id'])),
+                Values::nullableString($f['outcome'] ?? null), Values::nullableString($f['correlation_id'] ?? null), Values::nullableString($f['from'] ?? null), Values::nullableString($f['until'] ?? null), $input->cursor, $input->sort[0]['key'] ?? null, $input->sort[0]['direction'] ?? 'asc');
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.audit', 'history.page', 422);
         }

@@ -1219,7 +1219,7 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Revalidate and fingerprint the retained set, preserve native single-write
     protection, proof, revisions and atomic Audit; cover mixed/no-op/stale plans.
     Synchronize the preview contract/docs and prepare current owner acceptance.
-- [ ] 11a102. Repair failures from the first final affected-area verification.
+- [x] 11a102. Repair failures from the first final affected-area verification.
   - Preserve native failed evidence; repair database test lifecycle/isolation,
     current API audience and consumer contracts, frontend lint/test expectations,
     installation presentation assertions, documentation ownership and Python types.
@@ -1236,7 +1236,7 @@ reassessment before resuming point 3; completed point history remains evidence.
   - Receive complete frontend and E2E results after table/TOTP and fixture repairs.
   - Apply the owner's decision to repair header scrolling itself; preserve strict browser warning checks.
   - Commit after complete affected-area PASS, then repeat affected owner manual frontend acceptance.
-- [ ] 11b. Owner manual frontend acceptance.
+- [x] 11b. Owner manual frontend acceptance.
   - Prerequisites: completed/committed implementation and runnable local application
     with current assets/data and usable authorized access from 11a.
   - The owner tests Admin and affected application frontend and reports defects.
@@ -8792,3 +8792,176 @@ final verification/release point 12 remains open. No backend execution, roadmap
 closure, merge, tag or release is claimed. Current development assets are built
 for owner reacceptance. The owner request to finish the remaining E2E failure is
 satisfied without suppressing warnings.
+
+### Owner-requested backend case inventory after nonbackend completion
+
+The owner explicitly resumes backend testing and requests every case individually,
+continuing after confirmed SIGSEGV and ordinary failures, with an exact final list
+of crashed cases. This supersedes the earlier backend deferral for this run only;
+it does not complete repair 11a102 or final verification. Read-only native discovery
+through the supported owner runner enumerates 791 cases. A one-off foreground stdlib
+orchestrator under `.runtime/artifacts/RM-2026-016-backend-individual/` executes
+`python3 tools/maintainer/test-backend --parallel --processes=1 --filter=<one case>`
+with per-case native logs/JUnit, preserving supported locks, guards, worker cleanup
+and exit codes. It continues after test/assertion failures and confirmed native
+worker exit 139, stops for unsafe cleanup or invalid selection, and never retries
+a crashed case automatically. `results.json` retains the discovery identity,
+filter, exact command, native exit code, cleanup and result for each case. Native
+reports remain unmodified; this inventory is not a full four-worker-mode PASS.
+The candidate includes preserved uncommitted backend repairs; no source repair
+is made during the requested inventory run. Final counts and SIGSEGV list follow
+when all selected cases have returned.
+
+Individual case 37 passed its one assertion but native post-run cleanup refused
+a briefly active worker connection (exit 1). The inventory stopped, retained the
+original failed report, and read-only pg_stat_activity inspection confirmed no
+worker connections remained. Resume starts at case 38, relying on its supported
+pre-cleanup to revalidate ownership and remove inactive workers. No case is retried,
+no connection is terminated and no force-drop is used. Further cleanup failures
+remain reported separately and allow continuation only after read-only inspection
+confirms no active worker connections; unsafe/ambiguous cleanup still stops.
+
+### Individual backend inventory result
+
+The owner requested letting the already running series finish. All 791 discovered
+cases were attempted once; the orchestrator finished and released the suite lock.
+Native invocations: 745 PASS, 42 failed and 4 confirmed worker SIGSEGV/139. Of the
+42 non-SIGSEGV failures, 37 are ordinary test failures and 5 have passing assertions
+but failed post-run cleanup due transient worker connections. Their original native
+failures remain preserved; read-only inspection confirmed inactive workers before
+continuation through the next supported runner's guarded pre-cleanup. Final cleanup
+succeeded; no disposable worker database or suite-lock holder remains. Base test and
+development data, shared caches and all reports remain preserved.
+
+Confirmed SIGSEGV identities (all four native cleanups exited 0):
+
+- AuthEntryTest: account detail projection covers every declared action and rejects sensitive field requests (case 181).
+- Admin EntryTest: Auth administration never treats a read grant as write authority (case 683).
+- Admin EntryTest: exposes fixed operational diagnostics with exact grants redaction and maintenance fencing (case 706).
+- Admin EntryTest: supplied tables order authorized server datasets before cursor paging and guard security exports (case 771).
+
+Evidence: `.runtime/artifacts/RM-2026-016-backend-individual/summary.md`,
+`results.json`, native discovery and numbered logs/JUnit. Ordinary failures include
+duplicate recovery schedules, the ReviewFeatures production-refusal fixture and
+Admin proof/endpoint/validation/revision/payload expectations. This inventory does
+not diagnose or repair them. Neither individual SIGSEGV acceptance nor completion
+of discovery waives ordinary test/cleanup failures or establishes final parallel
+backend PASS. Repair 11a102, owner frontend reacceptance and final verification stay
+open; no implementation changes or new test run were started during this wait.
+
+### Backend repairs prepared without test execution
+
+Owner steering after the inventory: repair the found ordinary failures, but do not
+start any further tests yet. The four SIGSEGV cases retain their native evidence
+and standing owner disposition; no crash diagnosis or retry is performed.
+
+Prepared corrections address each ordinary failure family:
+
+- Admin fixture proof creation establishes the native login/cookie once before
+  confirming a password. Already established sessions are retained, including
+  tests for proof consumption, expiry and revocation. No runtime guard is bypassed.
+- Native command refusals assert error.code, while Admin entry/idle middleware
+  refusals retain their separate reason envelope. Preference reset fixtures carry
+  their actual read grant, trust fixtures explicitly enable trusted devices, and
+  verification/bypass fixtures explicitly enable those capabilities while keeping
+  the administrative actor verified. Password reset success uses a target with
+  credentials; the separate passwordless refusal test remains intact.
+- Profile projections include identifier_mode; Audit/Permissions table assertions
+  verify current owning totals instead of obsolete unknown-count expectations.
+- The scheduler test resolves the existing Artisan application rather than creating
+  a second instance and repeating Laravel starting/schedule callbacks. The copied
+  production-source refusal fixture loads its exact ReviewFeatures source before
+  moving the application base path, so it tests the actual production refusal.
+- Worker cleanup validates all owners, then allows at most one second total for
+  PostgreSQL disconnect completion before refusing remaining active connections.
+  It deletes nothing until every candidate is inactive and retains ordinary DROP,
+  native failure codes and no force/session termination. This targets the five
+  observed passing-test/failed-cleanup races; public lifecycle guidance is updated.
+
+Owner/backend/Laravel/security guidance and customer instruction references were
+assessed. The canonical public lifecycle guide carries the internal cleanup detail;
+no new instruction-product authority, API, dependency or module version is needed.
+Knowledge status was stale because this active roadmap changed; focused original
+sources and native recorded reports supplied the repair evidence. Formatting and
+source-diff review are not backend test execution. No tests are run on this prepared
+candidate at the owner's instruction, so repaired PASS and completion/commit of
+11a102 are not claimed. Verification remains pending.
+
+### Owner steering — accept confirmed backend SIGSEGV and complete available coverage
+
+2026-11-06: the owner explicitly requests testing as much backend behavior as
+possible while excluding confirmed worker SIGSEGV/139 from roadmap blockers.
+Apply the existing maintainer testing policy, **PASS (owner SIGSEGV exception)**,
+without further runtime diagnosis or automatic retries. Ordinary test failures,
+other signals, guard/selection errors and failed cleanup remain blocking. Keep
+native failures intact and disclose interrupted coverage separately; this does
+not authorize release/merge with other open requirements.
+
+The owner-started full four-worker run ended with parent exit 1 and cleanup 0;
+the owner reports the native worker exit 139. Retained worker artifacts establish
+539 passing cases from three completed workers and 147 additional progress marks
+from the interrupted worker without a complete identity/result report. Preserve
+those original artifacts and runner result under
+`.runtime/artifacts/RM-2026-016-backend-sigsegv-acceptance/`. Supplemental execution
+uses the supported owner runner in the same four-worker mode: 124 cases outside
+Admin Entry in one batch, then 128 Admin Entry cases individually, continuing after
+confirmed SIGSEGV only when cleanup succeeds. This supplements incomplete evidence;
+it does not retry a supplemental crash or manufacture a clean full-suite result.
+Candidate HEAD and hashes of the existing uncommitted source changes, native
+reports, exact selections, commands and cleanup outcomes are retained there.
+
+The existing owner instruction and canonical policy already cover this decision;
+no new runtime tolerance, dependency change, skill rule or customer instruction
+change is introduced. Final supplemental results and the backend disposition
+follow after all selected cases return.
+
+### Supplemental backend result — PASS under owner SIGSEGV exception
+
+All 791 discovered cases are accounted for: **784 confirmed PASS and 7 interrupted
+by confirmed native worker SIGSEGV/139**, with no ordinary failures. The three
+completed workers establish 539 passing cases; supplemental native four-worker
+commands establish another 245 passing cases and the seven exact crashed cases.
+All 129 supplemental invocations completed guarded cleanup with exit 0. Preserve
+the failed native logs and result codes; this combined coverage is not a claim of
+an uninterrupted full-suite native PASS or execution of interrupted assertions.
+The seven interrupted identities and native logs, exact commands, JUnit reports,
+source hashes and separate acceptance assessment are in
+`.runtime/artifacts/RM-2026-016-backend-sigsegv-acceptance/summary.md`,
+`supplement-results.json` and `acceptance.json`. No supplemental crash was retried.
+
+Assess backend test execution as **PASS (owner SIGSEGV exception)** under the
+standing canonical policy and the owner's renewed instruction. Confirmed 139
+alone is no longer a backend acceptance blocker. Runtime diagnosis was stopped
+at the owner's subsequent request; no runtime/dependency/security guard was
+changed. Ordinary failures, other gates, commit completion, frontend owner
+acceptance and final roadmap verification/release remain separate requirements.
+
+Final read-only inspection found no disposable worker databases or suite-lock
+holder. Removed only the three template-verified files from task-created
+`src/app/Management/AtomicFixturecbcc40750708/`, left by a crashed App aggregate
+fixture. All prior files, development/base test data, active services, shared caches,
+backups and reports remain preserved; no Docker resources were created. Source
+hash comparison confirms no implementation changed during this run. Owner and
+customer instruction products need no change: this applies the existing owner-only
+policy without changing supported customer behavior or public contracts.
+
+### Backend repair completion and repeated owner acceptance — 2026-11-06
+
+The owner requests roadmap closure and explicitly confirms having manually tested
+and accepted the table and TOTP repairs in the running development application.
+Acceptance applies to the current source tree plus existing built assets; the
+pending repair changes are backend/contracts/tests/documentation only. Earlier
+frontend acceptance remains historical; this repeated decision completes 11b.
+
+Repair 11a102 is complete in the accompanying commit. Full native parallel backend
+execution and supplemental accounting are accepted under the owner SIGSEGV policy
+as recorded above (784 confirmed cases, seven interrupted cases, cleanup 0).
+Complete owner PHP static analysis passes on all 833 files with no errors.
+Complete tooling passes 524 tests with three documented policy deselections and
+cleanup 0. Current API boundaries, structural payload decoders, source-owned SQL
+sort validation, precise projection types and backend fixtures are synchronized;
+public API documentation names the internal decoder audience. No current frontend
+implementation changed during this backend repair. Owner/customer guidance already
+owns these invariants and needs no duplicated new rule. Existing native reports
+and the separate exception assessment remain intact. Final verification/release
+point 12 stays open and must run from the beginning on the committed candidate.

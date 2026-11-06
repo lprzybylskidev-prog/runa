@@ -12,6 +12,7 @@ use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Modules\Auth\Contracts\AuthPreferences;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
+use Runa\Modules\Auth\Support\DeliveryInput;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Settings\ModuleSettings;
@@ -53,7 +54,7 @@ final readonly class PreferenceSection implements ManagementResourceReader, Mana
                 if (! is_array($delivery)) {
                     throw new \InvalidArgumentException('Invalid delivery preferences.');
                 }
-                $this->api()->updateAccount($input->publicId, $input->values['locale'], $input->values['theme'], $delivery, (int) $input->revision);
+                $this->api()->updateAccount($input->publicId, $input->values['locale'], $input->values['theme'], DeliveryInput::decode($delivery), (int) $input->revision);
             } catch (IdentityConflict) {
                 throw new OperationRejected('preferences_stale', 'runa.auth', 'preferences.admin_write', 409);
             } catch (\JsonException|\InvalidArgumentException|\TypeError) {

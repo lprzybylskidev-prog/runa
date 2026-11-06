@@ -5,6 +5,7 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Encryption\Encrypter;
 use Illuminate\Contracts\Queue\Factory;
 use Illuminate\Queue\WorkerOptions;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Monolog\Handler\TestHandler;
@@ -167,7 +168,8 @@ it('validates command classification cron versions and overlap bounds', function
 });
 
 it('preserves the technical pulse and health recovery schedules', function (): void {
-    new Application(app(), app('events'), 'test');
+    // Resolve the owning Artisan instance; another constructor repeats starting callbacks.
+    Artisan::all();
     $events = app(Schedule::class)->events();
     $pulse = array_values(array_filter($events, fn ($event) => str_contains($event->command ?? '', 'runa:runtime:pulse')));
     $health = array_values(array_filter($events, fn ($event) => str_contains($event->command ?? '', 'runa:modules:health')));

@@ -3,10 +3,12 @@
 namespace Runa\Contracts\Modules;
 
 use InvalidArgumentException;
+use Runa\ModuleFramework\Management\InputValues as Values;
 
 final readonly class MutationDefinition
 {
-    /** @param list<MutationAccess> $access
+    /**
+     * @param  list<MutationAccess>  $access
      * @param  list<string>  $subjects
      * @param  list<string>  $resources
      * @param  list<MutationProof>  $proofs
@@ -19,23 +21,18 @@ final readonly class MutationDefinition
             throw new InvalidArgumentException('Invalid mutation owner.');
         }
         foreach ([[$access, MutationAccess::class, 32], [$proofs, MutationProof::class, 8]] as [$items, $type, $limit]) {
-            if (! array_is_list($items) || count($items) > $limit) {
-                throw new InvalidArgumentException('Mutation declaration limit.');
-            }
-            foreach ($items as $item) {
-                if (! $item instanceof $type) {
-                    throw new InvalidArgumentException('Invalid mutation declaration.');
-                }
-            }
+            Values::objects($items, $type, $limit);
         }
-        if ($access === [] || ! array_is_list($subjects) || count($subjects) > 100 || ! array_is_list($resources) || $resources === [] || count($resources) > 32) {
+        Values::strings($subjects);
+        Values::strings($resources);
+        if ($access === [] || count($subjects) > 100 || $resources === [] || count($resources) > 32) {
             throw new InvalidArgumentException('Mutation declaration limit.');
         }
         foreach ($subjects as $subject) {
             new TrustedPrincipal($subject);
         }
         foreach ($resources as $resource) {
-            if (! is_string($resource) || ! str_starts_with($resource, $owner.'.') || strlen($resource) > 256 || preg_match('/\A[a-z0-9_.:-]+\z/D', $resource) !== 1) {
+            if (! str_starts_with($resource, $owner.'.') || strlen($resource) > 256 || preg_match('/\A[a-z0-9_.:-]+\z/D', $resource) !== 1) {
                 throw new InvalidArgumentException('Invalid mutation resource.');
             }
         }

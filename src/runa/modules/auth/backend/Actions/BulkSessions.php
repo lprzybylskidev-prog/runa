@@ -59,7 +59,7 @@ final readonly class BulkSessions implements AuthBulkSessions
             throw new OperationRejected('session_selection_invalid', 'runa.auth', 'sessions.bulk_preview', 422);
         }
         $selected = $users->map(static fn (User $user): array => [$user->public_id, $user->version, $user->security_version])->all();
-        $protected = $users->isEmpty() ? [] : app(OperatorAuthority::class)->administrators($connection, $users->pluck('public_id')->all());
+        $protected = $users->isEmpty() ? [] : app(OperatorAuthority::class)->administrators($connection, array_values($users->map(static fn (User $user): string => $user->public_id)->all()));
         $users = $users->reject(fn (User $user): bool => in_array($user->public_id, $protected, true));
         $accounts = [];
         $sessions = $devices = 0;

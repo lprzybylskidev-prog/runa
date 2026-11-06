@@ -326,7 +326,7 @@ $app->make(Runa\Testing\Database\TestDatabaseGuard::class)->assertSafe();
 $db = Illuminate\Support\Facades\DB::connection();
 $registry = new Runa\ModuleFramework\ModuleRegistry($db, new Runa\ModuleFramework\ModuleDiscovery($argv[1]));
 $policies = new Runa\ModuleFramework\LifecyclePolicies($argv[1], $app, new Runa\ModuleFramework\ModuleAutoloader($argv[1], $registry, true), true);
-$transitions = new Runa\ModuleFramework\ModuleTransitions($db, $registry, $policies, $app->make(Illuminate\Contracts\Encryption\Encrypter::class), '0.4.0', new Runa\ModuleFramework\ModuleHealth($db, $registry, new Runa\ModuleFramework\HealthPolicies($argv[1], $app, new Runa\ModuleFramework\ModuleAutoloader($argv[1], $registry, true), true), new Runa\ModuleFramework\HealthDeadline));
+$transitions = new Runa\ModuleFramework\ModuleTransitions($db, $registry, $policies, $app->make(Illuminate\Contracts\Encryption\Encrypter::class), '0.4.0', new Runa\ModuleFramework\ModuleHealth($app->make(Runa\ModuleFramework\Transactions\HealthAdmissions::class), $db, $registry, new Runa\ModuleFramework\HealthPolicies($argv[1], $app, new Runa\ModuleFramework\ModuleAutoloader($argv[1], $registry, true), true), new Runa\ModuleFramework\HealthDeadline));
 Tests\Fixtures\TransitionPolicy::$prepare[$argv[2]] = static function () { exit(23); };
 $transitions->apply($transitions->preview('enable', $argv[2]));
 WORKER;

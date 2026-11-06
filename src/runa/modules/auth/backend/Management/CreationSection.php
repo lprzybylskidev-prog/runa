@@ -14,6 +14,7 @@ use Runa\Contracts\Modules\ManagementReview;
 use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
 use Runa\ModuleFramework\Api\OperationGuard;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Auth\Contracts\AuthLifecycle;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Contracts\IdentitySetup;
@@ -102,11 +103,11 @@ final readonly class CreationSection implements ManagementResourceReader, Manage
             'password_confirmation' => ($v['credential_mode'] ?? null) === 'password' ? ['required', 'string'] : ['prohibited'],
         ])->validate();
         try {
-            $setup = new IdentitySetup($v['credential_mode'], $v['password'] ?? null, $v['email_verified'],
+            $setup = new IdentitySetup(Values::string($v['credential_mode']), Values::nullableString($v['password'] ?? null), Values::boolean($v['email_verified']),
                 Moment::seconds($v['activate_at'] ?? null), Moment::seconds($v['deactivate_at'] ?? null),
-                $v['security_locked'], Moment::seconds($v['attempt_locked_until'] ?? null), $v['password_change_required']);
+                Values::boolean($v['security_locked']), Moment::seconds($v['attempt_locked_until'] ?? null), Values::boolean($v['password_change_required']));
             $this->apis->resolve('runa.auth', AuthLifecycle::class, '2.1.0')->create(
-                new NewIdentity($v['email'], $v['name'] ?? null, $v['first_name'] ?? null, $v['surname'] ?? null, $v['login'] ?? null, $v['active']), $setup);
+                new NewIdentity(Values::string($v['email']), Values::nullableString($v['name'] ?? null), Values::nullableString($v['first_name'] ?? null), Values::nullableString($v['surname'] ?? null), Values::nullableString($v['login'] ?? null), Values::boolean($v['active'])), $setup);
 
             return new ManagementOutcome('committed', $this->read(new ManagementRead));
         } catch (IdentityConflict $error) {

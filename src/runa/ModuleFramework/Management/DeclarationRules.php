@@ -4,6 +4,7 @@ namespace Runa\ModuleFramework\Management;
 
 use InvalidArgumentException;
 use Runa\Contracts\Modules\ApiOperation;
+use Runa\Contracts\Modules\ManagementFieldAccess;
 
 /** Internal validation shared by the additive readonly management declarations. */
 final class DeclarationRules
@@ -21,7 +22,7 @@ final class DeclarationRules
         }
     }
 
-    /** @param string|array{pl:string,en:string} $text */
+    /** @param string|array<array-key,mixed> $text */
     public static function text(string|array $text): void
     {
         if (is_array($text)) {
@@ -61,7 +62,17 @@ final class DeclarationRules
             if (! $item instanceof $type) {
                 throw new InvalidArgumentException('Invalid management declaration type.');
             }
-            $identity = $key === 'field' ? $item->field->key : $item->$key;
+            if ($key === 'field') {
+                if (! $item instanceof ManagementFieldAccess) {
+                    throw new InvalidArgumentException('Invalid management field.');
+                }
+                $identity = $item->field->key;
+            } else {
+                if (! property_exists($item, $key) || ! is_string($item->$key)) {
+                    throw new InvalidArgumentException('Invalid management identity.');
+                }
+                $identity = $item->$key;
+            }
             if (isset($seen[$identity])) {
                 throw new InvalidArgumentException('Invalid or duplicate management declaration.');
             }

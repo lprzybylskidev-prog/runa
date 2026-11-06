@@ -3,6 +3,7 @@
 namespace Runa\Modules\Permissions\Actions;
 
 use Illuminate\Database\DatabaseManager;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Modules\Permissions\Contracts\AssignmentPreview;
@@ -67,7 +68,7 @@ final readonly class ManageAccess implements PermissionsAccess
         $search = trim($filters['search'] ?? '');
         if ($search !== '') {
             $pattern = '%'.addcslashes($search, '\\%_').'%';
-            $definitions->where(fn ($query) => $query->where('code', 'ilike', $pattern)->orWhere('name_pl', 'ilike', $pattern)->orWhere('name_en', 'ilike', $pattern));
+            $definitions->where(fn (Builder $query) => $query->where('code', 'ilike', $pattern)->orWhere('name_pl', 'ilike', $pattern)->orWhere('name_en', 'ilike', $pattern));
         }
         foreach (['code', 'name_pl', 'name_en'] as $key) {
             if (! array_key_exists($key, $filters)) {
@@ -85,8 +86,8 @@ final readonly class ManageAccess implements PermissionsAccess
                 if ($pivot === null) {
                     throw new \InvalidArgumentException('Unknown definition cursor.');
                 }
-                $definitions->where(fn ($where) => $where->where($sort, $direction === 'asc' ? '>' : '<', $pivot->{$sort})
-                    ->orWhere(fn ($tie) => $tie->where($sort, $pivot->{$sort})->where('public_id', '>', $after)));
+                $definitions->where(fn (Builder $where) => $where->where($sort, $direction === 'asc' ? '>' : '<', $pivot->{$sort})
+                    ->orWhere(fn (Builder $tie) => $tie->where($sort, $pivot->{$sort})->where('public_id', '>', $after)));
             }
             $definitions->orderBy($sort, $direction);
         } elseif ($after !== null) {

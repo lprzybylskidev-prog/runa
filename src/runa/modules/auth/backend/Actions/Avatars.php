@@ -134,7 +134,8 @@ final readonly class Avatars
         return $result;
     }
 
-    /** Private metadata/Audit phase; durable cleanup owns storage after commit. */
+    /** Private metadata/Audit phase; durable cleanup owns storage after commit.
+     * @return array{updated:bool,version:int} */
     public function removeLocked(Connection $connection, User $user): array
     {
         if ($user->avatar_path !== null) {

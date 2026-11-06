@@ -28,7 +28,7 @@ final readonly class SettingsDefinitions
     }
 
     /** One provider owns cross-field validation and the reversible application boundary.
-     * @return array{array<string, SettingDefinition>, SettingsProvider, string}
+     * @return array{array<string, SettingDefinition>, SettingsProvider, class-string}
      */
     public function for(ModuleRecord $record): array
     {
@@ -56,7 +56,7 @@ final readonly class SettingsDefinitions
             }
             $this->validate($definitions, $provider, $defaults);
 
-            return [$definitions, $provider, $handler];
+            return [$definitions, $provider, $type->getName()];
         } catch (Throwable) {
             throw new RuntimeException('Invalid settings declaration or defaults.');
         }

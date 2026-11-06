@@ -113,6 +113,7 @@ final readonly class ChangeDefinitions
             $table = 'runa_permissions.'.$kind.'_'.$members;
             $memberKey = $members === 'roles' ? 'role_id' : 'permission_id';
             $c->table($table)->where($kind.'_id', $id)->delete();
+            /** @var list<int> $memberIds PostgreSQL internal bigint identifiers. */
             $memberIds = $c->table('runa_permissions.'.$members)->whereIn('public_id', $ids)->pluck('id')->all();
             if ($memberIds !== []) {
                 $c->table($table)->insert(array_map(static fn (int $member): array => [$kind.'_id' => $id, $memberKey => $member, 'created_at' => now('UTC'), 'updated_at' => now('UTC')], $memberIds));

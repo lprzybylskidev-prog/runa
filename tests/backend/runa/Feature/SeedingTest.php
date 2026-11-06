@@ -54,6 +54,9 @@ it('has an empty idempotent Seeding foundation without invented business data', 
 });
 
 it('refuses explicit development corpus and direct seeders in a production installation despite local environment', function (): void {
+    // This source-presence guard test does not register Core Auth in its disposable registry.
+    require_once base_path('runa/modules/auth/backend/Development/ReviewFeatures.php');
+    $reviewFeatures = new ReviewFeatures;
     $original = base_path();
     $directory = sys_get_temp_dir().'/runa-seed-production-'.bin2hex(random_bytes(8));
     mkdir($directory.'/.git', 0700, true);
@@ -64,7 +67,7 @@ it('refuses explicit development corpus and direct seeders in a production insta
     try {
         expect(fn () => Artisan::call('runa:seed:development', ['--force' => true]))->toThrow(InvalidArgumentException::class, 'production');
         expect(fn () => app(DemoSeed::class)->run())->toThrow(InvalidArgumentException::class, 'production');
-        expect(fn () => app(ReviewFeatures::class)->enable())->toThrow(InvalidArgumentException::class, 'production');
+        expect(fn () => $reviewFeatures->enable())->toThrow(InvalidArgumentException::class, 'production');
         expect(Artisan::call('runa:seed:accounts'))->toBe(1);
     } finally {
         app()->setBasePath($original);

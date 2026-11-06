@@ -78,7 +78,7 @@ final readonly class SecurityNotices
             $this->transactions->lockAuthority($connection);
             $cursor = $connection->table('runa_auth.notice_scan')->where('id', 1)->lockForUpdate()->value('last_user_id');
             $users = User::where('id', '>', $cursor)->orderBy('id')->limit(100)->lockForUpdate()->get();
-            $days = app(PolicyExceptions::class)->values($users->all(), 'password_expiry_days');
+            $days = app(PolicyExceptions::class)->values(array_values($users->all()), 'password_expiry_days');
             $candidates = [];
             foreach ($users as $user) {
                 if (! $this->identities->evaluate($user, CarbonImmutable::now('UTC'))->mayAuthenticate()) {

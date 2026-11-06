@@ -11,6 +11,7 @@ use Runa\Contracts\Settings\ApplicationImages;
 use Runa\Identity\ApplicationIdentity;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleOperationHistory;
 use Runa\ModuleFramework\ModuleRegistry;
@@ -32,7 +33,9 @@ final readonly class AdminOperations
         private ModuleTransitions $transitions, private ModuleSettings $settings,
         private ModuleWork $work, private Encrypter $encrypter, private AdminOperationalAuthority $authority, private ModuleOperationHistory $operationHistory) {}
 
-    /** @param array<string,mixed> $input @return array<string,mixed> */
+    /**
+     * @param array<string,mixed> $input
+     * @return array<string,mixed> */
     public function read(string $view, array $input = []): array
     {
         return $this->safe(function () use ($view, $input): array {
@@ -78,7 +81,9 @@ final readonly class AdminOperations
         });
     }
 
-    /** @param array<string,mixed> $input @return array<string,mixed> */
+    /**
+     * @param array<string,mixed> $input
+     * @return array<string,mixed> */
     public function execute(string $command, array $input): array
     {
         return $this->safe(function () use ($command, $input): array {
@@ -110,14 +115,14 @@ final readonly class AdminOperations
                         if (($input['confirmed'] ?? null) !== true) {
                             throw $this->invalid();
                         }
-                        $review = json_decode($this->encrypter->decrypt($this->text($input, 'review'), false), true, 16, JSON_THROW_ON_ERROR);
+                        $review = json_decode(Values::string($this->encrypter->decrypt($this->text($input, 'review'), false)), true, 16, JSON_THROW_ON_ERROR);
                         if (! is_array($review) || ($review['actor'] ?? null) !== $this->principals->current()?->publicId
                             || ! is_int($review['expires'] ?? null) || $review['expires'] <= now()->getTimestamp()) {
                             throw $this->invalid();
                         }
-                        $this->optional($review['module']);
-                        $preview = $this->transitions->preview($review['intent'], $review['module']);
-                        if (! hash_equals($review['fingerprint'], $this->fingerprint($preview))) {
+                        $this->optional(Values::string($review['module']));
+                        $preview = $this->transitions->preview(Values::string($review['intent']), Values::string($review['module']));
+                        if (! hash_equals(Values::string($review['fingerprint']), $this->fingerprint($preview))) {
                             throw $this->stale();
                         }
 
@@ -131,12 +136,15 @@ final readonly class AdminOperations
                     case 'work.cancel':
                         return ['work' => $this->work->requestCancellation($this->uuid($input))];
                 }
-                throw $this->invalid();
             }, $independent, true);
         });
     }
 
-    /** @template T @param Closure():T $work @return T */
+    /**
+     * @template T
+     *
+     * @param Closure():T $work
+     * @return T */
     private function admit(string $operation, string $permission, Closure $work, bool $independent = false, bool $write = false): mixed
     {
         $check = function () use ($operation, $permission): void {
@@ -185,7 +193,9 @@ final readonly class AdminOperations
         return $result;
     }
 
-    /** @param array<string,mixed> $input @return array<string,mixed> */
+    /**
+     * @param array<string,mixed> $input
+     * @return array<string,mixed> */
     private function operationHistory(array $input): array
     {
         $module = $this->moduleId($input);
@@ -220,7 +230,9 @@ final readonly class AdminOperations
         return ['work' => array_slice($items, 0, $limit), 'truncated' => count($items) > $limit || count($items) === 1000];
     }
 
-    /** @param array<string,mixed> $input @return array<string,mixed> */
+    /**
+     * @param array<string,mixed> $input
+     * @return array<string,mixed> */
     private function preview(array $input): array
     {
         $module = $this->moduleId($input);
@@ -231,7 +243,7 @@ final readonly class AdminOperations
         }
         $preview = $this->transitions->preview($intent, $module);
         $token = $preview->ready() ? $this->encrypter->encrypt(json_encode(['module' => $module, 'intent' => $intent,
-            'actor' => $this->principals->current()->publicId, 'expires' => now()->getTimestamp() + 600, 'fingerprint' => $this->fingerprint($preview)], JSON_THROW_ON_ERROR), false) : null;
+            'actor' => ($this->principals->current() ?? throw $this->invalid())->publicId, 'expires' => now()->getTimestamp() + 600, 'fingerprint' => $this->fingerprint($preview)], JSON_THROW_ON_ERROR), false) : null;
 
         return ['ready' => $preview->ready(), 'review' => $token, 'generation' => $preview->graph->generation,
             'affected' => $preview->graph->affected, 'changes' => $preview->graph->changes,
@@ -283,7 +295,9 @@ final readonly class AdminOperations
         return $module;
     }
 
-    /** @param array<string,mixed> $input @param list<string> $keys */
+    /**
+     * @param array<string,mixed> $input
+     * @param list<string> $keys */
     private function keys(array $input, array $keys): void
     {
         if (array_diff(array_keys($input), $keys) !== [] || strlen(json_encode($input, JSON_THROW_ON_ERROR)) > (in_array('images', $keys, true) ? 1048576 : 65536)) {
@@ -313,7 +327,9 @@ final readonly class AdminOperations
         return $value;
     }
 
-    /** @param array<string,mixed> $input @return array<string,mixed> */
+    /**
+     * @param array<string,mixed> $input
+     * @return array<string,mixed> */
     private function map(array $input, string $key): array
     {
         $value = $input[$key] ?? null;
@@ -321,7 +337,7 @@ final readonly class AdminOperations
             throw $this->invalid();
         }
 
-        return $value;
+        return Values::map($value);
     }
 
     /** @param array<string,mixed> $input */
@@ -335,7 +351,9 @@ final readonly class AdminOperations
         return $id;
     }
 
-    /** @param Closure():array<string,mixed> $work @return array<string,mixed> */
+    /**
+     * @param Closure():array<string,mixed> $work
+     * @return array<string,mixed> */
     private function safe(Closure $work): array
     {
         try {

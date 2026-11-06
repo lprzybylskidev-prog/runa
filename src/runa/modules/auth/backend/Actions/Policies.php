@@ -138,6 +138,7 @@ final readonly class Policies implements AuthPolicies
     public function revokeExceptionsLocked(Connection $connection, User $user): void
     {
         $rows = $connection->table('runa_auth.policy_exceptions')->where('user_id', $user->id)->whereNull('revoked_at')->orderBy('id')->lockForUpdate()->get(['id', 'key', 'value', 'expires_at', 'reason']);
+        /** @var \stdClass&object{expires_at:?string} $row */
         foreach ($rows as $row) {
             $connection->table('runa_auth.policy_exceptions')->where('id', $row->id)->update(['revoked_at' => now(), 'version' => $connection->raw('version + 1'), 'updated_at' => now()]);
             $active = $row->expires_at === null || CarbonImmutable::parse($row->expires_at)->isFuture();

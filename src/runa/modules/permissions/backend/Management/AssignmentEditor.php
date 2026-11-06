@@ -16,6 +16,7 @@ use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Contracts\Modules\TransactionalMutation;
 use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Auth\Contracts\AuthAdministration;
 use Runa\Modules\Auth\Contracts\UserDirectoryQuery;
 use Runa\Modules\Permissions\Actions\ChangeAssignments;
@@ -63,7 +64,7 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
         $filters = ['search' => $search];
         if (isset($input->filters['selected'])) {
             try {
-                $ids = json_decode($input->filters['selected'], true, flags: JSON_THROW_ON_ERROR);
+                $ids = json_decode(Values::string($input->filters['selected']), true, flags: JSON_THROW_ON_ERROR);
                 if (! is_array($ids)) {
                     throw new \InvalidArgumentException('Invalid selected definitions.');
                 }
@@ -77,7 +78,7 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
         }, $input->cursor, $filters);
         // The owning API pages at 100; respect the narrower consumer page without losing the cursor.
         $items = array_slice($result['items'], 0, $input->limit);
-        $next = count($result['items']) > count($items) ? $items[array_key_last($items)]['public_id'] : $result['next'];
+        $next = $items !== [] && count($result['items']) > count($items) ? $items[array_key_last($items)]['public_id'] : $result['next'];
 
         $items = array_values(array_filter($items, fn ($item): bool => $input->field !== 'roles' || $item['code'] !== 'runa.permissions.super_admin'));
 
@@ -122,7 +123,7 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
 
     public function project(array $result): ManagementOutcome
     {
-        return new ManagementOutcome('committed', $this->read(new ManagementRead($result['user_public_id'])));
+        return new ManagementOutcome('committed', $this->read(new ManagementRead(Values::nullableString($result['user_public_id']))));
     }
 
     private function review(ManagementWrite $input): AssignmentPreview
@@ -141,9 +142,9 @@ final readonly class AssignmentEditor implements ManagementOptionsReader, Manage
         }
         try {
             return match ($input->command) {
-                'copy' => $this->api()->previewCopy($input->values['source_user'], $input->publicId, $input->values['mode']),
-                'preset' => $this->api()->previewPreset($input->values['preset'], $input->publicId, $input->values['mode']),
-                default => $this->api()->previewAssignments($input->publicId, new AssignmentSet($input->values['roles'], $input->values['permissions']), 'replace'),
+                'copy' => $this->api()->previewCopy(Values::string($input->values['source_user']), $input->publicId, Values::string($input->values['mode'])),
+                'preset' => $this->api()->previewPreset(Values::string($input->values['preset']), $input->publicId, Values::string($input->values['mode'])),
+                default => $this->api()->previewAssignments($input->publicId, new AssignmentSet(Values::strings($input->values['roles']), Values::strings($input->values['permissions'])), 'replace'),
             };
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.permissions', 'access.preview_assignments', 422);

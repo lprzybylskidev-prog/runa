@@ -49,7 +49,7 @@ beforeEach(function (): void {
     app()->instance(ModuleAvailability::class, $availability);
     app()->forgetInstance(ModuleApis::class);
     $this->registry->synchronize('app');
-    $this->pages = new ManagementPages($this->registry, $declarations, $availability, new ApplicationManagement(app(), $this->sources->root), app(ModuleApis::class), $this->sources->root);
+    $this->pages = new ManagementPages($this->registry, $declarations, $availability, new ApplicationManagement(app(), $this->sources->root), $this->sources->root);
 });
 
 afterEach(function (): void {
@@ -112,7 +112,7 @@ it('binds module component projection to source manifest and generated build evi
     unlink($directory.'/components/panel.vue');
     $compiled = new ManagementBuilds($this->sources->root, true);
     expect($compiled->component($this->id, $class::$component, $directory, $hash))->toBe($view);
-    $compiledPages = new ManagementPages($this->registry, app(ModuleDeclarations::class), app(ModuleAvailability::class), new ApplicationManagement(app(), $this->sources->root), app(ModuleApis::class), $this->sources->root, true);
+    $compiledPages = new ManagementPages($this->registry, app(ModuleDeclarations::class), app(ModuleAvailability::class), new ApplicationManagement(app(), $this->sources->root), $this->sources->root, true);
     expect($compiledPages->discover()['owners'][$this->id]['components'][$class::$component])->toBe($view);
     $entry['build_id'] = str_repeat('0', 64);
     file_put_contents($file, json_encode(['schema_version' => 1, 'owners' => [$this->id => $entry]], JSON_THROW_ON_ERROR));

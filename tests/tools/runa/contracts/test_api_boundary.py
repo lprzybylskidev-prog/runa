@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from pathlib import Path
 
@@ -105,7 +106,7 @@ if (!vue.messages.some(message => message.ruleId === 'runa/public-imports')) thr
     assert result.returncode == 0, result.stderr
 
 
-def test_runtime_audience_data_matches_frozen_public_symbols_and_named_integrations() -> None:
+def test_runtime_audience_data_retains_baseline_public_symbols_and_named_integrations() -> None:
     baseline = json.loads(
         (ROOT / "docs/runa/maintainer/architecture/api-boundary/source-map.json").read_text()
     )
@@ -117,7 +118,18 @@ def test_runtime_audience_data_matches_frozen_public_symbols_and_named_integrati
         for row in baseline["files"]
         if row.get("target_symbol") and row["audience"].startswith("public")
     }
-    assert set(policy["public"]) == expected
+    assert expected <= set(policy["public"])
+    assert len(policy["public"]) == len(set(policy["public"]))
+    declarations: set[str] = set()
+    for path in (ROOT / "src/runa").rglob("*.php"):
+        source = path.read_text()
+        namespace = re.search(r"namespace ([\w\\]+);", source)
+        declaration = re.search(
+            r"^(?:(?:final|abstract|readonly) )*(?:class|interface|trait|enum) (\w+)", source, re.M
+        )
+        if namespace and declaration:
+            declarations.add(namespace[1] + "\\" + declaration[1])
+    assert set(policy["public"]) <= declarations
     for callers in (*policy["reserved"].values(), *policy["internal_callers"].values()):
         assert callers
         assert all(name.startswith("src/runa/") and (ROOT / name).is_file() for name in callers)
@@ -173,8 +185,8 @@ foreach (['auth' => 'IdentityUpgrades', 'audit' => 'AuditUpgrades', 'permissions
  $steps = (new $class)->upgrades();
  $last = end($steps);
  $manifest = json_decode(file_get_contents($argv[1].'/src/runa/modules/'.$code.'/module.json'), true, flags: JSON_THROW_ON_ERROR);
- if ($last->to !== $manifest['version'] || $last->key !== 'verification_contracts') exit(41);
- if (!(new Runa\Support\VersionCompatibility)->supports($manifest['platform'], '0.6.0')) exit(42);
+ if ($last->to !== $manifest['version'] || !array_any($steps, fn ($step) => $step->key === 'verification_contracts')) exit(41);
+ if (!(new Runa\Support\VersionCompatibility)->supports($manifest['platform'], '0.7.0')) exit(42);
 }
 """,
         str(tmp_path),
@@ -182,19 +194,17 @@ foreach (['auth' => 'IdentityUpgrades', 'audit' => 'AuditUpgrades', 'permissions
     assert result.returncode == 0, result.stderr
 
 
-def test_current_source_placement_is_complete_and_old_private_locations_are_absent() -> None:
+def test_current_source_boundaries_and_retired_private_locations() -> None:
+    # RM-2026-012's dated inventory is historical evidence, not a freeze on later
+    # modules or owner-authorized migration consolidation. Inspect today's source.
+    result = php(r"""
+$errors = (new Runa\Development\ApiSourceCheck)->check($argv[1]);
+if ($errors !== []) { echo json_encode($errors); exit(1); }
+""")
+    assert result.returncode == 0, result.stdout + result.stderr
     mapping = json.loads(
         (ROOT / "docs/runa/maintainer/architecture/api-boundary/source-map.json").read_text()
     )
-    rows = [*mapping["files"], *mapping["additions"]]
-    tracked = set(
-        subprocess.check_output(["git", "ls-files", "src/runa"], cwd=ROOT, text=True).splitlines()
-    )
-    targets = {row["target"] for row in rows if row["target"].startswith("src/runa/")}
-    assert targets == tracked
-    for row in rows:
-        assert (ROOT / row["target"]).is_file()
-        assert row["owner"] and row["audience"] and row["mode"] and row["production"]
     for row in mapping["files"]:
         if row["source"] != row["target"]:
             assert not (ROOT / row["source"]).exists()

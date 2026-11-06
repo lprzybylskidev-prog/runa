@@ -4,8 +4,8 @@ namespace Runa\Modules\Auth\Actions;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Collection;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\AuthorityGuard;
 use Runa\ModuleFramework\Api\OperationGuard;
@@ -91,7 +91,8 @@ final readonly class BulkUsers implements AuthBulkUsers
         return $users;
     }
 
-    /** @param Collection<int,User> $users
+    /**
+     * @param  Collection<int,User>  $users
      * @param  list<User|LifecyclePlan>  $plans  Validated in-memory plans for impact projection; validation needs only the fingerprint.
      * @return array{fingerprint:string,accounts:int,affected_accounts:int,sessions:int,trusted_devices:int,skipped_accounts:int,ineligible_accounts:int}
      */
@@ -155,7 +156,8 @@ final readonly class BulkUsers implements AuthBulkUsers
         return ['fingerprint' => hash('sha256', json_encode([$revision, $change, $state, $related, $protected, $ineligible], JSON_THROW_ON_ERROR)), 'accounts' => $users->count(), 'affected_accounts' => $affected, 'sessions' => $sessions, 'trusted_devices' => $devices, 'skipped_accounts' => count($protected) + count($ineligible), 'ineligible_accounts' => count($ineligible)];
     }
 
-    /** @param Collection<int,User> $users
+    /**
+     * @param  Collection<int,User>  $users
      * @return list<User|LifecyclePlan>
      */
     public function prepare(Connection $connection, Collection $users, BulkUserChange $change): array
@@ -176,7 +178,7 @@ final readonly class BulkUsers implements AuthBulkUsers
                     ? new LifecycleChange($change->operation, $change->at, $change->enabled) : null,
             };
             $changes[$user->id] = $resolved;
-            if (in_array($resolved?->operation ?? $change->operation, ['deactivate', 'delete', 'factor_reset', 'require_verification'], true)) {
+            if (in_array($resolved->operation ?? $change->operation, ['deactivate', 'delete', 'factor_reset', 'require_verification'], true)) {
                 $exclude[] = $user->public_id;
             }
         }
@@ -201,7 +203,8 @@ final readonly class BulkUsers implements AuthBulkUsers
         return $plans;
     }
 
-    /** @param Collection<int,User> $users
+    /**
+     * @param  Collection<int,User>  $users
      * @return list<string>
      */
     private function ineligibleAccounts(Collection $users, BulkUserChange $change): array
@@ -211,9 +214,9 @@ final readonly class BulkUsers implements AuthBulkUsers
         }
         $now = CarbonImmutable::now('UTC');
 
-        return $users->filter(fn (User $user): bool => $change->operation === 'invite'
+        return array_values($users->filter(fn (User $user): bool => $change->operation === 'invite'
             ? ! app(LookupIdentity::class)->mayAcceptInvitation($user, $now)
-            : ($user->password === null || ! app(LookupIdentity::class)->evaluate($user, $now)->mayAuthenticate()))->pluck('public_id')->all();
+            : ($user->password === null || ! app(LookupIdentity::class)->evaluate($user, $now)->mayAuthenticate()))->map(static fn (User $user): string => $user->public_id)->all());
     }
 
     private function refusal(IdentityConflict $error, string $operation): OperationRejected
@@ -226,7 +229,8 @@ final readonly class BulkUsers implements AuthBulkUsers
         return new OperationRejected($reason, 'runa.auth', $operation, 409);
     }
 
-    /** @param Collection<int,User> $users
+    /**
+     * @param  Collection<int,User>  $users
      * @return list<string>
      */
     private function protectedAccounts(Connection $connection, Collection $users): array
@@ -235,7 +239,7 @@ final readonly class BulkUsers implements AuthBulkUsers
             return [];
         }
 
-        return app(OperatorAuthority::class)->administrators($connection, $users->pluck('public_id')->all());
+        return app(OperatorAuthority::class)->administrators($connection, array_values($users->map(static fn (User $user): string => $user->public_id)->all()));
     }
 
     /** @param list<User|LifecyclePlan> $plans */

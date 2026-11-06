@@ -23,15 +23,15 @@ use Runa\Support\Modules\Api\OperationRejected;
 /** Source-owned adapter; native module validation/publication remains separate. */
 abstract readonly class SettingsSnapshotSection implements ManagementResourceReader, ManagementWriter
 {
-    protected const MODULE = '';
+    protected const string MODULE = '';
 
-    protected const SCOPE = '';
+    protected const string SCOPE = '';
 
-    protected const READ_PERMISSION = '';
+    protected const string READ_PERMISSION = '';
 
-    protected const WRITE_PERMISSION = '';
+    protected const string WRITE_PERMISSION = '';
 
-    protected const DELETE_ACTION = '';
+    protected const string DELETE_ACTION = '';
 
     public function __construct(private DatabaseManager $database, private SettingsSnapshots $snapshots,
         private ModuleSettings $settings, private OperationGuard $guard, private PrincipalScope $principals,
@@ -82,7 +82,11 @@ abstract readonly class SettingsSnapshotSection implements ManagementResourceRea
         });
     }
 
-    /** @template T @param Closure():T $work @return T */
+    /**
+     * @template T
+     *
+     * @param Closure():T $work
+     * @return T */
     private function run(bool $write, Closure $work): mixed
     {
         if ($this->principals->current() === null) {

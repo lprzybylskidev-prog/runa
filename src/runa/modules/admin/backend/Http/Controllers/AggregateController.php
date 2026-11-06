@@ -17,7 +17,9 @@ final readonly class AggregateController
     {
         $access = $this->apis->resolve('runa.admin', AdminAccess::class, '1.0.0');
         $method = $request->routeIs('runa.admin.preview') ? 'preview' : 'save';
-        $data = $access->$method((string) $request->route('owner'), (string) $request->route('page'), $request->all());
+        /** @var array<string,mixed> $input HTTP JSON fields, including unknown keys for owning validation. */
+        $input = $request->all();
+        $data = $access->$method((string) $request->route('owner'), (string) $request->route('page'), $input);
 
         return (new AdminResource($data))->response()->header('Cache-Control', 'no-store, private');
     }

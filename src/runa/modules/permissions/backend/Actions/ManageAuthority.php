@@ -3,6 +3,7 @@
 namespace Runa\Modules\Permissions\Actions;
 
 use Illuminate\Database\Connection;
+use Illuminate\Support\Collection;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\Modules\Auth\Contracts\AuthorizationIdentity;
@@ -31,7 +32,7 @@ final readonly class ManageAuthority implements PermissionsAuthority, Permission
 
     /**
      * @param  (\stdClass&object{id: int, public_id: string, version: int})|null  $role
-     * @param  array{membership: object|null, revision: int}|null  $snapshot
+     * @param  array{membership: \stdClass|null, revision: int}|null  $snapshot
      */
     private function preview(Connection $c, string $userPublicId, bool $grant, ?object $role = null, ?array $snapshot = null): AuthorityPreview
     {
@@ -108,6 +109,7 @@ final readonly class ManageAuthority implements PermissionsAuthority, Permission
         $selection = $this->apis->resolve('runa.permissions', PermissionsSelections::class, '1.0.0')->users($selection);
         $role = $this->role($c);
         $members = $c->table('runa_permissions.user_roles')->where('role_id', $role->id)->whereIn('user_public_id', $selection->publicIds)->get()->keyBy('user_public_id');
+        /** @var Collection<string,int> $revisions */
         $revisions = $c->table('runa_permissions.user_access')->whereIn('user_public_id', $selection->publicIds)->pluck('version', 'user_public_id');
         $targets = array_map(fn (string $id): AuthorityPreview => $this->preview($c, $id, $grant, $role, ['membership' => $members->get($id), 'revision' => $revisions->get($id, 0)]), $selection->publicIds);
         $skipped = $grant ? [] : $this->authority->retainedForRemoval($c, array_values(array_map(fn (AuthorityPreview $target): string => $target->userPublicId, array_filter($targets, fn (AuthorityPreview $target): bool => $target->current))));

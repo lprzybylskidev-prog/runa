@@ -24,7 +24,8 @@ final readonly class ModuleHttp
     {
         // A cold database has no registry yet; installation must not require runtime schema.
         try {
-            if (! $this->connection->getSchemaBuilder()->hasTable('shared.module_registry_state')) {
+            if (! $this->connection->getSchemaBuilder()->hasTable('shared.module_registry_state')
+                || ! $this->connection->table('shared.module_registry_state')->where('id', 1)->exists()) {
                 return;
             }
         } catch (\Throwable) {

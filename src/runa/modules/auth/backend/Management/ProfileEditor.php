@@ -15,6 +15,7 @@ use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Contracts\Modules\TransactionalMutation;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Auth\Actions\ProfileMutation;
 use Runa\Modules\Auth\Actions\Profiles;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
@@ -91,7 +92,7 @@ final readonly class ProfileEditor implements ManagementParticipant, ManagementR
 
     public function project(array $result): ManagementOutcome
     {
-        return new ManagementOutcome('committed', $this->read(new ManagementRead($result['public_id'])));
+        return new ManagementOutcome('committed', $this->read(new ManagementRead(Values::nullableString($result['public_id']))));
     }
 
     private function change(ManagementWrite $input): ProfileChange
@@ -102,7 +103,7 @@ final readonly class ProfileEditor implements ManagementParticipant, ManagementR
         try {
             $values = array_map(fn ($value) => $value === '' ? null : $value, $input->values);
 
-            return new ProfileChange($values['name'], $values['first_name'], $values['surname'], $values['login']);
+            return new ProfileChange(Values::nullableString($values['name']), Values::nullableString($values['first_name']), Values::nullableString($values['surname']), Values::nullableString($values['login']));
         } catch (\InvalidArgumentException|\TypeError) {
             throw new OperationRejected('admin_input_invalid', 'runa.auth', 'profile.edit', 422);
         }

@@ -141,6 +141,7 @@
     "Runa\\Modules\\Auth\\Contracts\\Eligibility",
     "Runa\\Modules\\Auth\\Contracts\\Identity",
     "Runa\\Modules\\Auth\\Contracts\\IdentityConflict",
+    "Runa\\Modules\\Auth\\Contracts\\IdentitySetup",
     "Runa\\Modules\\Auth\\Contracts\\LifecycleChange",
     "Runa\\Modules\\Auth\\Contracts\\NewIdentity",
     "Runa\\Modules\\Auth\\Contracts\\PreferenceDefinition",
@@ -216,7 +217,8 @@
       "src/runa/modules/auth/backend/Actions/ManageProfiles.php",
       "src/runa/modules/auth/backend/Actions/ManageSecurity.php",
       "src/runa/modules/auth/backend/Actions/ScheduledLifecycle.php",
-      "src/runa/modules/permissions/backend/Support/PreserveAuthority.php"
+      "src/runa/modules/permissions/backend/Support/PreserveAuthority.php",
+      "src/runa/modules/auth/backend/Actions/BulkUsers.php"
     ],
     "Runa\\Contracts\\Modules\\HttpAccountPolicy": [
       "src/runa/Contracts/Modules/HttpAccountPolicy.php",
@@ -225,7 +227,8 @@
       "src/runa/Integration/Core/AnonymousAccountPolicy.php",
       "src/runa/ModuleFramework/Api/ModuleHttpGuard.php",
       "src/runa/Providers/AuthTransportServiceProvider.php",
-      "src/runa/Providers/ModuleFrameworkServiceProvider.php"
+      "src/runa/Providers/ModuleFrameworkServiceProvider.php",
+      "src/runa/Integration/Core/AdminHttpGuard.php"
     ],
     "Runa\\Contracts\\Modules\\OperationAuthorizer": [
       "src/runa/Contracts/Modules/OperationAuthorizer.php",
@@ -236,7 +239,10 @@
       "src/runa/Providers/CoreIntegrationServiceProvider.php",
       "src/runa/Providers/ModuleFrameworkServiceProvider.php",
       "src/runa/Support/Modules/Frontend/ModuleFrontend.php",
-      "src/runa/modules/admin/backend/Queries/Projection.php"
+      "src/runa/modules/admin/backend/Queries/Projection.php",
+      "src/runa/modules/auth/backend/Actions/AccountPreferences.php",
+      "src/runa/modules/auth/backend/Actions/Avatars.php",
+      "src/runa/modules/auth/backend/Queries/Administration.php"
     ],
     "Runa\\Contracts\\Modules\\PreparationContext": [
       "src/runa/Contracts/Modules/PreparationContext.php",
@@ -316,7 +322,16 @@
       "src/runa/modules/permissions/backend/Queries/ResolvePermissions.php",
       "src/runa/modules/permissions/backend/Support/AccessState.php",
       "src/runa/modules/permissions/backend/Support/OperatorAuthority.php",
-      "src/runa/modules/permissions/backend/Support/PreserveAuthority.php"
+      "src/runa/modules/permissions/backend/Support/PreserveAuthority.php",
+      "src/runa/Contracts/Modules/MutationDefinition.php",
+      "src/runa/modules/auth/backend/Actions/ProfileMutation.php",
+      "src/runa/modules/auth/backend/Contracts/AdministrativeProfile.php",
+      "src/runa/modules/auth/backend/Contracts/AdministrativeUser.php",
+      "src/runa/modules/auth/backend/Management/SubjectSection.php",
+      "src/runa/modules/auth/backend/Queries/Administration.php",
+      "src/runa/modules/auth/backend/Queries/UserDirectory.php",
+      "src/runa/modules/auth/backend/Support/TransactionSecurity.php",
+      "src/runa/modules/permissions/backend/Management/DefinitionEditor.php"
     ],
     "Runa\\Modules\\Audit\\Contracts\\AuditActorResolver": [
       "src/runa/Integration/Core/AuthAuditActor.php",
@@ -346,7 +361,8 @@
       "src/runa/Integration/Core/PermissionUserSelection.php",
       "src/runa/Providers/CoreIntegrationServiceProvider.php",
       "src/runa/modules/auth/backend/Actions/BulkSessions.php",
-      "src/runa/modules/auth/backend/Contracts/BulkUserSelection.php"
+      "src/runa/modules/auth/backend/Contracts/BulkUserSelection.php",
+      "src/runa/modules/auth/backend/Actions/BulkUsers.php"
     ],
     "Runa\\Modules\\Auth\\Contracts\\DevelopmentAccounts": [
       "src/runa/Console/Commands/DevelopmentAccounts.php",
@@ -361,7 +377,8 @@
       "src/runa/modules/auth/backend/Actions/BulkUsers.php",
       "src/runa/modules/auth/backend/Actions/OperatorAccounts.php",
       "src/runa/modules/auth/backend/Contracts/OperatorAuthority.php",
-      "src/runa/modules/permissions/backend/Support/OperatorAuthority.php"
+      "src/runa/modules/permissions/backend/Support/OperatorAuthority.php",
+      "src/runa/modules/auth/backend/Development/DevelopmentAdministratorSeeder.php"
     ],
     "Runa\\Modules\\Auth\\Contracts\\SecurityMailDelivery": [
       "src/runa/modules/auth/backend/Actions/SecurityNotices.php",
@@ -415,11 +432,16 @@
       "src/runa/modules/permissions/backend/Support/AccessTransaction.php",
       "src/runa/modules/auth/backend/Management/ProfileEditor.php",
       "src/runa/modules/admin/backend/Actions/Aggregate.php",
-      "src/runa/modules/auth/backend/Management/PolicySection.php"
+      "src/runa/modules/auth/backend/Management/PolicySection.php",
+      "src/runa/modules/auth/backend/Actions/BulkUsers.php",
+      "src/runa/modules/auth/backend/Actions/ChangeIdentity.php",
+      "src/runa/modules/auth/backend/Management/CreationSection.php"
     ],
     "Runa\\ModuleFramework\\Api\\OperationScope": [
       "src/runa/modules/audit/backend/Support/ExecutionContext.php",
-      "src/runa/modules/auth/backend/Queries/Administration.php"
+      "src/runa/modules/auth/backend/Queries/Administration.php",
+      "src/runa/modules/auth/backend/Actions/AccountPreferences.php",
+      "src/runa/modules/auth/backend/Actions/Avatars.php"
     ],
     "Runa\\ModuleFramework\\Api\\PrincipalScope": [
       "src/runa/modules/audit/backend/Queries/ReadOwnHistory.php",
@@ -434,7 +456,8 @@
       "src/runa/modules/admin/backend/Actions/Aggregate.php",
       "src/runa/modules/auth/backend/Management/ProfileEditor.php",
       "src/runa/modules/permissions/backend/Management/AssignmentEditor.php",
-      "src/runa/modules/auth/backend/Management/SubjectSection.php"
+      "src/runa/modules/auth/backend/Management/SubjectSection.php",
+      "src/runa/modules/permissions/backend/Management/AuthorityEditor.php"
     ],
     "Runa\\ModuleFramework\\Data\\AuthorityLock": [
       "src/runa/modules/auth/backend/Actions/ChangeIdentity.php",
@@ -471,7 +494,8 @@
     "Runa\\Integration\\Core\\AdminEntry": [
       "src/runa/modules/admin/backend/Queries/Access.php",
       "src/runa/modules/admin/backend/Actions/Command.php",
-      "src/runa/modules/admin/backend/Actions/Aggregate.php"
+      "src/runa/modules/admin/backend/Actions/Aggregate.php",
+      "src/runa/modules/admin/backend/Http/Controllers/ActivityController.php"
     ],
     "Runa\\Identity\\ApplicationIdentity": [
       "src/runa/modules/admin/backend/Queries/Access.php"
@@ -500,6 +524,41 @@
       "src/runa/Contracts/Modules/ManagementWrite.php",
       "src/runa/Contracts/Modules/ManagementOptionsRead.php",
       "src/runa/Contracts/Modules/ManagementWidgetResult.php"
+    ],
+    "Runa\\Integration\\Core\\AdminOperations": [
+      "src/runa/modules/admin/backend/Queries/Operations.php"
+    ],
+    "Runa\\ModuleFramework\\Management\\InputValues": [
+      "src/runa/Contracts/Modules/ManagementApiTarget.php",
+      "src/runa/Contracts/Modules/ManagementOptions.php",
+      "src/runa/Contracts/Modules/ManagementPageResult.php",
+      "src/runa/Contracts/Modules/ManagementRead.php",
+      "src/runa/Contracts/Modules/MutationDefinition.php",
+      "src/runa/Contracts/Settings/ApplicationImages.php",
+      "src/runa/Contracts/Settings/ApplicationSetting.php",
+      "src/runa/Integration/Core/AdminOperations.php",
+      "src/runa/Settings/SettingRegistry.php",
+      "src/runa/Settings/SettingStore.php",
+      "src/runa/Support/Modules/Data/ModuleTransactions.php",
+      "src/runa/Support/Modules/Settings/SettingsSnapshots.php",
+      "src/runa/modules/admin/backend/Actions/Aggregate.php",
+      "src/runa/modules/admin/backend/Queries/Projection.php",
+      "src/runa/modules/audit/backend/Management/HistoryReader.php",
+      "src/runa/modules/auth/backend/Contracts/AdministrativeProfile.php",
+      "src/runa/modules/auth/backend/Contracts/UserDirectoryPage.php",
+      "src/runa/modules/auth/backend/Contracts/UserDirectoryQuery.php",
+      "src/runa/modules/auth/backend/Management/BulkSessionSection.php",
+      "src/runa/modules/auth/backend/Management/BulkUserSection.php",
+      "src/runa/modules/auth/backend/Management/CreationSection.php",
+      "src/runa/modules/auth/backend/Management/Directory.php",
+      "src/runa/modules/auth/backend/Management/ProfileEditor.php",
+      "src/runa/modules/auth/backend/Management/SubjectSection.php",
+      "src/runa/modules/auth/backend/Queries/UserDirectory.php",
+      "src/runa/modules/auth/backend/Support/TransactionSecurity.php",
+      "src/runa/modules/permissions/backend/Contracts/AuthorityBatchPreview.php",
+      "src/runa/modules/permissions/backend/Management/AssignmentEditor.php",
+      "src/runa/modules/permissions/backend/Management/AuthorityBulkEditor.php",
+      "src/runa/modules/permissions/backend/Management/DefinitionEditor.php"
     ]
   }
 }

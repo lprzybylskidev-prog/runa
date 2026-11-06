@@ -23,6 +23,7 @@ final readonly class PolicySection implements ManagementResourceReader, Manageme
 {
     public function __construct(private ModuleApis $apis, private ModuleSettings $settings, private OperationGuard $guard) {}
 
+    /** @return list<string> */
     public static function keys(): array
     {
         return array_map(fn ($setting) => $setting->key, array_values(array_filter((new IdentitySettings)->settings(), fn ($setting) => ! $setting->sensitive)));

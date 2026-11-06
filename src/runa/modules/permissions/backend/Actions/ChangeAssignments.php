@@ -52,7 +52,10 @@ final readonly class ChangeAssignments
         $mutation = $this->mutation($reviewed);
         $results = $this->mutations->run([$mutation]);
 
-        return $results['runa.permissions.'.$mutation->definition()->key];
+        /** @var array{user_public_id: string, identity_version: int, eligible: bool, security_version: int, revision: int, super_admin: bool, assigned: array{roles: list<string>, permissions: list<string>}, definitions: array{roles: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>, permissions: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>}} $result Frozen owning mutation result after commit. */
+        $result = $results['runa.permissions.'.$mutation->definition()->key];
+
+        return $result;
     }
 
     public function mutation(AssignmentPreview $reviewed): AssignmentMutation
@@ -79,8 +82,10 @@ final readonly class ChangeAssignments
         $c = $this->database->connection();
         // Only ordinary roles change. Protected system assignment is preserved even in replace mode.
         foreach (['roles' => 'role', 'permissions' => 'permission'] as $kind => $singular) {
+            /** @var list<int> $ids PostgreSQL internal bigint identifiers. */
             $ids = $c->table('runa_permissions.'.$kind)->whereIn('public_id', $current->removed[$kind])->where('system', false)->pluck('id')->all();
             $c->table('runa_permissions.user_'.$kind)->where('user_public_id', $current->userPublicId)->whereIn($singular.'_id', $ids)->delete();
+            /** @var list<int> $ids PostgreSQL internal bigint identifiers. */
             $ids = $c->table('runa_permissions.'.$kind)->whereIn('public_id', $current->added[$kind])->where('system', false)->pluck('id')->all();
             if ($ids !== []) {
                 $c->table('runa_permissions.user_'.$kind)->insert(array_map(static fn (int $id): array => ['user_public_id' => $current->userPublicId,

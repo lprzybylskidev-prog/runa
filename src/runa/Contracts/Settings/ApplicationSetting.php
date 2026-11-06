@@ -4,6 +4,7 @@ namespace Runa\Contracts\Settings;
 
 use InvalidArgumentException;
 use Runa\Contracts\Modules\ApiOperation;
+use Runa\ModuleFramework\Management\InputValues as Values;
 
 final readonly class ApplicationSetting
 {
@@ -16,16 +17,14 @@ final readonly class ApplicationSetting
         new ApiOperation($readPermission);
         new ApiOperation($writePermission);
         if ($readPermission === '' || $writePermission === '' || ! in_array($type, ['string', 'integer', 'boolean', 'enum', 'timezone'], true)
-            || ! self::text($title, 160) || ! str_contains($readPermission, '.') || ! str_contains($writePermission, '.') || ! array_is_list($choices) || count($choices) > 64
+            || ! self::text($title, 160) || ! str_contains($readPermission, '.') || ! str_contains($writePermission, '.') || count($choices) > 64
             || count(array_unique($choices, SORT_REGULAR)) !== count($choices)
             || ($type === 'string' ? ($maxLength === null || $maxLength < 1 || $maxLength > 4096) : $maxLength !== null)
             || ($type !== 'enum' && $choices !== [])) {
             throw new InvalidArgumentException('Invalid application setting declaration.');
         }
+        Values::strings($choices);
         foreach ($choices as $choice) {
-            if (! is_string($choice)) {
-                throw new InvalidArgumentException('Invalid setting choice.');
-            }
             new ApiOperation($choice);
         }
         if (! $this->accepts($default)) {

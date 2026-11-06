@@ -47,8 +47,11 @@ final readonly class OperatorAuthority implements OperatorContract
         }
         $role = $this->role($connection, $publicIds[0]);
 
-        return $connection->table('runa_permissions.user_roles')->where('role_id', $role->id)
+        /** @var list<string> $result PostgreSQL UUID text projection. */
+        $result = $connection->table('runa_permissions.user_roles')->where('role_id', $role->id)
             ->whereIn('user_public_id', $publicIds)->orderBy('user_public_id')->pluck('user_public_id')->all();
+
+        return $result;
     }
 
     /** @return \stdClass&object{id: int, public_id: string} */

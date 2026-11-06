@@ -36,10 +36,11 @@ final class SectionReadRequest extends FormRequest
      */
     public function readQuery(): array
     {
+        /** @var array<string,mixed> $query HTTP field names. */
         $query = $this->query();
         if (isset($query['filters'])) {
             try {
-                $filters = json_decode($query['filters'], false, 10, JSON_THROW_ON_ERROR);
+                $filters = json_decode(is_string($query['filters']) ? $query['filters'] : throw new \InvalidArgumentException('Invalid filters.'), false, 10, JSON_THROW_ON_ERROR);
                 if (! $filters instanceof \stdClass) {
                     throw new \InvalidArgumentException('Invalid filter map.');
                 }

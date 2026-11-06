@@ -78,8 +78,10 @@ final readonly class ModuleGenerator
                 throw new InvalidArgumentException('Generate elements only inside a valid existing module.');
             }
             $tokens += ['name' => $name, 'key' => Str::snake($name), 'table' => Str::snake(Str::pluralStudly($name)), 'slug' => Str::kebab($name), 'operation' => Str::snake($name).'.read'];
+            /** @var \stdClass&object{settings:list<string>} $sourceDeclarations Validated manifest declaration categories. */
+            $sourceDeclarations = $source->manifest->definition['declarations'];
             if ($type === 'admin' && (strlen($tokens['key']) > 48
-                || array_diff($source->manifest->definition['declarations']->settings, [$namespace.'\\Definitions\\'.$name.'Settings']) !== [])) {
+                || array_diff($sourceDeclarations->settings, [$namespace.'\\Definitions\\'.$name.'Settings']) !== [])) {
                 throw new InvalidArgumentException('Admin examples need a name of at most 48 snake_case bytes and no other settings provider. Extend existing settings deliberately.');
             }
             $module->table($tokens['table']);
@@ -114,6 +116,9 @@ final readonly class ModuleGenerator
                 if (! is_array($manifest) || ! is_array($manifest['declarations'] ?? null)) {
                     throw new RuntimeException('Invalid module manifest.');
                 }
+                if (! is_array($manifest['docs'] ?? null)) {
+                    throw new RuntimeException('Invalid module documentation declarations.');
+                }
                 if ($type === 'admin' && ! in_array($docs.'/'.$name.'Admin.md', $manifest['docs'], true)) {
                     $manifest['docs'][] = $docs.'/'.$name.'Admin.md';
                     $files[$directory.'/module.json'] = $this->json($manifest);
@@ -146,6 +151,7 @@ final readonly class ModuleGenerator
     }
 
     /** Exact hashes are explicit scoped overwrite authorization, including manifest edits.
+     *
      * @param  array<string, string>  $files
      * @param  array<string, string>  $overwrites
      */

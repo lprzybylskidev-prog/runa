@@ -18,7 +18,6 @@ use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\Modules\Admin\Queries\Projection;
 use Runa\Modules\Auth\Management\AdministrationPages;
-use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 use Tests\Fixtures\ModuleSources;
 use Tests\PlatformTestCase;
@@ -43,7 +42,7 @@ beforeEach(function (): void {
     $class = $this->providerClass;
     $this->provider = new $class;
     $this->registration->register($this->provider);
-    $this->declarations = new ManagementPages(app(ModuleRegistry::class), app(ModuleDeclarations::class), app(ModuleAvailability::class), $this->registration, app(ModuleApis::class), $this->sources->root);
+    $this->declarations = new ManagementPages(app(ModuleRegistry::class), app(ModuleDeclarations::class), app(ModuleAvailability::class), $this->registration, $this->sources->root);
     $this->authority = new class implements OperationAuthorizer
     {
         public array $grants = ['runa.admin.enter'];
@@ -121,7 +120,7 @@ it('refuses ambiguous form intent and implicit management proof actions', functi
     $operation = new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'));
     expect(fn () => new ManagementCommandDefinition('delete', 'Delete', $operation, 'profile', intent: 'delete'))->toThrow(InvalidArgumentException::class);
     expect(fn () => new ManagementCommandDefinition('save', 'Save', $operation, 'profile', intent: 'unknown'))->toThrow(InvalidArgumentException::class);
-    $protected = new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'), stepUp: 'both');
+    $protected = new ManagementOperation(new ApiOperation('update', 'runa.auth.profile.update'), stepUp: 'password');
     expect(fn () => new ManagementCommandDefinition('save', 'Save', $protected, 'profile'))->toThrow(InvalidArgumentException::class);
     expect(new ManagementCommandDefinition('save', 'Save', $protected, 'profile', proofAction: 'runa.auth.profiles.manage'))->toBeInstanceOf(ManagementCommandDefinition::class);
 });

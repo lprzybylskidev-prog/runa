@@ -12,6 +12,7 @@ use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\ModuleFramework\Api\PrincipalScope;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Auth\Contracts\AuthAdministration;
 use Runa\Modules\Auth\Contracts\AuthIdentities;
 use Runa\Modules\Auth\Contracts\AuthInvitations;
@@ -30,13 +31,13 @@ use Runa\Support\Modules\Settings\ModuleSettings;
 /** Fixed source-owned dispatch. All writes go through the owning guarded public API. */
 abstract readonly class SubjectSection implements ManagementResourceReader, ManagementWriter
 {
-    protected const KEY = '';
+    protected const string KEY = '';
 
     public function __construct(private ModuleApis $apis, private PrincipalScope $principals, private ModuleSettings $settings) {}
 
     public function read(ManagementRead $input): ManagementRecord
     {
-        $id = $input->publicId ?? $this->principals->current()?->publicId ?? throw new OperationRejected('authentication_required', 'runa.auth', 'administration.read', 401);
+        $id = $input->publicId ?? $this->principals->current()->publicId ?? throw new OperationRejected('authentication_required', 'runa.auth', 'administration.read', 401);
         if ($input->cursor !== null) {
             if (! in_array(static::KEY, ['sessions', 'trust'], true)) {
                 throw new OperationRejected('admin_input_invalid', 'runa.auth', 'administration.read', 422);
@@ -71,10 +72,8 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             $identity = $this->api(AuthIdentities::class)->identity($id) ?? throw new OperationRejected('identity_missing', 'runa.auth', 'identity.read', 404);
             $version = $identity->version;
             $values = match (static::KEY) {
-                'invitations' => [],
                 'eligibility' => $this->eligibility($id),
                 'sessions' => ['sessions' => json_encode($this->api(AuthSessions::class)->listFor($id, $input->cursor), JSON_THROW_ON_ERROR), 'session_id' => null],
-                'security' => [],
                 'trust' => ['devices' => json_encode($this->api(AuthSecurity::class, '1.2.0')->trustedDevices($id, $input->cursor), JSON_THROW_ON_ERROR), 'device_id' => null],
                 'exceptions' => ['active_exceptions' => json_encode($this->api(AuthPolicies::class, '3.0.0')->activeExceptions($id), JSON_THROW_ON_ERROR), 'exception_versions' => json_encode($this->api(AuthPolicies::class, '3.0.0')->exceptionVersions($id), JSON_THROW_ON_ERROR), 'exceptions' => json_encode($this->api(AuthPolicies::class, '3.0.0')->exceptions($id), JSON_THROW_ON_ERROR), 'key' => 'session_idle_minutes', 'value' => null,
                     'reason' => null, 'expires_at' => null, 'exception_version' => 0, 'policy_revision' => $this->settings->read('runa.auth')['revision']],
@@ -83,7 +82,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
         }
 
         if (static::KEY === 'exceptions') {
-            $values['exception_version'] = json_decode($values['exception_versions'], true, flags: JSON_THROW_ON_ERROR)[$values['key']] ?? 0;
+            $values['exception_version'] = Values::map(json_decode(Values::string($values['exception_versions']), true, flags: JSON_THROW_ON_ERROR))['session_idle_minutes'] ?? 0;
         }
 
         return new ManagementRecord($id, (string) $version, $values);
@@ -103,7 +102,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
     {
         try {
             $this->validateInput($input);
-            $id = $input->publicId;
+            $id = Values::string($input->publicId);
             $v = $input->values;
             foreach (['name', 'first_name', 'surname', 'login'] as $key) {
                 if (($v[$key] ?? null) === '') {
@@ -112,25 +111,25 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             }
             $version = (int) $input->revision;
             $result = match (static::KEY.'.'.$input->command) {
-                'lifecycle.change' => $this->api(AuthLifecycle::class, '2.1.0')->change($id, $version, new LifecycleChange($v['operation'], in_array($v['operation'], ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'], true) ? Moment::seconds($v['at']) : null, in_array($v['operation'], ['set_security_lock', 'require_password_change'], true) ? $v['enabled'] : null)),
+                'lifecycle.change' => $this->api(AuthLifecycle::class, '2.1.0')->change($id, $version, new LifecycleChange(Values::string($v['operation']), in_array(Values::string($v['operation']), ['schedule_activation', 'schedule_deactivation', 'set_attempt_lock'], true) ? Moment::seconds($v['at']) : null, in_array(Values::string($v['operation']), ['set_security_lock', 'require_password_change'], true) ? Values::boolean($v['enabled']) : null)),
                 'invitations.invite' => $this->api(AuthInvitations::class)->invite($id, $version),
                 'invitations.invalidate' => $this->api(AuthInvitations::class)->invalidate($id, $version),
-                'primary_email.change' => $this->api(AuthProfiles::class, '2.1.0')->changeEmail($id, $version, $v['email']),
-                'primary_email.replace' => $this->api(AuthProfiles::class, '2.1.0')->replaceVerifiedEmail($id, $version, $v['replacement_email']),
+                'primary_email.change' => $this->api(AuthProfiles::class, '2.1.0')->changeEmail($id, $version, Values::string($v['email'])),
+                'primary_email.replace' => $this->api(AuthProfiles::class, '2.1.0')->replaceVerifiedEmail($id, $version, Values::string($v['replacement_email'])),
                 'primary_email.verify' => $this->api(AuthProfiles::class, '2.1.0')->verifyEmail($id, $version),
-                'secondary.verify' => $this->api(AuthProfiles::class, '2.1.0')->verifySecondary($id, $version, $v['address_id']),
+                'secondary.verify' => $this->api(AuthProfiles::class, '2.1.0')->verifySecondary($id, $version, Values::string($v['address_id'])),
                 'primary_email.require_verification' => $this->api(AuthProfiles::class, '2.1.0')->requireVerification($id, $version),
-                'secondary.add' => $this->api(AuthProfiles::class, '2.1.0')->addSecondary($id, $version, $v['email']),
-                'secondary.change' => $this->api(AuthProfiles::class, '2.1.0')->changeSecondary($id, $version, $v['address_id'], $v['email']),
-                'secondary.remove' => $this->api(AuthProfiles::class, '2.1.0')->removeSecondary($id, $version, $v['address_id']),
-                'sessions.revoke' => $this->api(AuthSessions::class)->revoke($id, $v['session_id']),
+                'secondary.add' => $this->api(AuthProfiles::class, '2.1.0')->addSecondary($id, $version, Values::string($v['email'])),
+                'secondary.change' => $this->api(AuthProfiles::class, '2.1.0')->changeSecondary($id, $version, Values::string($v['address_id']), Values::string($v['email'])),
+                'secondary.remove' => $this->api(AuthProfiles::class, '2.1.0')->removeSecondary($id, $version, Values::string($v['address_id'])),
+                'sessions.revoke' => $this->api(AuthSessions::class)->revoke($id, Values::string($v['session_id'])),
                 'sessions.revoke_all' => $this->api(AuthSessions::class)->revokeAll($id),
                 'security.password_reset' => $this->api(AuthSecurity::class, '1.2.0')->requestPasswordReset($id, $version),
                 'security.factor_reset' => $this->api(AuthSecurity::class, '1.2.0')->resetFactors($id, $version),
                 'trust.revoke_all' => $this->api(AuthSecurity::class, '1.2.0')->revokeDevices($id, $version),
-                'trust.revoke_device' => $this->api(AuthSecurity::class, '1.2.0')->revokeDevice($id, $v['device_id']),
+                'trust.revoke_device' => $this->api(AuthSecurity::class, '1.2.0')->revokeDevice($id, Values::string($v['device_id'])),
                 'exceptions.revoke_all' => $this->api(AuthPolicies::class, '3.0.0')->revokeExceptions($id, $version),
-                'exceptions.set' => $this->api(AuthPolicies::class, '3.0.0')->exception($id, $v['key'], $v['value'], $v['reason'], Moment::seconds($v['expires_at']), $v['exception_version'], $v['policy_revision']),
+                'exceptions.set' => $this->api(AuthPolicies::class, '3.0.0')->exception($id, Values::string($v['key']), Values::nullableInteger($v['value']), Values::string($v['reason']), Moment::seconds($v['expires_at']), Values::integer($v['exception_version']), Values::integer($v['policy_revision'])),
                 default => throw new \InvalidArgumentException('Unknown administration command.'),
             };
             if ($result === false) {
@@ -164,7 +163,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
     {
         $features = app(AdministrationFeatures::class);
         if (! $features->command(static::KEY, $input->command)
-            || (static::KEY === 'lifecycle' && ! $features->lifecycle($input->values['operation'] ?? ''))
+            || (static::KEY === 'lifecycle' && ! $features->lifecycle(Values::string($input->values['operation'] ?? '')))
             || (in_array(static::KEY, ['secondary', 'trust'], true) && ! $features->enabled(static::KEY))) {
             throw new \InvalidArgumentException('Auth feature disabled.');
         }
@@ -200,12 +199,14 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
                 throw new \InvalidArgumentException('Invalid administration field type.');
             }
             if ($field->type === 'uuid') {
-                new TrustedPrincipal($value);
+                new TrustedPrincipal(Values::string($value));
             }
         }
     }
 
-    /** @template T of object
+    /**
+     * @template T of object
+     *
      * @param class-string<T> $contract
      * @return T */
     private function api(string $contract, string $version = '1.0.0'): object

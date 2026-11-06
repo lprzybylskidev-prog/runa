@@ -4,6 +4,8 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — 0.7.0 candidate
 
+- Allow a bounded PostgreSQL disconnect grace period before guarded test-worker cleanup; retain ownership/activity refusal, native failures and non-forced deletion. Correct backend acceptance fixtures for native login/proofs, feature prerequisites, current projections, scheduler boot and production seeding refusal.
+
 - Repair final-verification findings: restore customer Vitest module-component discovery, reconcile controlled table columns and preference notifications, coalesce header positioning before paint without suppressing browser warnings, retain authenticator enrollment across action refresh, and include Settings/Images implementation in production images. Update four locked Symfony packages to 8.1.11 for reported security corrections; no new dependencies.
 
 - Retain the required eligible administrator during bulk superadministrator removal and apply the remaining reviewed changes. Reuse the existing protected-account warning/count, fingerprint the retained set and preserve native single-write lockout protection, password proof and atomic Audit.

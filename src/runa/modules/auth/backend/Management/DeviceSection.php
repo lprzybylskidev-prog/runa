@@ -4,5 +4,5 @@ namespace Runa\Modules\Auth\Management;
 
 final readonly class DeviceSection extends SubjectSection
 {
-    protected const KEY = 'trust';
+    protected const string KEY = 'trust';
 }

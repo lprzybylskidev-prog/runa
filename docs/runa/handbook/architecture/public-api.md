@@ -374,3 +374,13 @@ not the internal Images parser. Complete signatures/limits/ownership:
 [application branding](../modules/admin/operations.md#display-defaults-and-uploaded-branding).
 Public frontend defaults/instant formatting remain in the UI facade; see
 [settings presentation](../modules/admin/frontend.md#application-display-defaults-image-drafts-and-page-headings).
+
+## Internal Admin input decoding
+
+`Runa\ModuleFramework\Management\InputValues` is an internal structural decoder
+for the named supplied Core handlers and declaration validators in the source-owned
+audience policy. It is not a customer adapter, grant or identity source. Native
+Actions and guarded APIs retain semantic validation, current grants, revisions,
+password proof and transactional Audit. Auth owns its separate internal delivery
+preference decoder. Customers continue to use documented declarations and guarded
+public APIs from application-owned code.

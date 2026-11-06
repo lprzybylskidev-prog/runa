@@ -8,6 +8,7 @@ use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\ManagementRead;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Settings\SettingsDefinitions;
 use Runa\Modules\Audit\Contracts\AuditEvent;
@@ -27,8 +28,10 @@ final readonly class SettingsSnapshots
     {
         $this->transaction();
 
-        return $this->rows($module, $scope)->orderBy('name')->limit(100)->get(['public_id', 'name', 'source_revision', 'created_at'])
-            ->map(fn ($row) => ['public_id' => $row->public_id, 'name' => $row->name, 'source_revision' => (int) $row->source_revision, 'created_at' => $row->created_at])->all();
+        /** @var list<\stdClass&object{public_id:string,name:string,source_revision:int,created_at:string}> $rows */
+        $rows = $this->rows($module, $scope)->orderBy('name')->limit(100)->get(['public_id', 'name', 'source_revision', 'created_at'])->all();
+
+        return array_map(static fn ($row) => ['public_id' => $row->public_id, 'name' => $row->name, 'source_revision' => $row->source_revision, 'created_at' => $row->created_at], $rows);
     }
 
     /** @param list<string> $keys */
@@ -49,7 +52,7 @@ final readonly class SettingsSnapshots
         $hash = $this->fingerprint($module, $keys);
         $values = [];
         foreach ($keys as $key) {
-            $values[$key] = $state['settings'][$key]['value'];
+            $values[$key] = $state['settings'][$key]['value'] ?? null;
         }
         $id = (string) Str::uuid7();
         $connection->table('shared.module_settings_snapshots')->insert([
@@ -63,24 +66,27 @@ final readonly class SettingsSnapshots
         return $id;
     }
 
-    /** @param list<string> $keys @return array<string,mixed> */
+    /**
+     * @param list<string> $keys
+     * @return array<string,mixed> */
     public function load(string $module, string $scope, array $keys, string $publicId): array
     {
         $this->transaction();
         new ManagementRead($publicId);
+        /** @var \stdClass&object{definition_hash:string,settings_values:string} $row */
         $row = $this->rows($module, $scope)->where('public_id', $publicId)->first()
             ?? throw $this->reject($module, 'settings_snapshot_missing', 404);
         if (! hash_equals($this->fingerprint($module, $keys), $row->definition_hash)) {
             throw $this->reject($module, 'settings_snapshot_incompatible', 409);
         }
-        $values = json_decode($this->encrypter->decrypt($row->settings_values, false), true, flags: JSON_THROW_ON_ERROR);
+        $values = json_decode(Values::string($this->encrypter->decrypt($row->settings_values, false)), true, flags: JSON_THROW_ON_ERROR);
         if (! is_array($values) || array_diff(array_keys($values), $keys) !== [] || array_diff($keys, array_keys($values)) !== []) {
             throw $this->reject($module, 'settings_snapshot_incompatible', 409);
         }
 
         // Publication performs full current validation, including private values and
         // cross-field rules. Loading never substitutes source defaults for missing keys.
-        return $values;
+        return Values::map($values);
     }
 
     public function delete(string $module, string $scope, string $publicId): void
@@ -97,7 +103,8 @@ final readonly class SettingsSnapshots
     private function fingerprint(string $module, array $keys): string
     {
         [$definitions] = $this->definitions->for($this->registry->snapshot()->modules[$module]);
-        if ($keys === [] || ! array_is_list($keys) || count(array_unique($keys)) !== count($keys)) {
+        Values::strings($keys);
+        if ($keys === [] || count(array_unique($keys)) !== count($keys)) {
             throw new \LogicException('Snapshot scopes require explicit unique keys.');
         }
         $shape = [];

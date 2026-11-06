@@ -71,9 +71,12 @@ final readonly class SessionStore
     {
         $idle = app(PolicyExceptions::class)->queryFor('session_idle_minutes', 'session_user.id');
 
+        /** @var non-falsy-string&literal-string $deadline Fixed owning policy SQL; all runtime values are bound. */
+        $deadline = 'runa_auth.sessions.activity_at > ?::timestamptz - COALESCE(('.$idle->toSql()."), ?) * INTERVAL '1 minute'";
+
         return $this->liveQuery($connection)->join('runa_auth.users as session_user', 'session_user.id', '=', 'runa_auth.sessions.user_id')
             ->whereColumn('runa_auth.sessions.security_version', 'session_user.security_version')
-            ->whereRaw('runa_auth.sessions.activity_at > ?::timestamptz - COALESCE(('.$idle->toSql()."), ?) * INTERVAL '1 minute'", [CarbonImmutable::now('UTC'), ...$idle->getBindings(), $this->settings->integer('runa.auth', 'session_idle_minutes')]);
+            ->whereRaw($deadline, [CarbonImmutable::now('UTC'), ...$idle->getBindings(), $this->settings->integer('runa.auth', 'session_idle_minutes')]);
     }
 
     private function liveQuery(Connection $connection): Builder
@@ -126,7 +129,8 @@ final readonly class SessionStore
         }
     }
 
-    /** @param SessionRow $row
+    /**
+     * @param  SessionRow  $row
      * @return array{public_id: string, current: bool, remembered: bool, authenticated_at: string, activity_at: string, expires_at: string}
      */
     public function projection(object $row, bool $current = false): array

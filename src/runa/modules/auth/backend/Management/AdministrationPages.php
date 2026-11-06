@@ -343,7 +343,7 @@ final class AdministrationPages implements ManagementPageProvider
             }
         }
         $fields['lifecycle'][0] = self::field('operation', 'Lifecycle operation', 'dictionary', 'users.manage', 'users.read',
-            choices: array_values(array_filter($fields['lifecycle'][0]->field->choices, $features->lifecycle(...))));
+            choices: array_values(array_filter($fields['lifecycle'][0]->field->choices, static fn (mixed $value): bool => is_string($value) && $features->lifecycle($value))));
         foreach ($fields as $key => $items) {
             $fields[$key] = array_values(array_filter($items, fn ($access) => ($key === 'creation' && $access->field->key === 'password_change_required')
                 || $features->field($access->field->key)));
@@ -412,7 +412,7 @@ final class AdministrationPages implements ManagementPageProvider
         foreach ($settings as $setting) {
             $choices = [];
             foreach ($setting->rules as $rule) {
-                if (is_string($rule) && str_starts_with($rule, 'in:')) {
+                if (str_starts_with($rule, 'in:')) {
                     $choices = explode(',', substr($rule, 3));
                 }
             }
@@ -439,20 +439,21 @@ final class AdministrationPages implements ManagementPageProvider
         return [new ManagementPage('policy', 'Authentication policy', 'runa.auth.policy.read', $sections, order: 20, component: 'runa.auth.admin_policy')];
     }
 
+    /** @return list<ManagementFieldAccess> */
     private static function creationFields(): array
     {
         $fields = [self::field('email', 'Email', write: 'users.create', read: 'users.create'), ...self::names('users.create')];
         foreach (['active' => ['Aktywne', 'Active'], 'email_verified' => ['Adres potwierdzony przez administratora', 'Email verified by administrator'],
             'security_locked' => ['Blokada bezpieczeństwa', 'Security lock'], 'password_change_required' => ['Zmiana hasła przy pierwszym logowaniu', 'Change password at first sign-in']] as $key => [$pl, $en]) {
-            $fields[] = self::field($key, compact('pl', 'en'), 'boolean', 'users.create', 'users.create');
+            $fields[] = self::field($key, ['pl' => $pl, 'en' => $en], 'boolean', 'users.create', 'users.create');
         }
         foreach (['activate_at' => ['Termin aktywacji', 'Activation date'], 'deactivate_at' => ['Termin dezaktywacji', 'Deactivation date'],
             'attempt_locked_until' => ['Blokada logowania do', 'Login locked until']] as $key => [$pl, $en]) {
-            $fields[] = self::field($key, compact('pl', 'en'), 'datetime', 'users.create', 'users.create');
+            $fields[] = self::field($key, ['pl' => $pl, 'en' => $en], 'datetime', 'users.create', 'users.create');
         }
         $fields[] = self::field('credential_mode', ['pl' => 'Pierwsze hasło', 'en' => 'Initial password'], 'dictionary', 'users.create', 'users.create', choices: ['none', 'invitation', 'password']);
         foreach (['password' => ['Hasło', 'Password'], 'password_confirmation' => ['Powtórz hasło', 'Confirm password']] as $key => [$pl, $en]) {
-            $text = compact('pl', 'en');
+            $text = ['pl' => $pl, 'en' => $en];
             $fields[] = new ManagementFieldAccess(new ManagementField($key, 'text', $text, $text, writable: true, sensitive: true, maxLength: 72), 'runa.auth.users.create', 'runa.auth.users.create');
         }
         $fields[] = self::field('identifier_mode', 'Login identifier', 'dictionary', read: 'users.create', choices: ['email', 'login', 'either']);
@@ -463,13 +464,16 @@ final class AdministrationPages implements ManagementPageProvider
         return $fields;
     }
 
+    /** @return list<ManagementFieldAccess> */
     private static function names(string $grant): array
     {
         return array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), write: $grant, read: $grant), ['name', 'first_name', 'surname', 'login']);
     }
 
-    /** @param string|array{pl:string,en:string} $label
-     * @param  array{pl:string,en:string}|null  $description
+    /**
+     * @param  string|array<string,string>  $label
+     * @param  array<mixed>  $choices
+     * @param  array<string,string>|null  $description
      */
     public static function field(string $key, string|array $label, string $type = 'text', ?string $write = null, string $read = 'profiles.read', array $choices = [], bool $filter = false, ?array $description = null): ManagementFieldAccess
     {
@@ -480,6 +484,7 @@ final class AdministrationPages implements ManagementPageProvider
         } : null, choices: $choices), 'runa.auth.'.$read, $write === null ? null : 'runa.auth.'.$write);
     }
 
+    /** @return list<ManagementCommandDefinition> */
     private static function commandDefinitions(string $key): array
     {
         $result = [];
@@ -495,9 +500,15 @@ final class AdministrationPages implements ManagementPageProvider
         return $result;
     }
 
+    /** @param list<string> $methods */
+    private static function target(string $contract, array $methods, string $version = '1.0.0'): ManagementApiTarget
+    {
+        return new ManagementApiTarget('runa.auth', $contract, $version, $methods);
+    }
+
     public function bindings(): array
     {
-        $target = static fn ($contract, $methods, $version = '1.0.0') => new ManagementApiTarget('runa.auth', $contract, $version, $methods);
+        $target = self::target(...);
         $identity = $target(AuthIdentities::class, ['identity']);
 
         return [

@@ -16,6 +16,7 @@ use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\Data\AuthorityLock;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Transactions\HealthAdmissions;
@@ -30,20 +31,19 @@ final readonly class ModuleTransactions
         private AuthorityLock $authority, private TransactionSecurity $security,
         private HealthAdmissions $admissions, private Application $app) {}
 
-    /** @param list<TransactionalMutation> $mutations
+    /**
+     * @param  list<TransactionalMutation>  $mutations
      * @return array<string,array<string,mixed>>
      */
     public function run(array $mutations): array
     {
         $connection = $this->database->connection();
-        if ($connection->getDriverName() !== 'pgsql' || $connection->transactionLevel() !== 0 || ! array_is_list($mutations) || $mutations === [] || count($mutations) > 16) {
+        if ($connection->getDriverName() !== 'pgsql' || $connection->transactionLevel() !== 0 || $mutations === [] || count($mutations) > 16) {
             throw new OperationRejected('transaction_boundary_invalid', 'runa', 'transaction', 409);
         }
+        Values::objects($mutations, TransactionalMutation::class, 16);
         $items = $resources = $proofs = $subjects = [];
         foreach ($mutations as $mutation) {
-            if (! $mutation instanceof TransactionalMutation) {
-                throw new \InvalidArgumentException('Invalid owning mutation.');
-            }
             $definition = $mutation->definition();
             $this->owned($mutation, $definition);
             $id = $definition->owner.'.'.$definition->key;
@@ -144,7 +144,7 @@ final readonly class ModuleTransactions
                 }, 1);
             });
         } catch (Throwable $error) {
-            if ($started && $connection->transactionLevel() === 0) {
+            if ($started && $this->database->connection()->transactionLevel() === 0) {
                 $reason = $error instanceof OperationRejected && preg_match('/\A[a-z][a-z0-9_]{0,63}\z/D', $error->reason) === 1 ? $error->reason : 'transaction_failed';
                 $refusalFailed = false;
                 foreach ($items as [$mutation]) {

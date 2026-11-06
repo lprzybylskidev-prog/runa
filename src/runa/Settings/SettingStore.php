@@ -10,6 +10,7 @@ use Runa\Contracts\Settings\ApplicationImages;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\Data\AuthorityLock;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Audit\Contracts\AuditEvent;
 use Runa\Modules\Audit\Contracts\AuditRecords;
 use Runa\Support\Modules\Api\ModuleApis;
@@ -32,14 +33,17 @@ final readonly class SettingStore
         });
     }
 
-    /** @param array<string,mixed> $patch @return array{revision:int,values:array<string,string|int|bool|null>} */
+    /**
+     * @param array<string,mixed> $patch
+     * @return array{revision:int,values:array<string,string|int|bool|null>} */
     public function update(array $patch, int $expectedRevision, ?ApplicationImages $images = null): array
     {
-        if ($expectedRevision < 1 || $patch === [] || array_is_list($patch) || count($patch) > 64
+        if ($expectedRevision < 1 || $patch === [] || count($patch) > 64
             || strlen(json_encode($patch, JSON_THROW_ON_ERROR)) > 524288) {
             throw $this->reject('application_settings_invalid', 422);
         }
 
+        Values::map($patch);
         $this->prepare(true);
 
         return $this->run(function (Connection $connection) use ($patch, $expectedRevision, $images): array {
@@ -74,7 +78,7 @@ final readonly class SettingStore
                 foreach ($images->png as $kind => $bytes) {
                     // Identifiers come only from DTO keys; publish the paired images in one statement.
                     $column = match ($kind) {
-                        'logo' => 'branding_logo', 'logo_icon' => 'branding_logo_icon', 'favicon' => 'branding_favicon'
+                        'logo' => 'branding_logo', 'logo_icon' => 'branding_logo_icon', 'favicon' => 'branding_favicon', default => throw new \InvalidArgumentException('Invalid branding kind.')
                     };
                     $assignments[] = $column." = decode(?, 'base64')";
                     $bindings[] = base64_encode($bytes);
@@ -191,7 +195,9 @@ final readonly class SettingStore
         return $row ?? throw $this->reject('application_settings_unavailable', 503);
     }
 
-    /** @param object{revision:int|string,values:string} $row @return array{revision:int,values:array<string,string|int|bool|null>} */
+    /**
+     * @param object{revision:int|string,values:string} $row
+     * @return array{revision:int,values:array<string,string|int|bool|null>} */
     private function project(object $row): array
     {
         /** @var array<string,mixed> $stored */
@@ -232,7 +238,11 @@ final readonly class SettingStore
         }
     }
 
-    /** @template T @param Closure(Connection):T $work @return T */
+    /**
+     * @template T
+     *
+     * @param Closure(Connection):T $work
+     * @return T */
     private function run(Closure $work): mixed
     {
         if ($this->principals->current() === null) {

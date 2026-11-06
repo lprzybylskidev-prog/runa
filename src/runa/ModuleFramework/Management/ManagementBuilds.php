@@ -20,6 +20,9 @@ final readonly class ManagementBuilds
         $sources = [];
         $directory = ModuleDiscovery::ownedPath($this->root, $directory);
         foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS)) as $file) {
+            if (! $file instanceof \SplFileInfo) {
+                throw new InvalidArgumentException('Invalid frontend build source.');
+            }
             $path = ModuleDiscovery::ownedPath($this->root, $file->getPathname());
             if (! $file->isFile()) {
                 throw new InvalidArgumentException('Invalid frontend build source.');
@@ -55,10 +58,17 @@ final readonly class ManagementBuilds
             if (! is_file($file) || filesize($file) > 4194304) {
                 return $view;
             }
-            $manifest = json_decode(file_get_contents($file), true, 32, JSON_THROW_ON_ERROR);
+            $bytes = file_get_contents($file);
+            if ($bytes === false) {
+                return $view;
+            }
+            $manifest = json_decode($bytes, true, 32, JSON_THROW_ON_ERROR);
+            if (! is_array($manifest) || ! is_array($manifest['owners'] ?? null)) {
+                return $view;
+            }
             $entry = $manifest['owners'][$owner] ?? null;
             if (($manifest['schema_version'] ?? null) !== 1 || ! is_array($entry)
-                || ($entry['manifest_hash'] ?? null) !== $manifestHash || ! in_array($key, $entry['components'] ?? [], true)) {
+                || ($entry['manifest_hash'] ?? null) !== $manifestHash || (! is_array($entry['components'] ?? null) || ! in_array($key, $entry['components'], true))) {
                 return $view;
             }
             $sources = $entry['sources'] ?? null;

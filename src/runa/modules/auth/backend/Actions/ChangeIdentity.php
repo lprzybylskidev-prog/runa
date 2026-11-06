@@ -92,9 +92,9 @@ final readonly class ChangeIdentity implements AuthLifecycle
                 'password' => $setup?->password === null ? null : Hash::make($setup->password),
                 'password_changed_at' => $setup?->password === null ? null : CarbonImmutable::now('UTC'),
                 'activate_at' => $setup?->activateAt, 'deactivate_at' => $setup?->deactivateAt,
-                'security_locked' => $setup?->securityLocked ?? false,
+                'security_locked' => $setup->securityLocked ?? false,
                 'attempt_locked_until' => $setup?->attemptLockedUntil,
-                'password_change_required' => $setup?->passwordChangeRequired ?? false,
+                'password_change_required' => $setup->passwordChangeRequired ?? false,
             ]);
             app(EmailAddresses::class)->available($connection, $user, $input->email, true);
             $user->save();

@@ -3,7 +3,10 @@
 namespace Runa\Modules\Auth\Queries;
 
 use Carbon\CarbonImmutable;
+use DateTimeInterface;
+use Illuminate\Database\Query\JoinClause;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Auth\Actions\SessionStore;
 use Runa\Modules\Auth\Contracts\AdministrativeUser;
 use Runa\Modules\Auth\Contracts\UserDirectoryPage;
@@ -48,7 +51,7 @@ final readonly class UserDirectory
         $inner->selectRaw('(verification_forced OR ? OR (? AND verification_required)) AS effective_verification_required, avatar_path IS NOT NULL AS has_avatar', [$this->settings->value('runa.auth', 'email_verification') === 'all', $this->settings->value('runa.auth', 'email_verification') === 'new']);
         if (($permissions['trust.manage'] ?? false) && $this->features->enabled('trust')) {
             $devices = app('db')->connection()->table('runa_auth.trusted_devices')->selectRaw('user_id, security_version, count(*) AS trusted_device_count')->whereNull('revoked_at')->where('expires_at', '>', CarbonImmutable::now('UTC'))->groupBy('user_id', 'security_version');
-            $inner->leftJoinSub($devices, 'devices', fn ($join) => $join->on('devices.user_id', '=', 'runa_auth.users.id')->on('devices.security_version', '=', 'runa_auth.users.security_version'))->selectRaw('COALESCE(devices.trusted_device_count,0) AS trusted_device_count');
+            $inner->leftJoinSub($devices, 'devices', fn (JoinClause $join) => $join->on('devices.user_id', '=', 'runa_auth.users.id')->on('devices.security_version', '=', 'runa_auth.users.security_version'))->selectRaw('COALESCE(devices.trusted_device_count,0) AS trusted_device_count');
         }
         $totp = $this->features->enabled('totp') ? 'totp_secret IS NOT NULL' : 'FALSE';
         $email = $this->features->enabled('email_factor') ? '(email_factor AND email_verified_at IS NOT NULL)' : 'FALSE';
@@ -65,11 +68,12 @@ final readonly class UserDirectory
         if ($permissions['invitations.manage'] ?? false) {
             $invitations = app('db')->connection()->table('runa_auth.entry_tokens')->selectRaw('user_id, security_version, max(expires_at) AS invitation_expires_at, max(sent_at) AS invitation_sent_at')
                 ->where('purpose', 'invitation')->whereNull('consumed_at')->whereNull('invalidated_at')->where('expires_at', '>', CarbonImmutable::now('UTC'))->groupBy('user_id', 'security_version');
-            $inner->leftJoinSub($invitations, 'invitation', fn ($join) => $join->on('invitation.user_id', '=', 'runa_auth.users.id')->on('invitation.security_version', '=', 'runa_auth.users.security_version'))
+            $inner->leftJoinSub($invitations, 'invitation', fn (JoinClause $join) => $join->on('invitation.user_id', '=', 'runa_auth.users.id')->on('invitation.security_version', '=', 'runa_auth.users.security_version'))
                 ->selectRaw('(invitation.invitation_expires_at IS NOT NULL AND password IS NULL AND deleted_at IS NULL) AS invitation_pending, invitation.invitation_expires_at, invitation.invitation_sent_at');
         }
         if (($permissions['passwords.reset'] ?? false) && $this->features->enabled('password_expiry')) {
             $days = app(PolicyExceptions::class)->queryFor('password_expiry_days', 'runa_auth.users.id');
+            /** @var non-falsy-string&literal-string $duration SQL comes only from the fixed source-owned policy query; values remain bound. */
             $duration = 'COALESCE(('.$days->toSql().'), ?)';
             $bindings = [...$days->getBindings(), $this->settings->integer('runa.auth', 'password_expiry_days')];
             $expiry = "CASE WHEN password IS NOT NULL AND $duration > 0 THEN password_changed_at + $duration * INTERVAL '1 day' ELSE NULL END";
@@ -90,9 +94,9 @@ final readonly class UserDirectory
             $type = $fields[$key][1];
             $key = $key === 'verification_required' ? 'effective_verification_required' : $key;
             if ($type === 'text') {
-                $query->where($key, 'ilike', $this->literal($value));
+                $query->where($key, 'ilike', $this->literal(Values::string($value)));
             } elseif ($type === 'datetime') {
-                $range = json_decode($value, true, flags: JSON_THROW_ON_ERROR);
+                $range = Values::map(json_decode(Values::string($value), true, flags: JSON_THROW_ON_ERROR));
                 if (isset($range['from'])) {
                     $query->where($key, '>=', $range['from']);
                 }
@@ -128,7 +132,7 @@ final readonly class UserDirectory
                 });
             }
             // Identifiers and direction come exclusively from the authorized allowlist above.
-            $query->orderByRaw('"'.$column.'" '.$input->direction.' NULLS LAST')->orderBy('public_id');
+            $query->orderByRaw($this->orderSql($column, $input->direction))->orderBy('public_id');
         }
         $rows = $query->limit($input->limit + 1)->get();
         $items = [];
@@ -138,16 +142,20 @@ final readonly class UserDirectory
                 if (in_array($key, ['display_name', 'state'], true)) {
                     continue;
                 }
+                /** @var bool|int|string|DateTimeInterface|null $value Source-owned SQL aliases and Eloquent datetime casts. */
                 $value = $user->getAttribute($key === 'verification_required' ? 'effective_verification_required' : $key);
+                if ($value instanceof DateTimeInterface) {
+                    $value = CarbonImmutable::instance($value)->utc()->toIso8601String();
+                }
                 $details[$key] = $value === null ? null : match ($type) {
-                    'datetime' => CarbonImmutable::parse($value)->utc()->toIso8601String(),
+                    'datetime' => CarbonImmutable::parse(Values::string($value))->utc()->toIso8601String(),
                     'integer' => (int) $value, 'boolean' => (bool) $value,
-                    default => (string) $value,
+                    default => Values::string($value),
                 };
             }
-            $items[] = new AdministrativeUser($user->public_id, $user->getAttribute('display_name'), $user->getAttribute('state'), $user->version, $details);
+            $items[] = new AdministrativeUser($user->public_id, Values::string($user->getAttribute('display_name')), Values::string($user->getAttribute('state')), $user->version, $details);
         }
-        $next = $rows->count() > $input->limit ? base64_encode(json_encode(['id' => $items[array_key_last($items)]->publicId, 'query' => $signature], JSON_THROW_ON_ERROR)) : null;
+        $next = $items !== [] && $rows->count() > $input->limit ? base64_encode(json_encode(['id' => $items[array_key_last($items)]->publicId, 'query' => $signature], JSON_THROW_ON_ERROR)) : null;
 
         return new UserDirectoryPage($items, $next, $total);
     }
@@ -169,6 +177,20 @@ final readonly class UserDirectory
         } catch (\InvalidArgumentException) {
             throw new OperationRejected('directory_cursor_invalid', 'runa.auth', 'administration.users', 422);
         }
+    }
+
+    /** @return literal-string */
+    private function orderSql(string $column, string $direction): string
+    {
+        // Both values have already been checked against source-owned field/direction
+        // declarations. This method owns the sole identifier interpolation boundary.
+        if (! preg_match('/\A[a-z][a-z0-9_]{0,63}\z/D', $column) || ! in_array($direction, ['asc', 'desc'], true)) {
+            throw new \InvalidArgumentException('Invalid directory sort.');
+        }
+        /** @var non-falsy-string&literal-string $sql Validated identifier plus one of two fixed keywords. */
+        $sql = '"'.$column.'" '.$direction.' NULLS LAST';
+
+        return $sql;
     }
 
     private function literal(string $value): string

@@ -41,12 +41,17 @@ final class ApplicationManagement
         return array_values($this->providers);
     }
 
-    /** Verify source identity before any handler constructor executes. */
+    /** Verify source identity before any handler constructor executes.
+     * @return ReflectionClass<object>
+     */
     public function inspect(string $class): ReflectionClass
     {
         DeclarationRules::className($class);
         if (! str_starts_with($class, 'App\\') || str_starts_with($class, 'App\\Modules\\')) {
             throw new InvalidArgumentException('Application management class must be App-owned.');
+        }
+        if (! class_exists($class)) {
+            throw new InvalidArgumentException('Application management class unavailable.');
         }
         $reflection = new ReflectionClass($class);
         $file = $reflection->getFileName();

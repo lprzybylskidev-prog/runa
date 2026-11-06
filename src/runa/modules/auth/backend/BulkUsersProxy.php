@@ -11,7 +11,7 @@ final class BulkUsersProxy extends GuardedApi implements AuthBulkUsers
 {
     public function preview(SessionSelection $selection, BulkUserChange $change): array
     {
-        /** @var array{fingerprint:string,accounts:int,affected_accounts:int,sessions:int,trusted_devices:int} $result */
+        /** @var array{fingerprint:string,accounts:int,affected_accounts:int,sessions:int,trusted_devices:int,skipped_accounts:int,ineligible_accounts:int} $result */
         $result = $this->invoke(__FUNCTION__, [$selection, $change]);
 
         return $result;
@@ -19,7 +19,7 @@ final class BulkUsersProxy extends GuardedApi implements AuthBulkUsers
 
     public function execute(SessionSelection $selection, BulkUserChange $change, string $fingerprint): array
     {
-        /** @var array{accounts:int} $result */
+        /** @var array{accounts:int,skipped_accounts:int} $result */
         $result = $this->invoke(__FUNCTION__, [$selection, $change, $fingerprint]);
 
         return $result;

@@ -22,7 +22,9 @@ final readonly class ApplicationSettings
         return $this->store->read();
     }
 
-    /** @param array<string,mixed> $patch @return array{revision:int,values:array<string,string|int|bool|null>} */
+    /**
+     * @param array<string,mixed> $patch
+     * @return array{revision:int,values:array<string,string|int|bool|null>} */
     public function update(array $patch, int $expectedRevision, ?ApplicationImages $images = null): array
     {
         return $this->store->update($patch, $expectedRevision, $images);

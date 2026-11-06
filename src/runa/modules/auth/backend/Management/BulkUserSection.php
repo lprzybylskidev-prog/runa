@@ -10,6 +10,7 @@ use Runa\Contracts\Modules\ManagementResourceReader;
 use Runa\Contracts\Modules\ManagementReview;
 use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Auth\Contracts\AuthBulkUsers;
 use Runa\Modules\Auth\Contracts\BulkUserChange;
 use Runa\Modules\Auth\Contracts\SessionSelection;
@@ -42,16 +43,16 @@ final readonly class BulkUserSection implements ManagementResourceReader, Manage
         if ($spec === null || $input->publicId !== null || $input->revision !== '0' || $keys !== $expected) {
             throw new \InvalidArgumentException('Invalid bulk input.');
         }
-        new SessionSelection($input->values['public_ids']);
+        new SessionSelection(Values::strings($input->values['public_ids']));
 
-        return new BulkUserChange($input->command, Moment::seconds($input->values['at'] ?? null), $input->command === 'require_password_change' ? true : ($input->values['enabled'] ?? null));
+        return new BulkUserChange($input->command, Moment::seconds($input->values['at'] ?? null), $input->command === 'require_password_change' ? true : Values::nullableBoolean($input->values['enabled'] ?? null));
     }
 
     public function preview(ManagementWrite $input): ManagementReview
     {
         try {
             $change = $this->change($input);
-            $preview = $this->apis->resolve('runa.auth', AuthBulkUsers::class, '2.0.0')->preview(new SessionSelection($input->values['public_ids']), $change);
+            $preview = $this->apis->resolve('runa.auth', AuthBulkUsers::class, '2.0.0')->preview(new SessionSelection(Values::strings($input->values['public_ids'])), $change);
 
             $summary = ['accounts' => $preview['accounts'], 'affected_accounts' => $preview['affected_accounts'], 'skipped_accounts' => $preview['skipped_accounts'], 'ineligible_accounts' => $preview['ineligible_accounts']];
             if ($preview['sessions'] > 0) {
@@ -73,7 +74,7 @@ final readonly class BulkUserSection implements ManagementResourceReader, Manage
         if (! $input->confirmed || ! is_string($input->review['fingerprint'] ?? null) || ! hash_equals($review->fingerprint, $input->review['fingerprint'])) {
             throw new OperationRejected('user_preview_stale', 'runa.auth', 'users.bulk_execute', 409);
         }
-        $this->apis->resolve('runa.auth', AuthBulkUsers::class, '2.0.0')->execute(new SessionSelection($input->values['public_ids']), $this->change($input), $review->fingerprint);
+        $this->apis->resolve('runa.auth', AuthBulkUsers::class, '2.0.0')->execute(new SessionSelection(Values::strings($input->values['public_ids'])), $this->change($input), $review->fingerprint);
 
         return new ManagementOutcome('committed');
     }

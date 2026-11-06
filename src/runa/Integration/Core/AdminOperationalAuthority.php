@@ -10,7 +10,12 @@ final class AdminOperationalAuthority
     /** @var (Closure():void)|null */
     private ?Closure $check = null;
 
-    /** @template T @param Closure():void $check @param Closure():T $work @return T */
+    /**
+     * @template T
+     *
+     * @param Closure():void $check
+     * @param Closure():T $work
+     * @return T */
     public function run(Closure $check, Closure $work): mixed
     {
         $previous = $this->check;

@@ -15,10 +15,14 @@ final class AdminResource extends JsonResource
             throw new \LogicException('Admin projection exceeds its transport boundary.');
         }
 
-        return $this->wireMaps($this->resource);
+        /** @var array<string,mixed> $projection Guarded Admin root projections are field maps. */
+        $projection = $this->resource;
+
+        return $this->wireMaps($projection);
     }
 
     /** JSON maps remain objects even when empty; PHP guarded consumers retain native arrays.
+     *
      * @template TKey of array-key
      *
      * @param  array<TKey,mixed>  $value

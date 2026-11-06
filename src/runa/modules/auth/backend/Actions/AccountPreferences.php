@@ -15,6 +15,7 @@ use Runa\Modules\Auth\Contracts\PreferenceValue;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\AccountPreferenceSnapshot;
 use Runa\Modules\Auth\Queries\LookupIdentity;
+use Runa\Modules\Auth\Support\DeliveryInput;
 use Runa\Modules\Auth\Support\EntryTransaction;
 use Runa\Modules\Auth\Support\PreferenceDeclarations;
 use Runa\Support\Modules\Api\OperationRejected;
@@ -56,9 +57,7 @@ final readonly class AccountPreferences implements AuthPreferences
         if ($delivery !== [] && ! $this->allowsAddresses()) {
             throw new OperationRejected('permission_denied', 'runa.auth', 'preferences.admin_write', 403);
         }
-        if (! array_is_list($delivery) || count($delivery) > 128) {
-            throw new OperationRejected('preference_invalid', 'runa.auth', 'preferences.admin_write', 422);
-        }
+        $delivery = DeliveryInput::decode($delivery);
 
         return $this->target($publicId, function (Connection $connection, User $user) use ($locale, $theme, $delivery, $revision): array {
             $this->revision($user, $revision);
@@ -72,11 +71,6 @@ final readonly class AccountPreferences implements AuthPreferences
             $current = $routing->own($connection, $user)['categories'];
             $seen = [];
             foreach ($delivery as $entry) {
-                if (! is_array($entry) || count($entry) !== 4 || ! is_string($entry['module'] ?? null) || ! is_string($entry['key'] ?? null)
-                    || ! is_bool($entry['enabled'] ?? null) || ! is_array($entry['recipients'] ?? null) || ! array_is_list($entry['recipients'])
-                    || ($entry['enabled'] && $entry['recipients'] === []) || count(array_unique($entry['recipients'], SORT_REGULAR)) !== count($entry['recipients']) || count($entry['recipients']) > 100 || array_filter($entry['recipients'], fn ($id) => ! is_string($id)) !== []) {
-                    throw new OperationRejected('preference_invalid', 'runa.auth', 'preferences.admin_write', 422);
-                }
                 $key = $entry['module'].':'.$entry['key'];
                 $before = array_values(array_filter($current, fn ($item) => $item['module'] === $entry['module'] && $item['key'] === $entry['key']))[0] ?? null;
                 if (isset($seen[$key]) || $before === null) {
@@ -140,7 +134,8 @@ final readonly class AccountPreferences implements AuthPreferences
         return $this->target($publicId, fn (Connection $connection, User $user): array => $this->resetAccountLocked($connection, $user, $revision));
     }
 
-    /** Private owning reset; callers hold the selected account/revision lock. */
+    /** Private owning reset; callers hold the selected account/revision lock.
+     * @return array{account:string,revision:int} */
     public function resetAccountLocked(Connection $connection, User $user, int $revision): array
     {
         return $this->resetLocked($connection, $user, null, null, $revision, true);

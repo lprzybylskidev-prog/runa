@@ -31,6 +31,7 @@ use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\ModuleFramework\Management\ModuleManagement;
 use Runa\ModuleFramework\ModuleAutoloader;
 use Runa\ModuleFramework\ModuleDiscovery;
+use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
@@ -280,6 +281,7 @@ it('preserves Optional module grants while disabled and restores them when reena
     $reference = app(ModuleRegistry::class)->snapshot()->modules['app.reference'];
     DB::table('shared.modules')->where('module_id', 'app.reference')->update(['installed_version' => $reference->sourceVersion, 'enabled' => false]);
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    expect(app(ModuleHealth::class)->diagnose('app.reference')['blocked'])->toBeFalse();
     DB::table('runa_permissions.permissions')->insert(['public_id' => (string) Str::uuid7(), 'module_id' => 'app.reference', 'code' => 'app.reference.read', 'name_pl' => 'Odczyt', 'name_en' => 'Read', 'description_pl' => 'Odczyt.', 'description_en' => 'Read.', 'created_at' => now(), 'updated_at' => now()]);
     ($this->directPermission)('app.reference.read');
     ($this->asPermissionUser)(function (): void {

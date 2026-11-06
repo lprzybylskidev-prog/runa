@@ -47,7 +47,9 @@ final readonly class AdminEntry
             ->activity('runa.admin.enter', 300, $renew));
     }
 
-    /** @template T
+    /**
+     * @template T
+     *
      * @param  Closure(OperationContext): T  $read
      * @return T
      */
@@ -57,14 +59,22 @@ final readonly class AdminEntry
     }
 
     /** Trusted synchronous configuration may deliberately publish a registry generation.
-     * @template T @param Closure(OperationContext):T $write @return T
+     *
+     * @template T
+     *
+     * @param  Closure(OperationContext):T  $write
+     * @return T
      */
     public function write(Closure $write): mixed
     {
         return $this->run($write, true);
     }
 
-    /** @template T @param Closure(OperationContext):T $read @return T */
+    /**
+     * @template T
+     *
+     * @param Closure(OperationContext):T $read
+     * @return T */
     private function run(Closure $read, bool $publishes): mixed
     {
         if ($this->principals->current() === null) {

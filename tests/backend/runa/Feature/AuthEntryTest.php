@@ -266,7 +266,7 @@ it('keeps registration opt-in generic and atomic with activation distinct from v
     expect(User::where('email', 'pending@example.test')->first()->active)->toBeFalse()
         ->and(DB::table('runa_auth.entry_tokens')->count())->toBe(1);
     entryLogin($this, ['identifier' => 'pending@example.test', 'password' => 'a-long-test-password'])
-        ->assertUnprocessable()->assertJsonPath('error.code', 'invalid_credentials');
+        ->assertUnprocessable()->assertJsonPath('error.code', 'account_inactive');
     $pending = User::where('email', 'pending@example.test')->firstOrFail();
     app(ChangeIdentity::class)->change($pending->public_id, $pending->version, new LifecycleChange('activate'));
     entryLogin($this, ['identifier' => 'pending@example.test', 'password' => 'a-long-test-password'])
@@ -2052,7 +2052,8 @@ it('records concrete preference and factor changes with detailed resets without 
     expect(json_encode($enabled))->not->toContain($secret, $codes[0], 'totp_secret', 'recovery_hashes');
     $this->postJson('/api/runa/auth/step-up', ['action' => 'runa.auth.self.security.disable', 'current_password' => 'a-long-test-password'])->assertOk();
     $this->postJson('/api/runa/auth/security/disable', ['current_password' => 'a-long-test-password', 'target' => 'totp'])->assertOk();
-    expect($read('two_factor.recovery_used'))->toContain(['field' => 'spare_codes_remaining', 'before' => 8, 'after' => 7]);
+    // Post-login password confirmation never consumes login recovery codes.
+    expect(DB::table('runa_audit.events')->where('action', 'two_factor.recovery_used')->exists())->toBeFalse();
     expect($read('two_factor.disable'))->toContain(['field' => 'authenticator_enabled', 'before' => true, 'after' => false]);
     $actions = array_column($this->getJson('/api/runa/auth/profile/history?kind=account')->assertOk()->json('data.entries'), 'action');
     expect($actions)->toContain('preferences.changed', 'preferences.reset', 'delivery.preferences_reset', 'two_factor.totp_confirm', 'two_factor.disable');

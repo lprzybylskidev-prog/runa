@@ -11,7 +11,8 @@ final class OperationRequest extends FormRequest
         return true;
     }
 
-    /** Owning adapter validates command-specific keys and exact scalar types. @return array<string,list<string>> */
+    /** Owning adapter validates command-specific keys and exact scalar types.
+     * @return array<string,list<string>> */
     public function rules(): array
     {
         return ['export' => ['sometimes', 'boolean'], 'module' => ['sometimes', 'string', 'max:128'], 'id' => ['sometimes', 'uuid:7'], 'cursor' => ['sometimes', 'uuid:7'],
@@ -29,6 +30,7 @@ final class OperationRequest extends FormRequest
     /** @return array<string,mixed> */
     public function operationInput(): array
     {
+        /** @var array<string,mixed> $input HTTP field names. */
         $input = $this->isMethod('GET') ? $this->query() : $this->json()->all();
         if ($this->isMethod('GET') && isset($input['limit']) && is_string($input['limit']) && preg_match('/\A[0-9]{1,4}\z/D', $input['limit'])) {
             $input['limit'] = (int) $input['limit'];

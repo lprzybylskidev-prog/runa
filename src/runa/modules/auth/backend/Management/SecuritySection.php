@@ -4,5 +4,5 @@ namespace Runa\Modules\Auth\Management;
 
 final readonly class SecuritySection extends SubjectSection
 {
-    protected const KEY = 'security';
+    protected const string KEY = 'security';
 }

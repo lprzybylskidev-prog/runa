@@ -6,6 +6,7 @@ use Illuminate\Database\DatabaseManager;
 use Runa\Contracts\Modules\MutationProof;
 use Runa\Contracts\Modules\TransactionSecurity as SecurityContract;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Auth\Contracts\AuthStepUp;
 use Runa\Modules\Auth\Contracts\IdentityConflict;
 use Runa\Modules\Auth\Models\User;
@@ -17,7 +18,8 @@ final readonly class TransactionSecurity implements SecurityContract
 
     public function lockSubjects(array $publicIds): void
     {
-        if ($this->database->connection()->transactionLevel() < 1 || ! array_is_list($publicIds) || count($publicIds) > 100) {
+        Values::strings($publicIds);
+        if ($this->database->connection()->transactionLevel() < 1 || count($publicIds) > 100) {
             throw new \LogicException('Subject locks require a bounded owning transaction.');
         }
         $sorted = $publicIds;

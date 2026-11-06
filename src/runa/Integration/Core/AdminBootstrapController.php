@@ -42,6 +42,11 @@ final readonly class AdminBootstrapController
         });
         $this->guard->assertCurrent($context);
 
-        return $this->container->call([$controller, '__invoke']);
+        $callback = [$controller, '__invoke'];
+        if (! is_callable($callback)) {
+            throw new \LogicException('Invalid Admin dispatcher.');
+        }
+
+        return $this->container->call($callback);
     }
 }

@@ -21,19 +21,22 @@ use Runa\ModuleFramework\Api\ModuleDeclarations;
 use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleDiscovery;
 use Runa\ModuleFramework\ModuleRegistry;
-use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\ModuleRecord;
 use Throwable;
 
-/** Internal discovery of additive declarations. No handler invocation or authorization. */
+/** Internal discovery of additive declarations. No handler invocation or authorization.
+ *
+ * @phpstan-type OwnerDefinition array{title:string|array{pl:string,en:string},pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}
+ * @phpstan-type Discovery array{generation:int,revision:string,owners:array<string,OwnerDefinition>,diagnostics:array<string,string>}
+ */
 final readonly class ManagementPages
 {
     public function __construct(private ModuleRegistry $registry, private ModuleDeclarations $declarations,
         private ModuleAvailability $availability, private ApplicationManagement $application,
-        private ModuleApis $apis, private string $root, private bool $compiledOnly = false) {}
+        private string $root, private bool $compiledOnly = false) {}
 
-    /** @return array{generation:int,revision:string,owners:array<string, array{title:string|array{pl:string,en:string},pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}>,diagnostics:array<string,string>} */
+    /** @return Discovery */
     public function discover(): array
     {
         $snapshot = $this->registry->snapshot();
@@ -118,26 +121,20 @@ final readonly class ManagementPages
         return $instance instanceof ManagementParticipant ? $instance : throw new InvalidArgumentException('Invalid management participant.');
     }
 
-    /** @param list<ManagementPageProvider> $providers
+    /**
+     * @param  list<ManagementPageProvider>  $providers
      * @param  string|array{pl:string,en:string}  $title
-     * @return array{title:string|array{pl:string,en:string},pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}
+     * @return OwnerDefinition
      */
     private function collect(string $owner, array $providers, string|array $title, ?ModuleRecord $record): array
     {
         $components = [];
         $result = ['title' => $title, 'pages' => [], 'bindings' => [], 'contributions' => [], 'widgets' => []];
         foreach ($providers as $provider) {
-            foreach (['pages' => [ManagementPage::class, 32], 'bindings' => [ManagementBinding::class, 128],
-                'contributions' => [ManagementContribution::class, 64], 'widgets' => [ManagementWidget::class, 32]] as $kind => [$type, $limit]) {
-                $items = $provider->$kind();
-                DeclarationRules::collection($items, $type, $limit);
-                foreach ($items as $item) {
-                    if (isset($result[$kind][$item->key]) || count($result[$kind]) >= $limit) {
-                        throw new InvalidArgumentException('Conflicting management declarations.');
-                    }
-                    $result[$kind][$item->key] = $item;
-                }
-            }
+            $result['pages'] = $this->merge($result['pages'], $provider->pages(), ManagementPage::class, 32);
+            $result['bindings'] = $this->merge($result['bindings'], $provider->bindings(), ManagementBinding::class, 128);
+            $result['contributions'] = $this->merge($result['contributions'], $provider->contributions(), ManagementContribution::class, 64);
+            $result['widgets'] = $this->merge($result['widgets'], $provider->widgets(), ManagementWidget::class, 32);
         }
         if (count(array_filter($result['pages'], static fn (ManagementPage $page): bool => $page->default)) > 1) {
             throw new InvalidArgumentException('Duplicate default management page.');
@@ -202,6 +199,27 @@ final readonly class ManagementPages
         $result['components'] = $components;
 
         return $result;
+    }
+
+    /**
+     * @template T of ManagementPage|ManagementBinding|ManagementContribution|ManagementWidget
+     *
+     * @param  array<string,T>  $current
+     * @param  list<T>  $items
+     * @param  class-string<T>  $type
+     * @return array<string,T>
+     */
+    private function merge(array $current, array $items, string $type, int $limit): array
+    {
+        DeclarationRules::collection($items, $type, $limit);
+        foreach ($items as $item) {
+            if (isset($current[$item->key]) || count($current) >= $limit) {
+                throw new InvalidArgumentException('Conflicting management declarations.');
+            }
+            $current[$item->key] = $item;
+        }
+
+        return $current;
     }
 
     private function binding(string $owner, ManagementBinding $binding, ?ModuleRecord $record): void

@@ -13,7 +13,8 @@ use Runa\Modules\Auth\Support\Identifiers;
 use Runa\Modules\Auth\Support\SecurityContext;
 use Runa\Support\Modules\Api\OperationRejected;
 
-/** @phpstan-import-type MailRow from ProfileMail
+/**
+ * @phpstan-import-type MailRow from ProfileMail
  * @phpstan-import-type SessionRow from SessionStore */
 final readonly class EmailAddresses
 {
@@ -25,7 +26,7 @@ final readonly class EmailAddresses
      */
     public function ownPrimary(Request $request): array
     {
-        return $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request): ?array {
+        return $this->context->run($request, /** @param SessionRow $session */ function (Connection $connection, User $user, object $session) use ($request): array {
             if (! $this->profiles->value('own_email_editable')) {
                 $this->refuse('email_edit_disabled');
             }

@@ -7,6 +7,7 @@ use Runa\Contracts\Settings\ApplicationLogo;
 use Runa\Contracts\Settings\ApplicationSetting;
 use Runa\Contracts\Settings\ApplicationSettingProvider;
 use Runa\ModuleFramework\Management\ApplicationManagement;
+use Runa\ModuleFramework\Management\InputValues as Values;
 
 /** Source catalogue only. Boot/freeze never touches persistence. */
 final class SettingRegistry
@@ -32,20 +33,22 @@ final class SettingRegistry
         $this->source->inspect($provider::class);
         $settings = $provider->settings();
         $logos = $provider->logos();
-        if (! array_is_list($settings) || ! array_is_list($logos) || count($settings) + count($this->settings) > 58
+        if (count($settings) + count($this->settings) > 58
             || count($logos) + count($this->logos) > 32) {
             throw new InvalidArgumentException('Invalid application settings catalogue.');
         }
+        Values::objects($settings, ApplicationSetting::class, 58);
+        Values::objects($logos, ApplicationLogo::class, 32);
         $nextSettings = $this->settings;
         $nextLogos = $this->logos;
         foreach ($settings as $setting) {
-            if (! $setting instanceof ApplicationSetting || str_starts_with($setting->key, 'presentation.') || isset($nextSettings[$setting->key])) {
+            if (str_starts_with($setting->key, 'presentation.') || isset($nextSettings[$setting->key])) {
                 throw new InvalidArgumentException('Invalid or duplicate application setting.');
             }
             $nextSettings[$setting->key] = $setting;
         }
         foreach ($logos as $logo) {
-            if (! $logo instanceof ApplicationLogo || $logo->key === 'uploaded' || isset($nextLogos[$logo->key])) {
+            if ($logo->key === 'uploaded' || isset($nextLogos[$logo->key])) {
                 throw new InvalidArgumentException('Invalid or duplicate application logo.');
             }
             $nextLogos[$logo->key] = $logo;

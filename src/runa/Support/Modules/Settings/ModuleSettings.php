@@ -26,6 +26,7 @@ use Throwable;
 use WeakMap;
 
 /** Trusted management service. No authorization fiction, HTTP writes or public secret projection.
+ *
  * @phpstan-type State object{settings_values: ?string, settings_revision: int}
  * @phpstan-type Operation object{public_id: string, intent: string, target: string, generation: int, payload: string, status: string, publication_generation: ?int}
  * @phpstan-type Payload array{old: ?string, candidate: string, revision: int, manifest: string, schema: string, handler: string, application: string, changes: array<string, array<string, mixed>>, actor: ?array{kind: string, id: string}, occurred_at: string}
@@ -127,6 +128,7 @@ final class ModuleSettings
 
     /** Anchor the read lock at the caller's level before entering a savepoint.
      * Keep savepoint rollback isolation for failing provider/database reads.
+     *
      *
      * @template T
      *
@@ -291,7 +293,8 @@ final class ModuleSettings
         return new TransitionResult($id, in_array($row->status, ['preparing', 'compensating'], true) ? 'pending' : $row->status, $row->publication_generation, [$row->target => $row->status === 'recovery_required' ? 'settings_compensation_required' : 'settings_'.$row->status]);
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function rollback(object $row, array $payload): TransitionResult
@@ -326,7 +329,8 @@ final class ModuleSettings
         return $this->status($row->public_id);
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function current(object $row, array $payload, bool $rollback = false): ModuleRecord
@@ -361,7 +365,8 @@ final class ModuleSettings
         });
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function context(object $row, array $payload): SettingsContext
@@ -371,7 +376,8 @@ final class ModuleSettings
         return new SettingsContext($row->public_id, $row->target, $payload['revision'], $payload['application'], $payload['changes'], $actor === null ? null : new SettingsActor($actor['kind'], $actor['id']), $payload['occurred_at']);
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function notify(object $row, array $payload, string $outcome): void
@@ -395,7 +401,8 @@ final class ModuleSettings
         return $row ?? throw new RuntimeException('Unknown module settings.');
     }
 
-    /** @param array<string, SettingDefinition> $definitions
+    /**
+     * @param  array<string, SettingDefinition>  $definitions
      * @return array<string, mixed>
      */
     private function values(?string $encrypted, array $definitions): array
@@ -423,7 +430,8 @@ final class ModuleSettings
         return $row ?? throw new RuntimeException('Unknown settings operation.');
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @return Payload
      */
     private function payload(object $row): array

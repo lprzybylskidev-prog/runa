@@ -4,5 +4,5 @@ namespace Runa\Modules\Auth\Management;
 
 final readonly class LifecycleSection extends SubjectSection
 {
-    protected const KEY = 'lifecycle';
+    protected const string KEY = 'lifecycle';
 }

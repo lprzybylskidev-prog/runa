@@ -10,7 +10,7 @@ A source-defined scope selects explicit keys; authorization applies to that whol
 Modules with field-specific grants must use separately authorized scopes.
 
 The abstract readonly adapter implements ManagementResourceReader/ManagementWriter.
-Subclasses define MODULE, SCOPE, READ_PERMISSION, WRITE_PERMISSION, DELETE_ACTION
+Subclasses define protected string constants MODULE, SCOPE, READ_PERMISSION, WRITE_PERMISSION, DELETE_ACTION
 and `public static function keys(): array` (list of non-sensitive setting keys).
 Its public management signatures are `read(ManagementRead): ManagementRecord`,
 `page(ManagementRead): ManagementPageResult`, `preview(ManagementWrite): ManagementReview`

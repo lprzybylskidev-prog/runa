@@ -16,6 +16,7 @@ use RuntimeException;
 use Throwable;
 
 /** Durable reservations surround reversible hooks; only short transactions publish registry state.
+ *
  * @phpstan-type Progress array{state: string, token: ?string, code: string}
  * @phpstan-type Payload array{plans: array<string, array{revision: string, blocked: bool, code: string}>, changes: array<string, bool>, progress: array<string, Progress>, terminal: string}
  * @phpstan-type Operation object{public_id: string, intent: string, target: string, generation: int, affected: string, payload: string, status: string, publication_generation: ?int}
@@ -222,7 +223,8 @@ final class ModuleTransitions
         return $this->status($id);
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function assertPreparationCurrent(object $row, array $payload): void
@@ -233,7 +235,8 @@ final class ModuleTransitions
         }
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function compensate(object $row, array $payload, string $terminal): TransitionResult
@@ -273,7 +276,8 @@ final class ModuleTransitions
         return $this->status($row->public_id);
     }
 
-    /** @param Operation $row
+    /**
+     * @param  Operation  $row
      * @param  Payload  $payload
      */
     private function context(object $row, string $module, array $payload): TransitionContext
@@ -300,6 +304,7 @@ final class ModuleTransitions
     {
         $this->assertRunner();
         $this->connection->transaction(function () use ($id, $status, $payload): void {
+            /** @var (\stdClass&object{target:string,intent:string})|null $row */
             $row = $this->connection->table('shared.module_transitions')->where('public_id', $id)->lockForUpdate()->first();
             if ($row === null) {
                 throw new RuntimeException('Unknown module transition.');

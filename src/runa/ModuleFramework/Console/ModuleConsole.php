@@ -96,7 +96,8 @@ final readonly class ModuleConsole
     private function ready(): bool
     {
         try {
-            return $this->connection->getSchemaBuilder()->hasTable('shared.module_registry_state');
+            return $this->connection->getSchemaBuilder()->hasTable('shared.module_registry_state')
+                && $this->connection->table('shared.module_registry_state')->where('id', 1)->exists();
         } catch (Throwable) {
             return false;
         }

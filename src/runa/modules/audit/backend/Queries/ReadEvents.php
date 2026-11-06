@@ -58,18 +58,20 @@ final readonly class ReadEvents implements AuditReads
                     throw new \InvalidArgumentException('Unknown Audit page cursor.');
                 }
                 $value = $pivot->{$column};
-                $builder->where(function ($where) use ($column, $value, $pivot, $query): void {
+                $builder->where(function (Builder $where) use ($column, $value, $pivot, $query): void {
                     if ($value === null) {
                         $where->whereNull($column)->where('id', '>', $pivot->id);
                     } else {
                         $where->where($column, $query->direction === 'asc' ? '>' : '<', $value)
                             ->orWhereNull($column)
-                            ->orWhere(fn ($tie) => $tie->where($column, $value)->where('id', '>', $pivot->id));
+                            ->orWhere(fn (Builder $tie) => $tie->where($column, $value)->where('id', '>', $pivot->id));
                     }
                 });
             }
             // AuditQuery validates both identifiers before SQL composition.
-            $builder->orderByRaw('"'.$column.'" '.$query->direction.' NULLS LAST')->orderBy('id');
+            /** @var non-falsy-string&literal-string $order Validated source-owned Audit sort and direction. */
+            $order = '"'.$column.'" '.$query->direction.' NULLS LAST';
+            $builder->orderByRaw($order)->orderBy('id');
         }
         // Summary selection never fetches potentially large change/context/execution trees.
         /** @var list<EventRow> $rows */
@@ -115,7 +117,8 @@ final readonly class ReadEvents implements AuditReads
         return $this->database->connection()->table('runa_audit.events');
     }
 
-    /** @param list<int> $ids
+    /**
+     * @param  list<int>  $ids
      * @return array<int, list<AuditEntity>>
      */
     private function entities(array $ids): array
@@ -129,7 +132,8 @@ final readonly class ReadEvents implements AuditReads
         return $result;
     }
 
-    /** @param EventRow $row
+    /**
+     * @param  EventRow  $row
      * @param  list<AuditEntity>  $entities
      */
     private function entry(object $row, array $entities, bool $detail = false): AuditEntry

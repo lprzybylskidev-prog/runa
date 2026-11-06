@@ -15,6 +15,7 @@ use Runa\Contracts\Modules\ManagementReview;
 use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Contracts\Modules\TrustedPrincipal;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\Modules\Permissions\Contracts\AssignmentSet;
 use Runa\Modules\Permissions\Contracts\DefinitionInput;
 use Runa\Modules\Permissions\Contracts\DefinitionPreview;
@@ -26,7 +27,7 @@ use Runa\Support\Modules\Api\OperationRejected;
 
 abstract readonly class DefinitionEditor implements ManagementOptionsReader, ManagementResourceReader, ManagementWriter
 {
-    protected const KIND = 'role';
+    protected const string KIND = 'role';
 
     public function __construct(protected ModuleApis $apis) {}
 
@@ -40,6 +41,7 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
         return $this->record($this->api()->definition(static::KIND, $input->publicId));
     }
 
+    /** @param array{public_id:string,version:int,dictionary:array<string,string>,module:?string,system:bool,assigned:array{roles:list<string>,permissions:list<string>}} $state */
     protected function record(array $state): ManagementRecord
     {
         return new ManagementRecord($state['public_id'], (string) $state['version'], $state['dictionary'] + $state['assigned'] + [
@@ -60,7 +62,7 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
         }
         $result = $this->api()->definitions(static::KIND, $input->cursor, $input->filters, $input->sort[0]['key'] ?? null, $input->sort[0]['direction'] ?? 'asc');
         $items = array_slice($result['items'], 0, $input->limit);
-        $next = count($items) < count($result['items']) ? $items[array_key_last($items)]['public_id'] : $result['next'];
+        $next = $items !== [] && count($items) < count($result['items']) ? $items[array_key_last($items)]['public_id'] : $result['next'];
 
         return new ManagementPageResult(array_map(fn ($row) => new ManagementRecord($row['public_id'], (string) $row['version'], ['code' => $row['code'], 'name_pl' => $row['name_pl'], 'name_en' => $row['name_en']]), $items), $next, $result['total']);
     }
@@ -113,8 +115,8 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
             }
 
             return $this->api()->previewDefinition(new DefinitionInput(static::KIND,
-                new DictionaryEntry($v['code'], $v['name_pl'], $v['name_en'], $v['description_pl'], $v['description_en']),
-                new AssignmentSet($v['roles'] ?? [], $v['permissions']), $input->publicId, $input->publicId === null ? null : (int) $input->revision));
+                new DictionaryEntry(Values::string($v['code']), Values::string($v['name_pl']), Values::string($v['name_en']), Values::string($v['description_pl']), Values::string($v['description_en'])),
+                new AssignmentSet(Values::strings($v['roles'] ?? []), Values::strings($v['permissions'])), $input->publicId, $input->publicId === null ? null : (int) $input->revision));
         } catch (\InvalidArgumentException|\TypeError) {
             throw $this->invalid();
         }
@@ -144,12 +146,13 @@ abstract readonly class DefinitionEditor implements ManagementOptionsReader, Man
         if ($native instanceof RoleDeletionPreview) {
             $this->authority()->forceDeleteRole($native, $input->confirmed);
         } else {
-            $this->api()->deleteDefinition(static::KIND, $input->publicId, (int) $input->revision);
+            $this->api()->deleteDefinition(static::KIND, Values::string($input->publicId), (int) $input->revision);
         }
 
         return new ManagementOutcome('committed', $this->read(new ManagementRead));
     }
 
+    /** @param array<string,mixed> $review */
     private function fingerprint(DefinitionPreview|RoleDeletionPreview|array $review): string
     {
         return is_array($review) ? hash('sha256', serialize(['delete', static::KIND, $review])) : $review->fingerprint;

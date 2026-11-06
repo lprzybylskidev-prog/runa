@@ -16,8 +16,10 @@ final readonly class CommandController
     {
         $access = $this->apis->resolve('runa.admin', AdminAccess::class, '1.0.0');
         $method = $request->routeIs('runa.admin.command.preview') ? 'previewCommand' : 'command';
+        /** @var array<string,mixed> $input HTTP JSON fields, including unknown keys for owning validation. */
+        $input = $request->all();
         $data = $access->$method((string) $request->route('owner'), (string) $request->route('page'),
-            (string) $request->route('section'), $request->all());
+            (string) $request->route('section'), $input);
 
         return (new AdminResource($data))->response()->header('Cache-Control', 'no-store, private');
     }

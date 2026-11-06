@@ -2,7 +2,7 @@
 
 namespace Runa\Modules\Auth\Actions;
 
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\MutationAccess;
 use Runa\Contracts\Modules\MutationDefinition;
@@ -82,6 +82,7 @@ final class BulkUserMutation implements TransactionalMutation
         $this->applied = true;
     }
 
+    /** @return array{accounts:int,skipped_accounts:int} */
     public function result(): array
     {
         if (! $this->applied || $this->users === null) {

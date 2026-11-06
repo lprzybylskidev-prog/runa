@@ -16,6 +16,7 @@ final readonly class Access implements AdminAccess
     {
         // Resolving the bootstrap registry runs App-owned afterResolving registrations
         // before discovery freezes them. Cold command boot never loads Admin classes.
+        unset($registry);
     }
 
     public function entry(): array

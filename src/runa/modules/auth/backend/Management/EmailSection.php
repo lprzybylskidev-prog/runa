@@ -4,5 +4,5 @@ namespace Runa\Modules\Auth\Management;
 
 final readonly class EmailSection extends SubjectSection
 {
-    protected const KEY = 'primary_email';
+    protected const string KEY = 'primary_email';
 }

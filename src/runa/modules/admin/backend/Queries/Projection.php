@@ -20,12 +20,17 @@ use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
+use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\ModuleFramework\Management\ManagementPages;
 use Runa\Modules\Admin\Actions\AggregatePart;
 use Runa\Support\Modules\Api\OperationRejected;
 use Throwable;
 
-/** Admin-owned authorization intersection; owners still enforce record Policies. */
+/** Admin-owned authorization intersection; owners still enforce record Policies.
+ *
+ * @phpstan-import-type Discovery from ManagementPages
+ * @phpstan-import-type OwnerDefinition from ManagementPages
+ */
 final readonly class Projection
 {
     public function __construct(private ManagementPages $declarations, private OperationAuthorizer $authorizer) {}
@@ -106,7 +111,8 @@ final readonly class Projection
             'generation' => $discovery['generation'], 'revision' => hash('sha256', serialize([$discovery['revision'], $owner, $key, $views])), 'component' => $this->component($discovery['owners'][$owner], $page->component), 'sections' => $views]);
     }
 
-    /** @param array<string, mixed> $query
+    /**
+     * @param  array<string, mixed>  $query
      * @return array<string, mixed>
      */
     public function read(string $owner, string $key, string $identity, array $query): array
@@ -133,7 +139,7 @@ final readonly class Projection
             if (($kind !== 'options' && array_key_exists('field', $query)) || ($kind === 'options' && array_key_exists('sort', $query))) {
                 throw new InvalidArgumentException('Invalid lookup query.');
             }
-            $input = new ManagementRead($query['public_id'] ?? null, $query['cursor'] ?? null, $query['limit'] ?? 25, $query['filters'] ?? [], $query['sort'] ?? []);
+            $input = new ManagementRead(Values::nullableString($query['public_id'] ?? null), Values::nullableString($query['cursor'] ?? null), Values::integer($query['limit'] ?? 25), Values::filters($query['filters'] ?? []), Values::sort($query['sort'] ?? []));
             $fields = $this->fields($sectionOwner, $section, $discovery['generation']);
             if ($export) {
                 $fields = array_filter($fields, static fn (ManagementFieldAccess $field): bool => ! $field->field->sensitive);
@@ -177,7 +183,7 @@ final readonly class Projection
                 }
                 $result = ['items' => array_map(fn (ManagementRecord $record): array => $this->record($record, $fields), $page->items), 'next' => $page->next, 'total' => $page->total];
             } else {
-                if (! $handler instanceof ManagementOptionsReader || $lookup === null) {
+                if (! $handler instanceof ManagementOptionsReader) {
                     throw new InvalidArgumentException('Lookup capability missing.');
                 }
                 $options = $handler->options($lookup);
@@ -209,7 +215,7 @@ final readonly class Projection
                 || array_diff(array_keys($input), ['command', 'public_id', 'revision', 'values', 'review', 'confirmed']) !== []) {
                 throw new InvalidArgumentException('Read-only management section.');
             }
-            $write = new ManagementWrite($input['command'] ?? '', $input['public_id'] ?? null, $input['revision'] ?? '', $input['values'] ?? [], $input['review'] ?? null, $input['confirmed'] ?? false);
+            $write = new ManagementWrite(Values::string($input['command'] ?? ''), Values::nullableString($input['public_id'] ?? null), Values::string($input['revision'] ?? ''), Values::map($input['values'] ?? []), isset($input['review']) ? Values::map($input['review']) : null, Values::boolean($input['confirmed'] ?? false));
             $command = null;
             foreach ($section->commands as $candidate) {
                 if ($candidate->key === $write->command) {
@@ -234,6 +240,7 @@ final readonly class Projection
     }
 
     /** Resolve an independent command under entry admission; the owning writer runs after it ends.
+     *
      * @param  array<string,mixed>  $input
      * @return array{writer:ManagementWriter,input:ManagementWrite,command:ManagementCommandDefinition,fields:array<string,ManagementFieldAccess>}
      */
@@ -262,6 +269,7 @@ final readonly class Projection
     }
 
     /** The complete current writable atomic Save set, including editable contributions.
+     *
      * @param  array<string,mixed>  $input
      * @return array{revision:string,parts:list<AggregatePart>}
      */
@@ -279,7 +287,7 @@ final readonly class Projection
                 || ! is_string($item['id'] ?? null) || isset($submitted[$item['id']]) || ! is_array($item['input'] ?? null)) {
                 throw new OperationRejected('admin_input_invalid', 'runa.admin', 'save', 422);
             }
-            $submitted[$item['id']] = $item['input'];
+            $submitted[$item['id']] = Values::map($item['input']);
         }
         [$discovery, , $sections] = $this->selected($owner, $page);
         $parts = $checks = [];
@@ -310,7 +318,7 @@ final readonly class Projection
                 throw new OperationRejected('admin_participant_incompatible', 'runa.admin', 'save', 409);
             }
             $record = $this->read($owner, $page, $id, ['public_id' => $write->publicId]);
-            if ($record['public_id'] !== $write->publicId || ! hash_equals($record['revision'], $write->revision)) {
+            if ($record['public_id'] !== $write->publicId || ! hash_equals(Values::string($record['revision']), $write->revision)) {
                 throw new OperationRejected('admin_revision_stale', 'runa.admin', 'save', 409);
             }
             $parts[] = new AggregatePart($sectionOwner, $id, $command, $write, $writer,
@@ -323,10 +331,11 @@ final readonly class Projection
         usort($parts, fn ($a, $b): int => strcmp($a->id, $b->id));
         $this->declarations->assertCurrent($discovery['generation']);
 
-        return ['revision' => $this->page($owner, $page)['revision'], 'parts' => $parts];
+        return ['revision' => Values::string($this->page($owner, $page)['revision']), 'parts' => $parts];
     }
 
-    /** @param array<string,ManagementFieldAccess> $fields
+    /**
+     * @param  array<string,ManagementFieldAccess>  $fields
      * @return array<string,mixed>
      */
     public function outcome(ManagementOutcome $outcome, array $fields): array
@@ -347,7 +356,7 @@ final readonly class Projection
         return $this->outcome($outcome, $this->fields($sectionOwner, $section, $discovery['generation']));
     }
 
-    /** @return array{array<string,mixed>,ManagementPage,list<array{string,ManagementSection,string}>} */
+    /** @return array{Discovery,ManagementPage,list<array{string,ManagementSection,string}>} */
     private function selected(string $owner, string $key): array
     {
         $discovery = $this->declarations->discover();
@@ -379,7 +388,8 @@ final readonly class Projection
         return [$discovery, $page, [...$sections, ...array_column($contributions, 'section')]];
     }
 
-    /** @param list<array{string,ManagementSection,string}> $sections
+    /**
+     * @param  list<array{string,ManagementSection,string}>  $sections
      * @return array{string,ManagementSection}
      */
     private function findSection(array $sections, string $identity, int $generation): array
@@ -392,9 +402,10 @@ final readonly class Projection
         throw new OperationRejected('admin_page_unavailable', 'runa.admin', 'section.read', 404);
     }
 
-    /** @param array{components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>} $ownerDefinition
+    /**
+     * @param  OwnerDefinition  $ownerDefinition
      * @param  Closure(?string): bool  $allowed
-     * @return array<string, mixed>
+     * @return array{commands:list<array{key:string,intent:string,mode:string,available:bool}>,...<string,mixed>}
      */
     private function section(string $owner, ManagementSection $section, string $identity, int $generation, bool $available, array $ownerDefinition, Closure $allowed): array
     {
@@ -430,7 +441,8 @@ final readonly class Projection
             'component' => $this->component($ownerDefinition, $section->component), 'fields' => $views, 'commands' => $commands, 'record' => null, 'diagnostic' => $available ? null : 'admin_binding_unavailable'];
     }
 
-    /** @param array{components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>} $definition
+    /**
+     * @param  array{components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}  $definition
      * @return array{key:string,owner:string,manifest_hash:?string,build_id:?string}|null
      */
     private function component(array $definition, ?string $key): ?array
@@ -438,7 +450,8 @@ final readonly class Projection
         return $key === null ? null : $definition['components'][$key];
     }
 
-    /** @param (Closure(?string): bool)|null $allowed
+    /**
+     * @param  (Closure(?string): bool)|null  $allowed
      * @return array<string,ManagementFieldAccess>
      */
     private function fields(string $owner, ManagementSection $section, int $generation, ?Closure $allowed = null): array
@@ -470,7 +483,8 @@ final readonly class Projection
         };
     }
 
-    /** @param array<string,ManagementFieldAccess> $fields
+    /**
+     * @param  array<string,ManagementFieldAccess>  $fields
      * @return array<string,mixed>
      */
     private function record(ManagementRecord $record, array $fields): array
@@ -494,6 +508,7 @@ final readonly class Projection
                     'datetime' => is_string($value) && preg_match('/\\A[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?(?:Z|\\+00:00)\\z/D', $value) === 1,
                     'dictionary' => is_string($value) && ($access->field->choices === [] || in_array($value, $access->field->choices, true)),
                     'uuid' => $this->references($value, $access->field->multiple),
+                    default => false,
                 };
                 if (! $valid) {
                     throw new OperationRejected('admin_projection_invalid', 'runa.admin', 'section.read');
@@ -525,7 +540,8 @@ final readonly class Projection
         return $permission !== null && $this->authorizer->allows(new OperationContext($owner === 'app' ? 'runa.admin' : $owner, 'admin.read', 'admin', 'admin', $generation), $permission);
     }
 
-    /** @param array<string,mixed> $result
+    /**
+     * @param  array<string,mixed>  $result
      * @return array<string,mixed>
      */
     private function bounded(array $result): array

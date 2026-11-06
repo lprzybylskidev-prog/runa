@@ -17,7 +17,10 @@ interface PermissionsAccess
     /** @return array{user_public_id: string, identity_version: int, eligible: bool, security_version: int, revision: int, super_admin: bool, assigned: array{roles: list<string>, permissions: list<string>}, definitions: array{roles: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>, permissions: list<array{public_id: string, code: string, version: int, module: string|null, permissions?: list<array{public_id: string, code: string, version: int, module_id: string|null}>}>}} */
     public function applyAssignments(AssignmentPreview $reviewed): array;
 
-    /** @return array{items: list<array{public_id: string, code: string, name_pl: string, name_en: string, version: int}>, next: string|null, total: int} */
+    /**
+     * @param  array<string,mixed>  $filters
+     * @return array{items: list<array{public_id: string, code: string, name_pl: string, name_en: string, version: int}>, next: string|null, total: int}
+     */
     public function definitions(string $kind, ?string $after = null, array $filters = [], ?string $sort = null, string $direction = 'asc'): array;
 
     /** @return array{public_id: string, version: int, dictionary: array<string, string>, module: string|null, system: bool, assigned: array{roles: list<string>, permissions: list<string>}} */
