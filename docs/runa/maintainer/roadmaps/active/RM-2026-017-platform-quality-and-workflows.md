@@ -3368,3 +3368,34 @@ existing supported integration entrypoints merely because their names use
 This checkpoint records the decision only: no runtime/source implementation,
 dependency change, test execution, data operation, release or roadmap closure.
 Point 9 remains open/current; the approved D-01–D03 outcomes remain pending.
+
+### Point-9 direct integration assessment — 2026-11-06
+
+Followed the latest owner direction by inspecting the owning TestService and
+installed Pest/ParaTest/Laravel dispatch, discovery and worker termination sources.
+Local knowledge status was current (220 documents, no stale/missing/orphan chunks);
+bounded current-intent retrieval was followed by original-source inspection.
+
+The exception seam has an additional decisive limitation: ParaTest's
+`WorkerCrashedException::fromProcess` formats OS exit/assignment into its message,
+retains no structured worker/signal fields and sets the exception code to 0.
+`WrapperWorker::getExitCode` is the last test-status byte, not an OS termination
+getter; its Process and the Pest wrapper's workers are private. Thus even a
+different Runa startup catching that exception cannot obtain the approved
+machine evidence. No console parsing, private reflection, vendor modification or
+startup workaround is introduced.
+
+The [direct integration assessment](../../reviews/RM-2026-017-native-evidence-integration-boundary.md)
+records exact installed versions, source contracts and two concrete architecture
+routes: obtain a supported upstream evidence contract while retaining native
+scheduling, or amend the roadmap so the existing Runa test lifecycle owns native
+worker supervision. The latter changes the explicit no-new-runner/native-mode
+premise; the former requires dependency assessment and separately approved exact
+changes. Neither is silently authorized by pre-1.0 API freedom. Implementation
+stops for this owner decision under the significant-unknown rule. Gate B and the
+roadmap remain active, point 9 remains open, and D-02 is not deferred or complete.
+
+No runtime/configuration/dependency changes, tests, broad verification, live crash
+experiments, data operations or resource deletion ran in this continuation.
+Existing native evidence is preserved. Instruction products need no change for
+this unresolved engineering assessment; customer policy remains unchanged.
