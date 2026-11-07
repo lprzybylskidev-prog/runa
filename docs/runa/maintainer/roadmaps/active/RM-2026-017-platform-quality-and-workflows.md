@@ -21,7 +21,19 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 9 completed, 2026-11-07
+## Current execution state — point 10 completed, 2026-11-07
+
+**Gate B remains approved; points 1–10 are complete. Point 11 now awaits the
+owner's manual frontend acceptance.** The
+[point-10 review and acceptance sheet](../../reviews/RM-2026-017-point-10-review.md)
+record finding/test/skill dispositions, source/build identity, usable routes and
+bounded real Nginx observations. Current development assets include the opted-in
+reference example. Platform remains 0.7.0, target release 0.8.0; no early version
+preparation, owner acceptance, final automated verification or release is claimed.
+
+<a id="current-execution-state--point-9-completed-2026-11-07"></a>
+
+## Historical execution state — point 9 completed, 2026-11-07
 
 The owner explicitly requested completion of point 9 after the correction and
 rollback. That renewed instruction lifts its execution deferral for this point.
@@ -960,7 +972,7 @@ below are retained as historical records only.
     correction and stability; retain the general valid-evidence continuity rule.
     Preserve native failures, history, data/cleanup and security safeguards.
 
-- [ ] 10. Final qualitative review, test-value reconciliation and runtime readiness.
+- [x] 10. Final qualitative review, test-value reconciliation and runtime readiness.
   - **Objective:** compare delivered scope to the approved baseline and prepare
     actual owner acceptance after implementation.
   - **Preconditions:** points 1–9 completed/committed and every approved finding
@@ -3593,3 +3605,62 @@ README/command metadata, not final suites or rendered acceptance. The public
 `runa:doctor:docs` diagnostic rejects owner-only links by design and cannot replace
 this owner entrypoint. `git diff --check` passes. Incremental knowledge refresh
 and mandatory hooks complete the commit boundary.
+
+## Point 10 — Qualitative review and runtime readiness — 2026-11-07
+
+Completed the [finding/requirement matrix, test-value ledger, renewed skill
+scenarios and concrete owner acceptance sheet](../../reviews/RM-2026-017-point-10-review.md).
+Reconciled A-01–A-09, RA-01–RA-07, RH-01/RH-02, reference scope and the approved
+Admin health premise against source and retained owning-point evidence. The
+point-9 owner correction governs rejected automation; current runner limitations
+are explicit. RM-2026-018's separately agreed copy/device/refresh corrections
+remain draft scope. No new architecture choice or demonstrated Critical/High
+application defect was found within this review's stated limits.
+
+No test deletion/consolidation or arbitrary reduction is justified. The ledger
+keeps distinct backend freshness/security, component lifetime/feedback, actual
+consumer, parser/projection and runner cleanup protections; withdrawn campaign
+fixtures remain withdrawn with their rejected implementation. Comparable point-5
+query reductions are retained without an invented latency, bundle or suite-duration
+gain. All nine owner/customer skill selectors have source-grounded positive and
+negative walkthrough ratings; these are not independent agent benchmarks.
+
+Read-only local ModuleUpdates plans show source/installed agreement and no new
+upgrade steps. Existing reference data and authorized normal login/password proof
+are usable. No migration/reset/reseed or grant/settings change. Current 0.7.0
+satisfies the source ranges, so no early 0.8.0 candidate preparation/approval is
+needed. Independent module/release range reconciliation remains final work.
+
+Prepared SPA and native/emergency error assets through the documented container
+build and prerequisites. The initial default production-mode build correctly
+excluded reference, so its real page observation timed out despite API 200.
+Preserve that failed observation. An explicit existing Vite development-mode SPA
+build includes the optional example; environment/reference docs now explain this
+selection without weakening production exclusion. Real Nginx browser reads then
+confirm reference page/refresh/widget, dashboard, user directory, settled account
+form and the RA-05 create-close-details-copy-Security sequence. No unexpected
+failed API, page error or toast in the successful bounded observations. The first
+account screenshot is only a loading frame; retain it alongside the settled one.
+
+Evidence is retained under `.runtime/artifacts/playwright/RM-2026-017-point10/`,
+including failed/successful JSON, screenshots and `build-identity.json`. Current
+entry is `/build/assets/index-zpiZqt8q.js`; owner URL is `http://localhost:8080`,
+observed internally through its existing Nginx sibling. Runtime implementation
+is unchanged from source `efbb2e60`; this point adds only review/public build
+guidance. No HMR process remains, no Docker resources were created/deleted and
+all development/base test data, credentials, backups, recovery journals,
+knowledge/model/package caches and prior reports remain preserved.
+
+Owner/customer instruction products already select the canonical public
+presentation/build procedures and require no duplicated rule or new skill. The
+new owner review remains private. Stage durable sources, refresh knowledge and
+run mandatory hooks at the commit boundary. This point runs no full suite,
+quality graph, security scanner, native installation or image pipeline. Build
+prerequisites and bounded real readiness observations are manual-runtime preparation.
+Point 11 stays unchecked pending the owner's explicit tested-source/environment
+acceptance; point 12 remains the final automated verification/release point.
+
+Focused results: owner `check-docs` PASS/native exit 0; `git diff --check` PASS;
+served development component registry exactly matches its current source
+discovery, including reference. These checks do not certify final suites or
+replace owner acceptance. Mandatory hooks complete the commit boundary.

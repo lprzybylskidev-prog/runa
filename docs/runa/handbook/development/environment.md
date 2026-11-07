@@ -371,6 +371,17 @@ protected data and actions retain their server-side session and authorization ch
 
 For HMR, run `pnpm run dev` inside the devcontainer and open the VS Code-forwarded port 5173 at `/build/`. Vite proxies `/api` to the sibling Nginx, which still calls PHP-FPM/Laravel. The HMR server is frontend tooling, not the Laravel runtime. Light/dark/system and PL/EN preference state is owned by the shell; no UI framework or global state dependency is installed.
 
+For an opted-in reference example on the built-output URL, first run
+`pnpm --dir src run build` from the checkout root, then
+`pnpm --dir src exec vite build --mode development` and
+`php src/runa/build/errors/build.php` inside the application container. The first
+command includes TypeScript and native error-shell prerequisites; the second
+replaces the SPA assets with the development registry, including `app.reference`.
+Default Vite builds use production mode and deliberately exclude that example.
+HMR includes it automatically. Keep these development assets local; production
+uses its own build and source projection. After a later default build, repeat the
+development SPA build before reviewing the example through Nginx.
+
 Vite's development dependency cache uses the workspace-root
 `.runtime/frontend/vite/application` directory; the native error build selects
 `.runtime/frontend/vite/errors`. Both are resolved from the configuration

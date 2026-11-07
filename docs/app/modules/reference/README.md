@@ -97,6 +97,11 @@ freshness. Grant withdrawal hides the page/widget and refuses subsequent reads;
 disabling the module withdraws the owning API too. Public nonsensitive Ping remains
 usable without Admin entry. No business mutation or Audit event is emitted by a read.
 
+Use HMR or the explicit [development asset build](../../../runa/handbook/development/environment.md#firstopenrebuild-behavior)
+when viewing the example through Nginx. A default production-mode build omits its
+components even in a local Laravel environment; a successful API response alone
+does not establish that the example's presentation is available.
+
 Source declarations remain application-owned in `backend/Definitions`; the private
 `Management/ReferenceReader` adapter implements the delivered
 `ManagementResourceReader::{read,page}` and `ManagementWidgetReader::widget` DTO
