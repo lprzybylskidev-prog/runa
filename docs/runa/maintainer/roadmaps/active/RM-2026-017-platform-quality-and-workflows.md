@@ -1478,6 +1478,13 @@ below are retained as historical records only.
   - Synchronize the readiness evidence and instruction-product assessment; retry
     the supported asset build needed for manual acceptance. No final suite/gate.
 
+- [x] 10h2. Make the two-user diagnostic use independent browser sessions.
+  - The native diagnostic reached its case after Core alignment, but logging in
+    the second user through the first user's cookie invalidated that first session.
+    Separate the test clients without changing Auth login/session behavior.
+  - Rerun only this focused case through the supported isolated worker runner;
+    retain the native failure and synchronize readiness evidence.
+
 - [ ] 10i. Prepare combined runtime and renewed owner acceptance.
   - **Dependency:** completed 10a–10h. Reconcile the entire combined scope and
     outstanding findings against actual source; insert explicit repairs before
@@ -4939,3 +4946,26 @@ stored-data deletion. The reference guide and both owner/customer instruction
 products already route to that contract; no reusable guidance change is needed.
 Frontend/Vue selectors apply; no CSS/Tailwind contract change is introduced.
 Point 10i remains open, followed by owner acceptance 11 and final verification 12.
+
+## Point 10h2 completion — independent-session diagnostic, 2026-11-07
+
+After Core alignment the focused native two-user case reached its body and failed
+with HTTP 401 when returning to the first user. The fixture had logged in user X
+through user Y's browser session; native Auth deliberately invalidates that
+presented session. Separate application/session instances and an empty incoming
+cookie for X now model independent browsers. Both principals still authenticate
+through real HTTP; no identity/proof/availability guard or backend behavior changes.
+
+Laravel Boost 13.x HTTP-testing guidance and installed framework cookie/application
+lifecycle source ground the fixture correction. Supported command:
+`php artisan runa:test:backend --filter='keeps two independent users snapshots' -- --parallel --processes=1`.
+First execution: 1 failed, 8 assertions, exit 1 / cleanup 0. Corrected execution:
+1 passed, 14 assertions, exit 0 / cleanup 0. The supported runner created and
+removed only runa_test_test_1 each time; base runa_test was preserved. This bounded
+case proves original-revision refusal for independently authenticated users and
+a removed record. It is not complete backend or two-browser rendered acceptance.
+
+Both instruction products and canonical session/testing guidance already describe
+real guarded session admission; no reusable rule, public API/version or capability
+change is introduced. The separate base-test provenance blocker remains in 10i;
+owner manual acceptance 11 and final automated verification/release 12 stay open.

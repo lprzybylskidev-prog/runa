@@ -299,11 +299,16 @@ it('keeps two independent users snapshots versioned and rejects stale or removed
         $this->actorId = $y;
     }
     try {
+        // A separate browser enters without Y's cookie; login deliberately invalidates
+        // the presented browser session, so reusing it would destroy Y's snapshot.
+        $this->refreshApplication();
+        $this->withCookie('runa_session', '');
         $this->postJson('/api/runa/auth/login', ['identifier' => $email, 'password' => 'reference-example-password'])->assertOk();
         $this->withCookie('runa_session', app('session')->getId());
         $this->getJson('/api/runa/auth/profile')->assertOk()->assertJsonPath('data.public_id', $x);
         $changed = 'independent_'.bin2hex(random_bytes(4));
         $this->patchJson('/api/app/reference/samples', ['public_id' => $this->fixtureId, 'revision' => $snapshot['revision'], 'code' => $changed])->assertOk();
+        $this->refreshApplication();
         $this->withCookie('runa_session', $ySession);
         $this->getJson('/api/runa/auth/profile')->assertOk()->assertJsonPath('data.public_id', $y);
         $draft = ['public_id' => $this->fixtureId, 'revision' => $snapshot['revision'], 'code' => 'stale_draft'];
