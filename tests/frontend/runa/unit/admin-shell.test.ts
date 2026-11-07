@@ -24,6 +24,7 @@ import {
   useAdminApplicationSettings,
   useAdminForm,
   useAdminPage,
+  useAdminPageContext,
   useAdminResource,
   useAdminTable,
   AdminResourceTable,
@@ -2553,4 +2554,63 @@ it('bounded Admin advertisement timeout releases initial readiness and fences a 
   await flushPromises();
   expect(wrapper.find('[data-ready-body]').exists()).toBe(false);
   expect(document.querySelector('.account-menu a[href="/admin"]')).toBeNull();
+});
+
+it('custom Admin pages share admitted identity, register exit refusal and remove it on disposal', async () => {
+  const session = sessionFixture(),
+    navigate = vi.fn(),
+    show = ref(true);
+  const beforeLeave = vi.fn(async () => false);
+  let admin!: ReturnType<typeof useAdmin>;
+  let page!: ReturnType<typeof useAdminPage>;
+  let context!: ReturnType<typeof useAdminPageContext>;
+  const baseFetch = vi.mocked(window.fetch).getMockImplementation()!;
+  vi.mocked(window.fetch).mockImplementation(async (input, init) =>
+    String(input) === '/api/admin/app/settings'
+      ? respond({
+          data: {
+            schema_version: 1,
+            owner: 'app',
+            key: 'settings',
+            title: 'Settings',
+            generation: 7,
+            revision: 'page',
+            component: null,
+            sections: [],
+          },
+        })
+      : baseFetch(input, init),
+  );
+  const Child = defineComponent({
+    setup() {
+      context = useAdminPageContext(page, { beforeLeave, dirty: () => true });
+      return () => h('output', context.identity.value);
+    },
+  });
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        admin = useAdmin({ session, navigate });
+        page = useAdminPage(admin, ref({ owner: 'app', page: 'settings' }));
+        return () => (show.value ? h(Child) : null);
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(context.identity.value).toBeDefined());
+  const original = context.identity.value;
+  session.authorityRevision.value++;
+  await flushPromises();
+  expect(context.identity.value).toBe(original);
+  expect(await admin.navigate({ owner: 'app', page: 'settings' })).toBe(false);
+  expect(beforeLeave).toHaveBeenCalledTimes(1);
+  expect(navigate).not.toHaveBeenCalled();
+  session.paused.value = true;
+  expect(context.identity.value).toBeUndefined();
+  session.paused.value = false;
+  await vi.waitFor(() => expect(context.identity.value).toBeDefined());
+  show.value = false;
+  await wrapper.vm.$nextTick();
+  expect(await admin.navigate({ owner: 'app', page: 'settings' })).toBe(true);
+  expect(beforeLeave).toHaveBeenCalledTimes(1);
+  expect(navigate).toHaveBeenCalledWith('/admin/app/settings');
 });

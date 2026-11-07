@@ -21,18 +21,20 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10c completed, 2026-11-07
+## Current execution state — point 10d completed, 2026-11-07
 
-**Points 1–10, 10a, 10b and 10c are complete. Point 10d is next.**
-The reference backend now implements audited sample editing, independent field
-and action grants, safe settings review/publication, named snapshots, authorized
-history and protected managed-work dispatch/status. Its Admin/standalone views
-still show the previous Ping experience; the expanded presentation remains 10d.
+**Points 1–10 and 10a–10d are complete. Point 10e is next.**
+The reference now supplies samples, settings/snapshots, authorized history and
+protected managed-work pages through public Admin/Auth/UI facades, plus a typed
+standalone/replacement workspace. Existing Ping page/widget remain. Admin 1.1.0
+adds native custom-page identity/readiness/exit composition; reference remains
+this roadmap's unreleased 0.4.0 candidate. Runtime alignment/assets remain 10i;
+no rendered acceptance or final verification is claimed.
 
 The approved native correction replaces settings generation arguments with semantic
 review identities while preserving operational generation and exact native health/
 authority/proof/Audit fences. Current source: Framework API 2.0.0, AuthPolicies
-4.0.0 / Auth 6.0.0, Audit 1.1.1, Permissions 2.1.1, Admin 1.0.1 and reference 0.4.0.
+4.0.0 / Auth 6.0.0, Audit 1.1.1, Permissions 2.1.1, Admin 1.1.0 and reference 0.4.0.
 These are source candidates, not a claim of development installation or release.
 Platform VERSION remains 0.7.0 and the approved feature/0.8.0 projection is unchanged.
 
@@ -1325,7 +1327,7 @@ below are retained as historical records only.
     resetting existing data. Complete public signature/source documentation in
     this point. Full suites remain final; commit the backend point.
 
-- [ ] 10d. Complete the reference Admin/frontend customer journey.
+- [x] 10d. Complete the reference Admin/frontend customer journey.
   - **Dependency:** completed 10c. Add coherent settings/history/snapshot, sample
     editing and protected-action/work views through public Admin/Auth/UI facades.
     Keep the current Ping page/widget. Use shared page navigation, forms, feedback,
@@ -4531,3 +4533,95 @@ or removed. Base test/development data, existing services, Qdrant/model/pnpm cac
 backups, reports and recovery state were preserved. No development reset, implicit
 migration, candidate platform-version preparation, deployment or owner acceptance
 occurred. Point 10d is next; this point does not authorize skipping its UI work.
+
+## Point 10d completion — reference customer presentation, 2026-11-07
+
+### Delivered source and composition
+
+Added `/admin/app.reference/samples`, `/settings`, `/history` and `/work` through
+native module page/section declarations; the shared Admin top bar owns navigation.
+Their custom page uses projected section/field grants, real guarded ReferenceTools
+HTTP and public Admin/Auth/UI facades. Ping inspect/widget remain independent.
+Native fallback readers declare exact ReferenceTools calls and bounded cursor
+reads; they do not introduce a second business API or write path.
+
+Application-owned `workspace.vue` and `useReferenceWorkspace` provide the same
+samples/settings/snapshot/history/work presentation for a standalone shell and
+its typed default-slot replacement. The standalone caller supplies its existing
+admitted identity/capability projection and connects the exposed exit check to its
+router. Neither component starts another session. The registry Ping panel remains
+public/nonsensitive rather than inventing a protected identity for static mounting.
+
+Usable defaults compose Card/Form/FormNotifications, source-projected PL/EN setting
+names/descriptions, TextInput/RadioGroup, Table, ContentLoading, FormConflict and
+ConfirmDialog. Semantic tokens/shared controls retain responsive light/dark and
+keyboard/focus contracts. Code/credential presentation follows independent field
+grants; readonly consumers have no write controls. Secret keep/replace/clear remains
+local and is redacted in review/history/snapshots. A single view lane retains
+content and dirty drafts, serializes settings/snapshot intents and fences late
+responses on authority withdrawal/disposal. Actual stale/missing reasons reconcile
+without write replay; business conflicts retain their own localized outcome.
+Snapshots capture committed labels and load only into drafts. Protected publication,
+snapshot deletion and work dispatch use distinct native Auth full-page password
+actions. Cancellation sends no business write; work admission does not imply
+completion. The controller checks native settings `succeeded` separately from
+snapshot `committed` and work `admitted` outcomes.
+
+The owning native composition gap was a small public frontend extension: Admin
+`useAdminPageContext(page, {beforeLeave?, dirty?, settled?})` exposes admitted
+identity and joins existing readiness/exit ownership, preserving scope cleanup and
+fencing late navigation consent. It adds no session/cache/runner or retry machinery.
+Its full public signature, audience, implementation and delivery are recorded in
+the Admin frontend guide before consumption. Admin is honestly assessed as compatible
+MINOR **1.1.0** with a source-only forward edge, preserving AdminAccess 1.0.0 and
+storage. Reference remains **0.4.0**, completing the same unreleased feature;
+ReferenceTools 1.0.0, Framework API 2.0.0 and other Core APIs are unchanged here.
+The reference declares optional Admin ^1.1.0 for its actual new frontend consumer.
+Platform VERSION remains 0.7.0; no installation or early release preparation occurred.
+
+### Tests and current guidance
+
+Authored application regressions cover sample conflict/explicit resolution, removed
+subjects, identity withdrawal/late reads, exact reviewed publication/native proof,
+cancelled protected work and actual admission/status, snapshot draft loading/review
+invalidation, business-conflict isolation, readonly/omitted field rendering and a
+real custom-slot consumer with disposal. Added a native Admin lifecycle/navigation
+consumer regression and an application backend scenario for independent Admin
+read/write/field projections and the guarded native settings fallback.
+
+Synchronized reference source/reproduction/composition guidance, Admin public
+frontend/snapshot/examples/version guides, module and central changelogs, owner
+frontend layout/forms references and customer frontend application reference.
+Root owner/customer AGENTS and other domain skills require no change: existing
+public-boundary, single-session/proof, grant, roadmap and test ownership rules
+already apply. No new customer permission to edit protected source is introduced.
+The full capability matrix/acceptance-sheet reconciliation remains the explicit
+next point 10e; immutable historical reports are untouched.
+
+### Bounded diagnostics and remaining acceptance
+
+Local knowledge status was current before research; relevant sources were opened.
+Only focused diagnostics resolving concrete implementation uncertainties ran:
+
+- `php src/artisan runa:modules:check app`: no source errors for app.reference.
+- Application `runa:test:frontend ../tests/frontend/app/modules/reference/workspace.test.ts -t 'retains a conflicting sample|fences late reads|publishes the exact'`:
+  **3 selected cases passed**, 4 then-authored cases excluded, native exit/cleanup 0.
+- Owner `python3 tools/maintainer/test-frontend tests/frontend/runa/unit/admin-shell.test.ts -t 'custom Admin pages share admitted identity'`:
+  **1 selected case passed**, 48 excluded, native exit/cleanup 0.
+- After correcting explicit native result-status handling, application selection
+  `-t 'publishes the exact|renders readonly settings'`: **2 selected cases passed**,
+  8 excluded, native exit/cleanup 0. These selections precede the final metadata/
+  readiness/source refinements; they are bounded observations, not current-source
+  complete certification. The full owning checks and all authored cases remain 12.
+
+The runners emitted Vite's dependency dynamic-import analysis warning from generated
+Vitest runtime code; it is preserved in native output, not suppressed or called a
+warning-free full result. No complete frontend/backend suite, static analysis,
+browser matrix, build/image/scanner pipeline or final gate ran. No owner manual
+acceptance is claimed. Combined working-runtime/assets preparation remains 10i,
+sole owner acceptance 11 and sole final verification/release 12.
+
+No task-created Docker resources or worker databases were needed for these focused
+frontend runs; none were removed. Existing development/test data, services, caches,
+backups, reports and recovery state were preserved. Mandatory formatting/lint,
+staged knowledge freshness and commit hooks apply to this point's commit.

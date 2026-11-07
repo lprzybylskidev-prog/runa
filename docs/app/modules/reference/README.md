@@ -6,24 +6,26 @@ The first-development installer offers the example interactively or with `--refe
 
 ## Source map
 
-| Contract                                        | Working source under `src/app/modules/reference/`                                                                                                         |
-| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Identity, compatibility, declarations           | `module.json`                                                                                                                                             |
-| Health, lifecycle and work decisions            | `backend/Definitions/ReferenceHealthPolicy.php`, `ReferenceWorkPolicy.php`, `ReferenceJobPolicy.php`                                                      |
-| Typed public API, guarded proxy, implementation | `backend/Contracts/Ping.php`, `backend/PingProxy.php`, `backend/PingHandler.php`                                                                          |
-| Named guarded HTTP/resource                     | `backend/Definitions/ReferenceHttp.php`, `backend/Http/`                                                                                                  |
-| Owned schema and UUIDv7 model                   | `database/migrations/`, `backend/Models/Sample.php`                                                                                                       |
-| Transactional installation                      | `backend/Definitions/ReferenceUpgrades.php`, `backend/InitializeReference.php`                                                                            |
-| Typed settings and reversible reinitialization  | `backend/Definitions/ReferenceSettings.php`                                                                                                               |
-| Classified CLI, hourly scheduling and jobs      | `backend/Definitions/ReferenceCommands.php`, `ReferenceSchedules.php`, `ReferenceJobs.php`                                                                |
-| Independent versioned facts/listeners           | `backend/Definitions/ReferenceEvents.php`, `ReferenceListener.php`, `ReferenceEventHandler.php`                                                           |
-| Navigation, page and named slot contributions   | `backend/Definitions/ReferenceFrontend.php`, `frontend/components/panel.vue`                                                                              |
-| Guarded Admin page, read adapter and widget     | `backend/Definitions/ReferenceManagement.php`, `backend/Management/ReferenceReader.php`, `frontend/components/inspect_section.vue`, `response_widget.vue` |
-| Reusable source assertion                       | `tests/backend/app/modules/reference/ModuleContractTest.php` (repository-relative)                                                                        |
+| Contract                                        | Working source under `src/app/modules/reference/`                                                                                                                                            |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Identity, compatibility, declarations           | `module.json`                                                                                                                                                                                |
+| Health, lifecycle and work decisions            | `backend/Definitions/ReferenceHealthPolicy.php`, `ReferenceWorkPolicy.php`, `ReferenceJobPolicy.php`                                                                                         |
+| Typed public API, guarded proxy, implementation | `backend/Contracts/Ping.php`, `backend/PingProxy.php`, `backend/PingHandler.php`                                                                                                             |
+| ReferenceTools and shared protected workspace   | `backend/Contracts/ReferenceTools.php`, `backend/Actions/`, `frontend/contracts.ts`, `frontend/useReferenceWorkspace.ts`, `frontend/components/workspace.vue`, `tools_page.vue`              |
+| Named guarded HTTP/resource                     | `backend/Definitions/ReferenceHttp.php`, `backend/Http/`                                                                                                                                     |
+| Owned schema and UUIDv7 model                   | `database/migrations/`, `backend/Models/Sample.php`                                                                                                                                          |
+| Transactional installation                      | `backend/Definitions/ReferenceUpgrades.php`, `backend/InitializeReference.php`                                                                                                               |
+| Typed settings and reversible reinitialization  | `backend/Definitions/ReferenceSettings.php`                                                                                                                                                  |
+| Classified CLI, hourly scheduling and jobs      | `backend/Definitions/ReferenceCommands.php`, `ReferenceSchedules.php`, `ReferenceJobs.php`                                                                                                   |
+| Independent versioned facts/listeners           | `backend/Definitions/ReferenceEvents.php`, `ReferenceListener.php`, `ReferenceEventHandler.php`                                                                                              |
+| Navigation, page and named slot contributions   | `backend/Definitions/ReferenceFrontend.php`, `frontend/components/panel.vue`                                                                                                                 |
+| Guarded Admin pages, read adapters and widget   | `backend/Definitions/ReferenceManagement.php`, `backend/Management/ReferenceReader.php`, `frontend/components/inspect_section.vue`, `response_widget.vue`, `tools_page.vue`, `workspace.vue` |
+| Reusable source assertion                       | `tests/backend/app/modules/reference/ModuleContractTest.php` (repository-relative)                                                                                                           |
 
-The Admin page/widget currently show Ping. ReferenceTools 1.0.0 adds the guarded
-backend workflows below; their Admin/frontend journey remains pending in the
-active roadmap. The example declares optional Audit/Auth/Permissions integration
+The Admin inspect page/widget retain Ping; the four additional Admin pages and
+replaceable standalone workspace expose ReferenceTools 1.0.0 through the guarded
+backend workflows below. Runtime alignment and rendered acceptance remain
+separate from source delivery. The example declares optional Admin/Audit/Auth/Permissions integration
 constraints, so Ping and its CLI/work example remain independent of Core storage.
 Protected examples require those integrations installed and effectively available.
 No registration, synchronization or source update automatically grants user access.
@@ -38,7 +40,7 @@ The named `app.reference.reference.read` HTTP route is `GET /api/app/reference/p
 
 `app:reference:inspect` remains diagnostic while disabled; `app:reference:work` dispatches guarded database-queue work. The hourly schedule uses that same operational entrypoint. Work checks cancellation before its repeat-safe private `last-observation.txt` write and publishes `observed` v1; synchronous and asynchronous subscribers run independently. Checkpoints cannot undo completed effects, and failed/retried work may repeat fact publication. Consumers needing exactly-once business effects must add domain idempotency. The framework does not invent compensation for a module.
 
-Read settings with `runa:modules:settings app.reference`; pass a JSON `values` patch through stdin with `--write --revision=<read revision> --generation=<read generation>` to change `label`. The optional `credential` setting demonstrates encrypted storage and reinitialization; it has no external service effect and is never returned in Ping/logs. Read projection exposes only whether it is set. Revision/generation conflicts require a fresh read and deliberate retry. Infrastructure keys remain outside module settings.
+Read settings with `runa:modules:settings app.reference`; pass a JSON `values` patch through stdin with `--write --revision=<read revision> --review=<read review_id>` to change `label`. The optional `credential` setting demonstrates encrypted storage and reinitialization; it has no external service effect and is never returned in Ping/logs. Read projection exposes only whether it is set. Revision/review conflicts require a fresh read and deliberate retry. Infrastructure keys remain outside module settings.
 
 The opt-in frontend registry exposes `app.reference.panel`. Compose the existing ModulePage/navigation adapters in your chosen shell; the installer does not replace App.vue. The panel uses shared Card/Button and HTTP transport, Polish default/English locale prop, Button-owned loading, shared FormNotifications error/retry feedback, retained previous response during refresh and abort on unmount. It remains static except inherited control feedback; no page entrance motion is needed. The `app.reference.panel` host accepts `reference.panel` v1 contributions; place ModuleSlot at the host location in a consumer. Do not place the page into its own host recursively.
 
@@ -128,7 +130,8 @@ its declared host in an opted-in application composition. Do not recursively
 mount a host inside its own panel contribution.
 
 `ReferenceManagement::readPlan` returns one ManagementReadCall for Ping::read
-for each read/page/widget invocation. It uses the existing binding targets and
+for each inspect read/page/widget invocation; samples/settings/history/work each
+declare their actual ReferenceTools read method. It uses the existing binding targets and
 contains no arguments, results or proof. Customers extending the reader follow the
 [public read-health contract](../../../runa/handbook/modules/admin/declarations.md#read-health-plans),
 including separate occurrences for repeated/nested public calls. A critical owner
@@ -223,10 +226,10 @@ requires the user to reconsider their draft; never fetch a new identity and repl
 
 The `core_examples` 0.3.0 → 0.4.0 edge preserves data and identities. Its explicit
 migration adds positive bigint Sample revision (default 1 for retained records).
-No reset or downgrade is performed. Core source compatibility is Auth ^6.0.0,
+No reset or downgrade is performed. Core source compatibility includes Admin ^1.1.0 for its frontend lifecycle seam, Auth ^6.0.0,
 Audit ^1.1.0 and Permissions ^2.1.0; those modules require their current explicit
-forward updates before protected workflows can run. Existing Ping presentation
-remains available; no new UI acceptance is claimed by these backend examples.
+forward updates before protected workflows can run. The reference workspace is implemented in source; aligned runtime/assets and
+owner acceptance remain separate. No UI acceptance is claimed by the backend cases.
 
 Run the application-owned `CoreExamplesTest.php` through the supported backend
 runner against prepared isolated test Core. It covers field omission/read/write
@@ -235,3 +238,86 @@ named snapshots, dispatch proof/replay/expiry/revocation, Audit-read independenc
 and transaction rollback. Owner tests additionally cover native semantic identity,
 prepared-read nesting and policy snapshot integration. Full suites and current
 development runtime preparation remain later roadmap points.
+
+## Interactive reference presentation
+
+The application-owned `frontend/components/workspace.vue` is the shared default
+presentation for samples, settings/snapshots, history and managed work. Its typed
+`ReferenceWorkspaceProps` are `{ access: ReferenceAccess; view: ReferenceView;
+locale?: 'pl' | 'en' }`. `ReferenceView` is `samples | settings | history | work`.
+`ReferenceAccess` contains an optional admitted `identity` string, `read`, `write`,
+`codeRead`, `codeWrite`, `credentialRead` and `credentialWrite` booleans. The caller
+must derive these hints from current server authority and withdraw identity/access
+on logout, restriction, module disable or access loss. Hints never authorize HTTP.
+Keep one workspace per admitted identity/view; the controller aborts and clears
+protected state when its input authority changes or its Vue scope is disposed.
+
+`useReferenceWorkspace(access, view, locale)` (three getter functions) lives in
+`frontend/useReferenceWorkspace.ts`, returns `ReferenceWorkspaceController`, and
+owns guarded HTTP reads, draft reconciliation, review/publication, snapshots and
+action-specific Auth proof. The workspace default slot receives `{ controller }`
+for a complete application presentation replacement; preserve controller lifetime
+and the shell's Auth password-confirmation host. Neither component nor controller
+starts a session. Standalone consumers pass their existing admitted session key
+and capability projection, compose `PageNavigation` in their shell for the four
+views, and mount this component directly. The ordinary registry panel and dashboard
+widget retain public Ping without protected requests. Do not create a second
+session or copy Auth security logic to mount the workspace.
+
+Admin registers `/admin/app.reference/samples`, `/settings`, `/history` and `/work`
+(with the same `/admin/app.reference/` prefix). The shared
+`frontend/components/tools_page.vue` consumes public `AdminPageProps`; current
+page/section/field projections provide access hints. The native Admin shell owns
+subview navigation, session invalidation and full-page password confirmation.
+The custom view reads the named authenticated ReferenceTools HTTP endpoints;
+source-owned readers `ReferenceSamplesReader`, `ReferenceSettingsReader`, `ReferenceHistoryReader` and `ReferenceWorkReader` provide genuine guarded read fallbacks for
+the declared native bindings. No private Runa frontend import is used.
+
+The module owns these application examples; their audience is application authors,
+the entrypoints are the components/composable and Admin pages above, and delivery
+is optional development frontend/backend source, excluded from production. Backend
+ReferenceTools signatures remain 1.0.0; this presentation completes the existing
+unreleased reference 0.4.0 candidate without changing its storage or API.
+
+### Workspace behavior and reproduction
+
+Grant `runa.admin.enter` and the desired `app.reference.<area>.read` grant; add the
+independent write grants from the HTTP table only when needed. The native Admin
+top bar advertises readable pages. Field grants omit the code or credential
+projection independently; a read grant alone renders readonly values. The history
+page also requires AuditReads authority; example grants never replace it.
+
+1. Open `/admin/app.reference/samples`, select the code action, edit and save. A
+   competing edit retains the local draft and offers the shared conflict choices;
+   a removed record closes its editor. Open `/admin/app.reference/history` with
+   independent history/Audit grants to inspect the owning action/outcome summaries.
+2. Open `/admin/app.reference/settings`, change the label and review it. Publish
+   requests the existing Auth full-page password confirmation for
+   `app.reference.settings.publish`. Admin entry proof does not authorize it.
+   Source-provided setting names/descriptions follow the active PL/EN locale.
+   Credential controls expose set state and deliberate keep/replace/clear intent;
+   neither the previous value nor the new value appears in review/history/snapshots.
+3. Name and capture the committed label, even while another label is in the draft.
+   Loading a snapshot changes only the draft and invalidates its review. Dirty
+   replacement requires consent. Deletion uses a shared destructive dialog followed
+   by its distinct `app.reference.settings.snapshot_delete` password action.
+4. Open `/admin/app.reference/work` and dispatch. Confirm
+   `app.reference.work.dispatch`; cancellation sends no domain write. Admission is
+   reported separately from execution. Explicit refresh reads actual managed work;
+   no polling or simulated completion is supplied.
+
+The controller owns one read/write lane per view and preserves content during
+refresh. Settings and snapshot operations share that lane and the last confirmed
+semantic review/revision. Actual stale-state refusals refresh only this owning
+view, retain drafts and never replay a write or silently substitute a fresh review.
+Unrelated business conflicts retain their own message. Secrets/drafts stay in
+local memory and are erased on identity/access withdrawal/disposal. Standalone
+routers must call the workspace's exposed `beforeLeave(): Promise<boolean>`;
+`blocksNavigation: boolean` reports dirty/pending state; `initialSettled: boolean`
+reports settlement of the initial read for a composing shell. Native Admin installs this
+through `useAdminPageContext`, without a second session or private frontend import.
+
+Application regressions live in `tests/frontend/app/modules/reference/workspace.test.ts`
+plus the retained presentation cases. Their supported application frontend runner
+owns disposal/reporting; complete suites, browser states, current runtime/assets
+and owner acceptance are separate roadmap stages.

@@ -99,3 +99,13 @@ start-aligned, with ordinary viewport collision handling. Save/apply/capture use
 commit, load uses inspect, delete uses danger and snapshot Cancel uses cancel;
 discarding an ordinary draft uses discard, following
 [shared action semantics](../../development/frontend/components.md#action-button-semantics).
+
+Application-owned settings views using an existing owning HTTP API can compose
+the same public UI controls and Auth `useOperationProof` with their own reviewed
+draft controller; they never copy native session/proof internals. A custom Admin
+page joins native identity, initial readiness and exit guards through
+[useAdminPageContext](frontend.md#custom-page-lifecycle). Keep one controller for
+the owning aggregate, source-projected names/descriptions, field grants and exact
+review identities. The optional reference workspace demonstrates the shared
+Admin/standalone case. Native Management form/resource settings consumers retain
+AdminSettingsPage/useAdminSettingsSnapshots above.

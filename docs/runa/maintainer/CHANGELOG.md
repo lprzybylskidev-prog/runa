@@ -10,7 +10,9 @@ All release entries are maintained by the agent from roadmap facts.
   AuthPolicies 4.0.0 / Auth 6.0.0, Audit 1.1.1, Permissions 2.1.1 and current
   consumers, CLI and source-only forward edges. Complete reference 0.4.0 backend
   examples for audited editing, grants, settings/snapshots and protected work;
-  presentation, combined runtime readiness, owner acceptance and final checks remain.
+  presentation is now delivered through four Admin pages and a typed standalone
+  workspace, using the additive Admin 1.1.0 native lifecycle seam. Combined runtime
+  readiness, owner acceptance and final checks remain.
 
 - Absorb the approved RM-2026-018 interface-copy, trusted-device disclosure and
   action-driven data-refresh scope into this roadmap's feature/0.8.0 plan; remove
@@ -22,7 +24,7 @@ All release entries are maintained by the agent from roadmap facts.
 - Establish the reference module as executable customer documentation: new Runa
   modules and customer-facing capabilities extend working examples, guidance and
   tests in their owning point. Reopen reference completeness through repair point
-  10a before owner frontend acceptance; backend examples are delivered; their expanded frontend journey remains pending.
+  10a before owner frontend acceptance; backend examples are delivered; their expanded frontend journey is delivered; reconciliation/readiness/acceptance remain.
 
 - Record the approved common-settings refactor and ordered repair points 10a–10e:
   framework contracts, Auth migration, executable reference backend/UI and renewed

@@ -79,10 +79,13 @@ contracts remain separate from editable ManagementContribution declarations.
 The unreleased optional development-only `app.reference` candidate declares a read-only inspect page,
 owned adapter, replaceable section and dashboard widget through its existing Ping
 API. Its source dictionary declares `app.reference.reference.inspect`; native Admin
-entry is still required separately. It deliberately has no settings editor or
-foreign-record write. When the example is selected, follow its application-owned
+entry is still required separately. Its additional samples/settings/history/work pages compose public Admin lifecycle,
+Auth password confirmation and UI controls with the guarded owning ReferenceTools
+HTTP API. Read/write and field grants remain independent. Settings support reviewed
+publication and committed-label snapshots; sample edits have optimistic revisions
+and Audit. Work admission is distinct from completion. No foreign private API is used. When the example is selected, follow its application-owned
 `docs/app/modules/reference/README.md` for capability reproduction and composition.
-Reference declares one Ping occurrence through ManagementReadPlanProvider. Native
+Reference declares exact Ping and ReferenceTools read occurrences through ManagementReadPlanProvider. Native
 focused regressions cover its authorized section/widget and revoked access; final
 runtime/browser acceptance remains separate. See the
 [read-health source contract](declarations.md#read-health-plans).
@@ -202,7 +205,8 @@ the projected owner/manifest/build identities. A backend string never supplies a
 import path. Do not substitute a page component where section props are required.
 
 Field replacements use AdminFieldProps, emit `update:modelValue` and `availability`,
-and respect readonly/busy/errors. Full page replacements receive AdminPageProps;
+and respect readonly/busy/errors. Full page replacements receive AdminPageProps; custom owning-HTTP pages compose
+`useAdminPageContext` for native identity/exit checks (see the frontend contract);
 compose AdminForm with its existing form controller and AdminSectionContent for
 each authorized section. Do not create a second useAdminForm for the same page.
 Table replacements compose AdminResourceTable/useAdminTable and the public table

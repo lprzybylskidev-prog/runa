@@ -53,3 +53,10 @@ For area/module sidebar versus subview top-bar placement and nested PageNavigati
 or custom-layout usePageNavigationHost, follow
 `docs/runa/handbook/development/frontend/page-layouts.md#page-level-navigation-composition`.
 Preserve the owning controller's guards and history; keep operation controls in content.
+
+Custom Admin pages that use owning HTTP compose public `useAdminPageContext` for
+the native admitted identity and exit guard; use the existing single shell and
+Auth confirmation host. See the custom-page lifecycle contract in
+`docs/runa/handbook/modules/admin/frontend.md` and the optional reference workspace.
+Keep one controller per aggregate and connect its exposed exit check to standalone
+routing; presentation replacement does not authorize private platform imports.

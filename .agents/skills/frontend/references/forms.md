@@ -28,7 +28,10 @@ the shared fields retain controller-owned grants, proof and reconciliation.
 For module settings editors, use the public named-snapshot composition in
 `docs/runa/handbook/modules/admin/settings-snapshots.md`. Keep Audit in its own
 viewer; loading a snapshot edits a draft and applying it uses the module's native
-publication. Use the shared AdminSettingsPage/controller rather than copied proof logic.
+publication. Native Management consumers use shared AdminSettingsPage/controllers. For an
+existing owning HTTP API shared with standalone presentation, follow that guide's
+custom-page composition through native Admin lifecycle and Auth proof; never copy
+private session/proof logic.
 
 Setting metadata retains the stable technical key and separate human names and
 explanations in Polish/English. Preserve the owning descriptions through declared

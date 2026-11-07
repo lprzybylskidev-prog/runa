@@ -2,7 +2,7 @@
 
 ## 0.4.0 — Unreleased
 
-- Add guarded ReferenceTools API 1.0.0 and named authenticated HTTP for sample editing, field grants, safe settings review/publication, named snapshots, authorized Audit history and password-protected work dispatch/status. Use Framework API ^2.0.0 native admission and semantic settings review. Add a positive monotonic sample revision through a nondestructive migration; preserve existing records. Add application-owned success/refusal/rollback tests. Admin and standalone presentation still show Ping; the new interactive journey is a separate pending roadmap point.
+- Add guarded ReferenceTools API 1.0.0 and named authenticated HTTP for sample editing, field grants, safe settings review/publication, named snapshots, authorized Audit history and password-protected work dispatch/status. Use Framework API ^2.0.0 native admission and semantic settings review. Add a positive monotonic sample revision through a nondestructive migration; preserve existing records. Add application-owned success/refusal/rollback tests. Add localized, replaceable Admin and standalone samples/settings/snapshots/history/work presentation through public facades, preserving Ping. Retain dirty/conflicting drafts, action-specific full-page proof and explicit admission/completion states. Use the additive Admin 1.1.0 lifecycle seam; runtime readiness and acceptance remain separate.
 
 ## 0.3.0 — Unreleased
 

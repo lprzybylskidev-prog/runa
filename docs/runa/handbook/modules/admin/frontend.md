@@ -2,7 +2,7 @@
 
 # Admin frontend contract
 
-Admin 1.0.1 supplies the PL/EN session shell, guarded reads and independent
+Admin 1.1.0 supplies the PL/EN session shell, guarded reads and independent
 commands, compiled component resolution, presentation providers, generated record
 forms and cursor tables. Public facade `@/runa/admin` exports AdminApplication,
 AdminLayout, AdminPage, AdminSection, AdminForm, AdminField, AdminAction,
@@ -1331,3 +1331,25 @@ See the [shared capability contract](../../development/frontend/tables.md).
 
 Named module settings snapshots and the public AdminSettingsPage/controller are
 documented in [settings snapshots](settings-snapshots.md).
+
+## Custom page lifecycle
+
+Owner: Admin. Audience: application/module custom Admin pages. Public frontend
+entrypoint: `useAdminPageContext(page: AdminPageController, options?: {
+beforeLeave?: () => Promise<boolean>; dirty?: () => boolean; settled?: () => boolean;
+}): { identity: ComputedRef<string | undefined> }` from `@/runa/admin`.
+Implementation: `modules/admin/frontend/useAdminPageContext.ts`, delivered in the
+frontend runtime. Call inside the custom page's Vue scope. The returned identity
+is the native admitted account/session/page key, withdrawn on actual access loss;
+same-session observations do not replace it. Supplied native page controllers are
+required; unknown/headless controllers fail closed. The optional exit callback
+joins native Admin navigation and document-link guards and is removed on disposal.
+It returns false to retain pending writes or declined dirty drafts. Optional
+`settled` joins the shell's existing initial-readiness region; return true after
+the custom initial read succeeds, fails or is omitted, keeping refresh in place. Supply `dirty`
+for document-link interception only while a draft/write needs protection. Use the public
+UI dirty guard/dialog and expose the same callback to a standalone caller's router.
+This does not start a session, grant access, coordinate/retry domain writes or
+replace the native form/resource mutation lane. A page using custom owning HTTP
+must use one custom controller for that aggregate and omit competing native forms.
+The reference module's `tools_page.vue` is an executable consumer.

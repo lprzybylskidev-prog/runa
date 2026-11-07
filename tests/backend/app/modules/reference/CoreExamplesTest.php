@@ -231,3 +231,21 @@ it('rolls settings secret revision and its proof back on required Audit refusal'
     ($this->proof)('app.reference.settings.publish');
     $this->postJson('/api/app/reference/settings/publish', [...$input, 'review' => $review])->assertConflict();
 });
+
+it('projects reference Admin read and field grants independently before native fallback reads', function (): void {
+    ($this->grant)(['runa.admin.enter', 'samples.read', 'samples.write', 'settings.read']);
+    ($this->proof)('runa.admin.enter');
+    $page = $this->getJson('/api/admin/app.reference/samples')->assertOk()->json('data');
+    expect($page['sections'][0]['readonly'])->toBeFalse()
+        ->and($page['sections'][0]['fields'])->toBe([]);
+    ($this->grant)(['samples.code.read']);
+    $page = $this->getJson('/api/admin/app.reference/samples')->assertOk()->json('data');
+    expect($page['sections'][0]['fields'][0]['key'])->toBe('code')
+        ->and($page['sections'][0]['fields'][0]['readonly'])->toBeTrue();
+    $settings = $this->getJson('/api/admin/app.reference/settings')->assertOk()->json('data');
+    expect($settings['sections'][0]['readonly'])->toBeTrue()
+        ->and(array_column($settings['sections'][0]['fields'], 'key'))->toBe(['label']);
+    $this->getJson('/api/admin/app.reference/settings/sections/settings?kind=record')->assertOk()
+        ->assertJsonMissingPath('data.values.credential');
+    $this->getJson('/api/admin/app.reference/work')->assertNotFound();
+});

@@ -1,5 +1,13 @@
 # Admin module changelog
 
+## 1.1.0 — Unreleased
+
+- Expose native `useAdminPageContext` through the public frontend facade for
+  custom owning-HTTP pages: admitted account/session/page identity and registered
+  initial readiness and dirty/pending exit checks, with scope cleanup and no second session owner.
+  The optional application reference workspace is the executable consumer.
+  Add a source-only forward edge; preserve storage and AdminAccess 1.0.0.
+
 ## 1.0.1 — Unreleased
 
 - Require Framework API ^2.0.0 and Auth ^6.0.0 for semantic settings review and
