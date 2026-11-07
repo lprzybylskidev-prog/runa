@@ -110,7 +110,7 @@ final class PlatformCompositionTest extends TestCase
         foreach ($plan as $module) {
             $expected = match ($module['module']) {
                 'runa.admin' => ['1.0.1', null, ['initialize', 'standalone_participants', 'creation_release', 'editor_scopes']],
-                'runa.auth' => ['5.0.1', '1.0.1', ['platform_composition', 'execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts', 'admin_platform', 'native_transactions', 'section_activity', 'user_details', 'settings_snapshots', 'read_scopes']],
+                'runa.auth' => ['5.0.2', '1.0.1', ['platform_composition', 'execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts', 'admin_platform', 'native_transactions', 'section_activity', 'user_details', 'settings_snapshots', 'read_scopes', 'common_settings']],
                 'runa.audit' => ['1.1.0', '1.0.1', ['platform_composition', 'platform_delivery', 'verification_contracts', 'admin_platform', 'admin_history']],
                 'runa.permissions' => ['2.1.0', '1.0.1', ['platform_composition', 'platform_delivery', 'verification_contracts', 'admin_platform', 'native_transactions', 'table_exports']],
             };

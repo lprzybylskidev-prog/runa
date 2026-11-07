@@ -18,7 +18,7 @@ use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
-/** Auth settings retain their own runner and mandatory publication participant. */
+/** Auth consumes native settings publication with source-owned access and effects. */
 final readonly class PolicySection implements ManagementResourceReader, ManagementWriter
 {
     public function __construct(private ModuleApis $apis, private ModuleSettings $settings, private OperationGuard $guard) {}
@@ -32,6 +32,7 @@ final readonly class PolicySection implements ManagementResourceReader, Manageme
     public function read(ManagementRead $input): ManagementRecord
     {
         $this->guard->enter('runa.auth', new ApiOperation('policy.read', 'runa.auth.policy.read'));
+        // Owning read within Admin's admitted transaction; the grant above remains required.
         $state = $this->settings->read('runa.auth');
         $values = [];
         foreach (self::keys() as $key) {

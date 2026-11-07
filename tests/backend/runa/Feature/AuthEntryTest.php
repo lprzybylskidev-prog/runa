@@ -35,6 +35,7 @@ use Runa\ModuleFramework\Api\ModuleHttp;
 use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\Settings\SettingsSecurity;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\ModuleFramework\Work\WorkDefinitions;
 use Runa\Modules\Audit\Contracts\AuditUnavailable;
@@ -77,6 +78,7 @@ use Runa\Modules\Auth\Contracts\PreferenceValue;
 use Runa\Modules\Auth\Contracts\SessionSelection;
 use Runa\Modules\Auth\Contracts\UserDirectoryQuery;
 use Runa\Modules\Auth\Definitions\EntryWork;
+use Runa\Modules\Auth\Definitions\IdentitySettings;
 use Runa\Modules\Auth\Mail\AuthMessage;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Queries\LookupIdentity;
@@ -92,6 +94,7 @@ use Runa\Support\Modules\Settings\ModuleSettings;
 use Runa\Support\Modules\Storage\ModuleStorage;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Tests\Fixtures\CoreModuleStorage;
+use Tests\Fixtures\OperatorSettings;
 
 function entryLogin($test, array $payload): TestResponse
 {
@@ -105,7 +108,7 @@ function entryPolicy(array $patch): void
 {
     $settings = app(ModuleSettings::class);
     $state = $settings->read('runa.auth');
-    expect($settings->update('runa.auth', $patch, $state['revision'], $state['generation'])->status)->toBe('succeeded');
+    expect(OperatorSettings::update('runa.auth', $patch, $state['revision'], $state['generation'])->status)->toBe('succeeded');
 }
 
 function entryUser(string $email, bool $password = true): User
@@ -1620,6 +1623,37 @@ it('operator command requires confirmation and privately hands off without stdou
     }
 })->group('auth-policy-operators');
 
+/** Isolate current grants while retaining real Auth session, proof and Audit storage. */
+function policyPublicationAccess(): object
+{
+    $grants = new class implements OperationAuthorizer
+    {
+        public bool $allowed = true;
+
+        public ?Closure $onLocked = null;
+
+        public function allows(OperationContext $context, string $permission): bool
+        {
+            if ($permission !== 'runa.auth.policy.write' && $permission !== 'runa.auth.policy.read') {
+                return false;
+            }
+            if (DB::connection()->transactionLevel() === 1 && $this->onLocked !== null) {
+                $callback = $this->onLocked;
+                $this->onLocked = null;
+                $callback();
+            }
+
+            return $this->allowed;
+        }
+    };
+    app()->instance(OperationAuthorizer::class, $grants);
+    foreach ([OperationGuard::class, ModuleApis::class, SettingsSecurity::class, ModuleSettings::class] as $service) {
+        app()->forgetInstance($service);
+    }
+
+    return $grants;
+}
+
 function policyStepUpProof($test, string $action): void
 {
     $test->postJson('/api/runa/auth/step-up', ['action' => $action, 'current_password' => 'a-long-test-password'])->assertOk();
@@ -1738,6 +1772,7 @@ it('rejects stale bulk revocation previews and rolls back sessions with Audit wi
 })->group('auth-policy-operators');
 
 it('consumes policy publication proof only with history and preserves scheduled deactivation', function (): void {
+    policyPublicationAccess();
     $actor = profileVerified('policy-publisher@example.test');
     $target = profileVerified('scheduled-target@example.test');
     entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
@@ -1752,7 +1787,22 @@ it('consumes policy publication proof only with history and preserves scheduled 
     expect($publish)->toThrow(QueryException::class);
     expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.policy.publish')->value('consumed_at'))->toBeNull();
     DB::statement('ALTER TABLE runa_auth.policy_versions DROP CONSTRAINT publication_history_refusal');
+    $historyCount = DB::table('runa_auth.policy_versions')->count();
+    $transitionCount = DB::table('shared.module_transitions')->count();
+    DB::statement('ALTER TABLE runa_audit.events ADD CONSTRAINT publication_audit_refusal CHECK (false) NOT VALID');
+    expect($publish)->toThrow(AuditUnavailable::class);
+    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.policy.publish')->value('consumed_at'))->toBeNull()
+        ->and(DB::table('runa_auth.policy_versions')->count())->toBe($historyCount)
+        ->and(DB::table('shared.module_transitions')->count())->toBe($transitionCount)
+        ->and($settings->read('runa.auth')['revision'])->toBe($state['revision']);
+    DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT publication_audit_refusal');
     expect($publish()['status'])->toBe('succeeded');
+    expect(DB::table('runa_auth.policy_versions')->count())->toBe($historyCount + 1)
+        ->and(DB::table('runa_audit.events')->where('action', 'step_up.consumed')->count())->toBe(1);
+    $fresh = $settings->read('runa.auth');
+    expect(fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $settings->update('runa.auth', ['notice_new_browser' => false], $fresh['revision'], $fresh['generation'])))
+        ->toThrow(OperationRejected::class);
+    expect($settings->read('runa.auth')['revision'])->toBe($fresh['revision']);
     expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.policy.publish')->value('consumed_at'))->not->toBeNull();
     DB::transaction(function () use ($target): void {
         $target->active = false;
@@ -2382,3 +2432,79 @@ it('bounds standalone Auth policy reads and discards rolled back settings and ex
     CarbonImmutable::setTestNow(CarbonImmutable::parse($row->activity_at)->addMinutes(2));
     expect($sessions->live($row))->toBeFalse();
 });
+
+it('refuses denied and stale native Auth settings writes without spending the password proof', function (): void {
+    $grants = policyPublicationAccess();
+    $actor = profileVerified('common-policy-denied@example.test');
+    entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
+    policyStepUpProof($this, 'runa.auth.policy.publish');
+    $settings = app(ModuleSettings::class);
+    $state = $settings->read('runa.auth');
+    $publish = fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $settings->update('runa.auth', ['notice_new_browser' => true], $state['revision'], $state['generation']));
+    $grants->allowed = false;
+    expect($publish)->toThrow(OperationRejected::class);
+    $grants->allowed = true;
+    $grants->onLocked = function () use ($grants): void {
+        $grants->allowed = false;
+    };
+    expect($publish)->toThrow(OperationRejected::class);
+    $grants->allowed = true;
+    // Trusted console publication still works without borrowing the browser principal/proof.
+    entryPolicy(['notice_password_expiry' => true]);
+    expect($publish)->toThrow(RuntimeException::class, 'Settings revision changed or transition unresolved.');
+    expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.policy.publish')->value('consumed_at'))->toBeNull()
+        ->and($settings->value('runa.auth', 'notice_new_browser'))->toBeFalse()
+        ->and($settings->read('runa.auth')['revision'])->toBe($state['revision'] + 1);
+})->group('auth-policy-operators');
+
+it('refuses changed Auth settings source and connection before consuming publication proof', function (string $change): void {
+    $grants = policyPublicationAccess();
+    $actor = profileVerified('common-policy-identity@example.test');
+    entryLogin($this, ['identifier' => $actor->email, 'password' => 'a-long-test-password'])->assertOk();
+    policyStepUpProof($this, 'runa.auth.policy.publish');
+    $settings = app(ModuleSettings::class);
+    $state = $settings->read('runa.auth');
+    $default = DB::getDefaultConnection();
+    config(['database.connections.policy_changed' => config('database.connections.'.$default)]);
+    $grants->onLocked = function () use ($change): void {
+        if ($change === 'source') {
+            app()->instance(IdentitySettings::class, new stdClass);
+        } else {
+            DB::setDefaultConnection('policy_changed');
+        }
+    };
+    try {
+        expect(fn () => app(PrincipalScope::class)->run(new TrustedPrincipal($actor->public_id), fn () => $settings->update('runa.auth', ['notice_new_browser' => true], $state['revision'], $state['generation'])))
+            ->toThrow(RuntimeException::class);
+    } finally {
+        app()->forgetInstance(IdentitySettings::class);
+        DB::setDefaultConnection($default);
+        DB::purge('policy_changed');
+    }
+    expect($settings->read('runa.auth')['revision'])->toBe($state['revision'])
+        ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.policy.publish')->value('consumed_at'))->toBeNull();
+})->with(['source', 'connection'])->group('auth-policy-operators');
+
+it('updates Auth common settings participation without rewriting policies credentials or prior upgrade identities', function (): void {
+    entryPolicy(['password_min_length' => 14, 'notice_new_browser' => true]);
+    $user = entryUser('common-policy-upgrade@example.test');
+    $id = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
+    $step = 'upgrade:common_settings:5.0.1:5.0.2';
+    DB::table('shared.module_update_steps')->where('module_id', $id)->where('step', $step)->delete();
+    DB::table('shared.modules')->where('id', $id)->update(['installed_version' => '5.0.1']);
+    DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    $before = DB::table('shared.modules')->where('id', $id)->first();
+    $history = DB::table('runa_auth.policy_versions')->orderBy('id')->get()->toArray();
+    $steps = DB::table('shared.module_update_steps')->where('module_id', $id)->orderBy('id')->get()->toArray();
+    app(ModuleUpdates::class)->apply('runa', str_repeat('e', 40), static function (): void {});
+    $after = DB::table('shared.modules')->where('id', $id)->first();
+    expect($after->installed_version)->toBe('5.0.2')
+        ->and($after->settings_values)->toBe($before->settings_values)
+        ->and($after->settings_revision)->toBe($before->settings_revision)
+        ->and(User::find($user->id)->password)->toBe($user->password)
+        ->and(DB::table('runa_auth.policy_versions')->orderBy('id')->get()->toArray())->toEqual($history)
+        ->and(DB::table('shared.module_update_steps')->where('module_id', $id)->where('step', '!=', $step)->orderBy('id')->get()->toArray())->toEqual($steps)
+        ->and(DB::table('shared.module_update_steps')->where('module_id', $id)->where('step', $step)->count())->toBe(1);
+    app(ModuleUpdates::class)->apply('runa', str_repeat('e', 40), static function (): void {});
+    expect(DB::table('shared.module_update_steps')->where('module_id', $id)->where('step', $step)->count())->toBe(1);
+})->group('auth-policy-operators');

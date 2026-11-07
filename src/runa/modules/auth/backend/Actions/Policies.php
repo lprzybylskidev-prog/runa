@@ -103,7 +103,7 @@ final readonly class Policies implements AuthPolicies
     {
         $principal = $this->principals->current() ?? throw new OperationRejected('authentication_required', 'runa.auth', 'policy.publish', 401);
         $this->preview($patch, $revision, $generation);
-        // Mandatory participant consumes step-up inside the actual publication transaction.
+        // Source-declared access consumes one proof inside native settings publication.
         $result = $this->settings->update('runa.auth', $patch, $revision, $generation, new SettingsActor('actor', $principal->publicId));
 
         return ['operation' => $result->operationId, 'status' => $result->status];

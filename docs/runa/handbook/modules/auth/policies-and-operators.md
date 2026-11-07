@@ -1,7 +1,7 @@
 # Auth policies and trusted operator recovery
 
-Auth 5.0.1 supplies AuthPolicies 3.0.0 and AuthBulkSessions 2.0.0 with
-Audit ^1.0.0 and framework API ^1.0.0. Install the current per-table storage and
+Auth 5.0.2 supplies AuthPolicies 3.0.0 and AuthBulkSessions 2.0.0 with
+Audit ^1.0.0 and framework API ^1.2.0. Install the current per-table storage and
 technical initialization through the fenced ModuleUpdates workflow; ordinary
 startup does not migrate or initialize an administrator.
 
@@ -15,12 +15,32 @@ or upgrade and its history/Audit commit on the same default PostgreSQL connectio
 Failure of either required store rolls back publication. The independent settings
 observer is not used for mandatory persistence.
 
-An optional framework SettingsAuthorization participant runs after candidate and
-revision validation, before the candidate write/reservation fence, in that same
-transaction. Auth consumes an actor's every-action password proof for
-`runa.auth.policy.publish` there, against the old policy. History persists after
-the actual stored write. A refused publication also restores the proof's unused
-state. Compensation does not require the user's proof a second time.
+The source-owned `IdentitySettings` provider implements the common
+[SettingsAccessProvider and SettingsParticipant contracts](../../architecture/module-settings.md).
+Its pure access declaration requires `runa.auth.policy.read` for authorized reads,
+`runa.auth.policy.write` for publication and the one-use password proof
+`runa.auth.policy.publish`. Native settings security admits those operations before
+locking, then locks registry state, common authority and the Auth actor in that
+order. It rechecks current grants, source, revision/generation and connection,
+and consumes the proof against the old policy in the publication transaction.
+HTTP actor metadata cannot select operator authority. Trusted principal-free CLI
+publication remains separate and requires no browser proof.
+
+The provider's synchronous `publishing(Connection, SettingsPublication): void`
+hook delegates to Auth-owned PolicyHistory for policy consequences, exception
+invalidation and immutable policy-domain history after the actual stored write.
+It runs for publish, native restore and reserved upgrade; mandatory Audit remains
+framework-owned participation. Failure restores the unused proof together with
+settings, consequences and both histories. Compensation does not consume proof a
+second time. Core Audit integration contains no Auth settings dispatch. Generic
+operation history and named snapshots remain framework facilities; Auth's history
+records policy-specific values and consequences, not another settings store.
+
+AuthPolicies 3.0.0 and Admin's reviewed policy publisher retain their signatures.
+The Admin reader uses its owning guarded read inside the existing admitted read
+transaction; direct HTTP settings projections use `readAuthorized`. The compatible
+`common_settings` module update records the integration change without altering
+stored policies, credentials, historical steps or recovery evidence.
 
 AuthPolicies 3.0.0 provides bounded internal history (50 revisions per page),
 old/new comparison through `preview`, revision/generation-checked `publish` and
@@ -74,7 +94,7 @@ public function exception(string $publicId, string $key, ?int $value,
 
 The guarded entrypoint, permission, password proof and transactional Audit
 remain unchanged. The `expires_at` member returned by both exception reads is now
-`string|null`, an incompatible row-contract change from 1.x. Auth 5.0.1 and current
+`string|null`, an incompatible row-contract change from 1.x. Auth 5.0.2 and current
 consumer constraints reflect it under the standing pre-1.0 owner authorization.
 
 ### Active account exception projection

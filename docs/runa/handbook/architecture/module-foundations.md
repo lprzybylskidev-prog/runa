@@ -16,12 +16,14 @@ semantics and cannot guarantee Audit/history persistence. Do not send external
 mail/network effects from transactional participants.
 
 `SettingsAuthorization::authorizing(Connection, SettingsContext): void` is an
-optional extension of the configured mandatory participant. It runs after revision/
-candidate validation, before storing the candidate or creating its fence, within
-the same transaction. Auth consumes actor-bound policy step-up against the old
-policy there; publication/history failure restores the unused proof. Post-write
-SettingsParticipant persists history/Audit without an ordinary gateway call behind
-the fence. Trusted system/CLI writes retain their explicit operator authority.
+optional source-owned SettingsProvider extension for additional owning rules,
+after revision/candidate validation and before the candidate/fence write. Common
+SettingsAccess metadata declares current read/write/field grants and password
+proof; native security consumes that proof atomically with publication/history and
+Audit. Auth uses this same provider contract, retaining its policy consequences
+in its owning publication hook. Trusted system/CLI writes retain explicit operator
+authority. See [native settings publication](module-settings.md) for signatures,
+locks, admission, source/connection checks and recovery phases.
 
 `PreparationParticipant::preparing(PreparationContext): void` is a trusted
 framework update adapter for required Audit in a reserved transactional forward

@@ -276,9 +276,6 @@ final class ModuleSettings
                         'actor' => $actor === null ? null : ['kind' => $actor->kind, 'id' => $actor->id],
                         'occurred_at' => now()->utc()->toIso8601String(),
                     ];
-                    if ($this->participant instanceof SettingsAuthorization) {
-                        $this->participant->authorizing($this->connection, new SettingsContext($id, $module, $expectedRevision + 1, $application, $changes, $actor, $payload['occurred_at']));
-                    }
                     if ($provider instanceof SettingsAuthorization) {
                         $provider->authorizing($this->connection, new SettingsContext($id, $module, $expectedRevision + 1, $application, $changes, $actor, $payload['occurred_at']));
                     }

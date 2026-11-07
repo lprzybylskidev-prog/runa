@@ -21,15 +21,24 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10a completed, 2026-11-07
+## Current execution state — point 10b completed, 2026-11-07
 
-**Points 1–10 and 10a are complete. Point 10b is next:** migrate Auth onto the
-common settings contract and remove the old special dispatch. The framework
-foundation alone does not complete the overall common-settings correction.
+**Points 1–10, 10a and 10b are complete. Point 10c is next:** complete the
+reference backend as an executable Core consumer. Auth now uses the common native
+settings contract; Core Audit no longer dispatches its policy authorization/history.
 Gate B and feature/0.8.0 remain approved. Platform VERSION stays 0.7.0; Framework
-API is now 1.2.0. Points 10b–10e, renewed owner manual acceptance (11) and final
-automated verification/release (12) remain open. No final PASS, acceptance or
-release is claimed. See the point-10a completion record below.
+API remains 1.2.0 and Auth is 5.0.2. Points 10c–10e, renewed owner manual acceptance
+(11) and final automated verification/release (12) remain open. No final PASS,
+acceptance or release is claimed. See the point-10b completion record below.
+
+<a id="current-execution-state--point-10a-completed-2026-11-07"></a>
+
+## Historical execution state — point 10a completed, 2026-11-07
+
+Points 1–10 and 10a were complete; point 10b was next. Framework API 1.2.0 supplied
+the foundation while Auth migration, reference backend/UI, renewed owner acceptance
+and final verification remained open. The completion record below retains the
+implementation evidence and staged-consumer boundaries at that checkpoint.
 
 <a id="current-execution-state--point-10a-reference-repair-2026-11-07"></a>
 
@@ -1063,7 +1072,7 @@ below are retained as historical records only.
     Only necessary focused diagnostics and mandatory hooks here; complete suites
     remain point 12. Commit implementation, docs and checklist together.
 
-- [ ] 10b. Move Auth settings onto the common framework contract.
+- [x] 10b. Move Auth settings onto the common framework contract.
   - **Dependency:** completed 10a. Replace Core's special dispatch to Auth policy
     authorization/history with the same supported source-owned path available to
     other modules. Remove the obsolete branch rather than retaining an adapter.
@@ -4003,3 +4012,105 @@ base development/test databases, caches, backups and existing reports are preser
 Mandatory hooks and staged-source incremental knowledge synchronization apply to
 this implementation commit. Point 10b is the next authorized implementation point;
 manual acceptance and release remain later gates.
+
+## Point 10b — Auth common settings migration completed — 2026-11-07
+
+Implemented from clean `3b0001ef` on the existing roadmap branch, following the
+owner's instruction to execute the next point. Knowledge status was current
+(227 documents, 12,847 chunks); a bounded current-intent settings query was checked
+against the original common-settings contract, approved design, current point and
+point-10a completion record. Loaded backend, Laravel, security and PostgreSQL
+skills, with focused database/transaction/public-API/security guidance. Boost's
+Laravel 13 docs confirmed pessimistic locking within the owning transaction.
+
+### Owning source, authorization and unchanged domain behavior
+
+Before runtime edits, updated the Auth policy guide with exact declaration/hook
+ownership, current operations/proof, placement, publication phases and the existing
+registry → common authority → Auth actor lock order. `IdentitySettings` now
+implements SettingsAccessProvider and SettingsParticipant: policy read/write grants
+and one-use `runa.auth.policy.publish` password proof are pure source metadata;
+its publication hook invokes its own PolicyHistory. No owner authorization hook
+is needed because common settings security already enforces these requirements.
+
+Removed both Auth-specific dispatch branches and their installed-version/schema
+probes from Core AuditParticipation, PolicyHistory's separate proof consumer and
+the obsolete global-participant authorization invocation from ModuleSettings.
+SettingsAuthorization remains the optional provider-owned business-rule extension;
+mandatory Audit persistence remains independent. There is one native runner and
+one proof consumption path, with no adapter or duplicate Auth route.
+
+Auth retains policy definitions/cross-field rules, domain history, forced password
+changes, exception invalidation and the baseline initializer. Native restore and
+reserved upgrade invoke the same provider publication hook without consuming the
+initiating proof again. Stored values/credentials and existing upgrade identities
+are preserved. AuthPolicies 3.0.0 signatures/proxies and Admin's reviewed publisher
+remain current. The Admin reader deliberately retains its owning guarded read
+inside the admitted read transaction; it cannot nest the independent
+readAuthorized transaction. Named snapshots and generic settings/Audit history
+remain in their existing framework stores.
+
+Private test fixture OperatorSettings now explicitly models principal-free console
+setup between HTTP requests and restores the previous request in finally; it
+refuses an authenticated principal. Auth entry/Admin configuration fixtures use it
+rather than accidentally treating a leftover HTTP-kernel request as operator
+execution. Runtime HTTP checks remain strict. Regression authorization stand-ins
+isolate native admission/lock changes; the existing Admin case exercises actual
+Permissions grants and actual Auth proof/Audit persistence.
+
+### Versions, guidance and instruction-product assessment
+
+Auth advances 5.0.1 → 5.0.2 as a correction with unchanged guarded public APIs and
+data contracts, requiring Framework API ^1.2.0 for its actual source interfaces.
+The `common_settings` 5.0.1 → 5.0.2 source-only update records the integration
+without migrations/default rewrites; all earlier identities remain intact.
+Permissions/Admin dependency ranges already accept this Auth PATCH, and no other
+module behavior/version changes here. Framework remains 1.2.0, platform VERSION
+0.7.0 and approved target feature/0.8.0 remain unchanged.
+
+Updated Auth README, administration/policy guides, module changelog, central
+unreleased changelog, current Admin/transaction version references and
+module-foundations guidance, removing obsolete global
+SettingsAuthorization/old Auth proof-consumption claims. Both instruction products
+were assessed: owner/customer backend skills already route to the canonical native
+settings and Auth policy guides; their root AGENTS already require public APIs,
+module isolation and atomic security/Audit. No new reusable rule or instruction
+change is needed. Reference's working source/UI remain unchanged; their consumer
+implementation is explicitly sequenced into approved dependent points 10c/10d,
+with no expanded interactive coverage claimed here.
+
+### Focused diagnostics and limits
+
+Only concrete migration/authority/fixture uncertainties were checked, through
+`python3 tools/maintainer/test-backend --parallel --processes=1`:
+
+- Filter `consumes policy publication proof only|refuses denied and stale native Auth|refuses changed Auth settings source|keeps settings history effects|Auth administration publishes through`:
+  **6 PASS, 88 assertions**, 15.93 seconds. Covers one consumption/Audit event,
+  replay refusal, policy/history/Audit rollback, consequences/operator restore,
+  missing/lost grants, stale review, source substitution/connection change and
+  actual Admin publication. No candidate or proof consumption survives a refused transaction.
+- Filter `updates Auth common settings participation|upgrades encrypted identity settings additively|test_isolated_target_planner_finds_the_compatible_core_forward_edges|expires and revalidates only allowlisted account exceptions`:
+  **4 PASS, 48 assertions**, 5.98 seconds. Covers unchanged encrypted policy
+  bytes/revision/password/history/prior ledger rows on the new update edge,
+  idempotence, existing reserved-default upgrade, target planner and unchanged
+  account-exception invalidation.
+- Filter `projects safe entry form options|keeps registration opt-in generic|Auth creation verification defaults on|Auth creation atomically configures credentials`:
+  **4 PASS, 83 assertions**, 10.45 seconds. Confirms console setup between real
+  requests without weakening publication and retaining ordinary entry/Admin flows.
+- After fixture synchronization, repeated only the affected security consumers
+  `Auth administration publishes through|refuses denied and stale native Auth|consumes policy publication proof only`:
+  **3 PASS, 58 assertions**, 9.37 seconds.
+
+No broad backend/security suite, static analysis, scanner/image, installation or
+browser gate ran; these remain final point 12, following reference completion and
+renewed owner manual acceptance. Existing native recovery is retained, not newly
+certified for every failure mode by these samples. Mandatory hooks and incremental
+staged-source knowledge synchronization apply to this point's commit.
+
+Each supported native run reported scoped cleanup of its disposable
+`runa_test_test_1` worker with exit/cleanup 0. Fixture-created alternate connections
+were purged and source substitutions restored. No task-created Docker container,
+network, image tag or volume required cleanup. Active development, base
+runa/runa_test data, credentials, existing reports, caches and backups are preserved.
+No migration, data reset, dependency or production change. Point 10c is next;
+manual acceptance and final release remain open.

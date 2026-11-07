@@ -14,8 +14,10 @@ All release entries are maintained by the agent from roadmap facts.
   acceptance preparation. Framework API 1.2.0 now supplies source-owned access,
   field grants, password-proof orchestration and transactional settings hooks in
   the native runner. Preserve encrypted values/revisions/recovery and use existing
-  Audit/history/snapshots. Auth migration and expanded reference runtime examples
-  remain pending in points 10b–10e.
+  Audit/history/snapshots. Auth 5.0.2 now uses this common source contract; Core
+  Audit no longer dispatches Auth policy authorization/history. Current grants,
+  one-use proof, domain consequences and atomic Audit remain enforced. Expanded
+  reference runtime examples remain pending in points 10c–10e.
 
 - Define agent-directed verification continuity and bounded manual SIGSEGV handling;
   preserve valid unrelated evidence and require explicit owner acceptance of

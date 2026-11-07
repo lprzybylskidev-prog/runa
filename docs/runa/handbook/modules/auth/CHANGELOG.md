@@ -1,5 +1,14 @@
 # Auth module changelog
 
+## 5.0.2 — Unreleased
+
+- Consume Framework API ^1.2.0 native settings access/proof/publication contracts.
+  Declare current policy read/write grants and one-use password confirmation on
+  IdentitySettings; persist policy consequences/history through its owning hook.
+  Remove Core Audit dispatch to Auth and the separate proof consumer. Preserve
+  guarded API signatures, current encrypted settings, credentials, exception
+  invalidation, native recovery and all previous upgrade identities.
+
 ## 5.0.1 — Unreleased
 
 - End user-dialog reads on close and isolate subsequent bulk editing; retain dirty
