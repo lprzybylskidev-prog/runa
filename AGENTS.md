@@ -410,6 +410,12 @@ follow the same boundary. Update both instruction products when a reusable rule 
 
 ## Module development
 
+The reference module is executable customer documentation. Every new Runa module
+and every new customer-facing capability of an existing module must extend its
+working examples, documentation and tests in the same roadmap point. Follow the
+[reference module maintenance contract](docs/runa/maintainer/development/reference-module.md);
+source declarations or CLI listings alone do not demonstrate an interactive use case.
+
 For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH. Incompatible changes follow the standing pre-1.0 authorization above; from platform 1.0.0 they require an explicitly owner-approved MAJOR before implementation. Platform versioning remains independent. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
 
 ## Language and naming

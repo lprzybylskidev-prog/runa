@@ -5,6 +5,10 @@ description: 'Runa backend engineering guidance for application structure, failu
 
 # Runa Backend
 
+When adding a Runa module or customer-facing capability, apply the owner
+[executable reference obligation](../../../docs/runa/maintainer/development/reference-module.md)
+in the same point. Trace the working example through public APIs and owning tests.
+
 For opt-in Admin generation and independent App pages, follow
 `docs/runa/handbook/modules/admin/examples.md`. Review exact overwrite hashes,
 singular settings-provider ownership and generated business/presentation boundaries;

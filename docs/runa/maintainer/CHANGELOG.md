@@ -4,6 +4,11 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Establish the reference module as executable customer documentation: new Runa
+  modules and customer-facing capabilities extend working examples, guidance and
+  tests in their owning point. Reopen reference completeness through repair point
+  10a before owner frontend acceptance; expanded runtime examples are not yet delivered.
+
 - Define agent-directed verification continuity and bounded manual SIGSEGV handling;
   preserve valid unrelated evidence and require explicit owner acceptance of
   exhausted confirmed interruptions, replacing standing automatic acceptance.

@@ -5,6 +5,11 @@ description: Runa customer guidance for application use cases, transactions, pub
 
 # Runa application backend
 
+For working Runa integration examples, follow the executable customer reference
+section in `docs/runa/handbook/development/modules.md` and, when selected,
+`docs/app/modules/reference/README.md`. Adapt App-owned code through public APIs;
+the Runa owner's reference maintenance duty does not authorize protected edits.
+
 For opt-in Admin generation and independent application pages, follow
 `docs/runa/handbook/modules/admin/examples.md`. Generated source stays App-owned;
 review exact file overwrite hashes and preserve the owning settings provider.

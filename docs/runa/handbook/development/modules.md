@@ -44,6 +44,17 @@ Runa-owned generation additionally requires a receipt-free owner checkout with i
 Generation has no HTTP endpoint. Admin exposes only its named guarded operational
 commands, never arbitrary generator or engine dispatch.
 
+## Executable customer reference
+
+The optional development-only `app.reference` module is executable documentation
+of supported Runa module integrations. When selected, use
+`docs/app/modules/reference/README.md` to trace actual UI/backend/CLI scenarios to
+their public contracts, owning declarations, Actions and application tests. Adapt
+application-owned examples while retaining server authority, transactional Audit
+and shared Auth proof orchestration. The example is not a production module or
+permission to import private platform implementations. A clean acquisition may
+omit it; the handbook and generator examples remain independently usable.
+
 ## Welcome catalogue
 
 Every new Runa-owned module must also complete the default welcome page: supply

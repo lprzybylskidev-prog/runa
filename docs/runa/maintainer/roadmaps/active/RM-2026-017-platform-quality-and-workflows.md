@@ -21,7 +21,19 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10 completed, 2026-11-07
+## Current execution state — point 10a reference repair, 2026-11-07
+
+Owner manual review rejected the reference example's completeness. The owner
+explicitly authorized a repair point before the existing point 11: establish the
+executable-documentation obligation and complete useful current Core integration
+examples. **Point 10a is current; point 11 remains open and must be repeated for
+the repaired reference views.** Gate B and feature/0.8.0 remain approved. No final
+verification, owner acceptance or release is claimed. Earlier point-7 exclusions
+and point-10 completeness claims do not approve omitting these examples.
+
+<a id="current-execution-state--point-10-completed-2026-11-07"></a>
+
+## Historical execution state — point 10 completed, 2026-11-07
 
 **Gate B remains approved; points 1–10 are complete. Point 11 now awaits the
 owner's manual frontend acceptance.** The
@@ -1000,6 +1012,32 @@ below are retained as historical records only.
     may require early 0.8.0 candidate preparation; obtain explicit owner approval
     and record prepared_version fields/reason under the release workflow before
     such version changes. Never fake versions or bypass maintenance. No reset.
+
+- [ ] 10a. Complete the executable customer reference and its maintenance rule.
+  - **Owner decision, 2026-11-07:** reference is customer documentation in code.
+    Every new Runa module and customer-facing capability must extend working
+    reference examples, documentation and tests in its owning point. Record the
+    canonical owner rule and synchronize affected instruction products.
+  - **Scope:** retain the working Ping page/widget and add dedicated module
+    settings with redacted secret handling and snapshots/history; useful owned
+    sample editing with revisions and transactional Audit; separately permissioned
+    fields/actions; an actual operation requiring action-specific Auth password
+    confirmation; and existing managed-work dispatch/status examples. Trace each
+    current Core module to runnable source, public entrypoint and owning tests.
+  - **Design:** consume existing public APIs, native settings/work/transaction
+    runners and shared frontend security/controllers. Do not copy engines or
+    bypass guarded APIs. A significant missing public integration seam requires
+    an explicit owner decision before implementing that premise.
+  - **Deliverables:** synchronized capability/source matrix, complete public
+    signatures and presentation contracts, meaningful success/denial/stale/proof/
+    Audit-rollback tests, module version/dependency assessment and changelogs.
+    Preserve current data, opt-in/default-disabled delivery and production
+    exclusion; no new package or reset is authorized.
+  - **Acceptance:** only necessary focused diagnostics during implementation.
+    Prepare current assets/data and concrete URLs through supported nondestructive
+    procedures, commit the repair and return to point 11. Full suites and final
+    security/AI/delivery gates remain point 12; this is not a final-verification
+    repair loop. The owner alone accepts the repaired frontend.
 
 - [ ] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
@@ -3664,3 +3702,47 @@ Focused results: owner `check-docs` PASS/native exit 0; `git diff --check` PASS;
 served development component registry exactly matches its current source
 discovery, including reference. These checks do not certify final suites or
 replace owner acceptance. Mandatory hooks complete the commit boundary.
+
+## Point 11 feedback and point 10a repair authorization — 2026-11-07
+
+The owner inspected the reference Admin page and rejected its functional
+completeness: a Ping card/widget is insufficient executable customer documentation.
+The owner explicitly requires examples of Audit on an input mutation, separate
+permission-controlled fields and writes, and an Auth password-protected operation.
+The subsequent instruction authorizes a repair point before the existing point 11,
+recording the enduring obligation and expanding the reference. Feature/0.8.0
+remains approved; there is no second active roadmap or release/version approval.
+
+Added point 10a without renumbering the existing manual/final points. The
+[canonical owner rule](../../development/reference-module.md) governs every new
+Runa module and customer-facing addition, with executable source/reproduction,
+public contracts, meaningful tests and a capability matrix in the same point.
+Root AGENTS and owner backend selector route to it. The public module guide and
+customer backend selector describe consuming/adapting the optional example;
+customer root AGENTS needs no owner maintenance authority. Existing frontend,
+Laravel, security and PostgreSQL selectors already route implementation to the
+correct public contracts and need no duplicate policy. Historical point-7/10
+claims and dated evidence remain preserved; they do not accept the omission.
+
+Before runtime edits, inspected native Admin commands, ModuleSettings publication,
+Core AuditParticipation, Auth policy publication, snapshots, proof, public API and
+module source boundaries. Knowledge was current at point entry, and bounded
+current-intent retrieval was followed by original-source reads. Relevant backend,
+Laravel, frontend/Vue/Tailwind, security and PostgreSQL skills were selected;
+Boost version-aware validation/transaction documentation was queried.
+
+The dedicated settings editor exposes a significant missing public authoring
+seam: independent settings publication has no module-owned authorization callback
+inside its actual transaction; Core only delegates that hook to Auth policy.
+A proof check before update or an ambient wrapper would not preserve the required
+atomic protocol. The [concrete native settings authorization proposal](../../reviews/RM-2026-017-reference-settings-authorization.md)
+records current source, the exact optional provider contract and required refusal/
+rollback/authority checks. Requested explicit owner agreement under the roadmap's
+significant-unknown rule before implementing this new public extension premise.
+Point 10a remains open; no implementation, manual acceptance or final PASS is claimed.
+
+This checkpoint changes only instructions/planning/documentation. No runtime,
+module version, dependency, migration, build, settings/grant mutation or data reset
+has occurred. Existing assets/data/credentials/reports/caches and resources remain.
+Focused documentation/link consistency and mandatory hooks apply to this coherent
+checkpoint, with staged-source incremental knowledge refresh before commit.
