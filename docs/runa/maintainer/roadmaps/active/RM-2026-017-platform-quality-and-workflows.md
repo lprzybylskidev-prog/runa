@@ -21,7 +21,22 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10f completed, 2026-11-07
+## Current execution state — point 10g completed, 2026-11-07
+
+**Points 1–10 and 10a–10g are complete. Point 10h is next.**
+Own-account trusted devices now use the public Accordion, initially collapsed.
+The table remains mounted across disclosure changes; refresh retains expansion
+and query state. Trust-browser action/prerequisites remain outside; configuration
+omission and keyed account disposal retain their existing security owners.
+
+Focused Chromium diagnostics cover disclosure/query retention, capability omission,
+account-switch cleanup and actual device revocation. No full suite, runtime/assets
+alignment, owner acceptance or final PASS is claimed. Auth stays the unreleased
+6.0.0 candidate; platform VERSION remains 0.7.0 and feature/0.8.0 is unchanged.
+Refresh 10h, combined readiness 10i, owner acceptance 11 and final verification/
+release 12 remain open. The preceding real Nginx 503 limitation remains for 10i.
+
+## Historical execution state — point 10f completed, 2026-11-07
 
 **Points 1–10 and 10a–10f are complete. Point 10g is next.**
 The [interface-copy review](../../reviews/RM-2026-017-interface-copy.md) records
@@ -1411,7 +1426,7 @@ below are retained as historical records only.
   - Update owning catalogues/contracts, meaningful regressions, current guidance
     and module/version records; assess both instruction products. Commit this point.
 
-- [ ] 10g. Collapse the trusted-device table on initial account entry.
+- [x] 10g. Collapse the trusted-device table on initial account entry.
   - **Dependency:** completed 10f. Reuse public Accordion around the existing
     account-security device table. Preserve table state on close/reopen and refresh,
     filters, pagination, view configuration, explicit refresh, permitted export
@@ -4781,3 +4796,66 @@ reset, installation or operational repair was attempted in this copy point.
 No task-created Docker resources/worker databases were needed or removed;
 existing development/test data, active services, caches, backups, reports and
 recovery state were preserved. Point 10g is next.
+
+## Point 10g completion — trusted-device disclosure, 2026-11-07
+
+### Delivered behavior and source boundaries
+
+AuthAccountSecurity composes public Accordion around the existing Table and Load
+older control. Expansion is view-local and initially false; the mounted Table
+retains its query, column/view state, export owner and cursor/revocation behavior.
+Ordinary reads do not alter expansion. Trust-browser action and factor prerequisite
+remain outside the collapsed region. Disabled capability removes the section and
+resets expansion/removal state. Existing account-keyed disposal clears protected
+rows/cursor/loading availability; no hidden-content cache or second security/session
+owner was added. Native button Enter/Space activation, aria-expanded/controls,
+inert hidden content and reduced-motion collapse come from the existing public
+Accordion. Semantic component tokens and unchanged table overflow preserve the
+responsive/theme implementation; complete rendered acceptance remains 11/12.
+
+Knowledge status was current (230 documents, no stale/missing/orphan chunks);
+current-intent retrieval led to original account/security and component contracts.
+Inspected public Accordion/Collapse, native account/list disposal and existing
+consumers/tests. Tailwind remains 4.3.3 with existing spacing/tokens only.
+Updated the owning public account presentation guide and Auth/central changelogs.
+This compatible UI correction completes the same unreleased Auth 6.0.0 candidate;
+no further module/API increment, dependency, migration or runtime change is needed.
+Framework/Core candidates, reference 0.4.0, platform 0.7.0 and approved feature/0.8.0
+projection remain unchanged. Public controller and presentation signatures remain.
+
+Owner/customer AGENTS and frontend/Vue/Tailwind/security selectors already route
+to the canonical public control, account replacement and capability/data-clearing
+contracts; no new reusable operating rule or skill reference is needed. Customer
+frontend instructions were assessed as product data, without authority to edit
+protected platform source. Current prose replaces the obsolete always-inline-table
+claim; earlier historical evidence is preserved.
+
+### Bounded diagnostic evidence
+
+The supported owner test-frontend command targeted auth-account.test.ts only:
+
+- Initial `-t 'trusted disclosure'`: two fixture/assertion failures, native exit 1,
+  cleanup 0. Browser structuredClone rejected a reactive query proxy; the fixture's
+  standalone refresh did not simulate session withdrawal. Corrected query snapshot
+  serialization and exercised the real account-key switch/disposal boundary.
+- `-t 'trusted disclosure|trusted devices live|trusted management keeps|device metadata'`:
+  four passed, 78 excluded, native exit 0 / cleanup 0. The final alternative matched
+  no additional case; this is not device-metadata coverage.
+- After formatting and making the existing revocation scenario explicitly open
+  disclosure, `-t 'trusted disclosure|trusted device management keeps isolated'`:
+  three passed, 79 excluded, native exit 0 / cleanup 0. Covers initial inert/ARIA
+  linkage, mounted query retention through toggles/hidden refresh, visible external
+  action/prerequisite, capability removal/reset, hidden-data disposal on switch,
+  and existing cursor/proof/revocation behavior.
+
+Native Vite generated dependency dynamic-import warning remains in runner output.
+No full suite, static analysis, browser matrix, asset/image build, scanner or final
+gate ran. Native test reports/screenshots retain the initial failures. Runtime/assets
+alignment and real Nginx readiness remain 10i, sole owner manual acceptance 11 and
+sole complete automated verification/release 12. No acceptance or final PASS is
+claimed. Mandatory staged formatting/lint, knowledge freshness and commit hooks
+apply to this completion commit.
+
+No task-created Docker containers/networks/images/volumes or worker databases were
+needed or removed. Existing development/test data, active services, Qdrant/model/
+pnpm caches, backups, reports and recovery state were preserved. Point 10h is next.

@@ -4,6 +4,9 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Start the own-account trusted-device list collapsed using public Accordion;
+  retain mounted table state and independent trust-browser/prerequisite controls.
+
 - Complete the interface-copy review: remove login filler, shorten registration
   and root introductions in PL/EN, and retain actionable/security instructions.
   Record source dispositions, bounded Chromium evidence and the current Nginx

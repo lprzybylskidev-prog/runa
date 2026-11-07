@@ -341,7 +341,15 @@ redundant verified-email, secondary-address introduction, avatar instructions,
 enrolled-method summaries/status lines, trust explanation and delivery-editor
 introduction. Keep actionable verification errors and enrollment prerequisites.
 The avatar preview is centered within its Card. Trust actions appear directly
-inside the two-factor Card. Its Trusted devices heading identifies the inline table.
+inside the two-factor Card. Its Trusted devices Accordion identifies the device list and starts collapsed on
+account entry. The trust-browser action and factor prerequisite remain outside.
+The mounted table preserves filters, sorting, pagination and view configuration on
+close/reopen; refresh does not change disclosure state. Native button keyboard
+activation, expanded/control semantics and the shared inert, reduced-motion collapse
+apply. Disabling the capability omits the entire section and resets disclosure;
+identity/access loss retains the controller's protected-data clearing. Full account
+presentation replacements compose the public Accordion and existing account
+controller; no extra session/security owner or persistence is introduced.
 
 Trusted-device management is visible whenever the feature is configured, even
 with no active records. Load its authorized list at initialization, visible refresh

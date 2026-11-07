@@ -2,6 +2,9 @@
 
 ## 6.0.0 — Unreleased
 
+- Start the own-account trusted-device list collapsed using public Accordion;
+  retain mounted table state and independent trust-browser/prerequisite controls.
+
 - Remove the redundant login introduction in Polish/English and the repeated
   registration instruction; retain activation, recovery and security guidance.
   Keep the existing optional-description presentation contract.

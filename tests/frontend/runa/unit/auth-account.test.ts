@@ -9,6 +9,8 @@ import { useDisplayPreferences } from '../../../../src/runa/resources/js/composa
 import { enrollmentQrCode } from '../../../../src/runa/modules/auth/frontend/totpEnrollment';
 import AuthAvatarCropper from '../../../../src/runa/modules/auth/frontend/AuthAvatarCropper.vue';
 import {
+  Accordion,
+  Table,
   Avatar,
   ApplicationLayout,
   providePresentationVisibility,
@@ -1745,6 +1747,92 @@ it('account session sorting uses instants across month boundaries and concise En
   await vi.waitFor(() => expect(w.get('tbody tr').text()).toContain('Bieżąca'));
 });
 
+it('trusted disclosure starts collapsed and retains the mounted table query across toggles and refresh', async () => {
+  currentSecurity = { ...security, trusted_devices_enabled: true };
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await loaded(w);
+  const section = w.get('[data-trusted-devices]');
+  const accordion = section.getComponent(Accordion);
+  const trigger = accordion.get('button');
+  const panel = () => accordion.get('[id]');
+  expect(trigger.text()).toContain('Zaufane urządzenia');
+  expect(trigger.attributes('aria-expanded')).toBe('false');
+  expect(trigger.attributes('aria-controls')).toBe(panel().attributes('id'));
+  expect(panel().attributes('inert')).toBeDefined();
+  expect(panel().attributes('aria-hidden')).toBe('true');
+  const trust = section
+    .findAll('button')
+    .find((button) => button.text() === 'Zaufaj tej przeglądarce')!;
+  expect(trust.element.closest('[inert]')).toBeNull();
+  expect(section.get('p').element.closest('[inert]')).toBeNull();
+  await trigger.trigger('click');
+  expect(trigger.attributes('aria-expanded')).toBe('true');
+  const table = accordion.getComponent(Table);
+  const element = table.element;
+  const query = {
+    page: 2,
+    perPage: 10,
+    sort: { key: 'browser', direction: 'desc' as const },
+    search: 'Firefox',
+    filters: { platform: 'Linux' },
+  };
+  table.vm.$emit('update:query', query);
+  await flushPromises();
+  const retainedQuery = JSON.parse(JSON.stringify(table.props('query')));
+  await trigger.trigger('click');
+  await w.getComponent(AuthAccountEditor).props('account').loadTrustedDevices();
+  await flushPromises();
+  expect(trigger.attributes('aria-expanded')).toBe('false');
+  await trigger.trigger('click');
+  expect(accordion.getComponent(Table).element).toBe(element);
+  expect(table.props('query')).toEqual(retainedQuery);
+  expect(panel().attributes('inert')).toBeUndefined();
+  expect(writes).toHaveLength(0);
+});
+
+it('trusted disclosure omits disabled capability and clears hidden rows on account switch', async () => {
+  currentSecurity = { ...security, trusted_devices_enabled: true };
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await loaded(w);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  const accordion = w.get('[data-trusted-devices]').getComponent(Accordion);
+  await accordion.get('button').trigger('click');
+  state.security.value = {
+    ...state.security.value!,
+    trusted_devices_enabled: false,
+  };
+  await flushPromises();
+  expect(w.find('[data-trusted-devices]').exists()).toBe(false);
+  state.security.value = {
+    ...state.security.value!,
+    trusted_devices_enabled: true,
+  };
+  await flushPromises();
+  expect(
+    w.get('[data-trusted-devices]').getComponent(Accordion).props('modelValue'),
+  ).toBe(false);
+  state.trustedRows.value = [{ public_id: id, browser: 'Private browser' }];
+  await flushPromises();
+  expect(w.get('[data-trusted-devices]').text()).toContain('Private browser');
+  sessionAccount = other;
+  currentProfile = { ...profile, public_id: other };
+  await w.setProps({ accountId: other });
+  await loaded(w);
+  expect(w.text()).not.toContain('Private browser');
+  expect(
+    w.get('[data-trusted-devices]').getComponent(Accordion).props('modelValue'),
+  ).toBe(false);
+  expect(state.trustedRows.value).toEqual([]);
+  expect(state.trustedCursor.value).toBeNull();
+  expect(state.trustedLoaded.value).toBe(false);
+});
+
 it('trusted devices live inside two-factor settings and cannot be enabled without an enrolled factor', async () => {
   currentSecurity = { ...security, trusted_devices_enabled: true };
   const w = mount(AccountFixture, {
@@ -1887,6 +1975,11 @@ it('trusted device management keeps isolated cursor rows and confirms revocation
     props: { accountId: id },
   });
   await loaded(w);
+  await w
+    .get('[data-trusted-devices]')
+    .getComponent(Accordion)
+    .get('button')
+    .trigger('click');
   const state = w.getComponent(AuthAccountEditor).props('account');
   state.rows.value = [{ public_id: other, current: true }];
   await vi.waitFor(() =>
