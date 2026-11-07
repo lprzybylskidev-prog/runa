@@ -21,7 +21,28 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10i in progress, 2026-11-07
+## Current execution state — point 10i completed, 2026-11-07
+
+**Points 1–10i, including repairs 10h1/10h2, are complete. Point 11 awaits the
+owner's manual frontend acceptance.** The
+[combined readiness review](../../reviews/RM-2026-017-combined-readiness.md)
+records actual development source/runtime/assets, working routes/APIs, current
+versions, existing administrator access and scoped interaction evidence. The
+[current acceptance sheet](../../reviews/RM-2026-017-current-acceptance.md)
+is ready for the owner at http://localhost:8080.
+
+The agent-authored no-reset restriction was contrary to existing pre-1.0 authority
+and is corrected. Identified runa_test storage and all application/platform/module
+ledgers were rebuilt through guarded supported operations. The native independent
+user conflict diagnostic now passes on that base: 1 test, 14 assertions, exit 0 /
+cleanup 0. Development runa data/credentials/settings and all Docker volumes remain
+preserved. No fake provenance or runtime/security bypass was introduced.
+
+No owner acceptance, complete suites, final PASS or release is claimed. Point 12
+stays after explicit owner acceptance. Platform VERSION remains 0.7.0, projected
+feature release 0.8.0; module/API candidates are unchanged.
+
+## Historical execution state — point 10i in progress, 2026-11-07
 
 **Points 1–10h, 10h1 and 10h2 are complete. Point 10i remains open.**
 The [combined readiness review](../../reviews/RM-2026-017-combined-readiness.md)
@@ -35,8 +56,9 @@ Development Core/reference forward updates succeeded without reset; settings,
 credentials, flags and user/sample identities were retained. Base runa_test Core
 also updated, but the example has an existing table without migration provenance.
 The updater refused duplicate creation and retains its app-owner reservation.
-Point 10i prohibits resets: owner approval to rebuild only runa_test is pending.
-No reset or fabricated ledger/installed-version repair is authorized by silence.
+The agent-authored no-reset clause was inconsistent with the standing pre-1.0
+owner authorization and is corrected. Rebuild only the identified runa_test under
+its guard and supported owner scopes; never fabricate migration/version evidence.
 Development remains available at http://localhost:8080; test evidence/resources are
 preserved. Manual acceptance 11 and final verification/release 12 remain open.
 Platform VERSION stays 0.7.0, projected feature/0.8.0 unchanged.
@@ -407,9 +429,11 @@ native PASS. No upstream installers/scripts execute merely for research.
 
 Published tags, dated evidence and closed roadmaps retain their historical bytes.
 Do not remove roadmap discussion or rejected designs to reduce document size.
-No reset or deletion of existing application data is planned or authorized by
-this request. Any discovered need is discussed separately with exact ownership,
-data value and scope; never use a reset as a shortcut for these improvements.
+Necessary identified Runa development/test database rebuilds and migration cleanup
+follow the standing pre-1.0 owner authorization and canonical inspection/reset
+procedure. Preserve real production/customer data, backups and uncertain or
+irreplaceable data; those boundaries still require discussion where applicable.
+Do not require repeated approval for rebuildable development/test data.
 
 ## Current-state baseline and planning evidence
 
@@ -1339,7 +1363,8 @@ below are retained as historical records only.
     base URL, resolved routes, source/build and scenarios. Core platform ranges
     may require early 0.8.0 candidate preparation; obtain explicit owner approval
     and record prepared_version fields/reason under the release workflow before
-    such version changes. Never fake versions or bypass maintenance. No reset.
+    such version changes. Never fake versions or bypass maintenance. Necessary
+    identified development/test rebuilds follow the standing pre-1.0 policy.
 
 - [x] 10a. Standardize the module-framework settings mechanism.
   - **Owner decision, 2026-11-07:** reference is customer documentation in code.
@@ -1505,13 +1530,16 @@ below are retained as historical records only.
   - Rerun only this focused case through the supported isolated worker runner;
     retain the native failure and synchronize readiness evidence.
 
-- [ ] 10i. Prepare combined runtime and renewed owner acceptance.
+- [x] 10i. Prepare combined runtime and renewed owner acceptance.
   - **Dependency:** completed 10a–10h. Reconcile the entire combined scope and
     outstanding findings against actual source; insert explicit repairs before
     manual acceptance. Renew the qualitative/source and instruction-product review
     for new behavior rather than relying on the earlier point-10 readiness.
   - Prepare supported nondestructive updates, current assets and usable authorized
-    data/access after formatting. No reset/new package/production deployment.
+    data/access after formatting. Necessary identified development/test rebuilds and
+    migration cleanup follow the standing pre-1.0 authorization, exact-scope
+    inspection and canonical storage/ledger reset procedure. No new package or
+    production deployment.
     Confirm actual pages/APIs, source/build identities and safe secret projections.
     Early candidate metadata preparation, if needed, still requires its existing
     separate owner approval; none is inferred from this scope merger.
@@ -5007,3 +5035,54 @@ reconcile the base. Owner approval to amend 10i's no-reset constraint for rebuil
 only runa_test remains pending; do not mark this point complete or advance 11/12.
 Both instruction products already cover the unchanged native/public procedures;
 private readiness/incident evidence adds no reusable rule requiring their change.
+
+## Point 10i policy correction — standing pre-1.0 authority, 2026-11-07
+
+The owner identified the agent-authored no-reset clause and repeated approval
+request as contrary to AGENTS' existing pre-1.0 authorization. That clause and the matching general out-of-scope/point-10 restrictions are
+removed from the active plan. This is correction of an agent-introduced restriction,
+not new reset authority or a change to project constitution. Necessary identified
+Runa development/test database rebuilds and editing/deleting/consolidating committed
+Runa migrations are already authorized inside an active roadmap. Exact ownership,
+destructive-scope disclosure, test guards and protection of production/customer/
+irreplaceable data remain required. Prior checkpoint claims that a separate reset
+approval was needed are superseded by this correction.
+
+Resume 10i by rebuilding only the identified runa_test application/platform/module
+storage and ledgers through supported guarded owner operations; preserve runa,
+volumes, caches, backups and evidence. No new migration or compatibility path is
+needed for the test fixture's untracked table.
+
+## Point 10i completion — test-base reconstruction and manual handoff, 2026-11-07
+
+Under the standing pre-1.0 authority, the identified runa_test schema/role/ownership
+and absence of competing connections were verified; its stopped test endpoints
+and complete 47-table inventory were recorded. Guarded application wipe followed
+by owner platform fresh, required/Core initialization and explicit application/
+reference installation rebuilt actual storage and every owning ledger. The stale
+reservation disappeared with its old installation state; no fake history or
+compatibility machinery was introduced. Supported steps all exited 0.
+
+The same focused two-user native case passes sequentially on the reconstructed
+base: 1 passed, 14 assertions, exit 0 / cleanup 0; no worker cleanup was needed.
+This supplements the earlier valid parallel-worker result and resolves the exact
+prerequisite failure without running a broad suite before point 12. Development
+still has 15 users, one sample and its identical encrypted-settings/revision hash;
+maintenance reasons are empty and real Nginx settings page returns HTTP 200.
+
+The combined readiness review and current acceptance sheet record installed/source
+versions, build identities, actual route/API/interaction observations, safe existing
+administrator access, native proof/mutation scenarios, PL/EN/themes/viewports and
+remaining full/manual coverage. Earlier runtime and diagnostic failures remain
+historical evidence. Both instruction products already carry the correct authority
+and public procedures; correcting this agent-authored roadmap restriction requires
+no duplicated rule or changed customer scope. No dependency/module/API version,
+production configuration or deployment change was introduced.
+
+Removed only scoped rebuildable runa_test table contents/installation state and
+the earlier runner-owned runa_test_test_1. Preserved database objects, Docker
+volumes/containers/networks/images, runa development data, Qdrant/model/pnpm caches,
+backups, reports and operation evidence. Current application is ready for the
+owner's sole manual acceptance point 11; only the owner may complete it. Final
+verification/release 12 remains open. This completion is committed with its
+synchronized evidence; no final PASS, owner acceptance or release is claimed.

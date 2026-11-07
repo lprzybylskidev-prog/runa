@@ -2,8 +2,8 @@
 
 Point 10i preparation, 2026-11-07. Development runtime/assets and actual routes
 are observed in the [combined readiness review](RM-2026-017-combined-readiness.md).
-The base test database provenance blocker keeps 10i open. This sheet is not owner
-acceptance or final automated PASS. Point 11 requires the owner's explicit result;
+Point 10i is complete, including the guarded test-base provenance repair. This
+sheet is the owner's manual handoff, not owner acceptance or final automated PASS. Point 11 requires the owner's explicit result;
 complete automated verification/release remains point 12. The earlier point-10
 report's runtime observations remain historical evidence.
 
@@ -11,7 +11,8 @@ report's runtime observations remain historical evidence.
 
 Expected local origin remains `http://localhost:8080`; internal diagnostics use
 the existing Nginx sibling `http://nginx:8080`. Both were reconfirmed in 10i through real Nginx requests and Chromium views. Use normal login and the
-existing privately configured authorized development account; never reset a
+existing privately configured authorized development administrator account
+(role runa.permissions.super_admin); never reset a
 password, issue substitute credentials or bypass grants/maintenance for readiness.
 
 Candidate source: platform VERSION 0.7.0, projected release 0.8.0; Framework API
@@ -19,8 +20,9 @@ Candidate source: platform VERSION 0.7.0, projected release 0.8.0; Framework API
 These versions are installed in the development database after explicit forward
 updates. Current SPA entry is /build/assets/index-3bYqUnwF.js; the linked readiness
 review records exact source/build hashes and services. No early VERSION preparation
-was needed. Test-base reconstruction remains a separate pending owner decision;
-no lifecycle toggle, fake version or production inclusion of reference is permitted.
+was needed. Test-base storage and real installation ledgers were rebuilt under
+standing pre-1.0 authority; the native two-user case passes there. No lifecycle
+toggle, fake version or production inclusion of reference was used.
 
 The [application Core matrix](../../../app/modules/reference/core-capabilities.md)
 owns executable source/API/test links and noninteractive/internal exclusions.
@@ -63,7 +65,7 @@ does not need to damage real account security to inspect those states.
 
 The combined readiness review records source/build hashes, routes/APIs, actual
 services/installed versions, existing administrator access and preserved resources.
-Its test-base provenance blocker keeps the handoff open. Copy/device/refresh
+Its test-base provenance blocker is resolved; this candidate is ready for point 11. Copy/device/refresh
 expectations reflect completed 10f–10h and inserted readiness repairs. Only the owner's explicit
 result for that prepared environment completes 11; later UI repairs repeat the
 affected manual acceptance. No final PASS, release or acceptance is recorded here.

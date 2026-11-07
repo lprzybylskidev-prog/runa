@@ -1,8 +1,9 @@
 # RM-2026-017 combined runtime readiness
 
-Point 10i, 2026-11-07. Development preparation is observed; the point remains open
-while the base test database's inconsistent installation provenance is unresolved.
-Owner acceptance 11 and final automated verification/release 12 remain open.
+Point 10i completed, 2026-11-07. Development runtime/assets and bounded interactions
+are observed; the base test database's inconsistent provenance is repaired through
+a guarded rebuild. Owner acceptance 11 and final automated verification/release 12
+remain open.
 
 ## Source, runtime and data preparation
 
@@ -42,7 +43,8 @@ positive bigint revision to retained samples. Existing source-only upgrade edges
 completed normally; all module enabled flags were retained. Before/after counts
 remain 15 users and one reference sample. A hash of encrypted settings/revisions
 is identical before/after. No password, grant, credential or settings value was
-replaced; no reset, reseed, source rollback or production operation occurred.
+replaced in development; no development reset/reseed, source rollback or
+production operation occurred. The separate test-base rebuild is recorded below.
 The owned manual maintenance was removed; development derived reasons are empty.
 
 Local safe operational evidence: .runtime/dev/RM-2026-017-10i/runa.jsonl and
@@ -132,36 +134,59 @@ to owner/customer AGENTS/skills are needed. Do not copy the private incident or
 readiness state into customer instructions. The full current-state documentation
 and quality review remains point 12.
 
-## Test provenance blocker and bounded native evidence
+## Test provenance correction and bounded native evidence
 
-Base database and role are runa_test, owned by runa_test, with no other active
-connections when inspected. Core forward updates completed to the same current
-versions as development. Existing app.reference was marked installed 0.4.0 but
-its samples table (four rows, including revision) had no module-update ledger at
-all. Applying the real app update therefore correctly refused duplicate table
-creation, transactionally rolling back that attempted migration. Its exact
-app-owner reservation is retained for reconciliation, not cleared manually:
-operation c2cf8bd889c3bc1e05a8b06adcf315a6c218fdef,
-fingerprint a4eea3e546ca34a766a5f261966ce943a841483b85fbcb82d31eda472b55e801.
-All existing test rows were preserved. The local operation removed only its own
-manual maintenance artifact, shared by the CLI environment, so working development
-was not left down; the test reservation still fences its affected module.
+The initial base test database's app.reference table had four rows and a revision
+column, but no module-update ledger despite installed version 0.4.0. The ordinary
+update correctly refused duplicate creation and retained its reservation. This
+native failure and the initial operation journal remain evidence; no migration
+success or installed version was fabricated to suppress it.
 
-The canonical reset procedure requires coherent platform/module/application storage
-and ledgers; application migrate:fresh alone cannot repair this state. Point 10i
-explicitly says no reset, so the owner was asked whether to amend that constraint
-for rebuilding only runa_test. No reset is authorized by silence. Preserve runa,
-all Docker volumes, backups/caches and evidence. Do not invent migration success,
-change installed versions by SQL, skip migration bodies or clear the reservation
-as a substitute for reconciliation.
+The agent-authored no-reset clause incorrectly contradicted the standing pre-1.0
+owner authorization. The owner identified that error; the active roadmap corrects
+it as an existing-authority correction, not a request for new reset approval.
+Both owner and customer instruction products already state their applicable scope;
+no new reusable exception or rule is needed.
 
-A fresh supported disposable worker allowed the requested two-user diagnostic to
-execute without touching this inconsistent base. Its first real run failed with
-401 because the fixture reused a browser session; point 10h2 separates clients.
-The corrected supported application backend selection passed 14 assertions in one
-parallel worker, native exit 0 and cleanup 0; runa_test_test_1 was removed by its
-own runner. These scoped results establish actual backend stale/removed admission
-for independent users, not complete backend, SIGSEGV acceptance or final PASS.
+Before rebuilding, TestDatabaseGuard verified APP_ENV/testing, host, runa_test
+role and the actual database identity. Database owner was runa_test, no other
+connections were active, and the app-test/nginx-test siblings were stopped. The
+exact disclosed scope was all 47 application/platform/module tables in shared,
+runa_auth, runa_audit, runa_permissions and app_reference within runa_test. Their
+schema claims matched the retained module identities; no unrelated table, database
+or volume was selected. The existing production-operation and test-suite locks
+covered the sequence:
+
+1. APP_ENV=testing php artisan db:wipe --force --no-interaction: application tables.
+2. APP_ENV=testing php distribution/platform-database.php migrate:fresh --force --no-interaction:
+   platform and claimed Runa-module tables, including installation/version ledgers.
+3. APP_ENV=testing php src/runa/database/prepare.php b681794b0e7998649ebfadfa50ab4d3c78556022:
+   required initialization and real Core module migrations/upgrades.
+4. Native application migrate/db:seed and documented app-owner ModuleUpdates apply:
+   real reference migrations and initializer, preserving its disabled test default.
+
+Every phase exited 0. All installed/source versions match the current development
+candidate; both reference migrations and every actual initialization/upgrade step
+have native succeeded ledger records. The stale update reservation is absent.
+No database/schema CASCADE, fake ledger, direct installed-version edit, new
+migration, adapter or compatibility path was introduced. The base database object
+and Docker volume were retained; its old rebuildable test rows were intentionally
+removed. Safe inventory and operation evidence:
+.runtime/dev/RM-2026-017-10i/base-reset-inventory.json and base-rebuild.log.
+
+The previous disposable-worker two-user diagnostic passed 14 assertions after
+10h2 separated independent browser sessions (native exit 0 / cleanup 0).
+After rebuilding, the same supported command without parallel arguments,
+php artisan runa:test:backend --filter='keeps two independent users snapshots',
+passed on the repaired base: 1 test, 14 assertions, native exit 0 / cleanup 0,
+no disposable workers removed. This resolves the concrete base admission question;
+it is not a complete backend suite, SIGSEGV acceptance or final PASS.
+
+Development was checked after the rebuild: database runa, 15 users, one sample,
+unchanged encrypted-settings/revision hash
+89a1b1151e3d1200d7bbc7f7240c60d396e417dbe310d173ba12d101f7a333f5,
+no maintenance reasons, actual reference settings page HTTP 200. Its data,
+credentials, flags and installed versions remain intact.
 
 ## Access, manual handoff and resources
 
@@ -170,11 +195,14 @@ is php artisan runa:seed:accounts. Its existing role is
 runa.permissions.super_admin. No new role, assignment or password was created.
 Admin entry still requests native full-page password confirmation. The
 [current acceptance sheet](RM-2026-017-current-acceptance.md) lists exact routes,
-independent reference grants and intended mutation/proof scenarios. Owner acceptance
-has not been requested as complete while 10i's test prerequisite remains unresolved.
+independent reference grants and intended mutation/proof scenarios. This working
+candidate is ready for point 11. Only the owner's explicit tested result completes
+that point; agent diagnostics do not establish owner acceptance.
 
-Only the supported diagnostic's disposable worker database was removed. No Docker
-containers, networks, tags or volumes were created or deleted. Development/base
-test data, all existing services, Qdrant/model/pnpm caches, backups, reports and
-recovery/operation state remain preserved. The base-test repair decision is the
-remaining blocker for completion of 10i; 11/12 remain open.
+The repaired base's rebuildable test rows and stale installation state were removed
+within the disclosed scope. The earlier supported diagnostic removed only its own
+runa_test_test_1 worker. No Docker containers, networks, tags or volumes were created
+or deleted. Development data, all existing services, Qdrant/model/pnpm caches,
+backups, reports and historical operation evidence are preserved. Point 10i is
+complete; owner manual acceptance 11 and final automated verification/release 12
+remain open.
