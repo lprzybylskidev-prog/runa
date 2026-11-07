@@ -106,8 +106,9 @@ The scope always unwinds on exception and is never a client token or global cach
 
 Reserved `Runa\Contracts\Modules\TransactionSecurity` has
 `lockSubjects(array $publicIds): void` and
-`proof(MutationProof $proof, bool $consume): void`. Only the fixed framework root
-and named Core/Auth integration may consume it. Auth owns actual identity locking
+`proof(MutationProof $proof, bool $consume): void`. Only the fixed framework root,
+the [native settings coordinator](module-settings.md) and named Core/Auth integration
+may consume it. Auth owns actual identity locking
 and existing session/security-bound StepUp verification/consumption; no user model
 or connection crosses this boundary. Other modules never import Auth persistence.
 

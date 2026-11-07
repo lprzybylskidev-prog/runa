@@ -21,7 +21,19 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10a reference repair, 2026-11-07
+## Current execution state — point 10a completed, 2026-11-07
+
+**Points 1–10 and 10a are complete. Point 10b is next:** migrate Auth onto the
+common settings contract and remove the old special dispatch. The framework
+foundation alone does not complete the overall common-settings correction.
+Gate B and feature/0.8.0 remain approved. Platform VERSION stays 0.7.0; Framework
+API is now 1.2.0. Points 10b–10e, renewed owner manual acceptance (11) and final
+automated verification/release (12) remain open. No final PASS, acceptance or
+release is claimed. See the point-10a completion record below.
+
+<a id="current-execution-state--point-10a-reference-repair-2026-11-07"></a>
+
+## Historical execution state — point 10a reference repair, 2026-11-07
 
 Owner manual review rejected the reference example's completeness. The owner
 explicitly authorized a repair point before the existing point 11: establish the
@@ -1021,7 +1033,7 @@ below are retained as historical records only.
     and record prepared_version fields/reason under the release workflow before
     such version changes. Never fake versions or bypass maintenance. No reset.
 
-- [ ] 10a. Standardize the module-framework settings mechanism.
+- [x] 10a. Standardize the module-framework settings mechanism.
   - **Owner decision, 2026-11-07:** reference is customer documentation in code.
     Every new Runa module and customer-facing capability must extend working
     examples, documentation and tests in its owning point. The rule/instruction
@@ -3880,3 +3892,114 @@ scheduled in the new implementation points. Root/domain/customer instructions
 need no additional edit for this planning record: the general isolation/public API,
 pre-1.0 and reference-maintenance rules already apply; synchronize actual new
 public contracts and changed consumers in their implementation points.
+
+## Point 10a — Common settings framework completed — 2026-11-07
+
+Implemented against planning baseline `21e5a865` on the existing roadmap branch.
+The checkout was clean. Knowledge status was current (226 documents, 12,810 chunks);
+a bounded current-intent roadmap query located the approved sequence, then the
+original roadmap/authorization record and owning source were opened. Loaded the
+backend, Laravel, security and PostgreSQL skills and relevant transaction/public
+API/database/security guidance. Laravel Boost's installed Laravel 13 documentation
+confirmed pessimistic locking and explicit transaction-attempt semantics.
+
+### Contract and source decisions
+
+Before runtime edits, authored the public
+[native settings publication contract](../../../handbook/architecture/module-settings.md):
+framework ownership/audience, complete extension and adapter signatures, source
+placement, pure discovery, admission, actual registry/authority/actor lock order,
+transaction boundary, operator authority and publication/recovery phases. Current
+source mapping confirmed existing encrypted values/revisions in `shared.modules`,
+transition/snapshot evidence, SettingsDefinitions validation, native application/
+compensation, mandatory Audit and Auth-specific PolicyHistory participation.
+
+- The single source-owned SettingsProvider can additionally implement public
+  SettingsAccessProvider, SettingsAuthorization and SettingsParticipant. Access
+  metadata declares operation grants, additional field read/write grants and an
+  optional source-owned MutationProof. Runtime descriptor checks use the same
+  SettingsDefinitions resolver, validating known keys without invoking mutation
+  hooks. Physical declaration ownership and container substitution refusal remain.
+- The native ModuleSettings runner invokes owning authorization before reservation,
+  and owning synchronous persistence for publish, restore and reserved upgrade.
+  Required framework participation remains mandatory and independent. Restoring
+  a failed application does not consume the initiating password proof again.
+- Private SettingsSecurity prepares exact operation/field/proof/Audit admission
+  outside the transaction; under the registry lock it takes the existing authority
+  lock and Auth-owned actor lock, rechecks source/current grants, validates the
+  candidate and consumes proof in the publication transaction. It is an explicit
+  additional named caller of reserved TransactionSecurity, whose actual Core/Auth
+  implementation remains unchanged. No foreign private class/table access, new
+  credential implementation, callback registry or alternative publication runner.
+- Human actor history comes from trusted PrincipalScope. System/mismatched actor
+  metadata cannot select authenticated authority. Principal-free console execution
+  retains operator behavior; a route-bearing HTTP request without identity refuses.
+  Jobs do not inherit a browser proof. Connection/PDO/principal/generation checks
+  guard the transaction; declaration identity includes metadata and actual provider/
+  handler file hashes. Source drift refuses publication or retains native recovery.
+- readAuthorized supplies the existing redacted shape while omitting denied fields.
+  Internal owning read/value helpers remain distinct. Initial publication proof,
+  candidate, source history and mandatory Audit roll back together; later handler
+  failure still uses native compensation/fencing. Final grant checks precede the
+  fence; ordinary operational admission must refuse once the fence exists.
+- Existing Audit settings events and Admin SettingsSnapshots remain the generic
+  history/snapshot mechanisms. No migration, new table/store, data reset, secret
+  rewrite, dependency, HTTP endpoint or frontend change was introduced.
+
+### Versions, current guidance and staged consumers
+
+Framework API advances 1.1.0 → 1.2.0 for additive source contracts/authorized
+projection. Existing ^1.x consumers retain valid ranges; the generator already
+reads the FrameworkApi constant and its expected-version regression is updated.
+No Core module implementation/signature changed, so no independent module manifest
+bump is justified here. Platform VERSION and projected feature/0.8.0 are unchanged.
+
+The public source allowlist now exposes the four settings extension symbols while
+TransactionSecurity/TrustedPrincipal retain exact named caller restrictions. Public
+API/module/transaction/authoring guides, central unreleased changelog and both
+backend skill products route to the same canonical settings guide. Root owner and
+customer AGENTS need no change: their public API, module isolation, atomic Audit,
+protected-source and roadmap rules already cover this extension. No broader policy
+or customer platform-edit authority is added.
+
+The approved dependency sequence deliberately places Auth's consumer migration/
+old-dispatch removal in 10b and the executable reference backend/UI in 10c/10d.
+Those remain open: the old Auth path is neither presented as the completed design
+nor wrapped in a new compatibility adapter. Existing reference data/source/UI are
+preserved, with no expanded interactive coverage claimed before their owning points.
+
+### Focused evidence and limits
+
+Only checks resolving new publication/access-boundary uncertainty ran:
+
+- `python3 tools/maintainer/test-backend --parallel --processes=1
+--filter='ModuleSettingsSecurityTest|runs source-owned authorization|rolls back source-owned history|refuses changed settings provider'`:
+  **8 PASS, 62 assertions**, 1.63 seconds. Proves source hooks/restore, native source
+  drift recovery, framework field access/actor/proof orchestration and atomic
+  rollback of a transactional proof/history stand-in when mandatory Audit refuses.
+- Additional focused native filters `refuses a changed default connection`:
+  **1 PASS, 5 assertions**, 0.79 seconds; `rejects a stale reviewed revision`:
+  **1 PASS, 6 assertions**, 0.89 seconds. Both refuse before proof consumption.
+- `python3 tools/maintainer/test-python --scope=contracts
+--path=contracts/test_api_boundary.py
+--filter=php_aliases_reserved_callers_and_public_support_remain_distinct`:
+  **1 PASS, 6 deselected**, 0.05 seconds. Public settings extension imports pass;
+  application access to the reserved security bridge/private coordinator refuses.
+
+The first native diagnostic failed because the test fixture assumed a nonexistent
+`shared.cache`; corrected it to a connection-local PostgreSQL temporary evidence
+table, then received the passing results above. No failure suppression or runtime
+schema repair. Source-only Auth/Audit and transactional proof stand-ins isolate
+framework guarantees; these are not certification of actual Auth credentials,
+Permissions persistence or real Audit integration. Their migration/regressions and
+complete affected suites remain in the approved later points/final verification.
+No full suite, static analysis, scanner/image/installation or browser gate ran.
+
+The supported runner printed scoped cleanup and removed its disposable
+`runa_test_test_1` worker after each native run; no worker cleanup failure. Temporary
+fixture sources/evidence tables are removed by fixture/connection lifecycle. No
+new Docker container/network/image/volume was provisioned; active development,
+base development/test databases, caches, backups and existing reports are preserved.
+Mandatory hooks and staged-source incremental knowledge synchronization apply to
+this implementation commit. Point 10b is the next authorized implementation point;
+manual acceptance and release remain later gates.

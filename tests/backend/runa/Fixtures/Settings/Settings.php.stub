@@ -7,8 +7,16 @@ use Runa\Contracts\Modules\SettingsHandler;
 use Runa\Contracts\Modules\SettingsProvider;
 use Tests\Fixtures\SettingsCalls;
 
-final class Settings implements SettingsProvider, SettingsHandler
+final class Settings implements SettingsProvider, SettingsHandler, \Runa\Contracts\Modules\SettingsAuthorization, \Runa\Contracts\Modules\SettingsParticipant
 {
+    public function authorizing(\Illuminate\Database\Connection $connection, SettingsContext $context): void
+    {
+        if (SettingsCalls::$authorize !== null) { (SettingsCalls::$authorize)($connection, $context); }
+    }
+    public function publishing(\Illuminate\Database\Connection $connection, \Runa\Contracts\Modules\SettingsPublication $publication): void
+    {
+        if (SettingsCalls::$publish !== null) { (SettingsCalls::$publish)($connection, $publication); }
+    }
     public function settings(): array
     {
         $names = ['pl' => 'Nazwa', 'en' => 'Name'];

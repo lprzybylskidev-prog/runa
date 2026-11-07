@@ -30,6 +30,11 @@ $cases = [
  ['<?php use Runa\Contracts\Modules\{WorkHandler, AuthorityGuard as Guard};', ['reserved_api_import'], ''],
  ['<?php new \Runa\ModuleFramework\ModuleRegistry;', ['internal_platform_import'], ''],
  ['<?php use Runa\Support\Modules\Work\WorkContext; use Runa\Support\Modules\Data\ModuleModel;', [], ''],
+ ['<?php use Runa\Contracts\Modules\{SettingsAccess, SettingsAccessProvider, SettingsAuthorization, SettingsParticipant};', [], ''],
+ ['<?php use Runa\Contracts\Modules\TransactionSecurity;', ['reserved_api_import'], 'src/app/Settings.php'],
+ ['<?php use Runa\Contracts\Modules\TransactionSecurity;', [], 'src/runa/ModuleFramework/Settings/SettingsSecurity.php'],
+ ['<?php use Runa\Contracts\Modules\TransactionSecurity;', [], 'src/runa/Providers/ModuleFrameworkServiceProvider.php'],
+ ['<?php use Runa\ModuleFramework\Settings\SettingsSecurity;', ['internal_platform_import'], 'src/app/Settings.php'],
  ['<?php use Runa\Modules\Auth\Contracts\Unknown;', ['foreign_module_import'], ''],
  ['<?php use Runa\Modules\Auth\Contracts\AuthorizationIdentity;', [], 'src/runa/Integration/Core/AuthAuthorizationIdentity.php'],
  ['<?php use Runa\Modules\Auth\Contracts\AuthorizationIdentity;', ['reserved_api_import'], 'src/app/AuthAuthorizationIdentity.php'],
@@ -39,6 +44,9 @@ $cases = [
 ];
 foreach ($cases as [$source, $expected, $path]) {
  if ($boundary->php($source, 'App\Modules\Own\\', $path) !== $expected) { fwrite(STDERR, $source); exit(10); }
+}
+foreach (['src/runa/ModuleFramework/Settings/SettingsAdmission.php', 'src/runa/ModuleFramework/Settings/SettingsSecurity.php', 'src/runa/Providers/ModuleFrameworkServiceProvider.php'] as $path) {
+ if ($boundary->php(file_get_contents($argv[1].'/'.$path), 'Runa\\', $path) !== []) { fwrite(STDERR, $path); exit(11); }
 }
 $parser = new Runa\Development\ApiSourceCheck;
 $source = '<?php namespace Runa\Contracts\Modules; interface Unknown { public function x(AuthorityGuard $guard): void; }';

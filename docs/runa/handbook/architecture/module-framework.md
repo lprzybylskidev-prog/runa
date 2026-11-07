@@ -55,7 +55,7 @@ Source roots, manifest files and referenced files must remain inside the owning 
 
 Localized names are at most 160 characters, descriptions at most 2000. Collections are bounded to 256 items per category; class names and relative paths to 256 characters. Required/optional dependency maps must be disjoint, cannot reference self, and Runa modules cannot depend on application modules through either map. A required cycle is invalid; optional integration references never become enablement edges.
 
-Version components are decimal integers without leading zeros, at most nine digits each. Version constraints reuse `Runa\Support\VersionCompatibility`: exact or `=`, `>`, `>=`, `<`, `<=`, `^`, `~` against complete stable triples; whitespace is AND and `||` is OR, maximum 256 characters. Wildcards, partial versions, prereleases and build metadata are unsupported in v1 compatibility evaluation and fail explicitly. Do not use the dev-only transitive Composer SemVer package at runtime. Module versions and framework API versions are independent of platform VERSION; the current framework API contract is `1.1.0`, including additive Admin read-health planning. Existing ^1.0.0 consumers remain compatible.
+Version components are decimal integers without leading zeros, at most nine digits each. Version constraints reuse `Runa\Support\VersionCompatibility`: exact or `=`, `>`, `>=`, `<`, `<=`, `^`, `~` against complete stable triples; whitespace is AND and `||` is OR, maximum 256 characters. Wildcards, partial versions, prereleases and build metadata are unsupported in v1 compatibility evaluation and fail explicitly. Do not use the dev-only transitive Composer SemVer package at runtime. Module versions and framework API versions are independent of platform VERSION; the current framework API contract is `1.2.0`, adding source-owned settings access/security/participation to the existing Admin read-health planning. Existing ^1.0.0 consumers remain compatible.
 
 Every category below is required in `declarations`; an unused category is `[]`, except that `lifecycle` always has exactly one descriptor. Its descriptor classes return typed immutable source definitions, not free-form executable manifest payloads. The `health` category has zero or one `HealthPolicy` descriptor; it groups the module’s source-only checks and operational policy. Source descriptors use category-specific interfaces; unsupported descriptor revisions fail validation. The declaration envelope and boundaries are frozen here; each feature point supplies its detailed PHP types and executable validation before it can be used.
 
@@ -165,7 +165,7 @@ are delivered with platform 0.7.0.
 
 ### Delivered dependency graph and lifecycle previews
 
-`Runa\ModuleFramework\ModuleGraph` takes a `RegistrySnapshot`, the running platform version and framework API version (default `1.1.0`). Records expose validated required/optional maps and platform/framework constraints from the persisted manifest in the same locked snapshot as flags and generation. Planning reads no source files, executes no descriptors and writes nothing.
+`Runa\ModuleFramework\ModuleGraph` takes a `RegistrySnapshot`, the running platform version and framework API version (default `1.2.0`). Records expose validated required/optional maps and platform/framework constraints from the persisted manifest in the same locked snapshot as flags and generation. Planning reads no source files, executes no descriptors and writes nothing.
 
 ```php
 $graph = new ModuleGraph($registry->snapshot(), $platformVersion);
@@ -477,6 +477,11 @@ flags, settings, installed versions, retained work and Audit history.
 Call `requireAvailable(module, key)` at an optional integration operation boundary. It checks the source enabled state and configuration, declared optional version constraint, both modules' effective availability and platform maintenance. It returns the declared target identity for a guarded public API call. Do not retain an availability result as authorization for a later operation. Event listeners naming `integration` automatically repeat this check at sync invocation, async admission and worker start; the integration must target that event's publisher. Optional absence/incompatibility/unhealth never changes ordinary module enabled state or its unrelated required graph. Cyclic optional references do not recurse through activation. Registered Core failure still causes platform maintenance for these operations.
 
 ## Delivered declarative settings
+
+Use [native settings publication](module-settings.md) for the complete source-owned
+access/proof/authorization/publication contracts, authorized field projection and
+the shared security admission/lock protocol. The storage and recovery primitives
+below remain the single native implementation.
 
 Declare one owned `SettingsProvider` under `declarations.settings` when a module has settings. Its `settings()` returns up to 128 schema-version-1 `SettingDefinition` descriptors with stable key, type, default, PL/EN names and descriptions, backend validation rules/options, `sensitive`, `nullable` and `application` (`immediate` or `reinitialize`). `valid(completeValues)` supplies pure cross-field backend validation; `handler()` names an owned `SettingsHandler`. Construction, validation and defaults must have no effects. Modules without settings need no provider. DB values never select executable classes or validation rules.
 

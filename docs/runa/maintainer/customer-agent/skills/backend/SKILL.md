@@ -22,6 +22,11 @@ imports or cached authority/availability substitutes.
 
 Load for application use cases, transactions, public integrations and failure handling. Read the active application roadmap, query available local knowledge and inspect analogous App code. Project rules override generic advice. Load references/application.md only when needed. Preserve protected platform source.
 
+For App module settings, follow `docs/runa/handbook/architecture/module-settings.md`.
+Declare access/proof requirements and owning participation on your settings provider;
+use authorized HTTP projections and the native independent publication/recovery
+protocol. Reserved security bridges remain unavailable to application code.
+
 For lists, metadata/bootstrap, authorization intersections and settings/preference
 snapshots, follow `docs/runa/handbook/architecture/application-architecture.md#read-path-performance`.
 Measure query growth beyond Eloquent relations under real transaction nesting,

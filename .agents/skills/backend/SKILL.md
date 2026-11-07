@@ -21,6 +21,11 @@ imports or cached authority/availability substitutes.
 
 Use this skill for backend architecture and implementation choices that are broader than Laravel syntax.
 
+For module settings, follow [native settings publication](../../../docs/runa/handbook/architecture/module-settings.md).
+Declare access/proof requirements and owning participation on the single settings
+provider; use authorized projections for HTTP and retain the independent native
+runner, atomic proof/publication/Audit and native recovery.
+
 For lists, metadata/bootstrap, authorization intersections and settings/preference
 snapshots, review repeated reads beyond Eloquent relations. Follow
 [read-path performance](../../../docs/runa/handbook/architecture/application-architecture.md#read-path-performance):

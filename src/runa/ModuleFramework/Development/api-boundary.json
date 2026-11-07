@@ -79,10 +79,14 @@
     "Runa\\Contracts\\Modules\\SettingChange",
     "Runa\\Contracts\\Modules\\SettingDefinition",
     "Runa\\Contracts\\Modules\\SettingType",
+    "Runa\\Contracts\\Modules\\SettingsAccess",
+    "Runa\\Contracts\\Modules\\SettingsAccessProvider",
     "Runa\\Contracts\\Modules\\SettingsActor",
+    "Runa\\Contracts\\Modules\\SettingsAuthorization",
     "Runa\\Contracts\\Modules\\SettingsContext",
     "Runa\\Contracts\\Modules\\SettingsHandler",
     "Runa\\Contracts\\Modules\\SettingsObserver",
+    "Runa\\Contracts\\Modules\\SettingsParticipant",
     "Runa\\Contracts\\Modules\\SettingsProvider",
     "Runa\\Contracts\\Modules\\SettingsPublication",
     "Runa\\Contracts\\Modules\\SlotContribution",
@@ -265,22 +269,6 @@
       "src/runa/modules/audit/backend/Participation.php",
       "src/runa/modules/permissions/backend/Participation.php"
     ],
-    "Runa\\Contracts\\Modules\\SettingsAuthorization": [
-      "src/runa/Contracts/Modules/SettingsAuthorization.php",
-      "src/runa/Integration/Core/AuditParticipation.php",
-      "src/runa/Support/Modules/Settings/ModuleSettings.php",
-      "src/runa/modules/auth/backend/Actions/PolicyHistory.php"
-    ],
-    "Runa\\Contracts\\Modules\\SettingsParticipant": [
-      "src/runa/Contracts/Modules/SettingsParticipant.php",
-      "src/runa/Integration/Core/AuditParticipation.php",
-      "src/runa/ModuleFramework/Settings/NoSettingsParticipation.php",
-      "src/runa/Providers/CoreIntegrationServiceProvider.php",
-      "src/runa/Providers/ModuleFrameworkServiceProvider.php",
-      "src/runa/Support/Modules/Settings/ModuleSettings.php",
-      "src/runa/modules/audit/backend/Participation.php",
-      "src/runa/modules/auth/backend/Actions/PolicyHistory.php"
-    ],
     "Runa\\Contracts\\Modules\\TrustedPrincipal": [
       "src/runa/Contracts/Modules/HttpAccountPolicy.php",
       "src/runa/Contracts/Modules/TrustedPrincipal.php",
@@ -333,7 +321,8 @@
       "src/runa/modules/auth/backend/Queries/Administration.php",
       "src/runa/modules/auth/backend/Queries/UserDirectory.php",
       "src/runa/modules/auth/backend/Support/TransactionSecurity.php",
-      "src/runa/modules/permissions/backend/Management/DefinitionEditor.php"
+      "src/runa/modules/permissions/backend/Management/DefinitionEditor.php",
+      "src/runa/ModuleFramework/Settings/SettingsAdmission.php"
     ],
     "Runa\\Modules\\Audit\\Contracts\\AuditActorResolver": [
       "src/runa/Integration/Core/AuthAuditActor.php",
@@ -395,7 +384,9 @@
       "src/runa/Integration/Core/TransactionSecurity.php",
       "src/runa/Providers/CoreIntegrationServiceProvider.php",
       "src/runa/Support/Modules/Data/ModuleTransactions.php",
-      "src/runa/modules/auth/backend/Support/TransactionSecurity.php"
+      "src/runa/modules/auth/backend/Support/TransactionSecurity.php",
+      "src/runa/ModuleFramework/Settings/SettingsSecurity.php",
+      "src/runa/Providers/ModuleFrameworkServiceProvider.php"
     ],
     "Runa\\Contracts\\Modules\\OperationalParticipant": [
       "src/runa/Contracts/Modules/OperationalParticipant.php",

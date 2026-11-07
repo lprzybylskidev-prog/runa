@@ -11,8 +11,11 @@ All release entries are maintained by the agent from roadmap facts.
 
 - Record the approved common-settings refactor and ordered repair points 10a–10e:
   framework contracts, Auth migration, executable reference backend/UI and renewed
-  acceptance preparation. Preserve module isolation/public APIs; implementation
-  and runtime examples remain pending.
+  acceptance preparation. Framework API 1.2.0 now supplies source-owned access,
+  field grants, password-proof orchestration and transactional settings hooks in
+  the native runner. Preserve encrypted values/revisions/recovery and use existing
+  Audit/history/snapshots. Auth migration and expanded reference runtime examples
+  remain pending in points 10b–10e.
 
 - Define agent-directed verification continuity and bounded manual SIGSEGV handling;
   preserve valid unrelated evidence and require explicit owner acceptance of

@@ -327,3 +327,73 @@ it('fences failed transactional restoration and retries participation without lo
     $this->settings->recover($result->operationId);
     expect($participant->publications)->toHaveCount($count);
 });
+
+it('runs source-owned authorization and history in the publication transaction and restores without reauthorizing', function (): void {
+    $authorized = 0;
+    $phases = [];
+    SettingsCalls::$authorize = function (Connection $connection, $context) use (&$authorized): void {
+        $authorized++;
+        expect($connection)->toBe(DB::connection())->and($connection->transactionLevel())->toBe(1);
+        expect($context->changes['token'])->toBe(['replaced' => true]);
+        expect($connection->table('shared.module_transitions')->where('target', $this->module)->exists())->toBeFalse();
+    };
+    SettingsCalls::$publish = function (Connection $connection, SettingsPublication $publication) use (&$phases): void {
+        $phases[] = $publication->phase;
+        expect($connection->transactionLevel())->toBe(1);
+        expect($this->settings->read($this->module)['revision'])->toBe($publication->revision);
+    };
+    SettingsCalls::$apply = fn () => false;
+    expect(($this->update)(['token' => 'fixture-private'])->status)->toBe('failed');
+    expect($authorized)->toBe(1)->and($phases)->toBe(['publish', 'restore']);
+    expect($this->settings->read($this->module)['settings']['token']['set'])->toBeFalse();
+});
+
+it('rolls back source-owned history and settings when required framework Audit participation refuses', function (): void {
+    DB::statement('CREATE TEMPORARY TABLE settings_test_evidence (key text PRIMARY KEY, value text NOT NULL)');
+    $participant = new class implements SettingsParticipant
+    {
+        public function publishing(Connection $connection, SettingsPublication $publication): void
+        {
+            throw new RuntimeException('Required Audit refused.');
+        }
+    };
+    $this->settings = new ModuleSettings(DB::connection(), $this->registry, $this->definitions, app(Encrypter::class), new SettingsCalls, $participant);
+    SettingsCalls::$publish = function (Connection $connection): void {
+        $connection->table('settings_test_evidence')->insert(['key' => $this->module, 'value' => 'published']);
+    };
+    $before = $this->settings->read($this->module);
+    expect(fn () => ($this->update)(['label' => 'candidate']))->toThrow(RuntimeException::class, 'Required Audit refused.');
+    expect($this->settings->read($this->module))->toEqual($before);
+    expect(DB::table('settings_test_evidence')->where('key', $this->module)->exists())->toBeFalse();
+    expect(DB::table('shared.module_transitions')->where('target', $this->module)->exists())->toBeFalse();
+});
+
+it('refuses changed settings provider source before publication and retains recovery after later drift', function (): void {
+    $record = $this->registry->snapshot()->modules[$this->module];
+    $path = $this->sources->root.'/'.$record->sourcePath.'/backend/Definitions/Settings.php';
+    $original = file_get_contents($path);
+    SettingsCalls::$authorize = function () use ($path, $original): void {
+        file_put_contents($path, $original."\n");
+    };
+    try {
+        expect(fn () => ($this->update)(['label' => 'candidate']))->toThrow(RuntimeException::class, 'Settings declaration changed.');
+        expect($this->settings->read($this->module)['revision'])->toBe(0);
+    } finally {
+        file_put_contents($path, $original);
+        SettingsCalls::$authorize = null;
+    }
+    SettingsCalls::$apply = function () use ($path, $original): bool {
+        file_put_contents($path, $original."\n");
+
+        return false;
+    };
+    try {
+        $result = ($this->update)(['label' => 'candidate']);
+        expect($result->status)->toBe('recovery_required');
+        expect($this->settings->read($this->module)['settings']['label']['value'])->toBe('candidate');
+    } finally {
+        file_put_contents($path, $original);
+    }
+    expect($this->settings->recover($result->operationId)->status)->toBe('failed');
+    expect($this->settings->read($this->module)['settings']['label']['value'])->toBe('initial');
+});

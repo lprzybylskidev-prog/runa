@@ -326,6 +326,14 @@ implementation and corresponding boundary checks are delivered together.
 
 ## Native transactional source extension
 
+SettingsProvider authors may additionally implement public SettingsAccessProvider,
+SettingsAuthorization and SettingsParticipant, using SettingsAccess metadata.
+The container-owned ModuleSettings adapter supplies readAuthorized alongside native
+update. [Native settings publication](module-settings.md) owns complete signatures,
+field grants, admission, proof/publication/Audit atomicity and source placement.
+The private settings coordinator is a named caller of reserved TransactionSecurity;
+this does not make that bridge an application API.
+
 The framework supplies TransactionalMutation, MutationDefinition, MutationAccess
 and MutationProof plus the container-owned ModuleTransactions adapter under
 Runa\Support\Modules\Data. Follow [owning module transactions](module-transactions.md)

@@ -4,6 +4,8 @@ namespace Runa\ModuleFramework\Settings;
 
 use Illuminate\Contracts\Validation\Factory;
 use Runa\Contracts\Modules\SettingDefinition;
+use Runa\Contracts\Modules\SettingsAccess;
+use Runa\Contracts\Modules\SettingsAccessProvider;
 use Runa\Contracts\Modules\SettingsHandler;
 use Runa\Contracts\Modules\SettingsProvider;
 use Runa\ModuleFramework\Api\BoundaryValues;
@@ -55,11 +57,26 @@ final readonly class SettingsDefinitions
                 throw new RuntimeException;
             }
             $this->validate($definitions, $provider, $defaults);
+            $this->access($provider, $definitions);
 
             return [$definitions, $provider, $type->getName()];
         } catch (Throwable) {
             throw new RuntimeException('Invalid settings declaration or defaults.');
         }
+    }
+
+    /** @param array<string,SettingDefinition> $definitions */
+    public function access(SettingsProvider $provider, array $definitions): ?SettingsAccess
+    {
+        if (! $provider instanceof SettingsAccessProvider) {
+            return null;
+        }
+        $access = $provider->access();
+        if (array_diff_key($access->readFields, $definitions) !== [] || array_diff_key($access->writeFields, $definitions) !== []) {
+            throw new RuntimeException('Settings access names undeclared fields.');
+        }
+
+        return $access;
     }
 
     /** @param array<string, SettingDefinition> $definitions

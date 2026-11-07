@@ -13,23 +13,26 @@ use Runa\Contracts\Modules\SettingsAuthorization;
 use Runa\Contracts\Modules\SettingsContext;
 use Runa\Contracts\Modules\SettingsObserver;
 use Runa\Contracts\Modules\SettingsParticipant;
+use Runa\Contracts\Modules\SettingsProvider;
 use Runa\Contracts\Modules\SettingsPublication;
 use Runa\Contracts\Modules\TransitionResult;
 use Runa\Contracts\Modules\UpgradeContext;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\Settings\NoSettingsParticipation;
+use Runa\ModuleFramework\Settings\SettingsAdmission;
 use Runa\ModuleFramework\Settings\SettingsDefinitions;
+use Runa\ModuleFramework\Settings\SettingsSecurity;
 use Runa\Support\Modules\ModuleRecord;
 use Runa\Support\Modules\RegistrySnapshot;
 use RuntimeException;
 use Throwable;
 use WeakMap;
 
-/** Trusted management service. No authorization fiction, HTTP writes or public secret projection.
+/** Native publication with source-owned access; runtime secret reads stay private.
  *
  * @phpstan-type State object{settings_values: ?string, settings_revision: int}
  * @phpstan-type Operation object{public_id: string, intent: string, target: string, generation: int, payload: string, status: string, publication_generation: ?int}
- * @phpstan-type Payload array{old: ?string, candidate: string, revision: int, manifest: string, schema: string, handler: string, application: string, changes: array<string, array<string, mixed>>, actor: ?array{kind: string, id: string}, occurred_at: string}
+ * @phpstan-type Payload array{old: ?string, candidate: string, revision: int, manifest: string, schema: string, handler: string, declaration: string, application: string, changes: array<string, array<string, mixed>>, actor: ?array{kind: string, id: string}, occurred_at: string}
  */
 final class ModuleSettings
 {
@@ -47,6 +50,7 @@ final class ModuleSettings
         private readonly SettingsDefinitions $definitions, private readonly Encrypter $encrypter,
         private readonly SettingsObserver $observer,
         private readonly SettingsParticipant $participant = new NoSettingsParticipation,
+        private readonly ?SettingsSecurity $security = null,
     ) {
         $this->reads = new WeakMap;
     }
@@ -91,7 +95,28 @@ final class ModuleSettings
         $revision = $stored->settings_revision + 1;
         $this->write($context->module, $this->encode($candidate), $revision);
         $publication = new SettingsContext($context->operation, $context->module, $revision, 'immediate', $changes, null, now()->utc()->toIso8601String());
-        $this->participant->publishing($this->connection, new SettingsPublication($publication, $revision, 'upgrade', $changes));
+        $this->publishing($provider, new SettingsPublication($publication, $revision, 'upgrade', $changes));
+    }
+
+    /** Current human grants, field visibility and safe secret set-state. No ambient transaction.
+     * @return array{generation: int, revision: int, settings: array<string, array{definition: SettingDefinition, value?: mixed, set?: bool}>}
+     */
+    public function readAuthorized(string $module): array
+    {
+        $record = $this->registry->snapshot()->modules[$module] ?? throw new RuntimeException('Unknown module.');
+        [$definitions, $provider, $handler] = $this->definitions->for($record);
+        $access = $this->definitions->access($provider, $definitions) ?? throw new RuntimeException('Settings access declaration required.');
+        $identity = $this->declaration($definitions, $provider, $handler);
+
+        return ($this->security ?? throw new RuntimeException('Settings security unavailable.'))->read($module, $access, function () use ($module, $identity): array {
+            $record = $this->registry->snapshot()->modules[$module] ?? throw new RuntimeException('Unknown module.');
+            [$definitions, $provider, $handler] = $this->definitions->for($record);
+            if ($identity !== $this->declaration($definitions, $provider, $handler)) {
+                throw new RuntimeException('Settings declaration changed.');
+            }
+
+            return $this->read($module);
+        });
     }
 
     /** Safe management projection. Sensitive values expose set-state only, never ciphertext.
@@ -206,52 +231,85 @@ final class ModuleSettings
     {
         return $this->exclusive(function () use ($module, $patch, $expectedRevision, $expectedGeneration, $actor): TransitionResult {
             $id = (string) Str::uuid7();
-            $this->connection->transaction(function () use ($id, $module, $patch, $expectedRevision, $expectedGeneration, $actor): void {
-                $this->lock();
-                $snapshot = $this->registry->snapshot();
-                $state = $this->state($module);
-                if ($snapshot->generation !== $expectedGeneration || $state->settings_revision !== $expectedRevision || $this->connection->table('shared.module_transitions')->whereIn('status', ModuleRegistry::ACTIVE_TRANSITIONS)->exists()) {
-                    throw new RuntimeException('Settings revision changed or transition unresolved.');
-                }
-                $record = $snapshot->modules[$module] ?? throw new RuntimeException('Unknown module.');
-                [$definitions, $provider, $handler] = $this->definitions->for($record);
-                if ($patch === [] || array_diff_key($patch, $definitions) !== []) {
-                    throw new RuntimeException('Expected declared setting keys.');
-                }
-                $old = $this->values($state->settings_values, $definitions);
-                $this->definitions->validate($definitions, $provider, $old);
-                $candidate = array_replace($old, $patch);
-                $this->definitions->validate($definitions, $provider, $candidate);
-                $changes = [];
-                $application = 'immediate';
-                foreach ($patch as $key => $value) {
-                    $definition = $definitions[$key];
-                    $changes[$key] = $definition->sensitive ? ['replaced' => true] : ['old' => $old[$key], 'new' => $value];
-                    if ($definition->application === 'reinitialize') {
-                        $application = 'reinitialize';
+            $record = $this->registry->snapshot()->modules[$module] ?? throw new RuntimeException('Unknown module.');
+            [$plannedDefinitions, $plannedProvider, $plannedHandler] = $this->definitions->for($record);
+            $access = $this->definitions->access($plannedProvider, $plannedDefinitions);
+            $identity = $this->declaration($plannedDefinitions, $plannedProvider, $plannedHandler);
+            $publish = function (?SettingsAdmission $admission = null) use ($id, $module, $patch, $expectedRevision, $expectedGeneration, $actor, $identity): void {
+                $this->connection->transaction(function () use ($id, $module, $patch, $expectedRevision, $expectedGeneration, $actor, $identity, $admission): void {
+                    $this->lock();
+                    if ($admission !== null) {
+                        $this->security?->lock($admission);
                     }
-                }
-                $encrypted = $this->encode($candidate);
-                $payload = [
-                    'old' => $state->settings_values, 'candidate' => $encrypted, 'revision' => $expectedRevision + 1,
-                    'manifest' => $record->manifestHash, 'schema' => $this->schema($definitions), 'handler' => $handler,
-                    'application' => $application, 'changes' => $changes,
-                    'actor' => $actor === null ? null : ['kind' => $actor->kind, 'id' => $actor->id],
-                    'occurred_at' => now()->utc()->toIso8601String(),
-                ];
-                if ($this->participant instanceof SettingsAuthorization) {
-                    $this->participant->authorizing($this->connection, new SettingsContext($id, $module, $expectedRevision + 1, $application, $changes, $actor, $payload['occurred_at']));
-                }
-                $this->connection->table('shared.module_transitions')->insert([
-                    'public_id' => $id, 'intent' => 'settings', 'target' => $module, 'generation' => $expectedGeneration,
-                    'affected' => json_encode([$module], JSON_THROW_ON_ERROR), 'payload' => $this->encode($payload),
-                    'status' => 'preparing', 'created_at' => now(), 'updated_at' => now(),
-                ]);
-                $this->write($module, $encrypted, $expectedRevision + 1);
-                $row = $this->operation($id);
-                $this->participant->publishing($this->connection, new SettingsPublication($this->context($row, $payload), $expectedRevision + 1, 'publish', $changes));
-                $this->bump(); // Publish candidate and durable fence together, preserving enabled state.
-            });
+                    $snapshot = $this->registry->snapshot();
+                    $state = $this->state($module);
+                    if ($snapshot->generation !== $expectedGeneration || $state->settings_revision !== $expectedRevision || $this->connection->table('shared.module_transitions')->whereIn('status', ModuleRegistry::ACTIVE_TRANSITIONS)->exists()) {
+                        throw new RuntimeException('Settings revision changed or transition unresolved.');
+                    }
+                    $record = $snapshot->modules[$module] ?? throw new RuntimeException('Unknown module.');
+                    [$definitions, $provider, $handler] = $this->definitions->for($record);
+                    if ($identity !== $this->declaration($definitions, $provider, $handler)) {
+                        throw new RuntimeException('Settings declaration changed.');
+                    }
+                    $actor = $admission === null ? $actor : $admission->actor;
+                    if ($patch === [] || array_diff_key($patch, $definitions) !== []) {
+                        throw new RuntimeException('Expected declared setting keys.');
+                    }
+                    $old = $this->values($state->settings_values, $definitions);
+                    $this->definitions->validate($definitions, $provider, $old);
+                    $candidate = array_replace($old, $patch);
+                    $this->definitions->validate($definitions, $provider, $candidate);
+                    $changes = [];
+                    $application = 'immediate';
+                    foreach ($patch as $key => $value) {
+                        $definition = $definitions[$key];
+                        $changes[$key] = $definition->sensitive ? ['replaced' => true] : ['old' => $old[$key], 'new' => $value];
+                        if ($definition->application === 'reinitialize') {
+                            $application = 'reinitialize';
+                        }
+                    }
+                    $encrypted = $this->encode($candidate);
+                    $payload = [
+                        'old' => $state->settings_values, 'candidate' => $encrypted, 'revision' => $expectedRevision + 1,
+                        'manifest' => $record->manifestHash, 'schema' => $this->schema($definitions), 'handler' => $handler, 'declaration' => $identity,
+                        'application' => $application, 'changes' => $changes,
+                        'actor' => $actor === null ? null : ['kind' => $actor->kind, 'id' => $actor->id],
+                        'occurred_at' => now()->utc()->toIso8601String(),
+                    ];
+                    if ($this->participant instanceof SettingsAuthorization) {
+                        $this->participant->authorizing($this->connection, new SettingsContext($id, $module, $expectedRevision + 1, $application, $changes, $actor, $payload['occurred_at']));
+                    }
+                    if ($provider instanceof SettingsAuthorization) {
+                        $provider->authorizing($this->connection, new SettingsContext($id, $module, $expectedRevision + 1, $application, $changes, $actor, $payload['occurred_at']));
+                    }
+                    if ($admission !== null) {
+                        $this->security?->consume($admission);
+                        $this->security?->finish($admission);
+                    }
+                    $this->connection->table('shared.module_transitions')->insert([
+                        'public_id' => $id, 'intent' => 'settings', 'target' => $module, 'generation' => $expectedGeneration,
+                        'affected' => json_encode([$module], JSON_THROW_ON_ERROR), 'payload' => $this->encode($payload),
+                        'status' => 'preparing', 'created_at' => now(), 'updated_at' => now(),
+                    ]);
+                    $this->write($module, $encrypted, $expectedRevision + 1);
+                    $row = $this->operation($id);
+                    $this->publishing($provider, new SettingsPublication($this->context($row, $payload), $expectedRevision + 1, 'publish', $changes));
+                    $this->assertRunner();
+                    if ($admission !== null) {
+                        $this->security?->assertCurrent($admission);
+                    }
+                    $this->definitions->assertCurrentSource($record, $provider::class, $handler);
+                    if ($identity !== $this->declaration($definitions, $provider, $handler)) {
+                        throw new RuntimeException('Settings declaration changed.');
+                    }
+                    $this->bump(); // Publish candidate and durable fence together, preserving enabled state.
+                }, 1);
+            };
+            if ($access === null) {
+                $publish();
+            } else {
+                ($this->security ?? throw new RuntimeException('Settings security unavailable.'))->publication($module, $access, array_keys($patch), $actor, $publish);
+            }
             $row = $this->operation($id);
             $payload = $this->payload($row);
             try {
@@ -304,12 +362,13 @@ final class ModuleSettings
             // Refuse replacing state after unexpected external writes; keep the existing fence.
             $this->connection->transaction(function () use ($row, $payload): void {
                 $this->lock();
-                $this->current($row, $payload, true);
+                $record = $this->current($row, $payload, true);
+                [, $provider] = $this->definitions->for($record);
                 $state = $this->state($row->target);
                 if ($state->settings_values !== $payload['old']) {
                     $this->write($row->target, $payload['old'], $state->settings_revision + 1);
                     $changes = array_map(static fn (array $change): array => isset($change['replaced']) ? $change : ['old' => $change['new'], 'new' => $change['old']], $payload['changes']);
-                    $this->participant->publishing($this->connection, new SettingsPublication($this->context($row, $payload), $state->settings_revision + 1, 'restore', $changes));
+                    $this->publishing($provider, new SettingsPublication($this->context($row, $payload), $state->settings_revision + 1, 'restore', $changes));
                 }
                 $this->save($row->public_id, 'compensating');
             });
@@ -338,15 +397,35 @@ final class ModuleSettings
         $this->assertRunner();
         $snapshot = $this->registry->snapshot();
         $record = $snapshot->modules[$row->target] ?? throw new RuntimeException('Settings source missing.');
-        [$definitions, , $handler] = $this->definitions->for($record);
+        [$definitions, $provider, $handler] = $this->definitions->for($record);
         $state = $this->state($row->target);
         $candidate = $state->settings_values === $payload['candidate'] && $state->settings_revision === $payload['revision'];
         $restored = $rollback && $state->settings_values === $payload['old'] && $state->settings_revision === $payload['revision'] + 1;
-        if ($snapshot->generation !== $row->generation + 1 || $record->manifestHash !== $payload['manifest'] || $handler !== $payload['handler'] || $this->schema($definitions) !== $payload['schema'] || (! $candidate && ! $restored)) {
+        if ($snapshot->generation !== $row->generation + 1 || $record->manifestHash !== $payload['manifest'] || $handler !== $payload['handler'] || $this->schema($definitions) !== $payload['schema'] || $this->declaration($definitions, $provider, $handler) !== ($payload['declaration'] ?? null) || (! $candidate && ! $restored)) {
             throw new RuntimeException('Settings reservation or source changed.');
         }
 
         return $record;
+    }
+
+    private function publishing(SettingsProvider $provider, SettingsPublication $publication): void
+    {
+        if ($provider instanceof SettingsParticipant) {
+            $provider->publishing($this->connection, $publication);
+        }
+        $this->participant->publishing($this->connection, $publication);
+    }
+
+    /** @param array<string,SettingDefinition> $definitions */
+    private function declaration(array $definitions, SettingsProvider $provider, string $handler): string
+    {
+        $providerFile = (new \ReflectionClass($provider))->getFileName();
+        $handlerFile = (new \ReflectionClass($handler))->getFileName();
+        if ($providerFile === false || $handlerFile === false || ! is_file($providerFile) || ! is_file($handlerFile)) {
+            throw new RuntimeException('Settings source unavailable.');
+        }
+
+        return hash('sha256', serialize([$provider::class, $handler, hash_file('sha256', $providerFile), hash_file('sha256', $handlerFile), $definitions, $this->definitions->access($provider, $definitions)]));
     }
 
     /** @param Operation $row */
