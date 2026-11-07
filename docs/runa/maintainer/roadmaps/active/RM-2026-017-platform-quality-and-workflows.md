@@ -1472,6 +1472,12 @@ below are retained as historical records only.
     and module/API version/changelog assessments in the committed point.
     No broad suites before 12. The settings correction in 10c remains required.
 
+- [x] 10h1. Correct readiness build failures.
+  - Repair the reference snapshot delete/confirmation controls to use the public
+    danger intent and the generic Table props assertion in the trusted-device test.
+  - Synchronize the readiness evidence and instruction-product assessment; retry
+    the supported asset build needed for manual acceptance. No final suite/gate.
+
 - [ ] 10i. Prepare combined runtime and renewed owner acceptance.
   - **Dependency:** completed 10a–10h. Reconcile the entire combined scope and
     outstanding findings against actual source; insert explicit repairs before
@@ -4912,3 +4918,24 @@ Native scoped worker cleanup reported []; existing development/test data, active
 services, Qdrant/model/pnpm caches, backups, reports and recovery state are preserved.
 Mandatory staged formatting/lint, source freshness and commit hooks apply.
 Point 10i is next; 11/12 stay open.
+
+## Point 10h1 completion — readiness build repairs, 2026-11-07
+
+The first supported manual-runtime asset build in 10i failed before asset output:
+reference workspace snapshot deletion used nonexistent ButtonIntent destroy twice;
+the generic Table wrapper in the trusted-device query-retention test inferred no
+named props. The inserted repair uses the existing public danger intent for both
+delete controls and the established typed TableQuery props projection in tests.
+No new interface, behavior premise, dependency, version edge or migration.
+
+Repeated `pnpm --dir src run build` passes, including TypeScript, Vite and native
+static error shells. This is required manual-runtime asset preparation, not a
+final frontend gate or complete test suite. Existing chunk-size and ineffective
+dynamic-import warnings remain unsuppressed. The development-mode reference
+registry build and actual runtime readiness still belong to 10i.
+
+The public components guide's action-button semantics already specify danger for
+stored-data deletion. The reference guide and both owner/customer instruction
+products already route to that contract; no reusable guidance change is needed.
+Frontend/Vue selectors apply; no CSS/Tailwind contract change is introduced.
+Point 10i remains open, followed by owner acceptance 11 and final verification 12.

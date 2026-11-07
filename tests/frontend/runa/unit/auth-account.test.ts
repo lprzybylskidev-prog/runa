@@ -50,6 +50,8 @@ import {
 import { accountPreferences } from '../../../../src/runa/modules/auth/frontend/preferences/session';
 import { request } from '../../../../src/runa/resources/js/lib/http';
 
+import type { TableQuery } from '@/runa/ui';
+
 type MultiSelectInstance = ComponentPublicInstance<
   Parameters<typeof Select<true>>[0]
 >;
@@ -1781,14 +1783,16 @@ it('trusted disclosure starts collapsed and retains the mounted table query acro
   };
   table.vm.$emit('update:query', query);
   await flushPromises();
-  const retainedQuery = JSON.parse(JSON.stringify(table.props('query')));
+  const retainedQuery = JSON.parse(
+    JSON.stringify((table.props() as { query: TableQuery }).query),
+  );
   await trigger.trigger('click');
   await w.getComponent(AuthAccountEditor).props('account').loadTrustedDevices();
   await flushPromises();
   expect(trigger.attributes('aria-expanded')).toBe('false');
   await trigger.trigger('click');
   expect(accordion.getComponent(Table).element).toBe(element);
-  expect(table.props('query')).toEqual(retainedQuery);
+  expect((table.props() as { query: TableQuery }).query).toEqual(retainedQuery);
   expect(panel().attributes('inert')).toBeUndefined();
   expect(writes).toHaveLength(0);
 });

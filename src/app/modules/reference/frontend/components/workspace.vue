@@ -374,7 +374,7 @@ const submit = () =>
                       >{{ copy.load }}</Button
                     >
                     <Button
-                      intent="destroy"
+                      intent="danger"
                       size="sm"
                       :disabled="busy"
                       @click="deleteTarget = row"
@@ -441,7 +441,7 @@ const submit = () =>
     :description="deleteTarget?.name ?? ''"
     :locale="locale"
     :confirm-label="copy.remove"
-    confirm-intent="destroy"
+    confirm-intent="danger"
     @confirm="removeSnapshot"
     @cancel="deleteTarget = undefined"
     @update:model-value="!$event && (deleteTarget = undefined)"
