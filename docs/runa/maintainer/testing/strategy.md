@@ -204,71 +204,107 @@ Scratch test/code files must be removed before roadmap closure or promoted to du
 
 When fixing a reproducible security defect such as XSS, access-control leakage, IDOR, unsafe validation, or related behavior, add a regression test when the scenario can be meaningfully automated.
 
+## Verification evidence continuity
+
+During owner final verification, preserve completed unrelated checks instead of
+restarting the entire quality graph after a failure. This is an agent procedure
+using existing supported commands, not automatic resume or orchestration.
+
+Before another execution, retain native output/reports and record in the active
+roadmap (or its linked retained review): candidate commit and relevant working
+changes, selected groups/check IDs and commands, execution mode, environment and
+prerequisites, evidence paths, actual results and remaining coverage. Never include
+secrets. Inspect results before deciding what to run next; coordinator status alone
+does not establish case coverage. Distinguish PASS, failed, interrupted, unknown,
+unexecuted, excluded and explicitly owner-accepted exceptions.
+
+Reassess validity after source, dependency, configuration, environment or
+prerequisite changes. Explain which results remain applicable and why; rerun every
+invalidated check and its real prerequisites. If scope cannot be established
+reliably, use the appropriate complete supported selection. Never reuse stale or
+unverified evidence. Release-only metadata follows the release workflow's narrower
+validation rule; it does not automatically invalidate backend behavior evidence.
+
+Continue safely reachable backend coverage and consolidate ordinary failures by
+owning cause before repairs. Insert fix points under the roadmap workflow. Each
+repair must pass the complete affected-area suite in the failing mode, with real
+prerequisites and results received before committing/completing the fix point;
+a filtered regression alone is insufficient. Repeat affected manual frontend
+acceptance when needed. Then revalidate the complete final scope, retaining valid
+unrelated results and executing unresolved/invalidated checks. Do not restart the
+whole graph merely because a backend case failed.
+
+Existing quality execution keeps latest-run state/logs, but a new intentional run
+replaces that directory. Supported test runs can also replace their reports.
+Before reuse, preserve those files under a distinct private workspace-root
+`.runtime/verification/retained/` directory outside the latest-run directory and record
+their original paths, candidate and provenance. Do not move live run files, change
+native reports or copy secret environment files. Preserve browser evidence at its
+documented artifact location. Inspect locks/status and wait for cleanup before
+another run. The roadmap/review provides durable cross-session reasoning; runtime
+reports remain local evidence and must stay available. There is no automatic
+archive, proof of validity or supported resume flag. A new coordinator starts its
+selected graph from the beginning; use supported individual check commands for
+remaining scope and report their results separately, never edit coordinator state.
+No new persistence engine or tooling change is required by this procedure.
+
 ## Backend SIGSEGV owner acceptance
 
-Owner decision, 2026-10-29: when the only failure in an owner backend test run is
-an actual PHP worker SIGSEGV/exit 139, assess the backend test check as
-**PASS (owner SIGSEGV exception)**. This standing policy replaces mandatory
-restart/rerun/diagnosis for owner acceptance of that condition. Do not add automatic
-retries or modify runtime/dependency pins to implement this policy. No renewed
-per-run approval is needed.
+Owner correction, 2026-11-07: this agent-directed procedure supersedes the earlier
+standing automatic PASS/no-retry policy. It applies only to owner verification;
+customer recovery and acceptance policy remain unchanged. Do not investigate the
+known PHP fault's root cause or change runtime/dependency pins for this procedure.
 
-Owner clarification, 2026-11-06: this is standing authorization for final
-verification, roadmap closure, merge, tagging, push and release publication.
-Never ask the owner to accept the same confirmed SIGSEGV again, rerun an already
-accepted backend merely to obtain a green coordinator, or diagnose the crash as
-a release prerequisite. Version/changelog/upgrade-declaration finalization alone
-does not invalidate accepted backend behavior; verify its actual changed contracts
-and consumers without repeating the whole backend solely for that metadata.
-Substantive behavior changes and ordinary failures retain their real checks.
+1. Preserve native output, reports, exact candidate, mode/worker count, signal,
+   runner result and guarded cleanup result. Inspect existing diagnostics for an
+   actual PHP worker SIGSEGV/exit 139. A ParaTest parent exit 1 may carry worker
+   139; arbitrary exit 1 or a string mentioning 139 is not confirmation. Assertion,
+   setup, warning/risky/deprecation failures, timeouts, cleanup failures, OOM/137,
+   SIGABRT/134 and ambiguous crashes are ordinary blocking failures/unknowns.
+2. Identify the interrupted exact test/dataset only where existing evidence is
+   reliable. A progress marker or the last displayed test does not prove identity.
+   If identity is uncertain, record it and continue safe existing selections;
+   use broader backend scope where necessary. Unknown or unexecuted cases are
+   never converted into confirmed SIGSEGV exceptions.
+3. For a reliably identified interrupted case, manually initiate at most two
+   additional attempts using the existing supported backend entrypoint and exact
+   native selection. Record commands/results for the original and additional
+   attempts across sessions; do not reset the budget on a handoff. Stop after
+   success or an ordinary failure. Preserve the failing mode where supported;
+   explain selection/mode limitations. Do not add retry scripts or runner logic.
+4. A later PASS proves that later selection only; the original run stays failed.
+   Continue remaining safely executable backend coverage and collect ordinary
+   failures before repairs under verification evidence continuity above. Do not
+   immediately restart the full backend suite after each interruption.
+5. After two additional confirmed crashes, classify the case as interrupted by
+   SIGSEGV and continue other safely executable tests. Before release, request
+   explicit owner acceptance naming the exhausted cases, attempts, native
+   evidence, cleanup and interrupted assertions/coverage. Do not infer acceptance
+   from silence or the superseded standing policy. Unknown/unexecuted coverage,
+   ordinary failures and unsafe cleanup remain blocking.
 
-When a release validator cannot represent this documented exception, its lack
-of support does not require another owner approval and must not block an otherwise
-verified release solely for the accepted backend signal. Preserve the native
-FAILED coordinator and failed validator output. Record a separate release
-assessment identifying the candidate, native worker 139, cleanup 0, interrupted
-coverage and actual results of every other selected check and prerequisite.
-Obtain checks blocked by the coordinator through their supported commands; stale
-or unexecuted checks are not PASS. Proceed with the already authorized release
-when those independent requirements are satisfied. This narrow disposition covers
-only the validator's all-green evidence requirement caused by accepted SIGSEGV;
-never waive an unrelated hard gate, alter raw reports, fake coordinator PASS,
-patch the validator at runtime or add retries. Reconcile already repaired unrelated
-failures with their actual successful results in the same separate assessment.
+Only the explicitly accepted confirmed interruptions receive a separate owner
+exception disposition. Keep native FAILED reports/coordinator/validator results;
+do not manufacture native PASS or claim interrupted assertions executed. Complete
+every other selected check and real prerequisite through supported commands.
+Where a validator cannot represent that explicitly accepted exception, retain its
+failure and the separate owner decision plus complete independent evidence;
+its all-green representation limitation alone does not revoke that decision.
+Never waive unrelated gates, patch validators at runtime or relabel the overall
+coordinator as an all-group PASS. Closure, merge and publication require the
+recorded acceptance and valid complete remaining scope.
 
-Eligibility requires retained execution evidence identifying the native worker
-signal, successful guarded cleanup (exit 0), and no other test execution failure.
-A ParaTest parent exit 1 can carry a worker exit 139; assess the underlying worker
-failure rather than accepting arbitrary exit 1 or an output string mentioning 139. Assertion failures, configured warning/risky/deprecation failures, guard or
-setup failures, cleanup errors, timeouts, SIGABRT/134, OOM/SIGKILL/137 and unknown
-crashes are outside this exception. Incomplete or ambiguous failure evidence does
-not establish eligibility. Expected application errors exercised by passing tests
-are not independent test failures.
+No custom/replacement runner, Runa-managed workers, automatic retries/skips/
+acceptance, per-worker attribution infrastructure, attempt ledger, SIGSEGV state
+machine, Pest/ParaTest changes or scripts automating these decisions are authorized.
+The agent inspects evidence and invokes existing commands itself.
 
-Keep the original failed logs, native exit/signal, runner and cleanup results,
-exact candidate, execution mode and worker count. Do not edit raw reports or the
-quality coordinator's state to manufacture native PASS. Record the owner PASS
-assessment separately, explicitly naming the exception and showing executed and
-interrupted/unexecuted backend coverage to the extent available. Acceptance does
-not claim that interrupted assertions ran or that the runtime fault was fixed.
-
-The exception applies only to the backend test execution check. All other selected
-checks and real prerequisites must actually complete successfully; unexecuted
-security, analysis, frontend or other gates are not covered. If the coordinator
-stops after the crash, retain its FAILED result and obtain remaining required
-check evidence through supported commands before accepting a release. An overall
-coordinator FAILED status must never be presented as a clean all-group PASS.
-
-This is Runa owner release policy, not customer application permission or a
-runtime recovery feature. The customer instruction product and delivered recovery
-procedure remain unchanged. No reusable skill behavior or product API changes.
-Keep this temporary tolerance while the native PHP/runtime fault remains
-unresolved; do not treat a single lucky passing run as proof of correction.
-Retire it when a corrected PHP/runtime replacement is established and passes
-complete parallel backend verification without using the exception. Remove the
-owner AGENTS summary, this exception procedure, linked release/quality exemptions
-and any obsolete exception-only machinery together. No automatic dependency
-update or root-cause investigation is authorized merely to retire this rule.
+Retire this temporary procedure/exception when a corrected PHP/runtime replacement
+is established and passes complete parallel backend verification without the
+exception; one lucky run is not proof of correction. Remove exception summaries
+and obsolete exception-only machinery together, preserving historical evidence.
+Keep the general verification evidence continuity rule. Retirement does not itself
+authorize dependency updates or root-cause investigation.
 
 ## Test failures
 

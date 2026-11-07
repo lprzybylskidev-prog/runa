@@ -44,12 +44,13 @@ When finished or interrupted:
 
 ## Owner backend SIGSEGV disposition
 
-The [owner testing policy](../testing/strategy.md#backend-sigsegv-owner-acceptance)
-accepts backend test execution as PASS when a confirmed worker SIGSEGV/139 is its
-only failure and guarded cleanup succeeds. Preserve the failed native/coordinator
-reports and disclose the policy assessment separately. It does not waive any
-other failed or unexecuted gate, including at all-group milestones. No retry loop,
-automatic state rewrite or new command is introduced by this documentation policy. Final closure/publication applies the canonical separate evidence disposition without another owner approval; an all-green-only validator cannot revoke the standing exception. Do not repeat an already accepted backend solely for version metadata. Remove this summary when the canonical exception is retired.
+Follow [verification evidence continuity](../testing/strategy.md#verification-evidence-continuity)
+for retaining valid completed checks and executing unresolved/invalidated scope
+through existing commands. The [temporary SIGSEGV procedure](../testing/strategy.md#backend-sigsegv-owner-acceptance)
+requires bounded agent-directed attempts and explicit owner acceptance of exhausted
+confirmed interruptions. Preserve native/coordinator failures and record the
+separate disposition; ordinary failures, unknown coverage and other required gates
+remain blocking. No automatic resume, retry, skip or acceptance is delivered.
 
 ## Manual group selection
 
@@ -144,7 +145,9 @@ reasons, graph fingerprint, branch/commit, rationale, timings and actual results
 Closure validates complete PASS against the agreed scope and unchanged candidate
 (except reviewed release-only metadata). Missing, failed, interrupted, stale,
 command-altered or narrower evidence blocks closure. Changing final scope requires
-updating the roadmap and rerunning its entire selection from the beginning.
+updating the roadmap and revalidating its complete selection under owner evidence
+continuity. Retain valid unrelated results and execute unresolved/invalidated checks
+and prerequisites; native closure validators do not automatically combine reports.
 
 Customer catalogues use delivered application commands only; see the
 [public quality guide](../../handbook/quality/README.md). Owner acquisition/update,
@@ -252,7 +255,7 @@ If the run is interrupted by crash/reboot/manual termination:
 
 - record `interrupted`,
 - show the last known step,
-- final verification must rerun from the beginning.
+- inspect and preserve evidence, then complete unresolved/invalidated scope under owner evidence continuity.
 
 ## Severity
 
@@ -322,7 +325,7 @@ While running, status tails each process log and finishes with `Process is still
 
 The runner uses the dependency graph in `gates.yml`; independent nodes may run concurrently and shared-state checks are serialized. Production fixture build/health/isolation and image scanning share `production-simulation`, serializing the host acceptance resources while each customer fixture retains its own operation lock. A deterministic command may prepare evidence, but `review-changed-surface` also requires an actual agent review with findings/disposition. It cannot be a stub that claims human/agent reasoning occurred.
 
-Before final verification, commit implementation/cleanup so the gate checks a coherent candidate. Its own checklist item is necessarily pending during execution. Version/changelog/closure metadata are finalized afterward using focused consistency checks, as defined in `docs/runa/maintainer/workflows/releases.md`. If substantive code/config/behavior changes occur after the gate, invalidate the result and run the full final gate again.
+Before final verification, commit implementation/cleanup so the gate checks a coherent candidate. Its own checklist item is necessarily pending during execution. Version/changelog/closure metadata are finalized afterward using focused consistency checks, as defined in `docs/runa/maintainer/workflows/releases.md`. If substantive code/config/behavior changes occur after the gate, reassess evidence under the owner continuity procedure, rerun invalidated checks and prerequisites, and complete the remaining final scope.
 
 `doctor docs` checks documented public command names and the bounded README state contract defined in the release workflow. `doctor release` includes the same checks in every final gate, regardless of selected impact areas. Offline documentation/release/knowledge contracts run in the final contract step. These checks do not interpret capability prose, prove a real deployment or establish remote publication. The recorded source review in the roadmap workflow covers semantic consistency and historical context.
 
@@ -332,7 +335,7 @@ The runner executes at most four ready nodes concurrently, preserving definition
 
 Commands execute as argument arrays without a shell. Missing commands fail with exit code 127; failed dependencies block their descendants while unrelated checks continue. Nonzero warning steps remain visible in evidence and block their dependents; warnings require release-report justification. Missing or unimplemented commands fail closed; command existence alone does not prove acceptance.
 
-A stable OS file lock outside the latest-run directory prevents concurrent starts. State is replaced atomically and records the branch, commit, roadmap, impact areas, per-step status and last launched step. Background execution detaches from the terminal and inherits the lock. Signals terminate active command process groups and mark the run interrupted. If the coordinator crashes, status detects the released lock and records interruption; a new run refuses to overwrite evidence while recorded child processes still exist. Stop surviving children before restarting. A final run always starts from the beginning.
+A stable OS file lock outside the latest-run directory prevents concurrent starts. State is replaced atomically and records the branch, commit, roadmap, impact areas, per-step status and last launched step. Background execution detaches from the terminal and inherits the lock. Signals terminate active command process groups and mark the run interrupted. If the coordinator crashes, status detects the released lock and records interruption; a new run refuses to overwrite evidence while recorded child processes still exist. Stop surviving children before restarting. Each new coordinator run starts its selected graph from the beginning; this is not a requirement to discard valid unrelated evidence. Preserve files before replacement and use supported check commands for unresolved scope under the owner continuity procedure.
 
 `./bin/artisan runa:check:debug-residue` checks tracked and untracked application/test PHP, JS, TS and Vue sources for debug calls, and rejects files in either visible scratch directory. CLI output in durable tooling is intentional and outside this application-source rule. The checker reports source locations without printing source payloads. Private scheduler/evidence contracts use `python3 tools/maintainer/test-python --scope=contracts --filter=test_quality_`; obsolete private filename launchers are removed.
 

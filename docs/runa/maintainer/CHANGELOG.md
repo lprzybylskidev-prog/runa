@@ -4,6 +4,11 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Define agent-directed verification continuity and bounded manual SIGSEGV handling;
+  preserve valid unrelated evidence and require explicit owner acceptance of
+  exhausted confirmed interruptions, replacing standing automatic acceptance.
+  No runner, retry automation or customer recovery-policy change.
+
 - Keep Vite caches under workspace `.runtime`; invalidate development setup after
   shared/module frontend, registry or native error build changes while preserving
   nondestructive reopen. Add hash-bound RM-016 decision retrieval cases without

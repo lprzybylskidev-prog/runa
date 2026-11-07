@@ -281,13 +281,15 @@ If a failure requires code/config/docs work:
 1. leave the roadmap active,
 2. add a new fix point before manual acceptance when present, otherwise immediately before final verification,
 3. implement and complete the fix point,
-4. rerun final verification from the beginning.
+4. revalidate the complete final scope under [verification evidence continuity](../testing/strategy.md#verification-evidence-continuity), rerunning unresolved/invalidated checks and real prerequisites while retaining valid unrelated evidence.
 
-During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then restart final verification from the beginning. This exception does not authorize broad checks during ordinary implementation points.
+During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then revalidate the complete final scope under that evidence-continuity procedure. This exception does not authorize broad checks during ordinary implementation points.
 
 Do not patch silently "inside" the verification point and pretend it stayed green.
 
 If the issue changes an architectural/behavioral assumption, return to discussion.
+
+For backend SIGSEGV, follow the [temporary owner procedure](../testing/strategy.md#backend-sigsegv-owner-acceptance): bounded agent-directed attempts and explicit acceptance of exhausted confirmed interruptions, without automation or invented coverage. Record native results and validity/remaining scope in the roadmap handoff or linked review. The shared roadmap template's evidence fields apply; customer application recovery policy is unchanged.
 
 ## Background quality execution
 
@@ -305,7 +307,7 @@ If interrupted/crashed/rebooted:
 
 - status becomes `interrupted`,
 - show where it stopped,
-- final verification reruns from the beginning.
+- preserve and inspect evidence, then complete unresolved/invalidated scope under the owner evidence-continuity procedure.
 
 ## Closing
 
@@ -350,7 +352,7 @@ Security, migration/data-loss, or production-health failures cannot be downgrade
 
 During the final gate, the current roadmap remains active and its final checklist item remains open. Checks must not require that pending item to be complete before it can be verified. After PASS and focused release-metadata checks, complete the checklist/closure metadata on the roadmap branch. The closure commit may record a final report using facts known before merge; report merge/tag/publication results in chat without editing the now-closed roadmap.
 
-Final gate evidence records branch, commit, requested/excluded groups, baseline, prerequisites, graph fingerprint, rationale and results; legacy runs retain impact areas. Final release-only edits permitted by `docs/runa/maintainer/workflows/releases.md` receive focused validation; substantive changes invalidate the prior result. Do not interpret a stale PASS as proof for changed runtime code.
+Final gate evidence records branch, commit, requested/excluded groups, baseline, prerequisites, graph fingerprint, rationale and results; legacy runs retain impact areas. Final release-only edits permitted by `docs/runa/maintainer/workflows/releases.md` receive focused validation; substantive changes require reassessing validity and rerunning the affected checks and real prerequisites under evidence continuity. Do not interpret a stale PASS as proof for changed runtime code.
 
 Do not wait or poll after launching a background gate. Ask the user to return the status/log output when ready; an interrupted run is never a PASS.
 

@@ -73,3 +73,8 @@ For standalone or aggregate module writes migrated to native phases, follow
 [owning module transactions](../../../docs/runa/handbook/architecture/module-transactions.md).
 Use the source-owned participant contract and current API versions; Admin does
 not wrap old whole writes or own foreign business validation/persistence.
+
+For owner final backend verification, follow
+[verification evidence continuity](../../../docs/runa/maintainer/testing/strategy.md#verification-evidence-continuity)
+and its temporary SIGSEGV procedure. Keep native results and coverage limits;
+this owner-only policy does not change customer recovery.

@@ -21,7 +21,22 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point-9 correction and rollback, 2026-11-07
+## Current execution state — point 9 completed, 2026-11-07
+
+The owner explicitly requested completion of point 9 after the correction and
+rollback. That renewed instruction lifts its execution deferral for this point.
+**Gate B remains approved; points 1–9 are complete. Point 10 is next and has not
+started.** No manual acceptance, final verification or release is claimed.
+
+The canonical [owner testing procedure](../../testing/strategy.md#verification-evidence-continuity)
+now governs evidence continuity and bounded manual SIGSEGV handling. It replaces
+the earlier standing automatic owner acceptance with explicit acceptance of
+exhausted confirmed interruptions before release. Native failures remain intact.
+No withdrawn point-9 tooling is restored. See the completion record at the end.
+
+<a id="current-execution-state--point-9-correction-and-rollback-2026-11-07"></a>
+
+## Historical execution state — point-9 correction and rollback, 2026-11-07
 
 **Gate B remains approved. Points 1–8 are complete; point 9 is open and execution
 is deferred at the owner's explicit request.** Do not continue point 9, move to
@@ -78,6 +93,8 @@ runtime/security/a11y/performance/test-suite certification; all named unknowns
 remain with their assigned implementation/final checks. Feature/0.8.0, manual
 frontend acceptance and final verification remain unchanged. No dependency,
 reset, candidate-version preparation or production deployment approval is inferred.
+
+<a id="current-execution-state--owner-restart-decision-2026-11-06"></a>
 
 ## Historical execution state — owner restart decision, 2026-11-06
 
@@ -663,7 +680,7 @@ guessing or hidden detached orchestration.
 
 ### Corrected verification direction — 2026-11-07
 
-Point 9 will define an agent-directed procedure in canonical owner guidance.
+Point 9 defines the agent-directed procedure in [canonical owner guidance](../../testing/strategy.md#verification-evidence-continuity).
 No new recovery engine, retry script, worker attribution protocol, test-attempt
 ledger, dependency patch/update or automatic acceptance/skip is authorized.
 
@@ -692,8 +709,8 @@ The original D-01 durable-evidence objective remains separate for assessment.
 Use existing mechanisms first; establish independently necessary scope and
 existing owner authorization before proposing any tooling implementation.
 No `--resume`, campaign schema or closure-validator integration is presumed.
-Point 9 remains unstarted after rollback; canonical instruction changes below
-are future deliverables, not completed work in this correction.
+The rollback initially left point 9 unstarted. The later renewed owner instruction
+and completion record below supersede that execution deferral.
 
 ## Implementation plan
 
@@ -913,9 +930,10 @@ below are retained as historical records only.
     sources before incremental indexing; no automatic knowledge bootstrap for
     navigation. Scope any required host transition in Execution handoff first.
 
-- [ ] 9. Document agent-directed verification continuity and temporary SIGSEGV handling.
-  - **Execution boundary:** deferred by the owner on 2026-11-07. Do not begin
-    this point or subsequent implementation without renewed direction to continue.
+- [x] 9. Document agent-directed verification continuity and temporary SIGSEGV handling.
+  - **Execution boundary:** the owner renewed execution with an explicit request
+    to complete point 9 on 2026-11-07; completed in the recorded documentation commit.
+    Earlier deferral/rollback records remain historical.
   - **Objective:** prevent unnecessary repeated verification while maximizing
     useful backend coverage through agent decisions and existing supported commands.
   - **Deliverables:** one canonical owner procedure and concise entrypoint links;
@@ -3500,3 +3518,78 @@ point-8 baseline, removed-symbol/reference inspection, diff whitespace checks an
 mandatory commit hooks. No backend/frontend/tooling suite, quality campaign,
 live SIGSEGV, image build or scanner pipeline is run. Knowledge is refreshed for
 changed durable sources before commit. Point 9 stays unchecked and deferred.
+
+## Point 9 — Agent procedure and evidence continuity completed — 2026-11-07
+
+The owner explicitly instructed completion of the corrected point 9. Implemented
+only the agreed guidance: canonical owner testing procedure, root AGENTS summary,
+owner roadmap/quality/release entrypoints, backend skill routing and neutral
+shared roadmap-template evidence fields. Replaced the obsolete standing automatic
+SIGSEGV PASS and unconditional whole-graph restarts. Historical correction,
+rollback, investigations, native reports and prior decisions remain unchanged.
+No runner, campaign, automatic retry/acceptance, attempt ledger, worker integration,
+dependency, runtime configuration, module/API version or application change.
+
+### Existing evidence capabilities and limits
+
+Source inspection: `tools/application/quality_service.py` retains latest native
+step state/logs but deletes the completed latest directory on a new intentional
+run; `tools/maintainer/owner_cli.py` selects `.runtime/quality`. The testing runner
+already forwards native backend selection arguments and `--filter`, keeps guarded
+suite execution and cleanup, and offers no reliable new crash attribution.
+Quality state represents native results, not combined cross-run owner assessments;
+closure validators do not automatically merge separately obtained results.
+
+Use existing supported commands and manually preserve reports before replacement
+under `.runtime/verification/retained/`, outside the replaceable quality directory.
+Record candidate/environment/prerequisite validity, original evidence paths,
+coverage, remaining checks and decisions in the roadmap or linked retained review.
+These existing capabilities plus a committed reasoning record satisfy the present
+cross-session need. Automatic archival, machine resume and automatic closure
+composition remain unavailable, not delivered or implied. No independently
+necessary tooling implementation is established or authorized by this assessment.
+Missing local evidence cannot support a carried-forward PASS.
+
+### Bounded hypothetical procedure walkthrough
+
+These are source-reviewed hypothetical decisions, not executed tests or native
+verification results. No SIGSEGV was induced and no suite was run for this point.
+
+| Scenario                                                            | Required agent action and disposition                                                                                                                                                                                                     |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend/security checks pass; backend worker crashes               | Preserve reports before replacement, confirm signal and cleanup, keep unrelated valid checks, execute remaining supported scope; coordinator FAILED stays FAILED.                                                                         |
+| Reliable exact case passes on first or second extra attempt         | Record original crash and later native PASS with mode/selection; stop attempts after success and continue remaining coverage. Never relabel the original run.                                                                             |
+| Exact case confirms SIGSEGV in both extra attempts                  | Stop after two, continue other safe tests, record exhausted interrupted case and coverage; request explicit owner acceptance before release. No automatic PASS.                                                                           |
+| Worker signal known but exact case identity uncertain               | Do not infer from last progress output; record unknown identity and select safe remaining or necessary broader backend scope. Unknown/unexecuted cases block release.                                                                     |
+| Several ordinary backend failures found                             | Continue safely reachable scope, consolidate related failures, insert repair points, run complete affected-area suites in the failing mode with real prerequisites before completing/committing repairs. Preserve valid unrelated groups. |
+| Source/configuration/dependency/prerequisite changes                | Assess actual validity, identify invalidated checks and rerun them plus real prerequisites; uncertain validity requires adequate broader selection. Revalidate the full agreed scope without stale PASS.                                  |
+| Cleanup fails or crash is timeout/OOM/unknown                       | Outside SIGSEGV tolerance; preserve blocking failure, resolve safely. Neither prior standing policy nor an owner crash exception waives cleanup/ordinary gates.                                                                           |
+| Session changes or latest reports will be overwritten               | Preserve evidence outside `.runtime/quality`, record provenance/remaining work and the cumulative two-attempt budget; receiving agent inspects it. Missing proof cannot become PASS.                                                      |
+| Closure validator cannot represent explicitly accepted interruption | Preserve native failed validator/coordinator; separate owner decision names accepted cases and complete independent remaining check evidence. No runtime patch, fabricated all-green result or unrelated waiver.                          |
+
+### Documentation and instruction-product disposition
+
+Owner AGENTS, testing/quality/roadmap/release guides and backend skill now route to
+one canonical procedure; the shared template only adds neutral provenance,
+coverage and decision fields. The public testing/command guides already document
+supported selectors and customer recovery; leave their customer restart/diagnosis
+policy intact. Customer AGENTS/skills require no change because no delivered
+execution behavior or customer acceptance authority changes. No new skill is
+needed. Central unreleased changelog describes the owner workflow correction.
+Retirement requires a confirmed corrected runtime and complete parallel backend
+verification without the exception; retain the general evidence-continuity rule.
+
+Validation is limited to source/decision consistency, existing selector and report
+replacement inspection, local link/whitespace review, incremental knowledge
+freshness and mandatory commit hooks. Full suites, quality graph, scanners and
+runtime acceptance remain point 12. No data operation or resource cleanup occurred;
+all application/base test data, native reports, backups and model/Qdrant caches are
+preserved. Point 9 completes with this commit; point 10 remains unstarted.
+
+Focused documentation result: `python3 tools/maintainer/check-docs` — **PASS,
+native exit 0** after restoring the active roadmap's historical heading anchors
+used by retained review links. This validates placement, links/anchors and current
+README/command metadata, not final suites or rendered acceptance. The public
+`runa:doctor:docs` diagnostic rejects owner-only links by design and cannot replace
+this owner entrypoint. `git diff --check` passes. Incremental knowledge refresh
+and mandatory hooks complete the commit boundary.
