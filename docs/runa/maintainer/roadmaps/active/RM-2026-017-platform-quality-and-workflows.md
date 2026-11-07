@@ -21,7 +21,27 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10d completed, 2026-11-07
+## Current execution state — point 10e completed, 2026-11-07
+
+**Points 1–10 and 10a–10e are complete. Point 10f is next.**
+The [application Core matrix](../../../../app/modules/reference/core-capabilities.md)
+now reconciles all four current Core modules with actual public APIs, executable
+reference workflows, source/test owners and justified native/internal exclusions.
+Two added application regressions cover edit-to-history projection/record authority
+and independently denied credential writes/invalid settings. The
+[current acceptance sheet](../../reviews/RM-2026-017-current-acceptance.md) replaces
+the earlier scenario selection without altering its historical runtime evidence.
+
+No runtime/API/schema change or new version is introduced by 10e. Source candidates
+remain Framework API 2.0.0, Auth 6.0.0, Audit 1.1.1, Permissions 2.1.1, Admin 1.1.0
+and reference 0.4.0; platform VERSION stays 0.7.0 and feature/0.8.0 is unchanged.
+Copy/device/refresh points 10f–10h remain open; aligned runtime/assets and handoff
+remain 10i, sole owner acceptance 11 and sole final verification/release 12.
+No current rendered acceptance or final PASS is claimed.
+
+<a id="current-execution-state--point-10d-completed-2026-11-07"></a>
+
+## Historical execution state — point 10d completed, 2026-11-07
 
 **Points 1–10 and 10a–10d are complete. Point 10e is next.**
 The reference now supplies samples, settings/snapshots, authorized history and
@@ -1346,7 +1366,7 @@ below are retained as historical records only.
     frontend matrices remain point 12. Synchronize owning presentation guidance,
     example source map and version/changelog assessment, then commit the point.
 
-- [ ] 10e. Reconcile reference capability coverage and current guidance.
+- [x] 10e. Reconcile reference capability coverage and current guidance.
   - **Dependency:** completed 10a–10d. Reconcile all current Core modules against
     actual executable examples: capability, public API/version, source entrypoint,
     declaration/Action, UI route or CLI reproduction, expected outcome and owning
@@ -4625,3 +4645,81 @@ No task-created Docker resources or worker databases were needed for these focus
 frontend runs; none were removed. Existing development/test data, services, caches,
 backups, reports and recovery state were preserved. Mandatory formatting/lint,
 staged knowledge freshness and commit hooks apply to this point's commit.
+
+## Point 10e completion — Core capability and guidance reconciliation, 2026-11-07
+
+### Source-grounded coverage and dispositions
+
+Compared every current Core manifest/API declaration (Admin 1.1.0, Auth 6.0.0,
+Audit 1.1.1, Permissions 2.1.1) to ReferenceManagement/Permissions/Settings,
+ReferenceToolsHandler, EditSample, DispatchWork, SamplePolicy/Model, snapshot
+adapter, workspace controller/presentation and application test bodies. Knowledge
+status was current (227 documents, no stale/missing/orphan chunks); current-intent
+retrieval led to original reference/Admin/maintenance sources. Boost confirmed
+Laravel 13.37.0 and its version-aware HTTP assertion documentation.
+
+The application-owned `core-capabilities.md` now records public API versus module
+versions, actual declaration/Action/Query sources, UI/CLI reproduction, expected
+success/refusal behavior and named application test ownership. All four Core
+modules have real owning examples: Admin composition, Permissions independent
+read/write/field grants, automatic/explicit Audit and authorized history, Auth
+shared action-specific proof. Framework settings/snapshots/work and existing
+Ping/lifecycle/health/events/storage examples remain distinct from Core modules.
+The matrix explicitly disposes remaining public API families through native Core
+views or domain exclusions; it does not claim every foreign account operation
+belongs in the sample. Private registry/security/recovery mechanisms, genuine
+external integrations and foreign-subject aggregate edits are not invented APIs.
+
+Removed the obsolete pending-settings-editor claim and incomplete Admin coverage
+summary, updated Admin reference guidance and the reference changelog, and linked
+the detailed matrix from the central application guide. The new current acceptance
+sheet lists all reference routes, grants, safe concrete operations, standalone
+composition and current source candidates. It explicitly withholds runtime/build
+readiness until 10i and owner acceptance until 11. Dated point-10 report, rejected
+designs and original failed evidence retain their bytes. Copy/device/refresh
+expectations remain pending their owning points, not relabeled complete here.
+
+### Meaningful test gaps and bounded evidence
+
+Added two application-owned backend scenarios: invalid sample input emits no
+history, a committed audited edit is visible through authorized sample history
+without reprojecting code, and withdrawing sample read refuses that filtered
+history; settings publication grant alone refuses credential replacement/clear,
+and invalid label review leaves committed revision/value unchanged. No runtime
+implementation, dependency, schema or API contract changed.
+
+The focused diagnostic resolved whether these new cases actually reach the
+owning workflows and preserve the documented projection/authority boundaries:
+
+- Initial supported application backend selection without parallel preparation:
+  **2 failed**, login fixture HTTP 503 before either scenario, native exit 1,
+  cleanup 0. This base-mode fixture refused login before reaching the new assertions;
+  no guard was bypassed and no base/development update was performed to hide it.
+- `php artisan runa:test:backend ../tests/backend/app/modules/reference/CoreExamplesTest.php --parallel --processes=1 --filter='shows an audited sample change|refuses credential replacement'`:
+  **2 passed / 24 assertions**, native exit 0, cleanup 0, 4.77 seconds. The supported
+  worker preparation supplied isolated current Core. This is a two-case diagnostic,
+  not complete backend/reference coverage or final-verification evidence.
+- `git diff --check` passes; staged formatting/lint and knowledge freshness remain
+  mandatory commit-hook checks. No complete suite, static analysis, browser matrix,
+  asset/image build, scanner or final quality gate ran.
+
+Supported runner scoped cleanup listed/removed only `runa_test_test_1`. No task
+Docker containers, networks, tags or volumes were created or deleted. Base test
+and development databases/data, active services, Qdrant/model/pnpm caches,
+backups, reports and recovery state were preserved. Native diagnostics remain in
+supported runner evidence; initial failure is retained above rather than called PASS.
+
+### Instruction products and versions
+
+Owner reference-maintenance guide now locates the detailed map; the customer
+backend selector routes to it through the selected application guide, retaining
+protected-source restrictions and ordinary App ownership. Root owner/customer
+AGENTS and remaining skills already cover public boundaries, Audit, native proof,
+selective activation, test ownership and final-only broad checks; no new reusable
+rule or duplicated procedure is needed. Customer templates were read as product
+data only, never owner authority. No module/API/Framework increment is warranted
+for documentation and application tests completing this unreleased reference
+0.4.0 scope; current manifest ranges and platform projection remain unchanged.
+
+All 10e dependencies are committed. Combined runtime preparation remains 10i;
+point 10f is next, with 11/12 still the sole acceptance/final gates.

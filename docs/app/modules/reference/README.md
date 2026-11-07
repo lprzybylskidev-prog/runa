@@ -47,11 +47,11 @@ The opt-in frontend registry exposes `app.reference.panel`. Compose the existing
 ## Checks and troubleshooting
 
 Run `php artisan runa:test --scope=backend ../tests/backend/app/modules/reference`
-from the configured development PHP terminal for the delivered source assertion.
+from the configured development PHP terminal for the delivered application cases.
 Native backend paths resolve from `src`; use `./bin/artisan` from the host only
 when setup/recovery transport is needed. Runtime metadata can be checked with `runa:modules:check app --runtime` after synchronization. The source assertion alone does not exercise PostgreSQL installation, settings changes,
 work/events, retained-data disable or production exclusion. CoreExamplesTest adds
-application-owned HTTP success/refusal/rollback cases for the backend workflows below. Add application-owned
+application-owned HTTP success/refusal/validation/rollback cases for the backend workflows below. Add application-owned
 behavior tests for the examples you adopt; private platform suites are not
 delivered customer tests or a customer verification prerequisite.
 
@@ -70,7 +70,7 @@ database override changes that policy.
 
 The reference SettingsProvider demonstrates native settings access, field grants,
 action-specific proof and publication. Its owned HTTP workflow and named snapshot
-adapter are implemented below; the dedicated Admin editor remains pending.
+adapter and the dedicated Admin workspace are implemented below.
 Existing values remain preserved.
 
 The example panel binds its own request state to public Button busy, retaining a
@@ -140,6 +140,11 @@ reader failure while still available shows an empty unavailable diagnostic.
 
 ## Capability reproduction and deliberate exclusions
 
+The [Core capability matrix](core-capabilities.md) maps all four supplied Core
+modules to public API versions, executable source, routes, expected results and
+application success/refusal tests. It distinguishes reference examples from native
+Core workflows and private platform verification.
+
 | Capability                                | Runnable source / reproduction                                                                                                                                                                                                                                                                                                             |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Identity and retained optional lifecycle  | Inspect `module.json`, `runa:modules:check app --runtime`, then the explicit lifecycle preview/apply procedure above. Disable retains the sample and settings.                                                                                                                                                                             |
@@ -149,7 +154,7 @@ reader failure while still available shows an empty unavailable diagnostic.
 | CLI/work/scheduler/storage                | `app:reference:inspect`; while enabled, `app:reference:work`. Observe the returned work ID through the public `ModuleWork::status($workId)` adapter; the owning hourly schedule invokes the same operational entry. `ReferenceJobHandler` shows cancellation checkpoints and repeat-safe scoped storage.                                   |
 | Versioned facts and listeners             | Work publishes `observed` v1. `ReferenceEvents`, `ReferenceListener` and `ReferenceEventHandler` show independent synchronous/asynchronous consumers; queue completion is distinct from initial dispatch. Publication may repeat on retry.                                                                                                 |
 | Frontend page/navigation/visual slot      | `ReferenceFrontend`, panel and an opted-in ModulePage/ModuleSlot consumer as above. Production excludes their source/build entries.                                                                                                                                                                                                        |
-| Admin composition                         | The inspect page, declared binding, native grant, replaceable section and dashboard widget above are executable.                                                                                                                                                                                                                           |
+| Admin composition                         | Inspect/section/widget retain Ping; samples/settings/history/work pages use ReferenceTools and the shared workspace. See the Core matrix for independent grants, proof and refusal cases.                                                                                                                                                  |
 | Health and work policy                    | `runa:modules:health app.reference` and the source-owned policy definitions. No generic Admin health/integration editor.                                                                                                                                                                                                                   |
 | Cross-module editing and aggregate writes | Foreign-subject editing and multi-module aggregate business writes remain excluded: the example edits its own shared Sample. Native settings/protected work integrate the required Core participants. Use the [Admin examples](../../../runa/handbook/modules/admin/examples.md) and their opt-in generator/Core examples when adding one. |
 

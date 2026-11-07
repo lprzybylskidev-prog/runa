@@ -211,6 +211,36 @@ it('requires the Audit read grant independently of owning history access', funct
     $this->getJson('/api/app/reference/history')->assertOk();
 });
 
+it('shows an audited sample change through authorized history without reprojecting field values', function (): void {
+    ($this->grant)(['samples.read', 'samples.write', 'samples.code.write', 'history.read', 'runa.audit.read']);
+    $input = ['public_id' => $this->fixtureId, 'revision' => '1', 'code' => 'history_'.bin2hex(random_bytes(4))];
+    $this->patchJson('/api/app/reference/samples', [...$input, 'code' => 'Invalid code!'])->assertUnprocessable();
+    $this->getJson('/api/app/reference/history?sample='.$this->fixtureId)->assertOk()->assertJsonPath('data.items', []);
+    $this->patchJson('/api/app/reference/samples', $input)->assertOk()->assertJsonMissingPath('data.code');
+    $items = $this->getJson('/api/app/reference/history?sample='.$this->fixtureId)->assertOk()->json('data.items');
+    expect($items)->toHaveCount(1);
+    expect(array_keys($items[0]))->toBe(['public_id', 'occurred_at', 'action', 'outcome']);
+    expect($items[0]['public_id'])->not->toBeEmpty()
+        ->and($items[0]['action'])->not->toBeEmpty()
+        ->and($items[0]['outcome'])->not->toBeEmpty();
+    // History permission cannot replace current access to the owning record.
+    $permission = DB::table('runa_permissions.permissions')->where('code', 'app.reference.samples.read')->value('id');
+    DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->actorId)->where('permission_id', $permission)->delete();
+    $this->getJson('/api/app/reference/history?sample='.$this->fixtureId)->assertForbidden();
+});
+
+it('refuses credential replacement and clear without the independent field grant', function (): void {
+    ($this->grant)(['settings.read', 'settings.write']);
+    $state = $this->getJson('/api/app/reference/settings')->assertOk()->assertJsonMissingPath('data.settings.credential')->json('data');
+    $input = ['revision' => $state['revision'], 'review_id' => $state['review_id']];
+    foreach (['ungranted-private-value', null] as $credential) {
+        $this->postJson('/api/app/reference/settings/review', [...$input, 'values' => ['credential' => $credential]])->assertForbidden();
+    }
+    $this->postJson('/api/app/reference/settings/review', [...$input, 'values' => ['label' => str_repeat('x', 41)]])->assertUnprocessable();
+    $this->getJson('/api/app/reference/settings')->assertOk()->assertJsonPath('data.revision', $state['revision'])
+        ->assertJsonPath('data.settings.label.value', $state['settings']['label']['value']);
+});
+
 it('rolls settings secret revision and its proof back on required Audit refusal', function (): void {
     ($this->grant)(['settings.read', 'settings.write', 'settings.credential.write']);
     $state = $this->getJson('/api/app/reference/settings')->assertOk()->json('data');

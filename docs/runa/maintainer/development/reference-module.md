@@ -42,6 +42,8 @@ with a specific reason, not exposed as customer APIs.
   does not complete the example.
 
 Keep a capability-to-example matrix in `docs/app/modules/reference/README.md`.
+Its detailed source/test map is `docs/app/modules/reference/core-capabilities.md`,
+linked from that reproduction section.
 Reconcile it against all current Runa modules when adding one, changing public
 capabilities or performing a platform quality review. Update affected instruction
 products without granting customers authority over protected platform source.
