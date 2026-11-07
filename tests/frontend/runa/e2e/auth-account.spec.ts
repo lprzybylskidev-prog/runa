@@ -149,7 +149,10 @@ test('Auth account render diagnostic: profile and sign-out share the accessible 
     await page.emulateMedia({ colorScheme: theme });
     await page.addInitScript((theme) => {
       localStorage.clear();
-      localStorage.setItem('runa.theme', theme);
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.theme',
+        JSON.stringify({ version: 1, value: theme }),
+      );
     }, theme);
     await page.goto('/account');
     await expect(
@@ -262,7 +265,10 @@ for (const mode of ['composed', 'replacement']) {
       await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
       await page.addInitScript((theme) => {
         localStorage.clear();
-        localStorage.setItem('runa.theme', theme);
+        localStorage.setItem(
+          'runa.preferences:runa:display:global:runa.theme',
+          JSON.stringify({ version: 1, value: theme }),
+        );
       }, theme);
       await page.goto('/app?presentation=' + mode);
       const content = page.locator(
@@ -326,8 +332,14 @@ for (const welcome of [true, false]) {
       });
       await page.setViewportSize({ width, height: 900 });
       await page.addInitScript((theme) => {
-        localStorage.setItem('runa.locale', 'pl');
-        localStorage.setItem('runa.theme', theme);
+        localStorage.setItem(
+          'runa.preferences:runa:display:global:runa.locale',
+          JSON.stringify({ version: 1, value: 'pl' }),
+        );
+        localStorage.setItem(
+          'runa.preferences:runa:display:global:runa.theme',
+          JSON.stringify({ version: 1, value: theme }),
+        );
       }, theme);
       await accountTransport(page, welcome, { avatar: true, profileReady });
       await page.route('**/api/runa/auth/profile/avatar**', async (route) => {
@@ -440,8 +452,14 @@ for (const [width, theme, locale] of [
     await page.setViewportSize({ width, height: 900 });
     await page.addInitScript(
       ({ theme, locale }) => {
-        localStorage.setItem('runa.theme', theme);
-        localStorage.setItem('runa.locale', locale);
+        localStorage.setItem(
+          'runa.preferences:runa:display:global:runa.theme',
+          JSON.stringify({ version: 1, value: theme }),
+        );
+        localStorage.setItem(
+          'runa.preferences:runa:display:global:runa.locale',
+          JSON.stringify({ version: 1, value: locale }),
+        );
       },
       { theme, locale },
     );

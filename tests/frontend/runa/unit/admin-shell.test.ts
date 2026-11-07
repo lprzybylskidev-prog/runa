@@ -134,7 +134,10 @@ beforeEach(() => {
   window.history.replaceState({}, '', '/admin');
   accountPreferences.disconnect();
   localStorage.clear();
-  localStorage.setItem('runa.locale', 'en');
+  localStorage.setItem(
+    'runa.preferences:runa:display:global:runa.locale',
+    JSON.stringify({ version: 1, value: 'en' }),
+  );
   vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
     const path = String(input);
     if (path === '/api/admin/entry')
@@ -239,7 +242,11 @@ it('uses one supplied session, follows the English application preference and pl
   );
   expect(w.find('nav a[href="/account"]').exists()).toBe(false);
   expect(w.find('[aria-label*="Change language"]').exists()).toBe(false);
-  expect(localStorage.getItem('runa.locale')).toBe('en');
+  expect(
+    JSON.parse(
+      localStorage.getItem('runa.preferences:runa:display:global:runa.locale')!,
+    ).value,
+  ).toBe('en');
   expect(
     vi
       .mocked(window.fetch)
@@ -1770,7 +1777,7 @@ it('Admin entry proof preserves a retry when the shared session read fails befor
 });
 
 it('Admin bilingual presentation follows the shared preference and keeps a dirty field mounted without refetching', async () => {
-  localStorage.removeItem('runa.locale');
+  localStorage.removeItem('runa.preferences:runa:display:global:runa.locale');
   const data = bootstrap();
   data.owners[0]!.title = {
     pl: 'Ustawienia własnej aplikacji',
@@ -1867,7 +1874,10 @@ it('Admin bilingual presentation follows the shared preference and keeps a dirty
 });
 
 it('Admin bilingual password admission changes language without losing transient input or starting another proof', async () => {
-  localStorage.setItem('runa.locale', 'pl');
+  localStorage.setItem(
+    'runa.preferences:runa:display:global:runa.locale',
+    JSON.stringify({ version: 1, value: 'pl' }),
+  );
   vi.mocked(window.fetch).mockImplementation(async () =>
     respond({ reason: 'step_up_required' }, 403),
   );

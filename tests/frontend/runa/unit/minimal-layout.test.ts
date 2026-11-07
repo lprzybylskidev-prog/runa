@@ -12,7 +12,9 @@ import {
 
 enableAutoUnmount(afterEach);
 beforeEach(() => savePreference('runa.locale', 'pl'));
-afterEach(() => localStorage.removeItem('runa.locale'));
+afterEach(() =>
+  localStorage.removeItem('runa.preferences:runa:display:global:runa.locale'),
+);
 
 it('renders independently with optional regions and a translator-compatible default', () => {
   const layout = mount(MinimalLayout, {

@@ -5,7 +5,10 @@ test('downloads real bounded files, selects across pages and recovers partial op
 }) => {
   const errors = recordBrowserProblems(page, { anonymousSession: true });
   await page.addInitScript(() => {
-    localStorage.setItem('runa.locale', 'en');
+    localStorage.setItem(
+      'runa.preferences:runa:display:global:runa.locale',
+      JSON.stringify({ version: 1, value: 'en' }),
+    );
   });
   await page.goto('/__fixtures/ui?category=data');
   await expect(page.locator('table')).toHaveCount(2);
@@ -105,7 +108,10 @@ test('opens an isolated print document with the complete filtered result', async
   browserName,
 }) => {
   await page.addInitScript(() => {
-    localStorage.setItem('runa.locale', 'en');
+    localStorage.setItem(
+      'runa.preferences:runa:display:global:runa.locale',
+      JSON.stringify({ version: 1, value: 'en' }),
+    );
     window.print = () => {
       document.documentElement.dataset.printed = 'yes';
     };
@@ -173,8 +179,14 @@ for (const [device, width, height] of [
         await page.setViewportSize({ width, height });
         await page.addInitScript(
           ({ locale, theme }) => {
-            localStorage.setItem('runa.locale', locale);
-            localStorage.setItem('runa.theme', theme);
+            localStorage.setItem(
+              'runa.preferences:runa:display:global:runa.locale',
+              JSON.stringify({ version: 1, value: locale }),
+            );
+            localStorage.setItem(
+              'runa.preferences:runa:display:global:runa.theme',
+              JSON.stringify({ version: 1, value: theme }),
+            );
           },
           { locale, theme },
         );
@@ -214,7 +226,12 @@ for (const [device, width, height] of [
 test('keeps the toolbar compact and opens accessible export settings', async ({
   page,
 }) => {
-  await page.addInitScript(() => localStorage.setItem('runa.locale', 'en'));
+  await page.addInitScript(() =>
+    localStorage.setItem(
+      'runa.preferences:runa:display:global:runa.locale',
+      JSON.stringify({ version: 1, value: 'en' }),
+    ),
+  );
   await page.goto('/__fixtures/ui?category=data');
   await expect(
     page.getByRole('button', { name: 'Select all matching', exact: true }),

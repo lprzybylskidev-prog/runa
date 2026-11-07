@@ -21,7 +21,24 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10l completed, 2026-11-07
+## Current execution state — point 10m completed, 2026-11-07
+
+**Points 1–10m are complete. Point 10n is next; 10n–10r remain open.** Point 10m
+removes flat locale/theme imports and dual writes, the public frontend
+`PreferenceDefinition.legacyKey` option and the built-in table-view v1 conversion.
+Flat-only display preferences and obsolete table envelopes now use current defaults.
+Scoped guest/account values, current v2 named/default views, generic migration hooks,
+explicit guest adoption and account lifecycle/revision ownership remain intact.
+
+The focused owner frontend command passed 28 cases in four files (exit 0, cleanup
+0), including rendered display defaults/edits, current table state and account
+hydration/isolation. Browser fixtures now seed scoped envelopes. Source/current
+handbook/changelog are synchronized; module/API candidates and platform VERSION
+0.7.0 / approved feature-0.8.0 remain unchanged. No complete suite, runtime/assets
+alignment, owner acceptance or final PASS is claimed. Combined readiness stays
+10r, owner acceptance 11 and final verification/release 12.
+
+## Historical execution state — point 10l completed, 2026-11-07
 
 **Points 1–10l are complete. Point 10m is next; 10m–10r remain open.** Point 10l
 consolidates supplied initialization into null-to-current definitions and retains
@@ -1660,7 +1677,7 @@ below are retained as historical records only.
     history checks or new compatibility path. Author meaningful initial-effect,
     actual retained-upgrade and refusal scenarios; broad acceptance remains 12.
 
-- [ ] 10m. Remove obsolete concrete preference formats.
+- [x] 10m. Remove obsolete concrete preference formats.
   - **Dependency:** 10k; complete before 10r. Own P03/P04. Remove flat locale/theme
     legacy-key import/dual writes and built-in table-view v1 conversion; update
     current stores/layouts/consumers and compatibility-only fixtures/docs together.
@@ -5410,3 +5427,78 @@ only its disposable runa_test_test_1; development/base test data, all containers
 volumes, credentials, model caches and evidence are preserved. No final PASS or
 owner acceptance is claimed. Point 10m is next; readiness 10r, owner acceptance 11
 and final verification/release 12 remain open.
+
+## Point 10m completion — current scoped preference formats, 2026-11-07
+
+### Owning source and retained boundaries
+
+Source-verified P03/P04 from the accepted compatibility audit are resolved by
+removing `legacyKey` from the shared public `PreferenceDefinition<T>` and its
+reader, removing the language/theme flat-key dual write, and removing only the
+built-in `useTableViews` v1 migration. Current control names and encoded scoped
+keys are unchanged. `useLocale`/`useTheme` and both layout consumers already use
+the single shared store and require no alternate reader. No obsolete flat key is
+deleted, imported or written. Flat-only browsers render application defaults;
+obsolete table snapshots/workspaces produce the initial query/columns and empty
+named views, then persist the current v2 default through the existing controller.
+
+The generic frontend `migrate` and backend `migratePreference` hooks remain.
+Current-schema column/query normalization, named/default views, dirty state,
+reset tombstones and denied/quota memory remain. Explicit consented guest adoption,
+its permanent reset fence, account hydration/disposal, revision queue and conflict
+handling are unchanged. Existing account regressions remain authored and execute
+in the focused evidence below; backend adoption/reset scenarios remain for final
+verification. No automatic account import, write replay or compatibility reader
+was added.
+
+Current consumers and test fixtures were inspected through exact legacy-key/v1
+searches. Unit and E2E fixtures that previously wrote flat display keys now seed
+versioned scoped envelopes; persistence assertions and cleanup address those same
+keys. Only negative regressions intentionally create old flat keys. The old
+successful-import/v1-conversion fixtures are replaced by default/reset regressions.
+
+### Public contracts, documentation and instruction products
+
+The public frontend type deliberately loses `legacyKey` under the accepted
+pre-1.0 correction plan. This platform-owned TypeScript change belongs to approved
+feature/0.8.0; no module-owned implementation, declaration, PHP API signature,
+Framework API or storage schema changes. Auth 6.0.1, Audit 1.1.2, Permissions 2.1.2,
+Admin 1.1.1, reference 0.4.1 and Framework API 2.0.0 candidates remain unchanged;
+platform VERSION remains 0.7.0.
+
+The canonical Auth preference guide now records the exact public definition,
+scoped-only storage, intentional old-format defaults and retained migration hooks.
+The public frontend architecture/table guides and central changelog are synchronized;
+obsolete table account-persistence deferral claims are removed in the affected
+storage contract. The frontend skill's existing table reference and owner/customer
+Vue skills already route to those canonical public guides. Both instruction
+products were assessed: root AGENTS, domain SKILL.md files and customer bundle need
+no duplicated format-specific rule or signature because their existing account
+lifecycle/public-contract guidance remains correct. Customer application scope and
+protected-platform boundary remain unchanged. The executable reference consumes
+the unchanged shared Table/preferences facades; no new customer-facing capability
+or reference workflow is introduced.
+
+### Focused evidence and remaining work
+
+- Local knowledge status: current, 234 documents/13308 chunks; explicit-current
+  search located table/storage contracts, opened and corrected against source.
+- `python3 tools/maintainer/test-frontend preferences.test.ts table-views.test.ts display-preferences.test.ts`:
+  **PASS, 4 files / 28 cases, exit 0, cleanup 0**. Native filename matching also
+  selects `account-preferences.test.ts`. This bounded diagnostic resolves actual
+  default/reset, scoped persistence, current v2 lifecycle, generic migration,
+  denied-storage and account hydration/isolation concerns; it is not a full suite.
+- Rendered Chromium cases prove flat-only display defaults, explicit guest edits,
+  scoped re-entry and read-only mounting. Table regressions cover old v1 snapshot
+  and workspace rejection, corrupt/future defaulting and current named/default/
+  dirty/column/query behavior. Existing account cases cover delayed hydration and
+  account isolation/conflicts without write replay.
+- Vite reports its dynamic-import analysis warning in the generated Vitest runtime;
+  native execution completes successfully. No production import warning or new
+  runtime exception is inferred from this tooling warning.
+
+No database/ledger, dependency, container/image, asset build or running application
+state was changed. No task-created Docker resources require removal; existing
+services, data, caches and reports are preserved. Full frontend/E2E and other
+selected gates remain 12, aligned runtime/assets/readiness remains 10r and explicit
+owner acceptance remains 11. Point 10n is next.

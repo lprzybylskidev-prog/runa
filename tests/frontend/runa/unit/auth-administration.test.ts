@@ -26,7 +26,9 @@ import type {
 } from '@/runa/admin';
 enableAutoUnmount(afterEach);
 beforeEach(() => savePreference('runa.locale', 'en'));
-afterEach(() => localStorage.removeItem('runa.locale'));
+afterEach(() =>
+  localStorage.removeItem('runa.preferences:runa:display:global:runa.locale'),
+);
 const actor = '01900000-0000-7000-8000-000000000001';
 const target = '01900000-0000-7000-8000-000000000002';
 function field(key: string, readonly = true): AdminFieldData {

@@ -160,8 +160,14 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
     await page.setViewportSize({ width, height });
     await page.addInitScript((theme) => {
       localStorage.clear();
-      localStorage.setItem('runa.locale', 'en');
-      localStorage.setItem('runa.theme', theme);
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.locale',
+        JSON.stringify({ version: 1, value: 'en' }),
+      );
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.theme',
+        JSON.stringify({ version: 1, value: theme }),
+      );
     }, theme);
     await page.goto('/admin');
     const password = page.getByLabel('Current password', { exact: true });
@@ -195,9 +201,16 @@ test('Admin shell: English proof, account-only entry and responsive light/dark n
     ).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(page.locator('nav a[href="/account"]')).toHaveCount(0);
-    expect(await page.evaluate(() => localStorage.getItem('runa.locale'))).toBe(
-      'en',
-    );
+    expect(
+      await page.evaluate(
+        () =>
+          JSON.parse(
+            localStorage.getItem(
+              'runa.preferences:runa:display:global:runa.locale',
+            )!,
+          ).value,
+      ),
+    ).toBe('en');
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= innerWidth,
@@ -350,8 +363,14 @@ test('Admin generated forms: draft reconciliation, safe validation and guarded n
     await page.setViewportSize({ width, height });
     await page.addInitScript((theme) => {
       localStorage.clear();
-      localStorage.setItem('runa.theme', theme);
-      localStorage.setItem('runa.locale', 'en');
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.theme',
+        JSON.stringify({ version: 1, value: theme }),
+      );
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.locale',
+        JSON.stringify({ version: 1, value: 'en' }),
+      );
     }, theme);
     await page.goto('/admin/app/users');
     const field = page.getByRole('textbox', {
@@ -519,8 +538,14 @@ test('Auth administration: owned Users presentation selects accounts and protect
   ] as const) {
     await page.setViewportSize({ width, height: 1000 });
     await page.addInitScript((theme) => {
-      localStorage.setItem('runa.theme', theme);
-      localStorage.setItem('runa.locale', 'en');
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.theme',
+        JSON.stringify({ version: 1, value: theme }),
+      );
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.locale',
+        JSON.stringify({ version: 1, value: 'en' }),
+      );
     }, theme);
     await page.goto('/admin/runa.auth/users');
     const password = page.getByLabel('Current password', { exact: true });
@@ -703,8 +728,14 @@ test('Permissions and Audit administration: built definition and immutable histo
     ] as const) {
       await page.setViewportSize({ width, height });
       await page.addInitScript((theme) => {
-        localStorage.setItem('runa.theme', theme);
-        localStorage.setItem('runa.locale', 'en');
+        localStorage.setItem(
+          'runa.preferences:runa:display:global:runa.theme',
+          JSON.stringify({ version: 1, value: theme }),
+        );
+        localStorage.setItem(
+          'runa.preferences:runa:display:global:runa.locale',
+          JSON.stringify({ version: 1, value: 'en' }),
+        );
       }, theme);
       await page.goto(`/admin/${owner}/${key}`);
       const password = page.getByLabel('Current password', { exact: true });
@@ -818,8 +849,14 @@ test('Admin operations: persisted health, explicit cooperative cancellation and 
     cancellation = false;
     await page.setViewportSize({ width, height });
     await page.addInitScript((theme) => {
-      localStorage.setItem('runa.theme', theme);
-      localStorage.setItem('runa.locale', 'en');
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.theme',
+        JSON.stringify({ version: 1, value: theme }),
+      );
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.locale',
+        JSON.stringify({ version: 1, value: 'en' }),
+      );
     }, theme);
     await page.goto('/admin');
     const password = page.getByLabel('Current password', { exact: true });
@@ -925,7 +962,10 @@ test('application global settings compose responsive light and dark defaults wit
   ] as const) {
     await page.setViewportSize({ width, height });
     await page.addInitScript((theme) => {
-      localStorage.setItem('runa.theme', theme);
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.theme',
+        JSON.stringify({ version: 1, value: theme }),
+      );
     }, theme);
     await page.goto('/admin');
     const password = page.getByLabel('Current password', { exact: true });

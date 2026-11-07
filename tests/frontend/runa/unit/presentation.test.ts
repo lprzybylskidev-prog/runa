@@ -159,8 +159,8 @@ it('hydrates application display defaults and favicon while retaining explicit u
   };
   guestPreferenceStore.reset(scope, 'runa.locale');
   guestPreferenceStore.reset(scope, 'runa.theme');
-  localStorage.removeItem('runa.locale');
-  localStorage.removeItem('runa.theme');
+  localStorage.removeItem('runa.preferences:runa:display:global:runa.locale');
+  localStorage.removeItem('runa.preferences:runa:display:global:runa.theme');
   const favicon =
     '/api/presentation/assets/logo_icon/' + 'a'.repeat(64) + '.png';
   let timezone = 'America/New_York';
@@ -210,8 +210,8 @@ it('hydrates application display defaults and favicon while retaining explicit u
     root.remove();
     guestPreferenceStore.reset(scope, 'runa.locale');
     guestPreferenceStore.reset(scope, 'runa.theme');
-    localStorage.removeItem('runa.locale');
-    localStorage.removeItem('runa.theme');
+    localStorage.removeItem('runa.preferences:runa:display:global:runa.locale');
+    localStorage.removeItem('runa.preferences:runa:display:global:runa.theme');
   }
 });
 

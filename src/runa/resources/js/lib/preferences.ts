@@ -1,7 +1,4 @@
-import {
-  accountPreferences,
-  defaultPreferenceStore,
-} from '../../../modules/auth/frontend/preferences/session';
+import { defaultPreferenceStore } from '../../../modules/auth/frontend/preferences/session';
 import type { PreferenceDefinition } from './preferenceStore';
 const scope = {
   applicationId: 'runa',
@@ -12,7 +9,6 @@ function definition(key: string): PreferenceDefinition<string | null> {
   return {
     version: 1,
     defaultValue: null,
-    legacyKey: key,
     validate: (value: unknown): value is string | null =>
       value === null ||
       (typeof value === 'string' &&
@@ -26,11 +22,4 @@ export function readPreference(key: string): string | null {
 }
 export function savePreference(key: string, value: string): void {
   defaultPreferenceStore.write(scope, key, definition(key), value);
-  if (accountPreferences.signedIn()) return;
-  // Guest compatibility keys never receive an account value.
-  try {
-    localStorage.setItem(key, value);
-  } catch {
-    /* Store retains session memory. */
-  }
 }

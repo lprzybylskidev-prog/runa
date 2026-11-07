@@ -173,26 +173,44 @@ it('retains the application baseline sort and deduplicates current descriptors',
   );
   expect(normalizeTableColumns([], ['name', 'name'])).toHaveLength(1);
 });
-it('recovers corrupt storage and migrates the version-one snapshot', () => {
-  expect(setup(adapter('{invalid')).controller.columns.value).toHaveLength(2);
-  const storage = adapter(
-    JSON.stringify({
-      version: 1,
-      value: {
-        columns: [
-          { key: 'city', visible: false },
-          { key: 'name', visible: true, width: 210 },
-        ],
-        query: { ...initial(), filters: { name: 'A' } },
-      },
-    }),
-  );
-  const { controller, query } = setup(storage);
-  expect(controller.columns.value[0]).toEqual({ key: 'city', visible: false });
-  expect(query.value.filters).toEqual({ name: 'A' });
-  expect(
-    JSON.parse(storage.read(preferenceKey(scope, 'table-views'))!).version,
-  ).toBe(2);
+it('defaults obsolete table formats instead of importing their snapshots or named views', () => {
+  const snapshot = {
+    columns: [
+      { key: 'city', visible: false },
+      { key: 'name', visible: true, width: 210 },
+    ],
+    query: { ...initial(), filters: { name: 'A' } },
+  };
+  const workspace = {
+    current: snapshot,
+    views: [{ id: 'old', name: 'Old', snapshot }],
+    activeId: 'old',
+    defaultId: 'old',
+  };
+  for (const raw of [
+    '{invalid',
+    JSON.stringify({ version: 1, value: snapshot }),
+    JSON.stringify({ version: 1, value: workspace }),
+    JSON.stringify({ version: 3, value: workspace }),
+  ]) {
+    const storage = adapter(raw);
+    const { controller, query, wrapper } = setup(storage);
+    expect(controller.columns.value).toEqual([
+      { key: 'name', visible: true },
+      { key: 'city', visible: true },
+    ]);
+    expect(query.value).toEqual(initial());
+    expect(controller.state.value.views).toEqual([]);
+    expect(controller.state.value.activeId).toBeNull();
+    expect(controller.state.value.defaultId).toBeNull();
+    expect(
+      JSON.parse(storage.read(preferenceKey(scope, 'table-views'))!),
+    ).toEqual({
+      version: 2,
+      value: controller.state.value,
+    });
+    wrapper.unmount();
+  }
 });
 it('handles denied storage in memory and resets/reorders without losing saved views', () => {
   const denied: PreferenceStorage = {

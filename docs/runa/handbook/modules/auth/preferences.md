@@ -93,7 +93,7 @@ current account revision/recipient rules. Save/Revert affects only its row; inco
 preserve dirty rows and expose overlapping recipient changes locally without
 generating writes. The shell's compact preference controls retain their cycling contract.
 
-## Browser integration and legacy ownership
+## Browser integration and guest ownership
 
 Public `@/runa/ui` exports retain `createPreferenceStore`, `defaultPreferenceStore`,
 `accountPreferences` and `createAccountPreferenceStore`. Generic versioned guest
@@ -101,6 +101,28 @@ storage is independent of Auth. The supplied account adapter owns Auth transport
 and session binding, and the default UI composes that adapter once. Injected stores
 retain their own lifecycle; do not create a second adapter for each account card
 or import the private session/transport modules.
+
+The public UI preference definition is owned by the shared frontend, consumed by
+application UI through `@/runa/ui`, and implemented in
+`src/runa/resources/js/lib/preferenceStore.ts`. It is a runtime TypeScript
+contract independent of module PHP API versions:
+
+```ts
+interface PreferenceDefinition<T> {
+  version: number;
+  defaultValue: T;
+  validate(value: unknown): value is T;
+  migrate?: (value: unknown, version: number) => unknown;
+}
+```
+
+`createPreferenceStore(adapter?: PreferenceStorage): PreferenceStore` defaults to
+browser storage. It reads only the versioned scoped envelope; unsupported versions
+use `defaultValue` unless the supplied `migrate` produces a valid current value.
+The retired `legacyKey` option is removed. Applications owning real preference
+schema evolution can still supply `migrate`; Auth providers retain their separate
+`migratePreference` hook. Neither hook implies conversion of built-in obsolete
+formats.
 
 `defaultPreferenceStore`, `usePreference`, language/theme, navigation,
 `useStatisticsMode` and `useTableViews` use the same account adapter. Signed-in
@@ -127,10 +149,12 @@ Inventory and mapping:
 | Statistics                                    | application / owning module / view / statistics.mode   | Exact module view/key, v1                        |
 | Columns, filters, current/named/default views | application / owning module / view / table-views       | Exact module view/key, v2                        |
 
-Guest `createPreferenceStore` retains validated versioned scoped localStorage and
-legacy `runa.locale`/`runa.theme` fallback; denied storage uses lifetime memory.
-Reset writes a tombstone so legacy data cannot reappear. Only guest changes write
-legacy keys. Account values never enter guest/legacy storage. All mounted consumers
+Guest `createPreferenceStore` uses validated versioned scoped localStorage;
+denied storage uses lifetime memory. Language/theme use only the scope/control
+keys listed above, encoded through `preferenceKey`. Old flat `runa.locale` and
+`runa.theme` entries are ignored and never written or imported; a browser with only
+those entries uses application defaults. Reset writes a scoped tombstone.
+Account values never enter guest storage. All mounted consumers
 subscribe to account changes and guest writes/resets, and incoming hydration does not generate new saves.
 Initial locale/theme application to document attributes is also read-only: mounting
 a consumer while its account snapshot is pending must not write defaults back.

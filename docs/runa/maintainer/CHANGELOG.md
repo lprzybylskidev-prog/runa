@@ -4,6 +4,12 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Remove flat language/theme browser-key imports and dual writes, the public
+  `PreferenceDefinition.legacyKey` option and built-in table-view v1 conversion.
+  Keep scoped guest/account preferences, explicit guest adoption, current v2
+  named/default views, denied-storage memory and generic migration hooks.
+  Obsolete formats use current defaults; UI/browser fixtures seed scoped envelopes.
+
 - Simplify built-in initialization into null-to-current steps, retain explicit
   current-schema updates and published table-free Admin preparation, and remove
   76 historical Upgrade classes/122 edges. Core candidate patches: Auth 6.0.1,

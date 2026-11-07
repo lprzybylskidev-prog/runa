@@ -45,15 +45,6 @@ export function useTableViews<Row>(options: {
         return false;
       }
     },
-    migrate: (value, version) => {
-      if (version !== 1) return undefined;
-      const raw = value && typeof value === 'object' ? value : {};
-      return normalizeTableViews(
-        'current' in raw ? raw : { current: raw },
-        options.columns(),
-        baseline,
-      );
-    },
   };
   // Read permissively, then reconcile removed/new fields against current descriptors.
   const readDefinition = {

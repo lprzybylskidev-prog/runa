@@ -16,7 +16,7 @@ import type {
 enableAutoUnmount(afterEach);
 beforeEach(() => savePreference('runa.locale', 'en'));
 afterEach(() => {
-  localStorage.removeItem('runa.locale');
+  localStorage.removeItem('runa.preferences:runa:display:global:runa.locale');
   vi.restoreAllMocks();
 });
 

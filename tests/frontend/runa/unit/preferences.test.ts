@@ -86,16 +86,19 @@ it('retains session values when storage is denied or reaches quota', () => {
   quota.reset(scope, 'collapse');
   expect(quota.read(scope, 'collapse', bool)).toBe(false);
 });
-it('reads an existing legacy preference without removing its key', () => {
+it('ignores unscoped browser keys and only persists the scoped envelope', () => {
   const { data, store } = fixture();
   data.set('runa.locale', 'en');
   const definition: PreferenceDefinition<string> = {
     version: 1,
     defaultValue: 'pl',
     validate: (v): v is string => v === 'pl' || v === 'en',
-    legacyKey: 'runa.locale',
   };
-  expect(store.read(scope, 'locale', definition)).toBe('en');
+  expect(store.read(scope, 'locale', definition)).toBe('pl');
+  expect(data.has(preferenceKey(scope, 'locale'))).toBe(false);
+  store.write(scope, 'locale', definition, 'pl');
+  expect(store.read(scope, 'locale', definition)).toBe('pl');
   expect(data.get('runa.locale')).toBe('en');
-  expect(data.has(preferenceKey(scope, 'locale'))).toBe(true);
+  store.reset(scope, 'locale');
+  expect(store.read(scope, 'locale', definition)).toBe('pl');
 });

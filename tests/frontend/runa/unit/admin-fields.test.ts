@@ -19,7 +19,10 @@ import CustomerAdminField from './fixtures/customization/CustomerAdminField.vue'
 enableAutoUnmount(afterEach);
 afterEach(() => savePreference('runa.locale', 'en'));
 beforeEach(() => {
-  localStorage.setItem('runa.locale', 'en');
+  localStorage.setItem(
+    'runa.preferences:runa:display:global:runa.locale',
+    JSON.stringify({ version: 1, value: 'en' }),
+  );
 });
 function field(change: Partial<AdminFieldData> = {}): AdminFieldData {
   return {
