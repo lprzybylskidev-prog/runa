@@ -4,6 +4,13 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Absorb the approved RM-2026-018 interface-copy, trusted-device disclosure and
+  action-driven data-refresh scope into this roadmap's feature/0.8.0 plan; remove
+  its redundant unactivated draft and separate 0.8.1 projection. Record owner
+  approval of the native settings generation/snapshot-admission correction.
+  These remain open implementation points, followed by one renewed owner
+  acceptance and one final automated verification/release.
+
 - Establish the reference module as executable customer documentation: new Runa
   modules and customer-facing capabilities extend working examples, guidance and
   tests in their owning point. Reopen reference completeness through repair point

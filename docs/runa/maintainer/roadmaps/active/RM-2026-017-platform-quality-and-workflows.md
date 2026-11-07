@@ -21,15 +21,40 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10b completed, 2026-11-07
+## Current execution state — expanded scope approved, 2026-11-07
 
-**Points 1–10, 10a and 10b are complete. Point 10c is next:** complete the
-reference backend as an executable Core consumer. Auth now uses the common native
-settings contract; Core Audit no longer dispatches its policy authorization/history.
-Gate B and feature/0.8.0 remain approved. Platform VERSION stays 0.7.0; Framework
-API remains 1.2.0 and Auth is 5.0.2. Points 10c–10e, renewed owner manual acceptance
-(11) and final automated verification/release (12) remain open. No final PASS,
-acceptance or release is claimed. See the point-10b completion record below.
+**Points 1–10, 10a and 10b remain complete. Point 10c is in progress and open.**
+The owner approved the native settings generation/snapshot-admission correction
+and explicitly combined draft RM-2026-018 with this active roadmap. Its complete
+copy, trusted-device disclosure and action-driven refresh specification is now
+[part of this roadmap](#absorbed-rm-2026-018-scope--owner-approved-2026-11-07).
+The obsolete draft is removed; no second roadmap is activated and no separate
+0.8.1 release is planned for this absorbed scope. Existing feature/0.8.0 remains
+the release projection; platform VERSION stays 0.7.0.
+
+Continue 10c with the [approved owning correction](../../reviews/RM-2026-017-reference-generation-admission.md),
+recording exact native contracts/lock phases before runtime edits. Complete 10d
+reference presentation, 10e capability reconciliation, 10f interface copy,
+10g trusted-device disclosure, 10h action-driven refresh and 10i combined runtime
+readiness. Point 11 remains the sole penultimate owner manual acceptance; point
+12 remains the sole final automated verification/release. All these points stay
+open; no final PASS, owner acceptance or release is claimed.
+
+Application-owned candidate source adds sample editing/Audit, field grants,
+settings review/publication, snapshots and protected managed work. Focused sample
+and work/rollback diagnostics passed; settings/snapshot failures are retained and
+require the approved native repair. Candidate app.reference is 0.4.0; development
+installation is not claimed. Framework API remains 1.2.0 and Auth 5.0.2 pending
+honest assessment of the actual correction. Prior design-stop records below
+remain historical evidence, superseded by this explicit owner decision.
+
+<a id="current-execution-state--point-10b-completed-2026-11-07"></a>
+
+## Historical execution state — point 10b completed, 2026-11-07
+
+Points 1–10, 10a and 10b were complete. Point 10c was next, to complete the reference
+backend as an executable Core consumer. Gate B and feature/0.8.0 remained approved.
+No final PASS, acceptance or release was claimed.
 
 <a id="current-execution-state--point-10a-completed-2026-11-07"></a>
 
@@ -439,6 +464,18 @@ performance bottlenecks and redundant tests are **unknown**, not presumed findin
 
 ### Decisions and approval status
 
+- 2026-11-07 — Owner approved the proposed native settings generation/snapshot
+  admission correction after its explanation and comparison with RM-2026-018.
+  Preserve exact health/security admission and genuine conflict refusal; equivalent
+  successful health refresh must not alone invalidate deliberate publication.
+  Declare exact signatures/source identity/lock phases before implementation.
+- 2026-11-07 — Owner explicitly combined RM-2026-018 with this active roadmap
+  and instructed removal of its obsolete draft. Absorb its full agreed copy,
+  trusted-device and passive-refresh-removal scope under feature/0.8.0; retire
+  the separate fix/0.8.1 projection. Keep one active branch/release, one manual
+  acceptance and one final automated gate. No new dependency, reset, production
+  deployment, early VERSION bump or broader standing policy is approved.
+
 - 2026-11-06 — Owner requests draft preparation only, intended 0.8.0, no activation,
   implementation, large suites, browser acceptance, rebuilds or release changes.
 - 2026-11-06 — Initial planning proposal: feature/0.8.0 from the released 0.7.0
@@ -765,6 +802,150 @@ No `--resume`, campaign schema or closure-validator integration is presumed.
 The rollback initially left point 9 unstarted. The later renewed owner instruction
 and completion record below supersede that execution deferral.
 
+### Absorbed RM-2026-018 scope — owner-approved 2026-11-07
+
+The owner explicitly combined the previously agreed draft into RM-2026-017 and
+requested deletion of the redundant draft. The full specification below replaces
+its earlier deferral to a later release. Its initial fix/0.8.1 metadata and
+predecessor relation describe the former plan; this scope now ships with this
+roadmap's existing feature/0.8.0 projection, subject to completed implementation,
+renewed owner acceptance and final verification. RM-2026-018 was never activated
+or released. Its ID remains accounted for by this decision and Git history.
+
+Preserve the supplied identity and architecture. No broad visual redesign, new
+table/accordion/authentication system, external dependency, freshness cache,
+polling interval, age threshold, refresh coordinator or concurrency framework is
+approved. Do not change trusted-device persistence/lifetime, account linking,
+identity eligibility or authorization. No migration/reset or production deployment
+belongs to these absorbed UI/refresh points. Retain initial/explicit reads and
+backend write admission. Do not remove meaningful security/recovery instructions
+or expand device disclosure to all platform tables. The distinct native settings
+repair belongs to 10c; it is needed even after passive frontend reads are removed.
+
+Source targets below reflect the original read-only investigation, not an
+instruction to implement old paths blindly. Recheck current source after 10c–10e
+and preserve the reference example's executable public-consumer obligation.
+
+#### Interface copy review
+
+Apply the existing [interface copy standard](../../../handbook/design/visual-direction.md#interface-copy-and-preference-controls).
+Inventory view families and shared text owners; for each candidate record the
+rendered location, purpose, PL/EN text and removal/retention rationale. A source
+count or a blanket "no defect" conclusion is insufficient. Inspect relevant
+rendered contexts using bounded observations; full browser matrices remain final.
+
+Remove the login introduction "Podaj dane swojego konta." / "Enter your account
+credentials." and its unused owning catalogue/description path as appropriate.
+Do not replace it with another sentence restating the heading or field labels.
+Review analogous entry and account descriptions, rather than fixing this string
+alone. Keep security consequences, recovery/refusal guidance, unusual input
+requirements, validation, accessible names and genuine results.
+
+#### Trusted-device table disclosure
+
+The target is the existing "Zaufane urządzenia" / "Trusted devices" section in
+`src/runa/modules/auth/frontend/AuthAccountSecurity.vue`. The owner explicitly
+confirmed that "linked accounts" in the initial request meant this table.
+
+- On initial entry, show a clearly named disclosure control with its table
+  collapsed. Reuse the public Accordion contract from
+  [content containers](../../../handbook/development/frontend/components.md#content-containers-and-navigation).
+- Expanding exposes the existing table and its permitted controls. Preserve
+  filters, pagination, view configuration, refresh, authorized exports and
+  revocation behavior. Closing/reopening during the same view must preserve
+  existing table state; ordinary refresh must not force it open.
+- Scope the disclosure to the device list. Keep the trust-browser action and
+  meaningful two-factor prerequisite explanation outside the hidden list. Do
+  not change the security rules or duplicate session/security orchestration.
+- Preserve configuration-based omission of the entire disabled capability. Keep
+  keyboard operation, expanded/control semantics, hidden-content focus handling,
+  reduced motion, mobile/tablet/desktop and both themes/locales usable.
+- Preserve existing loading/readiness and identity/access-loss clearing. Hidden
+  content does not authorize retaining protected data after access loss.
+
+#### Backend-owned consistency and action-driven refresh
+
+The owner explicitly replaces the current blanket requirement to refresh visible
+views on return/focus. A displayed snapshot may remain older than database state.
+The frontend does not continuously determine whether that snapshot is current.
+For a mutation it still sends the original expected version/revision or reviewed
+fingerprint; it must not silently fetch and substitute a newer token to make an
+old draft pass validation.
+
+At execution, the backend validates current authority, availability, expected
+version/review and business constraints within the owning transaction/locks.
+Cover inserts, updates and deletes according to their semantics: insertion may
+require uniqueness/reference checks rather than a preexisting record version;
+bulk actions must revalidate the reviewed set/effects. Do not add versions
+mechanically to idempotent actions. Reuse and correct existing owning safeguards
+where necessary; no new concurrency system is planned.
+
+On an actual stale-state rejection, return a stable specific error code. The
+frontend shows a clear PL/EN explanation that the action was not performed and
+refreshes only the affected data. Preserve dirty values and offer existing local
+conflict resolution where necessary; new server values must not silently replace
+the draft or advance its submission token without reconciliation. Never replay
+the write, hide the refusal behind successful refresh, or retry it with a fresh
+version. Treat removed targets explicitly. Business refusals sharing HTTP 409
+retain their own messages and do not imply a data-version conflict.
+
+Retain initial reads on view/section entry, user-requested refresh, filter/sort/
+pagination reads, explicit operation previews and updates after the user's own
+successful action. Preserve refresh-in-place presentation and draft retention for
+these real reads; the reported loading placement is not itself a demonstrated
+defect. Do not replace removed passive reads with timers or delayed equivalents.
+
+##### Source-grounded removal and separation targets
+
+The 2026-11-07 read-only investigation identified these owners; recheck actual
+source after the predecessor closes rather than freezing today's implementation:
+
+- `auth/frontend/useAuthAccount.ts`: remove broad account/list refresh on
+  visibilitychange, focus and pageshow, plus trailing-read state used solely by
+  those triggers. Retain action/conflict/explicit reads and their cancellation.
+- `admin/frontend/useAdminResource.ts`: remove the visibility-triggered last-query
+  read. Review blanket 409 invalidation alongside `useAdminForm.ts`; route actual
+  stale-state errors to targeted conflict handling instead of refreshing on every
+  unrelated business refusal.
+- `auth/frontend/useApplicationSession.ts` and Admin's `useAdmin.ts`,
+  `useAdminPage.ts`, `useAdminResource.ts`: separate security checks from the
+  unconditional authorityRevision-to-bootstrap/page/resource refresh cascade.
+  A successful check of the same session must not itself reload business views.
+  Retain real identity/access-change invalidation and late-response fences.
+- `auth/frontend/preferences/accountPreferences.ts`: avoid reloading an unchanged
+  account's preference snapshot merely because a session check succeeded.
+- Shared `resources/js/runa/ui/createApplication.ts`: remove focus/visibility and
+  incidental history/session-driven public presentation refresh. Keep initial
+  hydration, real identity transitions and refresh following an applicable own
+  settings mutation. Session reads must not become branding refresh triggers.
+
+These are paths under `src/runa/modules` except the explicitly shared resources
+path. Review supplied App/reference consumers and analogous controllers too.
+Keep necessary session/protected-place expiry and access checks, 401/403 handling,
+and clearing of protected content on detected identity/access loss. Do not delete
+all visibility/focus listeners indiscriminately: protected activity, modal focus
+and decorative animation have independent purposes. No data-freshness reload may
+be reintroduced through a security check's successful completion.
+
+##### Guidance and acceptance
+
+Update the owning public forms/reconciliation guide, affected loading/module/API
+guides and root owner/customer instruction products and skill references in the
+same implementation point. Replace obsolete passive-refresh rules rather than
+appending contradictory exceptions. Keep one canonical procedure and retain only
+reconciliation machinery needed for explicit reads, own actions and real conflicts.
+
+Author regressions proving that focus/tab return does not fetch business data
+through either direct listeners or session/preference/presentation cascades;
+filters, pagination, manual refresh and own-action results still work. Include
+two independent users/sessions: X changes or removes data while Y keeps the old
+snapshot; Y's operation receives the correct backend refusal, shows the specific
+message, refreshes affected data and preserves the draft without replay. Cover
+insert uniqueness/reference conflicts, reviewed bulk changes, non-stale 409
+refusals, actual access loss and security checks that do not reload business data.
+Existing conflict tests are evidence to inspect, not a fresh PASS. Complete
+backend/frontend/E2E verification remains the final point.
+
 ## Implementation plan
 
 Every implementation point requires committed work,
@@ -1090,6 +1271,14 @@ below are retained as historical records only.
     full backend/security and affected-area checks remain final. Commit the point.
 
 - [ ] 10c. Complete the reference backend as an executable Core consumer.
+  - **Approved native prerequisite, 2026-11-07:** correct settings review/publication
+    generation semantics and snapshot admission in their owning framework paths.
+    Preserve operational evidence, current health/expiry/source/connection checks,
+    field grants, action-specific proof and atomic Audit. Before runtime edits,
+    declare full public signatures, semantic review identity and lock phases;
+    update Auth/reference/CLI/Admin/snapshot consumers and regressions together.
+    No guessed generation, automatic retry, second runner/store, compatibility
+    adapter or reference-only bypass. See the approved decision record.
   - **Dependency:** completed 10a/10b. Retain existing Ping, sample identities,
     source/CLI/work/events examples and optional production-excluded delivery.
     Use the same common settings contract as Auth, never a reference-only bypass.
@@ -1131,7 +1320,7 @@ below are retained as historical records only.
     frontend matrices remain point 12. Synchronize owning presentation guidance,
     example source map and version/changelog assessment, then commit the point.
 
-- [ ] 10e. Reconcile reference coverage and prepare renewed owner acceptance.
+- [ ] 10e. Reconcile reference capability coverage and current guidance.
   - **Dependency:** completed 10a–10d. Reconcile all current Core modules against
     actual executable examples: capability, public API/version, source entrypoint,
     declaration/Action, UI route or CLI reproduction, expected outcome and owning
@@ -1140,16 +1329,68 @@ below are retained as historical records only.
     reference/Admin guides and the acceptance sheet; synchronize owner/customer
     instruction products without granting protected-source edit authority. Preserve
     historical reports, rejected designs and native failed evidence.
-  - **Runtime:** prepare supported nondestructive updates, current assets and usable
-    authorized data/access after formatting. No reset/new package/production
-    deployment. Confirm real reference pages and relevant APIs, source/build
-    identities and safe secret projection. Record exact effects and evidence.
-    Early candidate version preparation, if genuinely needed, still requires the
-    separate existing owner approval; none is inferred from this plan.
-  - **Handoff:** commit concrete URLs, representative grants/roles, scenarios and
-    source/environment identity for point 11. Only the owner accepts the UI.
-    Complete final suites/security/AI/delivery verification stays point 12; these
-    repairs precede the first final gate and do not invoke its broad repair loop.
+  - **Boundary:** author remaining tests and resolve demonstrated example/guidance
+    gaps in this coherent committed point. Complete suites remain 12; combined
+    runtime preparation and owner handoff move to 10i after all absorbed changes.
+
+- [ ] 10f. Review supplied interface text and remove demonstrated filler.
+  - **Dependency:** completed 10e. Apply the absorbed interface-copy specification
+    to root, Auth entry/account, Admin, Permissions, Audit, optional reference,
+    shared components and native error/mail presentation. Record rendered location,
+    purpose, PL/EN text and removal/retention rationale for actual candidates.
+  - Remove loginHelp and analogous redundant introductions where demonstrated;
+    preserve actionable instructions, labels, constraints, accessible names,
+    security consequences and outcomes. Use bounded rendered observations here;
+    complete browser matrices remain 12.
+  - Update owning catalogues/contracts, meaningful regressions, current guidance
+    and module/version records; assess both instruction products. Commit this point.
+
+- [ ] 10g. Collapse the trusted-device table on initial account entry.
+  - **Dependency:** completed 10f. Reuse public Accordion around the existing
+    account-security device table. Preserve table state on close/reopen and refresh,
+    filters, pagination, view configuration, explicit refresh, permitted export
+    and revocation. Keep trust-browser action and useful prerequisites outside.
+  - Preserve configuration omission, readiness, access-loss clearing, keyboard
+    focus/expanded semantics, reduced motion, responsive PL/EN and light/dark.
+    Author meaningful initial/disclosure/state/access regressions and synchronize
+    guidance/module assessment in this committed point; no new dependency/runner.
+
+- [ ] 10h. Simplify data refresh and preserve backend-owned conflict handling.
+  - **Dependency:** completed 10g. Remove direct passive focus/visibility/pageshow
+    data reads and the specified session/authority/preference/branding cascades.
+    Remove obsolete state/tests rather than retaining alternate refresh paths;
+    add no timers, cache or new freshness/concurrency infrastructure.
+  - Preserve initial, explicit, filter/sort/page, preview and own-action reads;
+    separate real identity/access invalidation and necessary session/protected-place
+    expiry checks from successful same-session checks. Keep late-response fences.
+  - Inspect backend insert/update/delete and reviewed bulk checks; correct actual
+    gaps within owning locks/transactions. Always submit original version/review;
+    distinguish actual stale-state codes from unrelated business 409 refusals.
+    Show specific PL/EN refusal, refresh only affected data, preserve/reconcile
+    dirty drafts and never replay a rejected write or substitute a fresh token.
+  - Author direct/cascade, two-user change/removal, uniqueness/reference/bulk,
+    non-stale 409 and real access-loss regressions. Update canonical forms/loading/
+    API guidance, both instruction products, skill references, affected consumers
+    and module/API version/changelog assessments in the committed point.
+    No broad suites before 12. The settings correction in 10c remains required.
+
+- [ ] 10i. Prepare combined runtime and renewed owner acceptance.
+  - **Dependency:** completed 10a–10h. Reconcile the entire combined scope and
+    outstanding findings against actual source; insert explicit repairs before
+    manual acceptance. Renew the qualitative/source and instruction-product review
+    for new behavior rather than relying on the earlier point-10 readiness.
+  - Prepare supported nondestructive updates, current assets and usable authorized
+    data/access after formatting. No reset/new package/production deployment.
+    Confirm actual pages/APIs, source/build identities and safe secret projections.
+    Early candidate metadata preparation, if needed, still requires its existing
+    separate owner approval; none is inferred from this scope merger.
+  - Commit concrete URLs, representative grants/roles and a combined acceptance
+    sheet: reference settings/snapshots/edits/Audit/protected work, purposeful copy,
+    collapsed/expanded/empty devices, passive tab return without data reload,
+    explicit refresh and actual conflict/draft behavior. Include relevant PL/EN,
+    themes, viewports and keyboard states. Only the owner completes 11.
+  - Complete suites/security/AI/delivery verification stays 12. These points
+    precede the first final gate and do not invoke its broad repair exception.
 
 - [ ] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
@@ -1160,6 +1401,9 @@ below are retained as historical records only.
     grants/configuration, data/error/dirty/loading states, viewport, theme and PL/EN
     scenarios. At most five representative views for each changed shared-component
     class; include every directly changed distinct behavior beyond that sample.
+  - **Combined acceptance:** include the absorbed copy/device/refresh scenarios
+    from 10i and two-user actual-conflict behavior. All changed UI returns to this
+    single acceptance; prior observations do not approve newly delivered behavior.
   - **Reference acceptance:** include concrete URLs and scenarios for the directly
     changed reference Admin presentation and its relevant states; shared-component
     sampling does not omit these distinct example behaviors.
@@ -4114,3 +4358,71 @@ network, image tag or volume required cleanup. Active development, base
 runa/runa_test data, credentials, existing reports, caches and backups are preserved.
 No migration, data reset, dependency or production change. Point 10c is next;
 manual acceptance and final release remain open.
+
+## Point 10c — Native generation/admission design stop — 2026-11-07
+
+Read the active point, approved settings design, current source and relevant
+Backend/Laravel/Security/PostgreSQL skills. Local knowledge status was current:
+227 documents, 12866 chunks, no stale/missing/orphan chunks. Bounded current-intent
+retrieval was followed by original public settings, transactions, snapshots,
+Audit, Permissions, source-boundary and reference maintenance guidance.
+Laravel Boost confirmed Laravel 13.37.0/PHP 8.4 and supplied version-aware
+validation guidance.
+
+The [decision record](../../reviews/RM-2026-017-reference-generation-admission.md)
+contains the source-verified failure, proposed owning correction and bounded
+native evidence. Implementation stops for the significant generation/admission
+premise; point 10c remains unchecked. The shared snapshot adapter trial was
+withdrawn to avoid introducing an unsupported nested admission path.
+No changes to public framework signatures or platform runtime configuration are
+approved by this checkpoint.
+
+Candidate application source uses native ModuleTransactions, SettingsAccess,
+Audit automatic/manual capture and SettingsSnapshots. Its monotonic sample
+revision migration is forward-only because this roadmap explicitly preserves
+existing data; it has not been applied to development storage. The source-only
+0.3.0 to 0.4.0 upgrade edge preserves existing sample UUIDs/settings.
+The candidate declares optional Core dependencies for its new guarded consumers,
+retaining public Ping/CLI/source behavior without Admin. Existing published
+upgrade identities remain untouched.
+
+Owner/customer instruction products need no new reusable rule at this checkpoint:
+the existing public API, native settings, reference maintenance and significant
+unknown rules already require this stop. Public current-state completion claims
+and candidate changelog/documentation must be synchronized with the eventual
+chosen implementation before point completion. Changes remain uncommitted and
+unfinished, without release/verification certification.
+
+## Owner scope consolidation and native correction approval — 2026-11-07
+
+After the generation/admission explanation, the owner asked whether correcting
+it would be discarded by RM-2026-018. Source review confirmed distinct mechanisms:
+018 removes passive frontend data-refresh triggers/cascades, whereas required
+backend health, authority, expected-version/review and integrity checks remain.
+Settings and snapshot failures occur during explicit actions without passive reads.
+The owner then approved the proposed correction and explicitly requested combining
+018 with this active roadmap, followed by explicit deletion of the redundant draft.
+
+The complete agreed specification and exclusions were transferred above before
+removing the draft. Points 10f–10h absorb its three implementation outcomes;
+10i consolidates runtime readiness. Existing 10c owns the native settings repair,
+10e retains reference coverage, 11 stays penultimate owner acceptance and 12 stays
+final verification/release. Earlier dated deferrals to RM-2026-018 remain historical
+records, superseded by this decision. The separate 0.8.1 projection is retired;
+accepted feature/0.8.0 and the current roadmap branch remain unchanged. No second
+activation, release, VERSION change, reset or dependency is introduced.
+
+This is a planning/approval commit only, preserving the unfinished 10c source and
+tests outside its staged changes. The former design stop is resolved by the owner;
+implementation and failing/unexecuted coverage remain open. Record full native
+signatures/lock phases before the next runtime edits. Scope checks found no broad
+verification before implementation completion: manual acceptance is 11 and all
+complete automated suites/gates remain 12.
+
+Instruction-product assessment: this scope consolidation changes no standing
+constitution. Owner/customer guidance changes for action-driven refresh belong
+in 10h with the implementation; do not prematurely remove current contracts.
+Current roadmap ownership, preservation of history, native security and public
+source boundaries already cover the approved native correction. Local knowledge
+was stale from the unfinished active-roadmap edits; used focused original sources
+and refresh the staged corpus incrementally at this commit boundary.
