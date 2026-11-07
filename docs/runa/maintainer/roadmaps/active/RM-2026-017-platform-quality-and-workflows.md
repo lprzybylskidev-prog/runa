@@ -21,10 +21,10 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — compatibility audit completed and scope extended, 2026-11-07
+## Current execution state — compatibility audit and correction plan accepted, 2026-11-07
 
-**Points 1–10i and audit/planning point 10j are complete. Proposed corrections
-10k–10q and renewed readiness 10r remain open.** The owner explicitly requested a
+**Points 1–10i and audit/planning point 10j are complete. The owner accepted the
+audit and correction plan; points 10k–10q and renewed readiness 10r remain open.** The owner explicitly requested a
 full additional pre-1.0 compatibility audit and its plan inside this active roadmap,
 with no refactoring in that audit stage and no new roadmap. The
 [source audit](../../reviews/RM-2026-017-pre1-compatibility-audit.md) and
@@ -36,9 +36,10 @@ No runtime source, database, dependency, container/image or asset was changed by
 the audit. The 10i environment/evidence still identifies its recorded source;
 it does not accept the planned refactors. Point 11 remains the sole penultimate
 owner manual acceptance after 10r; final automated verification/release 12 remains
-last. No owner acceptance or final PASS is claimed. Platform VERSION stays 0.7.0;
-existing feature/0.8.0 projection is unchanged. Proposed design/policy corrections
-are recorded for review, not silently implemented or approved by the audit.
+last. No manual frontend acceptance or final PASS is claimed. Platform VERSION
+stays 0.7.0; existing feature/0.8.0 projection is unchanged. The owner accepted
+the audit and planned corrections after reviewing the report; implementation has
+not started. Significant new premises still require their applicable discussion.
 
 ## Historical execution state — point 10i completed, 2026-11-07
 
@@ -624,6 +625,12 @@ performance bottlenecks and redundant tests are **unknown**, not presumed findin
 ## Specification
 
 ### Decisions and approval status
+
+- 2026-11-07 — Owner explicitly accepted the pre-1.0 compatibility audit and its
+  correction plan recorded in commit e5072654. Points 10k–10q and readiness 10r
+  remain pending execution in this active roadmap. This accepts the proposed
+  minimal authority/provenance correction for 10k; it does not complete manual
+  frontend acceptance 11 or final verification/release 12. Feature/0.8.0 is unchanged.
 
 - 2026-11-07 — Owner approved the proposed native settings generation/snapshot
   admission correction after its explanation and comparison with RM-2026-018.
