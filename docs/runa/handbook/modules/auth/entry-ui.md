@@ -6,6 +6,12 @@ historical source-only `0.7.0 -> 0.8.0` update changed no stored data or setting
 Apply through ModuleUpdates; unchanged installations remain no-ops. Account
 self-service and session-expiry integration are supplied by [the account UI](account-ui.md).
 
+The default login view uses its heading and labelled fields without an
+introductory paragraph. Registration explains possible activation requirements;
+recovery and restricted steps retain their conditional outcomes, security
+consequences and instructions. The entry controller keeps its optional description
+(empty for login), including for customer presentation replacements.
+
 ## Composition and routes
 
 Import `AuthEntry`, `entryPage` and `EntryPage` from `@/runa/auth`. The component

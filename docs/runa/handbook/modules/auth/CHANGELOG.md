@@ -2,6 +2,10 @@
 
 ## 6.0.0 — Unreleased
 
+- Remove the redundant login introduction in Polish/English and the repeated
+  registration instruction; retain activation, recovery and security guidance.
+  Keep the existing optional-description presentation contract.
+
 - Replace AuthPolicies publication/preview generation integers with semantic review identities (API 4.0.0). Require Framework API ^2.0.0; keep current grants, action-specific password proof, policy consequences and atomic history/Audit. Add the source-only settings_review_identity forward edge without data conversion.
 
 ## 5.0.2 — Unreleased

@@ -21,7 +21,27 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10e completed, 2026-11-07
+## Current execution state — point 10f completed, 2026-11-07
+
+**Points 1–10 and 10a–10f are complete. Point 10g is next.**
+The [interface-copy review](../../reviews/RM-2026-017-interface-copy.md) records
+actual PL/EN candidates and dispositions across supplied view families. Login
+has no redundant introduction; registration retains activation guidance without
+repeating the form task; root copy retains factual product context without the
+promotional assertion. Security/recovery instructions and public signatures remain.
+
+Two focused current-component Chromium cases pass (PL/EN); the first test-host
+compilation failure is retained in the review. Real Nginx observations returned
+503 and did not reach the SPA. This is an explicit readiness limitation for 10i,
+not owner acceptance or final PASS. No runtime guard/data/installation was changed.
+Auth remains the unreleased 6.0.0 candidate; other module/API candidates and
+platform VERSION 0.7.0 / approved feature-0.8.0 projection are unchanged.
+Trusted-device disclosure 10g, refresh 10h, combined runtime/assets 10i, sole owner
+acceptance 11 and sole final verification/release 12 remain open.
+
+<a id="current-execution-state--point-10e-completed-2026-11-07"></a>
+
+## Historical execution state — point 10e completed, 2026-11-07
 
 **Points 1–10 and 10a–10e are complete. Point 10f is next.**
 The [application Core matrix](../../../../app/modules/reference/core-capabilities.md)
@@ -1379,7 +1399,7 @@ below are retained as historical records only.
     gaps in this coherent committed point. Complete suites remain 12; combined
     runtime preparation and owner handoff move to 10i after all absorbed changes.
 
-- [ ] 10f. Review supplied interface text and remove demonstrated filler.
+- [x] 10f. Review supplied interface text and remove demonstrated filler.
   - **Dependency:** completed 10e. Apply the absorbed interface-copy specification
     to root, Auth entry/account, Admin, Permissions, Audit, optional reference,
     shared components and native error/mail presentation. Record rendered location,
@@ -4723,3 +4743,41 @@ for documentation and application tests completing this unreleased reference
 
 All 10e dependencies are committed. Combined runtime preparation remains 10i;
 point 10f is next, with 11/12 still the sole acceptance/final gates.
+
+## Point 10f completion — supplied interface copy, 2026-11-07
+
+The [source-grounded copy review](../../reviews/RM-2026-017-interface-copy.md)
+records view-family inventory, actual locations, PL/EN text, purpose and
+removal/retention rationale, including shared feedback and native error/mail
+presentation. Removed both loginHelp entries, the repeated registration task
+sentence and the root promotional assertion. Existing optional-description
+resolution already omits the login paragraph; public controller/replacement
+signatures remain unchanged. Preserve activation, reset/session consequences,
+recovery/setup instructions, field constraints, settings/snapshot semantics,
+work admission/completion distinction and real refusal/outcome copy.
+
+Updated the public Auth entry guide and module/central changelogs. Auth stays the
+unreleased 6.0.0 candidate; no additional API/module/platform version is justified
+for compatible copy correction within that release. No dependency, schema,
+permission, runtime configuration or persistence change. Owner/customer AGENTS
+and frontend skills already select the canonical copy contract and retain public
+presentation/security boundaries; neither needs a duplicated rule. Customer
+instruction templates were assessed only as product data.
+
+Knowledge was current before research; original guidance was opened. Supported
+focused Chromium diagnostics first failed because the new test host required
+unsupported runtime template compilation. Correcting that host to a render
+function yielded **2 passed / 17 excluded**, native exit 0, cleanup 0. The cases
+render current PL/EN login/recovery components, preserve required validation with
+no write and verify that necessary recovery guidance remains. Native Vite generated
+dependency analysis warning is retained. No complete suite or final gate ran.
+
+Bounded real Nginx observations at root/login/register/recovery/unknown paths
+returned HTTP 503; screenshots/evidence retain the actual maintenance shell and
+failed username wait. No current SPA, authenticated view or new built-copy
+acceptance is claimed. Runtime/assets alignment and real-page review remain 10i,
+owner acceptance 11 and complete automated verification/release 12. No bypass,
+reset, installation or operational repair was attempted in this copy point.
+No task-created Docker resources/worker databases were needed or removed;
+existing development/test data, active services, caches, backups, reports and
+recovery state were preserved. Point 10g is next.

@@ -4,6 +4,11 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Complete the interface-copy review: remove login filler, shorten registration
+  and root introductions in PL/EN, and retain actionable/security instructions.
+  Record source dispositions, bounded Chromium evidence and the current Nginx
+  503 limitation; combined runtime readiness and owner acceptance remain open.
+
 - Correct native settings review/publication and snapshot admission in Framework
   API 2.0.0: separate semantic `review_id` from operational generation, retain
   exact health/authority/proof fences and reuse native prepared scopes. Update
@@ -18,7 +23,7 @@ All release entries are maintained by the agent from roadmap facts.
   action-driven data-refresh scope into this roadmap's feature/0.8.0 plan; remove
   its redundant unactivated draft and separate 0.8.1 projection. Record owner
   approval of the native settings generation/snapshot-admission correction.
-  The absorbed interface implementation remains open, followed by one renewed
+  Trusted-device disclosure and refresh implementation remain open, followed by one renewed
   owner acceptance and one final automated verification/release.
 
 - Establish the reference module as executable customer documentation: new Runa

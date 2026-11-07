@@ -36,7 +36,7 @@ export const messages = {
     poweredBy: 'Oparte na',
     title: '.runa',
     description:
-      'Modularny monolit na bazie Laravela. Dostarcza w pełni konfigurowalne moduły do budowy aplikacji biznesowych.',
+      'Modularny monolit na bazie Laravela do budowy aplikacji biznesowych.',
   },
   en: {
     close: 'Close',
@@ -75,7 +75,7 @@ export const messages = {
     poweredBy: 'Powered by',
     title: '.runa',
     description:
-      'A modular monolith built on Laravel. Fully configurable modules for building business applications.',
+      'A modular monolith built on Laravel for business applications.',
   },
 } satisfies Record<'pl' | 'en', Record<string, string>>;
 
