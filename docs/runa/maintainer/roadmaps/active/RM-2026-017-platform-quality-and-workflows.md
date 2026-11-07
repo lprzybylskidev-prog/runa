@@ -21,7 +21,22 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — compatibility audit and correction plan accepted, 2026-11-07
+## Current execution state — point 10k completed, 2026-11-07
+
+**Points 1–10k are complete. Point 10l is next; 10l–10r remain open.** Point 10k
+installs the owner-approved decision-provenance correction and qualifies current
+upgrade-history guidance under standing pre-1.0 authority. Owner and customer
+instruction products retain their separate platform/application scopes. Auth
+controller/presentation comments describe current contracts and valid Vue wrappers;
+their types and runtime behavior are unchanged. The completion review below records
+source decisions, instruction assessment and evidence limits.
+
+No upgrade declarations, migrations, storage/ledgers, dependencies or assets were
+changed. The 10i runtime/evidence still identifies its recorded source; combined
+post-refactor readiness remains 10r, sole owner manual acceptance 11 and final
+verification/release 12. Platform VERSION 0.7.0 and feature/0.8.0 remain unchanged.
+
+## Historical execution state — compatibility audit and correction plan accepted, 2026-11-07
 
 **Points 1–10i and audit/planning point 10j are complete. The owner accepted the
 audit and correction plan; points 10k–10q and renewed readiness 10r remain open.** The owner explicitly requested a
@@ -1589,7 +1604,7 @@ below are retained as historical records only.
     add the dependent correction/readiness points below. Do not claim test PASS
     or infer new architecture, dependency, security or constitutional approval.
 
-- [ ] 10k. Reconcile standing authority and current compatibility guidance.
+- [x] 10k. Reconcile standing authority and current compatibility guidance.
   - **Dependency:** completed 10j. Own P09 and the cause-analysis proposal. Correct
     unconditional historical-handler freezing in the public API guide by linking
     the canonical pre-1.0 policy and distinguishing real deployed/recovery identities.
@@ -5273,3 +5288,64 @@ acceptance, complete suite PASS or release is claimed. Both instruction products
 were assessed; actual rule/type/capability corrections are assigned to their owning
 implementation points rather than being applied during this audit. The report and
 this plan are committed together on the current roadmap branch.
+
+## Point 10k completion — compatibility guidance and decision provenance, 2026-11-07
+
+### Source and decision review
+
+The owner acceptance recorded in b1562b6c explicitly accepts the audit/plan in
+e5072654, including its minimal authority/provenance correction. This satisfies
+point 10k's constitutional discussion prerequisite; this point does not infer a
+new permission from an agent proposal. The current request resumes the next point.
+The canonical releases pre-1.0 policy and root AGENTS already authorize coherent
+owner changes and identified rebuildable dev/test reconciliation. They retain
+security/business invariants, durable-data protection, dependency approval,
+immutable published/history records and discussion of significant new premises.
+
+The maintainer roadmap workflow now checks proposed scope restrictions against
+standing owner decisions during drafting, import and active amendments. Decisions
+records actual explicit owner changes. An inconsistent agent-authored restriction
+is corrected under existing authority. The established premature-verification
+conflict stop and new-premise discussion gates are preserved; no classifier,
+new approval register or additional lifecycle state is introduced.
+
+The public API guide no longer unconditionally freezes every historical handler
+or requires a forward edge for every compatible source change. It distinguishes
+supported installed baselines and real interrupted-update identities from
+unpublished development steps, retains source-fingerprint/history checks and
+requires coherent storage/ledger reconciliation. Its source-placement row routes
+to that same qualified policy. Current source is still described honestly: this
+point does not consolidate any Upgrade class or execute a storage operation.
+
+Auth controller comments describe the current public surface and deliberate
+contract-change obligations. Presentation comments explain the current reason for
+Vue Component flexibility: partial-prop and $attrs-forwarding wrappers. Imports,
+exports, members, signatures, implementation and consumers are unchanged. No
+replacement-type narrowing or runtime compatibility layer is introduced.
+
+### Instruction products and verification limits
+
+Root AGENTS adds only the cross-task provenance summary needed before retrieval;
+the maintainer agent-contract entrypoint links the canonical roadmap/release
+procedures. The public application roadmap workflow and customer AGENTS receive
+the application-scoped equivalent. They explicitly preserve protected Runa source.
+Public API guidance links delivered module-version/database policies; the private
+canonical owner release policy is linked from owner-only guidance, so the customer
+projection does not acquire a dependency on absent maintainer files.
+
+Owner/customer domain skills need no edits: the changed rule is cross-task roadmap
+authority, not a domain procedure, and existing skills already route to AGENTS and
+canonical guides. CLAUDE entrypoints already delegate to their respective AGENTS.
+No new skill or duplicated policy is needed. Existing Auth 6.0.0 / Framework API
+2.0.0 candidates and other module versions remain appropriate: only comments and
+guidance change here, with no public signature or behavior change. Platform VERSION
+stays 0.7.0 and the approved feature/0.8.0 projection remains.
+
+Semantic review compared the changed guidance with the actual owner decision,
+canonical release policy, public module-version policy and protected-source
+boundary. Git diff whitespace review and mandatory commit hooks apply, with
+incremental knowledge refresh for staged durable sources. No new automated tests
+are warranted for prose/comment changes; complete documentation/AI/quality checks
+remain point 12. No rendered acceptance or final PASS is claimed. No task-created
+Docker resources, databases, volumes or assets require cleanup. Point 10l is next;
+10r must renew combined readiness after the accepted runtime refactors.

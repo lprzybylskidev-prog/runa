@@ -18,6 +18,11 @@ If code and documentation disagree, investigate staleness. Do not blindly make e
 
 Project-specific rules override upstream skills and generic best practices.
 
+Roadmap precedence does not make agent-authored restrictions project-owner
+decisions. Follow the application decision-provenance review in
+docs/runa/handbook/workflows/roadmaps.md#discussion-and-activation; application
+roadmap approval never authorizes protected Runa source edits.
+
 ## Roadmap gate
 
 No application implementation, runtime configuration change, migration, or production-impacting change may start without an active roadmap.

@@ -16,6 +16,10 @@ If code and documentation disagree, investigate staleness. Do not blindly make e
 
 Project-specific rules override upstream skills and generic best practices.
 
+Roadmap precedence does not make agent-authored restrictions owner decisions.
+Follow the decision-provenance review in
+docs/runa/maintainer/workflows/roadmaps.md#discussion-and-activation.
+
 ## Pre-1.0 development
 
 Until Runa platform 1.0.0, backward compatibility is not a design requirement.

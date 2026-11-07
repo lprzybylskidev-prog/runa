@@ -103,6 +103,14 @@ Every roadmap contains:
 
 ## Discussion and activation
 
+When drafting, importing or amending an active roadmap, check scope restrictions
+against standing owner decisions, including the
+[pre-1.0 compatibility policy](releases.md#pre-10-compatibility). Roadmap precedence
+does not turn an agent-authored restriction into an owner decision. Use Decisions
+to cite an explicit owner change to a standing rule; otherwise correct the
+inconsistent restriction and proceed within existing authority. Preserve explicit
+stop-and-discuss gates for new premises and premature broad verification.
+
 While agreeing the roadmap, explicitly ask the owner which `release_type` and `proposed_version` to use. Offer a reasoned proposal based on scope, current VERSION and agreed predecessor order, but obtain confirmation instead of silently treating it as accepted. Record the answer in frontmatter and Decisions. If the owner has already explicitly supplied or confirmed both values in the same planning discussion, use that decision without repeating the question. Unconfirmed agent suggestions remain provisional; confirmation of release metadata is not activation approval. Reconfirm a changed proposal if later scope/order changes require a different classification or projected version.
 
 If no roadmap is active and implementation is requested:

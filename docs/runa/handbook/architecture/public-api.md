@@ -83,11 +83,22 @@ keys and delegates execution there. Auth HTTP adapters use `Http/Controllers`,
 named HTTP endpoints, without importing these implementation classes. Combined
 settings declaration/application handlers retain their existing source identity.
 
-Initialization and historical `Upgrade*.php` files deliberately retain their
-module-root paths and classes. Their bytes, edge keys and fingerprints participate
-in installed-history and interrupted-update validation. Do not consolidate empty
-handlers or regroup these persisted identities as directory cleanup. A compatible
-source change adds its own forward edge without rewriting prior steps.
+Initialization and retained `Upgrade*.php` files currently use module-root paths
+and classes. Their bytes, edge keys and fingerprints participate in installed-history
+and interrupted-update validation. Preserve identities needed by supported deployed
+installations and real recovery evidence; assess those consumers before changing
+retained steps. A forward update edge is needed when an actual supported installed
+baseline requires it, rather than for every source-only development change.
+
+The standing Runa owner authorization before platform 1.0.0 permits consolidating
+unpublished development steps and correcting their owning initializers, with current
+consumers and identified dev/test storage/ledgers reconciled coherently. It does not
+permit fabricating applied history, weakening recovery checks, discarding durable
+data or rewriting published tags and closed records. See the public
+[module version policy](../development/modules.md#independent-module-versions) and
+[database policy](database.md) for the delivered boundaries. Customers keep Runa
+source protected; this owner authorization does not grant platform maintenance
+permission to application agents.
 
 ## Platform implementation homes
 
@@ -152,7 +163,7 @@ remains authoritative. Module pages/slots retain manifest/build identity checks.
 | `src/runa/Settings`                                                                                   | Private platform settings catalogue/persistence, using the protected singleton migration; no customer engine imports.                                                                                                                                                      |
 | `src/runa/Support/Modules`                                                                            | Retained public adapters/values listed below. ModuleJob is the deliberately retained internal persisted envelope.                                                                                                                                                          |
 | `src/runa/ModuleFramework`, `src/runa/Integration/Core`                                               | Internal engines and named Core bridges. Runtime module diagnostics remain available without developer dependencies.                                                                                                                                                       |
-| `src/runa/modules/<code>/backend`                                                                     | Module-owned public Contracts, private Actions/Queries/Models/Proxies, HTTP Controllers/Requests/Resources, pure Definitions, source-owned Management adapters and executable Work. Retain module-root historical upgrade identities.                                      |
+| `src/runa/modules/<code>/backend`                                                                     | Module-owned public Contracts, private Actions/Queries/Models/Proxies, HTTP Controllers/Requests/Resources, pure Definitions, source-owned Management adapters and executable Work. Retained upgrade identities follow the installed-history policy above.                 |
 | `src/runa/Providers`, `Configuration`, `Identity`, `Logging`, `Mail`, `Runtime`, `Foundation`, `Http` | Platform composition and internal infrastructure, except explicitly documented public adapters/controllers.                                                                                                                                                                |
 | `src/runa/Database`, `src/runa/database`                                                              | PHP database infrastructure versus migration/seed/deploy resources. These are distinct responsibilities; preserve persisted migration identities.                                                                                                                          |
 | `src/runa/resources/js/runa`                                                                          | Public frontend facade/type/style entrypoints; compose their exports from application-owned code.                                                                                                                                                                          |

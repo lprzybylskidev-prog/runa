@@ -3,8 +3,8 @@ import type { Component, ComputedRef, InjectionKey } from 'vue';
 
 /** Application-owned Vue component definitions. Omitted entries retain defaults.
  * Replacement props/slots/events are named in contracts/presentation and exported
- * by @/runa/auth. Keep Component compatibility for existing Vue wrappers which
- * intentionally consume only part of the supplied props or forward $attrs.
+ * by @/runa/auth. Component accepts Vue wrappers which intentionally consume only
+ * part of the supplied props or forward $attrs.
  */
 export interface AuthPresentation {
   minimalLayout?: Component;
