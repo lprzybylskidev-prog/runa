@@ -21,7 +21,26 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10i completed, 2026-11-07
+## Current execution state — compatibility audit completed and scope extended, 2026-11-07
+
+**Points 1–10i and audit/planning point 10j are complete. Proposed corrections
+10k–10q and renewed readiness 10r remain open.** The owner explicitly requested a
+full additional pre-1.0 compatibility audit and its plan inside this active roadmap,
+with no refactoring in that audit stage and no new roadmap. The
+[source audit](../../reviews/RM-2026-017-pre1-compatibility-audit.md) and
+[complete case inventory](../../reviews/RM-2026-017-pre1-compatibility-inventory.json)
+record ten actionable cases, retained architectural boundaries, risks/consumers,
+actual published-versus-development baselines and the instruction/process analysis.
+
+No runtime source, database, dependency, container/image or asset was changed by
+the audit. The 10i environment/evidence still identifies its recorded source;
+it does not accept the planned refactors. Point 11 remains the sole penultimate
+owner manual acceptance after 10r; final automated verification/release 12 remains
+last. No owner acceptance or final PASS is claimed. Platform VERSION stays 0.7.0;
+existing feature/0.8.0 projection is unchanged. Proposed design/policy corrections
+are recorded for review, not silently implemented or approved by the audit.
+
+## Historical execution state — point 10i completed, 2026-11-07
 
 **Points 1–10i, including repairs 10h1/10h2, are complete. Point 11 awaits the
 owner's manual frontend acceptance.** The
@@ -1551,10 +1570,136 @@ below are retained as historical records only.
   - Complete suites/security/AI/delivery verification stays 12. These points
     precede the first final gate and do not invoke its broad repair exception.
 
+- [x] 10j. Audit pre-1.0 compatibility debt and plan its disposition.
+  - **Owner scope amendment, 2026-11-07:** audit the complete requested migration,
+    adapter/wrapper, fallback, module contract and related historical scope, plus
+    instruction/roadmap causes. Work independently on analysis and this plan;
+    perform no refactoring in the audit stage and create no second roadmap.
+  - Deliver source/consumer locations, rationale, simplification, affected public
+    contracts, risk and refactor/retain recommendation per case, with inventory and
+    honest source/runtime limits. Preserve native boundaries and immutable history.
+  - Record the ten cases P01–P10 and retained families K01–K16 in the linked report;
+    add the dependent correction/readiness points below. Do not claim test PASS
+    or infer new architecture, dependency, security or constitutional approval.
+
+- [ ] 10k. Reconcile standing authority and current compatibility guidance.
+  - **Dependency:** completed 10j. Own P09 and the cause-analysis proposal. Correct
+    unconditional historical-handler freezing in the public API guide by linking
+    the canonical pre-1.0 policy and distinguishing real deployed/recovery identities.
+    Clarify misleading controller/presentation comments without narrowing valid
+    Vue replacement components merely for type symmetry.
+  - Resolve the minimal proposed roadmap decision-provenance wording under the
+    existing owner discussion rule for constitutional changes before installing it;
+    drafting/activation/active amendments must distinguish actual owner decisions
+    from agent-invented exclusions. Reuse Decisions; no new approval register,
+    keyword ban, automatic classifier or duplicated policy in every skill.
+  - Assess root AGENTS/agent-contract and the separately authored customer bundle;
+    synchronize only affected summaries/references. Customer guidance never grants
+    protected-platform edits. Keep existing quality gates and explicit discussion
+    stops intact. Commit the source/decision review and current guidance together.
+
+- [ ] 10l. Simplify built-in initialization/history and reference migration structure.
+  - **Dependency:** 10k. Own P01/P02. Inventory the exact retained current initial
+    effects and any genuinely supported published-baseline data-update paths before
+    edits. Use existing null-to-current UpgradeDefinition support; a new framework
+    engine/initializer abstraction is not established as necessary.
+  - Consolidate source-only historical edges/empty handlers in all supplied Core
+    modules/reference. Move real defaults, singleton creation, policy baseline,
+    protected-role/declaration synchronization and Audit effects into their owning
+    current initialization/update definitions. Keep honest module/API versions,
+    dependency order, source fingerprints, transactional ledgers, preparation
+    participation and ambiguous non-idempotent recovery refusal.
+  - Put reference samples revision/default/CHECK in its original CREATE and remove
+    the additional development ALTER migration. Assess current consumers, fixtures,
+    generator/example declarations and install/update documentation in this point.
+    Published tags/closed records remain unchanged; historical evidence is not a
+    reason to keep unpublished runtime steps.
+  - Record exact required storage/ledger reconciliation for identified dev/test
+    data under standing pre-1.0 authority; coordinate operational preparation in
+    10r once persisted source is coherent. No fake installation success, disabled
+    history checks or new compatibility path. Author meaningful initial-effect,
+    actual retained-upgrade and refusal scenarios; broad acceptance remains 12.
+
+- [ ] 10m. Remove obsolete concrete preference formats.
+  - **Dependency:** 10k; complete before 10r. Own P03/P04. Remove flat locale/theme
+    legacy-key import/dual writes and built-in table-view v1 conversion; update
+    current stores/layouts/consumers and compatibility-only fixtures/docs together.
+  - Preserve scoped current guest/account values, explicit consented guest adoption
+    and its reset lifetime, hydration/identity disposal, dirty drafts, original
+    revisions, current v2 views and generic customer preference migration hooks.
+    Denied-storage memory/default behavior is not obsolete compatibility.
+  - Document intentional old-format defaults without automatic account import or
+    alternate string/legacy readers. Assess public types and existing module/API
+    candidates honestly; author current behavior regressions without a broad gate.
+
+- [ ] 10n. Retire the duplicate Button prop.
+  - **Dependency:** 10k; complete before 10r. Own P05. Replace Button compact with
+    iconOnly in all real source/generated/example/test consumers, then remove that
+    Button alias and its duplicate busy-slot branch. Preserve icon-only names,
+    focus/loading/size/intent behavior; unrelated compact/density props remain.
+  - Synchronize the public components contract, relevant examples/pattern references
+    and both instruction products where affected. No replacement alias or adapter.
+    Include affected controls in the renewed owner acceptance sheet.
+
+- [ ] 10o. Normalize structured management read projections.
+  - **Dependency:** 10k/10l; complete before 10r. Own P08. Trace the concrete native
+    snapshot/Auth read fields and consumers, separating structured read metadata
+    from intentional editable text, encrypted storage, hashes, URL values and Audit
+    display chunks. Use existing bounded AdminJson/ManagementRecord capabilities.
+  - Return native arrays/objects for the redundant encoded read collections and
+    update their Admin/Auth/reference controllers, authored wire types and current
+    tests/docs together. Remove old string decoders; do not accept both formats.
+  - Preserve guarded public entrypoints, semantic review/original write revisions,
+    grants, locks, health/authority admission, one-use proof, secret projection and
+    atomic Audit. Keep the common snapshot security owner and current public
+    replacement seams. Extend working reference examples for the changed contract.
+
+- [ ] 10p. Correct the owning native test integration.
+  - **Dependency:** 10k; complete before 10r. Own P06. Record the exact current
+    command/flag/engine contract and source-owned design before implementation.
+    Replace the global argv adaptation/split launch plumbing with a coherent owning
+    integration where supported by the pinned native engines; do not preserve the
+    current Collision path by another wrapper, startup shim or launch workaround.
+  - Retain supported native/application/owner entrypoints, PHPUnit/Pest semantics,
+    discovery/filter/coverage options, TTY/signals/native exits, database guards,
+    suite lock and scoped worker cleanup. Update supported command/test docs and
+    author parity/refusal scenarios. A newly required dependency/design premise
+    still returns to discussion; no dependency change is inferred from this audit.
+  - Preserve the owner SIGSEGV evidence procedure; no crash root-cause investigation,
+    campaign/resume automation or unexecuted coverage claims. Broad suites stay 12.
+
+- [ ] 10q. Remove retired selector aliases and reconcile resolved maintenance state.
+  - **Dependency:** 10k; complete before 10r. Own P07/P10. Remove only discovery-only
+    bin/check and bin/operations aliases and their current delivery/contract assertions;
+    preserve live recovery/tool/cold transports and current Artisan discovery.
+  - Reconcile MT-2026-002 with actual completed release evidence, using the existing
+    maintenance schema/status fields. Retain historical security evidence and the
+    still-unproven official-PostgreSQL replacement condition in MT-2026-001.
+    No runtime pin, exception, dependency update or historical rewrite is included.
+  - Update owning public/current command guidance and live fixture inventories;
+    preserve dated migration records. Assess instruction products without copying
+    owner-only maintenance policy into customer guidance.
+
+- [ ] 10r. Prepare the combined post-refactor runtime and manual acceptance handoff.
+  - **Dependency:** completed 10k–10q. Reconcile every audit finding with its actual
+    implementation/disposition, current consumers, tests/docs and module/API versions.
+    Prepare supported assets and required dev/test storage/ledger state from that
+    coherent committed source, with exact ownership/scope and standing pre-1.0
+    rebuild authority; preserve real customer/production/uncertain durable data.
+  - Confirm actual Nginx pages/APIs and usable existing authorized access. Renew
+    source/build/runtime identities and concrete owner scenarios for preference
+    behavior, affected Button consumers, native snapshot/Auth structured reads,
+    reference workflows, proof/dirty/conflict behavior and relevant PL/EN/themes/
+    viewports/keyboard states. Existing 10i screenshots certify only their old source.
+  - Update the combined acceptance sheet and instruction-product review; only the
+    owner completes 11. Necessary bounded diagnostics and operational asset building
+    establish readiness, not complete native installation/test/security/AI PASS.
+    Full automated verification/release remains 12 under unchanged gate policy.
+
 - [ ] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
-  - **Preconditions:** completed implementation/review/readiness, matching current
-    assets/data and usable authorized application, acceptance sheet supplied.
+  - **Preconditions:** completed implementation/review/readiness, including 10k–10r,
+    matching current assets/data and usable authorized application, acceptance sheet supplied.
   - **Deliverables:** concrete clickable URLs derived from the current environment
     and actual route/page declarations; what to inspect per view; relevant roles/
     grants/configuration, data/error/dirty/loading states, viewport, theme and PL/EN
@@ -5086,3 +5231,38 @@ backups, reports and operation evidence. Current application is ready for the
 owner's sole manual acceptance point 11; only the owner may complete it. Final
 verification/release 12 remains open. This completion is committed with its
 synchronized evidence; no final PASS, owner acceptance or release is claimed.
+
+## Owner scope amendment and point 10j completion — pre-1.0 compatibility audit, 2026-11-07
+
+The owner requested a complete source audit and dependent plan inside this active
+roadmap before manual acceptance, explicitly excluding refactoring during the audit
+and creation of another roadmap. The paired audit/inventory records all requested
+areas, concrete locations/consumers/risks and refactor-or-retain dispositions. It
+separates 10 actionable cases from 16 justified architectural mechanism families;
+pattern/file counts are not proof of runtime quality. Source baseline, all 46
+migrations, 76 Upgrade classes/64 empty bodies, 122 edges and 26 API declarations
+are recorded, with published v0.7.0 versus current candidate identities.
+
+The standing pre-1.0 instructions are already explicit. The incident was an agent
+reasoning/authoring error; a manual roadmap restriction/decision-provenance check
+and qualification of unconditional handler-history guidance are proposed, not
+silently installed as new constitution. Existing metadata/hooks/freshness checks
+cannot certify prose authority. No new classifier, approval registry or duplicate
+policy is proposed. Customer protected-platform boundaries remain separate.
+
+Points 10k–10q own the proposed corrections and point 10r renews combined readiness
+once their source is coherent. Their implementation is not started or implicitly
+approved by this audit. Source/API/security/policy premises still follow applicable
+owner discussion; existing feature/0.8.0 projection is unchanged. No second roadmap,
+branch, runtime/configuration/migration/reset/dependency/image/resource change or
+broad verification occurred. No new tests are appropriate for this analysis-only
+point; source/inventory/link consistency and mandatory commit hooks apply.
+
+Existing point identities/scope remain: 11 is the sole penultimate owner manual
+acceptance, after renewed readiness, and 12 is final affected-area automated
+verification/release. Future changes invalidate relevant 10i readiness evidence;
+that earlier environment is still observed for its exact old source. No owner
+acceptance, complete suite PASS or release is claimed. Both instruction products
+were assessed; actual rule/type/capability corrections are assigned to their owning
+implementation points rather than being applied during this audit. The report and
+this plan are committed together on the current roadmap branch.

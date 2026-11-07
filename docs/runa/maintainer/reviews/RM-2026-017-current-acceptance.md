@@ -7,6 +7,16 @@ sheet is the owner's manual handoff, not owner acceptance or final automated PAS
 complete automated verification/release remains point 12. The earlier point-10
 report's runtime observations remain historical evidence.
 
+## Post-audit handoff dependency
+
+The owner's additional pre-1.0 audit adds proposed corrections 10k–10q and renewed
+combined readiness 10r in the same active roadmap. The current environment and
+observations below still identify the completed 10i source. They cannot accept
+future preference, control or structured-read changes. Renew affected scenarios,
+assets/runtime/source identities and data/access preparation in 10r before the
+sole owner acceptance point 11. Final automated verification remains 12. See the
+[compatibility audit and dispositions](RM-2026-017-pre1-compatibility-audit.md).
+
 ## Preconditions and identity
 
 Expected local origin remains `http://localhost:8080`; internal diagnostics use

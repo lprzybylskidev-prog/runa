@@ -1,0 +1,3963 @@
+{
+  "roadmap": "RM-2026-017",
+  "baseline": "e9afda313e444346cb34abebd826f2ff4ce34269",
+  "review_date": "2026-11-07",
+  "method": "Tracked first-party source screening plus source/consumer/contract review; individual recommendations and limitations are in the paired Markdown report. Pattern hits are not defect counts.",
+  "source_file_count": 1440,
+  "candidate_file_count": 298,
+  "migration_count": 46,
+  "upgrade_class_count": 76,
+  "empty_upgrade_class_count": 64,
+  "declared_upgrade_edge_count": 122,
+  "current_api_definition_count": 26,
+  "migration_inventory": [
+    {
+      "path": "src/app/modules/reference/database/migrations/2026_10_22_000001_app_reference_samples.php",
+      "lines": 24,
+      "creates": ["->create('samples', function (Blueprint $table): void {"],
+      "table_alter": false,
+      "sql": [],
+      "decision": "P01"
+    },
+    {
+      "path": "src/app/modules/reference/database/migrations/2026_11_07_000001_app_reference_add_sample_revision.php",
+      "lines": 24,
+      "creates": [],
+      "table_alter": true,
+      "sql": [
+        "ALTER TABLE app_reference.samples ADD CONSTRAINT reference_sample_revision_positive CHECK (revision > 0)');"
+      ],
+      "decision": "P01"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000001_create_jobs.php",
+      "lines": 28,
+      "creates": [
+        "Schema::create('shared.jobs', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE shared.jobs ADD CONSTRAINT jobs_attempts_range CHECK (attempts BETWEEN 0 AND 255)');"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000002_create_failed_jobs.php",
+      "lines": 26,
+      "creates": [
+        "Schema::create('shared.failed_jobs', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000003_create_platform_seed_runs.php",
+      "lines": 25,
+      "creates": [
+        "Schema::create('shared.platform_seed_runs', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE shared.platform_seed_runs ADD CONSTRAINT platform_seed_runs_release_sha CHECK (release_sha ~ '^[a-f0-9]{40}$')\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000004_create_module_registry_state.php",
+      "lines": 30,
+      "creates": [
+        "Schema::create('shared.module_registry_state', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE shared.module_registry_state ADD CONSTRAINT module_registry_singleton CHECK (id = 1 AND generation >= 0)');",
+        "ALTER TABLE shared.module_registry_state ADD CONSTRAINT module_slot_order CHECK (jsonb_typeof(slot_order) = 'object' AND octet_length(slot_order::text) <= 131072)\");",
+        "ALTER TABLE shared.module_registry_state ADD CHECK (update_operation IS NULL OR update_operation ~ '^[a-f0-9]{40}$'), ADD CONSTRAINT module_registry_update_reservation CHECK ((update_operation IS NULL AND update_owner IS NULL AND update_fingerprint IS NULL) OR (update_operation IS NOT NULL AND update_owner IS NOT NULL AND update_fingerprint IS NOT NULL AND update_owner IN ('runa', 'app') AND update_fingerprint ~ '^[a-f0-9]{64}$'))\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000005_create_modules.php",
+      "lines": 53,
+      "creates": [
+        "Schema::create('shared.modules', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE shared.modules",
+        "ALTER TABLE shared.modules ADD CONSTRAINT modules_settings CHECK (settings_revision >= 0 AND (settings_values IS NULL OR octet_length(settings_values) <= 131072))');",
+        "ALTER TABLE shared.modules ADD CONSTRAINT modules_health CHECK (jsonb_typeof(health_observations) = 'object' AND octet_length(health_observations::text) <= 65536)\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000006_create_module_transitions.php",
+      "lines": 33,
+      "creates": [
+        "Schema::create('shared.module_transitions', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE shared.module_transitions ADD CONSTRAINT module_transitions_intent CHECK (intent IN ('enable', 'disable', 'unregister', 'settings')), ADD CONSTRAINT module_transitions_status CHECK (status IN ('preparing', 'pending', 'compensating', 'recovery_required', 'succeeded', 'refused', 'failed')), ADD CONSTRAINT module_transitions_generation CHECK (generation >= 0 AND (publication_generation IS NULL OR publication_generation > generation)), ADD CONSTRAINT module_transitions_affected CHECK (jsonb_typeof(affected) = 'array')\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000007_create_module_work.php",
+      "lines": 45,
+      "creates": [
+        "Schema::create('shared.module_work', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE shared.module_work ADD CONSTRAINT module_work_state CHECK (status IN ('pending', 'running', 'succeeded', 'cancelled', 'refused', 'failed', 'recovery_required')), ADD CONSTRAINT module_work_attempts CHECK (attempts BETWEEN 0 AND 100 AND generation >= 0), ADD CONSTRAINT module_work_lease CHECK ((status = 'running' AND lease_token IS NOT NULL AND lease_until IS NOT NULL) OR (status <> 'running' AND lease_token IS NULL AND lease_until IS NULL)), ADD CONSTRAINT module_work_progress CHECK (progress ~ '^[a-z][a-z0-9_]{0,63}$'), ADD CONSTRAINT module_work_payload CHECK (octet_length(payload) <= 131072), ADD CONSTRAINT module_work_uuid CHECK (substring(public_id::text, 15, 1) = '7')\");",
+        "ALTER TABLE shared.module_work ADD CONSTRAINT module_work_event_delivery CHECK ((event_listener IS NULL AND delivery_key IS NULL) OR (event_listener IS NOT NULL AND delivery_key IS NOT NULL AND event_listener ~ '^[a-z][a-z0-9_]{0,63}$' AND delivery_key ~ '^[0-9a-f]{64}$'))\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000008_create_module_update_steps.php",
+      "lines": 31,
+      "creates": [
+        "Schema::create('shared.module_update_steps', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE shared.module_update_steps ADD CHECK (operation ~ '^[a-f0-9]{40}$'), ADD CHECK (fingerprint ~ '^[a-f0-9]{64}$'), ADD CHECK (status IN ('running', 'succeeded'))\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000009_create_application_settings.php",
+      "lines": 32,
+      "creates": [
+        "Schema::create('shared.application_settings', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE shared.application_settings ADD CONSTRAINT application_settings_singleton CHECK (singleton = 1), ADD CONSTRAINT application_settings_revision CHECK (revision > 0), ADD CONSTRAINT application_settings_object CHECK (jsonb_typeof(values) = 'object')\");",
+        "ALTER TABLE shared.application_settings ADD CONSTRAINT application_branding_bounds CHECK ((branding_logo IS NULL) = (branding_logo_icon IS NULL) AND octet_length(branding_logo) <= 524288 AND octet_length(branding_logo_icon) <= 32768 AND octet_length(branding_favicon) <= 32768)');"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_05_000010_create_module_settings_snapshots.php",
+      "lines": 32,
+      "creates": [
+        "Schema::create('shared.module_settings_snapshots', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE shared.module_settings_snapshots ADD CONSTRAINT module_snapshots_revision CHECK (source_revision >= 0), ADD CONSTRAINT module_snapshots_name CHECK (length(btrim(name)) BETWEEN 1 AND 80), ADD CONSTRAINT module_snapshots_payload CHECK (octet_length(settings_values) <= 131072)');"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/audit/database/migrations/2026_11_03_000001_runa_audit_create_events.php",
+      "lines": 43,
+      "creates": [
+        "$schema->create('events', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_audit.events ADD CHECK (outcome IN ('success','attempt','refused','failure')), ADD CHECK (actor_kind IN ('human','anonymous','system','scheduler','queue','cli','machine')), ADD CHECK ((actor_kind IN ('human','machine')) = (actor_public_id IS NOT NULL)), ADD CHECK (actor_public_id IS NULL OR actor_public_id::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/audit/database/migrations/2026_11_03_000002_runa_audit_create_entities.php",
+      "lines": 31,
+      "creates": [
+        "$schema->create('entities', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_audit.entities ADD CHECK (entity_public_id::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000001_runa_auth_create_users.php",
+      "lines": 76,
+      "creates": [
+        "$schema->create('users', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.users",
+        "ALTER TABLE runa_auth.users ADD CHECK (jsonb_typeof(recovery_hashes) = 'array'), ADD CHECK (totp_counter IS NULL OR totp_counter >= 0), ADD CHECK ((totp_pending IS NULL) = (totp_pending_until IS NULL))\");",
+        "ALTER TABLE runa_auth.users ADD CHECK ((avatar_path IS NULL) = (avatar_type IS NULL)), ADD CHECK (avatar_type IS NULL OR avatar_type IN ('image/jpeg', 'image/png', 'image/webp'))\");",
+        "ALTER TABLE runa_auth.users ADD CHECK (preference_revision >= 0)');"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000002_runa_auth_create_entry_tokens.php",
+      "lines": 45,
+      "creates": [
+        "$schema->create('entry_tokens', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.entry_tokens ADD CHECK (purpose IN ('invitation', 'verification', 'reset', 'email_otp')), ADD CHECK (security_version > 0 AND reminders >= 0), ADD CHECK (token_hash ~ '^[0-9a-f]{64}$')\");",
+        "ALTER TABLE runa_auth.entry_tokens ADD CHECK (purpose <> 'email_otp' OR (session_hash IS NOT NULL AND session_hash ~ '^[0-9a-f]{64}$'))\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000003_runa_auth_create_sessions.php",
+      "lines": 40,
+      "creates": [
+        "$schema->create('sessions', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.sessions ADD CHECK (session_hash ~ '^[0-9a-f]{64}$'), ADD CHECK (security_version > 0), ADD CHECK (expires_at > authenticated_at AND activity_at >= authenticated_at)\");",
+        "ALTER TABLE runa_auth.sessions ADD CHECK ((factor_method IS NULL AND factor_verified_at IS NULL) OR (factor_method IS NOT NULL AND factor_method IN ('totp', 'recovery', 'email') AND factor_verified_at IS NOT NULL))\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000004_runa_auth_create_trusted_devices.php",
+      "lines": 40,
+      "creates": [
+        "$schema->create('trusted_devices', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.trusted_devices ADD CHECK (token_hash ~ '^[0-9a-f]{64}$'), ADD CHECK (security_version > 0)\");",
+        "ALTER TABLE runa_auth.trusted_devices ADD CHECK (browser IS NULL OR browser IN ('Edge', 'Opera', 'Samsung Internet', 'Firefox', 'Chrome', 'Safari')), ADD CHECK (platform IS NULL OR platform IN ('iOS', 'iPadOS', 'Android', 'Windows', 'ChromeOS', 'macOS', 'Linux'))\");",
+        "ALTER TABLE runa_auth.trusted_devices ADD CHECK (factor_method IS NULL OR factor_method IN ('totp', 'recovery', 'email'))\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000005_runa_auth_create_login_windows.php",
+      "lines": 29,
+      "creates": [
+        "$schema->create('login_windows', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.login_windows ADD CHECK (fingerprint ~ '^[0-9a-f]{64}$'), ADD CHECK (attempts > 0)\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000006_runa_auth_create_password_history.php",
+      "lines": 28,
+      "creates": [
+        "$schema->create('password_history', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000007_runa_auth_create_step_up_proofs.php",
+      "lines": 37,
+      "creates": [
+        "$schema->create('step_up_proofs', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.step_up_proofs ADD CHECK (security_version > 0), ADD CHECK (expires_at > verified_at), ADD CHECK (session_hash ~ '^[0-9a-f]{64}$')\");",
+        "ALTER TABLE runa_auth.step_up_proofs ADD CHECK ((activity_at IS NULL) = (idle_expires_at IS NULL)), ADD CHECK (activity_at IS NULL OR (activity_at >= verified_at AND idle_expires_at > activity_at))');"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000008_runa_auth_create_avatar_files.php",
+      "lines": 29,
+      "creates": [
+        "$schema->create('avatar_files', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000009_runa_auth_create_secondary_emails.php",
+      "lines": 32,
+      "creates": [
+        "$schema->create('secondary_emails', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.secondary_emails ADD CHECK (email = lower(btrim(email)) AND octet_length(email) BETWEEN 3 AND 254 AND email ~ '^[!-~]+@[!-~]+$')\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000010_runa_auth_create_email_changes.php",
+      "lines": 40,
+      "creates": [
+        "$schema->create('email_changes', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.email_changes ADD CHECK (session_policy IN ('keep_all', 'revoke_others', 'revoke_all')), ADD CHECK (security_version > 0), ADD CHECK (old_email <> new_email), ADD CHECK (NOT administrative OR session_policy = 'revoke_all')\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000011_runa_auth_create_profile_mail.php",
+      "lines": 41,
+      "creates": [
+        "$schema->create('profile_mail', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.profile_mail ADD CHECK (purpose IN ('primary_new', 'primary_old', 'secondary', 'notice')), ADD CHECK ((purpose IN ('primary_new', 'primary_old') AND change_id IS NOT NULL AND secondary_id IS NULL) OR (purpose = 'secondary' AND secondary_id IS NOT NULL AND change_id IS NULL) OR (purpose = 'notice' AND secondary_id IS NULL AND change_id IS NULL)), ADD CHECK ((purpose = 'notice') = (token_hash IS NULL)), ADD CHECK (security_version > 0)\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000012_runa_auth_create_preferences.php",
+      "lines": 32,
+      "creates": [
+        "$schema->create('preferences', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.preferences ADD CHECK (definition_version > 0), ADD CHECK (octet_length(value::text) <= 32768), ADD CHECK (octet_length(scope) <= 512)');"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000013_runa_auth_create_delivery_preferences.php",
+      "lines": 32,
+      "creates": [
+        "$schema->create('delivery_preferences', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.delivery_preferences ADD CHECK (jsonb_typeof(recipients) = 'array' AND jsonb_array_length(recipients) BETWEEN 1 AND 21)\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000014_runa_auth_create_security_notices.php",
+      "lines": 37,
+      "creates": [
+        "$schema->create('security_notices', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.security_notices ADD CHECK (browser IS NULL OR browser IN ('Edge', 'Opera', 'Samsung Internet', 'Firefox', 'Chrome', 'Safari')), ADD CHECK (platform IS NULL OR platform IN ('iOS', 'iPadOS', 'Android', 'Windows', 'ChromeOS', 'macOS', 'Linux'))\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000015_runa_auth_create_notice_frequencies.php",
+      "lines": 28,
+      "creates": [
+        "$schema->create('notice_frequencies', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000016_runa_auth_create_known_browsers.php",
+      "lines": 28,
+      "creates": [
+        "$schema->create('known_browsers', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000017_runa_auth_create_notice_scan.php",
+      "lines": 25,
+      "creates": [
+        "$schema->create('notice_scan', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.notice_scan ADD CHECK (id = 1 AND last_user_id >= 0)');"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000018_runa_auth_create_policy_versions.php",
+      "lines": 32,
+      "creates": [
+        "$schema->create('policy_versions', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.policy_versions ADD CHECK (revision >= 0), ADD CHECK (phase IN ('baseline', 'publish', 'restore', 'upgrade')), ADD CHECK (jsonb_typeof(values) = 'object')\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000019_runa_auth_create_policy_exceptions.php",
+      "lines": 36,
+      "creates": [
+        "$schema->create('policy_exceptions', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.policy_exceptions ADD CHECK (key IN ('password_expiry_days', 'session_idle_minutes')), ADD CHECK ((key = 'password_expiry_days' AND value BETWEEN 1 AND 3650) OR (key = 'session_idle_minutes' AND value BETWEEN 1 AND 43200)), ADD CHECK (version > 0 AND policy_revision >= 0), ADD CHECK (octet_length(reason) BETWEEN 1 AND 1000)\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000020_runa_auth_create_operator_tokens.php",
+      "lines": 32,
+      "creates": [
+        "$schema->create('operator_tokens', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.operator_tokens ADD CHECK (purpose IN ('initialize', 'recover')), ADD CHECK (security_version > 0), ADD CHECK (token_hash ~ '^[a-f0-9]{64}$')\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000021_runa_auth_create_initialization.php",
+      "lines": 26,
+      "creates": [
+        "$schema->create('initialization', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_auth.initialization ADD CHECK (id = 1), ADD CHECK ((subject IS NULL) = (completed_at IS NULL))');"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000022_runa_auth_create_development_fixtures.php",
+      "lines": 26,
+      "creates": [
+        "->create('development_fixtures', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000001_runa_permissions_create_permissions.php",
+      "lines": 41,
+      "creates": [
+        "$schema->create('permissions', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": ["ALTER TABLE runa_permissions.permissions"],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000002_runa_permissions_create_roles.php",
+      "lines": 41,
+      "creates": [
+        "$schema->create('roles', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": ["ALTER TABLE runa_permissions.roles"],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000003_runa_permissions_create_role_permissions.php",
+      "lines": 30,
+      "creates": [
+        "$schema->create('role_permissions', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000004_runa_permissions_create_user_roles.php",
+      "lines": 30,
+      "creates": [
+        "$schema->create('user_roles', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_permissions.user_roles ADD CHECK (user_public_id::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000005_runa_permissions_create_user_permissions.php",
+      "lines": 30,
+      "creates": [
+        "$schema->create('user_permissions', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_permissions.user_permissions ADD CHECK (user_public_id::text ~ '^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')\");"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000006_runa_permissions_create_presets.php",
+      "lines": 37,
+      "creates": [
+        "$schema->create('presets', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": ["ALTER TABLE runa_permissions.presets"],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000007_runa_permissions_create_user_access.php",
+      "lines": 30,
+      "creates": [
+        "$schema->create('user_access', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [
+        "ALTER TABLE runa_permissions.user_access ADD CHECK (version > 0),"
+      ],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000008_runa_permissions_create_preset_roles.php",
+      "lines": 30,
+      "creates": [
+        "$schema->create('preset_roles', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000009_runa_permissions_create_preset_permissions.php",
+      "lines": 30,
+      "creates": [
+        "$schema->create('preset_permissions', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [],
+      "decision": "K03"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000010_runa_permissions_create_development_fixtures.php",
+      "lines": 26,
+      "creates": [
+        "$schema->create('development_fixtures', function (Blueprint $table): void {"
+      ],
+      "table_alter": false,
+      "sql": [],
+      "decision": "K03"
+    }
+  ],
+  "upgrade_inventory": [
+    {
+      "path": "src/app/modules/reference/backend/UpgradeAdminShowcase.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/app/modules/reference/backend/UpgradeCoreExamples.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/app/modules/reference/backend/UpgradePublicHttp.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/app/modules/reference/backend/UpgradeSourceHealth.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/app/modules/reference/backend/UpgradeTestLayout.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/UpgradeCustomPageContext.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/UpgradeEditorScopes.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/UpgradeCapture.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/UpgradeManagement.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/UpgradePermissionDeclarations.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/UpgradePlatformComposition.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/UpgradePlatformDelivery.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/UpgradeTestLayout.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAccountCards.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAccountCopy.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAccountEditor.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAccountMethods.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAccountOrchestration.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAccountRefresh.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAccountUi.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAllPreferences.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAuthorityParticipation.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAvatarModal.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeCoreIntegration.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeCredentials.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeDevelopmentFixtures.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeEntry.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeEntryUi.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeExecutionLayout.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeFactorDialogs.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeFactorSpacing.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeFormNotifications.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeFormPresentation.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeFrontendContracts.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeHeadingFocus.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeMailLayout.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeNavigationCancellation.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradePermissionDeclarations.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradePlatformComposition.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradePlatformDelivery.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradePolicy.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradePreferences.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradePreferencesPresentation.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradePreferencesSelection.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradePresentation.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeProfiles.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeReadScopes.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeRecoveryDialog.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeSecondaryDetails.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeSectionActivity.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeSessionSorting.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeSessions.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeSettingsPublication.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeShellAvatar.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeTestLayout.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeTotpQr.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeUserPanel.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeWelcomeHeader.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeWelcomeLinks.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAccess.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthAllPreferences.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthAvatar.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthCards.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthFactorDialogs.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthPresentation.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthQr.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthRecoveryDialog.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthRefresh.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthSecondaryDetails.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthority.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeCoreIntegration.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeDevelopmentFixtures.php",
+      "decision": "P02",
+      "effect": "preserve real initialization/default/history assertions in owning current initializer"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradePlatformComposition.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradePlatformDelivery.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeTableExports.php",
+      "decision": "P02",
+      "effect": "empty"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeTestLayout.php",
+      "decision": "P02",
+      "effect": "empty"
+    }
+  ],
+  "upgrade_providers": [
+    {
+      "path": "src/app/modules/reference/backend/Definitions/ReferenceUpgrades.php",
+      "edge_count": 6,
+      "decision": "P02",
+      "edges": [
+        {
+          "key": "initialize",
+          "from": null,
+          "to": "0.1.0",
+          "handler": "InitializeReference"
+        },
+        {
+          "key": "central_test_layout",
+          "from": "0.1.0",
+          "to": "0.1.1",
+          "handler": "UpgradeTestLayout"
+        },
+        {
+          "key": "public_http",
+          "from": "0.1.1",
+          "to": "0.1.2",
+          "handler": "UpgradePublicHttp"
+        },
+        {
+          "key": "source_health",
+          "from": "0.1.2",
+          "to": "0.2.0",
+          "handler": "UpgradeSourceHealth"
+        },
+        {
+          "key": "admin_showcase",
+          "from": "0.2.0",
+          "to": "0.3.0",
+          "handler": "UpgradeAdminShowcase"
+        },
+        {
+          "key": "core_examples",
+          "from": "0.3.0",
+          "to": "0.4.0",
+          "handler": "UpgradeCoreExamples"
+        }
+      ]
+    },
+    {
+      "path": "src/runa/modules/admin/backend/Definitions/AdminUpgrades.php",
+      "edge_count": 5,
+      "decision": "P02",
+      "edges": [
+        {
+          "key": "initialize",
+          "from": null,
+          "to": "0.1.0",
+          "handler": "InitializeAdmin"
+        },
+        {
+          "key": "standalone_participants",
+          "from": "0.1.0",
+          "to": "0.2.0",
+          "handler": "InitializeAdmin"
+        },
+        {
+          "key": "creation_release",
+          "from": "0.2.0",
+          "to": "1.0.0",
+          "handler": "InitializeAdmin"
+        },
+        {
+          "key": "editor_scopes",
+          "from": "1.0.0",
+          "to": "1.0.1",
+          "handler": "UpgradeEditorScopes"
+        },
+        {
+          "key": "custom_page_context",
+          "from": "1.0.1",
+          "to": "1.1.0",
+          "handler": "UpgradeCustomPageContext"
+        }
+      ]
+    },
+    {
+      "path": "src/runa/modules/audit/backend/Definitions/AuditUpgrades.php",
+      "edge_count": 15,
+      "decision": "P02",
+      "edges": [
+        {
+          "key": "initialize",
+          "from": null,
+          "to": "0.1.0",
+          "handler": "InitializeAudit"
+        },
+        {
+          "key": "capture",
+          "from": "0.1.0",
+          "to": "0.2.0",
+          "handler": "UpgradeCapture"
+        },
+        {
+          "key": "own_history",
+          "from": "0.2.0",
+          "to": "0.3.0",
+          "handler": "UpgradeCapture"
+        },
+        {
+          "key": "permission_declarations",
+          "from": "0.3.0",
+          "to": "0.4.0",
+          "handler": "UpgradePermissionDeclarations"
+        },
+        {
+          "key": "management",
+          "from": "0.4.0",
+          "to": "0.5.0",
+          "handler": "UpgradeManagement"
+        },
+        {
+          "key": "own_history_details",
+          "from": "0.5.0",
+          "to": "0.6.0",
+          "handler": "UpgradeCapture"
+        },
+        {
+          "key": "structured_history",
+          "from": "0.6.0",
+          "to": "0.7.0",
+          "handler": "UpgradeCapture"
+        },
+        {
+          "key": "stable_release",
+          "from": "0.7.0",
+          "to": "1.0.0",
+          "handler": "UpgradeCapture"
+        },
+        {
+          "key": "central_test_layout",
+          "from": "1.0.0",
+          "to": "1.0.1",
+          "handler": "UpgradeTestLayout"
+        },
+        {
+          "key": "platform_composition",
+          "from": "1.0.1",
+          "to": "1.0.2",
+          "handler": "UpgradePlatformComposition"
+        },
+        {
+          "key": "platform_delivery",
+          "from": "1.0.2",
+          "to": "1.0.3",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "verification_contracts",
+          "from": "1.0.3",
+          "to": "1.0.4",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "admin_platform",
+          "from": "1.0.4",
+          "to": "1.0.5",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "admin_history",
+          "from": "1.0.5",
+          "to": "1.1.0",
+          "handler": "UpgradeManagement"
+        },
+        {
+          "key": "settings_protocol",
+          "from": "1.1.0",
+          "to": "1.1.1",
+          "handler": "UpgradePlatformDelivery"
+        }
+      ]
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/IdentityUpgrades.php",
+      "edge_count": 71,
+      "decision": "P02",
+      "edges": [
+        {
+          "key": "initialize",
+          "from": null,
+          "to": "0.1.0",
+          "handler": "InitializeAuth"
+        },
+        {
+          "key": "entry",
+          "from": "0.1.0",
+          "to": "0.2.0",
+          "handler": "UpgradeEntry"
+        },
+        {
+          "key": "sessions",
+          "from": "0.2.0",
+          "to": "0.3.0",
+          "handler": "UpgradeSessions"
+        },
+        {
+          "key": "credentials",
+          "from": "0.3.0",
+          "to": "0.4.0",
+          "handler": "UpgradeCredentials"
+        },
+        {
+          "key": "profiles",
+          "from": "0.4.0",
+          "to": "0.5.0",
+          "handler": "UpgradeProfiles"
+        },
+        {
+          "key": "preferences",
+          "from": "0.5.0",
+          "to": "0.6.0",
+          "handler": "UpgradePreferences"
+        },
+        {
+          "key": "policy",
+          "from": "0.6.0",
+          "to": "0.7.0",
+          "handler": "UpgradePolicy"
+        },
+        {
+          "key": "entry_ui",
+          "from": "0.7.0",
+          "to": "0.8.0",
+          "handler": "UpgradeEntryUi"
+        },
+        {
+          "key": "account_ui",
+          "from": "0.8.0",
+          "to": "0.9.0",
+          "handler": "UpgradeAccountUi"
+        },
+        {
+          "key": "permission_declarations",
+          "from": "0.9.0",
+          "to": "0.10.0",
+          "handler": "UpgradePermissionDeclarations"
+        },
+        {
+          "key": "authority_participation",
+          "from": "0.10.0",
+          "to": "0.10.1",
+          "handler": "UpgradeAuthorityParticipation"
+        },
+        {
+          "key": "core_integration",
+          "from": "0.10.1",
+          "to": "0.11.0",
+          "handler": "UpgradeCoreIntegration"
+        },
+        {
+          "key": "development_fixtures",
+          "from": "0.11.0",
+          "to": "0.12.0",
+          "handler": "UpgradeDevelopmentFixtures"
+        },
+        {
+          "key": "presentation",
+          "from": "0.12.0",
+          "to": "0.13.0",
+          "handler": "UpgradePresentation"
+        },
+        {
+          "key": "welcome_header",
+          "from": "0.13.0",
+          "to": "0.13.1",
+          "handler": "UpgradeWelcomeHeader"
+        },
+        {
+          "key": "welcome_links",
+          "from": "0.13.1",
+          "to": "0.13.2",
+          "handler": "UpgradeWelcomeLinks"
+        },
+        {
+          "key": "heading_focus",
+          "from": "0.13.2",
+          "to": "0.13.3",
+          "handler": "UpgradeHeadingFocus"
+        },
+        {
+          "key": "form_presentation",
+          "from": "0.13.3",
+          "to": "0.13.4",
+          "handler": "UpgradeFormPresentation"
+        },
+        {
+          "key": "user_panel",
+          "from": "0.13.4",
+          "to": "0.13.5",
+          "handler": "UpgradeUserPanel"
+        },
+        {
+          "key": "navigation_cancellation",
+          "from": "0.13.5",
+          "to": "0.13.6",
+          "handler": "UpgradeNavigationCancellation"
+        },
+        {
+          "key": "account_editor",
+          "from": "0.13.6",
+          "to": "0.13.7",
+          "handler": "UpgradeAccountEditor"
+        },
+        {
+          "key": "account_cards",
+          "from": "0.13.7",
+          "to": "0.14.0",
+          "handler": "UpgradeAccountCards"
+        },
+        {
+          "key": "avatar_modal",
+          "from": "0.14.0",
+          "to": "0.14.1",
+          "handler": "UpgradeAvatarModal"
+        },
+        {
+          "key": "form_notifications",
+          "from": "0.14.1",
+          "to": "0.14.2",
+          "handler": "UpgradeFormNotifications"
+        },
+        {
+          "key": "shell_avatar",
+          "from": "0.14.2",
+          "to": "0.15.0",
+          "handler": "UpgradeShellAvatar"
+        },
+        {
+          "key": "account_methods",
+          "from": "0.15.0",
+          "to": "0.15.1",
+          "handler": "UpgradeAccountMethods"
+        },
+        {
+          "key": "totp_qr",
+          "from": "0.15.1",
+          "to": "0.16.0",
+          "handler": "UpgradeTotpQr"
+        },
+        {
+          "key": "recovery_dialog",
+          "from": "0.16.0",
+          "to": "0.17.0",
+          "handler": "UpgradeRecoveryDialog"
+        },
+        {
+          "key": "secondary_details",
+          "from": "0.17.0",
+          "to": "0.18.0",
+          "handler": "UpgradeSecondaryDetails"
+        },
+        {
+          "key": "mail_layout",
+          "from": "0.18.0",
+          "to": "0.18.1",
+          "handler": "UpgradeMailLayout"
+        },
+        {
+          "key": "session_sorting",
+          "from": "0.18.1",
+          "to": "0.18.2",
+          "handler": "UpgradeSessionSorting"
+        },
+        {
+          "key": "factor_dialogs",
+          "from": "0.18.2",
+          "to": "0.19.0",
+          "handler": "UpgradeFactorDialogs"
+        },
+        {
+          "key": "preferences_presentation",
+          "from": "0.19.0",
+          "to": "0.19.1",
+          "handler": "UpgradePreferencesPresentation"
+        },
+        {
+          "key": "all_preferences",
+          "from": "0.19.1",
+          "to": "0.20.0",
+          "handler": "UpgradeAllPreferences"
+        },
+        {
+          "key": "preferences_selection",
+          "from": "0.20.0",
+          "to": "0.20.1",
+          "handler": "UpgradePreferencesSelection"
+        },
+        {
+          "key": "account_refresh",
+          "from": "0.20.1",
+          "to": "0.21.0",
+          "handler": "UpgradeAccountRefresh"
+        },
+        {
+          "key": "account_copy",
+          "from": "0.21.0",
+          "to": "0.21.1",
+          "handler": "UpgradeAccountCopy"
+        },
+        {
+          "key": "factor_spacing",
+          "from": "0.21.1",
+          "to": "0.21.2",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "trust_heading",
+          "from": "0.21.2",
+          "to": "0.21.3",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "secondary_status_layout",
+          "from": "0.21.3",
+          "to": "0.21.4",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "frontend_type_safety",
+          "from": "0.21.4",
+          "to": "0.21.5",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "structural_loading",
+          "from": "0.21.5",
+          "to": "0.21.6",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "table_loading",
+          "from": "0.21.6",
+          "to": "0.21.7",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "single_table_read",
+          "from": "0.21.7",
+          "to": "0.21.8",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "welcome_modules",
+          "from": "0.21.8",
+          "to": "0.21.9",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "avatar_loading",
+          "from": "0.21.9",
+          "to": "0.21.10",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "welcome_navigation",
+          "from": "0.21.10",
+          "to": "0.21.11",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "account_action_tones",
+          "from": "0.21.11",
+          "to": "0.21.12",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "targeted_throttling",
+          "from": "0.21.12",
+          "to": "0.21.13",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "preference_history",
+          "from": "0.21.13",
+          "to": "0.21.14",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "preference_history_labels",
+          "from": "0.21.14",
+          "to": "0.21.15",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "history_details",
+          "from": "0.21.15",
+          "to": "0.22.0",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "concrete_history",
+          "from": "0.22.0",
+          "to": "0.23.0",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "registration_confirmation",
+          "from": "0.23.0",
+          "to": "0.23.1",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "stable_release",
+          "from": "0.23.1",
+          "to": "1.0.0",
+          "handler": "UpgradeFactorSpacing"
+        },
+        {
+          "key": "central_test_layout",
+          "from": "1.0.0",
+          "to": "1.0.1",
+          "handler": "UpgradeTestLayout"
+        },
+        {
+          "key": "platform_composition",
+          "from": "1.0.1",
+          "to": "1.0.2",
+          "handler": "UpgradePlatformComposition"
+        },
+        {
+          "key": "execution_layout",
+          "from": "1.0.2",
+          "to": "1.0.3",
+          "handler": "UpgradeExecutionLayout"
+        },
+        {
+          "key": "frontend_contracts",
+          "from": "1.0.3",
+          "to": "1.1.0",
+          "handler": "UpgradeFrontendContracts"
+        },
+        {
+          "key": "account_orchestration",
+          "from": "1.1.0",
+          "to": "1.1.1",
+          "handler": "UpgradeAccountOrchestration"
+        },
+        {
+          "key": "platform_delivery",
+          "from": "1.1.1",
+          "to": "1.1.2",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "frontend_source_checks",
+          "from": "1.1.2",
+          "to": "1.1.3",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "verification_contracts",
+          "from": "1.1.3",
+          "to": "1.1.4",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "admin_platform",
+          "from": "1.1.4",
+          "to": "1.1.5",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "native_transactions",
+          "from": "1.1.5",
+          "to": "2.0.0",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "section_activity",
+          "from": "2.0.0",
+          "to": "3.0.0",
+          "handler": "UpgradeSectionActivity"
+        },
+        {
+          "key": "user_details",
+          "from": "3.0.0",
+          "to": "4.0.0",
+          "handler": "UpgradeSectionActivity"
+        },
+        {
+          "key": "settings_snapshots",
+          "from": "4.0.0",
+          "to": "5.0.0",
+          "handler": "UpgradeFrontendContracts"
+        },
+        {
+          "key": "read_scopes",
+          "from": "5.0.0",
+          "to": "5.0.1",
+          "handler": "UpgradeReadScopes"
+        },
+        {
+          "key": "common_settings",
+          "from": "5.0.1",
+          "to": "5.0.2",
+          "handler": "UpgradeSettingsPublication"
+        },
+        {
+          "key": "settings_review_identity",
+          "from": "5.0.2",
+          "to": "6.0.0",
+          "handler": "UpgradeSettingsPublication"
+        }
+      ]
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/PermissionsUpgrades.php",
+      "edge_count": 25,
+      "decision": "P02",
+      "edges": [
+        {
+          "key": "initialize",
+          "from": null,
+          "to": "0.1.0",
+          "handler": "InitializePermissions"
+        },
+        {
+          "key": "access",
+          "from": "0.1.0",
+          "to": "0.2.0",
+          "handler": "UpgradeAccess"
+        },
+        {
+          "key": "authority",
+          "from": "0.2.0",
+          "to": "0.3.0",
+          "handler": "UpgradeAuthority"
+        },
+        {
+          "key": "core_integration",
+          "from": "0.3.0",
+          "to": "0.4.0",
+          "handler": "UpgradeCoreIntegration"
+        },
+        {
+          "key": "development_fixtures",
+          "from": "0.4.0",
+          "to": "0.5.0",
+          "handler": "UpgradeDevelopmentFixtures"
+        },
+        {
+          "key": "auth_presentation",
+          "from": "0.5.0",
+          "to": "0.5.1",
+          "handler": "UpgradeAuthPresentation"
+        },
+        {
+          "key": "auth_cards",
+          "from": "0.5.1",
+          "to": "0.5.2",
+          "handler": "UpgradeAuthCards"
+        },
+        {
+          "key": "auth_avatar",
+          "from": "0.5.2",
+          "to": "0.5.3",
+          "handler": "UpgradeAuthAvatar"
+        },
+        {
+          "key": "auth_qr",
+          "from": "0.5.3",
+          "to": "0.5.4",
+          "handler": "UpgradeAuthQr"
+        },
+        {
+          "key": "auth_recovery_dialog",
+          "from": "0.5.4",
+          "to": "0.5.5",
+          "handler": "UpgradeAuthRecoveryDialog"
+        },
+        {
+          "key": "auth_secondary_details",
+          "from": "0.5.5",
+          "to": "0.5.6",
+          "handler": "UpgradeAuthSecondaryDetails"
+        },
+        {
+          "key": "auth_factor_dialogs",
+          "from": "0.5.6",
+          "to": "0.5.7",
+          "handler": "UpgradeAuthFactorDialogs"
+        },
+        {
+          "key": "auth_all_preferences",
+          "from": "0.5.7",
+          "to": "0.5.8",
+          "handler": "UpgradeAuthAllPreferences"
+        },
+        {
+          "key": "auth_refresh",
+          "from": "0.5.8",
+          "to": "0.5.9",
+          "handler": "UpgradeAuthRefresh"
+        },
+        {
+          "key": "history_dependencies",
+          "from": "0.5.9",
+          "to": "0.5.10",
+          "handler": "UpgradeAuthRefresh"
+        },
+        {
+          "key": "history_capture_dependencies",
+          "from": "0.5.10",
+          "to": "0.5.11",
+          "handler": "UpgradeAuthRefresh"
+        },
+        {
+          "key": "stable_release",
+          "from": "0.5.11",
+          "to": "1.0.0",
+          "handler": "UpgradeAuthRefresh"
+        },
+        {
+          "key": "central_test_layout",
+          "from": "1.0.0",
+          "to": "1.0.1",
+          "handler": "UpgradeTestLayout"
+        },
+        {
+          "key": "platform_composition",
+          "from": "1.0.1",
+          "to": "1.0.2",
+          "handler": "UpgradePlatformComposition"
+        },
+        {
+          "key": "platform_delivery",
+          "from": "1.0.2",
+          "to": "1.0.3",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "verification_contracts",
+          "from": "1.0.3",
+          "to": "1.0.4",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "admin_platform",
+          "from": "1.0.4",
+          "to": "1.0.5",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "native_transactions",
+          "from": "1.0.5",
+          "to": "2.0.0",
+          "handler": "UpgradePlatformDelivery"
+        },
+        {
+          "key": "table_exports",
+          "from": "2.0.0",
+          "to": "2.1.0",
+          "handler": "UpgradeTableExports"
+        },
+        {
+          "key": "settings_protocol",
+          "from": "2.1.0",
+          "to": "2.1.1",
+          "handler": "UpgradePlatformDelivery"
+        }
+      ]
+    }
+  ],
+  "api_definitions": [
+    {
+      "path": "src/app/modules/reference/backend/Definitions/ReferenceApi.php",
+      "contract": "Ping::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Definitions/ReferenceToolsApi.php",
+      "contract": "ReferenceTools::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/Definitions/AdminApi.php",
+      "contract": "AdminAccess::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/Definitions/OperationsApi.php",
+      "contract": "AdminOperations::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/Definitions/AuditApi.php",
+      "contract": "AuditRecords::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/Definitions/AuditReadApi.php",
+      "contract": "AuditReads::class",
+      "version": "1.1.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/Definitions/OwnHistoryApi.php",
+      "contract": "OwnHistory::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/Definitions/OwnHistoryDetailsApi.php",
+      "contract": "OwnHistoryDetails::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/AdministrationApi.php",
+      "contract": "AuthAdministration::class",
+      "version": "2.1.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/BulkSessionsApi.php",
+      "contract": "AuthBulkSessions::class",
+      "version": "2.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/BulkUsersApi.php",
+      "contract": "AuthBulkUsers::class",
+      "version": "2.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/DeliveryApi.php",
+      "contract": "AuthDelivery::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/IdentityApi.php",
+      "contract": "AuthIdentities::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/InvitationsApi.php",
+      "contract": "AuthInvitations::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/LifecycleApi.php",
+      "contract": "AuthLifecycle::class",
+      "version": "2.1.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/PoliciesApi.php",
+      "contract": "AuthPolicies::class",
+      "version": "4.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/PreferencesApi.php",
+      "contract": "AuthPreferences::class",
+      "version": "1.1.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/ProfilesApi.php",
+      "contract": "AuthProfiles::class",
+      "version": "2.1.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/SecurityApi.php",
+      "contract": "AuthSecurity::class",
+      "version": "1.2.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/SessionsApi.php",
+      "contract": "AuthSessions::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/StepUpApi.php",
+      "contract": "AuthStepUp::class",
+      "version": "2.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/AccessApi.php",
+      "contract": "PermissionsAccess::class",
+      "version": "2.2.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/AuthorityApi.php",
+      "contract": "PermissionsAuthority::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/AuthorityBatchApi.php",
+      "contract": "PermissionsAuthorityBatch::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/PermissionsApi.php",
+      "contract": "Permissions::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/SelectionApi.php",
+      "contract": "PermissionsSelections::class",
+      "version": "1.0.0",
+      "decision": "K01"
+    }
+  ],
+  "screened_candidate_inventory": [
+    {
+      "path": "distribution/bootstrap.py",
+      "matches": {
+        "named_boundary": [160]
+      },
+      "review_disposition": "K09/K10; acquisition ownership and retained update evidence"
+    },
+    {
+      "path": "distribution/update_contracts.py",
+      "matches": {
+        "history": [1, 63, 72, 78, 85]
+      },
+      "review_disposition": "K09/K10; acquisition ownership and retained update evidence"
+    },
+    {
+      "path": "distribution/update_execution.py",
+      "matches": {
+        "history": [111]
+      },
+      "review_disposition": "K09/K10; acquisition ownership and retained update evidence"
+    },
+    {
+      "path": "distribution/update_execution_models.py",
+      "matches": {
+        "history": [221]
+      },
+      "review_disposition": "K09/K10; acquisition ownership and retained update evidence"
+    },
+    {
+      "path": "distribution/update_modules.py",
+      "matches": {
+        "history": [87]
+      },
+      "review_disposition": "K09/K10; acquisition ownership and retained update evidence"
+    },
+    {
+      "path": "distribution/update_planning.py",
+      "matches": {
+        "history": [259, 318, 322]
+      },
+      "review_disposition": "K09/K10; acquisition ownership and retained update evidence"
+    },
+    {
+      "path": "docker/embeddings/Dockerfile",
+      "matches": {
+        "history": [16]
+      },
+      "review_disposition": "K10/K12; operational lifecycle and recovery"
+    },
+    {
+      "path": "docker/nginx/production.conf",
+      "matches": {
+        "fallback": [45]
+      },
+      "review_disposition": "K10/K12; operational lifecycle and recovery"
+    },
+    {
+      "path": "docker/php/Dockerfile",
+      "matches": {
+        "history": [66],
+        "named_boundary": [138]
+      },
+      "review_disposition": "K10/K12; operational lifecycle and recovery"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Actions/DispatchWork.php",
+      "matches": {
+        "named_boundary": [6]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Actions/EditSample.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Actions/ReferenceToolsHandler.php",
+      "matches": {
+        "named_boundary": [12, 13]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Definitions/ReferenceApi.php",
+      "matches": {
+        "named_boundary": [7, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Definitions/ReferenceDiagnostic.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Definitions/ReferenceEventHandler.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Definitions/ReferenceJobHandler.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Definitions/ReferenceListener.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Definitions/ReferenceToolsApi.php",
+      "matches": {
+        "named_boundary": [7, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/PingHandler.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/PingProxy.php",
+      "matches": {
+        "named_boundary": [9]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/app/modules/reference/backend/Queries/ReadSamples.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/app/modules/reference/backend/ReferenceToolsProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/app/modules/reference/backend/UpgradePublicHttp.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/app/modules/reference/database/migrations/2026_10_22_000001_app_reference_samples.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/app/modules/reference/database/migrations/2026_11_07_000001_app_reference_add_sample_revision.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/app/routes/web.php",
+      "matches": {
+        "named_boundary": [3]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Console/Commands/CheckApplicationManifest.php",
+      "matches": {
+        "history": [14, 23, 29]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Console/Commands/CheckRuntimeHealth.php",
+      "matches": {
+        "named_boundary": [6]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Console/Commands/TestMail.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Contracts/Modules/AuthRequestThrottle.php",
+      "matches": {
+        "fallback": [13]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/Contracts/Modules/LifecyclePolicy.php",
+      "matches": {
+        "history": [12]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/Contracts/Modules/SlotHost.php",
+      "matches": {
+        "history": [9]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/Contracts/Modules/UpgradeDefinition.php",
+      "matches": {
+        "history": [6, 24]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/Database/DatabaseScope.php",
+      "matches": {
+        "history": [121]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/Development/ApiSourceCheck.php",
+      "matches": {
+        "named_boundary": [117]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Development/Modules/ModuleGenerator.php",
+      "matches": {
+        "named_boundary": [93, 99, 103]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Development/Modules/stubs/README.md.stub",
+      "matches": {
+        "history": [7]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Development/Modules/stubs/admin-adapter.php.stub",
+      "matches": {
+        "named_boundary": [12]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Development/Modules/stubs/admin-api.php.stub",
+      "matches": {
+        "named_boundary": [7, 14]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Development/Modules/stubs/admin-management.php.stub",
+      "matches": {
+        "named_boundary": [6, 73]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Development/Modules/stubs/admin-proxy.php.stub",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Development/Modules/stubs/api.php.stub",
+      "matches": {
+        "named_boundary": [7, 14]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Development/Modules/stubs/migration.php.stub",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Development/Modules/stubs/proxy.php.stub",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Http/AuthAccountBridge.php",
+      "matches": {
+        "named_boundary": [16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Http/Middleware/ThrottleAuthEntry.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Identity/ApplicationIdentity.php",
+      "matches": {
+        "history": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Identity/ApplicationManifest.php",
+      "matches": {
+        "history": [7, 47, 51, 73, 75, 76]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Integration/Core/PermissionAuthorizer.php",
+      "matches": {
+        "named_boundary": [6]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/ModuleFramework/Api/ModuleDeclarations.php",
+      "matches": {
+        "conditional_api": [50, 53]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/ModuleFramework/Development/api-boundary.json",
+      "matches": {
+        "history": [205],
+        "named_boundary": [231, 275]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/ModuleFramework/Events/ModuleIntegrations.php",
+      "matches": {
+        "history": [12, 63]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/ModuleFramework/FrameworkApi.php",
+      "matches": {
+        "history": [5]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/ModuleFramework/HealthDeadline.php",
+      "matches": {
+        "fallback": [7],
+        "conditional_api": [12]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/ModuleFramework/Management/ManagementPages.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/ModuleFramework/Management/ManagementRenderers.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/ModuleFramework/ModuleAvailability.php",
+      "matches": {
+        "history": [7, 62, 70, 78]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/ModuleFramework/ModuleGraph.php",
+      "matches": {
+        "history": [10, 71, 146, 163]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/ModuleFramework/ModuleManifest.php",
+      "matches": {
+        "history": [6, 163]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/ModuleFramework/ModuleRegistry.php",
+      "matches": {
+        "history": [140]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/ModuleFramework/ModuleTransitions.php",
+      "matches": {
+        "history": [58, 64, 76]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/ModuleFramework/Updates/ModuleUpdatePlanner.php",
+      "matches": {
+        "history": [12, 41, 52, 53, 62, 63]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Providers/AuthTransportServiceProvider.php",
+      "matches": {
+        "named_boundary": [7, 11, 21]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Providers/DevelopmentServiceProvider.php",
+      "matches": {
+        "named_boundary": [9]
+      },
+      "review_disposition": "P06 for native test integration; preserve generator/command boundaries K11"
+    },
+    {
+      "path": "src/runa/Providers/RunaServiceProvider.php",
+      "matches": {
+        "named_boundary": [27, 28]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Support/Modules/Development/ModuleContractSuite.php",
+      "matches": {
+        "conditional_api": [140]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Support/Modules/Frontend/ModuleFrontend.php",
+      "matches": {
+        "history": [144]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Support/Modules/Settings/SettingsSnapshots.php",
+      "matches": {
+        "history": [80, 84]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Support/Modules/Storage/ModuleStorage.php",
+      "matches": {
+        "named_boundary": [6, 8, 36, 40]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Support/VersionCompatibility.php",
+      "matches": {
+        "history": [8, 19, 26, 31, 57]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/Testing/Backend/ApplicationTestCommand.php",
+      "matches": {
+        "named_boundary": [6],
+        "conditional_api": [39, 49]
+      },
+      "review_disposition": "P06"
+    },
+    {
+      "path": "src/runa/Testing/Backend/TestRun.php",
+      "matches": {
+        "conditional_api": [29]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Testing/TestCase.php",
+      "matches": {
+        "named_boundary": [10, 11, 12]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/Tooling/Management/HostBridge.php",
+      "matches": {
+        "named_boundary": [10],
+        "conditional_api": [54, 118]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/Tooling/Management/ToolingCommand.php",
+      "matches": {
+        "named_boundary": [78]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/Tooling/Management/development.json",
+      "matches": {
+        "history": [244]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/Tooling/Management/operations.json",
+      "matches": {
+        "history": [77]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/config/app.php",
+      "matches": {
+        "fallback": [10]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/config/branding.php",
+      "matches": {
+        "history": [9]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000001_create_jobs.php",
+      "matches": {
+        "named_boundary": [5, 6]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000002_create_failed_jobs.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000003_create_platform_seed_runs.php",
+      "matches": {
+        "named_boundary": [5, 6]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000004_create_module_registry_state.php",
+      "matches": {
+        "named_boundary": [5, 6]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000005_create_modules.php",
+      "matches": {
+        "named_boundary": [5, 6]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000006_create_module_transitions.php",
+      "matches": {
+        "named_boundary": [5, 6]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000007_create_module_work.php",
+      "matches": {
+        "named_boundary": [5, 6]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000008_create_module_update_steps.php",
+      "matches": {
+        "named_boundary": [5, 6]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_03_000009_create_application_settings.php",
+      "matches": {
+        "named_boundary": [5, 6]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/database/migrations/2026_11_05_000010_create_module_settings_snapshots.php",
+      "matches": {
+        "named_boundary": [5, 6]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/database/seeders/DatabaseSeeder.php",
+      "matches": {
+        "named_boundary": [6]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/AccessProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/Actions/Aggregate.php",
+      "matches": {
+        "history": [75, 81]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/Actions/AggregateMutation.php",
+      "matches": {
+        "history": [57]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/Definitions/AdminApi.php",
+      "matches": {
+        "named_boundary": [8, 16]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/Definitions/OperationsApi.php",
+      "matches": {
+        "named_boundary": [9, 16]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/OperationsProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/Queries/Projection.php",
+      "matches": {
+        "history": [399]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/backend/UpgradeEditorScopes.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/admin/frontend/AdminComponentBoundary.vue",
+      "matches": {
+        "fallback": [51]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/frontend/AdminOperations.vue",
+      "matches": {
+        "history": [295, 302]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/frontend/collections.ts",
+      "matches": {
+        "named_boundary": [2, 5]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/frontend/contracts.ts",
+      "matches": {
+        "named_boundary": [175, 353, 359, 362]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/frontend/messages.ts",
+      "matches": {
+        "history": [249, 251]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/frontend/operationMessages.ts",
+      "matches": {
+        "history": [15, 18, 19]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/frontend/refusals.ts",
+      "matches": {
+        "history": [11, 104]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/frontend/useAdminOperations.ts",
+      "matches": {
+        "fallback": [261]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/admin/frontend/useAdminTable.ts",
+      "matches": {
+        "named_boundary": [18, 35, 56, 58, 87, 95, 104, 111, 275, 276, 524]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/AuditProxy.php",
+      "matches": {
+        "named_boundary": [10]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/AuditReadProxy.php",
+      "matches": {
+        "named_boundary": [11]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/Definitions/AuditApi.php",
+      "matches": {
+        "named_boundary": [9, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/Definitions/AuditReadApi.php",
+      "matches": {
+        "named_boundary": [8, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/Definitions/OwnHistoryApi.php",
+      "matches": {
+        "named_boundary": [9, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/Definitions/OwnHistoryDetailsApi.php",
+      "matches": {
+        "named_boundary": [9, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/OwnHistoryDetailsProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/OwnHistoryProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/Support/AutomaticCapture.php",
+      "matches": {
+        "conditional_api": [45]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/audit/backend/UpgradePlatformDelivery.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/audit/database/migrations/2026_11_03_000001_runa_audit_create_events.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/audit/database/migrations/2026_11_03_000002_runa_audit_create_entities.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/AccountPreferences.php",
+      "matches": {
+        "history": [180, 192, 248]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/AuthenticateCredentials.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/AuthenticateSession.php",
+      "matches": {
+        "named_boundary": [8, 9]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/Avatars.php",
+      "matches": {
+        "named_boundary": [10]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/ChangeIdentity.php",
+      "matches": {
+        "history": [52],
+        "named_boundary": [10, 11]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/CredentialFactors.php",
+      "matches": {
+        "named_boundary": [12, 13]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/DeliverEntryMail.php",
+      "matches": {
+        "named_boundary": [7, 8]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/EntryTokens.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/Passwords.php",
+      "matches": {
+        "named_boundary": [8, 9]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/ProfileMail.php",
+      "matches": {
+        "named_boundary": [7, 8]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/RegisterAccount.php",
+      "matches": {
+        "named_boundary": [7, 8]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/SecurityNotices.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/SessionStore.php",
+      "matches": {
+        "named_boundary": [9]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/StepUp.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Actions/TrustedDevices.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/AdministrationProxy.php",
+      "matches": {
+        "named_boundary": [11]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/BulkSessionsProxy.php",
+      "matches": {
+        "named_boundary": [9]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/BulkUsersProxy.php",
+      "matches": {
+        "named_boundary": [10]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Contracts/AuthPreferences.php",
+      "matches": {
+        "history": [21, 24]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Contracts/SecurityMailDelivery.php",
+      "matches": {
+        "fallback": [5]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/AdministrationApi.php",
+      "matches": {
+        "named_boundary": [8, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/BulkSessionsApi.php",
+      "matches": {
+        "named_boundary": [9, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/BulkUsersApi.php",
+      "matches": {
+        "named_boundary": [9, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/DeliveryApi.php",
+      "matches": {
+        "named_boundary": [10, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/IdentityApi.php",
+      "matches": {
+        "named_boundary": [9, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/InvitationsApi.php",
+      "matches": {
+        "named_boundary": [10, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/LifecycleApi.php",
+      "matches": {
+        "named_boundary": [10, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/PoliciesApi.php",
+      "matches": {
+        "named_boundary": [10, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/PreferencesApi.php",
+      "matches": {
+        "named_boundary": [10, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/ProfilesApi.php",
+      "matches": {
+        "named_boundary": [10, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/SecurityApi.php",
+      "matches": {
+        "named_boundary": [10, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/SessionsApi.php",
+      "matches": {
+        "named_boundary": [10, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Definitions/StepUpApi.php",
+      "matches": {
+        "named_boundary": [10, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/DeliveryProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Development/DevelopmentAdministratorSeeder.php",
+      "matches": {
+        "named_boundary": [6]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Http/Controllers/ActivityController.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Http/Controllers/EntryOptionsController.php",
+      "matches": {
+        "named_boundary": [6]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Http/Controllers/ResendVerificationController.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Http/Controllers/RevokeSessionController.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Http/Controllers/SecurityStatusController.php",
+      "matches": {
+        "named_boundary": [8, 9]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Http/Controllers/SessionController.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Http/Controllers/SessionsController.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Http/Controllers/TrustListController.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Http/Controllers/TrustRevokeController.php",
+      "matches": {
+        "named_boundary": [7]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Http/Resources/SessionResource.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/IdentityProxy.php",
+      "matches": {
+        "named_boundary": [10]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/InvitationsProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/LifecycleProxy.php",
+      "matches": {
+        "named_boundary": [12]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Management/CreationSection.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K02/K15; P08 separately inventories opaque read payloads"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Models/User.php",
+      "matches": {
+        "history": [45, 77]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/PoliciesProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/PreferencesProxy.php",
+      "matches": {
+        "history": [31, 39],
+        "named_boundary": [11]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/ProfilesProxy.php",
+      "matches": {
+        "named_boundary": [10]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Queries/AccountPreferenceSnapshot.php",
+      "matches": {
+        "history": [16, 22, 53, 86]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Queries/LookupIdentity.php",
+      "matches": {
+        "named_boundary": [6]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/SecurityProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/SessionsProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/StepUpProxy.php",
+      "matches": {
+        "named_boundary": [8]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Support/AccountPolicy.php",
+      "matches": {
+        "named_boundary": [7, 8]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Support/CredentialPolicy.php",
+      "matches": {
+        "named_boundary": [6]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Support/EntryPassword.php",
+      "matches": {
+        "named_boundary": [6]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/Support/SecurityContext.php",
+      "matches": {
+        "named_boundary": [9]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAccountCopy.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAccountRefresh.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeAllPreferences.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeFactorDialogs.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeFactorSpacing.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeFrontendContracts.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradePlatformDelivery.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradePreferencesSelection.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/auth/backend/UpgradeReadScopes.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000001_runa_auth_create_users.php",
+      "matches": {
+        "history": [48],
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000002_runa_auth_create_entry_tokens.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000003_runa_auth_create_sessions.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000004_runa_auth_create_trusted_devices.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000005_runa_auth_create_login_windows.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000006_runa_auth_create_password_history.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000007_runa_auth_create_step_up_proofs.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000008_runa_auth_create_avatar_files.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000009_runa_auth_create_secondary_emails.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000010_runa_auth_create_email_changes.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000011_runa_auth_create_profile_mail.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000012_runa_auth_create_preferences.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000013_runa_auth_create_delivery_preferences.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000014_runa_auth_create_security_notices.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000015_runa_auth_create_notice_frequencies.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000016_runa_auth_create_known_browsers.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000017_runa_auth_create_notice_scan.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000018_runa_auth_create_policy_versions.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000019_runa_auth_create_policy_exceptions.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000020_runa_auth_create_operator_tokens.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000021_runa_auth_create_initialization.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/database/migrations/2026_11_03_000022_runa_auth_create_development_fixtures.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/auth/frontend/AuthHistoryDetail.vue",
+      "matches": {
+        "fallback": [81, 82]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/frontend/DefaultApplication.vue",
+      "matches": {
+        "named_boundary": [9, 14]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/auth/frontend/contracts/controllers.ts",
+      "matches": {
+        "history": [7]
+      },
+      "review_disposition": "P09 wording; preserve current public controller K08"
+    },
+    {
+      "path": "src/runa/modules/auth/frontend/preferences/accountPreferences.ts",
+      "matches": {
+        "history": [68, 97, 133, 210, 372]
+      },
+      "review_disposition": "K04; guest ownership and current schema normalization"
+    },
+    {
+      "path": "src/runa/modules/auth/frontend/presentation.ts",
+      "matches": {
+        "history": [6]
+      },
+      "review_disposition": "P09 wording; preserve Vue component replacement K08"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/AccessProxy.php",
+      "matches": {
+        "named_boundary": [12]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/AuthorityBatchProxy.php",
+      "matches": {
+        "named_boundary": [10]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/AuthorityProxy.php",
+      "matches": {
+        "named_boundary": [10]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/AccessApi.php",
+      "matches": {
+        "named_boundary": [8, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/AuthorityApi.php",
+      "matches": {
+        "named_boundary": [9, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/AuthorityBatchApi.php",
+      "matches": {
+        "named_boundary": [9, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/PermissionsApi.php",
+      "matches": {
+        "named_boundary": [9, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/Definitions/SelectionApi.php",
+      "matches": {
+        "named_boundary": [10, 16]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/PermissionProxy.php",
+      "matches": {
+        "named_boundary": [9]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/SelectionProxy.php",
+      "matches": {
+        "named_boundary": [9]
+      },
+      "review_disposition": "K01/K02; different contracts have distinct authority/phase semantics"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthAllPreferences.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthAvatar.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthCards.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthFactorDialogs.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthPresentation.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthQr.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthRecoveryDialog.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthRefresh.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradeAuthSecondaryDetails.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/permissions/backend/UpgradePlatformDelivery.php",
+      "matches": {
+        "history": [8]
+      },
+      "review_disposition": "P02"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000001_runa_permissions_create_permissions.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000002_runa_permissions_create_roles.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000003_runa_permissions_create_role_permissions.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000004_runa_permissions_create_user_roles.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000005_runa_permissions_create_user_permissions.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000006_runa_permissions_create_presets.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000007_runa_permissions_create_user_access.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000008_runa_permissions_create_preset_roles.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000009_runa_permissions_create_preset_permissions.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/modules/permissions/database/migrations/2026_11_03_000010_runa_permissions_create_development_fixtures.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K03; current schema/ownership and fail-closed history guard"
+    },
+    {
+      "path": "src/runa/resources/js/components/AppMaskedInput.vue",
+      "matches": {
+        "history": [86, 96]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/components/AppPageNavigation.vue",
+      "matches": {
+        "fallback": [53, 67]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/components/AppTable.vue",
+      "matches": {
+        "named_boundary": [22, 26, 200, 206]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/components/AppTableActions.vue",
+      "matches": {
+        "named_boundary": [17, 23, 37, 130, 208]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/composables/useFeedbackTone.ts",
+      "matches": {
+        "fallback": [23, 26]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/composables/useImageReadiness.ts",
+      "matches": {
+        "fallback": [11, 20, 32]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/composables/useTableViews.ts",
+      "matches": {
+        "fallback": [21]
+      },
+      "review_disposition": "P04; preserve current schema reconciliation K04"
+    },
+    {
+      "path": "src/runa/resources/js/lib/binaryExports.ts",
+      "matches": {
+        "named_boundary": [3, 10, 101]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/lib/clientExports.ts",
+      "matches": {
+        "named_boundary": [5, 9, 10, 41, 44, 45, 46]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/lib/exportFiles.ts",
+      "matches": {
+        "named_boundary": [3, 66]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/lib/moduleFrontend.ts",
+      "matches": {
+        "history": [214]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/lib/preferenceStore.ts",
+      "matches": {
+        "history": [11, 114, 115, 116, 119, 121]
+      },
+      "review_disposition": "P03; preserve generic current-store behavior K04"
+    },
+    {
+      "path": "src/runa/resources/js/lib/preferences.ts",
+      "matches": {
+        "history": [15, 30]
+      },
+      "review_disposition": "P03"
+    },
+    {
+      "path": "src/runa/resources/js/lib/printTable.ts",
+      "matches": {
+        "named_boundary": [2, 39, 45]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/lib/tableViews.ts",
+      "matches": {
+        "fallback": [51, 54, 62, 69, 80, 92, 115, 119]
+      },
+      "review_disposition": "K04; guest ownership and current schema normalization"
+    },
+    {
+      "path": "src/runa/resources/js/runa/ui/exports.ts",
+      "matches": {
+        "named_boundary": [95, 112]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/runa/ui/identity.ts",
+      "matches": {
+        "fallback": [68, 69]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/resources/js/runa/ui/index.ts",
+      "matches": {
+        "named_boundary": [145, 146, 147]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/routes/api.php",
+      "matches": {
+        "named_boundary": [3]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/routes/web.php",
+      "matches": {
+        "named_boundary": [3]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "src/runa/testing/backend/worker-databases.php",
+      "matches": {
+        "named_boundary": [5]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "tools/application/deployment_service.py",
+      "matches": {
+        "history": [269]
+      },
+      "review_disposition": "K10/K12; operational lifecycle and recovery"
+    },
+    {
+      "path": "tools/application/development_config.py",
+      "matches": {
+        "fallback": [250]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "tools/application/diagnostics.py",
+      "matches": {
+        "named_boundary": [117]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "tools/application/host_transport_models.py",
+      "matches": {
+        "history": [1]
+      },
+      "review_disposition": "K10/K12; operational lifecycle and recovery"
+    },
+    {
+      "path": "tools/application/installation_service.py",
+      "matches": {
+        "named_boundary": [570]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "tools/application/knowledge/cli.py",
+      "matches": {
+        "history": [86, 88, 123],
+        "fallback": [78]
+      },
+      "review_disposition": "K07/K14; retrieval/storage/model semantics, not old API execution"
+    },
+    {
+      "path": "tools/application/knowledge/configuration.py",
+      "matches": {
+        "history": [220]
+      },
+      "review_disposition": "K07/K14; retrieval/storage/model semantics, not old API execution"
+    },
+    {
+      "path": "tools/application/knowledge/context.py",
+      "matches": {
+        "named_boundary": [8, 26]
+      },
+      "review_disposition": "K07/K14; retrieval/storage/model semantics, not old API execution"
+    },
+    {
+      "path": "tools/application/knowledge/evidence.py",
+      "matches": {
+        "history": [72]
+      },
+      "review_disposition": "K07/K14; retrieval/storage/model semantics, not old API execution"
+    },
+    {
+      "path": "tools/application/knowledge/golden.json",
+      "matches": {
+        "fallback": [11]
+      },
+      "review_disposition": "K07/K14; retrieval/storage/model semantics, not old API execution"
+    },
+    {
+      "path": "tools/application/knowledge/ingest.py",
+      "matches": {
+        "history": [86]
+      },
+      "review_disposition": "K07/K14; retrieval/storage/model semantics, not old API execution"
+    },
+    {
+      "path": "tools/application/knowledge/provider.py",
+      "matches": {
+        "fallback": [1, 59, 100]
+      },
+      "review_disposition": "K07/K14; retrieval/storage/model semantics, not old API execution"
+    },
+    {
+      "path": "tools/application/knowledge/retrieval.py",
+      "matches": {
+        "history": [33, 153, 156, 181, 194, 200, 345, 395]
+      },
+      "review_disposition": "K07/K14; retrieval/storage/model semantics, not old API execution"
+    },
+    {
+      "path": "tools/application/knowledge/startup_service.py",
+      "matches": {
+        "fallback": [66],
+        "named_boundary": [21]
+      },
+      "review_disposition": "K07/K14; retrieval/storage/model semantics, not old API execution"
+    },
+    {
+      "path": "tools/application/knowledge/transport.py",
+      "matches": {
+        "named_boundary": [55]
+      },
+      "review_disposition": "K07/K14; retrieval/storage/model semantics, not old API execution"
+    },
+    {
+      "path": "tools/application/quality_evidence.py",
+      "matches": {
+        "history": [67, 101]
+      },
+      "review_disposition": "K06; explicit existing selection and retained evidence contracts"
+    },
+    {
+      "path": "tools/application/quality_models.py",
+      "matches": {
+        "history": [1, 32, 33, 47, 171, 174, 175, 179, 180]
+      },
+      "review_disposition": "K06; explicit existing selection and retained evidence contracts"
+    },
+    {
+      "path": "tools/application/quality_planning.py",
+      "matches": {
+        "history": [95, 168, 169]
+      },
+      "review_disposition": "K06; explicit existing selection and retained evidence contracts"
+    },
+    {
+      "path": "tools/application/quality_reporting.py",
+      "matches": {
+        "history": [1, 33]
+      },
+      "review_disposition": "K06; explicit existing selection and retained evidence contracts"
+    },
+    {
+      "path": "tools/application/quality_service.py",
+      "matches": {
+        "history": [81, 87]
+      },
+      "review_disposition": "K06; explicit existing selection and retained evidence contracts"
+    },
+    {
+      "path": "tools/application/quality_state.py",
+      "matches": {
+        "history": [76]
+      },
+      "review_disposition": "K06; explicit existing selection and retained evidence contracts"
+    },
+    {
+      "path": "tools/application/repository_boundary_service.py",
+      "matches": {
+        "history": [14, 60]
+      },
+      "review_disposition": "K09/K10; acquisition ownership and retained update evidence"
+    },
+    {
+      "path": "tools/application/testing/production-runtime.php",
+      "matches": {
+        "conditional_api": [29]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "tools/application/testing/runner.py",
+      "matches": {
+        "history": [223, 225, 232, 239]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "tools/application/testing/support/fakes.py",
+      "matches": {
+        "history": [23]
+      },
+      "review_disposition": "K11; source/test boundaries; P06 separately covers engine launch split"
+    },
+    {
+      "path": "tools/core/delivery.py",
+      "matches": {
+        "history": [20]
+      },
+      "review_disposition": "K09/K10; acquisition ownership and retained update evidence"
+    },
+    {
+      "path": "tools/core/process.py",
+      "matches": {
+        "named_boundary": [15, 62]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "tools/maintainer/checks.py",
+      "matches": {
+        "history": [116]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "tools/maintainer/knowledge-golden.json",
+      "matches": {
+        "history": [82, 143]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    },
+    {
+      "path": "tools/maintainer/release_checks.py",
+      "matches": {
+        "history": [92, 111]
+      },
+      "review_disposition": "K05/K08/K11/K13; family screening, not an independently proven defect"
+    }
+  ],
+  "additional_reviewed_aliases": [
+    "bin/check",
+    "bin/operations",
+    "bin/command",
+    "tools/application/command_cli.py"
+  ],
+  "runtime_evidence_manifest": ".runtime/audits/RM-2026-017-pre1/source-scan.json"
+}
