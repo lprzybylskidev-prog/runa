@@ -347,7 +347,7 @@ The ApplicationLayout top menu and sidebar, including their entries, disclosures
 
 ## Shared action controls
 
-Public `@/runa/ui` action imports include Button, ButtonGroup and Icon, with exported ControlSize/ControlTone/ButtonVariant types. Controls remain shell-independent. Button preserves its original neutral/md appearance and compact compatibility; explicit variants use shared semantic tokens. Busy state blocks native activation. ButtonGroup joins adjacent controls with one divider. ApplicationLayout consumes Button while retaining its unique initials profile control. Action-list/split buttons and reusable avatars are deferred until a concrete need exists, per owner review. See the component catalogue for full contracts.
+Public `@/runa/ui` action imports include Button, ButtonGroup and Icon, with exported ControlSize/ControlTone/ButtonVariant types. Controls remain shell-independent. Button defaults to neutral/md and uses iconOnly for square controls; explicit variants use shared semantic tokens. Busy state blocks native activation. ButtonGroup joins adjacent controls with one divider. ApplicationLayout consumes Button while retaining its unique initials profile control. Action-list/split buttons and reusable avatars are deferred until a concrete need exists, per owner review. See the component catalogue for full contracts.
 
 The retired catalog has no application entry. Isolated component scenarios remain under tests/frontend/fixtures/browser; reusable component contracts stay in the frontend skill catalogue.
 

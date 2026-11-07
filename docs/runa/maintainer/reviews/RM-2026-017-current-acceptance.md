@@ -17,6 +17,26 @@ assets/runtime/source identities and data/access preparation in 10r before the
 sole owner acceptance point 11. Final automated verification remains 12. See the
 [compatibility audit and dispositions](RM-2026-017-pre1-compatibility-audit.md).
 
+## Button correction — source scenarios from point 10n
+
+Point 10n (2026-11-08) removes Button.compact and migrates all four language/theme
+button branches to iconOnly. These are source scenarios for renewed preparation
+in 10r; the 10i assets/observations below do not certify this source.
+
+- On `/` and `/auth/login`, inspect the language/theme controls in the entry layout;
+  on `/account` and `/admin`, inspect their shell equivalents. Use PL/EN, light/dark,
+  narrow/desktop and keyboard focus/activation. Controls keep square dimensions,
+  localized accessible names/tooltips and their existing preference effects.
+- Native/emergency error pages use the same controls with GET navigation: language
+  and theme buttons retain their independent submitted name/value and companion
+  hidden preference. Prepare a supported error-page scenario in 10r; do not invent
+  a route or trigger destructive failures for acceptance.
+- For the existing shared Table refresh/reset, table-preference/export settings and
+  Dialog close controls, sample keyboard names/focus and available busy states.
+  Their existing iconOnly callers are unchanged. Icon-only busy buttons retain
+  their name and dimensions while replacing the icon with a decorative spinner;
+  text buttons retain their text. Owner acceptance remains point 11.
+
 ## Preconditions and identity
 
 Expected local origin remains `http://localhost:8080`; internal diagnostics use

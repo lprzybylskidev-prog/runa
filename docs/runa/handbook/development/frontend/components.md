@@ -108,10 +108,23 @@ Viewport clamping and collision fallback remain active.
 
 - Source: `src/runa/resources/js/components/AppButton.vue`; public `Button`. Native attributes/listeners inherit; safe default `type="button"`. No shell dependency.
 - `variant`: neutral, solid, outline, soft, ghost. `tone`: neutral, primary, secondary, success, danger, warning, info, accent. Public `ButtonIntent` supplies action meaning; `ButtonTone` includes neutral. `size`: sm (36px), md (44px), lg (52px). Use md for usual touch actions.
-- `busy?: boolean` disables activation and exposes aria-busy plus a decorative spinner; slot text supplies context. When omitted, a `type="submit"` Button inherits the nearest public Form's busy state; other buttons and standalone submit buttons default to false. Explicit true/false overrides this local default. The private form-activity injection is UI implementation, not another public entrypoint. `disabled` uses native semantics. `aria-pressed` supports toggle feedback. `iconOnly` (or compatible `compact`) makes a square; provide an accessible name. Tooltip is separate.
+- `busy?: boolean` disables activation and exposes aria-busy plus a decorative spinner; slot text supplies context. When omitted, a `type="submit"` Button inherits the nearest public Form's busy state; other buttons and standalone submit buttons default to false. Explicit true/false overrides this local default. The private form-activity injection is UI implementation, not another public entrypoint. `disabled` uses native semantics. `aria-pressed` supports toggle feedback. `iconOnly?: boolean` (default false; `icon-only` in templates) makes a square and hides the default slot while busy; provide an accessible name through `aria-label`. Text buttons keep their slot while busy. Tooltip is separate.
 - Intent overrides a low-level tone. With no explicit variant, every colored intent uses outline; neutral uses neutral. Shipped views use no solid action fills, including main Save and confirmation actions. The low-level solid variant remains available for explicit custom presentation; it is not the default visual language. Without intent/tone, the button is neutral. Busy preserves the action color and blocks activation; unavailable controls use disabled tokens.
 - Colors use finite CSS token mappings, without inline styles so build-time native error rendering retains its CSP contract. Reduced motion preserves the static busy indicator.
 - Used by MinimalLayout preferences and ApplicationLayout preferences, sidebar/drawer controls and profile trigger. Shell disclosures/navigation and modal backdrop remain specialized internal compositions.
+
+```vue
+<Button
+  icon-only
+  size="sm"
+  intent="inspect"
+  :busy="refreshing"
+  aria-label="Odśwież"
+  @click="refresh"
+>
+  <Icon name="refresh" :size="18" />
+</Button>
+```
 
 ### Action button semantics
 

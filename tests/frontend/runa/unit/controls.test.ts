@@ -5,6 +5,8 @@ import {
 } from '../../../../src/runa/modules/auth/frontend/bulkGroups';
 import { afterEach, expect, it } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
+import PreferenceControls from '../../../../src/runa/resources/js/components/AppPreferenceControls.vue';
+import { messages } from '../../../../src/runa/resources/js/locales/messages';
 import {
   Button,
   ButtonGroup,
@@ -15,6 +17,7 @@ it('blocks native clicks while busy and preserves submit, labels and pressed sta
   let count = 0;
   const wrapper = mount(Button, {
     props: { busy: true, type: 'submit', iconOnly: true },
+    slots: { default: 'Save icon' },
     attrs: {
       'aria-label': 'Save',
       'aria-pressed': 'true',
@@ -26,10 +29,93 @@ it('blocks native clicks while busy and preserves submit, labels and pressed sta
   expect(wrapper.attributes('aria-busy')).toBe('true');
   expect(wrapper.attributes('type')).toBe('submit');
   expect(wrapper.attributes('aria-label')).toBe('Save');
+  expect(wrapper.attributes('aria-pressed')).toBe('true');
+  expect(wrapper.text()).not.toContain('Save icon');
   await wrapper.setProps({ busy: false });
+  expect(wrapper.text()).toContain('Save icon');
   (wrapper.element as HTMLButtonElement).click();
   expect(count).toBe(1);
 });
+it.each([
+  ['sm', 36],
+  ['md', 44],
+  ['lg', 52],
+] as const)(
+  'keeps %s icon-only geometry and restores focusable activation after loading',
+  async (size, pixels) => {
+    const wrapper = mount(Button, {
+      attachTo: document.body,
+      props: { iconOnly: true, size, intent: 'inspect' },
+      attrs: { 'aria-label': 'Refresh' },
+      slots: { default: '↻' },
+    });
+    const button = wrapper.element as HTMLButtonElement;
+    const dimensions = () => [
+      button.getBoundingClientRect().width,
+      button.getBoundingClientRect().height,
+    ];
+    expect(dimensions()).toEqual([pixels, pixels]);
+    button.focus();
+    expect(document.activeElement).toBe(button);
+    await wrapper.setProps({ busy: true });
+    expect(dimensions()).toEqual([pixels, pixels]);
+    expect(wrapper.text()).not.toContain('↻');
+    expect(wrapper.attributes('aria-label')).toBe('Refresh');
+    expect(wrapper.attributes('data-tone')).toBe('info');
+    await wrapper.setProps({ busy: false });
+    button.focus();
+    expect(document.activeElement).toBe(button);
+    expect(wrapper.text()).toContain('↻');
+  },
+);
+it.each([false, true])(
+  'keeps square named preference controls with navigation=%s',
+  async (navigation) => {
+    const wrapper = mount(PreferenceControls, {
+      attachTo: document.body,
+      props: {
+        navigation,
+        size: 'sm',
+        locale: 'pl',
+        theme: 'system',
+        languageLabel: 'Zmień język',
+        themeLabel: 'Zmień motyw',
+        t: (key) => messages.pl[key],
+      },
+    });
+    const buttons = wrapper.findAll('button');
+    expect(buttons).toHaveLength(2);
+    expect(buttons.map((button) => button.attributes('aria-label'))).toEqual([
+      'Zmień język',
+      'Zmień motyw',
+    ]);
+    for (const button of buttons) {
+      const bounds = button.element.getBoundingClientRect();
+      expect([bounds.width, bounds.height]).toEqual([36, 36]);
+    }
+    if (navigation) {
+      expect(
+        buttons.map((button) => [
+          button.attributes('type'),
+          button.attributes('name'),
+          button.attributes('value'),
+        ]),
+      ).toEqual([
+        ['submit', 'lang', 'en'],
+        ['submit', 'theme', 'light'],
+      ]);
+      expect(
+        wrapper.findAll('form').map((form) => form.attributes('method')),
+      ).toEqual(['get', 'get']);
+    } else {
+      await buttons[0]!.trigger('click');
+      await buttons[1]!.trigger('click');
+      expect(
+        wrapper.emitted('change')?.map(([preference]) => preference),
+      ).toEqual(['language', 'theme']);
+    }
+  },
+);
 it('names groups and keeps icons decorative with configurable size/color', () => {
   expect(
     mount(ButtonGroup, { props: { label: 'Period' } }).attributes('aria-label'),

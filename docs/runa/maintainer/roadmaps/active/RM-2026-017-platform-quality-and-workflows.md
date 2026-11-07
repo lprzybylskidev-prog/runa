@@ -21,7 +21,22 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10m completed, 2026-11-07
+## Current execution state — point 10n completed, 2026-11-08
+
+**Points 1–10n are complete. Point 10o is next; 10o–10r remain open.** Point 10n
+removes the public Button.compact alias and its duplicate sizing/busy conditions.
+All four supplied language/theme button branches now use iconOnly. Existing
+icon-only consumers and unrelated BooleanInput/Checkbox compact props remain.
+
+The focused owner frontend command passed 10 Chromium cases in one file (exit 0,
+cleanup 0), covering activation, accessible names, loading/slot behavior, square
+sizes, restored focus and interactive/GET preference consumers. Current public
+contracts, changelog and pending acceptance scenarios are synchronized. Platform
+VERSION 0.7.0 / approved feature-0.8.0 and module/API candidates are unchanged.
+No complete suite, rebuilt assets/runtime, owner acceptance or final PASS is
+claimed. Combined readiness stays 10r, owner acceptance 11 and final release 12.
+
+## Historical execution state — point 10m completed, 2026-11-07
 
 **Points 1–10m are complete. Point 10n is next; 10n–10r remain open.** Point 10m
 removes flat locale/theme imports and dual writes, the public frontend
@@ -1689,7 +1704,7 @@ below are retained as historical records only.
     alternate string/legacy readers. Assess public types and existing module/API
     candidates honestly; author current behavior regressions without a broad gate.
 
-- [ ] 10n. Retire the duplicate Button prop.
+- [x] 10n. Retire the duplicate Button prop.
   - **Dependency:** 10k; complete before 10r. Own P05. Replace Button compact with
     iconOnly in all real source/generated/example/test consumers, then remove that
     Button alias and its duplicate busy-slot branch. Preserve icon-only names,
@@ -5502,3 +5517,63 @@ state was changed. No task-created Docker resources require removal; existing
 services, data, caches and reports are preserved. Full frontend/E2E and other
 selected gates remain 12, aligned runtime/assets/readiness remains 10r and explicit
 owner acceptance remains 11. Point 10n is next.
+
+## Point 10n completion — single icon-only Button prop, 2026-11-08
+
+### Source, consumers and public contract
+
+Source-verified P05 is resolved in AppButton: remove the compact prop/default and
+use iconOnly alone for square styling and busy-slot suppression. The established
+private app-button-compact CSS class remains an implementation detail with the
+same size rules; no CSS or Tailwind token change is needed. Native attributes,
+listeners, default type, Form busy inheritance, disabled activation, semantic
+intent, focus and accessible-name ownership are unchanged. Text buttons retain
+their slot during loading; icon-only controls keep their external accessible name.
+
+The exact tracked source/test/tooling/distribution and instruction searches found
+four Button.compact calls, all in AppPreferenceControls: language/theme in ordinary
+and GET-navigation branches. They now use icon-only. Existing Table, Dialog,
+shell, module, example and test Button consumers already use iconOnly or ordinary
+text buttons; no generator/template alias exists. AppTable/AppTablePreferences
+Checkbox compact, AuthEmailPreferenceFields BooleanInput compact, form density,
+native test --compact and unrelated PHP compact calls retain their own semantics.
+The dated audit and API inventory retain their original evidence, not current API
+claims.
+
+This deliberately removes a platform-owned public Vue prop under the accepted
+pre-1.0 correction plan. It belongs to approved feature/0.8.0; no module-owned
+implementation, PHP Framework API or storage contract changes. Auth 6.0.1, Audit
+1.1.2, Permissions 2.1.2, Admin 1.1.1, reference 0.4.1 and Framework API 2.0.0
+candidates remain unchanged; platform VERSION remains 0.7.0. No new reference
+capability/workflow is introduced; it consumes the unchanged shared UI facade.
+
+The canonical public components guide now describes iconOnly/default/template
+spelling and busy-slot behavior, with a current example; the frontend architecture
+summary and central changelog remove the compatibility claim. The current owner
+acceptance sheet includes affected entry/shell/GET controls and existing shared
+icon-only consumers, explicitly pending renewed 10r assets/runtime and owner 11.
+
+Both instruction products were assessed: owner frontend components reference and
+customer frontend application reference already route to the canonical public
+components guide. Their SKILL.md/root AGENTS summaries carry no duplicate Button
+signature or alias, so no copied rule or instruction edit is necessary. Customer
+application scope and protected-platform boundary remain unchanged.
+
+### Focused evidence and remaining work
+
+- Local knowledge status was current (234 documents, 13324 chunks); bounded search
+  located the owning point and P05 evidence, then original sources were opened.
+- `python3 tools/maintainer/test-frontend controls.test.ts`: **PASS, one file /
+  10 cases, exit 0, cleanup 0**. This bounded diagnostic resolves the alias-removal
+  risks: all three rendered square sizes through busy transitions, accessible
+  names/pressed state and blocked native clicks, restored focus, action tone,
+  and both ordinary event and GET-navigation preference button branches.
+- The existing Vitest runtime dynamic-import analysis warning is retained; native
+  execution completes successfully. This is no production-build warning claim.
+
+No complete suite, E2E acceptance, static analysis, asset build, runtime/database/
+ledger, dependency or Docker resource change was performed. Existing development,
+base test data, containers, volumes, model caches and reports remain preserved;
+no task-created Docker resources require deletion. Mandatory hooks and staged
+incremental knowledge freshness apply. Combined readiness stays 10r, sole owner
+acceptance 11 and final automated verification/release 12. Point 10o is next.

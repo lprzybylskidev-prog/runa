@@ -31,7 +31,7 @@ const emit = defineEmits<{
           intent="neutral"
           :size="size"
           type="submit"
-          compact
+          icon-only
           name="lang"
           :value="locale === 'pl' ? 'en' : 'pl'"
           :aria-label="languageLabel"
@@ -44,7 +44,7 @@ const emit = defineEmits<{
           intent="neutral"
           :size="size"
           type="submit"
-          compact
+          icon-only
           name="theme"
           :value="
             theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system'
@@ -70,7 +70,7 @@ const emit = defineEmits<{
           <AppButton
             intent="neutral"
             :size="size"
-            compact
+            icon-only
             :aria-label="languageLabel"
             :aria-describedby="descriptionId"
             @click="emit('change', 'language', $event)"
@@ -84,7 +84,7 @@ const emit = defineEmits<{
           <AppButton
             intent="neutral"
             :size="size"
-            compact
+            icon-only
             :aria-label="themeLabel"
             :aria-describedby="descriptionId"
             @click="emit('change', 'theme', $event)"

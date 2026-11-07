@@ -12,7 +12,6 @@ import type {
 const props = withDefaults(
   defineProps<{
     type?: 'button' | 'submit' | 'reset';
-    compact?: boolean;
     disabled?: boolean;
     busy?: boolean | undefined;
     size?: ControlSize;
@@ -26,7 +25,6 @@ const props = withDefaults(
     intent: undefined,
     variant: undefined,
     type: 'button',
-    compact: false,
     disabled: false,
     busy: undefined,
     size: 'md',
@@ -56,7 +54,7 @@ const variant = computed(
     :data-variant="variant"
     :data-size="size"
     class="app-button"
-    :class="{ 'app-button-compact': compact || iconOnly }"
+    :class="{ 'app-button-compact': iconOnly }"
   >
     <AppSpinner
       v-if="busy"
@@ -65,7 +63,7 @@ const variant = computed(
       size="sm"
       decorative
     />
-    <slot v-if="!busy || !(compact || iconOnly)" />
+    <slot v-if="!busy || !iconOnly" />
   </button>
 </template>
 

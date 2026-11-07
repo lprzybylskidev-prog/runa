@@ -4,6 +4,10 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Remove the duplicate public Button.compact prop; use iconOnly (icon-only in
+  templates). Migrate language/theme controls and preserve square sizing,
+  accessible names, busy slot behavior and native focus/activation semantics.
+
 - Remove flat language/theme browser-key imports and dual writes, the public
   `PreferenceDefinition.legacyKey` option and built-in table-view v1 conversion.
   Keep scoped guest/account preferences, explicit guest adoption, current v2
