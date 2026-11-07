@@ -434,3 +434,59 @@ it('allows navigation during a clean pending read while a pending protected muta
   await pending;
   expect(await c.beforeLeave()).toBe(true);
 });
+
+it('two independent viewers keep old snapshots until a write conflicts or a target disappears', async () => {
+  let current:
+    { public_id: string; revision: string; code: string } | undefined = {
+    public_id: id,
+    revision: '1',
+    code: 'original',
+  };
+  const writes: Array<{ revision: string; code: string }> = [];
+  vi.spyOn(window, 'fetch').mockImplementation(async (_path, init) => {
+    if (init?.method === 'PATCH') {
+      const input = JSON.parse(String(init.body)) as {
+        revision: string;
+        code: string;
+      };
+      writes.push(input);
+      if (!current)
+        return response({ error: { code: 'reference_sample_missing' } }, 404);
+      if (input.revision !== current.revision)
+        return response({ error: { code: 'reference_sample_stale' } }, 409);
+      current = {
+        ...current,
+        code: input.code,
+        revision: String(Number(current.revision) + 1),
+      };
+      return response(current);
+    }
+    return response({ items: current ? [current] : [] });
+  });
+  const x = harness('samples');
+  const y = harness('samples');
+  y.authority.value = { ...access(), identity: 'other-account:other-session' };
+  await vi.waitFor(() =>
+    expect(x.controller.ready.value && y.controller.ready.value).toBe(true),
+  );
+  await x.controller.selectSample(x.controller.rows.value[0]!);
+  await y.controller.selectSample(y.controller.rows.value[0]!);
+  y.controller.code.value = 'y_draft';
+  x.controller.code.value = 'x_committed';
+  await x.controller.saveSample();
+  window.dispatchEvent(new Event('focus'));
+  document.dispatchEvent(new Event('visibilitychange'));
+  expect(y.controller.selected.value?.revision).toBe('1');
+  await y.controller.saveSample();
+  expect(writes.map((input) => input.revision)).toEqual(['1', '1']);
+  expect(y.controller.code.value).toBe('y_draft');
+  expect(y.controller.sampleConflict.value?.code).toBe('x_committed');
+  expect(y.controller.error.value).not.toBe('');
+  y.controller.resolveSample(true);
+  current = undefined;
+  await y.controller.saveSample();
+  expect(writes.map((input) => input.revision)).toEqual(['1', '1', '2']);
+  expect(y.controller.selected.value).toBeUndefined();
+  await y.controller.saveSample();
+  expect(writes).toHaveLength(3);
+});

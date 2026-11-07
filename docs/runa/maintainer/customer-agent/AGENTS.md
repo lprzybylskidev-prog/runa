@@ -223,7 +223,7 @@ Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/d
 - Rendered UI is the acceptance truth.
 - Accessibility is part of normal component review.
 - Views follow the public [readiness contract](docs/runa/handbook/development/frontend/loading.md): mount layout frames immediately, localize loading to dependent elements/regions, refresh in place, bound optional image waits and clear protected content on identity/access loss.
-- Data views follow the public forms guide automatic read reconciliation: refresh in place, preserve dirty drafts, share aggregate mutation revisions, resolve overlapping changes locally and never silently replay writes or reinitialize edited forms.
+- Data views follow the public forms guide action-driven read reconciliation: preserve initial/explicit/own-action reads and dirty drafts, submit original versions/reviews, share aggregate mutation revisions and resolve actual conflicts locally. Passive focus/visible-return and unchanged-session checks do not reload business data. Never silently replay writes or reinitialize edited forms.
 - TypeScript strict mode.
 - No `any` for known API payloads.
 - No global state library unless a real shared-state need appears.

@@ -85,12 +85,22 @@ Autofill browser constraints: [MDN :autofill](https://developer.mozilla.org/en-U
 
 ## Automatic read reconciliation
 
-Current and future data views refresh authoritative reads in place after their own
-mutations, when returning to a visible view and when a stale write is rejected.
-Coalesce overlapping reads and refresh on navigation as appropriate. Reuse the
-feature controller and shared HTTP client; do not add unconditional polling or a
-whole-document reload. Failed reads may offer Retry loading; successful automatic
-refresh does not require a generic Reload current values action.
+Current and future data views read on entry, explicit refresh, filter/sort/page
+changes, deliberate operation previews and their own successful mutations. An
+older displayed snapshot is valid presentation. Focus, visible return, pageshow,
+incidental history events and successful same-session security checks do not
+reload business data, preferences or branding. Keep necessary session/protected-
+place expiry and access checks independent of data freshness. Real identity/access
+loss clears protected content and fences late responses immediately. Reuse the
+feature controller and shared HTTP client; add no polling, freshness cache,
+replacement coordinator or whole-document reload.
+
+At mutation time submit the version/review belonging to the displayed draft.
+Do not fetch a newer token before writing or substitute one merely because a
+session check succeeded. The backend rechecks current authority, availability,
+version/review and business constraints in its owning transaction/locks. Inserts
+use owning uniqueness/reference validation; idempotent actions need no mechanical
+version. Reviewed bulk writes validate the current selected set and effects.
 
 Track confirmed server baselines separately from local drafts. Update clean
 fields/lists automatically and merge disjoint changes while retaining dirty
@@ -108,8 +118,9 @@ conservative local review. A removed target cannot be retained as a valid edit.
 `current`, `locale`, `busy`, `allowKeep` props and `accept`/`keep` events. The feature
 owns merging, resolution, token advancement and subsequent explicit submission.
 
-On a stale-revision HTTP 409, automatically fetch current data without replaying
-the write. Report the version conflict and retain its draft. HTTP status alone
+On a stable, recognized stale-state refusal, fetch only the affected data without
+replaying the write. Treat removed targets explicitly and block further edits to
+them. Report the version conflict and retain its draft. HTTP status alone
 is insufficient: business refusals can also use 409. Preserve their stable reason
 through owner adapters and aggregate coordinators, and show reviewed localized
 copy for that reason instead of claiming a stale revision or successful refresh.

@@ -20,7 +20,7 @@ import { adminFailure, refuseAdmin, sessionStamp } from './useAdmin';
 import { pageOwners } from './pageContext';
 import { pageRuntime } from './runtime';
 import { useAdminInitialReadiness } from './initialReadiness';
-import { writeFailure } from './writeFailure';
+import { writeFailure, staleWrite } from './writeFailure';
 
 function readQuery(query: AdminReadQuery) {
   const params: Record<string, string | number | boolean | null | undefined> = {
@@ -258,7 +258,7 @@ export function useAdminResource(
           /* No payload trust. */
         }
         if (admin && (cause.status === 401 || entry)) refuseAdmin(admin, cause);
-        if (cause.status === 409) runtime.changed.value++;
+        if (staleWrite(cause) && lastQuery) await read(lastQuery);
       }
       return undefined;
     } finally {
@@ -312,15 +312,6 @@ export function useAdminResource(
     },
     { flush: 'sync' },
   );
-  function visible() {
-    if (
-      document.visibilityState === 'visible' &&
-      lastQuery &&
-      page.state.value === 'ready'
-    )
-      void read(lastQuery);
-  }
-  document.addEventListener('visibilitychange', visible);
   onScopeDispose(() => {
     alive = false;
     ++writeEpoch;
@@ -329,7 +320,6 @@ export function useAdminResource(
     invalidate();
     lastQuery = undefined;
     stop();
-    document.removeEventListener('visibilitychange', visible);
   });
   return {
     clear: () => {

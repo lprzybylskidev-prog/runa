@@ -52,7 +52,7 @@ optional module and key scope. This POST read surface uses the normal cookie/CSR
 transport. Both ingress and the Action recheck unrestricted tracked sessions.
 Responses are private/no-store and include account/revision. The snapshot projects
 current source defaults as well as stored values for the selected application and
-shared `runa` display namespace. Other devices converge on visible return, navigation, conflict refresh or new login;
+shared `runa` display namespace. Other devices converge on explicit reads, applicable view entry, conflict refresh or new login;
 there is no polling or WebSocket synchronization.
 
 Snapshot reads validate each available provider's declarations once, then load
@@ -106,7 +106,8 @@ or import the private session/transport modules.
 `useStatisticsMode` and `useTableViews` use the same account adapter. Signed-in
 values are memory-only caches; PostgreSQL values/defaults are authoritative.
 The shell probes the session once and binds successful unrestricted login/session
-responses through the shared HTTP wrapper. A custom authentication host may call
+responses through the shared HTTP wrapper. Revalidating an already hydrated same
+account does not reload its snapshot; explicit connect/refresh remains available. A custom authentication host may call
 `accountPreferences.connect(publicId, applicationId)` after its verified session
 response, and `disconnect()` at logout. Restricted sessions hold defaults until
 an unrestricted session refresh. Refresh session after completing a restricted flow.
@@ -244,8 +245,10 @@ The account adapter exposes `refresh()` for a queued snapshot without clearing t
 current account cache and `mutate(callback)` for feature-owned delivery writes.
 The callback receives the shared current revision and account-fenced AbortSignal,
 returns the normal account/revision envelope, and is followed by a queued snapshot.
-All presentation/delivery writes share this queue. On 409, current reads refresh
-without replay; older queued mutations are canceled. Failed synchronization offers
+All presentation/delivery writes share this queue. Delivery submits its displayed
+snapshot revision; it never prefetches a new revision to admit an older draft.
+On recognized preferences_stale/identity_stale refusals, affected reads refresh
+without replay; unrelated business 409s retain their own refusal without a read; older queued mutations are canceled. Failed synchronization offers
 an explicit read retry. A successful refresh never calls the destructive form reset.
 
 Preferences tab entry and account refresh perform one delivery read per refresh

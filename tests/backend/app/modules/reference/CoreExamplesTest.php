@@ -82,7 +82,7 @@ afterEach(function (): void {
     DB::statement('ALTER TABLE runa_audit.events DROP CONSTRAINT IF EXISTS reference_test_audit_refusal');
     // Retain immutable Audit and Core identity history. These fixture accounts are
     // made ineligible; disposable parallel workers are removed by the supported runner.
-    DB::table('runa_auth.users')->where('public_id', $this->actorId)->update(['active' => false]);
+    DB::table('runa_auth.users')->whereIn('public_id', [$this->actorId, ...($this->additionalActors ?? [])])->update(['active' => false]);
     DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->actorId)->delete();
     DB::table('app_reference.samples')->where('public_id', $this->fixtureId)->update(['deleted_at' => now()]);
     if ($this->referenceOriginal !== null) {
@@ -278,4 +278,41 @@ it('projects reference Admin read and field grants independently before native f
     $this->getJson('/api/admin/app.reference/settings/sections/settings?kind=record')->assertOk()
         ->assertJsonMissingPath('data.values.credential');
     $this->getJson('/api/admin/app.reference/work')->assertNotFound();
+});
+
+it('keeps two independent users snapshots versioned and rejects stale or removed sample writes', function (): void {
+    $grants = ['samples.read', 'samples.write', 'samples.code.read', 'samples.code.write'];
+    ($this->grant)($grants);
+    $y = $this->actorId;
+    $ySession = app('session')->getId();
+    $snapshot = collect($this->getJson('/api/app/reference/samples')->assertOk()->json('data.items'))->firstWhere('public_id', $this->fixtureId);
+    $x = (string) Str::uuid7();
+    $this->additionalActors = [$x];
+    $email = 'reference-x-'.bin2hex(random_bytes(6)).'@example.test';
+    DB::table('runa_auth.users')->insert(['public_id' => $x, 'name' => 'Independent editor', 'email' => $email,
+        'email_claim' => $email, 'password' => Hash::make('reference-example-password'), 'password_changed_at' => now(),
+        'active' => true, 'email_verified_at' => now(), 'created_at' => now(), 'updated_at' => now()]);
+    $this->actorId = $x;
+    try {
+        ($this->grant)($grants);
+    } finally {
+        $this->actorId = $y;
+    }
+    try {
+        $this->postJson('/api/runa/auth/login', ['identifier' => $email, 'password' => 'reference-example-password'])->assertOk();
+        $this->withCookie('runa_session', app('session')->getId());
+        $this->getJson('/api/runa/auth/profile')->assertOk()->assertJsonPath('data.public_id', $x);
+        $changed = 'independent_'.bin2hex(random_bytes(4));
+        $this->patchJson('/api/app/reference/samples', ['public_id' => $this->fixtureId, 'revision' => $snapshot['revision'], 'code' => $changed])->assertOk();
+        $this->withCookie('runa_session', $ySession);
+        $this->getJson('/api/runa/auth/profile')->assertOk()->assertJsonPath('data.public_id', $y);
+        $draft = ['public_id' => $this->fixtureId, 'revision' => $snapshot['revision'], 'code' => 'stale_draft'];
+        $this->patchJson('/api/app/reference/samples', $draft)->assertConflict()->assertJsonPath('error.code', 'reference_sample_stale');
+        expect(DB::table('app_reference.samples')->where('public_id', $this->fixtureId)->value('code'))->toBe($changed);
+        // There is no delivered sample-delete endpoint; establish the removed-target fixture explicitly.
+        DB::table('app_reference.samples')->where('public_id', $this->fixtureId)->update(['deleted_at' => now()]);
+        $this->patchJson('/api/app/reference/samples', [...$draft, 'revision' => '2'])->assertNotFound()->assertJsonPath('error.code', 'reference_sample_missing');
+    } finally {
+        DB::table('runa_permissions.user_permissions')->where('user_public_id', $x)->delete();
+    }
 });

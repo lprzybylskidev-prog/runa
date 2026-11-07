@@ -21,7 +21,24 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10g completed, 2026-11-07
+## Current execution state — point 10h completed, 2026-11-07
+
+**Points 1–10 and 10a–10h are complete. Point 10i is next.**
+Business reads now follow entry/explicit/query/own-action triggers; successful
+same-session security checks do not cascade into Admin, preferences, shell profile
+or public presentation reads. Real identity/access loss and expiry checks remain.
+Recognized stale-state refusals reconcile affected data without write replay or
+silently replacing original draft versions. Delivery no longer prefetches a newer
+revision before writing. See the [point-10h source/evidence review](../../reviews/RM-2026-017-action-driven-refresh.md).
+
+Bounded Chromium diagnostics pass. The new native two-user backend diagnostic
+stopped at fixture login HTTP 503 before executing its case; no backend PASS is
+claimed. Point 10i must align working runtime/test prerequisites and rerun it,
+without guard bypass/reset. Owner acceptance 11 and complete final verification/
+release 12 remain open. Platform VERSION stays 0.7.0, feature/0.8.0 projection
+and all existing module/API candidates remain unchanged.
+
+## Historical execution state — point 10g completed, 2026-11-07
 
 **Points 1–10 and 10a–10g are complete. Point 10h is next.**
 Own-account trusted devices now use the public Accordion, initially collapsed.
@@ -1436,7 +1453,7 @@ below are retained as historical records only.
     Author meaningful initial/disclosure/state/access regressions and synchronize
     guidance/module assessment in this committed point; no new dependency/runner.
 
-- [ ] 10h. Simplify data refresh and preserve backend-owned conflict handling.
+- [x] 10h. Simplify data refresh and preserve backend-owned conflict handling.
   - **Dependency:** completed 10g. Remove direct passive focus/visibility/pageshow
     data reads and the specified session/authority/preference/branding cascades.
     Remove obsolete state/tests rather than retaining alternate refresh paths;
@@ -4859,3 +4876,39 @@ apply to this completion commit.
 No task-created Docker containers/networks/images/volumes or worker databases were
 needed or removed. Existing development/test data, active services, Qdrant/model/
 pnpm caches, backups, reports and recovery state were preserved. Point 10h is next.
+
+## Point 10h completion — action-driven refresh, 2026-11-07
+
+The [owning review](../../reviews/RM-2026-017-action-driven-refresh.md) records
+actual source owners, backend lock/transaction/uniqueness/reference/bulk safeguards,
+trigger removal, original-version corrections, current documentation/instruction
+products and all diagnostic failures and limits. Auth account conflict recovery
+reads only profile or preference/delivery data as applicable; Admin resource refusal
+refresh is local, independent writes refresh their section and aggregate conflicts
+reconcile participating form data. Actual security/access loss remains immediate.
+No timer/cache/coordinator, dependency, migration/reset or production change.
+
+Final bounded evidence after formatting: owner selection across five files,
+25 passed / 190 excluded, native exit 0 / cleanup 0; after narrowing account
+conflict reads, Auth account selection 14 passed / 68 excluded, exit 0 / cleanup 0.
+Public presentation actual-identity versus unchanged-session diagnostic: 1 passed /
+4 excluded, exit 0 / cleanup 0. Application two-view simulated-transport case:
+1 passed / 11 excluded, exit 0 / cleanup 0. These are scoped diagnostics only.
+The new native two-user/session HTTP case is authored but its attempted run failed
+at fixture login HTTP 503 (exit 1 / cleanup 0, no case coverage). Combined readiness
+10i must repair runtime/test prerequisites and rerun this focused case; final native
+backend/complete automated coverage remains 12. No broad gate or acceptance ran.
+
+Forms/loading/API, Auth account/preferences and Admin frontend guides replace
+obsolete passive-refresh rules. Both owner/customer AGENTS and frontend reference
+products route to the canonical action-driven procedure; security/Vue/backend
+selectors need no duplicated policy. Auth 6.0.0 and Admin 1.1.0 remain the existing
+unreleased candidates with unchanged public signatures; no extra version/forward
+edge is introduced. Framework API 2.0.0, AuthPolicies 4.0.0, Audit 1.1.1,
+Permissions 2.1.1, reference 0.4.0, platform 0.7.0 and target 0.8.0 are unchanged.
+
+No task-created Docker containers/networks/images/volumes were required or removed.
+Native scoped worker cleanup reported []; existing development/test data, active
+services, Qdrant/model/pnpm caches, backups, reports and recovery state are preserved.
+Mandatory staged formatting/lint, source freshness and commit hooks apply.
+Point 10i is next; 11/12 stay open.

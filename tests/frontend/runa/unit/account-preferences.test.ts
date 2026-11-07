@@ -58,7 +58,7 @@ it('serializes revision writes and reports conflicts without replay or false suc
   const store = createAccountPreferenceStore(guest(), async (input) => {
     if (input.operation === 'snapshot') return snapshot('A');
     writes.push(input);
-    if (fail) throw new ApiError(409, {});
+    if (fail) throw new ApiError(409, { error: { code: 'preferences_stale' } });
     return {
       data: {
         account: 'A',
@@ -292,7 +292,7 @@ it('shares revisions between display and delivery mutations and refreshes a fail
       attempts++;
       revision++;
       value = 'light';
-      throw new ApiError(409, {});
+      throw new ApiError(409, { error: { code: 'preferences_stale' } });
     }),
   ).rejects.toBeInstanceOf(ApiError);
   expect(attempts).toBe(1);
@@ -306,7 +306,7 @@ it('cancels already queued mutations after a conflict instead of rebasing old in
   const store = createAccountPreferenceStore(guest(), async (input) => {
     if (input.operation === 'snapshot') return snapshot('A', 'system', 4);
     attempts++;
-    throw new ApiError(409, {});
+    throw new ApiError(409, { error: { code: 'preferences_stale' } });
   });
   await store.connect('A');
   store.store.write(scope, 'runa.theme', theme, 'dark');
@@ -416,4 +416,21 @@ it('preference business refusals retain specific copy without pretending the rev
   expect(store.status().error).toBe('save_failed');
   expect(store.status().message?.[0]).toContain('zostały już przeniesione');
   expect(reads).toBe(1);
+});
+
+it('action-driven refresh does not fetch a snapshot after a non-stale business 409', async () => {
+  let snapshots = 0;
+  const store = createAccountPreferenceStore(guest(), async (input) => {
+    if (input.operation === 'snapshot') {
+      snapshots++;
+      return snapshot('A');
+    }
+    throw new ApiError(409, { error: { code: 'preferences_already_adopted' } });
+  });
+  await store.connect('A');
+  store.store.write(scope, 'runa.theme', theme, 'dark');
+  await store.flush();
+  expect(snapshots).toBe(1);
+  expect(store.status().error).toBe('save_failed');
+  store.disconnect();
 });

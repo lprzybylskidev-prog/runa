@@ -223,17 +223,15 @@ replaceable. AdminEntryProof has no slots or emitted events. Confirmation clears
 the password, admits no duplicate submission and refreshes only bootstrap;
 account/session invalidation and disposal erase it. Failure never replays a
 business operation. `authorityRevision` on ApplicationSessionController increments
-after successful session validation; unchanged activity/heartbeat observations do
-not trigger new Admin advertisements or descriptor reads. Session identity,
-restrictions, suspension, loading, pending logout and that revision fence protected
-reads. Pre-admission password input uses the current unrestricted account/session
-identity rather than the observation revision: same-session revalidation keeps its
-page and input mounted while bootstrap is checked in the background. An unchanged
-native step_up_required result preserves that form; a real denial/invalidation or
-successful bootstrap admission clears its credentials. Same-session observations retain mounted bootstrap/page presentation and dirty
-forms while revalidating; request/operation stamps still invalidate every old
-authority observation. Real identity/access loss clears protected state immediately.
-No proof/business write is replayed. See [view readiness](../../development/frontend/loading.md).
+on initial admission or a real account/session/restriction change. Successful
+same-session validation and activity/heartbeat observations do not trigger Admin
+advertisements, bootstrap, descriptors, resources or preference reads. Explicit
+refresh remains available. Identity, restrictions, suspension, loading, pending
+logout and the authority revision fence protected reads. Necessary session and
+protected-place expiry checks remain independent. Real identity/access loss clears
+protected state immediately. Same-context explicit reads retain mounted password
+confirmation and dirty forms until actual denial/admission. No proof/business
+write is replayed. See [view readiness](../../development/frontend/loading.md).
 
 Composables mount once per keyed account/page; scope disposal aborts requests and
 removes listeners/dirty guards. They own cancellation, session/CSRF/proof handling,
@@ -345,7 +343,7 @@ Create the controller once in the owning page's Vue scope. It owns the resource
 read lane: change `query` or call `refresh`, rather than sending independent
 record/options reads through `resource`. The latter exposes read status/error/busy
 and decoded results. Do not reuse a controller between pages or accounts.
-`useAdminResource` retains native admission, visibility refresh, response fencing
+`useAdminResource` retains native admission, action-driven reads, response fencing
 and disposal. Account/access/page changes erase table filters and cursor state;
 same-session observations and descriptor updates preserve allowed query controls,
 reset cursor/selection intent and restart page 1.
@@ -726,7 +724,7 @@ controls, secret set-state and existing cursor/query/disposal behavior. Source
 `view` is presentation intent, never additional authority. The default `record`
 intent mounts one existing resource lane, reads the projected subject UUID (or
 the owning singleton when null), and displays only returned, readable values.
-Loading, safe failure/explicit Retry, descriptor/visibility refresh and account
+Loading, safe failure/explicit Retry, applicable descriptor/explicit refresh and account
 invalidation retain `useAdminResource` behavior. Omitted values have no fabricated
 empty field; secret values show only Set/Not set. Editable values bind to the one
 page form controller and execute explicit declared commands. Form/controller props
@@ -817,7 +815,8 @@ the existing action-bound entry proof and native owning checks. The advertisemen
 cannot authorize a subsequent request or bypass protected bootstrap.
 
 The shell fetches advertisement once after session validation and revalidates on
-session/authority refresh and return to the application. A known same-session link
+actual session/authority transitions or a new shell entry. Successful checks of
+the same session do not reload the advertisement. A known same-session link
 stays visible during the optional background read, then follows its result;
 malformed/failed/denied reads hide it. Session/account change, restriction or lost
 session immediately hides it and cancels/fences stale responses. Reopening the
@@ -997,7 +996,8 @@ these protocols; it does not copy private session/security code.
 Promise<ApplicationPresentation | undefined>`. Failure returns undefined so a
 consumer can restore source defaults. `createApplication` hydrates presentation
 separately from canonical identity and refreshes after application-setting writes,
-Auth session changes and focus/visibility/history navigation. Per-app epochs cancel
+actual Auth identity transitions. Same-session checks and passive focus/visibility/
+history navigation do not reload presentation. Per-app epochs cancel
 older reads; unmount cleans observers/listeners. The root/layout renders immediately while logo decoding updates branding in place; failed background reads retain confirmed presentation. It never stores branding in guest
 preferences or changes canonical IDs/versions. Custom roots may use the same loader
 and IdentityProvider; retain lifecycle fencing and source fallback.

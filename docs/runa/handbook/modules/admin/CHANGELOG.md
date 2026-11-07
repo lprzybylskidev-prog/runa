@@ -2,6 +2,12 @@
 
 ## 1.1.0 — Unreleased
 
+- Remove passive resource reads and same-session bootstrap/page/resource cascades.
+  Retain security/identity fences, reconcile recognized stale-state and removed-target
+  refusals in their affected resource, and preserve drafts and specific business
+  refusal messages. Application settings reconcile actual revision conflicts
+  without replay or hiding the refusal.
+
 - Expose native `useAdminPageContext` through the public frontend facade for
   custom owning-HTTP pages: admitted account/session/page identity and registered
   initial readiness and dirty/pending exit checks, with scope cleanup and no second session owner.

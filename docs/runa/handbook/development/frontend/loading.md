@@ -99,12 +99,14 @@ never register every HTTP request as an application-wide prerequisite.
 ## Initial reveal and subsequent work
 
 Review request counts as well as reveal timing. Public application presentation
-has one in-flight read; overlapping focus/visibility/popstate/publication changes
-coalesce into one trailing current read. Results overtaken by an invalidation
+has one in-flight read; overlapping own publications and actual identity changes
+coalesce into one trailing current read. Successful same-session checks and passive
+focus/visibility/history events do not trigger presentation reads. Results overtaken by an invalidation
 cannot replace presentation. The last confirmed display remains while loading,
 and disposal cancels the lane. Reuse the existing owner rather than adding another
 identity, session or preference fetch to each component. Account and business
-reconciliation retain their own trailing invalidation and dirty-draft contracts.
+reconciliation follow the [action-driven read contract](forms.md#automatic-read-reconciliation)
+and retain dirty drafts through applicable reads.
 
 Declare dependencies per element/region: branding uses source defaults while
 hydrating; preferences apply through their existing subscriber; profile/avatars

@@ -113,7 +113,6 @@ export function useAuthAccount(accountId: string) {
       codes.value = [];
   });
   let refreshPromise: Promise<void> | undefined;
-  let refreshAgain = false;
   let refreshingPreferenceSnapshot = false;
   const draft = shallowRef<Record<string, string> | null>(null);
   let draftEpoch = accountDraftEpoch();
@@ -273,10 +272,18 @@ export function useAuthAccount(accountId: string) {
     } catch (error) {
       if (!alive || error instanceof RequestCancelledError) return;
       const result = authFailure(error);
+      const stale = [
+        'identity_stale',
+        'preferences_stale',
+        'secondary_missing',
+        'avatar_missing',
+      ].includes(result.reason ?? '');
       failure.value =
         result.reason && Object.hasOwn(accountFailureMessages, result.reason)
           ? result.reason
-          : result.code;
+          : result.code === 'conflict' && !stale
+            ? 'unavailable'
+            : result.code;
       const accepted = acceptedFields ?? fieldNames.value;
       const refusalField = accountFailureField(failure.value, accepted);
       if (refusalField) {
@@ -294,11 +301,14 @@ export function useAuthAccount(accountId: string) {
                 )
             : text(copy[0], copy[1]);
       }
-      if (failure.value === 'conflict') {
+      if (stale) {
         if (['avatar', 'avatarRemove'].includes(task.value))
           avatarConflict.value = true;
         try {
-          await refreshAccount(true);
+          if (result.reason === 'preferences_stale') {
+            await accountPreferences.refresh();
+            await readDelivery();
+          } else await loadProfile();
         } catch {
           if (alive) failure.value = 'refresh_failed';
         }
@@ -362,20 +372,7 @@ export function useAuthAccount(accountId: string) {
     } finally {
       refreshPromise = undefined;
       refreshing.value = false;
-      if (refreshAgain && alive && !busy.value) refreshVisible();
     }
-  }
-  function refreshVisible() {
-    if (document.visibilityState !== 'visible') return;
-    if (refreshPromise || busy.value) {
-      refreshAgain = true;
-      return;
-    }
-    refreshAgain = false;
-    void refreshAccount().catch((error) => {
-      if (alive && !(error instanceof RequestCancelledError))
-        failure.value = 'refresh_failed';
-    });
   }
   async function initialize() {
     await perform(async () => {
@@ -468,6 +465,7 @@ export function useAuthAccount(accountId: string) {
       return;
     }
     const op = task.value;
+    const expectedVersion = profile.value?.version;
     if (['avatar', 'avatarRemove'].includes(op) && avatarConflict.value) {
       failure.value = 'conflict';
       return false;
@@ -535,7 +533,7 @@ export function useAuthAccount(accountId: string) {
       if (op === 'details') {
         path = 'profile';
         verb = 'PATCH';
-        Object.assign(input, { version: profile.value!.version });
+        Object.assign(input, { version: expectedVersion });
         for (const key of ['name', 'first_name', 'surname', 'login'])
           input[key] = fields[key] || null;
         if (naming.value === 'single') {
@@ -544,7 +542,7 @@ export function useAuthAccount(accountId: string) {
         } else input.name = null;
       } else if (op === 'email') {
         path = 'profile/email';
-        input.version = profile.value!.version;
+        input.version = expectedVersion;
       } else if (op.startsWith('secondary')) {
         path = 'profile/secondary-emails';
         verb =
@@ -553,11 +551,11 @@ export function useAuthAccount(accountId: string) {
             : op === 'secondaryChange'
               ? 'PATCH'
               : 'POST';
-        input.version = profile.value!.version;
+        input.version = expectedVersion;
         if (op !== 'secondaryAdd') input.address_id = fields.address_id;
       } else if (op === 'avatar' || op === 'avatarRemove') {
         path = 'profile/avatar';
-        input.version = profile.value!.version;
+        input.version = expectedVersion;
         if (op === 'avatarRemove') verb = 'DELETE';
         else {
           const form = new FormData();
@@ -1007,9 +1005,6 @@ export function useAuthAccount(accountId: string) {
                         'The operation failed. Check your values and try again.',
                       ),
   );
-  watch(busy, (value) => {
-    if (!value && refreshAgain) refreshVisible();
-  });
   const unsubscribePreferences = accountPreferences.subscribe(() => {
     if (
       alive &&
@@ -1026,9 +1021,6 @@ export function useAuthAccount(accountId: string) {
   });
   onMounted(() => {
     void initialize();
-    document.addEventListener('visibilitychange', refreshVisible);
-    window.addEventListener('focus', refreshVisible);
-    window.addEventListener('pageshow', refreshVisible);
   });
   watch(
     secret,
@@ -1048,9 +1040,6 @@ export function useAuthAccount(accountId: string) {
       rememberAccountDraft(accountId, fields, draftEpoch);
     alive = false;
     unsubscribePreferences();
-    document.removeEventListener('visibilitychange', refreshVisible);
-    window.removeEventListener('focus', refreshVisible);
-    window.removeEventListener('pageshow', refreshVisible);
     abort.abort();
     cleanSecrets();
     for (const values of Object.values(sectionFields))

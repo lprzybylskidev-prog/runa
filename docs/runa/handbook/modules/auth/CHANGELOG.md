@@ -2,6 +2,12 @@
 
 ## 6.0.0 — Unreleased
 
+- Use action-driven business reads: remove passive account/resource reads and
+  same-session preference/branding/Admin cascades while retaining security checks
+  and actual identity/access invalidation. Reconcile recognized stale-state refusals
+  only, preserve drafts/original submission tokens, and stop delivery prefetch from
+  silently replacing its reviewed revision.
+
 - Start the own-account trusted-device list collapsed using public Accordion;
   retain mounted table state and independent trust-browser/prerequisite controls.
 

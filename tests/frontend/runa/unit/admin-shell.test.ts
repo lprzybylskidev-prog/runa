@@ -31,6 +31,7 @@ import {
   useAdminPresentation,
 } from '@/runa/admin';
 import {
+  useApplicationSession,
   ApplicationSessionShell,
   AuthOperationProofPage,
   AuthPresentationProvider,
@@ -2613,4 +2614,95 @@ it('custom Admin pages share admitted identity, register exit refusal and remove
   expect(await admin.navigate({ owner: 'app', page: 'settings' })).toBe(true);
   expect(beforeLeave).toHaveBeenCalledTimes(1);
   expect(navigate).toHaveBeenCalledWith('/admin/app/settings');
+});
+
+it('action-driven refresh keeps same-session security checks independent of Admin resources and preferences', async () => {
+  accountPreferences.disconnect();
+  const current = sessionFixture().session.value!;
+  let denied = false;
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const path = String(input).split('?')[0]!;
+    if (path.endsWith('/csrf')) return respond({});
+    if (path.endsWith('/auth/session'))
+      return denied
+        ? respond({ error: { code: 'signed_out' } }, 401)
+        : respond({ data: current });
+    if (path.endsWith('/auth/preferences'))
+      return respond({
+        data: {
+          account: current.public_id,
+          revision: 0,
+          values: [],
+          legacy_claimed: true,
+        },
+      });
+    if (path === '/api/admin/activity')
+      return respond({
+        data: { remaining_seconds: 900, heartbeat_seconds: 30 },
+      });
+    if (path === '/api/admin') return respond({ data: bootstrap() });
+    if (path === '/api/admin/app/settings')
+      return respond({ data: resourcePage() });
+    if (path.includes('/sections/profile'))
+      return respond({
+        data: {
+          public_id: identity,
+          revision: 'r1',
+          values: { name: 'Retained' },
+        },
+      });
+    return respond({}, 404);
+  });
+  let session!: ApplicationSessionController;
+  let page!: AdminPageController;
+  let resource!: AdminResourceController;
+  mount(
+    defineComponent({
+      setup() {
+        session = useApplicationSession(vi.fn());
+        const admin = useAdmin({ session });
+        page = useAdminPage(admin, ref({ owner: 'app', page: 'settings' }));
+        resource = useAdminResource(page, 'profile');
+        return () => h('div');
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  await resource.read({ kind: 'record', public_id: identity });
+  await flushPromises();
+  const revision = session.authorityRevision.value;
+  const before = vi.mocked(window.fetch).mock.calls.length;
+  window.dispatchEvent(new Event('focus'));
+  document.dispatchEvent(new Event('visibilitychange'));
+  window.dispatchEvent(
+    new PageTransitionEvent('pageshow', { persisted: true }),
+  );
+  await flushPromises();
+  await session.refresh();
+  await flushPromises();
+  const calls = vi
+    .mocked(window.fetch)
+    .mock.calls.slice(before)
+    .map(([path]) => String(path));
+  expect(calls.some((path) => path.endsWith('/auth/session'))).toBe(true);
+  expect(
+    calls.filter(
+      (path) =>
+        !path.endsWith('/csrf') &&
+        !path.endsWith('/auth/session') &&
+        !path.endsWith('/admin/activity'),
+    ),
+  ).toEqual([]);
+  expect(session.authorityRevision.value).toBe(revision);
+  expect(resource.result.value).toMatchObject({ values: { name: 'Retained' } });
+  await resource.read({ kind: 'record', public_id: identity });
+  expect(vi.mocked(window.fetch).mock.calls.at(-1)![0]).toContain(
+    '/sections/profile',
+  );
+  denied = true;
+  await session.refresh();
+  await flushPromises();
+  expect(session.paused.value).toBe(true);
+  expect(resource.result.value).toBeUndefined();
+  expect(accountPreferences.currentAccount()).toBeNull();
 });

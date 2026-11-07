@@ -8,5 +8,6 @@ speculative splitting, virtualization or new abstractions.
 For slow views inspect request owners and measure render, request, table, image or
 bundle costs before optimizing. Follow [read-path performance](../../../../docs/runa/handbook/architecture/application-architecture.md#read-path-performance)
 and [readiness/reconciliation](../../../../docs/runa/handbook/development/frontend/loading.md).
-Retain trailing invalidations, current authority and dirty drafts when coalescing.
+Coalesce only applicable action-driven reads under the public forms contract;
+retain current authority and dirty drafts.
 A source suspicion is not a measured bottleneck; record evidence and unknowns.

@@ -83,7 +83,9 @@ follow `docs/runa/handbook/development/frontend/forms.md#visible-operation-progr
 Generic scope or loading copy never substitutes for shared progress presentation.
 
 For actionable failures, follow the public forms guide's
-`Values, dirty baselines and request failures` and `Automatic read reconciliation`.
+`Values, dirty baselines and request failures` and `Automatic read reconciliation`,
+including its action-driven triggers, original submission tokens and separation
+of security checks from business-data reads.
 Keep stable business reasons distinct from stale revisions across adapters and
 aggregate writes; use reviewed localized copy and affected fields. A generic
 fallback is for unknown failures, never a substitute for a known refusal.

@@ -1649,7 +1649,7 @@ it('secondary address conflicts keep both drafts and never replay the write auto
     .get('[data-account-section=details] [name=name]')
     .setValue('Unsaved identity');
   await w.get('[name=secondary_email]').setValue('pending@example.test');
-  write = () => json('conflict', 409);
+  write = () => json('identity_stale', 409);
   await submitAccount(w.get('[data-account-section=secondary]'));
   await vi.waitFor(() =>
     expect(
@@ -2139,7 +2139,7 @@ function preferenceDeliveryFixture() {
           values: [],
         });
       if (body.operation === 'write') {
-        if (body.revision !== revision) return json('version_conflict', 409);
+        if (body.revision !== revision) return json('preferences_stale', 409);
         revision++;
         return json({
           account: id,
@@ -2163,7 +2163,7 @@ function preferenceDeliveryFixture() {
   });
   write = (path, body) => {
     if (path.endsWith('/delivery-preferences')) {
-      if (body.revision !== revision) return json('version_conflict', 409);
+      if (body.revision !== revision) return json('preferences_stale', 409);
       const category = categories.find(
         (choice) => choice.key === body.category,
       )!;
@@ -2350,12 +2350,13 @@ it('inline delivery conflicts refresh automatically and preserve the draft witho
   await row.get('input[role=switch]').setValue(false);
   await flushPromises();
   categories[0]!.recipients = [other];
-  write = () => json('version_conflict', 409);
+  write = () => json('preferences_stale', 409);
   await row.trigger('submit');
   await vi.waitFor(() =>
     expect(row.find('[data-form-conflict]').exists()).toBe(true),
   );
-  expect(writes).toHaveLength(0);
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.body.revision).toBe(3);
   expect(row.getComponent(Switch).props('modelValue')).toBe(false);
   expect(row.text()).not.toContain('Wczytaj zapisane');
   await row
@@ -2364,7 +2365,8 @@ it('inline delivery conflicts refresh automatically and preserve the draft witho
     .trigger('click');
   expect(row.find('[data-form-conflict]').exists()).toBe(false);
   expect(row.attributes('data-dirty')).toBe('true');
-  expect(writes).toHaveLength(0);
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.body.revision).toBe(3);
 });
 
 it('header preference reset requires confirmation and cancel never resets the account', async () => {
@@ -2500,7 +2502,7 @@ it('overlapping identity refresh requires a local decision before a versioned sa
   const state = w.getComponent(AuthAccountEditor).props('account');
   state.fields.name = 'My name';
   currentProfile = { ...currentProfile, version: 6, name: 'Remote name' };
-  window.dispatchEvent(new Event('focus'));
+  await state.refresh();
   await vi.waitFor(() => expect(state.profile.value?.version).toBe(6));
   await flushPromises();
   const details = w.get('[data-account-section=details]');
@@ -2552,7 +2554,7 @@ it('inline delivery rejection refreshes reads without replay or a reload action'
   await openPreferences(w);
   const row = w.get('[data-delivery-category=optional]');
   await row.get('input[role=switch]').setValue(false);
-  write = () => json('version_conflict', 409);
+  write = () => json('preferences_stale', 409);
   await row.trigger('submit');
   const state = w.getComponent(AuthAccountPreferences).props('account');
   await vi.waitFor(() => expect(state.busy.value).toBe(false));
@@ -2638,7 +2640,7 @@ it('disabled module secondary editing closes the existing draft without changing
   expect(writes).toHaveLength(0);
 });
 
-it('account refresh retains a trailing focus invalidation while an earlier read is pending', async () => {
+it('action-driven refresh ignores passive events even while an explicit account read is pending', async () => {
   const w = mount(AccountFixture, {
     attachTo: document.body,
     props: { accountId: id },
@@ -2663,9 +2665,21 @@ it('account refresh retains a trailing focus invalidation while an earlier read 
   await vi.waitFor(() => expect(release).toBeDefined());
   currentProfile = { ...currentProfile, version: 6, name: 'Remote update' };
   window.dispatchEvent(new Event('focus'));
+  const calls = vi.mocked(window.fetch).mock.calls.length;
+  document.dispatchEvent(new Event('visibilitychange'));
+  window.dispatchEvent(new Event('pageshow'));
   release!(json(profile));
   await first;
-  await vi.waitFor(() => expect(state.profile.value?.version).toBe(6));
+  await flushPromises();
+  expect(state.profile.value?.version).toBe(profile.version);
+  expect(
+    vi
+      .mocked(window.fetch)
+      .mock.calls.slice(calls)
+      .filter(([input]) => String(input).endsWith('/profile')),
+  ).toHaveLength(0);
+  await state.refresh();
+  expect(state.profile.value?.version).toBe(6);
   expect(state.refreshing.value).toBe(false);
   expect(state.fields.name).toBe('My pending draft');
   expect(state.detailConflicts.name).toBe('Remote update');
@@ -2771,8 +2785,7 @@ it('reads delivery once per preference tab entry or account refresh while retain
           (JSON.parse(String(init?.body)) as { operation?: string })
             .operation === 'read',
       ).length;
-  // A real browser focus is a separate invalidation. Focus the document while
-  // still on Details, then measure the tab refresh independently of that event.
+  // Browser focus does not invalidate business snapshots.
   await loaded(w);
   w.get<HTMLButtonElement>(
     'nav[aria-label="Ustawienia konta"] button',
@@ -2794,7 +2807,8 @@ it('reads delivery once per preference tab entry or account refresh while retain
   await flushPromises();
   expect(reads()).toBe(3);
   window.dispatchEvent(new Event('focus'));
-  await vi.waitFor(() => expect(reads()).toBe(4));
+  await flushPromises();
+  expect(reads()).toBe(3);
 });
 
 it('account history opens safe detail changes, handles retry and never restores a closed late response', async () => {

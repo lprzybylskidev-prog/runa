@@ -86,7 +86,7 @@ function admin(): AdminController {
   };
 }
 const response = (data: AdminOperationData, status = 200) =>
-  new Response(JSON.stringify({ data }), {
+  new Response(JSON.stringify(status < 400 ? { data } : data), {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -121,7 +121,9 @@ it('operational diagnostic fences late reads and never replays a failed write', 
   finish(response({ modules: [], generation: 1 }));
   await pending;
   expect(controller.snapshot.value).toBeUndefined();
-  fetch.mockResolvedValue(response({}, 409));
+  fetch.mockResolvedValue(
+    response({ reason: 'application_settings_revision_changed' }, 409),
+  );
   controller.dirty.value = true;
   await controller.execute('application.update', { revision: 1, patch: {} });
   expect(controller.conflict.value).toBe(true);
@@ -253,11 +255,16 @@ it('application settings retain dirty drafts across disjoint and overlapping rev
   fetch.mockResolvedValueOnce(
     response({ reason: 'application_settings_revision_changed' }, 409),
   );
+  fetch.mockResolvedValueOnce(
+    response(applicationState(4, 'Another remote name', 'Remote label')),
+  );
   await settings.save();
   expect(settings.draft.value['presentation.name']).toBe('My draft');
   expect(controller.dirty.value).toBe(true);
-  expect(fetch).toHaveBeenCalledTimes(calls + 1);
-  expect(JSON.parse(String(fetch.mock.calls.at(-1)?.[1]?.body))).toEqual({
+  expect(fetch).toHaveBeenCalledTimes(calls + 2);
+  expect(settings.conflicts.value.has('presentation.name')).toBe(true);
+  expect(controller.error.value).toContain('Application settings changed');
+  expect(JSON.parse(String(fetch.mock.calls.at(-2)?.[1]?.body))).toEqual({
     revision: 3,
     patch: { 'presentation.name': 'My draft' },
   });
@@ -1394,7 +1401,7 @@ it('application branding converts a logo to PNG and a square favicon, preserving
   expect(posted.patch).toEqual({ 'presentation.logo': 'uploaded' });
   expect(posted.images.logo).toBeTypeOf('string');
   expect(posted.images.logo_icon).toBeTypeOf('string');
-  expect(controller.conflict.value).toBe(true);
+  expect(controller.conflict.value).toBe(false);
   expect(settings.imageFiles.value.logo).toHaveLength(1);
   const remote = brandingState(2);
   (remote.values as AdminOperationData)['presentation.logo'] = 'uploaded';

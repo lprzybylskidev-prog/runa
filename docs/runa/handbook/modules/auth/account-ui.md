@@ -310,13 +310,15 @@ use the refreshed version. Custom screens use the public controller from
 `@/runa/auth` once per keyed account, including its returned conflict and list state.
 
 The public account controller refreshes profile, security/options, active lists,
-loaded trusted devices and visible delivery settings on tab changes, visible return,
-window focus/pageshow and rejected conflicts. Reads coalesce and retain account/view
+loaded trusted devices and visible delivery settings on applicable tab entry,
+explicit refresh, own successful actions and recognized stale-state refusals.
+Focus, visibility and pageshow do not trigger account reads. Reads coalesce and retain account/view
 fences. It does not poll, remount the view, move focus or replay writes. Read failures
 preserve drafts and expose Retry loading. Preference hydration refreshes visible
 delivery categories; theme, navigation, table and delivery writes share one queue
-and current account revision. Session refresh of the same account retains cached
-presentation until the authoritative snapshot arrives; logout/switch still fences it.
+and current account revision. A successful check of the same unrestricted session
+does not reload preferences, optional shell profile or entry options; logout/switch
+still fences protected state.
 
 Clean profile fields merge automatically. Dirty identity/email fields, secondary
 address editors, avatar files and password/factor drafts remain in memory. Overlapping
