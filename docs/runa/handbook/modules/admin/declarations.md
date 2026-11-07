@@ -237,7 +237,7 @@ final readonly class ManagementReadCall
 
 Trusted module authors implement this optional provider in owned backend definitions
 under existing `declarations.management`. Independent App providers use the same
-interface through frozen AdminRegistry registration. Select framework_api ^1.1.0
+interface through frozen AdminRegistry registration. Select framework_api ^2.0.0
 when using it. This is metadata planning, not a new business API or HTTP input.
 The existing ManagementPageProvider and guarded AdminAccess 1.0.0 signatures stay
 supported; handlers without a plan retain reads that need no on-use preparation.

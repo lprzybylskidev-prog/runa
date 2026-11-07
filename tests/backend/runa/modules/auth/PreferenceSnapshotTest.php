@@ -58,7 +58,7 @@ afterEach(function (): void {
 it('batches reminder history and current policy exceptions across the locked account cohort', function (): void {
     $settings = app(ModuleSettings::class);
     $state = $settings->read('runa.auth');
-    $settings->update('runa.auth', ['notice_account_deactivation' => true, 'email_verification' => 'disabled'], $state['revision'], $state['generation']);
+    $settings->update('runa.auth', ['notice_account_deactivation' => true, 'email_verification' => 'disabled'], $state['revision'], $state['review_id']);
     for ($i = 0; $i < 4; $i++) {
         $identity = app(ChangeIdentity::class)->create(new NewIdentity('reminder-growth-'.$i.'@example.test', name: 'Reminder User', active: true));
         DB::transaction(function () use ($identity): void {

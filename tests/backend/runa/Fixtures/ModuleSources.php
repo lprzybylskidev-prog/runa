@@ -24,7 +24,7 @@ final class ModuleSources
         $prefix = ($owner === 'app' ? 'App' : 'Runa').'\\Modules\\'.str_replace(' ', '', ucwords(str_replace('_', ' ', $code)));
         $definition = [
             'schema_version' => 1, 'id' => $owner.'.'.$code, 'kind' => $kind, 'version' => $version,
-            'platform' => '^0.4.0', 'framework_api' => '^1.0.0',
+            'platform' => '^0.4.0', 'framework_api' => '^2.0.0',
             'name' => (object) ['pl' => 'Moduł', 'en' => 'Module'], 'description' => (object) ['pl' => 'Opis', 'en' => 'Description'],
             'dependencies' => (object) ['required' => new \stdClass, 'optional' => new \stdClass],
             'providers' => [], 'declarations' => (object) array_fill_keys(ModuleManifest::CATEGORIES, []),

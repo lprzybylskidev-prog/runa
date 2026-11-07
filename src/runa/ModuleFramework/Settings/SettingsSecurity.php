@@ -60,7 +60,8 @@ final readonly class SettingsSecurity
                 $this->guard->enter('runa.auth', new ApiOperation('step_up.assert'));
             }
             $this->guard->enter('runa.audit', new ApiOperation('audit.record'));
-        }, fn (): mixed => $work($scope));
+        }, fn (): mixed => $work(new SettingsAdmission($scope->module, $scope->access, $scope->keys,
+            $scope->principal, $scope->actor, $scope->pdo, $this->registry->snapshot()->generation)));
     }
 
     public function lock(SettingsAdmission $scope): void
@@ -112,8 +113,8 @@ final readonly class SettingsSecurity
     }
 
     /** Authorized projection only. Owning runtime reads remain separate.
-     * @param  Closure():array{generation:int,revision:int,settings:array<string,array{definition:SettingDefinition,value?:mixed,set?:bool}>}  $read
-     * @return array{generation:int,revision:int,settings:array<string,array{definition:SettingDefinition,value?:mixed,set?:bool}>}
+     * @param  Closure():array{generation:int,review_id:string,revision:int,settings:array<string,array{definition:SettingDefinition,value?:mixed,set?:bool}>}  $read
+     * @return array{generation:int,review_id:string,revision:int,settings:array<string,array{definition:SettingDefinition,value?:mixed,set?:bool}>}
      */
     public function read(string $module, SettingsAccess $access, Closure $read): array
     {

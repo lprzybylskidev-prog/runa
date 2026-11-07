@@ -474,11 +474,14 @@ it('prepares distinct Admin read occurrences for repeated and nested guarded cal
     $prepared = [$calls['exists'](), $calls['describe'](), $calls['exists']()];
     expect(HealthPolicy::$calls[$this->id])->toBe(3)->and(ApiCalls::$constructed)->toBe(0);
     $nested = false;
-    ApiCalls::$onExists = function () use ($api, &$nested): void {
+    ApiCalls::$onExists = function () use ($api, $admissions, &$nested): void {
         expect(DB::connection()->transactionLevel())->toBe(1);
         if (! $nested) {
             $nested = true;
-            expect($api->describe($this->publicId)->publicId)->toBe($this->publicId);
+            expect($admissions->within(
+                static fn () => throw new RuntimeException('Must reuse the prepared read scope.'),
+                fn () => $api->describe($this->publicId),
+            )->publicId)->toBe($this->publicId);
         }
     };
     DB::transaction(fn () => $admissions->read($prepared, DB::connection(), function () use ($api): void {
@@ -497,9 +500,9 @@ it('refuses an extra prepared Admin read occurrence before constructing its impl
     $call = $admissions->prepareRead([$this->id, $this->contract, '1.0.0', 'exists'], function (): void {
         expect($this->availability->statuses($this->id, 'read')[$this->id]->available)->toBeTrue();
     });
-    expect(fn () => DB::transaction(fn () => $admissions->read([$call], DB::connection(), function () use ($api): void {
+    expect(fn () => DB::transaction(fn () => $admissions->read([$call], DB::connection(), function () use ($api, $admissions): void {
         expect($api->exists($this->publicId))->toBeTrue();
-        $api->exists($this->publicId);
+        $admissions->within(static fn () => throw new RuntimeException('Unexpected preparation.'), fn () => $api->exists($this->publicId));
     })))->toThrow(OperationRejected::class);
     expect(ApiCalls::$constructed)->toBe(1)->and(ApiCalls::$executed)->toBe(1);
     expect($api->exists($this->publicId))->toBeTrue()->and(ApiCalls::$executed)->toBe(2);
@@ -520,7 +523,7 @@ it('invalidates prepared Admin read evidence after expiry policy change rollback
     if ($change === 'reconnect') {
         DB::reconnect();
     }
-    expect(fn () => DB::transaction(fn () => $admissions->read([$call], DB::connection(), function () use ($api, $change): void {
+    expect(fn () => DB::transaction(fn () => $admissions->read([$call], DB::connection(), function () use ($api, $change, $admissions): void {
         if ($change === 'rollback') {
             $connection = DB::connection();
             $events = $connection->getEventDispatcher();
@@ -533,7 +536,7 @@ it('invalidates prepared Admin read evidence after expiry policy change rollback
                 $connection->setEventDispatcher($events);
             }
         }
-        $api->exists($this->publicId);
+        $admissions->within(static fn () => throw new RuntimeException('Unexpected preparation.'), fn () => $api->exists($this->publicId));
     })))->toThrow(OperationRejected::class);
     expect(ApiCalls::$constructed)->toBe(0)->and(ApiCalls::$executed)->toBe(0)
         ->and(DB::connection()->transactionLevel())->toBe(0);

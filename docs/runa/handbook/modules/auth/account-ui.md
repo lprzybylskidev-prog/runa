@@ -26,16 +26,16 @@ projection also sends the frontend to sign-in; a loaded document never treats th
 flag as authentication. An existing session resolves into the app or its required
 security flow. Disabling welcome neither revokes sessions nor relaxes checks.
 
-The trusted operator reads current revision/generation with:
+The trusted operator reads current revision/review identity with:
 
 ```sh
 ./bin/artisan runa:modules:settings runa.auth
 ```
 
-Then writes a revision-checked JSON patch using those actual values (replace R/G):
+Then writes a revision-checked JSON patch using those actual values (replace R/HASH):
 
 ```sh
-printf '%s' '{"values":{"public_welcome_enabled":false}}' | ./bin/artisan runa:modules:settings runa.auth --write --revision=R --generation=G
+printf '%s' '{"values":{"public_welcome_enabled":false}}' | ./bin/artisan runa:modules:settings runa.auth --write --revision=R --review=HASH
 ```
 
 Use true to restore welcome. This uses existing settings publication/history/Audit,

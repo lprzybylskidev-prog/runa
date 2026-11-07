@@ -1,7 +1,7 @@
 # Permissions
 
-Core `runa.permissions` is delivered at independent version `2.1.0`
-for platform >=0.7.0 <0.8.0, requiring `runa.auth ^5.0.0`, `runa.audit ^1.0.0` and framework API `^1.0.0`.
+Core `runa.permissions` is delivered at independent version `2.1.1`
+for platform >=0.7.0 <0.8.0, requiring `runa.auth ^6.0.0`, `runa.audit ^1.0.0` and framework API `^2.0.0`.
 Install with the existing fenced module updater, after Audit and Auth. The explicit
 transactional `null -> 0.1.0` edge creates dictionaries and the protected
 `runa.permissions.super_admin` role, with **no user assignments**. Matching installed
@@ -127,7 +127,7 @@ effective is still false without a grant and current eligibility/availability.
 ## Delivery boundary
 
 Custom-role/preset CRUD and reviewed assignment/copy operations use PermissionsAccess
-2.1.0 under the [ordinary access contract](access.md). Protected superadmin
+2.2.0 under the [ordinary access contract](access.md). Protected superadmin
 assignment/removal, last-superadmin participation and confirmed custom-role force
 deletion use the separate [protected authority contract](authority.md). The neutral
 AuthorityGuard now resolves the trusted Permissions participant and refuses missing

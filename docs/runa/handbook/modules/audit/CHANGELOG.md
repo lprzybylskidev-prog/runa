@@ -1,5 +1,9 @@
 # Audit module changelog
 
+## 1.1.1 — Unreleased
+
+- Declare Framework API ^2.0.0 compatibility after native settings review publication changes. Add a source-only settings_protocol forward edge; Audit APIs, event storage and immutable history remain unchanged.
+
 ## 1.1.0 — 2026-10-30
 
 - Extend AuditReads to 1.1.0 with optional SQL summary ordering before cursor paging, nulls last and stable append-identity ties; expose implemented sort keys in the Admin history table without changing immutable events or read authority.

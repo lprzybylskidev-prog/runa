@@ -309,12 +309,12 @@ this is explicit local preparation, never an automatic reopen step.
    Verify navigation returns through `/`, the welcome has logged-out links and a
    fresh request to authenticated application/profile content requires sign-in.
 3. Read current Auth settings with `runa:modules:settings runa.auth`. Through its
-   documented revision/generation-checked stdin write, set only
+   documented revision/review identity-checked stdin write, set only
    `public_welcome_enabled=false`. Open `/` logged out: expect `/auth/login`.
    Repeat sign-in, security steps, application, dropdown profile and sign-out;
    return through `/` now reaches sign-in. An existing session entering `/` must
    resolve to the application or pending required steps without a redirect loop.
-4. Restore the original setting through a fresh revision/generation read. Exercise
+4. Restore the original setting through a fresh revision/review identity read. Exercise
    the unverified, second-factor and blocked accounts separately; do not weaken
    production security policy to skip their expected restrictions. Review in Polish
    and English, light/dark and desktop/tablet/mobile during final frontend acceptance.
@@ -331,7 +331,7 @@ Verify the real served guest welcome, conditional registration, normal sign-in,
 profile and sign-out before handing over the URL and privately supplied development
 credentials. Keep passwords out of source, documentation, argv, logs and screenshots;
 preserve established credentials on repeats. The explicit module development seeder applies an idempotent full Auth review
-preset through audited revision/generation-checked ModuleSettings before account
+preset through audited revision/review identity-checked ModuleSettings before account
 fixtures. It enables welcome/registration, own identity edits, secondary addresses
 and their edits, both avatar editors, both account histories, self-deactivation/
 deletion, TOTP/email OTP/recovery/trust/session extension, administrative email

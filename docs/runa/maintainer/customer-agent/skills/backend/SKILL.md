@@ -23,6 +23,7 @@ imports or cached authority/availability substitutes.
 Load for application use cases, transactions, public integrations and failure handling. Read the active application roadmap, query available local knowledge and inspect analogous App code. Project rules override generic advice. Load references/application.md only when needed. Preserve protected platform source.
 
 For App module settings, follow `docs/runa/handbook/architecture/module-settings.md`.
+Use the documented semantic review identity for deliberate publication and snapshot capture; keep operational generation and current authorization checks distinct.
 Declare access/proof requirements and owning participation on your settings provider;
 use authorized HTTP projections and the native independent publication/recovery
 protocol. Reserved security bridges remain unavailable to application code.

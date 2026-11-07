@@ -524,8 +524,8 @@ final class AdministrationPages implements ManagementPageProvider
             new ManagementBinding('security', SecuritySection::class, [$target(AuthAdministration::class, ['facts'], '2.1.0'), $identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'], '1.2.0')]),
             new ManagementBinding('trust', DeviceSection::class, [$identity, $target(AuthSecurity::class, ['trustedDevices', 'revokeDevice', 'revokeDevices'], '1.2.0')]),
             new ManagementBinding('preferences', PreferenceSection::class, [$target(AuthPreferences::class, ['account', 'updateAccount', 'resetAccount'], '1.1.0')]),
-            new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'activeExceptions', 'exceptionVersions', 'exception', 'revokeExceptions'], '3.0.0')]),
-            new ManagementBinding('policy', PolicySection::class, [$target(AuthPolicies::class, ['preview', 'publish'], '3.0.0')]),
+            new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'activeExceptions', 'exceptionVersions', 'exception', 'revokeExceptions'], '4.0.0')]),
+            new ManagementBinding('policy', PolicySection::class, [$target(AuthPolicies::class, ['preview', 'publish'], '4.0.0')]),
             new ManagementBinding('policy_snapshots', PolicySnapshots::class, [
                 $target(AuthStepUp::class, ['assertVerified'], '2.0.0'),
                 new ManagementApiTarget('runa.audit', AuditRecords::class, '1.0.0', ['record']),

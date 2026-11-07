@@ -40,7 +40,7 @@ final readonly class PolicySection implements ManagementResourceReader, Manageme
         }
         $values['summary'] = null;
 
-        return new ManagementRecord(null, $state['revision'].':'.$state['generation'], $values);
+        return new ManagementRecord(null, $state['revision'].':'.$state['review_id'], $values);
     }
 
     public function page(ManagementRead $input): ManagementPageResult
@@ -51,7 +51,7 @@ final readonly class PolicySection implements ManagementResourceReader, Manageme
     public function preview(ManagementWrite $input): ManagementReview
     {
         try {
-            if ($input->publicId !== null || preg_match('/\A([0-9]{1,9}):([0-9]{1,9})\z/D', $input->revision, $parts) !== 1) {
+            if ($input->publicId !== null || preg_match('/\A([0-9]{1,9}):([a-f0-9]{64})\z/D', $input->revision, $parts) !== 1) {
                 throw new \InvalidArgumentException('Invalid policy revision.');
             }
             $keys = array_keys($input->values);
@@ -62,7 +62,7 @@ final readonly class PolicySection implements ManagementResourceReader, Manageme
                 throw new \InvalidArgumentException('Invalid policy patch.');
             }
             $patch = $input->values;
-            $preview = $this->apis->resolve('runa.auth', AuthPolicies::class, '3.0.0')->preview($patch, (int) $parts[1], (int) $parts[2]);
+            $preview = $this->apis->resolve('runa.auth', AuthPolicies::class, '4.0.0')->preview($patch, (int) $parts[1], $parts[2]);
             $changes = $preview['changes'] + ['summary' => $preview['consequences']];
 
             return new ManagementReview(hash('sha256', serialize([$input->command, $input->values, $preview])), $changes, 'password', true);
@@ -77,9 +77,9 @@ final readonly class PolicySection implements ManagementResourceReader, Manageme
         if (! is_string($input->review['fingerprint'] ?? null) || ! hash_equals($review->fingerprint, $input->review['fingerprint'])) {
             throw new OperationRejected('policy_stale', 'runa.auth', 'policy.publish', 409);
         }
-        [$revision, $generation] = array_map('intval', explode(':', $input->revision));
-        $api = $this->apis->resolve('runa.auth', AuthPolicies::class, '3.0.0');
-        $result = $api->publish($input->values, $revision, $generation);
+        [$revision, $reviewId] = explode(':', $input->revision);
+        $api = $this->apis->resolve('runa.auth', AuthPolicies::class, '4.0.0');
+        $result = $api->publish($input->values, (int) $revision, $reviewId);
         $status = match ($result['status']) {
             'succeeded' => 'committed', 'pending', 'running' => 'pending', 'recovery_required' => 'recovery_required',
             default => throw new OperationRejected('policy_publication_failed', 'runa.auth', 'policy.publish', 409),

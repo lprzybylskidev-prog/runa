@@ -2,6 +2,11 @@
 
 ## 1.0.1 — Unreleased
 
+- Require Framework API ^2.0.0 and Auth ^6.0.0 for semantic settings review and
+  native snapshot admission. Existing AdminAccess/controller signatures and
+  stored presentation remain unchanged; the existing source-only forward edge
+  records this candidate's compatibility update without a data migration.
+
 - Prepare separately declared read-health occurrences outside locks, then retain
   current entry/proof/authority and owning reads inside the existing transaction.
   Cover record/page/options/widget adapters, per-call consumption, expiry/source/

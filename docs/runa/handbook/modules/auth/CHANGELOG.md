@@ -1,5 +1,9 @@
 # Auth module changelog
 
+## 6.0.0 — Unreleased
+
+- Replace AuthPolicies publication/preview generation integers with semantic review identities (API 4.0.0). Require Framework API ^2.0.0; keep current grants, action-specific password proof, policy consequences and atomic history/Audit. Add the source-only settings_review_identity forward edge without data conversion.
+
 ## 5.0.2 — Unreleased
 
 - Consume Framework API ^1.2.0 native settings access/proof/publication contracts.

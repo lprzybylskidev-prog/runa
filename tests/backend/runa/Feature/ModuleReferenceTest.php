@@ -30,7 +30,7 @@ it('integrates reference updates HTTP frontend scheduler worker and draining lif
         $updates = app(ModuleUpdates::class);
         $updates->apply('app', str_repeat('e', 40), static function (): void {});
         $record = $registry->snapshot()->modules['app.reference'];
-        expect($record->enabled)->toBeFalse()->and($record->installedVersion)->toBe('0.3.0')
+        expect($record->enabled)->toBeFalse()->and($record->installedVersion)->toBe('0.4.0')
             ->and(DB::table('app_reference.samples')->count())->toBe(1)
             ->and(DB::table('app_reference.samples')->value('public_id'))->toMatch('/^[a-f0-9-]{14}7[a-f0-9-]+$/')
             ->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
@@ -47,7 +47,7 @@ it('integrates reference updates HTTP frontend scheduler worker and draining lif
         expect($api->read()->message)->toBe('reference');
         $settings = app(ModuleSettings::class);
         $state = $settings->read('app.reference');
-        expect($settings->update('app.reference', ['label' => 'Updated'], $state['revision'], $state['generation'])->status)->toBe('succeeded');
+        expect($settings->update('app.reference', ['label' => 'Updated'], $state['revision'], $state['review_id'])->status)->toBe('succeeded');
         expect($api->read()->message)->toBe('Updated');
         // The presentation adapter consumes the same guarded API and never exposes settings secrets.
         $reader = app(ReferenceReader::class);
@@ -101,7 +101,7 @@ it('integrates reference updates HTTP frontend scheduler worker and draining lif
         expect($transitions->apply($transitions->preview('unregister', 'app.reference'))->status)->toBe('succeeded');
         $registry->registerAgain('app.reference');
         expect($registry->snapshot()->modules['app.reference']->enabled)->toBeFalse()
-            ->and($registry->snapshot()->modules['app.reference']->installedVersion)->toBe('0.3.0')
+            ->and($registry->snapshot()->modules['app.reference']->installedVersion)->toBe('0.4.0')
             ->and(DB::table('app_reference.samples')->count())->toBe(1)
             ->and(app(ModuleStorage::class)->disk('app.reference')->get('last-observation.txt'))->toBe('Reference work completed.');
     } finally {

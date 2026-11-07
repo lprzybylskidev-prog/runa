@@ -2,7 +2,7 @@
 
 # Auth administration
 
-Auth 5.0.2 supplies source-owned administration declarations and adapters, consumed
+Auth 6.0.0 supplies source-owned administration declarations and adapters, consumed
 by Admin without a reverse backend dependency. Business behavior remains available
 through the owning guarded APIs without Admin. These contracts are delivered with
 platform 0.7.0; the interface versions below are independent of the module version.
@@ -145,7 +145,7 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | factor reset                    | AuthSecurity.resetFactors; `two_factor.reset`                                                                                           | Version, confirmation, password `runa.auth.two_factor.reset`; native authority/revocation                                                                                            |
 | preferences reset               | AuthPreferences.resetAccount; `preferences.read`, `preferences.reset`                                                                   | Account preference revision and confirmation; presentation-only reset                                                                                                                |
 | exceptions                      | AuthPolicies; `policy.exceptions`                                                                                                       | Policy and per-key exception revisions, bounded reason/expiry, password `runa.auth.policy.exception`; null value revokes                                                             |
-| policy / named snapshots        | AuthPolicies + owning ModuleSettings; `policy.read`, `policy.write`                                                                     | Exact settings revision/generation, reviewed differences and consequences, password `runa.auth.policy.publish`; snapshot deletion requires its own password proof                    |
+| policy / named snapshots        | AuthPolicies + owning ModuleSettings; `policy.read`, `policy.write`                                                                     | Exact settings revision/review identity, reviewed differences and consequences, password `runa.auth.policy.publish`; snapshot deletion requires its own password proof               |
 | bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants                                                        | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation; no additional operation proof                                                             |
 
 Account creation is in the directory Card header's right actions area. All
@@ -246,7 +246,7 @@ UUID. Native conflict/refusal/Audit behavior remains authoritative.
 
 Policy fields are typed from Auth's definitions and presented in semantic groups.
 One native publication validates the entire editable policy against the current
-revision/generation. Named snapshots capture committed values; loading populates
+revision/review identity. Named snapshots capture committed values; loading populates
 only the draft. Publication shows committed only for native `succeeded`;
 pending/recovery states retain operation identity. Audit and revision history are
 absent from this editor. See [snapshot composition](../admin/settings-snapshots.md).
@@ -504,7 +504,7 @@ consumers through `ModuleApis`; management adapters are private:
 ```php
 // AuthSecurity API 1.2.0, permission runa.auth.trust.manage
 public function revokeDevices(string $publicId, int $expectedVersion): bool;
-// AuthPolicies API 3.0.0, permission runa.auth.policy.exceptions
+// AuthPolicies API 4.0.0, permission runa.auth.policy.exceptions
 // Fresh password runa.auth.policy.exception proof, consumed once in transaction.
 public function revokeExceptions(string $publicId, int $expectedVersion): bool;
 ```
@@ -523,7 +523,7 @@ their existing resolution and authority boundaries; customers never copy private
 Auth controllers or access foreign models. The new default detail components are
 private presentation implementations, not additional customer imports.
 
-`AuthPolicies` 3.0.0 additionally exposes
+`AuthPolicies` 4.0.0 additionally exposes
 `exceptionVersions(string $publicId): array<string, int>` under
 `runa.auth.policy.exceptions`. It projects each key's current monotonic version
 independently of the bounded history page, so editing another rule remains correct
@@ -638,8 +638,8 @@ see [composition and storage](../admin/settings-snapshots.md). The select and ad
 delete action manage named snapshots. Capture stores committed values; load is a
 local draft preview with previous-value markers and cancellation to the earlier draft.
 The former history section/revision restore is absent. Settings changes remain
-transactionally audited; Audit has its own viewer. AuthPolicies is 3.0.0 and Auth
-is 5.0.0 for removal of guarded history restore. Operator recovery remains CLI-only.
+transactionally audited; Audit has its own viewer. AuthPolicies is 4.0.0 and Auth
+is 6.0.0, including removal of guarded history restore and semantic settings reviews. Operator recovery remains CLI-only.
 
 Permissions contributes ordinary access copying/preset application and a separately
 granted protected-authority action to this same user-details screen. Account access

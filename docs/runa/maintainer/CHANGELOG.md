@@ -4,17 +4,25 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Correct native settings review/publication and snapshot admission in Framework
+  API 2.0.0: separate semantic `review_id` from operational generation, retain
+  exact health/authority/proof fences and reuse native prepared scopes. Update
+  AuthPolicies 4.0.0 / Auth 6.0.0, Audit 1.1.1, Permissions 2.1.1 and current
+  consumers, CLI and source-only forward edges. Complete reference 0.4.0 backend
+  examples for audited editing, grants, settings/snapshots and protected work;
+  presentation, combined runtime readiness, owner acceptance and final checks remain.
+
 - Absorb the approved RM-2026-018 interface-copy, trusted-device disclosure and
   action-driven data-refresh scope into this roadmap's feature/0.8.0 plan; remove
   its redundant unactivated draft and separate 0.8.1 projection. Record owner
   approval of the native settings generation/snapshot-admission correction.
-  These remain open implementation points, followed by one renewed owner
-  acceptance and one final automated verification/release.
+  The absorbed interface implementation remains open, followed by one renewed
+  owner acceptance and one final automated verification/release.
 
 - Establish the reference module as executable customer documentation: new Runa
   modules and customer-facing capabilities extend working examples, guidance and
   tests in their owning point. Reopen reference completeness through repair point
-  10a before owner frontend acceptance; expanded runtime examples are not yet delivered.
+  10a before owner frontend acceptance; backend examples are delivered; their expanded frontend journey remains pending.
 
 - Record the approved common-settings refactor and ordered repair points 10a–10e:
   framework contracts, Auth migration, executable reference backend/UI and renewed

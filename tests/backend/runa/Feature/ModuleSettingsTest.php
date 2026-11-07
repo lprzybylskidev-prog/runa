@@ -42,7 +42,7 @@ beforeEach(function (): void {
     $this->update = function (array $values, ?SettingsActor $actor = null) {
         $state = $this->settings->read($this->module);
 
-        return $this->settings->update($this->module, $values, $state['revision'], $state['generation'], $actor);
+        return $this->settings->update($this->module, $values, $state['revision'], $state['review_id'], $actor);
     };
 });
 
@@ -162,7 +162,7 @@ it('applies immediate settings behind a durable fence outside transactions and r
         };
         expect(($this->update)(['label' => 'new'], new SettingsActor('actor', 'user:123'))->status)->toBe('succeeded');
         expect(SettingsCalls::$changes[0]->context->actor->kind)->toBe('actor')->and(SettingsCalls::$changes[0]->outcome)->toBe('succeeded');
-        expect(fn () => $this->settings->update($this->module, ['label' => 'stale'], $old['revision'], $old['generation']))->toThrow(RuntimeException::class);
+        expect(fn () => $this->settings->update($this->module, ['label' => 'stale'], $old['revision'], $old['review_id']))->toThrow(RuntimeException::class);
     } finally {
         $other->disconnect();
         DB::purge('settings_observer');
@@ -203,7 +203,7 @@ it('fails closed on lost encryption key and isolates independent observer except
     ($this->update)(['token' => 'test-private-value']);
     $wrongKey = new ModuleSettings(DB::connection(), $this->registry, $this->definitions, new LaravelEncrypter(random_bytes(32), 'AES-256-CBC'), new SettingsCalls);
     expect(fn () => $wrongKey->read($this->module))->toThrow(RuntimeException::class, 'Settings key or encrypted data unavailable');
-    expect(fn () => $wrongKey->update($this->module, ['label' => 'no'], 1, $this->registry->snapshot()->generation))->toThrow(RuntimeException::class);
+    expect(fn () => $wrongKey->update($this->module, ['label' => 'no'], 1, $this->settings->read($this->module)['review_id']))->toThrow(RuntimeException::class);
     expect($this->settings->value($this->module, 'token'))->toBe('test-private-value')->and($this->registry->snapshot()->fenced)->toBe([]);
     SettingsCalls::$observe = fn () => throw new RuntimeException('independent observer failed');
     expect(($this->update)(['label' => 'ok'])->status)->toBe('succeeded')->and($this->settings->value($this->module, 'label'))->toBe('ok');
@@ -223,7 +223,7 @@ $definitions = new Runa\ModuleFramework\Settings\SettingsDefinitions($declaratio
 $settings = new Runa\Support\Modules\Settings\ModuleSettings($db, $registry, $definitions, $app->make(Illuminate\Contracts\Encryption\Encrypter::class), new Tests\Fixtures\SettingsCalls);
 Tests\Fixtures\SettingsCalls::$apply = static function () { exit(23); };
 $view = $settings->read($argv[2]);
-$settings->update($argv[2], ['label' => 'interrupted'], $view['revision'], $view['generation']);
+$settings->update($argv[2], ['label' => 'interrupted'], $view['revision'], $view['review_id']);
 WORKER;
     $process = new Process([PHP_BINARY, '-r', $worker, $this->sources->root, $this->module], base_path(), ['APP_ENV' => 'testing', 'DB_DATABASE' => DB::connection()->getDatabaseName(), 'LARAVEL_STORAGE_PATH' => storage_path()]);
     expect($process->run())->toBe(23, $process->getErrorOutput());
@@ -270,7 +270,7 @@ it('leaves values and flags unchanged when encryption fails before reserving a s
     $encrypter->expects($this->once())->method('encrypt')->willThrowException(new RuntimeException('private provider error'));
     $service = new ModuleSettings(DB::connection(), $this->registry, $this->definitions, $encrypter, new SettingsCalls);
     $view = $this->settings->read($this->module);
-    expect(fn () => $service->update($this->module, ['token' => 'test-private-value'], $view['revision'], $view['generation']))->toThrow(RuntimeException::class, 'Settings encryption unavailable.');
+    expect(fn () => $service->update($this->module, ['token' => 'test-private-value'], $view['revision'], $view['review_id']))->toThrow(RuntimeException::class, 'Settings encryption unavailable.');
     expect($this->settings->read($this->module))->toEqual($view)->and($this->registry->snapshot()->fenced)->toBe([]);
     expect(DB::table('shared.module_transitions')->where('target', $this->module)->exists())->toBeFalse();
 });
@@ -396,4 +396,43 @@ it('refuses changed settings provider source before publication and retains reco
     }
     expect($this->settings->recover($result->operationId)->status)->toBe('failed');
     expect($this->settings->read($this->module)['settings']['label']['value'])->toBe('initial');
+});
+
+it('keeps reviewed settings stable across equivalent health renewal and refuses changed health expiry and source', function (): void {
+    $observation = ['fingerprint' => str_repeat('a', 64), 'passed' => true, 'checked_at' => now()->getTimestamp(),
+        'expires_at' => now()->getTimestamp() + 120, 'code' => 'healthy'];
+    $publishHealth = function (array $value): void {
+        DB::table('shared.modules')->where('module_id', $this->module)->update(['health_observations' => json_encode(['check' => $value], JSON_THROW_ON_ERROR)]);
+        DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    };
+    $publishHealth($observation);
+    $reviewed = $this->settings->read($this->module);
+    $publishHealth([...$observation, 'checked_at' => $observation['checked_at'] - 1, 'expires_at' => $observation['expires_at'] + 60]);
+    $renewed = $this->settings->read($this->module);
+    expect($renewed['generation'])->toBeGreaterThan($reviewed['generation'])
+        ->and($renewed['review_id'])->toBe($reviewed['review_id']);
+    expect($this->settings->update($this->module, ['attempts' => 4], $reviewed['revision'], $reviewed['review_id'])->status)->toBe('succeeded');
+
+    $publishHealth($observation);
+    $reviewed = $this->settings->read($this->module);
+    $publishHealth([...$observation, 'passed' => false, 'code' => 'health_failed']);
+    expect(fn () => $this->settings->update($this->module, ['attempts' => 5], $reviewed['revision'], $reviewed['review_id']))->toThrow(RuntimeException::class);
+    $publishHealth($observation);
+    try {
+        $this->travelTo(now()->addSeconds(121));
+        expect($this->settings->read($this->module)['review_id'])->not->toBe($reviewed['review_id']);
+        expect(fn () => $this->settings->update($this->module, ['attempts' => 5], $reviewed['revision'], $reviewed['review_id']))->toThrow(RuntimeException::class);
+    } finally {
+        $this->travelBack();
+    }
+    $path = $this->sources->root.'/'.$this->registry->snapshot()->modules[$this->module]->sourcePath.'/backend/Definitions/Settings.php';
+    $source = file_get_contents($path);
+    try {
+        file_put_contents($path, $source."\n");
+        expect($this->settings->read($this->module)['review_id'])->not->toBe($reviewed['review_id']);
+        expect(fn () => $this->settings->update($this->module, ['attempts' => 5], $reviewed['revision'], $reviewed['review_id']))->toThrow(RuntimeException::class);
+    } finally {
+        file_put_contents($path, $source);
+    }
+    expect($this->settings->read($this->module)['revision'])->toBe($reviewed['revision']);
 });

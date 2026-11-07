@@ -37,9 +37,9 @@ setting keys and additional permission strings; omitted keys inherit the operati
 permission. The optional password `MutationProof` uses the existing Auth contract.
 
 Resolve container-owned `Runa\Support\Modules\Settings\ModuleSettings`.
-`readAuthorized(string $module): array` returns the existing redacted read shape,
+`readAuthorized(string $module): array` returns the redacted read shape with `generation: int`, `revision: int`, `review_id: string` and `settings: array`,
 omitting fields denied by current read grants. `update(string $module, array $patch,
-int $expectedRevision, int $expectedGeneration, ?SettingsActor $actor = null):
+int $expectedRevision, string $expectedReview, ?SettingsActor $actor = null):
 TransitionResult` retains its native independent-runner protocol. With access
 metadata, the runner checks the write operation and every patched field, consumes
 the declared proof once and derives human actor context from the trusted principal.
@@ -53,9 +53,22 @@ Providers without access metadata retain trusted native/CLI publication; they do
 not gain an HTTP publication contract. These source extensions do not change the
 signatures or security requirements of existing Core guarded APIs.
 
+## Semantic review identity
+
+Framework API 2.0.0 adds the lowercase 64-character SHA-256 `review_id` to both
+settings reads. Submit that exact identity with the original revision. It binds
+the target/revision, provider/handler file hashes and definitions/access metadata,
+registry source/install/enabled/dependency identities and fences, and health
+fingerprint/result/code/freshness. Equivalent health observation renewal excludes
+check/expiry timestamps; expiry, a changed result, source or revision invalidates
+review. `generation` remains operational evidence and the native transaction fence.
+The review identity contains no private values and grants no authority; publication
+independently rechecks current identity, grants, proof, health and connection.
+No automatic write retry or replacement identity is supported.
+
 ## Admission, locks and atomicity
 
-1. Resolve pure declarations and capture access/provider/handler/schema identity.
+1. Resolve pure declarations and capture access/provider/handler/schema identity. Capture operational generation after health preparation.
    Before the publication transaction, admit the owning write operation, patched
    field grants and applicable Auth proof/Audit operations. Reuse the native
    `HealthAdmissions` scope; after sealing it, no external health checks start
@@ -64,8 +77,8 @@ signatures or security requirements of existing Core guarded APIs.
    connection. Open one publication transaction with one attempt, lock the registry
    row exclusively, acquire the common authority advisory lock, then lock the
    authenticated actor through the reserved Auth integration. Recheck principal,
-   generation, source, declarations, grants and admission before mutation.
-3. Validate expected revision/generation, declared patch and complete candidate.
+   the post-admission operational generation, source, declarations, grants and admission before mutation.
+3. Validate expected revision/review identity, declared patch and complete candidate.
    Invoke the provider's optional `authorizing` hook before transition/fence writes.
    It may enforce additional owning record/business rules through public APIs;
    no external effects or new unprepared health dependencies belong here.

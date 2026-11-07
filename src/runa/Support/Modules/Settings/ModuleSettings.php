@@ -99,7 +99,7 @@ final class ModuleSettings
     }
 
     /** Current human grants, field visibility and safe secret set-state. No ambient transaction.
-     * @return array{generation: int, revision: int, settings: array<string, array{definition: SettingDefinition, value?: mixed, set?: bool}>}
+     * @return array{generation: int, review_id: string, revision: int, settings: array<string, array{definition: SettingDefinition, value?: mixed, set?: bool}>}
      */
     public function readAuthorized(string $module): array
     {
@@ -120,7 +120,7 @@ final class ModuleSettings
     }
 
     /** Safe management projection. Sensitive values expose set-state only, never ciphertext.
-     * @return array{generation: int, revision: int, settings: array<string, array{definition: SettingDefinition, value?: mixed, set?: bool}>}
+     * @return array{generation: int, review_id: string, revision: int, settings: array<string, array{definition: SettingDefinition, value?: mixed, set?: bool}>}
      */
     public function read(string $module): array
     {
@@ -132,8 +132,31 @@ final class ModuleSettings
                 $settings[$key] = ['definition' => $definition, ...($definition->sensitive ? ['set' => $values[$key] !== null] : ['value' => $values[$key]])];
             }
 
-            return ['generation' => $snapshot->generation, 'revision' => $revision, 'settings' => $settings];
+            return ['generation' => $snapshot->generation, 'review_id' => $this->reviewIdentity($snapshot, $module, $revision), 'revision' => $revision, 'settings' => $settings];
         });
+    }
+
+    /** Semantic settings identity; observation renewal alone is not a reviewed change. */
+    private function reviewIdentity(RegistrySnapshot $snapshot, string $module, int $revision): string
+    {
+        $records = [];
+        foreach ($snapshot->modules as $id => $record) {
+            $health = [];
+            foreach ($record->healthObservations as $key => $observation) {
+                $health[$key] = [$observation['fingerprint'], $observation['passed'], $observation['code'],
+                    $observation['checked_at'] <= now()->getTimestamp() && $observation['expires_at'] > now()->getTimestamp()];
+            }
+            ksort($health);
+            $records[$id] = [$record->publicId, $record->registered, $record->sourcePresent, $record->enabled,
+                $record->sourceVersion, $record->installedVersion, $record->sourcePath, $record->manifestHash,
+                $record->required, $record->optional, $record->platformConstraint, $record->frameworkApiConstraint, $health];
+        }
+        ksort($records);
+        $fenced = $snapshot->fenced;
+        sort($fenced);
+        [$definitions, $provider, $handler] = $this->definitions->for($snapshot->modules[$module]);
+
+        return hash('sha256', serialize([$module, $revision, $this->declaration($definitions, $provider, $handler), $records, $fenced]));
     }
 
     /** Explicit private runtime access for trusted owning-module code; never serialize this result.
@@ -227,23 +250,23 @@ final class ModuleSettings
     /** Patch declared keys; omitted values are retained. Sensitive null explicitly clears a value.
      * @param  array<string, mixed>  $patch
      */
-    public function update(string $module, #[\SensitiveParameter] array $patch, int $expectedRevision, int $expectedGeneration, ?SettingsActor $actor = null): TransitionResult
+    public function update(string $module, #[\SensitiveParameter] array $patch, int $expectedRevision, string $expectedReview, ?SettingsActor $actor = null): TransitionResult
     {
-        return $this->exclusive(function () use ($module, $patch, $expectedRevision, $expectedGeneration, $actor): TransitionResult {
+        return $this->exclusive(function () use ($module, $patch, $expectedRevision, $expectedReview, $actor): TransitionResult {
             $id = (string) Str::uuid7();
             $record = $this->registry->snapshot()->modules[$module] ?? throw new RuntimeException('Unknown module.');
             [$plannedDefinitions, $plannedProvider, $plannedHandler] = $this->definitions->for($record);
             $access = $this->definitions->access($plannedProvider, $plannedDefinitions);
             $identity = $this->declaration($plannedDefinitions, $plannedProvider, $plannedHandler);
-            $publish = function (?SettingsAdmission $admission = null) use ($id, $module, $patch, $expectedRevision, $expectedGeneration, $actor, $identity): void {
-                $this->connection->transaction(function () use ($id, $module, $patch, $expectedRevision, $expectedGeneration, $actor, $identity, $admission): void {
+            $publish = function (?SettingsAdmission $admission = null) use ($id, $module, $patch, $expectedRevision, $expectedReview, $actor, $identity): void {
+                $this->connection->transaction(function () use ($id, $module, $patch, $expectedRevision, $expectedReview, $actor, $identity, $admission): void {
                     $this->lock();
                     if ($admission !== null) {
                         $this->security?->lock($admission);
                     }
                     $snapshot = $this->registry->snapshot();
                     $state = $this->state($module);
-                    if ($snapshot->generation !== $expectedGeneration || $state->settings_revision !== $expectedRevision || $this->connection->table('shared.module_transitions')->whereIn('status', ModuleRegistry::ACTIVE_TRANSITIONS)->exists()) {
+                    if (! hash_equals($this->reviewIdentity($snapshot, $module, $state->settings_revision), $expectedReview) || $state->settings_revision !== $expectedRevision || $this->connection->table('shared.module_transitions')->whereIn('status', ModuleRegistry::ACTIVE_TRANSITIONS)->exists()) {
                         throw new RuntimeException('Settings revision changed or transition unresolved.');
                     }
                     $record = $snapshot->modules[$module] ?? throw new RuntimeException('Unknown module.');
@@ -284,7 +307,7 @@ final class ModuleSettings
                         $this->security?->finish($admission);
                     }
                     $this->connection->table('shared.module_transitions')->insert([
-                        'public_id' => $id, 'intent' => 'settings', 'target' => $module, 'generation' => $expectedGeneration,
+                        'public_id' => $id, 'intent' => 'settings', 'target' => $module, 'generation' => $snapshot->generation,
                         'affected' => json_encode([$module], JSON_THROW_ON_ERROR), 'payload' => $this->encode($payload),
                         'status' => 'preparing', 'created_at' => now(), 'updated_at' => now(),
                     ]);

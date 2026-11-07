@@ -111,7 +111,7 @@ it('normalizes Auth names and identifiers and enforces PostgreSQL naming and cla
     $settings = app(ModuleSettings::class);
     foreach (['login', 'either', 'email'] as $mode) {
         $current = $settings->read('runa.auth');
-        expect($settings->update('runa.auth', ['identifier_mode' => $mode], $current['revision'], $current['generation'])->status)->toBe('succeeded');
+        expect($settings->update('runa.auth', ['identifier_mode' => $mode], $current['revision'], $current['review_id'])->status)->toBe('succeeded');
         expect($lookup->forIdentifier($mode === 'email' ? 'one@example.test' : ' FIRST.LOGIN ')?->public_id)->toBe($one->publicId);
     }
     foreach ([fn () => new NewIdentity('x@example.test'), fn () => new NewIdentity('x@example.test', name: 'X', firstName: 'Y', surname: 'Z'),
@@ -174,7 +174,7 @@ it('reserves deleted identifiers by default and refuses conflicting restoration 
     expect($user->active)->toBeFalse()->and($user->security_version)->toBe(3)->and($user->remember_token)->toBeNull();
     $settings = app(ModuleSettings::class);
     $current = $settings->read('runa.auth');
-    $settings->update('runa.auth', ['reuse_deleted_identifiers' => true], $current['revision'], $current['generation']);
+    $settings->update('runa.auth', ['reuse_deleted_identifiers' => true], $current['revision'], $current['review_id']);
     $old = $actions->change($old->publicId, $old->version, new LifecycleChange('delete'));
     $new = $actions->create(new NewIdentity('reserved@example.test', name: 'New', login: 'reserved'));
     expect($new->publicId)->not->toBe($old->publicId);

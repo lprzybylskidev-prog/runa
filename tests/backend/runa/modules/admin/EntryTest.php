@@ -1,6 +1,7 @@
 <?php
 
 use App\Modules\Reference\Contracts\Ping;
+use App\Modules\Reference\Contracts\ReferenceTools;
 use App\Modules\Reference\Definitions\ReferenceHealthPolicy;
 use App\Settings\PointTenFixture\Settings;
 use Carbon\CarbonImmutable;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Monolog\Handler\AbstractProcessingHandler;
 use Monolog\LogRecord;
+use Runa\Contracts\Modules\ApiOperation;
 use Runa\Contracts\Modules\HealthContext;
 use Runa\Contracts\Modules\HealthDefinition;
 use Runa\Contracts\Modules\HealthPolicy;
@@ -42,6 +44,7 @@ use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleOperationHistory;
 use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Admin\Contracts\AdminAccess;
 use Runa\Modules\Admin\Contracts\AdminRegistry;
@@ -110,7 +113,7 @@ beforeEach(function (): void {
     config()->set('queue.default', 'database');
     config()->set('hashing.bcrypt.rounds', 4);
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['email_verification' => 'disabled'], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'disabled'], $settings['revision'], $settings['review_id']);
     $identity = app(ChangeIdentity::class)->create(new NewIdentity('admin-entry@example.test', name: 'Admin entry', active: true));
     $this->adminUser = User::where('public_id', $identity->publicId)->firstOrFail();
     DB::transaction(function (): void {
@@ -848,7 +851,7 @@ it('Auth administration dispatches every lifecycle intent with native revisions 
         $this->adminUser->save();
     });
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['registration_activation' => 'administrator', 'password_expiry_days' => 30], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['registration_activation' => 'administrator', 'password_expiry_days' => 30], $settings['revision'], $settings['review_id']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('lifecycle-admin@example.test', name: 'Lifecycle target'));
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.deleted.read', 'runa.auth.users.manage']);
     foreach (['activate', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change', 'deactivate', 'delete', 'restore'] as $operation) {
@@ -882,7 +885,7 @@ it('Auth administration keeps creations invitations secondary addresses and pref
     $this->postJson('/api/admin/runa.auth/users/sections/invitations/commands', $invite)->assertOk();
     // Secondary addresses retain native enablement; Admin cannot override policy.
     $state = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['secondary_emails_enabled' => true], $state['revision'], $state['generation']);
+    OperatorSettings::update('runa.auth', ['secondary_emails_enabled' => true], $state['revision'], $state['review_id']);
     $input = ['command' => 'add', 'public_id' => $user->public_id, 'revision' => (string) $user->version, 'values' => ['email' => 'secondary-admin@example.test']];
     $this->postJson('/api/admin/runa.auth/users/sections/secondary/commands', $input)->assertOk();
     $record = authAdministrationRead($this, 'secondary', $user->public_id);
@@ -906,7 +909,7 @@ it('Auth administration keeps creations invitations secondary addresses and pref
 
 it('Auth administration refuses stronger operations without native password proof', function (string $section, string $command, array $values, string $grant): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['email_verification' => 'new', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'new', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['review_id']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('strong-admin@example.test', name: 'Strong target', active: true));
     authAdministrationLogin($this, ['runa.auth.profiles.read', 'runa.auth.policy.exceptions', 'runa.auth.'.$grant]);
     if ($section === 'exceptions') {
@@ -998,7 +1001,7 @@ it('Auth administration publishes through the native policy runner and refuses h
 
 it('Auth administration confirms selected bulk revocation without another identity proof', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['review_id']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('bulk-admin@example.test', name: 'Bulk target', active: true));
     authAdministrationLogin($this, ['runa.auth.sessions.bulk_revoke', 'runa.permissions.users.select']);
     $input = ['command' => 'revoke', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$target->publicId], 'trust' => true], 'confirmed' => true];
@@ -1036,7 +1039,7 @@ it('Auth administration never treats a read grant as write authority', function 
 
 it('Auth administration preserves native session and trust scoping without disclosing session credentials', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['review_id']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('sessions-admin@example.test', name: 'Session target', active: true));
     $user = User::where('public_id', $target->publicId)->firstOrFail();
     $sessions = DB::transaction(fn () => [
@@ -1069,7 +1072,7 @@ it('Auth administration runs native strong account actions with one use proof', 
     if ($patch !== []) {
         DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['email_verified_at' => now()]);
         $state = app(ModuleSettings::class)->read('runa.auth');
-        OperatorSettings::update('runa.auth', $patch, $state['revision'], $state['generation']);
+        OperatorSettings::update('runa.auth', $patch, $state['revision'], $state['review_id']);
     }
     $target = app(ChangeIdentity::class)->create(new NewIdentity('strong-success@example.test', name: 'Strong target', active: true));
     if ($command === 'password_reset') {
@@ -1125,7 +1128,7 @@ it('Auth creation verification defaults on and remains configurable in the Auth 
         ->and($field['label']['pl'])->toBe('Administracyjne potwierdzanie adresów e-mail');
     expect(authAdministrationRead($this, 'creation')['values']['email_verification_allowed'])->toBeTrue();
     $state = $settings->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['admin_email_verification_bypass' => false], $state['revision'], $state['generation']);
+    OperatorSettings::update('runa.auth', ['admin_email_verification_bypass' => false], $state['revision'], $state['review_id']);
     expect(authAdministrationRead($this, 'creation')['values']['email_verification_allowed'])->toBeFalse();
     $this->postJson('/api/admin/runa.auth/users/sections/creation/preview', ['command' => 'create', 'public_id' => null, 'revision' => '0',
         'values' => authCreationValues(['email_verified' => true])])->assertForbidden()->assertJsonPath('error.code', 'email_bypass_disabled');
@@ -1138,7 +1141,7 @@ it('Auth creation atomically configures credentials schedules verification and l
         $this->adminUser->save();
     });
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['email_verification' => 'all', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'all', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['review_id']);
     authAdministrationStrongProof($this, 'runa.auth.users.create');
     $password = 'initial-user-password';
     $input = ['command' => 'create', 'public_id' => null, 'revision' => '0', 'values' => authCreationValues([
@@ -1186,7 +1189,7 @@ it('Auth creation queues inactive invitations atomically and rolls back proof an
 it('Auth creation refuses unsupported credentials schedules and verification without partial accounts', function (): void {
     authAdministrationLogin($this, ['runa.auth.users.create']);
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['password_expiry_days' => 0], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['password_expiry_days' => 0], $settings['revision'], $settings['review_id']);
     $page = $this->getJson('/api/admin/runa.auth/users')->assertOk()->json('data');
     $creation = array_values(array_filter($page['sections'], fn ($section) => $section['key'] === 'creation'))[0];
     expect(array_column($creation['commands'], 'key'))->toContain('create')
@@ -2038,7 +2041,7 @@ it('uses Auth protected section idle access for Admin and never trusts activity 
 
 it('Auth user administration hides disabled feature metadata and refuses hidden commands', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['totp_enabled' => false, 'email_otp_enabled' => false, 'avatar_editor' => 'user', 'password_expiry_days' => 0], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['totp_enabled' => false, 'email_otp_enabled' => false, 'avatar_editor' => 'user', 'password_expiry_days' => 0], $settings['revision'], $settings['review_id']);
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.auth.profiles.read', 'runa.auth.emails.read', 'runa.auth.emails.reverify', 'runa.auth.emails.verify_bypass', 'runa.auth.secondary.read', 'runa.auth.trust.manage', 'runa.auth.two_factor.reset', 'runa.auth.passwords.reset', 'runa.auth.policy.exceptions']);
     $page = $this->getJson('/api/admin/runa.auth/users')->assertOk()->json('data');
     $sections = collect($page['sections'])->keyBy('key');
@@ -2080,7 +2083,7 @@ it('Auth user administration reports native live sessions and authorized account
 it('Auth user administration filters all authorized facts before pagination and binds cursors', function (): void {
     expect(fn () => new ManagementRead(filters: array_fill_keys(array_map(fn ($i) => 'field'.$i, range(1, 65)), true)))->toThrow(InvalidArgumentException::class);
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['email_verification' => 'new', 'email_otp_enabled' => true, 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'new', 'email_otp_enabled' => true, 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['review_id']);
     DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['password_changed_at' => now()]);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('filter-facts@example.test', firstName: 'Anna', surname: 'Test', active: true));
     DB::table('runa_auth.users')->where('public_id', $target->publicId)->update(['email_verified_at' => now(), 'password' => Hash::make('test-password'), 'password_changed_at' => now()->subDays(40), 'totp_secret' => app(Encrypter::class)->encrypt('test-secret'), 'recovery_hashes' => json_encode(['one', 'two'])]);
@@ -2106,7 +2109,7 @@ it('Auth user administration filters all authorized facts before pagination and 
 
 it('Auth user administration executes each native bulk operation with its declared proof', function (string $operation): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['email_verification' => 'new', 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'new', 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['review_id']);
     DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['password_changed_at' => now()]);
     $ids = [];
     foreach (['one', 'two'] as $suffix) {
@@ -2502,7 +2505,7 @@ it('preserves identifier refusals through Admin profile and secondary adapters w
     $target = app(ChangeIdentity::class)->create(new NewIdentity('refusal-target@example.test', name: 'Before', login: 'refusal_target'));
     app(ChangeIdentity::class)->create(new NewIdentity('occupied@example.test', name: 'Occupied', login: 'occupied_login'));
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['secondary_emails_enabled' => true, 'secondary_email_sharing' => false], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['secondary_emails_enabled' => true, 'secondary_email_sharing' => false], $settings['revision'], $settings['review_id']);
     $profile = authAdministrationRead($this, 'profile', $target->publicId);
     $values = array_intersect_key($profile['values'], array_flip(['name', 'first_name', 'surname', 'login']));
     $values['login'] = 'occupied_login';
@@ -2548,7 +2551,7 @@ it('confirms existing addresses through native Admin commands and refreshes reci
     authAdministrationLogin($this, ['runa.auth.profiles.read', 'runa.auth.emails.read', 'runa.auth.secondary.read', 'runa.auth.secondary.manage', 'runa.auth.emails.verify_bypass', 'runa.auth.preferences.read', 'runa.auth.addresses.read']);
     DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['email_verified_at' => now()]);
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['email_verification' => 'all', 'secondary_emails_enabled' => true, 'admin_email_verification_bypass' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'all', 'secondary_emails_enabled' => true, 'admin_email_verification_bypass' => true], $settings['revision'], $settings['review_id']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('verify-existing-admin@example.test', name: 'Verify existing', active: true));
     $address = $kind === 'secondary' ? app(ManageProfiles::class)->addSecondary($target->publicId, 1, 'verify-existing-secondary@example.test') : null;
     $section = $kind === 'secondary' ? 'secondary' : 'primary_email';
@@ -2571,7 +2574,7 @@ it('confirms existing addresses through native Admin commands and refreshes reci
 
 it('supplied tables order authorized server datasets before cursor paging and guard security exports', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    OperatorSettings::update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['review_id']);
     $ids = [];
     foreach (['Zulu', 'Alpha', 'Alpha', 'Middle'] as $index => $name) {
         $identity = app(ChangeIdentity::class)->create(new NewIdentity('table-order-'.$index.'@example.test', name: 'Table order '.$name, active: true));
@@ -2813,4 +2816,45 @@ it('refuses Admin read results after entry proof expires during the locked read'
         return ['protected' => 'Never returned'];
     }))->toThrow(OperationRejected::class);
     expect(DB::connection()->transactionLevel())->toBe(0);
+});
+
+it('joins hybrid snapshot reads to the exact prepared Admin call and refuses missing expired or revoked admission', function (): void {
+    expect(app(ModuleRegistry::class)->snapshot()->modules)->not->toHaveKey('app.reference');
+    try {
+        app(ModuleUpdates::class)->apply('app', str_repeat('e', 40), static function (): void {});
+        expect(app(ModuleHealth::class)->diagnose('app.reference')['blocked'])->toBeFalse();
+        $transitions = app(ModuleTransitions::class);
+        expect($transitions->apply($transitions->preview('enable', 'app.reference'))->status)->toBe('succeeded');
+        ($this->adminGrant)('app.reference.settings.read');
+        $admissions = app(HealthAdmissions::class);
+        $api = app(ModuleApis::class)->resolve('app.reference', ReferenceTools::class, '1.0.0');
+        $identity = ['app.reference', ReferenceTools::class, '1.0.0', 'snapshots'];
+        app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($admissions, $api, $identity): void {
+            $prepare = fn () => $admissions->prepareRead($identity, fn () => app(OperationGuard::class)->enter(
+                'app.reference', new ApiOperation('settings.snapshots', 'app.reference.settings.read')));
+            $call = $prepare();
+            $values = DB::transaction(fn () => $admissions->read([$call], DB::connection(), fn () => $api->snapshots()));
+            expect(json_decode($values['snapshots'], true, flags: JSON_THROW_ON_ERROR))->toBe([]);
+            expect(fn () => DB::transaction(fn () => $admissions->read([], DB::connection(), fn () => $api->snapshots())))->toThrow(OperationRejected::class);
+            $call = $prepare();
+            try {
+                $this->travel(121)->seconds();
+                expect(fn () => DB::transaction(fn () => $admissions->read([$call], DB::connection(), fn () => $api->snapshots())))->toThrow(OperationRejected::class);
+            } finally {
+                $this->travelBack();
+            }
+            $call = $prepare();
+            $permission = DB::table('runa_permissions.permissions')->where('code', 'app.reference.settings.read')->value('id');
+            DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)->where('permission_id', $permission)->delete();
+            expect(fn () => DB::transaction(fn () => $admissions->read([$call], DB::connection(), fn () => $api->snapshots())))->toThrow(OperationRejected::class);
+        });
+    } finally {
+        $id = DB::table('shared.modules')->where('module_id', 'app.reference')->value('id');
+        DB::table('shared.module_update_steps')->where('module_id', $id)->delete();
+        DB::table('shared.module_transitions')->where('target', 'app.reference')->delete();
+        DB::table('shared.modules')->where('module_id', 'app.reference')->delete();
+        DB::statement('DROP TABLE IF EXISTS app_reference.samples RESTRICT');
+        DB::statement('DROP SCHEMA IF EXISTS app_reference RESTRICT');
+        DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    }
 });

@@ -18,13 +18,17 @@ and `execute(ManagementWrite): ManagementOutcome`. Catalog records expose JSON t
 `snapshots`, nullable text `name`, nullable UUID `snapshot_id` and JSON text `values`.
 A record read with publicId returns only that scope's selected snapshot values.
 Commands `capture` (name) and `delete` (snapshot_id) never publish settings.
+Records carry `revision:review_id`, using the [native semantic review contract](../../architecture/module-settings.md).
+The adapter prepares exact read/write/Audit and applicable Auth calls before locks
+for standalone entry, or joins the existing native mutation/Admin prepared-read
+scope. Unprepared/expired calls remain refused, including nested reads.
 Deletion consumes DELETE_ACTION password proof within the same transaction as Audit.
 
 The trusted store signatures are `catalog(string $module, string $scope): array`,
-`capture(string $module, string $scope, array $keys, string $name, int $revision, int $generation): string`,
+`capture(string $module, string $scope, array $keys, string $name, int $revision, string $reviewId): string`,
 `load(string $module, string $scope, array $keys, string $publicId): array` and
 `delete(string $module, string $scope, string $publicId): void`.
-Capture checks the displayed settings revision/generation; module/scope/name is unique
+Capture checks the displayed settings revision/review identity; module/scope/name is unique
 among live snapshots, with a maximum of 100 live snapshots per scope. Names are plain
 text, trimmed and bounded to 80 characters. Deletion is soft. Captures and deletions
 write explicit Audit in their storage transaction, excluding configuration values.

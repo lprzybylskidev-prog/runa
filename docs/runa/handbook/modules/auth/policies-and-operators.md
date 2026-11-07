@@ -1,7 +1,7 @@
 # Auth policies and trusted operator recovery
 
-Auth 5.0.2 supplies AuthPolicies 3.0.0 and AuthBulkSessions 2.0.0 with
-Audit ^1.0.0 and framework API ^1.2.0. Install the current per-table storage and
+Auth 6.0.0 supplies AuthPolicies 4.0.0 and AuthBulkSessions 2.0.0 with
+Audit ^1.0.0 and framework API ^2.0.0. Install the current per-table storage and
 technical initialization through the fenced ModuleUpdates workflow; ordinary
 startup does not migrate or initialize an administrator.
 
@@ -21,7 +21,7 @@ Its pure access declaration requires `runa.auth.policy.read` for authorized read
 `runa.auth.policy.write` for publication and the one-use password proof
 `runa.auth.policy.publish`. Native settings security admits those operations before
 locking, then locks registry state, common authority and the Auth actor in that
-order. It rechecks current grants, source, revision/generation and connection,
+order. It rechecks current grants, source, revision/review identity and connection,
 and consumes the proof against the old policy in the publication transaction.
 HTTP actor metadata cannot select operator authority. Trusted principal-free CLI
 publication remains separate and requires no browser proof.
@@ -36,14 +36,17 @@ second time. Core Audit integration contains no Auth settings dispatch. Generic
 operation history and named snapshots remain framework facilities; Auth's history
 records policy-specific values and consequences, not another settings store.
 
-AuthPolicies 3.0.0 and Admin's reviewed policy publisher retain their signatures.
+AuthPolicies 4.0.0 uses `preview(array $patch, int $revision, string $reviewId): array`
+and `publish(array $patch, int $revision, string $reviewId): array`. Preview returns
+`revision`, `review_id`, `changes` and `consequences`; publication returns
+`operation` and `status`. Admin carries `revision:review_id` as its opaque revision.
 The Admin reader uses its owning guarded read inside the existing admitted read
-transaction; direct HTTP settings projections use `readAuthorized`. The compatible
-`common_settings` module update records the integration change without altering
+transaction; direct HTTP settings projections use `readAuthorized`. The source-only
+`common_settings` and `settings_review_identity` module updates record the integration changes without altering
 stored policies, credentials, historical steps or recovery evidence.
 
-AuthPolicies 3.0.0 provides bounded internal history (50 revisions per page),
-old/new comparison through `preview`, revision/generation-checked `publish` and
+AuthPolicies 4.0.0 provides bounded internal history (50 revisions per page),
+old/new comparison through `preview`, revision/review identity-checked `publish` and
 account exception reads/writes. The guarded historical `restore` operation was
 removed; trusted operator recovery remains a separate CLI-only capability.
 The Admin policy page uses [named settings snapshots](../admin/settings-snapshots.md)
@@ -84,7 +87,7 @@ current effective values. Expired exceptions stop applying immediately without
 waiting for cron. Cleanup preserves sessions covered by a live extension; an
 extension never moves the session's captured absolute deadline.
 
-Auth-owned public write signature in `AuthPolicies` 3.0.0:
+Auth-owned public write signature in `AuthPolicies` 4.0.0:
 
 ```php
 public function exception(string $publicId, string $key, ?int $value,
@@ -94,13 +97,13 @@ public function exception(string $publicId, string $key, ?int $value,
 
 The guarded entrypoint, permission, password proof and transactional Audit
 remain unchanged. The `expires_at` member returned by both exception reads is now
-`string|null`, an incompatible row-contract change from 1.x. Auth 5.0.2 and current
+`string|null`, an incompatible row-contract change from 1.x. Auth 6.0.0 and current
 consumer constraints reflect it under the standing pre-1.0 owner authorization.
 
 ### Active account exception projection
 
-Auth owns `AuthPolicies` 3.0.0, consumed through guarded
-`ModuleApis::resolve('runa.auth', AuthPolicies::class, '3.0.0')` by authorized
+Auth owns `AuthPolicies` 4.0.0, consumed through guarded
+`ModuleApis::resolve('runa.auth', AuthPolicies::class, '4.0.0')` by authorized
 application/module integrations and the Admin management adapter. The added
 `public function activeExceptions(string $publicId): array` returns the same
 `list<array{public_id:string,key:string,value:int,reason:string,actor:string,

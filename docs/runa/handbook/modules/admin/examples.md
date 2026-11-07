@@ -29,7 +29,7 @@ resource/widget/command adapter, immediate settings provider, custom section Vue
 component, central test and module guide. It registers `apis`, `management` and
 `settings` and adds the guide to the manifest. Its management provider declares an
 exact normalize call for each read/page/widget; the reviewed manifest requires
-framework_api ^1.1.0. The generated business API remains usable without Admin. A module has one settings provider;
+framework_api ^2.0.0. The generated business API remains usable without Admin. A module has one settings provider;
 if one already belongs to another class, generation refuses. Extend that provider
 and author declarations deliberately rather than overwrite its validation/recovery.
 Generation retains the module version/dependencies: assess versions, source

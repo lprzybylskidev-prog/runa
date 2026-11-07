@@ -73,11 +73,11 @@ final readonly class Policies implements AuthPolicies
         ])->all());
     }
 
-    public function preview(array $patch, int $revision, int $generation): array
+    public function preview(array $patch, int $revision, string $reviewId): array
     {
-        return $this->transactions->run(function () use ($patch, $revision, $generation): array {
+        return $this->transactions->run(function () use ($patch, $revision, $reviewId): array {
             $state = $this->settings->read('runa.auth');
-            if ($state['revision'] !== $revision || $state['generation'] !== $generation) {
+            if ($state['revision'] !== $revision || $state['review_id'] !== $reviewId) {
                 throw new OperationRejected('policy_stale', 'runa.auth', 'policy.preview', 409);
             }
             [$definitions, $provider] = $this->definitions->for($this->registry->snapshot()->modules['runa.auth']);
@@ -94,17 +94,17 @@ final readonly class Policies implements AuthPolicies
                 }
             }
 
-            return ['revision' => $revision, 'generation' => $generation, 'changes' => $changes,
+            return ['revision' => $revision, 'review_id' => $reviewId, 'changes' => $changes,
                 'consequences' => $this->history->consequences($changes, $values)];
         });
     }
 
-    public function publish(array $patch, int $revision, int $generation): array
+    public function publish(array $patch, int $revision, string $reviewId): array
     {
         $principal = $this->principals->current() ?? throw new OperationRejected('authentication_required', 'runa.auth', 'policy.publish', 401);
-        $this->preview($patch, $revision, $generation);
+        $this->preview($patch, $revision, $reviewId);
         // Source-declared access consumes one proof inside native settings publication.
-        $result = $this->settings->update('runa.auth', $patch, $revision, $generation, new SettingsActor('actor', $principal->publicId));
+        $result = $this->settings->update('runa.auth', $patch, $revision, $reviewId, new SettingsActor('actor', $principal->publicId));
 
         return ['operation' => $result->operationId, 'status' => $result->status];
     }

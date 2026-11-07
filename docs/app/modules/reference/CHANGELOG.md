@@ -1,5 +1,9 @@
 # Reference module changelog
 
+## 0.4.0 — Unreleased
+
+- Add guarded ReferenceTools API 1.0.0 and named authenticated HTTP for sample editing, field grants, safe settings review/publication, named snapshots, authorized Audit history and password-protected work dispatch/status. Use Framework API ^2.0.0 native admission and semantic settings review. Add a positive monotonic sample revision through a nondestructive migration; preserve existing records. Add application-owned success/refusal/rollback tests. Admin and standalone presentation still show Ping; the new interactive journey is a separate pending roadmap point.
+
 ## 0.3.0 — Unreleased
 
 - Declare central backend/frontend module tests, discover frontend module cases and

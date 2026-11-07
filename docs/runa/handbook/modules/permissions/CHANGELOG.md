@@ -1,5 +1,9 @@
 # Permissions module changelog
 
+## 2.1.1 — Unreleased
+
+- Declare Framework API ^2.0.0 and Auth ^6.0.0 compatibility. Add a source-only settings_protocol forward edge; existing permission/grant APIs and assignment storage remain unchanged.
+
 ## 2.1.0 — Unreleased
 
 - Retain the required eligible administrator during bulk superadministrator removal and apply the remaining reviewed changes. Reuse the existing protected-account warning/count, fingerprint the retained set and preserve native single-write lockout protection, password proof and atomic Audit.

@@ -69,11 +69,11 @@ composition. Module and guarded API versions are listed separately below.
 | Owner         | Delivered version            | Contract disposition                                                                                                                                                                                                               |
 | ------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Platform      | 0.7.0, feature               | Platform versioning remains independent of the Admin module version.                                                                                                                                                               |
-| Admin         | 1.0.1, compatible correction | Requires Audit ^1.0.0, Auth ^5.0.0 and Permissions ^2.0.0; explicit creation-release history follows development 0.2.0.                                                                                                            |
-| Auth          | 5.0.2                        | AuthProfiles API 2.1.0; AuthAdministration API 2.1.0; AuthPolicies API 3.0.0; AuthStepUp API 2.0.0; other current guarded interfaces retain their declared versions. Administrative reads and owning Admin adapters are delivered. |
-| Permissions   | 2.1.0                        | PermissionsAccess API 2.2.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions.                                                                                            |
-| Audit         | 1.1.0                        | AuditReads API 1.1.0; AuditRecords stays at 1.0.0; the guarded read-only viewer is delivered.                                                                                                                                      |
-| Framework API | 1.1.0                        | Additive exact-call read-health planning; existing native transactions retain their contract. Constructor changes remain internal.                                                                                                 |
+| Admin         | 1.0.1, compatible correction | Requires Audit ^1.0.0, Auth ^6.0.0 and Permissions ^2.0.0; explicit creation-release history follows development 0.2.0.                                                                                                            |
+| Auth          | 6.0.0                        | AuthProfiles API 2.1.0; AuthAdministration API 2.1.0; AuthPolicies API 4.0.0; AuthStepUp API 2.0.0; other current guarded interfaces retain their declared versions. Administrative reads and owning Admin adapters are delivered. |
+| Permissions   | 2.1.1                        | PermissionsAccess API 2.2.0; source phases replace ambient assignment-write nesting. Other current APIs retain their declared versions.                                                                                            |
+| Audit         | 1.1.1                        | AuditReads API 1.1.0; AuditRecords stays at 1.0.0; the guarded read-only viewer is delivered.                                                                                                                                      |
+| Framework API | 2.0.0                        | Native settings use semantic review identity; exact-call read-health planning and native transactions remain available. All current consumers use the corrected signatures.                                                        |
 | App scaffold  | 0.0.0                        | Its supplied Runa range is >=0.2.1 <0.8.0; customer ranges remain application-owned.                                                                                                                                               |
 
 Auth/Permissions and Admin require platform `>=0.7.0 <0.8.0`. Audit now requires the same target platform range for its supplied Admin defaults. Do not rewrite customer manifests automatically. Retain
@@ -92,7 +92,7 @@ are not final runtime/browser acceptance.
 
 ## Delivery status and acceptance ownership
 
-Admin 1.0.1 is Core, requires Framework API ^1.1.0, and requires Audit `^1.0.0`, Auth `^5.0.0` and Permissions `^2.0.0`. Its platform
+Admin 1.0.1 is Core, requires Framework API ^2.0.0, and requires Audit `^1.0.0`, Auth `^6.0.0` and Permissions `^2.0.0`. Its platform
 range is `>=0.7.0 <0.8.0`; installation requires a compatible platform runtime. Explicit platform installation/update at the target version
 registers it and records `upgrade:initialize:install:0.1.0`,
 `upgrade:standalone_participants:0.1.0:0.2.0` and
@@ -174,9 +174,9 @@ the administrative behavior and boundaries.
 The owner approved direct native Auth/Permissions/framework refactoring on
 2026-10-30. The [phased transaction contract](../../architecture/module-transactions.md)
 supersedes the earlier unchanged-API composition proposal. AuthProfiles 2.1.0 and
-PermissionsAccess 2.2.0 ship with independent Auth 5.0.2 and Permissions 2.1.0; standalone
+PermissionsAccess 2.2.0 ship with independent Auth 6.0.0 and Permissions 2.1.1; standalone
 writes have a root boundary, while source composition joins native phases.
-Auth/Permissions require platform >=0.7.0 <0.8.0. Audit ships as independent 1.1.0 with optional guarded read ordering; record signatures remain unchanged.
+Auth/Permissions require platform >=0.7.0 <0.8.0. Audit ships as independent 1.1.1 with optional guarded read ordering; record signatures remain unchanged.
 The native path and Admin aggregate dispatch are implemented. The first stable
 Admin creation release records its explicit final upgrade boundary to 1.0.0.
 

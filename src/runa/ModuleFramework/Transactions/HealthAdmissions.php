@@ -145,6 +145,32 @@ final class HealthAdmissions
         }
     }
 
+    /** @template T
+     * @param Closure():void $prepare
+     * @param Closure():T $work
+     * @return T */
+    public function within(Closure $prepare, Closure $work): mixed
+    {
+        if ($this->preparingRead !== null || ($this->evidence !== null && ! $this->sealed)) {
+            throw new RuntimeException('Health admission is still preparing.');
+        }
+        if ($this->readScope !== null || $this->evidence !== null) {
+            $this->readScope?->assertCurrent();
+            $this->assertCurrent();
+            $result = $work();
+            $this->readScope?->assertCurrent();
+            $this->assertCurrent();
+
+            return $result;
+        }
+
+        if ($this->connection->transactionLevel() !== 0) {
+            throw new RuntimeException('Standalone health admission requires an independent transaction boundary.');
+        }
+
+        return $this->run($prepare, $work);
+    }
+
     public function reuse(ModuleRecord $record, ?string $operation, string $fingerprint): bool
     {
         if ($this->readScope !== null) {

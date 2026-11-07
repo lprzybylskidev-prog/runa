@@ -125,7 +125,8 @@ final class IdentityUpgrades implements UpgradeProvider
             new UpgradeDefinition('user_details', '3.0.0', '4.0.0', UpgradeSectionActivity::class),
             new UpgradeDefinition('settings_snapshots', '4.0.0', '5.0.0', UpgradeFrontendContracts::class),
             new UpgradeDefinition('read_scopes', '5.0.0', '5.0.1', UpgradeReadScopes::class),
-            new UpgradeDefinition('common_settings', '5.0.1', '5.0.2', UpgradeSettingsPublication::class)];
+            new UpgradeDefinition('common_settings', '5.0.1', '5.0.2', UpgradeSettingsPublication::class),
+            new UpgradeDefinition('settings_review_identity', '5.0.2', '6.0.0', UpgradeSettingsPublication::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

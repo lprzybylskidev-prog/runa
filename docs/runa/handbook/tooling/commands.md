@@ -316,7 +316,7 @@ Standard make:* commands generate application artifacts. make:controller, make:m
 
 ### `php artisan runa:modules:settings [module]`
 
-Trusted redacted settings read. `--write --revision=N --generation=N` accepts a bounded JSON envelope from piped standard input, never secret arguments. `--recover=UUID` without a module restores/compensates an interrupted settings change. Failure/ambiguous recovery exits 1 with safe diagnostics. See the [declarative settings contract](../architecture/module-framework.md#delivered-declarative-settings) for payload, revision, handler and external-key semantics. The CLI is distinct from the named guarded Admin settings operations;
+Trusted redacted settings read. `--write --revision=N --review=HASH` accepts a bounded JSON envelope from piped standard input, never secret arguments. `--recover=UUID` without a module restores/compensates an interrupted settings change. Failure/ambiguous recovery exits 1 with safe diagnostics. See the [declarative settings contract](../architecture/module-framework.md#delivered-declarative-settings) for payload, revision, handler and external-key semantics. The CLI is distinct from the named guarded Admin settings operations;
 see [Core operations and settings](../modules/admin/operations.md).
 
 ### `php artisan runa:modules:management <module>`

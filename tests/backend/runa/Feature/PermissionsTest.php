@@ -89,7 +89,7 @@ beforeEach(function (): void {
     $this->permissionUser = app(ChangeIdentity::class)->create(new NewIdentity('permission-fixture@example.test', name: 'Permission fixture', active: true));
     // Fixture policy disables verification; credentials and step-up are exercised by Auth suites.
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'disabled'], $settings['revision'], $settings['generation']);
+    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'disabled'], $settings['revision'], $settings['review_id']);
     $this->permissionApi = app(ModuleApis::class)->resolve('runa.permissions', Permissions::class, '1.0.0');
     $this->asPermissionUser = fn (Closure $work) => app(PrincipalScope::class)->run(new TrustedPrincipal($this->permissionUser->publicId), $work);
     $this->directPermission = function (string $code): int {
@@ -744,7 +744,7 @@ it('serializes two real concurrent last authority removals under the shared tran
 
 it('keeps the last superadministrator active through self service and rolls back consumed proof before refusal history', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['self_deactivate' => true], $settings['revision'], $settings['generation']);
+    app(ModuleSettings::class)->update('runa.auth', ['self_deactivate' => true], $settings['revision'], $settings['review_id']);
     permissionAccessManager($this);
     permissionSystemMember($this->permissionUser->publicId);
     app()->bind(AuthorityGuard::class, ProtectedAuthority::class);

@@ -50,7 +50,8 @@ final class PermissionsUpgrades implements UpgradeProvider
             new UpgradeDefinition('verification_contracts', '1.0.3', '1.0.4', UpgradePlatformDelivery::class),
             new UpgradeDefinition('admin_platform', '1.0.4', '1.0.5', UpgradePlatformDelivery::class),
             new UpgradeDefinition('native_transactions', '1.0.5', '2.0.0', UpgradePlatformDelivery::class),
-            new UpgradeDefinition('table_exports', '2.0.0', '2.1.0', UpgradeTableExports::class)];
+            new UpgradeDefinition('table_exports', '2.0.0', '2.1.0', UpgradeTableExports::class),
+            new UpgradeDefinition('settings_protocol', '2.1.0', '2.1.1', UpgradePlatformDelivery::class)];
     }
 
     public function preflight(?string $installed, string $target): ?string

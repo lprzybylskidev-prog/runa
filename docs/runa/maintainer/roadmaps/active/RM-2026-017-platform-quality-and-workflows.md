@@ -21,7 +21,31 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — expanded scope approved, 2026-11-07
+## Current execution state — point 10c completed, 2026-11-07
+
+**Points 1–10, 10a, 10b and 10c are complete. Point 10d is next.**
+The reference backend now implements audited sample editing, independent field
+and action grants, safe settings review/publication, named snapshots, authorized
+history and protected managed-work dispatch/status. Its Admin/standalone views
+still show the previous Ping experience; the expanded presentation remains 10d.
+
+The approved native correction replaces settings generation arguments with semantic
+review identities while preserving operational generation and exact native health/
+authority/proof/Audit fences. Current source: Framework API 2.0.0, AuthPolicies
+4.0.0 / Auth 6.0.0, Audit 1.1.1, Permissions 2.1.1, Admin 1.0.1 and reference 0.4.0.
+These are source candidates, not a claim of development installation or release.
+Platform VERSION remains 0.7.0 and the approved feature/0.8.0 projection is unchanged.
+
+The owner-approved absorbed copy, device disclosure and action-driven refresh scope
+remains in 10f–10h after reference presentation/coverage reconciliation. Combined
+readiness remains 10i, sole penultimate owner acceptance 11 and sole final automated
+verification/release 12. None is complete; no final PASS or owner acceptance is claimed.
+The prior generation/admission design stop and native failures below remain
+historical evidence, resolved by this point's documented native correction.
+
+<a id="current-execution-state--expanded-scope-approved-2026-11-07"></a>
+
+## Historical execution state — expanded scope approved, 2026-11-07
 
 **Points 1–10, 10a and 10b remain complete. Point 10c is in progress and open.**
 The owner approved the native settings generation/snapshot-admission correction
@@ -1270,7 +1294,7 @@ below are retained as historical records only.
     business retry. Resolve only concrete uncertainty with focused diagnostics;
     full backend/security and affected-area checks remain final. Commit the point.
 
-- [ ] 10c. Complete the reference backend as an executable Core consumer.
+- [x] 10c. Complete the reference backend as an executable Core consumer.
   - **Approved native prerequisite, 2026-11-07:** correct settings review/publication
     generation semantics and snapshot admission in their owning framework paths.
     Preserve operational evidence, current health/expiry/source/connection checks,
@@ -4426,3 +4450,84 @@ Current roadmap ownership, preservation of history, native security and public
 source boundaries already cover the approved native correction. Local knowledge
 was stale from the unfinished active-roadmap edits; used focused original sources
 and refresh the staged corpus incrementally at this commit boundary.
+
+## Point 10c — Native review/admission correction and reference backend completed — 2026-11-07
+
+Continued the existing application-owned candidate work at `8190d43b`; no initial
+work was discarded. Knowledge status was current (227 documents, 12,885 chunks)
+and bounded current-intent retrieval preceded focused source review. Loaded
+backend/Laravel/security/PostgreSQL guidance and opened the canonical settings,
+database, security, public API, reference and testing/command procedures. Installed
+Laravel 13 Boost documentation confirmed explicit transaction and pessimistic-lock
+semantics. No external dependency or additional roadmap was introduced.
+
+### Native contract and exact scope
+
+The [approved correction record](../../reviews/RM-2026-017-reference-generation-admission.md#concrete-native-contract-and-lock-design--2026-11-07)
+records full signatures, ownership, semantic identity and lock phases before runtime
+edits. Settings read/readAuthorized now add `review_id`; publication and capture
+compare the original revision and identity. Registry/source/install/enabled/fences,
+provider/handler hashes/access/definitions and normalized health state participate;
+equivalent successful observation renewal excludes timestamps. Real result/source/
+revision or fresh/expired changes invalidate. Operational generation still advances
+and protects synchronous native authority; its publication value is captured after
+required independent checks, and transition history records the locked generation.
+No authorization cache, guessed generation, automatic write replay or extra runner.
+
+SnapshotSection prepares standalone owner read/write, Audit and delete-specific
+Auth operations before locks, or joins the exact existing mutation/Admin prepared
+scope. Missing/expired/unplanned evidence still refuses. Nested result reads retain
+the existing scope. Read/write grants, proof, principal/connection/level and final
+availability/expiry fences remain. ReferenceTools snapshot operations use the same
+source-owned `settings.snapshots` operation key; prepared API frames therefore admit
+exact adapter calls without a blanket root scope. One store and transaction remain.
+
+This changes public settings arguments incompatibly. Honest assessment is Framework
+API **2.0.0**, AuthPolicies **4.0.0**, Auth **6.0.0** under standing pre-1.0 owner
+authorization; no compatibility facade is retained. Audit **1.1.1** and Permissions
+**2.1.1** update framework/Auth compatibility without changing their public APIs;
+Admin retains this roadmap's existing **1.0.1** compatible-correction candidate.
+All supplied manifests, current Auth consumers, CLI (`--review`), generator fixture
+expectations and settings tests are updated. Source-only module forward edges
+retain existing storage/history; the generator already derives FrameworkApi::VERSION.
+Platform/application VERSION and published history are unchanged.
+
+### Reference delivered backend and documentation
+
+ReferenceTools **1.0.0** / reference **0.4.0** adds named authenticated FormRequest/
+Resource HTTP, Actions/Query/Policy, independent field grants, revision-checked
+Sample editing with opt-in safe code Audit, redacted encrypted settings review,
+one-use own publication proof, committed-label snapshots, independent AuditReads
+authority and real managed-work admission/status. Dispatch prepares work before
+locks and writes explicit Audit atomically. Existing Ping, CLI/schedule/work/events,
+optional integration and production exclusion remain. No UI placeholder is presented
+as the new journey. The nondestructive, owner-prefixed migration adds positive
+Sample revision to retained rows; explicit runtime update is deferred to 10i.
+
+Updated the application reference source/signature/endpoint/grant/capability guide,
+central/module changelogs, native settings/framework/transaction/snapshot/CLI docs,
+Auth policy/account/Admin compatibility guides, seeding and module-development
+usage. Owner and customer backend skills route consumers to the semantic review
+contract. Root owner/customer AGENTS require no change: existing public boundary,
+proof/Audit, pre-1.0 versioning and native workflow rules already govern this work;
+no new constitutional or protected-edit permission is introduced. Presentation
+catalogues remain unchanged because frontend implementation belongs to 10d.
+
+### Focused diagnostic evidence and remaining verification
+
+Only bounded checks resolving the demonstrated generation/admission/atomicity
+uncertainties ran; no complete suite, analysis, browser matrix, installation
+acceptance, image/scanner pipeline or final quality gate ran.
+
+- Application entrypoint `runa:test:backend ../tests/backend/app/modules/reference/CoreExamplesTest.php --parallel --processes=1`: settings review/secret/proof, committed snapshot and failed-Audit publication rollback selections passed, **3 cases / 53 assertions**. Health evidence is deliberately renewed after advancing time; original review remains usable. Rollback preserves settings/revision and unconsumed proof; a deliberate later successful publication invalidates the old review.
+- Owner `python3 tools/maintainer/test-backend --parallel --processes=1 --filter=...`: semantic renewal/result/expiry/source diagnostic passed, **1 case / 9 assertions**; real hybrid snapshot prepared-read/absent/expired/revoked-admission diagnostic passed, **1 case / 8 assertions**.
+- Earlier focused owner selection for exact nested/repeated prepared calls, extra-call refusal and Auth named snapshot/Audit/proof behavior passed, **3 cases / 53 assertions**. Subsequent compatibility metadata changes still require the complete affected-area checks at 12; these are bounded diagnostic observations, not full current-source certification.
+- Preserved intermediate native failures: initial worker preparation found a missing Auth forward edge (fixed); invoking a private owner fixture through the application runner failed its fixture lookup (used the documented owner runner); a rollback assertion initially included another case's historical proof (scoped to the current actor); explicit app installation found the inherited migration filename lacked its owner prefix (renamed before delivery). These are not PASS or full-verification repairs. The original design-stop failures remain in their record.
+- Existing sample edit/work/proof/revocation/rollback diagnostics from the earlier candidate remain bounded evidence; application tests author those cases plus field omission and independent Audit read denial. Complete backend/source/runtime/version/CLI and frontend verification remains 12; runtime alignment remains 10i.
+
+Supported runners listed and removed only their disposable `runa_test_test_1`
+workers after execution. No task Docker container/network/image/volume was created
+or removed. Base test/development data, existing services, Qdrant/model/pnpm caches,
+backups, reports and recovery state were preserved. No development reset, implicit
+migration, candidate platform-version preparation, deployment or owner acceptance
+occurred. Point 10d is next; this point does not authorize skipping its UI work.

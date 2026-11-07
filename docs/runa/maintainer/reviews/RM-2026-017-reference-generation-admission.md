@@ -99,3 +99,65 @@ Application-owned tests retain unexecuted or failing scenarios for verification
 after repairs. Current source is unfinished; reference manifest 0.4.0 is a candidate,
 not an installed development release. UI remains the prior Ping page/widget until
 10d. Manual acceptance and final verification remain points 11 and 12.
+
+## Concrete native contract and lock design — 2026-11-07
+
+Owner: module framework; audience: trusted module authors and operator CLI.
+Implementation stays in `Support/Modules/Settings` and the private settings/health
+engines. This is a native API correction, with Framework API 2.0.0. No new table,
+runner or dependency is required. AuthPolicies advances to API 4.0.0 and Auth
+6.0.0 (the standing pre-1.0 policy permits replacing its existing signatures).
+The not-yet-delivered ReferenceTools API remains 1.0.0, app.reference 0.4.0.
+
+Complete changed public signatures:
+
+```php
+ModuleSettings::read(string $module): array
+ModuleSettings::readAuthorized(string $module): array
+ModuleSettings::update(string $module, array $patch, int $expectedRevision,
+    string $expectedReview, ?SettingsActor $actor = null): TransitionResult
+SettingsSnapshots::capture(string $module, string $scope, array $keys,
+    string $name, int $revision, string $reviewId): string
+AuthPolicies::preview(array $patch, int $revision, string $reviewId): array
+AuthPolicies::publish(array $patch, int $revision, string $reviewId): array
+ReferenceTools::reviewSettings(array $patch, int $revision, string $reviewId): array
+ReferenceTools::publishSettings(array $patch, int $revision, string $reviewId,
+    string $review): array
+ReferenceTools::captureSnapshot(string $name, int $revision, string $reviewId): array
+ReferenceTools::deleteSnapshot(string $publicId, int $revision, string $reviewId): array
+```
+
+Both settings reads retain `generation`, `revision`, `settings` and add `review_id`
+(a lowercase SHA-256 identity). It binds the target module/revision, exact settings
+provider/handler source and declarations, the registry's module/source/install/
+enabled/dependency identities and fences, and normalized health evidence
+(fingerprint, result, code, fresh/expired status). Equivalent evidence renewals
+exclude checked/expiry timestamps; crossing expiry or changing result invalidates
+the identity. Global generation remains unchanged as an operational fence. Identity
+is recalculated from the locked snapshot, never cached across requests. It carries
+no grant or proof: current identity, field grants, proof and health are independently
+rechecked on every deliberate publication. A genuine settings revision always
+invalidates even if values are restored. Admin revision strings become
+`revision:review_id`; CLI replaces `--generation` with `--review`.
+
+Publication acquires the independent runner lock, resolves declaration identity,
+admits exact module/field/Auth/Audit operations outside transactions, then captures
+its operational generation **after** those checks. It takes the registry row lock,
+authority lock and Auth subject locks in the existing order. It compares revision
+and semantic identity under those locks before proof consumption, rechecks source,
+principal, grants and expiry, and retains native atomic publication/Audit and
+restore/recovery. Transition history records the actual locked operational generation.
+
+Snapshot adapter uses one native admission scope for standalone entry. It prepares
+owner read plus write/Audit and Auth step-up operations (delete only) before locks.
+Within an existing native mutation or Admin prepared-read scope it reuses that
+scope and its exact-call evidence; missing/expired/unplanned evidence still refuses.
+It never opens a second root scope under locks. Registry then authority locks,
+current read/write grants, proof, storage and Audit remain in the same transaction.
+Nested result reads reuse the same admitted scope; final availability/connection/
+principal/expiry fences apply before commit. Admin's prepared-read call boundary
+is retained rather than replaced by blanket admission.
+
+Current consumers, source signatures, tests, CLI documentation and both instruction
+products must be reconciled before 10c is complete. Only focused diagnostic cases
+needed to establish these corrections run here; complete area suites remain 12.

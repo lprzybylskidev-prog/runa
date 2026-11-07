@@ -132,7 +132,7 @@ beforeEach(function (): void {
     $this->update = function (array $patch, ?SettingsActor $actor = null) {
         $state = $this->settings->read($this->module);
 
-        return app(PrincipalScope::class)->run($this->principal, fn () => $this->settings->update($this->module, $patch, $state['revision'], $state['generation'], $actor));
+        return app(PrincipalScope::class)->run($this->principal, fn () => $this->settings->update($this->module, $patch, $state['revision'], $state['review_id'], $actor));
     };
     $this->issueProof = fn () => DB::table('settings_test_evidence')->insert(['key' => $this->module, 'value' => 'proof']);
 });
@@ -201,12 +201,12 @@ it('filters unauthorized read fields and rejects undeclared access keys', functi
 
 it('keeps trusted operator publication separate from authenticated proof and refuses missing HTTP identity', function (): void {
     $state = $this->settings->read($this->module);
-    expect($this->settings->update($this->module, ['label' => 'operator'], $state['revision'], $state['generation'], new SettingsActor('system', 'maintenance'))->status)->toBe('succeeded');
+    expect($this->settings->update($this->module, ['label' => 'operator'], $state['revision'], $state['review_id'], new SettingsActor('system', 'maintenance'))->status)->toBe('succeeded');
     expect($this->proofs->consumed)->toBe(0);
     $route = new Route('POST', '/settings-fixture', fn () => null);
     app('request')->setRouteResolver(fn () => $route);
     $state = $this->settings->read($this->module);
-    expect(fn () => $this->settings->update($this->module, ['label' => 'http'], $state['revision'], $state['generation'], new SettingsActor('system', 'spoof')))->toThrow(OperationRejected::class);
+    expect(fn () => $this->settings->update($this->module, ['label' => 'http'], $state['revision'], $state['review_id'], new SettingsActor('system', 'spoof')))->toThrow(OperationRejected::class);
 });
 
 it('refuses a changed default connection before consuming proof or publishing settings', function (): void {
@@ -227,9 +227,9 @@ it('refuses a changed default connection before consuming proof or publishing se
 
 it('rejects a stale reviewed revision before consuming its one-use proof', function (): void {
     $reviewed = $this->settings->read($this->module);
-    $this->settings->update($this->module, ['label' => 'operator change'], $reviewed['revision'], $reviewed['generation']);
+    $this->settings->update($this->module, ['label' => 'operator change'], $reviewed['revision'], $reviewed['review_id']);
     ($this->issueProof)();
-    expect(fn () => app(PrincipalScope::class)->run($this->principal, fn () => $this->settings->update($this->module, ['label' => 'stale draft'], $reviewed['revision'], $reviewed['generation'])))->toThrow(RuntimeException::class, 'Settings revision changed or transition unresolved.');
+    expect(fn () => app(PrincipalScope::class)->run($this->principal, fn () => $this->settings->update($this->module, ['label' => 'stale draft'], $reviewed['revision'], $reviewed['review_id'])))->toThrow(RuntimeException::class, 'Settings revision changed or transition unresolved.');
     expect($this->proofs->consumed)->toBe(0);
     expect($this->settings->read($this->module)['settings']['label']['value'])->toBe('operator change');
     expect(DB::table('settings_test_evidence')->where('key', $this->module)->exists())->toBeTrue();

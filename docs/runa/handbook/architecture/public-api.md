@@ -113,6 +113,10 @@ keeps its separate Fortify/HTTP provider. Platform boot retains logging, queue
 admission and heartbeat ordering. Composer excludes module source from classmap
 scanning; the guarded module loader remains responsible for module classes.
 
+The current Framework API is 2.0.0. Settings publication and snapshot capture use
+semantic review identities under the [native settings contract](module-settings.md);
+current source manifests and generated consumers select `framework_api ^2.0.0`.
+
 Framework API 1.1.0 adds public ManagementReadPlanProvider/ManagementReadCall
 source extensions for [Admin read-health preparation](../modules/admin/declarations.md#read-health-plans).
 Implementation planning/discovery, ApiDefinitions, AdminRead and consumable health

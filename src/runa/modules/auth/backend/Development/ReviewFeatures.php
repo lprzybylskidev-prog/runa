@@ -27,7 +27,7 @@ final readonly class ReviewFeatures
         if ($patch === []) {
             return;
         }
-        $result = $settings->update('runa.auth', $patch, $state['revision'], $state['generation'], new SettingsActor('system', 'development.auth.review'));
+        $result = $settings->update('runa.auth', $patch, $state['revision'], $state['review_id'], new SettingsActor('system', 'development.auth.review'));
         if ($result->status !== 'succeeded') {
             throw new \RuntimeException('Development review settings did not complete.');
         }

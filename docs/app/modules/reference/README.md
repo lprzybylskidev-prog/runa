@@ -21,12 +21,12 @@ The first-development installer offers the example interactively or with `--refe
 | Guarded Admin page, read adapter and widget     | `backend/Definitions/ReferenceManagement.php`, `backend/Management/ReferenceReader.php`, `frontend/components/inspect_section.vue`, `response_widget.vue` |
 | Reusable source assertion                       | `tests/backend/app/modules/reference/ModuleContractTest.php` (repository-relative)                                                                        |
 
-The candidate Admin example is read-only: it shows the same current nonsensitive label as
-Ping through an owned page and dashboard widget. The adapter uses the guarded API;
-it never reads another module's models or exposes encrypted settings. No write,
-synthetic entity identity, health timestamp or automatic permission assignment is
-introduced. Admin is optional to the business API; the module needs no Core
-manifest dependency just to declare framework-owned management contracts.
+The Admin page/widget currently show Ping. ReferenceTools 1.0.0 adds the guarded
+backend workflows below; their Admin/frontend journey remains pending in the
+active roadmap. The example declares optional Audit/Auth/Permissions integration
+constraints, so Ping and its CLI/work example remain independent of Core storage.
+Protected examples require those integrations installed and effectively available.
+No registration, synchronization or source update automatically grants user access.
 
 ## Install and observe
 
@@ -47,8 +47,9 @@ The opt-in frontend registry exposes `app.reference.panel`. Compose the existing
 Run `php artisan runa:test --scope=backend ../tests/backend/app/modules/reference`
 from the configured development PHP terminal for the delivered source assertion.
 Native backend paths resolve from `src`; use `./bin/artisan` from the host only
-when setup/recovery transport is needed. Runtime metadata can be checked with `runa:modules:check app --runtime` after synchronization. This source assertion does not exercise PostgreSQL installation, settings changes,
-work/events, retained-data disable or production exclusion. Add application-owned
+when setup/recovery transport is needed. Runtime metadata can be checked with `runa:modules:check app --runtime` after synchronization. The source assertion alone does not exercise PostgreSQL installation, settings changes,
+work/events, retained-data disable or production exclusion. CoreExamplesTest adds
+application-owned HTTP success/refusal/rollback cases for the backend workflows below. Add application-owned
 behavior tests for the examples you adopt; private platform suites are not
 delivered customer tests or a customer verification prerequisite.
 
@@ -59,16 +60,16 @@ delivered customer tests or a customer verification prerequisite.
 - Waiting disable: inspect active work; run/reconcile the module's own bounded policy. Do not edit flags or discard leases.
 - Production refusal: remove development reference source from the delivery projection; disabling it is insufficient.
 
-Use the [public module development guide](../../../runa/handbook/development/modules.md) for creation, dependency direction, source boundaries, tests and independent version policy. Current reference version is 0.3.0, independently of platform VERSION.
+Use the [public module development guide](../../../runa/handbook/development/modules.md) for creation, dependency direction, source boundaries, tests and independent version policy. Current reference version is 0.4.0, independently of platform VERSION.
 
 The health declaration implements HealthPolicy schema 2. Its hybrid mode and
 check timing are defined in ReferenceHealthPolicy source only; no Admin tab or
 database override changes that policy.
 
-The reference SettingsProvider demonstrates the native source/CLI settings
-contract; it has no generic Admin settings tab. Administrator-facing configuration
-requires a dedicated owned page with change history and its own validated workflow,
-as described in the Admin authoring guide. Existing values remain preserved.
+The reference SettingsProvider demonstrates native settings access, field grants,
+action-specific proof and publication. Its owned HTTP workflow and named snapshot
+adapter are implemented below; the dedicated Admin editor remains pending.
+Existing values remain preserved.
 
 The example panel binds its own request state to public Button busy, retaining a
 stable action label and result/error output; no loading sentence or separate
@@ -76,8 +77,8 @@ spinner implementation is needed.
 
 ## Admin integration status
 
-The unreleased 0.3.0 source includes exact-call health planning (Framework API
-^1.1.0). Focused native regressions cover the guarded inspect page/widget and access
+The 0.4.0 source retains exact-call health planning and now requires Framework API
+^2.0.0. Focused native regressions cover the guarded inspect page/widget and access
 revocation, including withdrawal between selection and health preparation. Health
 checks run before the locked business read; the hybrid policy is unchanged. Final
 development runtime alignment and rendered/manual acceptance remain roadmap work,
@@ -136,18 +137,18 @@ reader failure while still available shows an empty unavailable diagnostic.
 
 ## Capability reproduction and deliberate exclusions
 
-| Capability                                | Runnable source / reproduction                                                                                                                                                                                                                                                                           |
-| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Identity and retained optional lifecycle  | Inspect `module.json`, `runa:modules:check app --runtime`, then the explicit lifecycle preview/apply procedure above. Disable retains the sample and settings.                                                                                                                                           |
-| Owned PostgreSQL data                     | Explicit app update runs the one-table migration and repeat-safe initializer for the `welcome` Sample. The model and migration show UUIDv7/ownership; the example intentionally supplies no unrelated record editor.                                                                                     |
-| Guarded PHP and HTTP                      | Resolve Ping 1.0.0 above, or request `GET /api/app/reference/ping` while effectively available.                                                                                                                                                                                                          |
-| Settings/encryption/reinitialization      | `runa:modules:settings app.reference`; write only a reviewed JSON `values` patch with the exact revision/generation. The optional credential is redacted, not a working external integration.                                                                                                            |
-| CLI/work/scheduler/storage                | `app:reference:inspect`; while enabled, `app:reference:work`. Observe the returned work ID through the public `ModuleWork::status($workId)` adapter; the owning hourly schedule invokes the same operational entry. `ReferenceJobHandler` shows cancellation checkpoints and repeat-safe scoped storage. |
-| Versioned facts and listeners             | Work publishes `observed` v1. `ReferenceEvents`, `ReferenceListener` and `ReferenceEventHandler` show independent synchronous/asynchronous consumers; queue completion is distinct from initial dispatch. Publication may repeat on retry.                                                               |
-| Frontend page/navigation/visual slot      | `ReferenceFrontend`, panel and an opted-in ModulePage/ModuleSlot consumer as above. Production excludes their source/build entries.                                                                                                                                                                      |
-| Admin composition                         | The inspect page, declared binding, native grant, replaceable section and dashboard widget above are executable.                                                                                                                                                                                         |
-| Health and work policy                    | `runa:modules:health app.reference` and the source-owned policy definitions. No generic Admin health/integration editor.                                                                                                                                                                                 |
-| Cross-module editing and aggregate writes | Intentionally absent: no foreign-subject editing use case exists in this read-only scenario. Use the [Admin examples](../../../runa/handbook/modules/admin/examples.md) and their opt-in generator/Core examples when adding one.                                                                        |
+| Capability                                | Runnable source / reproduction                                                                                                                                                                                                                                                                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Identity and retained optional lifecycle  | Inspect `module.json`, `runa:modules:check app --runtime`, then the explicit lifecycle preview/apply procedure above. Disable retains the sample and settings.                                                                                                                                                                             |
+| Owned PostgreSQL data                     | Explicit app update runs the one-table migration and repeat-safe initializer for the `welcome` Sample. The model and migration show UUIDv7/ownership; ReferenceTools supplies revision-checked editing with an independent code-field grant.                                                                                               |
+| Guarded PHP and HTTP                      | Resolve Ping 1.0.0 above, or request `GET /api/app/reference/ping` while effectively available.                                                                                                                                                                                                                                            |
+| Settings/encryption/reinitialization      | `runa:modules:settings app.reference`; write only a reviewed JSON `values` patch with the exact revision/review identity. The optional credential is redacted, not a working external integration.                                                                                                                                         |
+| CLI/work/scheduler/storage                | `app:reference:inspect`; while enabled, `app:reference:work`. Observe the returned work ID through the public `ModuleWork::status($workId)` adapter; the owning hourly schedule invokes the same operational entry. `ReferenceJobHandler` shows cancellation checkpoints and repeat-safe scoped storage.                                   |
+| Versioned facts and listeners             | Work publishes `observed` v1. `ReferenceEvents`, `ReferenceListener` and `ReferenceEventHandler` show independent synchronous/asynchronous consumers; queue completion is distinct from initial dispatch. Publication may repeat on retry.                                                                                                 |
+| Frontend page/navigation/visual slot      | `ReferenceFrontend`, panel and an opted-in ModulePage/ModuleSlot consumer as above. Production excludes their source/build entries.                                                                                                                                                                                                        |
+| Admin composition                         | The inspect page, declared binding, native grant, replaceable section and dashboard widget above are executable.                                                                                                                                                                                                                           |
+| Health and work policy                    | `runa:modules:health app.reference` and the source-owned policy definitions. No generic Admin health/integration editor.                                                                                                                                                                                                                   |
+| Cross-module editing and aggregate writes | Foreign-subject editing and multi-module aggregate business writes remain excluded: the example edits its own shared Sample. Native settings/protected work integrate the required Core participants. Use the [Admin examples](../../../runa/handbook/modules/admin/examples.md) and their opt-in generator/Core examples when adding one. |
 
 Application frontend regressions live in
 `tests/frontend/app/modules/reference/presentation.test.ts`. Run the scoped
@@ -156,3 +157,81 @@ from the development PHP terminal. They cover retained reads, duplicate requests
 dismissed localized failures, replacement response markup, cancellation and
 unavailable widget content and public Admin section refresh retention/busy feedback. Private owner suites additionally exercise native Admin
 grants and adapter availability; they are not customer dependencies.
+
+## Guarded Core backend examples
+
+Owner: application reference module. Audience: application/module developers.
+Implementation lives in `backend/Contracts/ReferenceTools.php`, its source-owned
+`Definitions/ReferenceToolsApi.php`, `ReferenceToolsProxy.php`, `Actions`, `Queries`,
+`Policies`, `Http` and `Management/ReferenceSnapshots.php`. Resolve the guarded API
+through `ModuleApis::resolve('app.reference', ReferenceTools::class, '1.0.0')`.
+These are normal backend runtime entrypoints in the optional development example;
+production excludes the entire example. Never construct the handler to bypass ingress.
+
+Complete signatures (the contract's array PHPDoc documents scalar collections):
+
+```php
+public function samples(): array;
+public function editSample(string $publicId, string $revision, string $code): array;
+public function settings(): array;
+public function reviewSettings(array $patch, int $revision, string $reviewId): array;
+public function publishSettings(array $patch, int $revision, string $reviewId, string $review): array;
+public function snapshots(?string $publicId = null): array;
+public function captureSnapshot(string $name, int $revision, string $reviewId): array;
+public function deleteSnapshot(string $publicId, int $revision, string $reviewId): array;
+public function history(?string $sample = null, ?string $before = null): array;
+public function dispatch(): array;
+public function work(): array;
+```
+
+All named authenticated routes below use `/api/app/reference/` and return
+`{data: ...}` with no-store responses. Route names use `app.reference.` plus the
+operation key in the table. The existing Ping route remains public/nonsensitive.
+
+| Operation         | Method/path           | Grant suffix and observable result                                                                                                            |
+| ----------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| samples.read      | GET samples           | samples.read; bounded items with public_id/revision, code only with samples.code.read                                                         |
+| samples.edit      | PATCH samples         | samples.write plus samples.read and samples.code.write; public_id/revision/code input returns the new monotonic revision and safe projection  |
+| settings.read     | GET settings          | settings.read; revision, review_id and localized settings; credential set-state requires settings.credential.read                             |
+| settings.review   | POST settings/review  | settings.write plus settings.read; values/revision/review_id input returns redacted changes and encrypted review                              |
+| settings.publish  | POST settings/publish | same grants, exact original input plus review; one-use password action app.reference.settings.publish; operation/status result                |
+| snapshots.read    | GET snapshots         | settings.read; optional public_id loads committed label only; snapshots/values are JSON text                                                  |
+| snapshots.capture | POST snapshots        | settings.write plus settings.read; name/revision/review_id captures committed label with Audit                                                |
+| snapshots.delete  | DELETE snapshots      | same grants; public_id/revision/review_id and own password action app.reference.settings.snapshot_delete                                      |
+| history.read      | GET history           | history.read plus independent runa.audit.read; optional sample/before UUIDv7 filters; safe event identity/action/time/outcome and next cursor |
+| work.dispatch     | POST work             | work.dispatch; password action app.reference.work.dispatch commits durable work intent and explicit Audit; work_id/status admitted            |
+| work.read         | GET work              | work.read; bounded owning work identities, statuses, progress, attempts and cancellation state                                                |
+
+Grant suffixes above use `app.reference.`. Credential replacement/clear additionally
+requires settings.credential.write, and the backend independently enforces it.
+An operation password is entered only in Auth's shared full-page confirmation
+view; Admin entry proof cannot authorize these separate actions. The samples are
+shared development records with an explicit owning Policy; deleted records refuse.
+`EditSample` uses the native transaction phases and opt-in Auditable code field.
+`DispatchWork` prepares queue admission before locks and records its explicit event
+in the same transaction; admission does not claim worker completion.
+
+Settings use the [native publication contract](../../../runa/handbook/architecture/module-settings.md).
+Store the original revision/review_id, review an explicit label/credential patch,
+confirm the exact action, then deliberately publish that same patch and review.
+Credential null clears, a string sets/replaces, and omission retains it. Neither
+review, history nor snapshots expose credential values or ciphertext. Health renewal
+alone preserves review identity; real source/availability/revision changes refuse.
+Loading a named snapshot only returns label values for a draft; it never publishes.
+Current rules, grants and a fresh own proof still apply at publication. A conflict
+requires the user to reconsider their draft; never fetch a new identity and replay.
+
+The `core_examples` 0.3.0 → 0.4.0 edge preserves data and identities. Its explicit
+migration adds positive bigint Sample revision (default 1 for retained records).
+No reset or downgrade is performed. Core source compatibility is Auth ^6.0.0,
+Audit ^1.1.0 and Permissions ^2.1.0; those modules require their current explicit
+forward updates before protected workflows can run. Existing Ping presentation
+remains available; no new UI acceptance is claimed by these backend examples.
+
+Run the application-owned `CoreExamplesTest.php` through the supported backend
+runner against prepared isolated test Core. It covers field omission/read/write
+refusal, audited edit/stale/deleted records, settings secret safety/review/proof,
+named snapshots, dispatch proof/replay/expiry/revocation, Audit-read independence
+and transaction rollback. Owner tests additionally cover native semantic identity,
+prepared-read nesting and policy snapshot integration. Full suites and current
+development runtime preparation remain later roadmap points.

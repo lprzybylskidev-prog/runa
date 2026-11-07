@@ -11,7 +11,7 @@ use Runa\Support\Modules\Settings\ModuleSettings;
 final class OperatorSettings
 {
     /** @param array<string, mixed> $patch */
-    public static function update(string $module, array $patch, int $revision, int $generation): TransitionResult
+    public static function update(string $module, array $patch, int $revision, string $reviewId): TransitionResult
     {
         if (app(PrincipalScope::class)->current() !== null) {
             throw new \LogicException('Operator fixture refuses an authenticated principal.');
@@ -19,7 +19,7 @@ final class OperatorSettings
         $request = app('request');
         app()->instance('request', Request::create('/'));
         try {
-            return app(ModuleSettings::class)->update($module, $patch, $revision, $generation);
+            return app(ModuleSettings::class)->update($module, $patch, $revision, $reviewId);
         } finally {
             app()->instance('request', $request);
         }

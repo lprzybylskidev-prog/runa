@@ -23,7 +23,7 @@ final class ReferenceManagement implements ManagementReadPlanProvider
 {
     public function permissions(): array
     {
-        return [new ManagementPermission('reference.inspect', ['pl' => 'Inspekcja przykładu', 'en' => 'Inspect reference'], ['pl' => 'Odczyt diagnostyki przykładu.', 'en' => 'Read reference diagnostics.'])];
+        return [...ReferencePermissions::permissions(), new ManagementPermission('reference.inspect', ['pl' => 'Inspekcja przykładu', 'en' => 'Inspect reference'], ['pl' => 'Odczyt diagnostyki przykładu.', 'en' => 'Read reference diagnostics.'])];
     }
 
     public function actions(): array
