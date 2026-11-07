@@ -9,6 +9,11 @@ All release entries are maintained by the agent from roadmap facts.
   tests in their owning point. Reopen reference completeness through repair point
   10a before owner frontend acceptance; expanded runtime examples are not yet delivered.
 
+- Record the approved common-settings refactor and ordered repair points 10a–10e:
+  framework contracts, Auth migration, executable reference backend/UI and renewed
+  acceptance preparation. Preserve module isolation/public APIs; implementation
+  and runtime examples remain pending.
+
 - Define agent-directed verification continuity and bounded manual SIGSEGV handling;
   preserve valid unrelated evidence and require explicit owner acceptance of
   exhausted confirmed interruptions, replacing standing automatic acceptance.

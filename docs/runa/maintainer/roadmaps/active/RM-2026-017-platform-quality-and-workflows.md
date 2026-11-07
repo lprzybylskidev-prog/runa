@@ -31,6 +31,14 @@ the repaired reference views.** Gate B and feature/0.8.0 remain approved. No fin
 verification, owner acceptance or release is claimed. Earlier point-7 exclusions
 and point-10 completeness claims do not approve omitting these examples.
 
+The owner subsequently approved a common framework settings mechanism with Auth
+as an ordinary consumer, preserving module isolation and public-API communication.
+The [approved design and work sequence](../../reviews/RM-2026-017-reference-settings-authorization.md)
+supersede the initial callback-only proposal and its pending-decision state.
+Repair work is split into points 10a–10e below; point 11 and final point 12 retain
+their identities and order. This checkpoint records the agreed plan, not runtime
+implementation or early version preparation.
+
 <a id="current-execution-state--point-10-completed-2026-11-07"></a>
 
 ## Historical execution state — point 10 completed, 2026-11-07
@@ -1013,31 +1021,114 @@ below are retained as historical records only.
     and record prepared_version fields/reason under the release workflow before
     such version changes. Never fake versions or bypass maintenance. No reset.
 
-- [ ] 10a. Complete the executable customer reference and its maintenance rule.
+- [ ] 10a. Standardize the module-framework settings mechanism.
   - **Owner decision, 2026-11-07:** reference is customer documentation in code.
     Every new Runa module and customer-facing capability must extend working
-    reference examples, documentation and tests in its owning point. Record the
-    canonical owner rule and synchronize affected instruction products.
-  - **Scope:** retain the working Ping page/widget and add dedicated module
-    settings with redacted secret handling and snapshots/history; useful owned
-    sample editing with revisions and transactional Audit; separately permissioned
-    fields/actions; an actual operation requiring action-specific Auth password
-    confirmation; and existing managed-work dispatch/status examples. Trace each
-    current Core module to runnable source, public entrypoint and owning tests.
-  - **Design:** consume existing public APIs, native settings/work/transaction
-    runners and shared frontend security/controllers. Do not copy engines or
-    bypass guarded APIs. A significant missing public integration seam requires
-    an explicit owner decision before implementing that premise.
-  - **Deliverables:** synchronized capability/source matrix, complete public
-    signatures and presentation contracts, meaningful success/denial/stale/proof/
-    Audit-rollback tests, module version/dependency assessment and changelogs.
-    Preserve current data, opt-in/default-disabled delivery and production
-    exclusion; no new package or reset is authorized.
-  - **Acceptance:** only necessary focused diagnostics during implementation.
-    Prepare current assets/data and concrete URLs through supported nondestructive
-    procedures, commit the repair and return to point 11. Full suites and final
-    security/AI/delivery gates remain point 12; this is not a final-verification
-    repair loop. The owner alone accepts the repaired frontend.
+    examples, documentation and tests in its owning point. The rule/instruction
+    checkpoint is committed in `6d4df9a9`; this implementation point stays open.
+  - **Approved correction:** make safe settings publication a common framework
+    capability and migrate Auth to it. Adding a generic path beside a retained
+    Auth-special path does not complete this correction. See the approved design.
+  - **Before runtime edits:** source-map current settings validation, revisions,
+    authorization/publication participants, history/snapshots and recovery. Declare
+    owner/audience, full public signatures, phases/lock order, native admission,
+    supported entrypoints and implementation homes. Separate framework mechanics
+    from module business effects and Core security capabilities.
+  - **Implement:** common source-owned authorization/publication extension and
+    reusable security orchestration in the existing native settings runner.
+    Preserve independent-runner boundaries, secret redaction, source/generation
+    checks, conflict handling and atomic proof/publication/Audit. Reuse existing
+    history, operation and snapshot mechanisms; no second settings store/runner.
+  - **Isolation:** Auth verifies passwords/proofs, Permissions decides grants and
+    Audit records history through supported public APIs. Framework mechanics do
+    not import private module classes or read foreign module tables. Any necessary
+    reserved security bridge has an explicit supported contract and named callers;
+    it must not become an ordinary customer bypass. HTTP cannot choose classes,
+    actor authority, grants or proof policy.
+  - **Deliver:** source-contract/native security/rollback regression scenarios,
+    public authoring/API documentation, source-check/runtime descriptor support,
+    honest Framework API/module version assessment and affected instruction products.
+    Only necessary focused diagnostics and mandatory hooks here; complete suites
+    remain point 12. Commit implementation, docs and checklist together.
+
+- [ ] 10b. Move Auth settings onto the common framework contract.
+  - **Dependency:** completed 10a. Replace Core's special dispatch to Auth policy
+    authorization/history with the same supported source-owned path available to
+    other modules. Remove the obsolete branch rather than retaining an adapter.
+  - **Keep Auth-owned:** setting definitions, cross-field business validation,
+    password-proof implementation, policy consequences, exception invalidation and
+    meaningful policy-domain history. Generic settings history/snapshots are not
+    duplicated inside Auth. Preserve existing stored policies, credentials,
+    publication/recovery evidence and installed upgrade identities.
+  - **Deliver:** current Auth/Admin consumers, public contracts, dependent
+    declarations, version/changelog assessment and regression scenarios for proof
+    consumed exactly once, unchanged consequence behavior, denied/stale writes,
+    Audit failure/rollback, trusted CLI and source/connection changes.
+  - **Boundary:** no weaker security, dependency addition, reset or automatic
+    business retry. Resolve only concrete uncertainty with focused diagnostics;
+    full backend/security and affected-area checks remain final. Commit the point.
+
+- [ ] 10c. Complete the reference backend as an executable Core consumer.
+  - **Dependency:** completed 10a/10b. Retain existing Ping, sample identities,
+    source/CLI/work/events examples and optional production-excluded delivery.
+    Use the same common settings contract as Auth, never a reference-only bypass.
+  - **Settings:** provide validated public read/review/publication, redacted secret
+    set/replace/clear handling and existing safe snapshot/history workflows.
+    Distinguish committed values from drafts and source-owned technical policy.
+  - **Audit/Permissions:** add useful sample editing with optimistic revisions,
+    an approved audited input and an independently permissioned field/action.
+    Guard backend projections and writes separately; hidden inputs do not grant
+    authority. Show automatic single-model capture and explicit events where the
+    operation needs them, with same-transaction rollback on Audit failure.
+  - **Auth/work:** implement an actual action requiring its own password proof,
+    distinct from Admin entry, plus authorized dispatch/status for existing managed
+    work. Reuse native public transactional/work contracts and avoid side effects
+    inside incompatible transaction phases. No fictional external integration.
+  - **Deliver:** explicit module-owned APIs/declarations/Actions/Queries, grants,
+    record policy, source/runtime/version changes and meaningful application-owned
+    tests covering success, read/write denial, stale revision/review, proof expiry/
+    replay, secret safety and rollback. Assess actual storage changes without
+    resetting existing data. Complete public signature/source documentation in
+    this point. Full suites remain final; commit the backend point.
+
+- [ ] 10d. Complete the reference Admin/frontend customer journey.
+  - **Dependency:** completed 10c. Add coherent settings/history/snapshot, sample
+    editing and protected-action/work views through public Admin/Auth/UI facades.
+    Keep the current Ping page/widget. Use shared page navigation, forms, feedback,
+    table/dialog and readiness contracts; no copied session or proof orchestration.
+  - **Visible examples:** change an audited value and inspect authorized history;
+    show/omit a field by its grant; permit reading independently of editing; perform
+    a real password-protected action through Auth's full-page confirmation; edit
+    settings and load a snapshot into a draft before deliberate publication; run
+    existing work and distinguish admission from completion.
+  - **Deliver:** Polish/English, light/dark, responsive and keyboard/focus behavior,
+    retained dirty/pending/conflicting drafts, localized outcomes, capability/access
+    withdrawal and documented typed replacement/composition seams. Add meaningful
+    application component/consumer regressions for these states. No native browser
+    validation conflict, fake operation or private platform import.
+  - **Acceptance boundary:** necessary focused diagnostics only; broader browser/
+    frontend matrices remain point 12. Synchronize owning presentation guidance,
+    example source map and version/changelog assessment, then commit the point.
+
+- [ ] 10e. Reconcile reference coverage and prepare renewed owner acceptance.
+  - **Dependency:** completed 10a–10d. Reconcile all current Core modules against
+    actual executable examples: capability, public API/version, source entrypoint,
+    declaration/Action, UI route or CLI reproduction, expected outcome and owning
+    success/refusal tests. Record justified noninteractive/internal exclusions.
+  - **Documentation:** replace obsolete read-only/no-settings-editor claims in
+    reference/Admin guides and the acceptance sheet; synchronize owner/customer
+    instruction products without granting protected-source edit authority. Preserve
+    historical reports, rejected designs and native failed evidence.
+  - **Runtime:** prepare supported nondestructive updates, current assets and usable
+    authorized data/access after formatting. No reset/new package/production
+    deployment. Confirm real reference pages and relevant APIs, source/build
+    identities and safe secret projection. Record exact effects and evidence.
+    Early candidate version preparation, if genuinely needed, still requires the
+    separate existing owner approval; none is inferred from this plan.
+  - **Handoff:** commit concrete URLs, representative grants/roles, scenarios and
+    source/environment identity for point 11. Only the owner accepts the UI.
+    Complete final suites/security/AI/delivery verification stays point 12; these
+    repairs precede the first final gate and do not invoke its broad repair loop.
 
 - [ ] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
@@ -3746,3 +3837,46 @@ module version, dependency, migration, build, settings/grant mutation or data re
 has occurred. Existing assets/data/credentials/reports/caches and resources remain.
 Focused documentation/link consistency and mandatory hooks apply to this coherent
 checkpoint, with staged-source incremental knowledge refresh before commit.
+
+## Common settings refactor approved and planned — 2026-11-07
+
+After the initial settings-authorization design stop, the owner first requested
+architecture discussion, then clarified that safe settings handling should be a
+framework standard available to every module. The owner explicitly approved the
+restated discovery/problem/repair direction and requested this detailed plan.
+This resolves the earlier pending decision. It does not approve preserving Auth's
+special route alongside a new reference route or moving private module engines
+into the framework.
+
+The [approved responsibility and execution specification](../../reviews/RM-2026-017-reference-settings-authorization.md#approved-direction--2026-11-07)
+owns the current design; the initial proposal remains clearly historical. Split
+the repair into 10a framework, 10b Auth migration, 10c reference backend, 10d
+reference presentation and 10e coverage/runtime readiness. Dependencies are ordered;
+each implementation owns its documentation/tests/version assessment and commit.
+The already committed executable-reference maintenance rule remains effective.
+
+Framework coordinates native settings mechanics and supported extension contracts.
+Auth owns password/proof verification and policy-specific effects; Permissions
+owns grants; Audit owns history persistence. Communicate through supported public
+APIs/source contracts, never foreign private classes or tables. The common path
+must replace special Auth dispatch. Reuse current operation history/snapshot
+storage and distinguish generic history from Auth domain consequences. Preserve
+atomic publication/proof/Audit, native multi-stage recovery, current authority,
+proper lock/admission ordering, trusted CLI and secret-safe projections.
+
+No new major premise is left for routine reconfirmation. Point 10a must still
+record the complete source-grounded signatures, phases and version implications
+before runtime code. Significant new discoveries retain the normal discussion
+boundary; small implementation choices remain autonomous. Feature/0.8.0 is the
+previously approved release projection and is unchanged; actual module/API bumps
+are assessed honestly in their owning implementation points. No dependency,
+reset, early candidate preparation or production operation is implied.
+
+This task is planning/documentation only. No runtime/configuration/schema/data,
+module manifest/version, test source or built asset changes. The existing point 11
+remains open for renewed owner acceptance after 10a–10e, and point 12 retains final
+complete affected-area automated verification/release. No broad verification is
+scheduled in the new implementation points. Root/domain/customer instructions
+need no additional edit for this planning record: the general isolation/public API,
+pre-1.0 and reference-maintenance rules already apply; synchronize actual new
+public contracts and changed consumers in their implementation points.
