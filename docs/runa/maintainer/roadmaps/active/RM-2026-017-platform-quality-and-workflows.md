@@ -21,7 +21,27 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10h completed, 2026-11-07
+## Current execution state — point 10i in progress, 2026-11-07
+
+**Points 1–10h, 10h1 and 10h2 are complete. Point 10i remains open.**
+The [combined readiness review](../../reviews/RM-2026-017-combined-readiness.md)
+records working development runtime/assets, actual routes/APIs and existing
+administrator access. Inserted 10h1 repairs unsupported button intents/generic test
+props; 10h2 corrects independent browser sessions in the native two-user diagnostic,
+which now passes 14 assertions in an isolated disposable worker. This is bounded
+readiness evidence, not complete suites, owner acceptance or final PASS.
+
+Development Core/reference forward updates succeeded without reset; settings,
+credentials, flags and user/sample identities were retained. Base runa_test Core
+also updated, but the example has an existing table without migration provenance.
+The updater refused duplicate creation and retains its app-owner reservation.
+Point 10i prohibits resets: owner approval to rebuild only runa_test is pending.
+No reset or fabricated ledger/installed-version repair is authorized by silence.
+Development remains available at http://localhost:8080; test evidence/resources are
+preserved. Manual acceptance 11 and final verification/release 12 remain open.
+Platform VERSION stays 0.7.0, projected feature/0.8.0 unchanged.
+
+## Historical execution state — point 10h completed, 2026-11-07
 
 **Points 1–10 and 10a–10h are complete. Point 10i is next.**
 Business reads now follow entry/explicit/query/own-action triggers; successful
@@ -4969,3 +4989,21 @@ Both instruction products and canonical session/testing guidance already describ
 real guarded session admission; no reusable rule, public API/version or capability
 change is introduced. The separate base-test provenance blocker remains in 10i;
 owner manual acceptance 11 and final automated verification/release 12 stay open.
+
+## Point 10i checkpoint — development aligned, base-test provenance pending, 2026-11-07
+
+The combined readiness review owns concrete preparation/source/asset identities,
+actual Nginx observations, data preservation, inserted 10h1/10h2 repairs, bounded
+native/backend evidence and the exact retained test-base reservation. The current
+acceptance sheet is synchronized with installed development versions and routes.
+No final gate, owner acceptance, release, dependency or production work ran.
+
+Development and base-test identities were checked separately under existing
+operation/suite locks. Development updates are complete and manual maintenance is
+inactive. The test-base app update safely refused a table already created without
+its installation ledger; no rows or provenance were deleted or fabricated.
+A fresh supported worker proves the corrected native two-user case, but does not
+reconcile the base. Owner approval to amend 10i's no-reset constraint for rebuilding
+only runa_test remains pending; do not mark this point complete or advance 11/12.
+Both instruction products already cover the unchanged native/public procedures;
+private readiness/incident evidence adds no reusable rule requiring their change.
