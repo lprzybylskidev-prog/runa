@@ -618,6 +618,20 @@ Declare `UpgradeProvider` classes in `declarations.upgrades`. `upgrades()` retur
 
 Each definition supplies a stable key, exact nullable `from` (null means first install), exact `to`, owned `UpgradeHandler`, transaction flag, explicit idempotency flag, recovery documentation key and ordered local prerequisite keys. One version edge has one handler, which groups related work. Every installed-to-target hop must have exactly one eligible forward edge, so skipped releases traverse an explicit chain. Prerequisites must be earlier in that chain or belong to a version already installed. Initial installation with no upgrade declarations installs the current schema directly; once data is installed, even a code-only version change needs an explicit no-op edge when no data transformation is required. Preserve published upgrade identities and handlers for supported paths. A recovery key names module documentation, not a framework rollback implementation. Nontransactional steps must supply an explicit recovery key; the transaction_rollback default is rejected for them.
 
+Supplied Core uses one explicit null-to-current initializer per module, rather
+than replaying development releases. Auth initializes technical singleton rows and
+the effective policy baseline; null encrypted settings selects current validated
+defaults. Permissions initializes its protected role and registered declarations,
+Audit records store readiness, and Admin participates in reserved preparation.
+Existing current-schema candidates use explicit transactional update definitions;
+Auth fills missing immediate defaults without replacing configured values. Admin
+also retains its published 1.0.0 preparation path because it owns no domain schema.
+Older Core schemas whose recorded CREATE migrations were replaced do not have a
+forward conversion: changed history refuses normally. Their identified dev/test
+storage requires the [database policy](database.md#migration-policy), not forged
+completion or a compatibility upgrade. This does not change generic customer
+module upgrade support or the historical 0.5-to-0.6 updater transport contract.
+
 The caller owns its existing exclusive installation/deployment lock, maintenance marker, writer shutdown, operation journal, infrastructure preflight and operator recovery. After platform migrations, application deployment code may explicitly invoke:
 
 ```php

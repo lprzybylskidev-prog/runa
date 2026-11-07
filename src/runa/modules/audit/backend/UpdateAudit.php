@@ -5,8 +5,8 @@ namespace Runa\Modules\Audit;
 use Runa\Contracts\Modules\UpgradeContext;
 use Runa\Contracts\Modules\UpgradeHandler;
 
-/** Source-only declarations; the reserved preparation participant synchronizes installed Permissions. */
-final class UpgradePermissionDeclarations implements UpgradeHandler
+/** Current-schema update; native preparation owns declaration synchronization and Audit. */
+final class UpdateAudit implements UpgradeHandler
 {
     public function run(UpgradeContext $context): void {}
 }

@@ -1,6 +1,6 @@
 # Audit
 
-`runa.audit` is a platform-owned Core module, version `1.1.1`, with no
+`runa.audit` is a platform-owned Core module, version `1.1.2`, with no
 Auth or Permissions dependency. It supplies append-only manual events, opt-in
 automatic model capture, local suppression and permission-protected reads. It supplies a source-owned [read-only Admin viewer](administration.md) without depending on Admin, Auth or Permissions.
 
@@ -20,7 +20,7 @@ public IDs and UTC occurrence times. There are no mutable Eloquent models,
 update/delete APIs, soft deletion, retention setting or cleanup job. Unrestricted
 PostgreSQL operators can still modify history; this is an application boundary.
 
-The explicit transactional `null -> 0.1.0` initialization records `audit.store_ready`
+The explicit transactional `null -> 1.1.2` initialization records `audit.store_ready`
 after schema creation. No pre-store history is invented. Completed installation
 steps and matching versions are no-ops. Normal ingress remains fenced during
 preparation. Source-owned framework adapters record subsequent reserved forward
@@ -28,9 +28,10 @@ steps and actual settings publication/restoration on their exact connection;
 participant failure rolls back the step/publication. Existing recovery fences and
 independent SettingsObserver semantics remain intact. These adapters are never
 application bypasses. Missing/stale Audit source after installation fails closed.
-The explicit `0.1.0 -> 0.2.0` forward edge adds read indexes without transforming
-history. Fresh installation traverses both edges; existing installations retain
-their events. Both public APIs remain version `1.0.0`.
+Current CREATE migrations include the read indexes. Fresh installation runs one
+null-to-current initializer; the retained current-schema update preserves existing
+events without replaying store readiness. AuditRecords remains version `1.0.0`;
+AuditReads is version `1.1.0`.
 
 ## Manual public API
 
@@ -258,8 +259,7 @@ bounds for trusted consumers, without providing a generic renderer or management
 
 ## Own-account history summaries
 
-Audit 0.3.0 adds an additive no-data-transform `0.2.0 -> 0.3.0` forward edge and
-public `OwnHistory` 1.0.0 through ModuleApis. `page(module, entityType, actions,
+Audit supplies public `OwnHistory` 1.0.0 through ModuleApis. `page(module, entityType, actions,
 before)` requires a trusted human principal, binds the entity UUIDv7 to that
 principal, validates a bounded 1–64 action allowlist and returns at most 50 rows.
 Only public_id, occurred_at, action and outcome are projected; next is an opaque

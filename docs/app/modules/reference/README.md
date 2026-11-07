@@ -62,7 +62,7 @@ delivered customer tests or a customer verification prerequisite.
 - Waiting disable: inspect active work; run/reconcile the module's own bounded policy. Do not edit flags or discard leases.
 - Production refusal: remove development reference source from the delivery projection; disabling it is insufficient.
 
-Use the [public module development guide](../../../runa/handbook/development/modules.md) for creation, dependency direction, source boundaries, tests and independent version policy. Current reference version is 0.4.0, independently of platform VERSION.
+Use the [public module development guide](../../../runa/handbook/development/modules.md) for creation, dependency direction, source boundaries, tests and independent version policy. Current reference version is 0.4.1, independently of platform VERSION.
 
 The health declaration implements HealthPolicy schema 2. Its hybrid mode and
 check timing are defined in ReferenceHealthPolicy source only; no Admin tab or
@@ -110,8 +110,8 @@ Source declarations remain application-owned in `backend/Definitions`; the priva
 `ManagementResourceReader::{read,page}` and `ManagementWidgetReader::widget` DTO
 signatures. It refuses foreign public IDs, cursors, filters and sorts. It is not a
 new supported business API. The response revision hashes the current message and
-is only a read projection identity. The `admin_showcase` 0.2.0 → 0.3.0 forward edge
-changes no schema, sample row, credential, settings or prior upgrade identities.
+is only a read projection identity. Current installation runs the single
+`initialize` null → 0.4.1 definition after its owned CREATE migration.
 
 `inspect_section.vue` consumes public `AdminSectionPresentationProps` and composes
 `AdminSection` inside shared Card/Button chrome. Admin owns authorization,
@@ -229,9 +229,12 @@ Loading a named snapshot only returns label values for a draft; it never publish
 Current rules, grants and a fresh own proof still apply at publication. A conflict
 requires the user to reconsider their draft; never fetch a new identity and replay.
 
-The `core_examples` 0.3.0 → 0.4.0 edge preserves data and identities. Its explicit
-migration adds positive bigint Sample revision (default 1 for retained records).
-No reset or downgrade is performed. Core source compatibility includes Admin ^1.1.0 for its frontend lifecycle seam, Auth ^6.0.0,
+The original samples CREATE defines positive bigint revision with default 1.
+Existing installations carrying the earlier CREATE/ALTER fingerprints require
+explicit identified development/test storage and module-ledger reconciliation;
+ordinary update refuses changed migration history. A native application wipe alone
+does not reset module completion or installed-version provenance. See the
+[database reset policy](../../../runa/handbook/architecture/database.md#migration-policy). Core source compatibility includes Admin ^1.1.0 for its frontend lifecycle seam, Auth ^6.0.0,
 Audit ^1.1.0 and Permissions ^2.1.0; those modules require their current explicit
 forward updates before protected workflows can run. The reference workspace is implemented in source; aligned runtime/assets and
 owner acceptance remain separate. No UI acceptance is claimed by the backend cases.
@@ -282,7 +285,7 @@ The module owns these application examples; their audience is application author
 the entrypoints are the components/composable and Admin pages above, and delivery
 is optional development frontend/backend source, excluded from production. Backend
 ReferenceTools signatures remain 1.0.0; this presentation completes the existing
-unreleased reference 0.4.0 candidate without changing its storage or API.
+unreleased reference 0.4.1 candidate without changing its storage or API.
 
 ### Workspace behavior and reproduction
 

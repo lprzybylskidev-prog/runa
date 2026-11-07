@@ -1,10 +1,18 @@
 # Reference module changelog
 
+## 0.4.1 — Unreleased
+
+- Initialize directly at the current schema/version; remove historical development
+  upgrade scaffolding. Define sample revision/default/positive CHECK in
+  the original CREATE; remove the additional ALTER. Existing recorded reference
+  migrations require explicit identified development/test reconciliation before
+  reinstall; no forward schema-conversion edge is claimed.
+
 ## 0.4.0 — Unreleased
 
 - Reconcile all supplied Core integrations with executable source, public API versions, expected outcomes and success/refusal test ownership. Add authorized edit-to-history and credential-field denial/validation regressions; document native/internal exclusions without claiming rendered acceptance.
 
-- Add guarded ReferenceTools API 1.0.0 and named authenticated HTTP for sample editing, field grants, safe settings review/publication, named snapshots, authorized Audit history and password-protected work dispatch/status. Use Framework API ^2.0.0 native admission and semantic settings review. Add a positive monotonic sample revision through a nondestructive migration; preserve existing records. Add application-owned success/refusal/rollback tests. Add localized, replaceable Admin and standalone samples/settings/snapshots/history/work presentation through public facades, preserving Ping. Retain dirty/conflicting drafts, action-specific full-page proof and explicit admission/completion states. Use the additive Admin 1.1.0 lifecycle seam; runtime readiness and acceptance remain separate.
+- Add guarded ReferenceTools API 1.0.0 and named authenticated HTTP for sample editing, field grants, safe settings review/publication, named snapshots, authorized Audit history and password-protected work dispatch/status. Use Framework API ^2.0.0 native admission and semantic settings review. Define a positive monotonic sample revision in the current CREATE migration. Add application-owned success/refusal/rollback tests. Add localized, replaceable Admin and standalone samples/settings/snapshots/history/work presentation through public facades, preserving Ping. Retain dirty/conflicting drafts, action-specific full-page proof and explicit admission/completion states. Use the additive Admin 1.1.0 lifecycle seam; runtime readiness and acceptance remain separate.
 
 ## 0.3.0 — Unreleased
 
@@ -19,8 +27,7 @@
 - Align panel spacing/actions and localized outcomes with shared Form/Card/Button
   contracts; retain the last response during refresh, expose response markup and
   cancel unmounted reads. Add customer capability reproduction and regressions.
-- Add source-only admin_showcase forward edge; preserve schema, sample identities,
-  settings, credentials and prior upgrade steps. No new dependency or business write.
+- Publish the Admin showcase source contract without a new dependency or business write.
 
 ## 0.2.0 — 2026-10-31
 

@@ -1,5 +1,13 @@
 # Auth module changelog
 
+## 6.0.1 — Unreleased
+
+- Initialize directly at the current schema/version; remove historical development
+  upgrade scaffolding. Retain the 6.0.0 → 6.0.1 current-schema update,
+  reserved declaration/Audit participation and native history/recovery refusals.
+  Published Core databases with replaced migration history require explicit
+  development reconciliation; no historical schema conversion is provided.
+
 ## 6.0.0 — Unreleased
 
 - Use action-driven business reads: remove passive account/resource reads and
@@ -15,7 +23,7 @@
   registration instruction; retain activation, recovery and security guidance.
   Keep the existing optional-description presentation contract.
 
-- Replace AuthPolicies publication/preview generation integers with semantic review identities (API 4.0.0). Require Framework API ^2.0.0; keep current grants, action-specific password proof, policy consequences and atomic history/Audit. Add the source-only settings_review_identity forward edge without data conversion.
+- Replace AuthPolicies publication/preview generation integers with semantic review identities (API 4.0.0). Require Framework API ^2.0.0; keep current grants, action-specific password proof, policy consequences and atomic history/Audit. Publish the current settings review contract without data conversion.
 
 ## 5.0.2 — Unreleased
 
@@ -24,7 +32,7 @@
   IdentitySettings; persist policy consequences/history through its owning hook.
   Remove Core Audit dispatch to Auth and the separate proof consumer. Preserve
   guarded API signatures, current encrypted settings, credentials, exception
-  invalidation, native recovery and all previous upgrade identities.
+  invalidation, native recovery and supported history validation.
 
 ## 5.0.1 — Unreleased
 

@@ -98,9 +98,9 @@ final class PlatformCompositionTest extends TestCase
     {
         $root = dirname(__DIR__, 4);
         $modules = [];
-        foreach (['audit', 'auth', 'permissions'] as $code) {
+        foreach (['audit' => '1.1.1', 'auth' => '6.0.0', 'permissions' => '2.1.1'] as $code => $installed) {
             $manifest = json_decode(file_get_contents($root.'/src/runa/modules/'.$code.'/module.json'), true, flags: JSON_THROW_ON_ERROR);
-            $modules['runa.'.$code] = ['installed' => '1.0.1', 'version' => '1.0.1', 'registered' => true, 'required' => $manifest['dependencies']['required']];
+            $modules['runa.'.$code] = ['installed' => $installed, 'version' => $manifest['version'], 'registered' => true, 'required' => $manifest['dependencies']['required']];
         }
         $process = new Process([PHP_BINARY, $root.'/distribution/module-plan.php', $root.'/src', $root.'/src'], sys_get_temp_dir());
         $process->setInput(json_encode(['platform' => trim(file_get_contents($root.'/VERSION')), 'modules' => $modules, 'module_steps' => []], JSON_THROW_ON_ERROR));
@@ -109,10 +109,10 @@ final class PlatformCompositionTest extends TestCase
         self::assertCount(4, $plan);
         foreach ($plan as $module) {
             $expected = match ($module['module']) {
-                'runa.admin' => ['1.0.1', null, ['initialize', 'standalone_participants', 'creation_release', 'editor_scopes']],
-                'runa.auth' => ['5.0.2', '1.0.1', ['platform_composition', 'execution_layout', 'frontend_contracts', 'account_orchestration', 'platform_delivery', 'frontend_source_checks', 'verification_contracts', 'admin_platform', 'native_transactions', 'section_activity', 'user_details', 'settings_snapshots', 'read_scopes', 'common_settings']],
-                'runa.audit' => ['1.1.0', '1.0.1', ['platform_composition', 'platform_delivery', 'verification_contracts', 'admin_platform', 'admin_history']],
-                'runa.permissions' => ['2.1.0', '1.0.1', ['platform_composition', 'platform_delivery', 'verification_contracts', 'admin_platform', 'native_transactions', 'table_exports']],
+                'runa.admin' => ['1.1.1', null, ['initialize']],
+                'runa.auth' => ['6.0.1', '6.0.0', ['current_initialization']],
+                'runa.audit' => ['1.1.2', '1.1.1', ['current_initialization']],
+                'runa.permissions' => ['2.1.2', '2.1.1', ['current_initialization']],
             };
             self::assertSame($expected[0], $module['to']);
             self::assertSame($expected[1], $module['from']);

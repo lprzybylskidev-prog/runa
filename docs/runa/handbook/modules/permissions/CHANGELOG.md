@@ -1,8 +1,16 @@
 # Permissions module changelog
 
+## 2.1.2 — Unreleased
+
+- Initialize directly at the current schema/version; remove historical development
+  upgrade scaffolding. Retain the 2.1.1 → 2.1.2 current-schema update,
+  reserved declaration/Audit participation and native history/recovery refusals.
+  Published Core databases with replaced migration history require explicit
+  development reconciliation; no historical schema conversion is provided.
+
 ## 2.1.1 — Unreleased
 
-- Declare Framework API ^2.0.0 and Auth ^6.0.0 compatibility. Add a source-only settings_protocol forward edge; existing permission/grant APIs and assignment storage remain unchanged.
+- Declare Framework API ^2.0.0 and Auth ^6.0.0 compatibility. Publish the current source contract; existing permission/grant APIs and assignment storage remain unchanged.
 
 ## 2.1.0 — Unreleased
 

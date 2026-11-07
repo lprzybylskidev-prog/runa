@@ -1,6 +1,6 @@
 # Auth policies and trusted operator recovery
 
-Auth 6.0.0 supplies AuthPolicies 4.0.0 and AuthBulkSessions 2.0.0 with
+Auth 6.0.1 supplies AuthPolicies 4.0.0 and AuthBulkSessions 2.0.0 with
 Audit ^1.0.0 and framework API ^2.0.0. Install the current per-table storage and
 technical initialization through the fenced ModuleUpdates workflow; ordinary
 startup does not migrate or initialize an administrator.
@@ -97,7 +97,7 @@ public function exception(string $publicId, string $key, ?int $value,
 
 The guarded entrypoint, permission, password proof and transactional Audit
 remain unchanged. The `expires_at` member returned by both exception reads is now
-`string|null`, an incompatible row-contract change from 1.x. Auth 6.0.0 and current
+`string|null`, an incompatible row-contract change from 1.x. Auth 6.0.1 and current
 consumer constraints reflect it under the standing pre-1.0 owner authorization.
 
 ### Active account exception projection

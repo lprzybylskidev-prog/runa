@@ -4,6 +4,13 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Simplify built-in initialization into null-to-current steps, retain explicit
+  current-schema updates and published table-free Admin preparation, and remove
+  76 historical Upgrade classes/122 edges. Core candidate patches: Auth 6.0.1,
+  Audit 1.1.2, Permissions 2.1.2, Admin 1.1.1. Reference 0.4.1 owns its revision in
+  the original CREATE; recorded old migration histories still refuse and require
+  identified development/test reconciliation. Native engine/recovery is unchanged.
+
 - Use action-driven business reads: remove passive account/resource reads and
   same-session preference/branding/Admin cascades while retaining security checks
   and actual identity/access invalidation. Reconcile recognized stale-state refusals

@@ -293,8 +293,8 @@ owned and can reject a selected asset for that consumer. These rules do not make
 platform version, application ID, compatibility, APP_URL/KEY, debug, credentials,
 drivers, knowledge endpoints or infrastructure editable.
 
-The native transaction redesign is retained by independent Auth 6.0.0 and
-Permissions 2.1.1, with guarded AuthProfiles 2.1.0 / PermissionsAccess 2.2.0. Other current guarded
+The native transaction redesign is retained by independent Auth 6.0.1 and
+Permissions 2.1.2, with guarded AuthProfiles 2.1.0 / PermissionsAccess 2.2.0. Other current guarded
 interfaces remain at their declared versions. The
 [native transaction contract](../../architecture/module-transactions.md) and
 [current composition guide](composition.md) supersede the original unchanged-API

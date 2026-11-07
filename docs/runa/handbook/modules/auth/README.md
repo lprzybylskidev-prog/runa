@@ -1,10 +1,10 @@
 # Auth identities, lifecycle and entry transport
 
-Core `runa.auth` is delivered at independent version `6.0.0` for
+Core `runa.auth` is delivered at independent version `6.0.1` for
 platform >=0.7.0 <0.8.0, requiring
 `runa.audit ^1.0.0` and framework API `^2.0.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
-The transactional `null -> 0.1.0` initialization creates no user, password or
+The transactional `null -> 6.0.1` initialization creates no user, password or
 administrative shortcut. Matching installed versions are no-ops. There is no
 Permissions dependency or cross-module SQL, model, relationship or foreign key.
 

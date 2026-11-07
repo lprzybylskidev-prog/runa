@@ -1,8 +1,16 @@
 # Audit module changelog
 
+## 1.1.2 — Unreleased
+
+- Initialize directly at the current schema/version; remove historical development
+  upgrade scaffolding. Retain the 1.1.1 → 1.1.2 current-schema update,
+  reserved declaration/Audit participation and native history/recovery refusals.
+  Published Core databases with replaced migration history require explicit
+  development reconciliation; no historical schema conversion is provided.
+
 ## 1.1.1 — Unreleased
 
-- Declare Framework API ^2.0.0 compatibility after native settings review publication changes. Add a source-only settings_protocol forward edge; Audit APIs, event storage and immutable history remain unchanged.
+- Declare Framework API ^2.0.0 compatibility after native settings review publication changes. Publish the current source contract; Audit APIs, event storage and immutable history remain unchanged.
 
 ## 1.1.0 — 2026-10-30
 

@@ -1,7 +1,7 @@
 # Auth entry transport
 
-The historical Auth 0.2.0 release introduced the explicit transactional `0.1.0 -> 0.2.0` edge after initial
-identity installation. Its additive migration creates owned `runa_auth.entry_tokens`
+Current Auth initialization verifies the owned `runa_auth.entry_tokens` storage
+created by its current CREATE migration
 with bigint identity, UUIDv7, same-module RESTRICT user FK, hashed single-use secret,
 UTC deadlines, revocation generation and private delivery state. No default user,
 credential or administrative authority is installed. Existing stored settings gain
@@ -10,7 +10,7 @@ unchanged, revision advances once and synchronous `settings.upgrade` Audit persi
 in that transaction. Matching installed versions remain no-ops.
 
 Current module/dependency and API versions are listed in the [Auth contract](README.md);
-old edge versions describe retained installation history.
+historical development edges are not replayed during current initialization.
 
 ## Native primitives and browser transport
 

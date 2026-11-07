@@ -76,7 +76,7 @@ contracts remain separate from editable ManagementContribution declarations.
 
 ## Supplied reference module
 
-The optional development-only `app.reference` 0.4.0 source supplies an inspect page,
+The optional development-only `app.reference` 0.4.1 source supplies an inspect page,
 owned adapter, replaceable section and dashboard widget through Ping 1.0.0.
 Its source dictionary declares `app.reference.reference.inspect`; native Admin
 entry is still required separately. Its additional samples/settings/history/work pages compose public Admin lifecycle,

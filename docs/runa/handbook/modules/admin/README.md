@@ -2,7 +2,7 @@
 
 # Admin contract specification
 
-Admin 1.1.0 adds custom-page lifecycle composition and includes compatible
+Admin 1.1.1 adds custom-page lifecycle composition and includes compatible
 editor-lifetime corrections to the 1.0.0 creation
 release delivered with platform 0.7.0. It supplies the shared PL/EN
 session shell, guarded page/section/resource reads, generated record forms,
@@ -93,11 +93,11 @@ are not final runtime/browser acceptance.
 
 ## Delivery status and acceptance ownership
 
-Admin 1.1.0 is Core, requires Framework API ^2.0.0, and requires Audit `^1.0.0`, Auth `^6.0.0` and Permissions `^2.0.0`. Its platform
+Admin 1.1.1 is Core, requires Framework API ^2.0.0, and requires Audit `^1.0.0`, Auth `^6.0.0` and Permissions `^2.0.0`. Its platform
 range is `>=0.7.0 <0.8.0`; installation requires a compatible platform runtime. Explicit platform installation/update at the target version
-registers it and records `upgrade:initialize:install:0.1.0`,
-`upgrade:standalone_participants:0.1.0:0.2.0` and
-`upgrade:creation_release:0.2.0:1.0.0` after its prerequisites.
+registers it and records `upgrade:initialize:install:1.1.1` after its prerequisites.
+Updates from current-schema 1.1.0 or published 1.0.0 each run one explicit
+transactional preparation step without replaying initialization.
 There are no Admin tables or request-time migrations. Existing preparation
 participation synchronizes its declared grants and transactional Audit; installation
 assigns no grants or users. Request boot never installs or registers Admin.
@@ -175,9 +175,9 @@ the administrative behavior and boundaries.
 The owner approved direct native Auth/Permissions/framework refactoring on
 2026-10-30. The [phased transaction contract](../../architecture/module-transactions.md)
 supersedes the earlier unchanged-API composition proposal. AuthProfiles 2.1.0 and
-PermissionsAccess 2.2.0 ship with independent Auth 6.0.0 and Permissions 2.1.1; standalone
+PermissionsAccess 2.2.0 ship with independent Auth 6.0.1 and Permissions 2.1.2; standalone
 writes have a root boundary, while source composition joins native phases.
-Auth/Permissions require platform >=0.7.0 <0.8.0. Audit ships as independent 1.1.1 with optional guarded read ordering; record signatures remain unchanged.
+Auth/Permissions require platform >=0.7.0 <0.8.0. Audit ships as independent 1.1.2 with optional guarded read ordering; record signatures remain unchanged.
 The native path and Admin aggregate dispatch are implemented. The first stable
 Admin creation release records its explicit final upgrade boundary to 1.0.0.
 

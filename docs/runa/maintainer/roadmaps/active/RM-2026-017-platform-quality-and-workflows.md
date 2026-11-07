@@ -21,7 +21,25 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10k completed, 2026-11-07
+## Current execution state — point 10l completed, 2026-11-07
+
+**Points 1–10l are complete. Point 10m is next; 10m–10r remain open.** Point 10l
+consolidates supplied initialization into null-to-current definitions and retains
+only actual current-schema updates plus the table-free published Admin path.
+Reference revision/default/CHECK now belongs to its original CREATE. See the
+[initialization review](../../reviews/RM-2026-017-initialization.md) for the complete
+initial-effect inventory, real baseline assessment, refusal evidence and required
+storage/ledger reconciliation reserved for 10r.
+
+Core candidates are Auth 6.0.1, Audit 1.1.2, Permissions 2.1.2 and Admin 1.1.1;
+reference is 0.4.1. Public signatures/Framework API 2.0.0 are unchanged. Platform
+VERSION 0.7.0 and approved feature/0.8.0 remain unchanged. Six focused backend cases
+and one source/generator case pass; no complete suites, installation acceptance,
+owner acceptance or final PASS is claimed. No installed storage/ledger/data/assets
+were changed; live runtime alignment remains 10r. Combined readiness remains 10r, owner acceptance 11 and final
+verification/release 12.
+
+## Historical execution state — point 10k completed, 2026-11-07
 
 **Points 1–10k are complete. Point 10l is next; 10l–10r remain open.** Point 10k
 installs the owner-approved decision-provenance correction and qualifies current
@@ -1620,7 +1638,7 @@ below are retained as historical records only.
     protected-platform edits. Keep existing quality gates and explicit discussion
     stops intact. Commit the source/decision review and current guidance together.
 
-- [ ] 10l. Simplify built-in initialization/history and reference migration structure.
+- [x] 10l. Simplify built-in initialization/history and reference migration structure.
   - **Dependency:** 10k. Own P01/P02. Inventory the exact retained current initial
     effects and any genuinely supported published-baseline data-update paths before
     edits. Use existing null-to-current UpgradeDefinition support; a new framework
@@ -5349,3 +5367,46 @@ are warranted for prose/comment changes; complete documentation/AI/quality check
 remain point 12. No rendered acceptance or final PASS is claimed. No task-created
 Docker resources, databases, volumes or assets require cleanup. Point 10l is next;
 10r must renew combined readiness after the accepted runtime refactors.
+
+## Point 10l completion — direct initialization and honest update scope, 2026-11-07
+
+The [owning review](../../reviews/RM-2026-017-initialization.md) inventories all
+twelve nonempty historical handlers and existing initializer/preparation effects
+before the correction, identifies published module versions from actual tags and
+records their real migration boundary. The 13 original Core migration files in
+the unchanged historical fixture were replaced before this point; preserving
+empty published-version edges would not convert those databases. Changed history
+continues to refuse. The old updater's documented 0.5-to-0.6 transport remains a
+historical contract; current guidance no longer implies conversion into today's
+CREATE definitions. No compatibility engine or bypass is added.
+
+Five null-to-current definitions replace the historical 122-edge install chains.
+Four explicit updates from the current installed development candidates preserve
+reserved preparation, Auth missing-default publication, protected-role checks and
+Audit. Admin also retains its real table-free published 1.0.0 preparation path.
+The 76 Upgrade classes are removed; current initialization owns storage checks,
+Auth singleton rows/policy baseline, Permissions protected role/declarations/Audit,
+Audit store readiness and reference welcome row. Generic engine fingerprints,
+transactional completion/version publication and ambiguous recovery refusal are
+unchanged. Reference revision/default/positive CHECK is in its original CREATE;
+the extra ALTER is removed. No storage/ledger mutation occurred. Exact identified
+reconciliation and usable access/data remain 10r; ordinary application fresh alone
+cannot reconcile module provenance.
+
+Source-only current preparation advances compatible patch candidates: Auth 6.0.1,
+Audit 1.1.2, Permissions 2.1.2, Admin 1.1.1 and reference 0.4.1. Public API versions,
+Framework API 2.0.0, compatible dependency ranges and platform VERSION 0.7.0 are
+unchanged. Current guides, module/central changelogs, reference coverage and source/
+native fixtures are synchronized. The review assesses both instruction products:
+existing owner/customer routing and separate authority remain valid without new
+always-loaded summaries or copied module version lists.
+
+Focused supported backend diagnostics: 6 passed, 84 assertions, exit 0 / cleanup 0.
+Focused source/generator contract: 1 passed, 6 deselected, exit 0 / cleanup 0.
+The application welcome/default/CHECK scenario is authored for final verification;
+complete suites/security/delivery/AI/installation acceptance stay in 12. Mandatory
+commit hooks and staged incremental knowledge freshness apply. The runner cleaned
+only its disposable runa_test_test_1; development/base test data, all containers/
+volumes, credentials, model caches and evidence are preserved. No final PASS or
+owner acceptance is claimed. Point 10m is next; readiness 10r, owner acceptance 11
+and final verification/release 12 remain open.

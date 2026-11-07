@@ -3,8 +3,9 @@
 Auth supplies private profile, address and avatar capabilities consumed by the
 [account UI](account-ui.md). No public profile is supplied. Current module,
 dependency and guarded API versions are listed in the [Auth contract](README.md).
-The historical `0.4.0 -> 0.5.0` profile/settings edge remains part of its declared
-upgrade history. Use fenced ModuleUpdates; do not run module migrations independently.
+Current initialization includes profile storage prerequisites; historical
+development edges are retired. Use fenced ModuleUpdates; do not run module
+migrations independently.
 
 ## Own-account transport
 

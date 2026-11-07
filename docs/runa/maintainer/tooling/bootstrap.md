@@ -132,8 +132,11 @@ working directory. `--install now` invokes that exact process and reports a fail
 without reacquiring or overwriting the published source. The copied single-file bootstrap needs no sibling installer for a
 protocol-1 release. The internal gateway is not a public Artisan command or a
 Python extension API. Historical releases without the protocol use their matching
-historical installer; the current updater can upgrade an existing 0.5.0 development
-installation without importing that release's Python modules. No source version is
+historical installer. The 0.5.0-to-0.6.0 updater transport reads an existing
+development installation without importing that release's Python modules. This
+historical transport contract does not promise migration of replaced Core schemas
+to today's development CREATE definitions; current target history validation still
+refuses changed/missing applied migrations. No source version is
 loaded into another version's interpreter namespace.
 Optional profile/settings/noninteractive options are forwarded. After a failed
 install preserve source/settings and rerun the printed command with `--resume`;

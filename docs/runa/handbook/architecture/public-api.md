@@ -83,7 +83,7 @@ keys and delegates execution there. Auth HTTP adapters use `Http/Controllers`,
 named HTTP endpoints, without importing these implementation classes. Combined
 settings declaration/application handlers retain their existing source identity.
 
-Initialization and retained `Upgrade*.php` files currently use module-root paths
+Current `Initialize*.php` and `Update*.php` handlers use module-root paths
 and classes. Their bytes, edge keys and fingerprints participate in installed-history
 and interrupted-update validation. Preserve identities needed by supported deployed
 installations and real recovery evidence; assess those consumers before changing

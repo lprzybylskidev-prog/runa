@@ -1,11 +1,16 @@
 <?php
 
 use App\Modules\Reference\Definitions\ReferencePermissions;
+use App\Modules\Reference\InitializeReference;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Runa\Contracts\Modules\UpgradeContext;
+use Runa\Support\Modules\Data\ModuleSchema;
+use Runa\Support\Modules\ModuleIdentity;
 use Tests\TestCase;
 
 uses(TestCase::class);
@@ -27,7 +32,7 @@ beforeEach(function (): void {
     $this->referenceFixtureOwned = ! Schema::hasTable('app_reference.samples');
     expect(Artisan::call('runa:modules:sync', ['owner' => 'app']))->toBe(0);
     // Test fixture metadata is not an installation/enable workflow example.
-    DB::table('shared.modules')->where('module_id', 'app.reference')->update(['installed_version' => '0.4.0', 'enabled' => true]);
+    DB::table('shared.modules')->where('module_id', 'app.reference')->update(['installed_version' => '0.4.1', 'enabled' => true]);
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     if ($this->referenceFixtureOwned) {
         foreach (glob(base_path('app/modules/reference/database/migrations/*.php')) as $migration) {
@@ -35,7 +40,7 @@ beforeEach(function (): void {
         }
     }
     if (! Schema::hasColumn('app_reference.samples', 'revision')) {
-        throw new RuntimeException('Explicitly update reference test storage to 0.4.0 before testing; fixtures never reset existing data.');
+        throw new RuntimeException('Explicitly reconcile reference test storage to the current CREATE definitions before testing; fixtures never reset existing data.');
     }
     $this->refreshApplication();
     $this->fixtureId = (string) Str::uuid7();
@@ -319,5 +324,24 @@ it('keeps two independent users snapshots versioned and rejects stale or removed
         $this->patchJson('/api/app/reference/samples', [...$draft, 'revision' => '2'])->assertNotFound()->assertJsonPath('error.code', 'reference_sample_missing');
     } finally {
         DB::table('runa_permissions.user_permissions')->where('user_public_id', $x)->delete();
+    }
+});
+
+it('creates a welcome sample with the current revision default and rejects nonpositive revisions', function (): void {
+    DB::beginTransaction();
+    try {
+        $welcome = DB::table('app_reference.samples')->where('code', 'welcome')->first();
+        $context = new UpgradeContext(
+            str_repeat('a', 40), 'app.reference', null, '0.4.1', 'initialize', DB::connection(),
+            new ModuleSchema(DB::connection(), new ModuleIdentity('app.reference')),
+        );
+        (new InitializeReference)->run($context);
+        (new InitializeReference)->run($context);
+        expect(DB::table('app_reference.samples')->where('code', 'welcome')->count())->toBe(1)
+            ->and(DB::table('app_reference.samples')->where('code', 'welcome')->value('revision'))->toBe($welcome?->revision ?? 1);
+        expect(fn () => DB::transaction(fn () => DB::table('app_reference.samples')->where('public_id', $this->fixtureId)->update(['revision' => 0])))
+            ->toThrow(QueryException::class);
+    } finally {
+        DB::rollBack();
     }
 });

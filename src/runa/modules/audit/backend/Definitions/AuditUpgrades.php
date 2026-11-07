@@ -5,32 +5,16 @@ namespace Runa\Modules\Audit\Definitions;
 use Runa\Contracts\Modules\UpgradeDefinition;
 use Runa\Contracts\Modules\UpgradeProvider;
 use Runa\Modules\Audit\InitializeAudit;
-use Runa\Modules\Audit\UpgradeCapture;
-use Runa\Modules\Audit\UpgradeManagement;
-use Runa\Modules\Audit\UpgradePermissionDeclarations;
-use Runa\Modules\Audit\UpgradePlatformComposition;
-use Runa\Modules\Audit\UpgradePlatformDelivery;
-use Runa\Modules\Audit\UpgradeTestLayout;
+use Runa\Modules\Audit\UpdateAudit;
 
 final class AuditUpgrades implements UpgradeProvider
 {
     public function upgrades(): array
     {
-        return [new UpgradeDefinition('initialize', null, '0.1.0', InitializeAudit::class),
-            new UpgradeDefinition('capture', '0.1.0', '0.2.0', UpgradeCapture::class),
-            new UpgradeDefinition('own_history', '0.2.0', '0.3.0', UpgradeCapture::class),
-            new UpgradeDefinition('permission_declarations', '0.3.0', '0.4.0', UpgradePermissionDeclarations::class),
-            new UpgradeDefinition('management', '0.4.0', '0.5.0', UpgradeManagement::class),
-            new UpgradeDefinition('own_history_details', '0.5.0', '0.6.0', UpgradeCapture::class),
-            new UpgradeDefinition('structured_history', '0.6.0', '0.7.0', UpgradeCapture::class),
-            new UpgradeDefinition('stable_release', '0.7.0', '1.0.0', UpgradeCapture::class),
-            new UpgradeDefinition('central_test_layout', '1.0.0', '1.0.1', UpgradeTestLayout::class),
-            new UpgradeDefinition('platform_composition', '1.0.1', '1.0.2', UpgradePlatformComposition::class),
-            new UpgradeDefinition('platform_delivery', '1.0.2', '1.0.3', UpgradePlatformDelivery::class),
-            new UpgradeDefinition('verification_contracts', '1.0.3', '1.0.4', UpgradePlatformDelivery::class),
-            new UpgradeDefinition('admin_platform', '1.0.4', '1.0.5', UpgradePlatformDelivery::class),
-            new UpgradeDefinition('admin_history', '1.0.5', '1.1.0', UpgradeManagement::class),
-            new UpgradeDefinition('settings_protocol', '1.1.0', '1.1.1', UpgradePlatformDelivery::class)];
+        return [
+            new UpgradeDefinition('initialize', null, '1.1.2', InitializeAudit::class),
+            new UpgradeDefinition('current_initialization', '1.1.1', '1.1.2', UpdateAudit::class),
+        ];
     }
 
     public function preflight(?string $installed, string $target): ?string

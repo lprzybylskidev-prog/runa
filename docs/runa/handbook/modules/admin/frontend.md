@@ -2,7 +2,7 @@
 
 # Admin frontend contract
 
-Admin 1.1.0 supplies the PL/EN session shell, guarded reads and independent
+Admin 1.1.1 supplies the PL/EN session shell, guarded reads and independent
 commands, compiled component resolution, presentation providers, generated record
 forms and cursor tables. Public facade `@/runa/admin` exports AdminApplication,
 AdminLayout, AdminPage, AdminSection, AdminForm, AdminField, AdminAction,

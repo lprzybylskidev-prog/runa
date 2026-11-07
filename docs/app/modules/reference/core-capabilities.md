@@ -1,9 +1,9 @@
 # Core capability examples
 
-This is the source map for the optional development-only reference 0.4.0.
+This is the source map for the optional development-only reference 0.4.1.
 All four supplied Core modules are represented below. Module versions and public
-API versions are separate: current source declares Admin 1.1.0, Auth 6.0.0,
-Audit 1.1.1 and Permissions 2.1.1. The reference accepts their compatible optional
+API versions are separate: current source declares Admin 1.1.1, Auth 6.0.1,
+Audit 1.1.2 and Permissions 2.1.2. The reference accepts their compatible optional
 ranges in [module.json](../../../../src/app/modules/reference/module.json) and
 requires Framework API ^2.0.0. A source candidate does not establish installation,
 working assets, rendered acceptance or complete verification.

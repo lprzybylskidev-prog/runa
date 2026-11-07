@@ -196,7 +196,7 @@ foreach (['auth' => 'IdentityUpgrades', 'audit' => 'AuditUpgrades', 'permissions
  $steps = (new $class)->upgrades();
  $last = end($steps);
  $manifest = json_decode(file_get_contents($argv[1].'/src/runa/modules/'.$code.'/module.json'), true, flags: JSON_THROW_ON_ERROR);
- if ($last->to !== $manifest['version'] || !array_any($steps, fn ($step) => $step->key === 'verification_contracts')) exit(41);
+ if ($last->to !== $manifest['version'] || !array_any($steps, fn ($step) => $step->key === 'initialize' && $step->from === null && $step->to === $manifest['version'])) exit(41);
  if (!(new Runa\Support\VersionCompatibility)->supports($manifest['platform'], '0.7.0')) exit(42);
 }
 """,

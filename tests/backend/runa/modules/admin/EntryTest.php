@@ -248,7 +248,7 @@ it('installs Admin through explicit forward history and declares bounded guarded
     $suite = new ModuleContractSuite(base_path(), true);
     expect($suite->source('runa.admin'))->toBe([])
         ->and($suite->runtime(app(ModuleRegistry::class)->snapshot()->modules['runa.admin']))->toBe([])
-        ->and(DB::table('shared.module_update_steps')->where('step', 'upgrade:initialize:install:0.1.0')->where('status', 'succeeded')->exists())->toBeTrue();
+        ->and(DB::table('shared.module_update_steps')->where('module_id', DB::table('shared.modules')->where('module_id', 'runa.admin')->value('id'))->where('step', 'upgrade:initialize:install:1.1.1')->where('status', 'succeeded')->exists())->toBeTrue();
     $api = app(ModuleApis::class)->resolve('runa.admin', AdminAccess::class, '1.0.0');
     expect($api)->toBeInstanceOf(AdminAccess::class)
         ->and(app('router')->getRoutes()->getByName('runa.admin.bootstrap')->uri())->toBe('api/admin');

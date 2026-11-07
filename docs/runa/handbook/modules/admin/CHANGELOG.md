@@ -1,5 +1,13 @@
 # Admin module changelog
 
+## 1.1.1 — Unreleased
+
+- Initialize directly at the current schema/version; remove historical development
+  upgrade scaffolding. Retain the 1.1.0 → 1.1.1 current-schema update and published Admin 1.0.0 update,
+  reserved declaration/Audit participation and native history/recovery refusals.
+  Published Core databases with replaced migration history require explicit
+  development reconciliation; no historical schema conversion is provided.
+
 ## 1.1.0 — Unreleased
 
 - Remove passive resource reads and same-session bootstrap/page/resource cascades.
@@ -12,14 +20,13 @@
   custom owning-HTTP pages: admitted account/session/page identity and registered
   initial readiness and dirty/pending exit checks, with scope cleanup and no second session owner.
   The optional application reference workspace is the executable consumer.
-  Add a source-only forward edge; preserve storage and AdminAccess 1.0.0.
+  Preserve storage and AdminAccess 1.0.0.
 
 ## 1.0.1 — Unreleased
 
 - Require Framework API ^2.0.0 and Auth ^6.0.0 for semantic settings review and
   native snapshot admission. Existing AdminAccess/controller signatures and
-  stored presentation remain unchanged; the existing source-only forward edge
-  records this candidate's compatibility update without a data migration.
+  stored presentation remain unchanged; this candidate's source contract requires no data migration.
 
 - Prepare separately declared read-health occurrences outside locks, then retain
   current entry/proof/authority and owning reads inside the existing transaction.
