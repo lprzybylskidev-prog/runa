@@ -36,7 +36,7 @@ final readonly class ReferenceWorkReader implements ManagementResourceReader
             $offset = $position + 1;
         }
         $page = array_slice($items, $offset, $input->limit);
-        $next = $offset + count($page) < count($items) ? $page[array_key_last($page)]->publicId : null;
+        $next = $offset + count($page) < count($items) ? ($page === [] ? null : $page[array_key_last($page)]->publicId) : null;
 
         return new ManagementPageResult($page, $next, count($items));
     }

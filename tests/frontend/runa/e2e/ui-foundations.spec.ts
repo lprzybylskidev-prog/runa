@@ -37,8 +37,8 @@ for (const [device, width, height] of [
         );
         await expect(page.getByRole('main')).toContainText(
           locale === 'pl'
-            ? 'Modularny monolit na bazie Laravela. Dostarcza w pełni konfigurowalne moduły do budowy aplikacji biznesowych.'
-            : 'A modular monolith built on Laravel. Fully configurable modules for building business applications.',
+            ? 'Modularny monolit na bazie Laravela do budowy aplikacji biznesowych.'
+            : 'A modular monolith built on Laravel for business applications.',
         );
         const modules = page.getByRole('list', {
           name: locale === 'pl' ? 'Moduły Runa' : 'Runa modules',

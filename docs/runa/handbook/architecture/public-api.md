@@ -69,6 +69,13 @@ and operation rather than granting access to that whole directory:
 | Audit       | Guarded `AuditRecords`, `AuditReads`, `OwnHistory`, `OwnHistoryDetails` and their values/exceptions; `Auditable` and `AuditModelPolicy` for opt-in capture; scoped `AuditSuppression::run` under the Audit transaction/redaction rules. | `AuditWriter`, `AuditActorResolver`; suppression's `active()` is capture plumbing.                                |
 | Permissions | Guarded `Permissions`, `PermissionsAccess`, `PermissionsAuthority`, `PermissionsAuthorityBatch`, `PermissionsSelections` and their preview/selection/declaration values.                                                                | `DevelopmentAccess`, only for explicit development contributors.                                                  |
 
+The source-check policy also records exact internal Core callers. Admin's
+Access query consumes the trusted `Integration/Core/AdminRead` orchestration;
+its Projection query consumes the internal `Management/ReadHandlerPlan` value.
+Auth's account admission policy anchors current registry reads through the internal
+`ModuleRegistry`, like existing owning policy/permission integration. These exact
+caller declarations do not expose those symbols to application/module authors.
+
 Reserved contracts support the existing named Core integration, owning Actions,
 transaction participants and operator/development procedures in each module's
 guide. They do not authorize application security-binding replacement, direct

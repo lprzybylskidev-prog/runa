@@ -14,7 +14,7 @@ uses(DatabaseTransactions::class);
 beforeEach(function (): void {
     $this->sources = new ModuleSources;
     $this->registry = new ModuleRegistry(DB::connection(), new ModuleDiscovery($this->sources->root));
-    $this->add = function (string $id, array $required = [], array $optional = [], string $kind = 'optional', string $version = '1.2.0', string $platform = '^0.4.0', string $api = '^1.0.0'): void {
+    $this->add = function (string $id, array $required = [], array $optional = [], string $kind = 'optional', string $version = '1.2.0', string $platform = '^0.4.0', string $api = '^2.1.0'): void {
         [$owner, $code] = explode('.', $id);
         $definition = $this->sources->add($owner, $code, $kind, $version);
         $definition['dependencies'] = (object) ['required' => (object) $required, 'optional' => (object) $optional];
@@ -99,7 +99,7 @@ it('distinguishes required Admin Audit shape from optional Audit consumers', fun
 });
 
 it('checks source platform and framework compatibility without conflating installed versions', function (): void {
-    ($this->add)('app.documents', platform: '^0.5.0', api: '^2.0.0');
+    ($this->add)('app.documents', platform: '^0.5.0', api: '^3.0.0');
     $graph = ($this->graph)();
     $preview = $graph->preview('enable', 'app.documents');
     expect(array_column($preview->blockers, 'code'))->toBe(['platform_version', 'framework_api_version']);

@@ -44,13 +44,13 @@ final readonly class SamplePolicy
                 throw new OperationRejected('reference_record_denied', 'app.reference', 'samples.read', 403);
             }
 
-            return ['public_id' => (string) $sample->getAttribute('public_id'), 'revision' => self::revision($sample)]
-                + ($code ? ['code' => (string) $sample->getAttribute('code')] : []);
+            return ['public_id' => $sample->public_id, 'revision' => self::revision($sample)]
+                + ($code ? ['code' => $sample->code] : []);
         }, $samples);
     }
 
     public static function revision(Sample $sample): string
     {
-        return (string) $sample->getAttribute('revision');
+        return (string) $sample->revision;
     }
 }

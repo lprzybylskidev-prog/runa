@@ -7,6 +7,9 @@ use Runa\Modules\Audit\Contracts\AuditModelPolicy;
 use Runa\Support\Modules\Data\ModuleModel;
 
 /** Development example of an owned UUIDv7 entity. */
+/** @property string $public_id
+ * @property string $code
+ * @property int $revision */
 final class Sample extends ModuleModel
 {
     use Auditable;

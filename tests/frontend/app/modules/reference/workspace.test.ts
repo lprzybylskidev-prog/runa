@@ -1,3 +1,4 @@
+/* eslint-disable vue/one-component-per-file -- Nested controller and confirmation-provider harnesses exercise the public composition boundary. */
 import { afterEach, expect, it, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, mount } from '@runa/testing/vue';
 import { defineComponent, h, nextTick, ref } from 'vue';

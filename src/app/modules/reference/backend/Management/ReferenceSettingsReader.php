@@ -20,9 +20,9 @@ final readonly class ReferenceSettingsReader implements ManagementResourceReader
             throw new OperationRejected('reference_query_invalid', 'app.reference', 'management.read', 422);
         }
         $result = $this->apis->resolve('app.reference', ReferenceTools::class, '1.0.0')->settings();
-        $values = ['label' => $result['settings']['label']['value']];
+        $values = ['label' => ($result['settings']['label']['value'] ?? null)];
         if (isset($result['settings']['credential'])) {
-            $values['credential'] = ['set' => $result['settings']['credential']['set']];
+            $values['credential'] = ['set' => ($result['settings']['credential']['set'] ?? throw new \LogicException('Missing secret set-state.'))];
         }
 
         return new ManagementRecord(null, $result['revision'].':'.$result['review_id'], $values);

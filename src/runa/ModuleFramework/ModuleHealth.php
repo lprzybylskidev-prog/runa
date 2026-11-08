@@ -97,6 +97,7 @@ final class ModuleHealth
                         // Discard removed definitions and reject old-source/policy results at publication.
                         $observations = array_intersect_key($observations, array_fill_keys(array_map(fn ($check): string => $check->id, $definition->checks), true));
                         $changedFrom = $this->connection->transaction(function () use ($record, $observations): ?int {
+                            /** @var object{generation:int}|null $state */
                             $state = $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
                             if ($state === null) {
                                 throw new RuntimeException('Module registry migration is required.');

@@ -29,7 +29,11 @@ class DocumentationContracts(unittest.TestCase):
         copy_public(self.root)
         subprocess.run(["git", "init", "-q", "-b", "main", str(self.root)], check=True)
         self.write("VERSION", "0.1.0\n")
-        self.write("docs/runa/handbook/tooling/commands.md", "# Commands\n./bin/example\n")
+        self.write(
+            "docs/runa/handbook/tooling/commands.md",
+            (self.root / "docs/runa/handbook/tooling/commands.md").read_text()
+            + "\n./bin/example\n",
+        )
         self.write("bin/example", "#!/bin/sh\nexit 0\n").chmod(0o755)
         self.readme = "# Runa\n\n## Current state\n\n<!-- runa:current-state -->\n\n- Current version: `0.1.0`\n- Active roadmap: `none`\n\n<!-- /runa:current-state -->\n"
         self.write("docs/runa/maintainer/README.md", self.readme)
@@ -106,15 +110,20 @@ class DocumentationContracts(unittest.TestCase):
         )
         self.write(
             "docs/runa/maintainer/roadmaps/closed/RM-2026-001-history.md",
-            "Historical release 0.0.0, not a current claim.\n",
+            "# Historical release\nVersion 0.0.0, not a current claim.\n",
         )
         self.write(
             "docs/runa/maintainer/workflows/example.md",
-            "```yaml\nid: RM-2026-003\nstatus: active\n```\n",
+            "# Workflow example\n```yaml\nid: RM-2026-003\nstatus: active\n```\n",
         )
         result = self.doctor("docs")
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.write("docs/runa/handbook/tooling/commands.md", "# Commands\n")
+        self.write(
+            "docs/runa/handbook/tooling/commands.md",
+            (self.root / "docs/runa/handbook/tooling/commands.md")
+            .read_text()
+            .replace("./bin/example", ""),
+        )
         result = self.doctor("docs")
         self.assertEqual(result.returncode, 1)
         self.assertIn("Undocumented command: example", result.stderr)
@@ -155,7 +164,7 @@ class DocumentationContracts(unittest.TestCase):
         self.write("docs/runa/maintainer/CHANGELOG.md", "# Changelog\n\n## [0.1.0]\nRM-2026-001\n")
         self.write(
             "docs/runa/maintainer/roadmaps/closed/RM-2026-001-test.md",
-            "---\nid: RM-2026-001\nstatus: closed\nbranch: roadmap/RM-2026-001-test\nclosed_at: 2026-10-18\nrelease_type: feature\n---\n- [x] Complete\n## Final report\nRM-2026-001 delivers 0.1.0.\n",
+            "---\nid: RM-2026-001\nstatus: closed\nbranch: roadmap/RM-2026-001-test\nclosed_at: 2026-10-18\nrelease_type: feature\n---\n# Fixture release\n- [x] Complete\n## Final report\nRM-2026-001 delivers 0.1.0.\n",
         )
         self.assertEqual(self.doctor("release").returncode, 0)
         self.write("docs/runa/maintainer/README.md", self.readme.replace("`0.1.0`", "`0.0.0`"))

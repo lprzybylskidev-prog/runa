@@ -46,16 +46,14 @@ final class HealthAdmissions
                 throw new RuntimeException('Health preparation connection changed.');
             }
 
-            return new PreparedReadCall($identity, $this->preparingRead, $pdo, $definitionFingerprint);
+            return new PreparedReadCall($identity, $this->preparingRead ?? throw new RuntimeException('Read preparation state missing.'), $pdo, $definitionFingerprint);
         } finally {
             $this->preparingRead = null;
         }
     }
 
-    /** @template T
-     * @param list<PreparedReadCall> $calls
-     * @param Closure():T $work
-     * @return T */
+    /** @param list<PreparedReadCall> $calls
+     * @param Closure():mixed $work */
     public function read(array $calls, Connection $connection, Closure $work): mixed
     {
         if ($this->evidence !== null || $this->readScope !== null || $this->preparingRead !== null || $connection->transactionLevel() === 0) {
@@ -177,7 +175,7 @@ final class HealthAdmissions
             $scope = $this->readScope;
             $scope->assertCurrent();
             $frame = $scope->frames === [] ? null : $scope->frames[array_key_last($scope->frames)];
-            $entry = ($frame?->evidence ?? [])[$record->id.':'.($operation ?? '*')] ?? null;
+            $entry = ($frame->evidence ?? [])[$record->id.':'.($operation ?? '*')] ?? null;
             if ($entry === null || $entry['source'] !== $record->manifestHash || $entry['policy'] !== $fingerprint || $entry['expiry'] <= now()->getTimestamp()) {
                 $scope->invalid = true;
                 throw new RuntimeException('Read call health admission missing or changed.');

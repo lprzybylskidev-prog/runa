@@ -12,6 +12,7 @@ final class ReferenceRequest extends FormRequest
         return true;
     }
 
+    /** @return array<string,list<string>> */
     public function rules(): array
     {
         $operation = $this->route()?->defaults['_runa_operation'] ?? null;

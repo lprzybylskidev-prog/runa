@@ -119,13 +119,16 @@ final readonly class SettingsSecurity
     public function read(string $module, SettingsAccess $access, Closure $read): array
     {
         $principal = $this->principals->current();
-        if ($principal === null || $principal->kind !== 'human' || $this->connection->transactionLevel() !== 0 || $this->connection !== $this->app->make('db')->connection()) {
+        if ($principal === null || $principal->kind !== 'human' || $this->connection !== $this->app->make('db')->connection()) {
             throw new OperationRejected('authentication_required', $module, 'settings.read', 401);
         }
         $pdo = $this->connection->getPdo();
 
-        return $this->admissions->run(fn () => $this->guard->enter($module, $access->read), function () use ($module, $access, $read, $principal, $pdo): array {
+        return $this->admissions->within(function () use ($module, $access): void {
+            $this->guard->enter($module, $access->read);
+        }, function () use ($module, $access, $read, $principal, $pdo): array {
             return $this->connection->transaction(function () use ($module, $access, $read, $principal, $pdo): array {
+                $level = $this->connection->transactionLevel();
                 $this->registry->snapshot();
                 $this->authority->acquire($this->connection);
                 $this->security->lockSubjects([$principal->publicId]);
@@ -143,7 +146,7 @@ final readonly class SettingsSecurity
                 }
                 $this->guard->assertAvailable($context);
                 $this->admissions->assertCurrent();
-                if ($this->principals->current() !== $principal || $this->connection !== $this->app->make('db')->connection() || $this->connection->getPdo() !== $pdo || $this->connection->transactionLevel() !== 1) {
+                if ($this->principals->current() !== $principal || $this->connection !== $this->app->make('db')->connection() || $this->connection->getPdo() !== $pdo || $this->connection->transactionLevel() !== $level) {
                     throw new OperationRejected('settings_authority_changed', $module, 'settings.read', 409);
                 }
 

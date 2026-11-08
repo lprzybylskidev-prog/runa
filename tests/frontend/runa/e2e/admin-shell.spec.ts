@@ -328,7 +328,7 @@ test('Admin generated forms: draft reconciliation, safe validation and guarded n
           status: 409,
           contentType: 'application/json',
           body: JSON.stringify({
-            reason: 'stale_revision',
+            reason: 'admin_revision_stale',
             scope: 'operation',
           }),
         });

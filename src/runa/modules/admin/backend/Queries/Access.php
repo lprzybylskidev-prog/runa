@@ -50,7 +50,10 @@ final readonly class Access implements AdminAccess
         return $this->reads->run(function () use ($owner, $page, $section, $query, &$selection): array {
             return ['resource' => $this->projection->readPlan($owner, $page, $section, $query, $selection)];
         }, function (\Closure $invoke) use ($owner, $page, $section, $query, &$selection): array {
-            return $invoke('resource', fn (): array => $this->projection->read($owner, $page, $section, $query, $selection));
+            /** @var array<string,mixed> $result */
+            $result = $invoke('resource', fn (): array => $this->projection->read($owner, $page, $section, $query, $selection));
+
+            return $result;
         });
     }
 

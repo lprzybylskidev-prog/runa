@@ -18,6 +18,7 @@ final readonly class SettingsAccess
             throw new InvalidArgumentException('Settings access requires explicit operation permissions.');
         }
         foreach ([$readFields, $writeFields] as $fields) {
+            /** @var array<array-key,mixed> $fields */
             if (count($fields) > 128) {
                 throw new InvalidArgumentException('Settings field access exceeds its limit.');
             }

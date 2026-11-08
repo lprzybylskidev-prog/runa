@@ -23,35 +23,44 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 12 repairs in progress, 2026-11-08
+## Current execution state — verification complete, release finalization, 2026-11-08
 
-Owner acceptance 11 remains valid for bb5abb29 runtime / 8d30518b documentation
-and index-BdXz_X9Q.js. Native-host handoff 0dd6c641 is received. Point 10y repair
-5926a491 reconciles owner command guidance/documentation fixtures; complete
-21-case documentation contracts and check-docs pass. No frontend changes occurred.
+Points10z/10za repairs and all selected actual checks are complete. Owner manual
+acceptance11 remains valid: no frontend runtime changed after the accepted source.
+The final backend ran last; native full execution stopped with worker139, and
+manual supported continuations completed all853 current cases without assertion
+failures, ignored cases or missing inventory identities. Every reliably interrupted
+case has later PASS; no exhausted interrupted coverage needs a separate acceptance.
+Native failed executions and cleanup results remain unchanged.
 
-The declared 13-group background run on candidate 75958d87 failed. Its native
-state and evidence are preserved unchanged; repair point 10z and final point 12
-remain open. Continue individual affected checks under evidence continuity rather
-than restarting the complete graph. The preparation report and attestation predate
-these repairs and cannot attest to the changed candidate.
+Owner frontend577, App backend16/frontend18, Python534 plus packaging2, browser407
+(with139 declared project skips), database migration9/constraints27/seeding6,
+PHP analysis799, format/lint/debug, source-security/secret/dependency checks,
+required knowledge27 and native documentation-live acceptance pass. Installation/
+update/customer-knowledge acceptance passes79 checks with scoped cleanup. Valid
+unchanged prerequisites are retained under evidence continuity. Complete results,
+limits, source review and artifacts are recorded in
+[final verification](../../reviews/RM-2026-017-final-verification.md).
 
-Repairs have passing complete Feature coverage (702 tests / 7,493 assertions),
-owner frontend coverage (577 tests), clean-source PHP static analysis, lint and
-formatting. Required knowledge evaluation and native documentation-live acceptance
-pass with unchanged golden expectations. After correcting the two Admin assertions,
-the complete owner backend passes: 852 tests / 10,506 assertions, four parallel
-processes, native exit 0 and cleanup 0. Preserve earlier failed SIGSEGV executions
-separately; the later complete PASS does not rewrite those native results.
-
-Native installation now passes the source-boundary/projection checks but its
-customer `php artisan test` exits 139. Installation/update/customer-knowledge
-acceptance is not PASS; later phases remain unexecuted. The owner-only SIGSEGV
-procedure does not waive customer installation acceptance or authorize runtime
-root-cause investigation. No release, merge or repair-point completion is justified
-while selected gates, coverage, cleanup and current security evidence remain open.
+The owner explicitly accepts complete actual individual evidence with the sole
+single-green-coordinator representation exception below. Original FAILED graph
+state is preserved; release metadata/freshness checks and finalization follow.
 
 ## Execution handoff
+
+### Owner closure-evidence decision — 2026-11-08
+
+The owner explicitly approved closure of RM-2026-017 after every selected actual
+check passes, using the complete candidate-bound results of individual supported
+checks while preserving the original native FAILED coordinator state. The sole
+exception is the closure validator's requirement for one all-green coordinator
+graph: its current implementation cannot represent the agreed manual verification
+continuity. Do not edit its state, patch its validator, invent PASS or waive any
+actual test, security, metadata, cleanup or coverage failure. Record the native
+representation failure separately from the complete actual check results. This
+one-release disposition expires at RM-2026-017 closure and grants no general
+customer or future-roadmap exception. Final backend runs after other checks and
+repairs; its earlier PASS remains historical after the settings-read correction.
 
 ### Point 12 — native host received and source review completed, 2026-11-08
 
@@ -2257,7 +2266,7 @@ below are retained as historical records only.
   - This corrects owner-only guidance/tests. Public/customer guidance already describes
     the aggregate and explicit scopes; no reusable rule or UI changes.
 
-- [ ] 10z. Repair consolidated final-verification failures from candidate 75958d87.
+- [x] 10z. Repair consolidated final-verification failures from candidate 75958d87.
   - Preserve the failed native graph and reports; retain valid unrelated checks.
   - Reconcile exact trusted Core source-import declarations, synthetic debug
     fixture output, reference lint fixtures, stale public projection/release and
@@ -2267,6 +2276,26 @@ below are retained as historical records only.
   - Resolve required knowledge retrieval failure without relaxing original goldens.
   - Receive complete affected-area checks in their original modes before commit;
     repeat owner frontend acceptance only if runtime UI behavior changes.
+
+- [x] 10za. Complete native authorized settings read composition and browser fixtures.
+  - Correct SettingsSecurity's read owner to use the existing HealthAdmissions
+    composition protocol, preserving principal/connection/level/field checks and
+    rejecting unrelated nested transactions. The delivered reference integration
+    exposes this defect through its existing Admin settings read assertion.
+  - Replace the browser fixture's retired generic stale reason with the current
+    owning Admin revision code; consolidate any remaining browser failures.
+  - Synchronize the public read contract and owning regression coverage. No new
+    API, dependency, admission bypass or frontend runtime change is authorized.
+  - Receive complete affected checks. Run final backend after other acceptance
+    and fixes, preserving native failures and valid unrelated evidence.
+
+- [x] 10zb. Reconcile supplied application/Core release compatibility metadata.
+  - Admit approved platform0.8.0 in the example application's existing range,
+    preserving App0.0.0 and its runtime/API behavior.
+  - Run the complete native application/platform manifest contract selection and
+    release metadata check. Earlier complete backend coverage stays valid because
+    no code/configuration/dependency/environment behavior changes for baseline0.7.0;
+    only the declared next supported platform range changes.
 
 - [x] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
@@ -6484,3 +6513,59 @@ its four disposable worker databases. Development/base test data, volumes,
 Qdrant/model caches and all prior verification evidence remain preserved.
 This records complete backend PASS; remaining non-backend point-12 scope and
 the consolidated point-10z repairs are not declared complete by this result.
+
+## Points 10z and 10za completed — 2026-11-08
+
+All consolidated repairs have complete affected-area results received before this
+completion commit. The final four-process backend was run after all other checks;
+its safely continued case coverage is853/853, zero ordinary failures or unknowns.
+The complete selected frontend/Python/browser/installation/database/static/security/
+knowledge results and native failure history are recorded in the linked final
+verification assessment. No frontend runtime changed, so owner acceptance11 remains
+valid. Public current-state guidance, executable reference consumers, tests and
+source declarations are synchronized; owner/customer instruction products retain
+canonical references without duplicated rules. Historical dated reports are frozen
+with their original bytes. No dependency/runtime pin or infrastructure change.
+Final point12 remains open solely for release-state metadata and finalization.
+
+## Final metadata compatibility finding — 2026-11-08
+
+The active release validator rejects the supplied App range>=0.2.1 <0.8.0 against
+approved target0.8.0. Insert10zb to widen the existing release metadata to<0.9.0;
+App version remains0.0.0. This declares compatibility with the already verified
+current consumers, without implementation, runtime/dependency or UI changes. The
+853-case backend evidence remains valid for unchanged behavior; complete owning
+manifest contracts and release validation verify the changed metadata. This is an
+ordinary blocking metadata finding until those checks pass, not the accepted graph
+representation exception. No extra release permission or dependency is involved.
+
+## Point 10zb completed — 2026-11-08
+
+The supplied App manifest admits>=0.2.1 <0.9.0 while retaining App0.0.0. Canonical
+configuration and Admin version guidance now describe that actual range. Complete
+native application/platform manifest contracts pass62 cases/87 assertions, four
+processes, exit0/cleanup0; evidence uses closure-manifests. Existing reusable owner/
+customer rules already require honest independent versions and compatible ranges;
+no new operating rule or duplicated skill content is needed. Earlier full actual
+coverage stays valid for unchanged runtime code and already-supported0.7.0.
+
+The repeated active release validator passes feature0.7.0 ->0.8.0. Actual source
+review and its refreshed432-hash binding pass after the declaration correction;
+original attestation/report and ordinary metadata refusal remain preserved.
+
+The same source declaration review finds Core Auth/Audit/Permissions/Admin ranges
+also ending at<0.8.0. Extend10zb to those supplied manifests and their current
+README/changelog declarations, admitting<0.9.0 with the same>=0.7.0 lower bound.
+Reference already admits<1.0.0. No module/API version, runtime implementation,
+security/admission behavior, dependency or migration changes. Complete source/
+module-development and native graph/identity contracts validate the declarations;
+existing behavior evidence remains valid for unchanged0.7.0 execution semantics.
+
+The complete compatibility metadata repair passes native graph/identity contracts
+75/143 (four processes, exit0/cleanup0), module-development contracts3/3, independent
+Core module version checks and all Core/App source/runtime descriptor checks. The
+first Core runtime diagnostic correctly refused unsynchronized declarations;
+explicit supported runa:modules:sync runa preserves installed versions/flags/data,
+then complete runtime checks pass for all four modules (generation1058). App
+reference runtime descriptors pass unchanged. No schema reset or migration occurs.
+All10zb implementation/checks/docs are complete before its commit.

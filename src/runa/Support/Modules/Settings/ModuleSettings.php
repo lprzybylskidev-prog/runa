@@ -421,7 +421,7 @@ final class ModuleSettings
         $state = $this->state($row->target);
         $candidate = $state->settings_values === $payload['candidate'] && $state->settings_revision === $payload['revision'];
         $restored = $rollback && $state->settings_values === $payload['old'] && $state->settings_revision === $payload['revision'] + 1;
-        if ($snapshot->generation !== $row->generation + 1 || $record->manifestHash !== $payload['manifest'] || $handler !== $payload['handler'] || $this->schema($definitions) !== $payload['schema'] || $this->declaration($definitions, $provider, $handler) !== ($payload['declaration'] ?? null) || (! $candidate && ! $restored)) {
+        if ($snapshot->generation !== $row->generation + 1 || $record->manifestHash !== $payload['manifest'] || $handler !== $payload['handler'] || $this->schema($definitions) !== $payload['schema'] || $this->declaration($definitions, $provider, $handler) !== $payload['declaration'] || (! $candidate && ! $restored)) {
             throw new RuntimeException('Settings reservation or source changed.');
         }
 
@@ -436,7 +436,8 @@ final class ModuleSettings
         $this->participant->publishing($this->connection, $publication);
     }
 
-    /** @param array<string,SettingDefinition> $definitions */
+    /** @param array<string,SettingDefinition> $definitions
+     * @param class-string $handler */
     private function declaration(array $definitions, SettingsProvider $provider, string $handler): string
     {
         $providerFile = (new \ReflectionClass($provider))->getFileName();

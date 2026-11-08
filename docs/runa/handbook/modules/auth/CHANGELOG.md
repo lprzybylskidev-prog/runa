@@ -2,6 +2,9 @@
 
 ## 6.0.1 — Unreleased
 
+- Admit the verified platform0.8.0 release in the supplied>=0.7.0 <0.9.0
+  compatibility range; module/API versions and runtime behavior are unchanged.
+
 - Use distinct semantic single/bulk action-family and final-command icons. Treat
   shared HTTP document cancellation as canceled protected-activity observation,
   preserving real proof/network/availability refusal.

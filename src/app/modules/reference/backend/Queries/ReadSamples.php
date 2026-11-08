@@ -11,9 +11,13 @@ final readonly class ReadSamples
 {
     public function __construct(private SamplePolicy $policy) {}
 
-    /** @return array<string,mixed> */
+    /** @return array{items:list<array{public_id:string,revision:string,code?:string}>} */
     public function read(): array
     {
-        return DB::transaction(fn () => ['items' => $this->policy->projectAll(Sample::orderBy('id')->limit(20)->get()->all())]);
+        return DB::transaction(function (): array {
+            $samples = array_values(Sample::orderBy('id')->limit(20)->get()->all());
+
+            return ['items' => $this->policy->projectAll($samples)];
+        });
     }
 }

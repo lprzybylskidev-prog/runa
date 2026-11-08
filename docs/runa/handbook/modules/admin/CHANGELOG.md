@@ -2,6 +2,9 @@
 
 ## 2.0.0 — Unreleased
 
+- Admit the verified platform0.8.0 release in the supplied>=0.7.0 <0.9.0
+  compatibility range; module/API versions and runtime behavior are unchanged.
+
 - Keep canceled departing-document bootstrap/page reads from producing a false
   unavailable warning. Preserve live failures and admitted identity/access fences.
 

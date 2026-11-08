@@ -28,7 +28,7 @@ final readonly class ReferenceHistoryReader implements ManagementResourceReader
         $items = array_map(static fn (array $row) => new ManagementRecord($row['public_id'], hash('sha256', json_encode($row, JSON_THROW_ON_ERROR)), array_intersect_key($row, ['action' => true, 'outcome' => true, 'occurred_at' => true])), $result['items']);
 
         $page = array_slice($items, 0, $input->limit);
-        $next = count($page) < count($items) ? $page[array_key_last($page)]->publicId : $result['next'];
+        $next = count($page) < count($items) ? ($page === [] ? null : $page[array_key_last($page)]->publicId) : $result['next'];
 
         return new ManagementPageResult($page, $next);
     }

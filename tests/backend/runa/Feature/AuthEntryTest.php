@@ -391,24 +391,22 @@ it('rejects a missing CSRF proof with the actual middleware even in the focused 
         ->assertStatus(419)->assertJsonPath('error.code', 'csrf_token_mismatch');
 });
 
-it('upgrades encrypted identity settings additively only inside the reserved updater', function (): void {
-    // The Core fixture already established real migration/step history.
-    // Model the supported prior data version without recreating initialized storage.
+it('refuses retired intermediate identity updates without rewriting encrypted settings or history', function (): void {
     $authId = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
-    DB::table('shared.module_update_steps')->where('module_id', $authId)->whereIn('step', ['upgrade:entry:0.1.0:0.2.0', 'upgrade:sessions:0.2.0:0.3.0', 'upgrade:credentials:0.3.0:0.4.0', 'upgrade:profiles:0.4.0:0.5.0', 'upgrade:preferences:0.5.0:0.6.0', 'upgrade:policy:0.6.0:0.7.0', 'upgrade:entry_ui:0.7.0:0.8.0', 'upgrade:account_ui:0.8.0:0.9.0', 'upgrade:permission_declarations:0.9.0:0.10.0'])->delete();
     $old = ['identifier_mode' => 'either', 'reuse_deleted_identifiers' => true];
-    DB::table('shared.modules')->where('module_id', 'runa.auth')->update(['installed_version' => '0.1.0', 'settings_revision' => 4,
-        'settings_values' => app('encrypter')->encrypt(json_encode($old, JSON_THROW_ON_ERROR), false)]);
-    $updates = app(ModuleUpdates::class);
-    $updates->apply('runa', str_repeat('b', 40), static function (): void {});
-    $state = app(ModuleSettings::class)->read('runa.auth');
-    expect($state['settings']['identifier_mode']['value'])->toBe('either')
-        ->and($state['settings']['public_registration']['value'])->toBeFalse()
-        ->and($state['settings']['public_welcome_enabled']['value'])->toBeTrue()->and($state['revision'])->toBe(5);
+    $encrypted = app('encrypter')->encrypt(json_encode($old, JSON_THROW_ON_ERROR), false);
+    DB::table('shared.modules')->where('id', $authId)->update([
+        'installed_version' => '0.1.0', 'settings_revision' => 4, 'settings_values' => $encrypted,
+    ]);
+    $steps = DB::table('shared.module_update_steps')->where('module_id', $authId)->orderBy('id')->get()->toArray();
     $events = DB::table('runa_audit.events')->where('action', 'settings.upgrade')->count();
-    expect($events)->toBe(1);
-    $updates->apply('runa', str_repeat('b', 40), static function (): void {});
-    expect(app(ModuleSettings::class)->read('runa.auth')['revision'])->toBe(5);
+    expect(fn () => app(ModuleUpdates::class)->apply('runa', str_repeat('b', 40), static function (): void {}))
+        ->toThrow(RuntimeException::class, 'Missing or ambiguous module upgrade path');
+    $state = DB::table('shared.modules')->where('id', $authId)->first();
+    expect($state->installed_version)->toBe('0.1.0')
+        ->and($state->settings_values)->toBe($encrypted)->and($state->settings_revision)->toBe(4)
+        ->and(DB::table('shared.module_update_steps')->where('module_id', $authId)->orderBy('id')->get()->toArray())->toEqual($steps)
+        ->and(DB::table('runa_audit.events')->where('action', 'settings.upgrade')->count())->toBe($events);
 });
 
 it('arbitrates invitation consumption against another connection holding the current user lock', function (): void {
@@ -2489,16 +2487,16 @@ it('updates Auth common settings participation without rewriting policies creden
     entryPolicy(['password_min_length' => 14, 'notice_new_browser' => true]);
     $user = entryUser('common-policy-upgrade@example.test');
     $id = DB::table('shared.modules')->where('module_id', 'runa.auth')->value('id');
-    $step = 'upgrade:common_settings:5.0.1:5.0.2';
+    $step = 'upgrade:current_initialization:6.0.0:6.0.1';
     DB::table('shared.module_update_steps')->where('module_id', $id)->where('step', $step)->delete();
-    DB::table('shared.modules')->where('id', $id)->update(['installed_version' => '5.0.1']);
+    DB::table('shared.modules')->where('id', $id)->update(['installed_version' => '6.0.0']);
     DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
     $before = DB::table('shared.modules')->where('id', $id)->first();
     $history = DB::table('runa_auth.policy_versions')->orderBy('id')->get()->toArray();
     $steps = DB::table('shared.module_update_steps')->where('module_id', $id)->orderBy('id')->get()->toArray();
     app(ModuleUpdates::class)->apply('runa', str_repeat('e', 40), static function (): void {});
     $after = DB::table('shared.modules')->where('id', $id)->first();
-    expect($after->installed_version)->toBe('5.0.2')
+    expect($after->installed_version)->toBe('6.0.1')
         ->and($after->settings_values)->toBe($before->settings_values)
         ->and($after->settings_revision)->toBe($before->settings_revision)
         ->and(User::find($user->id)->password)->toBe($user->password)

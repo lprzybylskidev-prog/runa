@@ -450,7 +450,9 @@ and lifecycle; no native command calls that already-locked wrapper.
 
 `NativeTestCommandTest` covers forwarding, serial/parallel environment, config
 selection, discovery, non-CLI/config/lock refusals, failures, cleanup and signals
-against isolated subprocess fixtures. For bounded real-engine parity, invoke
+against isolated subprocess fixtures. These fixtures explicitly select noninteractive
+input so child processes cannot consume the surrounding ParaTest worker protocol.
+The native command respects that flag when forwarding stdin. For bounded real-engine parity, invoke
 `php src/artisan test --without-tty --configuration=../tests/backend/runa/Fixtures/native-command/phpunit.xml`
 from the repository root, then repeat with `--parallel --processes=2`.
 This private fixture contains one Pest contribution and one PHPUnit class and

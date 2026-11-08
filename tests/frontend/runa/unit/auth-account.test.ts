@@ -2256,6 +2256,7 @@ it('disabled module notification options omit recipient controls and remain expl
     enabled: false,
     recipients: ['primary'],
   });
+  await vi.waitFor(() => expect(row.attributes('aria-busy')).toBe('false'));
   await row.get('input[role=switch]').setValue(true);
   expect(row.findComponent(Select).exists()).toBe(true);
 });
@@ -2999,7 +3000,7 @@ it('customization: keyed account replacements discard the previous account draft
   expect(writes).toEqual([]);
 });
 
-it('account orchestration: a save waits for the shared refresh and uses its revision without clearing other drafts', async () => {
+it('account orchestration: a save waits for the shared refresh and submits its original version without clearing other drafts', async () => {
   const { state } = mountController(() => useAuthAccount(id));
   await vi.waitFor(() =>
     expect(state.ready.value && !state.busy.value).toBe(true),
@@ -3046,7 +3047,7 @@ it('account orchestration: a save waits for the shared refresh and uses its revi
   expect(profileReads).toBe(2); // One coalesced read, then one confirmation after the write.
   expect(writes).toHaveLength(1);
   expect(writes[0]?.body).toMatchObject({
-    version: 6,
+    version: 5,
     name: 'Local name',
     login: 'remote-login',
   });
@@ -3198,7 +3199,8 @@ it.each(['decoded', 'error', 'timeout'] as const)(
           .getComponent(ApplicationSessionShell)
           .props('session');
         await session.refresh();
-        await vi.waitFor(() => expect(images).toHaveLength(2));
+        // Same-session checks do not reload business profile or avatar data.
+        expect(images).toHaveLength(1);
         expect(w.get('input[aria-label="Coordinated draft"]').element).toBe(
           input.element,
         );

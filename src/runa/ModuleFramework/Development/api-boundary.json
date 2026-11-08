@@ -479,7 +479,8 @@
       "src/runa/modules/permissions/backend/Actions/SynchronizeDeclarations.php",
       "src/runa/modules/permissions/backend/InitializePermissions.php",
       "src/runa/modules/permissions/backend/Participation.php",
-      "src/runa/modules/permissions/backend/Support/DeclarationCatalog.php"
+      "src/runa/modules/permissions/backend/Support/DeclarationCatalog.php",
+      "src/runa/modules/auth/backend/Support/AccountPolicy.php"
     ],
     "Runa\\ModuleFramework\\Settings\\SettingsDefinitions": [
       "src/runa/modules/auth/backend/Actions/Policies.php"
@@ -552,6 +553,12 @@
       "src/runa/modules/permissions/backend/Management/AssignmentEditor.php",
       "src/runa/modules/permissions/backend/Management/AuthorityBulkEditor.php",
       "src/runa/modules/permissions/backend/Management/DefinitionEditor.php"
+    ],
+    "Runa\\Integration\\Core\\AdminRead": [
+      "src/runa/modules/admin/backend/Queries/Access.php"
+    ],
+    "Runa\\ModuleFramework\\Management\\ReadHandlerPlan": [
+      "src/runa/modules/admin/backend/Queries/Projection.php"
     ]
   }
 }

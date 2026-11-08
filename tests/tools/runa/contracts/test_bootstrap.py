@@ -572,12 +572,16 @@ class BootstrapContracts(unittest.TestCase):
                 for name, content in custom_frontend.items():
                     self.assertEqual((destination / name).read_text(), content)
                 for area in ("frontend", "vue", "tailwind"):
-                    self.assertIn(
-                        "docs/runa/handbook/development/frontend/customization.md",
-                        (
-                            destination / ".agents/skills" / area / "references/application.md"
-                        ).read_text(),
-                    )
+                    guidance = (
+                        destination / ".agents/skills" / area / "references/application.md"
+                    ).read_text()
+                    if area == "frontend":
+                        self.assertIn("Canonical guide (under docs/runa/handbook)", guidance)
+                        self.assertIn("development/frontend/customization.md", guidance)
+                    else:
+                        self.assertIn(
+                            "docs/runa/handbook/development/frontend/customization.md", guidance
+                        )
                 # Customer repository commits its projected working tree, never owner files.
                 exported = Path(folder) / "exported"
                 shutil.copytree(destination, exported, ignore=shutil.ignore_patterns(".git"))
@@ -604,10 +608,16 @@ class BootstrapContracts(unittest.TestCase):
                 for name, content in custom_frontend.items():
                     self.assertEqual((clone / name).read_text(), content)
                 for area in ("frontend", "vue", "tailwind"):
-                    self.assertIn(
-                        "docs/runa/handbook/development/frontend/customization.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
-                    )
+                    guidance = (
+                        clone / ".agents/skills" / area / "references/application.md"
+                    ).read_text()
+                    if area == "frontend":
+                        self.assertIn("Canonical guide (under docs/runa/handbook)", guidance)
+                        self.assertIn("development/frontend/customization.md", guidance)
+                    else:
+                        self.assertIn(
+                            "docs/runa/handbook/development/frontend/customization.md", guidance
+                        )
                 for guidance in (ROOT / "docs/runa/maintainer/customer-agent/skills").glob(
                     "*/references/application.md"
                 ):

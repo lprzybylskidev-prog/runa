@@ -7,8 +7,18 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 final class ReferenceResource extends JsonResource
 {
+    /** @param array<string,mixed> $resource */
+    public function __construct(array $resource)
+    {
+        parent::__construct($resource);
+    }
+
+    /** @return array<string,mixed> */
     public function toArray(Request $request): array
     {
-        return $this->resource;
+        /** @var array<string,mixed> $values */
+        $values = $this->resource;
+
+        return $values;
     }
 }

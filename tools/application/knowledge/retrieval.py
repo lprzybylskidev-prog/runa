@@ -37,7 +37,7 @@ REFERENCE_WEIGHT = 3.0
 PURPOSE_WEIGHTS = {
     "current": {
         "current_guidance": 1.2,
-        "historical_evidence": 0.65,
+        "historical_evidence": 1.0,
         "proposal": 0.5,
         "unknown": 1.0,
     },

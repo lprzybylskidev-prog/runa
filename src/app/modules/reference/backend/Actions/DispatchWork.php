@@ -17,6 +17,7 @@ use Runa\Support\Modules\Work\ModuleWork;
 /** Durable intent and explicit Audit commit with one action-specific password proof. */
 final class DispatchWork implements TransactionalMutation
 {
+    /** @var ?Closure():string */
     private ?Closure $dispatch = null;
 
     private ?string $workId = null;

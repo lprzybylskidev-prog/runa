@@ -64,7 +64,7 @@ final class EditSample implements TransactionalMutation
             throw new \LogicException('Sample requires one apply.');
         }
         $this->sample->setAttribute('code', $this->code);
-        $this->sample->setAttribute('revision', (int) $this->sample->getAttribute('revision') + 1);
+        $this->sample->setAttribute('revision', $this->sample->revision + 1);
         $this->sample->save(); // Auditable captures only approved code in this transaction.
         $this->applied = true;
     }

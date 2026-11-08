@@ -38,7 +38,11 @@ permission. The optional password `MutationProof` uses the existing Auth contrac
 
 Resolve container-owned `Runa\Support\Modules\Settings\ModuleSettings`.
 `readAuthorized(string $module): array` returns the redacted read shape with `generation: int`, `revision: int`, `review_id: string` and `settings: array`,
-omitting fields denied by current read grants. `update(string $module, array $patch,
+omitting fields denied by current read grants. It opens an independent read boundary
+or joins an already admitted read, including an Admin handler's declared API call,
+through the existing health-admission protocol. Principal, field grants, connection
+and transaction level remain checked; an unrelated open transaction is refused.
+`update(string $module, array $patch,
 int $expectedRevision, string $expectedReview, ?SettingsActor $actor = null):
 TransitionResult` retains its native independent-runner protocol. With access
 metadata, the runner checks the write operation and every patched field, consumes

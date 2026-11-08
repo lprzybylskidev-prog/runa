@@ -14,6 +14,7 @@ import unittest
 from dataclasses import replace
 from pathlib import Path
 
+from tests.tools.runa.acceptance.documentation_fixture import copy_reference_sources
 from tools.application import docs_checks
 from tools.application.documentation import maintainer_checkout, roadmap_root
 from tools.application.documentation_markdown import anchors
@@ -166,12 +167,7 @@ class DocumentationOwnership(unittest.TestCase):
         shutil.copy2(product / "AGENTS.md", self.root / "AGENTS.md")
         shutil.rmtree(self.root / ".agents/skills")
         shutil.copytree(product / "skills", self.root / ".agents/skills")
-        for name in (
-            "src/app/modules/reference",
-            "tests/backend/app/modules/reference",
-            "tests/frontend/app/modules/reference",
-        ):
-            shutil.copytree(ROOT / name, self.root / name)
+        copy_reference_sources(self.root)
         self.copy("tools/application/quality.yml")
         self.receipt = self.root / ".git/runa-bootstrap.json"
         self.receipt.write_text("{}\n")

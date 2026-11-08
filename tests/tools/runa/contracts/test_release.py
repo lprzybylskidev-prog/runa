@@ -22,7 +22,6 @@ class ReleaseContracts(unittest.TestCase):
         copy_public(self.root)
         self.write("VERSION", "0.0.0\n")
         self.write("docs/runa/maintainer/CHANGELOG.md", "# Changelog\n\n## Unreleased\n")
-        self.write("docs/runa/handbook/tooling/commands.md", "# Fixture commands\n")
         (self.root / "bin").mkdir()
         self.readme("0.0.0", "none")
         self.git("init", "--initial-branch=main")
@@ -55,7 +54,7 @@ class ReleaseContracts(unittest.TestCase):
         )
 
     def roadmap(self) -> str:
-        return f"---\nid: RM-2026-001\nstatus: active\nbranch: {self.branch}\nrelease_type: feature\nclosed_at: null\n---\n\n- [x] Implementation\n- [ ] Full final verification and release\n"
+        return f"---\nid: RM-2026-001\nstatus: active\nbranch: {self.branch}\nrelease_type: feature\nclosed_at: null\n---\n\n# Fixture roadmap\n\n- [x] Implementation\n- [ ] Full final verification and release\n"
 
     def validate(self) -> str:
         with contextlib.redirect_stdout(io.StringIO()):

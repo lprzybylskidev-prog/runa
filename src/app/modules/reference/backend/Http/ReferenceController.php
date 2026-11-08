@@ -13,17 +13,21 @@ final readonly class ReferenceController
     public function __invoke(ReferenceRequest $request): JsonResponse
     {
         $api = $this->apis->resolve('app.reference', ReferenceTools::class, '1.0.0');
-        $input = $request->validated();
+        /** @var array<string,mixed> $values */
+        $values = $request->validated('values', []);
+        $publicId = $request->validated('public_id');
+        $sample = $request->validated('sample');
+        $before = $request->validated('before');
         $result = match ($request->route()?->defaults['_runa_operation'] ?? null) {
             'samples.read' => $api->samples(),
-            'samples.edit' => $api->editSample($input['public_id'], $input['revision'], $input['code']),
+            'samples.edit' => $api->editSample($request->string('public_id')->toString(), $request->string('revision')->toString(), $request->string('code')->toString()),
             'settings.read' => $api->settings(),
-            'settings.review' => $api->reviewSettings($input['values'], (int) $input['revision'], $input['review_id']),
-            'settings.publish' => $api->publishSettings($input['values'], (int) $input['revision'], $input['review_id'], $input['review']),
-            'snapshots.read' => $api->snapshots($input['public_id'] ?? null),
-            'snapshots.capture' => $api->captureSnapshot($input['name'], (int) $input['revision'], $input['review_id']),
-            'snapshots.delete' => $api->deleteSnapshot($input['public_id'], (int) $input['revision'], $input['review_id']),
-            'history.read' => $api->history($input['sample'] ?? null, $input['before'] ?? null),
+            'settings.review' => $api->reviewSettings($values, $request->integer('revision'), $request->string('review_id')->toString()),
+            'settings.publish' => $api->publishSettings($values, $request->integer('revision'), $request->string('review_id')->toString(), $request->string('review')->toString()),
+            'snapshots.read' => $api->snapshots(is_string($publicId) ? $publicId : null),
+            'snapshots.capture' => $api->captureSnapshot($request->string('name')->toString(), $request->integer('revision'), $request->string('review_id')->toString()),
+            'snapshots.delete' => $api->deleteSnapshot($request->string('public_id')->toString(), $request->integer('revision'), $request->string('review_id')->toString()),
+            'history.read' => $api->history(is_string($sample) ? $sample : null, is_string($before) ? $before : null),
             'work.dispatch' => $api->dispatch(),
             'work.read' => $api->work(),
             default => throw new \LogicException('Unknown reference operation.'),

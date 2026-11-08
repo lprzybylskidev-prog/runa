@@ -47,7 +47,7 @@ final readonly class ReferenceToolsHandler implements ReferenceTools
             $definition = $setting['definition'];
             $items[$key] = ['names' => $definition->names, 'descriptions' => $definition->descriptions,
                 'sensitive' => $definition->sensitive, 'application' => $definition->application]
-                + ($definition->sensitive ? ['set' => $setting['set']] : ['value' => $setting['value']]);
+                + ($definition->sensitive ? ['set' => ($setting['set'] ?? throw new \LogicException('Missing secret set-state.'))] : ['value' => ($setting['value'] ?? null)]);
         }
 
         return ['revision' => $state['revision'], 'review_id' => $state['review_id'], 'settings' => $items];
@@ -103,8 +103,8 @@ final readonly class ReferenceToolsHandler implements ReferenceTools
         foreach ($patch as $key => $value) {
             if ($key === 'credential') {
                 $changes[$key] = ['replaced' => true];
-            } elseif ($state['settings'][$key]['value'] !== $value) {
-                $changes[$key] = ['old' => $state['settings'][$key]['value'], 'new' => $value];
+            } elseif (($state['settings'][$key]['value'] ?? null) !== $value) {
+                $changes[$key] = ['old' => ($state['settings'][$key]['value'] ?? null), 'new' => $value];
             }
         }
 

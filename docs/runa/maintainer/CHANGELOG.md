@@ -4,141 +4,43 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
-- Put the reference landing page first through declared page order. Give Auth
-  single/bulk tool families and concrete commands distinct pinned Tabler icons.
-  Honor shared document cancellation in Admin bootstrap/page and Auth protected
-  activity without false departing-page warnings; preserve live error/access loss.
-
-- Keep module dashboard widgets out of application settings through the operations
-  dashboard slot. Group application identity/default preferences/additional fields,
-  use named compact reset actions and retain one guarded settings form/controller.
-
-- Separate module health observation freshness from operation generation. Still-valid
-  unchanged successful renewals preserve concurrent admissions while registry caches
-  receive current evidence. Preserve hard fences for failures, expiry, policy and
-  configuration changes, failure/recovery and original exact-call expiry.
-
-- Extend the pinned local Tabler catalogue with consistent explicit action icons
-  across supplied forms, module operations and the reference workspace. Add public
-  Button/LinkButton icon and ConfirmDialog confirmIcon composition, semantic
-  actionIcons/feedbackIcons, decorative feedback/empty icons and module-owned
-  frontend/icon.ts declarations. Preserve labels, action colors, native controls,
-  busy geometry and all guarded business/security behavior.
-
-- Remove retired discovery-only bin/check and bin/operations aliases; retained
-  recovery aliases point directly to bin/command. Reconcile MT-2026-002 as
-  resolved in the already released platform 0.5.0; retain MT-2026-001.
-
-- Replace native Artisan testing's global argv adaptation and split Collision/Pest
-  launch paths with one Runa-owned Pest command for serial/parallel execution and
-  PHPUnit classes. Preserve literal native options, guarded lifecycle, discovery,
-  terminal output, signal/failure exits and explicit Laravel worker flags.
-
-- Add bounded native json Management fields (Framework API 2.1.0) and strict
-  declaration/projection/frontend validation. Replace encoded snapshot/Auth reads
-  and preference delivery writes with native lists/maps; remove matching decoders.
-  Preserve owning grants, original review/revisions, proof, secret projection and
-  Audit. Admin advances to 2.0.0 for its released snapshot consumer contract break;
-  Auth 6.0.1 and reference 0.4.1 remain their existing unreleased candidates.
-
-- Remove the duplicate public Button.compact prop; use iconOnly (icon-only in
-  templates). Migrate language/theme controls and preserve square sizing,
-  accessible names, busy slot behavior and native focus/activation semantics.
-
-- Remove flat language/theme browser-key imports and dual writes, the public
-  `PreferenceDefinition.legacyKey` option and built-in table-view v1 conversion.
-  Keep scoped guest/account preferences, explicit guest adoption, current v2
-  named/default views, denied-storage memory and generic migration hooks.
-  Obsolete formats use current defaults; UI/browser fixtures seed scoped envelopes.
-
-- Simplify built-in initialization into null-to-current steps, retain explicit
-  current-schema updates and published table-free Admin preparation, and remove
-  76 historical Upgrade classes/122 edges. Core candidate patches: Auth 6.0.1,
-  Audit 1.1.2, Permissions 2.1.2, Admin 1.1.1. Reference 0.4.1 owns its revision in
-  the original CREATE; recorded old migration histories still refuse and require
-  identified development/test reconciliation. Native engine/recovery is unchanged.
-
-- Use action-driven business reads: remove passive account/resource reads and
-  same-session preference/branding/Admin cascades while retaining security checks
-  and actual identity/access invalidation. Reconcile recognized stale-state refusals
-  only, preserve drafts/original submission tokens, and stop delivery prefetch from
-  silently replacing its reviewed revision.
-
-- Start the own-account trusted-device list collapsed using public Accordion;
-  retain mounted table state and independent trust-browser/prerequisite controls.
-
-- Complete the interface-copy review: remove login filler, shorten registration
-  and root introductions in PL/EN, and retain actionable/security instructions.
-  Record source dispositions, bounded Chromium evidence and the current Nginx
-  503 limitation; combined runtime readiness and owner acceptance remain open.
-
-- Correct native settings review/publication and snapshot admission in Framework
-  API 2.0.0: separate semantic `review_id` from operational generation, retain
-  exact health/authority/proof fences and reuse native prepared scopes. Update
-  AuthPolicies 4.0.0 / Auth 6.0.0, Audit 1.1.1, Permissions 2.1.1 and current
-  consumers, CLI and source-only forward edges. Complete reference 0.4.0 backend
-  examples for audited editing, grants, settings/snapshots and protected work;
-  presentation is now delivered through four Admin pages and a typed standalone
-  workspace, using the additive Admin 1.1.0 native lifecycle seam. Combined runtime
-  readiness, owner acceptance and final checks remain.
-
-- Absorb the approved RM-2026-018 interface-copy, trusted-device disclosure and
-  action-driven data-refresh scope into this roadmap's feature/0.8.0 plan; remove
-  its redundant unactivated draft and separate 0.8.1 projection. Record owner
-  approval of the native settings generation/snapshot-admission correction.
-  Trusted-device disclosure and refresh implementation remain open, followed by one renewed
-  owner acceptance and one final automated verification/release.
-
-- Establish the reference module as executable customer documentation: new Runa
-  modules and customer-facing capabilities extend working examples, guidance and
-  tests in their owning point. Reopen reference completeness through repair point
-  10a before owner frontend acceptance; backend examples are delivered; their expanded frontend journey is delivered; reconciliation/readiness/acceptance remain.
-
-- Record the approved common-settings refactor and ordered repair points 10a–10e:
-  framework contracts, Auth migration, executable reference backend/UI and renewed
-  acceptance preparation. Framework API 1.2.0 now supplies source-owned access,
-  field grants, password-proof orchestration and transactional settings hooks in
-  the native runner. Preserve encrypted values/revisions/recovery and use existing
-  Audit/history/snapshots. Auth 5.0.2 now uses this common source contract; Core
-  Audit no longer dispatches Auth policy authorization/history. Current grants,
-  one-use proof, domain consequences and atomic Audit remain enforced. Expanded
-  reference runtime examples remain pending in points 10c–10e.
-
-- Define agent-directed verification continuity and bounded manual SIGSEGV handling;
-  preserve valid unrelated evidence and require explicit owner acceptance of
-  exhausted confirmed interruptions, replacing standing automatic acceptance.
-  No runner, retry automation or customer recovery-policy change.
-
-- Keep Vite caches under workspace `.runtime`; invalidate development setup after
-  shared/module frontend, registry or native error build changes while preserving
-  nondestructive reopen. Add hash-bound RM-016 decision retrieval cases without
-  rewriting closed history or changing knowledge runtime/model dependencies.
-
-- Add Framework API 1.1.0 exact-call Admin read-health planning, preserving separate
-  on-use checks before the locked read, current grants/proof/Policies and consumed
-  source/expiry/rollback/reconnect evidence. Update the reference and generated
-  customer example without changing Ping/AdminAccess guarded signatures.
-
-- Align the application import rule with the already public Admin facade; keep
-  private Admin implementation imports refused.
-
-- Prepare app.reference 0.3.0's read-only Admin page/widget using its existing
-  guarded Ping API; align panel feedback/read retention and document customer
-  capability reproduction. Native integration uses the owner-approved exact-call health preparation; final
-  runtime/browser acceptance remains pending. Keep optional development-only source and stored data.
-- Auth: clear closed user-dialog state before later reads/bulk editing and use
-  administrator activation terminology in Polish and English registration copy.
-
-- Admin 1.0.1: scope lazy record-section activation to its selected editor subject;
-  stop closed sections from refreshing. Keep dismissed form outcomes absent across
-  language changes and align Wizard actions with the shared spacing standard.
-
-- Auth 5.0.1: bound synchronous admission and policy reads without retaining
-  authorization/eligibility decisions. Group trusted permission evaluation and
-  management declaration discovery under their existing registry lock contract;
-  retain current availability, expiry, grants, rollback and reconnect checks.
-- Preserve `runa_auth.users.remember_token` for deliberate Laravel integration
-  compatibility while retaining Runa's operational session/revocation guarantees.
+- Deliver common source-owned settings access, field grants, password proof and
+  transactional effects. Separate semantic review identity from operational
+  generation; preserve encrypted values, native publication/recovery and Audit.
+  Authorized settings reads compose with admitted Admin reads while unrelated
+  open transactions remain refused. Framework API advances to 2.1.0.
+- Prepare exact declared Admin API reads before locking, retaining current
+  principal, grant, Policy, source, connection, expiry and rollback fences.
+  Keep unchanged healthy observations fresh without invalidating operation
+  generation; group repeated owning settings/permission computations without
+  persistent identity or grant caches.
+- Complete executable reference examples for audited editing, field grants,
+  settings and snapshots, protected durable work, authorized history, four Admin
+  pages and the typed standalone workspace. Admin is 2.0.0, Auth 6.0.1,
+  Audit 1.1.2, Permissions 2.1.2 and reference 0.4.1; App stays independent
+  at0.0.0 and its declared range admits platform0.8.0.
+- Replace historical initialization paths with current CREATE definitions and
+  null-to-current initialization, preserving refusal of unknown retired histories
+  and explicit supported development/test reconciliation.
+- Reconcile business reads after explicit actions and recognized conflicts;
+  preserve dirty drafts and original reviewed revisions. Remove passive business
+  reloads and distinguish cancellation from live failures and lost access.
+- Refine Polish/English interface copy, shared form feedback, settings composition,
+  trusted-device disclosure, module navigation order and consistent pinned icons.
+  Preserve responsive light/dark presentation and public replacement contracts.
+- Remove obsolete Button.compact, flat preference keys/table-v1 conversion and
+  retired bin/check/bin/operations aliases; migrate current consumers directly.
+- Use one native Pest command for serial/parallel Artisan testing and PHPUnit
+  classes, preserving literal arguments, guarded lifecycle, terminal/signals and
+  native exit codes. Noninteractive children cannot consume supervisor stdin.
+- Bound generated Vite/tool state to workspace .runtime and refresh development
+  setup fingerprints without destructive editor reopen or AI startup coupling.
+- Reconcile documentation/source ownership and current command/test fixtures;
+  preserve immutable historical reconciliation evidence. Improve required
+  current-intent retrieval without changing original golden expectations.
+- Establish manual verification evidence continuity and bounded SIGSEGV handling
+  without automated retries, runtime diagnosis or customer recovery tolerance.
+  Preserve failed native runs and require explicit acceptance of exhausted cases.
 
 ## [0.7.0] - 2026-11-06
 

@@ -16,20 +16,7 @@ beforeEach(function (): void {
     mkdir($this->nativeRoot.'/src/runa/testing/backend', 0775, true);
     file_put_contents($this->nativeRoot.'/src/phpunit.xml', '<phpunit/>');
     file_put_contents($this->nativeRoot.'/src/runa/testing/backend/worker-databases.php', '<?php file_put_contents(__DIR__."/../../../../cleanup.log", "cleanup\n", FILE_APPEND);');
-    file_put_contents($this->nativeRoot.'/src/vendor/bin/pest', <<<'PHP'
-<?php
-fwrite(STDERR, "native stderr\n");
-echo json_encode(['arguments' => array_slice($argv, 1), 'environment' => [
-    'APP_ENV' => getenv('APP_ENV'), 'TEST_TOKEN' => getenv('TEST_TOKEN'),
-    'development' => getenv('RUNA_NATIVE_FIXTURE_DEVELOPMENT'),
-    'parallel' => getenv('LARAVEL_PARALLEL_TESTING'),
-    'databases' => getenv('LARAVEL_PARALLEL_TESTING_WITHOUT_DATABASES'),
-    'cache' => getenv('LARAVEL_PARALLEL_TESTING_WITHOUT_CACHE'),
-    'recreate' => getenv('LARAVEL_PARALLEL_TESTING_RECREATE_DATABASES'),
-    'drop' => getenv('LARAVEL_PARALLEL_TESTING_DROP_DATABASES'),
-]]).PHP_EOL;
-exit(7);
-PHP);
+    File::copy(dirname(__DIR__).'/Fixtures/native-command/runner.php.stub', $this->nativeRoot.'/src/vendor/bin/pest');
 });
 
 afterEach(function (): void {
@@ -50,6 +37,8 @@ function runNativeCommandFixture(string $root, array $arguments, bool $literal =
         $console->addCommand($command);
         $output = new BufferedOutput;
         $input = $literal ? new ArgvInput(['artisan', 'test', '--without-tty', ...$arguments]) : new ArrayInput(['command' => 'test']);
+        // Fixtures are noninteractive; never consume the surrounding worker protocol.
+        $input->setInteractive(false);
         $status = $console->run($input, $output);
 
         return [$status, $output->fetch()];

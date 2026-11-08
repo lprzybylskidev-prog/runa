@@ -144,7 +144,9 @@ replaces the default configuration. Use `--coverage --min=80` for native coverag
 and its threshold; a missing driver remains a native failure. `--compact` and
 `--profile` use Pest's installed printer. Unsupported combinations/options retain
 the native refusal. `--ansi`/`--no-ansi` select native colors; `--without-tty`
-disables terminal attachment. Parent SIGINT/SIGTERM is forwarded to the child;
+disables terminal attachment. Noninteractive `--no-interaction`/`-n` execution
+closes child stdin instead of consuming a supervising process's input protocol.
+Interactive execution retains stdin forwarding. Parent SIGINT/SIGTERM is forwarded to the child;
 interruption/signal exits retain 128+signal status and guarded cleanup.
 Laravel parallel database/cache flags remain explicit child environment inputs.
 Artisan `--env` never changes the required isolated testing identity. Native test

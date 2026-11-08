@@ -139,6 +139,7 @@ final readonly class ManagementPages
         } catch (Throwable) {
             throw new OperationRejected('admin_read_plan_invalid', 'runa.admin', 'section.read', 422);
         }
+        /** @var array<array-key,mixed> $calls */
         if (! array_is_list($calls) || count($calls) > 128) {
             throw new OperationRejected('admin_read_plan_invalid', 'runa.admin', 'section.read', 422);
         }

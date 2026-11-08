@@ -11,6 +11,9 @@ working assets, rendered acceptance or complete verification.
 Use the [installation and grant procedure](README.md#install-and-observe) first.
 Paths below are relative to `src/app/modules/reference/` unless a repository root
 is stated. `ReferenceTools` 1.0.0 is the example's own guarded business API;
+its PHP signatures include complete sample/settings/history/work response shapes
+for static analysis and typed consumers. Request validation precedes typed HTTP
+extraction, and native secret set-state remains explicit;
 its [complete signatures and named HTTP routes](README.md#guarded-core-backend-examples)
 remain authoritative. HTTP, native Admin fallback readers and standalone UI call
 the same owning workflows. Do not instantiate private Core handlers.

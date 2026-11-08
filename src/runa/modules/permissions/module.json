@@ -3,7 +3,7 @@
   "id": "runa.permissions",
   "kind": "core",
   "version": "2.1.2",
-  "platform": ">=0.7.0 <0.8.0",
+  "platform": ">=0.7.0 <0.9.0",
   "framework_api": "^2.0.0",
   "name": {
     "pl": "Uprawnienia",

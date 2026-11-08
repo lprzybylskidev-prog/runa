@@ -17,6 +17,7 @@ use Runa\Contracts\Modules\ManagementResourceReader;
 use Runa\Contracts\Modules\ManagementSection;
 use Runa\Contracts\Modules\ManagementWidget;
 use Runa\Contracts\Modules\ManagementWidgetReader;
+use Runa\Contracts\Modules\ManagementWidgetResult;
 use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Contracts\Modules\OperationAuthorizer;
@@ -77,6 +78,7 @@ final readonly class Projection
 
                         return $handler->widget(new ManagementRead);
                     };
+                    /** @var ManagementWidgetResult $result */
                     $result = $invoke === null ? $read() : $invoke($owner.'.'.$widget->key, $read);
                     $now = new DateTimeImmutable('now');
                     if ($result->observedAt !== null && new DateTimeImmutable($result->observedAt) > $now) {
@@ -159,7 +161,7 @@ final readonly class Projection
                 }
                 $result = ['items' => array_map(fn (ManagementRecord $record): array => $this->record($record, $fields), $page->items), 'next' => $page->next, 'total' => $page->total];
             } else {
-                if (! $handler instanceof ManagementOptionsReader) {
+                if (! $handler instanceof ManagementOptionsReader || $lookup === null) {
                     throw new InvalidArgumentException('Lookup capability missing.');
                 }
                 $options = $handler->options($lookup);
@@ -182,6 +184,8 @@ final readonly class Projection
     }
 
     /** @param array<string,mixed> $query
+     * @param-out ReadSelection $selectedRead
+     *
      * @param ReadSelection|null $selectedRead */
     public function readPlan(string $owner, string $key, string $identity, array $query, ?array &$selectedRead = null): ReadHandlerPlan
     {
@@ -194,6 +198,8 @@ final readonly class Projection
     }
 
     /** @param Discovery|null $selectedDiscovery
+     * @param-out Discovery $selectedDiscovery
+     *
      * @return array<string,ReadHandlerPlan> */
     public function widgetReadPlans(?array &$selectedDiscovery = null): array
     {

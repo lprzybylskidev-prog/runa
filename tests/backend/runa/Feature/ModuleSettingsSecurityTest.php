@@ -90,11 +90,13 @@ beforeEach(function (): void {
     {
         public int $consumed = 0;
 
+        public int $lockLevel = 1;
+
         public function __construct(private string $key) {}
 
         public function lockSubjects(array $publicIds): void
         {
-            expect(DB::connection()->transactionLevel())->toBe(1);
+            expect(DB::connection()->transactionLevel())->toBe($this->lockLevel);
         }
 
         public function proof(MutationProof $proof, bool $consume): void
@@ -197,6 +199,24 @@ it('filters unauthorized read fields and rejects undeclared access keys', functi
     expect($this->settings->read($this->module)['settings']['token'])->toHaveKey('set')->not->toHaveKey('value');
     SettingsCalls::$access = new SettingsAccess(new ApiOperation('settings.read', 'settings.read'), new ApiOperation('settings.write', 'settings.write'), writeFields: ['missing' => 'settings.write']);
     expect(fn () => $this->settings->read($this->module))->toThrow(RuntimeException::class, 'Invalid settings declaration or defaults.');
+});
+
+it('joins an admitted read while refusing unrelated nested transactions and preserving field grants', function (): void {
+    $this->grants->denied = ['settings.secret.read'];
+    app(PrincipalScope::class)->run($this->principal, function (): void {
+        expect(fn () => DB::transaction(fn () => $this->settings->readAuthorized($this->module)))
+            ->toThrow(RuntimeException::class, 'Standalone health admission requires an independent transaction boundary.');
+        expect(DB::connection()->transactionLevel())->toBe(0);
+        $this->proofs->lockLevel = 2;
+        $view = DB::transaction(function (): array {
+            $result = $this->admissions->read([], DB::connection(), fn () => $this->settings->readAuthorized($this->module));
+            expect(DB::connection()->transactionLevel())->toBe(1);
+
+            return $result;
+        });
+        expect($view['settings'])->toHaveKey('label')->not->toHaveKey('token');
+        expect(DB::connection()->transactionLevel())->toBe(0);
+    });
 });
 
 it('keeps trusted operator publication separate from authenticated proof and refuses missing HTTP identity', function (): void {

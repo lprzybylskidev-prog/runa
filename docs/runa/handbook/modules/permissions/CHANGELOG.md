@@ -2,6 +2,9 @@
 
 ## 2.1.2 — Unreleased
 
+- Admit the verified platform0.8.0 release in the supplied>=0.7.0 <0.9.0
+  compatibility range; module/API versions and runtime behavior are unchanged.
+
 - Use the shared semantic action/feedback icons with visible labels and preserved
   busy, keyboard, proof and operation behavior; no backend contract/storage change.
 

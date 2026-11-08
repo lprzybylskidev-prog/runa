@@ -86,7 +86,7 @@ final class ApplicationTestCommand extends Command
         $process = new Process([...$binary, 'vendor/bin/pest', ...$configuration, '--test-directory=../tests/backend/app', ...$options], $base, $environment);
         $process->setTimeout(null);
         $process->setTty(! $withoutTty && Process::isTtySupported());
-        if (! $process->isTty() && defined('STDIN')) {
+        if (! $process->isTty() && $this->input->isInteractive() && defined('STDIN')) {
             $process->setInput(STDIN);
         }
         $run = fn (): int => $this->launch($process);
