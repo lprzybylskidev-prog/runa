@@ -17,8 +17,14 @@ for (const [device, width, height] of [
         await page.setViewportSize({ width, height });
         await page.addInitScript(
           ({ locale, theme }) => {
-            localStorage.setItem('runa.locale', locale);
-            localStorage.setItem('runa.theme', theme);
+            localStorage.setItem(
+              'runa.preferences:runa:display:global:runa.locale',
+              JSON.stringify({ version: 1, value: locale }),
+            );
+            localStorage.setItem(
+              'runa.preferences:runa:display:global:runa.theme',
+              JSON.stringify({ version: 1, value: theme }),
+            );
           },
           { locale, theme },
         );
@@ -31,8 +37,8 @@ for (const [device, width, height] of [
         );
         await expect(page.getByRole('main')).toContainText(
           locale === 'pl'
-            ? 'Modularny monolit na bazie Laravela. Dostarcza w pełni konfigurowalne moduły do budowy aplikacji biznesowych.'
-            : 'A modular monolith built on Laravel. Fully configurable modules for building business applications.',
+            ? 'Modularny monolit na bazie Laravela do budowy aplikacji biznesowych.'
+            : 'A modular monolith built on Laravel for business applications.',
         );
         const modules = page.getByRole('list', {
           name: locale === 'pl' ? 'Moduły Runa' : 'Runa modules',
@@ -99,8 +105,14 @@ for (const reducedMotion of ['no-preference', 'reduce'] as const) {
   }, testInfo) => {
     await page.emulateMedia({ reducedMotion });
     await page.addInitScript(() => {
-      localStorage.setItem('runa.locale', 'pl');
-      localStorage.setItem('runa.theme', 'light');
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.locale',
+        JSON.stringify({ version: 1, value: 'pl' }),
+      );
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.theme',
+        JSON.stringify({ version: 1, value: 'light' }),
+      );
     });
     await page.goto('/');
     await page.evaluate(() => {

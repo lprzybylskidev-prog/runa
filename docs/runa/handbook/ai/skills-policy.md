@@ -129,6 +129,11 @@ upstream updates require reviewed reconciliation, never directory replacement.
 
 ## Editing reusable guidance
 
+Use the [documentation authoring guide](../development/documentation.md) for audience,
+structure, examples and link/metadata conventions. This section owns reusable
+instruction selection and synchronization; domain skills route here rather than
+repeating the authoring procedure.
+
 1. Identify the reader, activation trigger, canonical home and affected products.
 2. Update or replace the existing owning rule before adding another. Remove obsolete
    claims/duplicates; preserve immutable history and source provenance.

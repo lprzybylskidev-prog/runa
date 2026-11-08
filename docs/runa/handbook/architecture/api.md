@@ -81,7 +81,7 @@ Define default and maximum page sizes.
 
 Filter/sort fields are explicit whitelists.
 
-Use cursor pagination later for genuinely large continuous datasets when it provides a clear benefit.
+Use cursor pagination for genuinely large continuous datasets when it provides a clear benefit.
 
 ## Bulk operations
 
@@ -172,7 +172,7 @@ Rate limits target abuse-prone operations and are configured through config/env.
 
 Use a request/correlation ID through application logs and related jobs where useful. Validate a client-provided ID or generate one; do not log untrusted unlimited values.
 
-For optimistic concurrency, multiple users may open the record. A stale write returns a stable conflict code (for example `resource_conflict`) and the frontend preserves the draft and offers recovery. Exact token/diff design belongs to the relevant feature roadmap.
+For optimistic concurrency, multiple users may open the record. A stale write returns a stable conflict code (for example `resource_conflict`) and the frontend preserves the draft and offers recovery. Submit the original displayed version/review; never prefetch a newer token to admit an old draft. Stable stale-state codes trigger affected-data reconciliation, while business 409 refusals retain their own messages. See [read reconciliation](../development/frontend/forms.md#automatic-read-reconciliation). Exact token/diff design belongs to the relevant feature roadmap.
 
 ### Optional table-wide search
 

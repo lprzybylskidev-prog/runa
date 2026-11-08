@@ -2,7 +2,7 @@
 import { provide } from 'vue';
 import { applicationSessionOwner } from '../../../resources/js/lib/applicationSession';
 import { usePreferencePending } from './preferences/usePreferencePending';
-import { useViewReadiness } from '@/runa/ui';
+import { actionIcons, useViewReadiness } from '@/runa/ui';
 import { initializePreferenceSession } from './preferences/session';
 provide(applicationSessionOwner, true);
 const preferencePending = usePreferencePending();
@@ -291,6 +291,7 @@ const readiness = useViewReadiness({
             />
             <Button
               v-if="method === 'email' && needsProof"
+              :icon="actionIcons.send"
               intent="commit"
               :busy="busy"
               variant="outline"
@@ -299,20 +300,34 @@ const readiness = useViewReadiness({
             >
             <template v-if="screen === 'verify' && !isTokenPage">
               <Button
+                :icon="actionIcons.send"
                 intent="commit"
                 :busy="busy"
                 variant="outline"
                 @click="sendEmail"
                 >{{ t('resend') }}</Button
               >
-              <Button intent="inspect" :busy="busy" @click="refresh">{{
-                t('refresh')
-              }}</Button>
+              <Button
+                :icon="actionIcons.refresh"
+                intent="inspect"
+                :busy="busy"
+                @click="refresh"
+                >{{ t('refresh') }}</Button
+              >
             </template>
           </template>
           <template v-if="hasSubmit || failure" #actions>
             <Button
               v-if="hasSubmit"
+              :icon="
+                screen === 'login'
+                  ? 'login'
+                  : screen === 'register'
+                    ? 'user-plus'
+                    : needsProof
+                      ? 'lock'
+                      : 'check'
+              "
               intent="commit"
               type="submit"
               :busy="busy"
@@ -337,6 +352,7 @@ const readiness = useViewReadiness({
           }}</TextLink>
           <Button
             v-if="session"
+            icon="logout"
             intent="neutral"
             :busy="busy"
             variant="ghost"
@@ -363,11 +379,16 @@ const readiness = useViewReadiness({
     :locale="locale"
   >
     <template #actions>
-      <Button v-if="!ready && failure" intent="inspect" @click="initialize">{{
-        t('retry')
-      }}</Button>
+      <Button
+        v-if="!ready && failure"
+        :icon="actionIcons.refresh"
+        intent="inspect"
+        @click="initialize"
+        >{{ t('retry') }}</Button
+      >
       <Button
         v-if="failure === 'csrf'"
+        :icon="actionIcons.refresh"
         intent="inspect"
         :busy="busy"
         @click="refreshCsrf"
@@ -375,6 +396,7 @@ const readiness = useViewReadiness({
       >
       <Button
         v-if="session && ['conflict', 'account_restricted'].includes(failure)"
+        :icon="actionIcons.refresh"
         intent="inspect"
         :busy="busy"
         @click="refresh"

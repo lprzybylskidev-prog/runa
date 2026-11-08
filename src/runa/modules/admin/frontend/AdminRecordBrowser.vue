@@ -2,7 +2,7 @@
 import { useAdminLocale } from './localization';
 const { locale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
-import { Button, Card, Dialog } from '@/runa/ui';
+import { actionIcons, Button, Card, Dialog } from '@/runa/ui';
 import type {
   AdminRecordBrowserProps,
   AdminRecordBrowserSlots,
@@ -52,6 +52,7 @@ watch(
       <slot name="toolbar" :table="table" />
       <Button
         v-if="allowCreate"
+        :icon="actionIcons.create"
         intent="commit"
         class="mb-4"
         :disabled="form.busy.value"
@@ -61,6 +62,7 @@ watch(
       <AdminResourceTable :controller="table">
         <template #actions="{ row }"
           ><Button
+            :icon="actionIcons.inspect"
             intent="inspect"
             size="sm"
             :disabled="form.busy.value"

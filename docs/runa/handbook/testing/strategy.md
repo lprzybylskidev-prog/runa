@@ -69,7 +69,7 @@ reports retain their established paths. Setup/reopen never executes these suites
 
 ## PHP
 
-Native `php artisan test` and `php artisan runa:test:backend` select src/phpunit.xml and tests/backend/app/Feature and Unit. Pest and PHPUnit are available. Standard make:test writes tests/backend/app/Feature or Unit; Tests\TestCase in src/runa/Testing/TestCase.php supplies reusable guarded application isolation. The Pest contribution lives in tests/backend/app/Pest.php. Native Artisan uses the development-only Runa adapter to select that root, and the application wrapper passes the same explicit root/configuration. Direct Pest execution from src uses `vendor/bin/pest --test-directory=../tests/backend/app`; bare Pest retains its upstream tests-directory default. The obsolete src/tests directory is absent. The common testing namespace is dev-only Composer autoload, excluded from production images. Customer test setup never invokes owner migration tools or discovers platform tests; fresh parallel worker databases receive forward-only technical preparation from the delivered primitive before application migrations.
+Native `php artisan test` and `php artisan runa:test:backend` select src/phpunit.xml and tests/backend/app/Feature and Unit. Pest and PHPUnit are available. Standard make:test writes tests/backend/app/Feature or Unit; Tests\TestCase in src/runa/Testing/TestCase.php supplies reusable guarded application isolation. The Pest contribution lives in tests/backend/app/Pest.php. Native Artisan uses the development-only Runa command to select that root, and the application wrapper passes the same explicit root/configuration. Direct Pest execution from src uses `vendor/bin/pest --test-directory=../tests/backend/app`; bare Pest retains its upstream tests-directory default. The obsolete src/tests directory is absent. The common testing namespace is dev-only Composer autoload, excluded from production images. Customer test setup never invokes owner migration tools or discovers platform tests; fresh parallel worker databases receive forward-only technical preparation from the delivered primitive before application migrations.
 
 Development installation and `runa:dev:initialize` explicitly prepare platform data in both the development database and the isolated base `runa_test` database through the forward-only platform preparation primitive. Application test execution then applies only application-owned migrations. After platform updates, refresh the development clone through initialization before running native application tests.
 
@@ -77,7 +77,7 @@ Run `php artisan runa:test --scope=backend --parallel`; TEST_WORKERS defaults to
 
 ## Frontend
 
-`php artisan runa:test:frontend` uses src/vitest.config.mjs and tests/frontend/app/unit. Vitest/Vue Test Utils run in real headless Chromium. Test rendered states, events, validation, focus/accessibility and asynchronous failure/race behavior. The example welcome test consumes the public UI facade. The supplied Vitest configuration registers moduleComponentsPlugin from src/runa/frontend/module-components.mjs with the src directory as its root, matching the application Vite registry. Existing application-owned Vitest configurations importing Runa UI/Auth/Admin must compose this plugin as well; updating Runa does not overwrite customer configuration. Keep TypeScript strict; no known-payload any.
+`php artisan runa:test:frontend` uses src/vitest.config.mjs and tests/frontend/app/unit plus tests/frontend/app/modules for module-owned cases. Vitest/Vue Test Utils run in real headless Chromium. Test rendered states, events, validation, focus/accessibility and asynchronous failure/race behavior. The example welcome test consumes the public UI facade. The supplied Vitest configuration registers moduleComponentsPlugin from src/runa/frontend/module-components.mjs with the src directory as its root, matching the application Vite registry. Existing application-owned Vitest configurations importing Runa UI/Auth/Admin must compose this plugin as well; updating Runa does not overwrite customer configuration. Keep TypeScript strict; no known-payload any.
 
 ## Browser endpoint and startup
 
@@ -131,16 +131,32 @@ This recovery does not authorize routine broad testing during implementation.
 
 ## Concurrency and acceptance
 
-The runa:test* wrappers and native php artisan test share a nonblocking checkout suite lock and forward child failure codes. Native sequential/PHPUnit testing composes Collision and restores its scoped raw-argv
-adaptation on every exit. Native Pest parallel testing invokes the same installed
-Pest engine with the application test root, preserving Laravel parallel flags,
-terminal behavior and native exits through the shared lock/cleanup lifecycle.
+The runa:test* wrappers and native php artisan test share a nonblocking checkout
+suite lock and forward child failure codes. The Runa native command launches the
+pinned Pest engine for both serial and parallel execution, including PHPUnit test
+classes. It reads literal Symfony CLI input without changing global argv or
+composing Collision's Laravel command. Pest owns native printing, profiling,
+coverage and ParaTest; Runa owns the application root and guarded lifecycle.
 Use `php artisan test --parallel --processes=2` to select two PHP workers.
+Native filters, paths, configuration, groups/suites and reports pass through as
+literal arguments. An explicit `--configuration`/`-c` or `--no-configuration`
+replaces the default configuration. Use `--coverage --min=80` for native coverage
+and its threshold; a missing driver remains a native failure. `--compact` and
+`--profile` use Pest's installed printer. Unsupported combinations/options retain
+the native refusal. `--ansi`/`--no-ansi` select native colors; `--without-tty`
+disables terminal attachment. Noninteractive `--no-interaction`/`-n` execution
+closes child stdin instead of consuming a supervising process's input protocol.
+Interactive execution retains stdin forwarding. Parent SIGINT/SIGTERM is forwarded to the child;
+interruption/signal exits retain 128+signal status and guarded cleanup.
+Laravel parallel database/cache flags remain explicit child environment inputs.
+Artisan `--env` never changes the required isolated testing identity. Native test
+execution requires CLI input; programmatic ArrayInput calls are refused. Artisan
+help/version retain the framework's own read-only behavior.
 Cleanup children discard keys inherited from the development environment before
 loading `.env.testing`; environment parser diagnostics never expose file values.
 Read-only native discovery (list-tests, list-tests-xml, list-suites and list-groups) does not acquire the lock or clean databases. Direct Pest/PHPUnit runners bypass lifecycle protection; use supported runners for execution. Cached application config must be cleared before backend test execution so .env.testing remains effective.
 
-Visually inspect significant frontend changes at desktop/tablet/mobile sizes, light/dark and PL/EN as relevant. Check keyboard/focus semantics, meaningful labels, console/network errors, long content and responsive overflow. Keep durable browser tests focused on critical application flows and reproducible regressions. Temporary exploration lives under .playwright/scratch or tools/scratch; promote useful coverage or remove scratch before closure, preserving ignored artifacts.
+Visually inspect significant frontend changes at desktop/tablet/mobile sizes, light/dark and PL/EN as relevant. Check keyboard/focus semantics, meaningful labels, console/network errors, long content and responsive overflow. Keep durable browser tests focused on critical application flows and reproducible regressions. Browser screenshots, traces, videos, reports and other generated diagnostic evidence belong under `.runtime/artifacts/playwright/`, following [artifact placement](../architecture/project-principles.md#generated-tooling-and-build-state). Promote useful exploration into the owning central test suite. Preserve existing evidence during cleanup; an ignored report is not automatically disposable.
 
 Do not weaken tests to obtain PASS. Investigate behavior versus test/isolation defects. Implementation points produce code, tests and documentation without routine check runs; only small, fast, focused checks for a concrete uncertainty belong there. Full suites, broad integration/installation acceptance, static analysis, image builds/scanner pipelines and full quality/security/AI and production checks run after all implementation in final verification, followed by fixes and repeated final verification. Mandatory commit hooks remain in force. Repairs after failed final verification must pass the complete affected-area suite in the failing execution mode before restarting the whole gate; repeat only affected areas and real prerequisites until green, as defined in the roadmap failure procedure. If any supplied roadmap requires broad verification earlier, stop and notify the user regardless of its author; follow the [roadmap workflow](../workflows/roadmaps.md#roadmap-points) before proceeding. See [quality](../quality/README.md) and [security](../security/baseline.md).
 

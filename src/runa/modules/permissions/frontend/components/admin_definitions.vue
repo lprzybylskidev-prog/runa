@@ -8,7 +8,7 @@ import {
   useAdminTable,
 } from '@/runa/admin';
 import type { AdminPageProps } from '@/runa/admin';
-import { Button, Card, Dialog } from '@/runa/ui';
+import { actionIcons, Button, Card, Dialog } from '@/runa/ui';
 const props = defineProps<AdminPageProps>();
 const { locale, t } = useAdminLocale();
 const text = (pl: string, en: string) => t({ pl, en });
@@ -78,6 +78,7 @@ watch(
       <template #actions>
         <Button
           v-if="canCreate"
+          :icon="actionIcons.create"
           intent="commit"
           size="sm"
           :disabled="form.busy.value"
@@ -92,6 +93,7 @@ watch(
       <AdminResourceTable :controller="table">
         <template #actions="{ row }">
           <Button
+            :icon="actionIcons.inspect"
             intent="inspect"
             size="sm"
             :disabled="form.busy.value"

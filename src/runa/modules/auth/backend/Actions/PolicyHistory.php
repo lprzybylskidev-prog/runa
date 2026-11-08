@@ -5,8 +5,6 @@ namespace Runa\Modules\Auth\Actions;
 use Illuminate\Database\Connection;
 use Illuminate\Support\Str;
 use Runa\Contracts\Modules\SettingDefinition;
-use Runa\Contracts\Modules\SettingsAuthorization;
-use Runa\Contracts\Modules\SettingsContext;
 use Runa\Contracts\Modules\SettingsParticipant;
 use Runa\Contracts\Modules\SettingsPublication;
 use Runa\ModuleFramework\Data\AuthorityLock;
@@ -14,16 +12,8 @@ use Runa\Modules\Auth\Models\User;
 use Runa\Support\Modules\Settings\ModuleSettings;
 
 /** Synchronous required persistence behind the settings fence; never an observer. */
-final readonly class PolicyHistory implements SettingsAuthorization, SettingsParticipant
+final readonly class PolicyHistory implements SettingsParticipant
 {
-    public function authorizing(Connection $connection, SettingsContext $context): void
-    {
-        if ($context->actor?->kind === 'actor') {
-            app(AuthorityLock::class)->acquire($connection);
-            app(StepUp::class)->assertVerified('runa.auth.policy.publish', everyAction: true);
-        }
-    }
-
     public function publishing(Connection $connection, SettingsPublication $publication): void
     {
         if ($publication->context->module !== 'runa.auth') {

@@ -86,7 +86,7 @@ function admin(): AdminController {
   };
 }
 const response = (data: AdminOperationData, status = 200) =>
-  new Response(JSON.stringify({ data }), {
+  new Response(JSON.stringify(status < 400 ? { data } : data), {
     status,
     headers: { 'Content-Type': 'application/json' },
   });
@@ -121,7 +121,9 @@ it('operational diagnostic fences late reads and never replays a failed write', 
   finish(response({ modules: [], generation: 1 }));
   await pending;
   expect(controller.snapshot.value).toBeUndefined();
-  fetch.mockResolvedValue(response({}, 409));
+  fetch.mockResolvedValue(
+    response({ reason: 'application_settings_revision_changed' }, 409),
+  );
   controller.dirty.value = true;
   await controller.execute('application.update', { revision: 1, patch: {} });
   expect(controller.conflict.value).toBe(true);
@@ -253,11 +255,16 @@ it('application settings retain dirty drafts across disjoint and overlapping rev
   fetch.mockResolvedValueOnce(
     response({ reason: 'application_settings_revision_changed' }, 409),
   );
+  fetch.mockResolvedValueOnce(
+    response(applicationState(4, 'Another remote name', 'Remote label')),
+  );
   await settings.save();
   expect(settings.draft.value['presentation.name']).toBe('My draft');
   expect(controller.dirty.value).toBe(true);
-  expect(fetch).toHaveBeenCalledTimes(calls + 1);
-  expect(JSON.parse(String(fetch.mock.calls.at(-1)?.[1]?.body))).toEqual({
+  expect(fetch).toHaveBeenCalledTimes(calls + 2);
+  expect(settings.conflicts.value.has('presentation.name')).toBe(true);
+  expect(controller.error.value).toContain('Application settings changed');
+  expect(JSON.parse(String(fetch.mock.calls.at(-2)?.[1]?.body))).toEqual({
     revision: 3,
     patch: { 'presentation.name': 'My draft' },
   });
@@ -1394,7 +1401,7 @@ it('application branding converts a logo to PNG and a square favicon, preserving
   expect(posted.patch).toEqual({ 'presentation.logo': 'uploaded' });
   expect(posted.images.logo).toBeTypeOf('string');
   expect(posted.images.logo_icon).toBeTypeOf('string');
-  expect(controller.conflict.value).toBe(true);
+  expect(controller.conflict.value).toBe(false);
   expect(settings.imageFiles.value.logo).toHaveLength(1);
   const remote = brandingState(2);
   (remote.values as AdminOperationData)['presentation.logo'] = 'uploaded';
@@ -1443,7 +1450,7 @@ it('application branding fences pending file preparation on account loss', async
   expect(settings.previewImage('logo')).toBeUndefined();
 });
 
-it('application settings use one main heading, bounded fields and adjacent restore buttons', async () => {
+it('application settings group identity and defaults with named compact restore controls', async () => {
   window.history.replaceState({}, '', '/admin?section=application');
   vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
     String(input).endsWith('/capabilities')
@@ -1469,10 +1476,18 @@ it('application settings use one main heading, bounded fields and adjacent resto
   ).toBe(false);
   const buttons = w
     .findAll('button')
-    .filter((button) => button.text() === 'Restore defaults');
+    .filter((button) =>
+      button.attributes('aria-label')?.startsWith('Restore defaults:'),
+    );
   expect(buttons).toHaveLength(6);
+  expect(w.findAll('legend').map((legend) => legend.text())).toEqual([
+    'Application identity',
+    'Default preferences',
+  ]);
   for (const button of buttons) {
     expect(button.attributes('aria-label')).toContain('Restore defaults:');
+    expect(button.text()).toBe('');
+    expect(button.attributes('title')).toBe(button.attributes('aria-label'));
     expect(
       button.element.parentElement?.querySelector(
         'input,button[aria-haspopup="dialog"]',
@@ -1584,4 +1599,36 @@ it('application settings retry failed reads without duplicate parent notificatio
     expect(w.find('input[type=file]').exists()).toBe(true),
   );
   expect(document.querySelectorAll('.app-toast')).toHaveLength(0);
+});
+
+it('dashboard contributions leave application settings and return with the Modules subview', async () => {
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    String(input).endsWith('/capabilities')
+      ? response({ capabilities: [] })
+      : response(brandingState()),
+  );
+  const w = mount(AdminOperations, {
+    props: { admin: admin() },
+    slots: {
+      dashboard: () =>
+        h('div', { 'data-test-dashboard-widget': '' }, 'Module widget'),
+    },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(w.find('[data-test-dashboard-widget]').exists()).toBe(true),
+  );
+  const link = (label: string) =>
+    w.findAll('button').find((button) => button.text() === label)!;
+  await vi.waitFor(() => expect(link('Application settings')).toBeDefined());
+  await link('Application settings').trigger('click');
+  await vi.waitFor(() =>
+    expect(w.find('input[type="file"]').exists()).toBe(true),
+  );
+  expect(w.find('[data-test-dashboard-widget]').exists()).toBe(false);
+  await link('Modules').trigger('click');
+  await vi.waitFor(() =>
+    expect(w.find('[data-test-dashboard-widget]').exists()).toBe(true),
+  );
+  expect(w.find('input[type="file"]').exists()).toBe(false);
 });

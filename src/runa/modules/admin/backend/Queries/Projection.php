@@ -15,13 +15,16 @@ use Runa\Contracts\Modules\ManagementRead;
 use Runa\Contracts\Modules\ManagementRecord;
 use Runa\Contracts\Modules\ManagementResourceReader;
 use Runa\Contracts\Modules\ManagementSection;
+use Runa\Contracts\Modules\ManagementWidget;
 use Runa\Contracts\Modules\ManagementWidgetReader;
+use Runa\Contracts\Modules\ManagementWidgetResult;
 use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\ManagementWriter;
 use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\OperationContext;
 use Runa\ModuleFramework\Management\InputValues as Values;
 use Runa\ModuleFramework\Management\ManagementPages;
+use Runa\ModuleFramework\Management\ReadHandlerPlan;
 use Runa\Modules\Admin\Actions\AggregatePart;
 use Runa\Support\Modules\Api\OperationRejected;
 use Throwable;
@@ -30,15 +33,20 @@ use Throwable;
  *
  * @phpstan-import-type Discovery from ManagementPages
  * @phpstan-import-type OwnerDefinition from ManagementPages
+ * @phpstan-import-type WidgetView from ReadHandlerPlan
+ *
+ * @phpstan-type ReadSelection array{Discovery,string,ManagementSection,\Runa\Contracts\Modules\ManagementBinding,string,ManagementRead,array<string,ManagementFieldAccess>,?ManagementOptionsRead}
  */
 final readonly class Projection
 {
     public function __construct(private ManagementPages $declarations, private OperationAuthorizer $authorizer) {}
 
-    /** @return array<string, mixed> */
-    public function bootstrap(): array
+    /** @param list<ReadHandlerPlan> $failedWidgets
+     * @param Discovery|null $selectedDiscovery
+     * @return array<string, mixed> */
+    public function bootstrap(?Closure $invoke = null, array $failedWidgets = [], ?array $selectedDiscovery = null): array
     {
-        $discovery = $this->declarations->discover();
+        $discovery = $selectedDiscovery ?? $this->declarations->discover();
         $owners = $widgets = [];
         foreach ($discovery['owners'] as $owner => $definition) {
             $pages = [];
@@ -59,15 +67,19 @@ final readonly class Projection
                 if (! $this->allowed($owner, $widget->permission, $discovery['generation'])) {
                     continue;
                 }
-                $projected = ['id' => $owner.'.'.$widget->key, 'title' => $widget->title, 'component' => $this->component($definition, $widget->component),
-                    'values' => [], 'observed_at' => null, 'expires_at' => null, 'diagnostic' => null];
+                $projected = $this->widgetView($owner, $widget, $definition);
                 try {
                     $binding = $definition['bindings'][$widget->binding];
-                    $handler = $this->declarations->handler($owner, $binding);
-                    if (! $handler instanceof ManagementWidgetReader) {
-                        throw new InvalidArgumentException('Widget capability unavailable.');
-                    }
-                    $result = $handler->widget(new ManagementRead);
+                    $read = function () use ($owner, $binding) {
+                        $handler = $this->declarations->handler($owner, $binding);
+                        if (! $handler instanceof ManagementWidgetReader) {
+                            throw new InvalidArgumentException('Widget capability unavailable.');
+                        }
+
+                        return $handler->widget(new ManagementRead);
+                    };
+                    /** @var ManagementWidgetResult $result */
+                    $result = $invoke === null ? $read() : $invoke($owner.'.'.$widget->key, $read);
                     $now = new DateTimeImmutable('now');
                     if ($result->observedAt !== null && new DateTimeImmutable($result->observedAt) > $now) {
                         throw new InvalidArgumentException('Future widget observation.');
@@ -83,6 +95,18 @@ final readonly class Projection
                 }
                 $widgets[] = ['order' => $widget->order, 'view' => $projected];
             }
+        }
+        // A preselected failed widget may return only its source metadata/diagnostic.
+        // Current owner availability and its effective grant still govern even
+        // diagnostic metadata; an unavailable owner is omitted, never bypassed.
+        foreach ($failedWidgets as $plan) {
+            $metadata = $plan->widget;
+            if ($metadata === null || in_array($plan->id, array_column(array_column($widgets, 'view'), 'id'), true) || ! $this->allowed($metadata['owner'], $metadata['permission'], $discovery['generation'])) {
+                continue;
+            }
+            $view = $metadata['view'];
+            $view['diagnostic'] = 'admin_widget_unavailable';
+            $widgets[] = ['order' => $metadata['order'], 'view' => $view];
         }
         usort($widgets, static fn (array $a, array $b): int => ($a['order'] <=> $b['order']) ?: strcmp($a['view']['id'], $b['view']['id']));
         $widgets = array_column($widgets, 'view');
@@ -113,9 +137,108 @@ final readonly class Projection
 
     /**
      * @param  array<string, mixed>  $query
+     * @param  ReadSelection|null  $selectedRead
      * @return array<string, mixed>
      */
-    public function read(string $owner, string $key, string $identity, array $query): array
+    public function read(string $owner, string $key, string $identity, array $query, ?array $selectedRead = null): array
+    {
+        [$discovery, $sectionOwner, $section, $binding, $kind, $input, $fields, $lookup] = $selectedRead ?? $this->readSelection($owner, $key, $identity, $query);
+        try {
+            $handler = $this->declarations->handler($sectionOwner, $binding);
+            // Handlers enforce native selection/count/export/option authority and record Policies.
+            if ($kind === 'record') {
+                if (! $handler instanceof ManagementResourceReader) {
+                    throw new InvalidArgumentException('Resource capability missing.');
+                }
+                $result = $this->record($handler->read($input), $fields);
+            } elseif ($kind === 'page') {
+                if (! $handler instanceof ManagementResourceReader) {
+                    throw new InvalidArgumentException('Resource capability missing.');
+                }
+                $page = $handler->page($input);
+                if (count($page->items) > $input->limit) {
+                    throw new OperationRejected('admin_result_limit', 'runa.admin', 'section.read');
+                }
+                $result = ['items' => array_map(fn (ManagementRecord $record): array => $this->record($record, $fields), $page->items), 'next' => $page->next, 'total' => $page->total];
+            } else {
+                if (! $handler instanceof ManagementOptionsReader || $lookup === null) {
+                    throw new InvalidArgumentException('Lookup capability missing.');
+                }
+                $options = $handler->options($lookup);
+                if (count($options->items) > $input->limit) {
+                    throw new OperationRejected('admin_result_limit', 'runa.admin', 'section.read');
+                }
+                if ($options->field !== $lookup->field) {
+                    throw new OperationRejected('admin_projection_invalid', 'runa.admin', 'section.read');
+                }
+                $result = ['field' => $options->field, 'items' => $options->items, 'next' => $options->next];
+            }
+        } catch (OperationRejected $error) {
+            throw $error;
+        } catch (Throwable) {
+            throw new OperationRejected('admin_read_unavailable', 'runa.admin', 'section.read');
+        }
+        $this->declarations->assertCurrent($discovery['generation']);
+
+        return $this->bounded($result);
+    }
+
+    /** @param array<string,mixed> $query
+     * @param-out ReadSelection $selectedRead
+     *
+     * @param ReadSelection|null $selectedRead */
+    public function readPlan(string $owner, string $key, string $identity, array $query, ?array &$selectedRead = null): ReadHandlerPlan
+    {
+        [$discovery, $sectionOwner, $section, $binding, $kind, $input, $fields, $lookup] = $this->readSelection($owner, $key, $identity, $query);
+        $selectedRead = [$discovery, $sectionOwner, $section, $binding, $kind, $input, $fields, $lookup];
+        $definition = $discovery['owners'][$sectionOwner];
+        $calls = $this->declarations->readPlan($definition, $binding, $kind === 'record' ? 'read' : $kind, $lookup ?? $input);
+
+        return new ReadHandlerPlan('resource', hash('sha256', serialize([$sectionOwner, $section, $binding, $fields, $kind, $input, $lookup, $calls, $definition['components']])), $calls);
+    }
+
+    /** @param Discovery|null $selectedDiscovery
+     * @param-out Discovery $selectedDiscovery
+     *
+     * @return array<string,ReadHandlerPlan> */
+    public function widgetReadPlans(?array &$selectedDiscovery = null): array
+    {
+        $discovery = $this->declarations->discover();
+        $selectedDiscovery = $discovery;
+        $plans = [];
+        foreach ($discovery['owners'] as $owner => $definition) {
+            foreach ($definition['widgets'] as $widget) {
+                if (! $this->allowed($owner, $widget->permission, $discovery['generation'])) {
+                    continue;
+                }
+                $binding = $definition['bindings'][$widget->binding];
+                $calls = [];
+                $diagnostic = null;
+                try {
+                    $calls = $this->declarations->readPlan($definition, $binding, 'widget', new ManagementRead);
+                } catch (Throwable) {
+                    $diagnostic = 'admin_read_plan_invalid';
+                }
+                $id = $owner.'.'.$widget->key;
+                $plans[$id] = new ReadHandlerPlan($id, hash('sha256', serialize([$owner, $widget, $binding, $calls, $definition['components'], $diagnostic])), $calls,
+                    ['owner' => $owner, 'permission' => $widget->permission, 'order' => $widget->order, 'view' => $this->widgetView($owner, $widget, $definition)], $diagnostic);
+            }
+        }
+
+        return $plans;
+    }
+
+    /** @param OwnerDefinition $definition
+     * @return WidgetView */
+    private function widgetView(string $owner, ManagementWidget $widget, array $definition): array
+    {
+        return ['id' => $owner.'.'.$widget->key, 'title' => $widget->title, 'component' => $this->component($definition, $widget->component),
+            'values' => [], 'observed_at' => null, 'expires_at' => null, 'diagnostic' => null];
+    }
+
+    /** @param array<string,mixed> $query
+     * @return ReadSelection */
+    private function readSelection(string $owner, string $key, string $identity, array $query): array
     {
         [$discovery, , $sections] = $this->selected($owner, $key);
         [$sectionOwner, $section] = $this->findSection($sections, $identity, $discovery['generation']);
@@ -165,44 +288,8 @@ final readonly class Projection
             throw new OperationRejected('admin_input_invalid', 'runa.admin', 'section.read', 422);
         }
         $binding = $discovery['owners'][$sectionOwner]['bindings'][$section->binding];
-        try {
-            $handler = $this->declarations->handler($sectionOwner, $binding);
-            // Handlers enforce native selection/count/export/option authority and record Policies.
-            if ($kind === 'record') {
-                if (! $handler instanceof ManagementResourceReader) {
-                    throw new InvalidArgumentException('Resource capability missing.');
-                }
-                $result = $this->record($handler->read($input), $fields);
-            } elseif ($kind === 'page') {
-                if (! $handler instanceof ManagementResourceReader) {
-                    throw new InvalidArgumentException('Resource capability missing.');
-                }
-                $page = $handler->page($input);
-                if (count($page->items) > $input->limit) {
-                    throw new OperationRejected('admin_result_limit', 'runa.admin', 'section.read');
-                }
-                $result = ['items' => array_map(fn (ManagementRecord $record): array => $this->record($record, $fields), $page->items), 'next' => $page->next, 'total' => $page->total];
-            } else {
-                if (! $handler instanceof ManagementOptionsReader) {
-                    throw new InvalidArgumentException('Lookup capability missing.');
-                }
-                $options = $handler->options($lookup);
-                if (count($options->items) > $input->limit) {
-                    throw new OperationRejected('admin_result_limit', 'runa.admin', 'section.read');
-                }
-                if ($options->field !== $lookup->field) {
-                    throw new OperationRejected('admin_projection_invalid', 'runa.admin', 'section.read');
-                }
-                $result = ['field' => $options->field, 'items' => $options->items, 'next' => $options->next];
-            }
-        } catch (OperationRejected $error) {
-            throw $error;
-        } catch (Throwable) {
-            throw new OperationRejected('admin_read_unavailable', 'runa.admin', 'section.read');
-        }
-        $this->declarations->assertCurrent($discovery['generation']);
 
-        return $this->bounded($result);
+        return [$discovery, $sectionOwner, $section, $binding, $kind, $input, $fields, $lookup];
     }
 
     /** Future command coordinators share this fail-closed input intersection; no write executes here.
@@ -502,6 +589,7 @@ final readonly class Projection
                 }
             } elseif ($value !== null) {
                 $valid = match ($access->field->type) {
+                    'json' => is_array($value),
                     'text' => is_string($value) && ($access->field->maxLength === null || mb_strlen($value) <= $access->field->maxLength),
                     'boolean' => is_bool($value),
                     'integer' => is_int($value),

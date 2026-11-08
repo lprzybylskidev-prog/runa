@@ -1,16 +1,68 @@
-export type IconName =
-  | 'layers-intersect'
-  | 'sun'
-  | 'moon'
-  | 'device-desktop'
-  | 'file-type-csv'
-  | 'file-type-xls'
-  | 'file-type-pdf'
-  | 'printer'
-  | 'adjustments-horizontal'
-  | 'refresh'
-  | 'filter-off'
-  | 'logout'
-  | 'clipboard-list'
-  | 'key'
-  | 'shield-lock';
+export const iconNames = [
+  'layers-intersect',
+  'sun',
+  'moon',
+  'device-desktop',
+  'file-type-csv',
+  'file-type-xls',
+  'file-type-pdf',
+  'printer',
+  'adjustments-horizontal',
+  'refresh',
+  'filter-off',
+  'logout',
+  'clipboard-list',
+  'key',
+  'shield-lock',
+  'plus',
+  'pencil',
+  'device-floppy',
+  'check',
+  'x',
+  'trash',
+  'eye',
+  'copy',
+  'arrow-back-up',
+  'rotate-2',
+  'player-play',
+  'send',
+  'login',
+  'user-plus',
+  'lock',
+  'shield-check',
+  'shield-x',
+  'mail',
+  'download',
+  'info-circle',
+  'circle-check',
+  'alert-triangle',
+  'alert-circle',
+  'inbox',
+  'flask',
+  'history',
+  'power',
+  'crop',
+  'arrows-exchange',
+  'arrow-up',
+  'arrow-down',
+  'chevron-left',
+  'chevron-right',
+  'home',
+  'calendar-clock',
+  'calendar-plus',
+  'calendar-minus',
+  'lock-access',
+  'lock-open',
+  'key-off',
+  'device-desktop-off',
+  'photo-off',
+  'clipboard-x',
+  'shield-star',
+  'shield-off',
+  'mail-plus',
+  'mail-x',
+  'mail-check',
+  'user-check',
+  'user-off',
+] as const;
+export type IconName = (typeof iconNames)[number];

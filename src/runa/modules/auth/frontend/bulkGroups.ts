@@ -1,4 +1,5 @@
-import type { ButtonIntent } from '@/runa/ui';
+import { actionIcons } from '@/runa/ui';
+import type { IconName, ButtonIntent } from '@/runa/ui';
 /** Private presentation grouping; native projected commands retain all admission/proof authority. */
 export const authBulkGroups = [
   {
@@ -204,4 +205,61 @@ export function groupAuthActions<T>(
       },
     );
   return groups.filter((group) => group.items.length);
+}
+
+/** Source action identity; independent of translated labels, proof and feedback. */
+export function authActionIcon(
+  key: string,
+  enabled?: boolean | null,
+  clearDate = false,
+): IconName {
+  if (key === 'toggle_activation')
+    return enabled === false ? 'user-off' : 'user-check';
+  if (key === 'toggle_deletion')
+    return enabled === false ? 'arrow-back-up' : 'trash';
+  if (key === 'set_attempt_lock')
+    return clearDate ? 'lock-open' : 'lock-access';
+  if (['set_security_lock', 'toggle_security_lock'].includes(key))
+    return enabled === false ? 'shield-check' : 'shield-lock';
+  if (key === 'require_password_change' && enabled === false) return 'key-off';
+  const icons: Readonly<Record<string, IconName>> = {
+    activate: 'user-check',
+    deactivate: 'user-off',
+    schedule_activation: 'calendar-plus',
+    schedule_deactivation: 'calendar-minus',
+    delete: 'trash',
+    remove: 'trash',
+    restore: 'arrow-back-up',
+    invite: 'mail-plus',
+    invalidate_invitation: 'mail-x',
+    verify_email: 'mail-check',
+    require_verification: 'mail',
+    require_password_change: 'key',
+    password_reset: 'key-off',
+    factor_reset: 'shield-x',
+    revoke: 'logout',
+    revoke_device: 'device-desktop-off',
+    revoke_trust: 'device-desktop-off',
+    reset_preferences: 'adjustments-horizontal',
+    remove_avatar: 'photo-off',
+    revoke_exceptions: 'clipboard-x',
+    grant_superadmin: 'shield-check',
+    revoke_superadmin: 'shield-off',
+  };
+  return icons[key] ?? actionIcons.confirm;
+}
+
+/** Thematic launcher identity shared by single-account and selected-account tools. */
+export function authActionToolIcon(commands: readonly string[]): IconName {
+  const group = authBulkGroup(commands[0] ?? '');
+  const icons = {
+    activity: 'power',
+    schedule: 'calendar-clock',
+    deletion: 'trash',
+    invitations: 'mail-plus',
+    attempt_lock: 'lock-access',
+    security_lock: 'shield-lock',
+    authority: 'shield-star',
+  } as const satisfies Record<(typeof authBulkGroups)[number]['key'], IconName>;
+  return group ? icons[group.key] : authActionIcon(commands[0] ?? '');
 }

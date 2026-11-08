@@ -2,17 +2,39 @@
 
 namespace Runa\Modules\Auth\Definitions;
 
+use Illuminate\Database\Connection;
+use Runa\Contracts\Modules\ApiOperation;
+use Runa\Contracts\Modules\MutationProof;
 use Runa\Contracts\Modules\SettingDefinition;
+use Runa\Contracts\Modules\SettingsAccess;
+use Runa\Contracts\Modules\SettingsAccessProvider;
 use Runa\Contracts\Modules\SettingsContext;
 use Runa\Contracts\Modules\SettingsHandler;
+use Runa\Contracts\Modules\SettingsParticipant;
 use Runa\Contracts\Modules\SettingsProvider;
+use Runa\Contracts\Modules\SettingsPublication;
+use Runa\Modules\Auth\Actions\PolicyHistory;
 use Runa\Modules\Auth\Contracts\DeliveryCategory;
 use Runa\Modules\Auth\Contracts\DeliveryProvider;
 use Runa\Modules\Auth\Contracts\PreferenceProvider;
 
 /** Immediate lookup/future-deletion policy. Existing ownership is never reassigned. */
-final class IdentitySettings implements DeliveryProvider, PreferenceProvider, SettingsHandler, SettingsProvider
+final class IdentitySettings implements DeliveryProvider, PreferenceProvider, SettingsAccessProvider, SettingsHandler, SettingsParticipant, SettingsProvider
 {
+    public function access(): SettingsAccess
+    {
+        return new SettingsAccess(
+            new ApiOperation('policy.read', 'runa.auth.policy.read'),
+            new ApiOperation('policy.publish', 'runa.auth.policy.write'),
+            proof: new MutationProof('runa.auth.policy.publish', 'password'),
+        );
+    }
+
+    public function publishing(Connection $connection, SettingsPublication $publication): void
+    {
+        app(PolicyHistory::class)->publishing($connection, $publication);
+    }
+
     public function settings(): array
     {
         return [

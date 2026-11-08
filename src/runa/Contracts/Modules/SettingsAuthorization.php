@@ -4,7 +4,7 @@ namespace Runa\Contracts\Modules;
 
 use Illuminate\Database\Connection;
 
-/** Optional mandatory authorization before publication/fencing, in the same transaction. */
+/** Optional SettingsProvider extension: mandatory owning authorization before publication/fencing. */
 interface SettingsAuthorization
 {
     public function authorizing(Connection $connection, SettingsContext $context): void;

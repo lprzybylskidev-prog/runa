@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { withTableFilters } from '@/runa/ui';
+import { actionIcons, withTableFilters } from '@/runa/ui';
 import { trustedDeviceColumns } from './trustedDeviceColumns';
 import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
+  Accordion,
   Button,
   Card,
   Dialog,
@@ -46,6 +47,7 @@ async function exportRows(signal: AbortSignal) {
   await props.account.authorizeTableExport(signal);
   return trustedRows.value;
 }
+const devicesExpanded = ref(false);
 const modal = ref<'factor' | null>(null);
 const removing = ref<string>();
 const attempt = ref(0);
@@ -249,7 +251,10 @@ const columns = computed<TableColumn<AccountRow>[]>(() =>
 watch(
   () => security.value?.trusted_devices_enabled,
   (enabled) => {
-    if (!enabled) removing.value = undefined;
+    if (!enabled) {
+      devicesExpanded.value = false;
+      removing.value = undefined;
+    }
   },
 );
 </script>
@@ -279,6 +284,7 @@ watch(
             <p class="text-xs text-muted">{{ securityMethod.description }}</p>
           </div>
           <Button
+            :icon="securityMethod.enrolled ? 'shield-x' : 'shield-check'"
             :intent="securityMethod.enrolled ? 'danger' : 'commit'"
             variant="outline"
             :disabled="busy || modal !== null || !securityMethod.available"
@@ -297,6 +303,7 @@ watch(
           security.recovery_codes_enabled &&
           security.enrolled.includes('totp')
         "
+        icon="rotate-2"
         intent="caution"
         variant="outline"
         :disabled="busy || modal !== null"
@@ -312,9 +319,6 @@ watch(
         :class="methods.length ? 'border-t border-line pt-4' : ''"
         data-trusted-devices
       >
-        <h3 class="text-sm font-semibold">
-          {{ text('Zaufane urządzenia', 'Trusted devices') }}
-        </h3>
         <p v-if="!canTrustDevice" class="text-xs text-muted">
           {{
             text(
@@ -325,6 +329,7 @@ watch(
         </p>
         <div class="flex flex-wrap gap-2">
           <Button
+            :icon="actionIcons.trust"
             intent="commit"
             variant="outline"
             :disabled="busy || !canTrustDevice"
@@ -332,48 +337,57 @@ watch(
             >{{ text('Zaufaj tej przeglądarce', 'Trust this browser') }}</Button
           >
         </div>
-        <Table
-          v-model:query="query"
-          :export-allowed="account.tableExportAllowed?.value === true"
-          :export-rows="exportRows"
-          :refresh="
-            async () => {
-              await loadTrustedDevices();
-            }
-          "
-          :refresh-disabled="busy"
-          mode="client"
-          :rows="trustedRows"
-          :loading="trustedLoading && !trustedLoaded"
-          :refreshing="trustedLoading"
-          :retain-empty-frame="true"
-          :columns="columns"
-          :row-key="(row) => row.public_id"
-          :caption="text('Zaufane urządzenia', 'Trusted devices')"
-          :english="locale === 'en'"
+        <Accordion
+          v-model="devicesExpanded"
+          :label="text('Zaufane urządzenia', 'Trusted devices')"
         >
-          <template #actions="{ row }"
-            ><Button
-              intent="danger"
-              size="sm"
-              variant="outline"
-              :disabled="busy"
-              @click="
-                removing = row.public_id;
-                attempt = 0;
+          <div class="space-y-3">
+            <Table
+              v-model:query="query"
+              :export-allowed="account.tableExportAllowed?.value === true"
+              :export-rows="exportRows"
+              :refresh="
+                async () => {
+                  await loadTrustedDevices();
+                }
               "
-              >{{ text('Unieważnij', 'Revoke') }}</Button
-            ></template
-          >
-        </Table>
-        <Button
-          v-if="trustedCursor"
-          intent="inspect"
-          :busy="trustedLoading"
-          :disabled="busy"
-          @click="loadTrustedDevices(true)"
-          >{{ text('Wczytaj starsze', 'Load older') }}</Button
-        >
+              :refresh-disabled="busy"
+              mode="client"
+              :rows="trustedRows"
+              :loading="trustedLoading && !trustedLoaded"
+              :refreshing="trustedLoading"
+              :retain-empty-frame="true"
+              :columns="columns"
+              :row-key="(row) => row.public_id"
+              :caption="text('Zaufane urządzenia', 'Trusted devices')"
+              :english="locale === 'en'"
+            >
+              <template #actions="{ row }"
+                ><Button
+                  icon="device-desktop-off"
+                  intent="danger"
+                  size="sm"
+                  variant="outline"
+                  :disabled="busy"
+                  @click="
+                    removing = row.public_id;
+                    attempt = 0;
+                  "
+                  >{{ text('Unieważnij', 'Revoke') }}</Button
+                ></template
+              >
+            </Table>
+            <Button
+              v-if="trustedCursor"
+              :icon="actionIcons.load"
+              intent="inspect"
+              :busy="trustedLoading"
+              :disabled="busy"
+              @click="loadTrustedDevices(true)"
+              >{{ text('Wczytaj starsze', 'Load older') }}</Button
+            >
+          </div>
+        </Accordion>
       </section>
     </div>
   </Card>
@@ -416,6 +430,7 @@ watch(
 
       <template #actions>
         <Button
+          :icon="actionIcons.confirm"
           :intent="
             overviewAction === 'disable'
               ? 'danger'
@@ -429,9 +444,13 @@ watch(
           :disabled="overviewAction === 'trustIssue' && !canTrustDevice"
           >{{ operationLabel }}</Button
         >
-        <Button intent="cancel" :disabled="busy" @click="close(false)">{{
-          text('Anuluj', 'Cancel')
-        }}</Button>
+        <Button
+          :icon="actionIcons.cancel"
+          intent="cancel"
+          :disabled="busy"
+          @click="close(false)"
+          >{{ text('Anuluj', 'Cancel') }}</Button
+        >
       </template>
     </Form>
     <FormNotifications
@@ -445,6 +464,7 @@ watch(
       <template #actions
         ><Button
           v-if="failure === 'csrf'"
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="busy"
           @click="account.refreshCsrf"
@@ -458,6 +478,7 @@ watch(
     :title="text('Unieważnić zaufanie?', 'Revoke device trust?')"
     :confirm-label="text('Unieważnij', 'Revoke')"
     confirm-intent="danger"
+    confirm-icon="device-desktop-off"
     :locale="locale"
     :busy="busy"
     @update:model-value="
@@ -484,6 +505,7 @@ watch(
       <template #actions
         ><Button
           v-if="failure === 'csrf'"
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="busy"
           @click="account.refreshCsrf"

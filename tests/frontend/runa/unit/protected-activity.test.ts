@@ -1,6 +1,7 @@
 import { afterEach, expect, it, page, vi } from '@runa/testing/vitest';
 import { enableAutoUnmount, flushPromises, mount } from '@runa/testing/vue';
 import { defineComponent, h, ref } from 'vue';
+import { RequestCancelledError } from '@/runa/http';
 import { useProtectedActivity } from '@/runa/auth';
 enableAutoUnmount(afterEach);
 afterEach(() => vi.useRealTimers());
@@ -149,3 +150,31 @@ it('protected section activity keeps the throttle across bootstrap reads and can
   expect(fetch).toHaveBeenCalledTimes(2);
   expect(fetch.mock.calls[1]?.[1]?.method).toBe('GET');
 });
+
+it.each(['document', 'network', 'proof', 'availability'] as const)(
+  'protected activity distinguishes document cancellation from %s failure',
+  async (kind) => {
+    const fetch = vi.spyOn(window, 'fetch');
+    if (kind === 'document')
+      fetch.mockRejectedValue(new RequestCancelledError());
+    else if (kind === 'network')
+      fetch.mockRejectedValue(new TypeError('Network failure'));
+    else
+      fetch.mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            reason:
+              kind === 'proof' ? 'step_up_required' : 'availability_changed',
+          }),
+          {
+            status: kind === 'proof' ? 403 : 503,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+      );
+    const { expired } = fixture({ initial: false });
+    await flushPromises();
+    if (kind === 'document') expect(expired).not.toHaveBeenCalled();
+    else await vi.waitFor(() => expect(expired).toHaveBeenCalledTimes(1));
+  },
+);

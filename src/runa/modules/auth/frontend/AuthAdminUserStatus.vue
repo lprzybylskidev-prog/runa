@@ -8,7 +8,7 @@ import type {
 } from '@/runa/admin';
 import AuthPolicyExceptionFacts from './AuthPolicyExceptionFacts.vue';
 import { policyRuleNames, usePolicyExceptions } from './policyExceptions';
-import { Alert, Button, Card, ContentLoading } from '@/runa/ui';
+import { actionIcons, Alert, Button, Card, ContentLoading } from '@/runa/ui';
 const props = defineProps<
   AdminSectionPresentationProps & {
     sources: AdminSectionData[];
@@ -192,6 +192,7 @@ const missing = computed(() =>
       <Alert v-if="missing" tone="warning"
         >{{ t('Unable to load the current record.') }}
         <Button
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="refreshing"
           size="sm"

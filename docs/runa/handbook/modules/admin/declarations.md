@@ -2,13 +2,13 @@
 
 # Admin declarations, bindings and wire values
 
-Status: point 3 implements declarations/discovery, capability interfaces,
-field-bound options, typed widget results and source-bound component/build
-projection. Point 4 adds compiled resolution, the shared session shell, entry
-advertisement and page-read/document HTTP. Point 5 adds section-read HTTP, the frontend resource read lane, independent
-write/preview HTTP and generated forms. Point 6 delivers native atomic coordination
-and profile/access adapters; point 7 adds complete Auth administrative declarations. Point 8 adds owning Permissions pages and the immutable Audit viewer; points 9–10 deliver framework operations and settings. Point 11 adds [generator and consumer examples](examples.md). See
-[ownership and delivery](README.md). Named value classes are final readonly, with
+Admin 1.0.0 supplies declarations/discovery, capability interfaces, field-bound
+options, typed widget results and source-bound component/build projection. It
+includes compiled resolution, the shared session shell, entry advertisement,
+page/section/resource HTTP, independent writes/previews, generated forms and native
+atomic coordination. Core declarations, framework operations, application settings
+and [generator/consumer examples](examples.md) use these delivered contracts.
+See [ownership and delivery](README.md). Named value classes are final readonly, with
 public promoted constructor properties. Interfaces and values in this section
 belong to `Runa\Contracts\Modules`, unless explicitly named otherwise.
 
@@ -182,7 +182,7 @@ handler methods reject with `OperationRejected('admin_operation_unavailable',
 'runa.admin', <declared operation>, 404)` rather than empty success.
 
 The capability interfaces and read/result DTOs above are implemented in the
-point-3 implementation. Generated forms and independent write dispatch are delivered in point 5. A handler
+declaration implementation. Generated forms and independent write dispatch are delivered. A handler
 implements only its actual capabilities. Resource, lookup, widget and write bindings
 require their corresponding interface; no reader implements dummy write methods.
 A source-declared unsupported capability is a structural declaration error.
@@ -214,6 +214,74 @@ lookups, counts, review changes and validation errors. Denied fields disappear
 entirely; read-only/unknown submitted keys are refused, never silently ignored.
 Sensitive fields expose `{set:boolean}` only and never a stored secret. Required
 participation becoming unavailable blocks Save; independent pages remain usable.
+
+<a id="read-health-plans"></a>
+
+## Read health plans — Framework API 1.1.0
+
+Framework-owned public source extensions live in `Runa\Contracts\Modules`:
+
+```php
+interface ManagementReadPlanProvider extends ManagementPageProvider
+{
+    /** @return list<ManagementReadCall> */
+    public function readPlan(string $binding, string $capability,
+        ManagementRead|ManagementOptionsRead $input): array;
+}
+final readonly class ManagementReadCall
+{
+    public function __construct(public string $module, public string $contract,
+        public string $version, public string $method) {}
+}
+```
+
+Trusted module authors implement this optional provider in owned backend definitions
+under existing `declarations.management`. Independent App providers use the same
+interface through frozen AdminRegistry registration. Select framework_api ^2.0.0
+when using it. This is metadata planning, not a new business API or HTTP input.
+The existing ManagementPageProvider and guarded AdminAccess 1.0.0 signatures stay
+supported; handlers without a plan retain reads that need no on-use preparation.
+
+The binding belongs to that provider. Capability is read, page, options or widget;
+only options receives ManagementOptionsRead. Return a list of at most 128 exact
+public invocation occurrences in execution order. Duplicates are separate calls,
+each with its own health evaluation. Every tuple must match that binding's declared
+ManagementApiTarget. Plans contain no arguments, results, credentials, callback or
+proof. Planning is pure and input-based: never execute a business handler/API, IO
+or mutations from readPlan. An unplanned/excess health-sensitive guarded call is
+refused before its implementation runs; there is no wildcard or implicit guess
+from a binding's other methods. Include nested public calls that require on-use
+checks; ordinary owning private helpers create no additional public invocation.
+
+Admin first admits current entry/proof/section/fields and validates input in a
+short transaction, selecting source metadata without constructing the business
+handler. It ends that transaction, prepares applicable on-use/hybrid checks for
+separate occurrences, then reenters its existing locked default-connection root.
+The principal, source/plan/generation, current grants and password proof are checked
+again. Real reads and owning record Policies execute under those locks. Health
+checks never execute inside that transaction. Each occurrence is consumable once;
+a nested call cannot borrow its parent's evidence. Expiry, policy/source/API mapping,
+rollback and reconnect fences remain current, including the final response fence.
+No authorization/eligibility result or health admission survives the read.
+Without a nonempty plan or plan error, Admin keeps the original single entry
+transaction. Selected source declarations and input/field selection are reused
+only within that locked computation, never across preparation phases or requests.
+A final entry-proof check also refuses results when proof expires during a read.
+
+Widget plans are separate: a reader/plan failure retains that currently authorized
+widget's unavailable diagnostic and empty values without failing unrelated bootstrap
+content. If critical health withdraws the owner's availability, Permissions also
+withdraws its effective source grants; omit that widget entirely. Do not bypass
+availability to show protected metadata. Hidden/unavailable owners retain independent
+scheduler/CLI recovery; read planning does not load them or perform broad diagnosis.
+
+The private coordinator is `Runa\Integration\Core\AdminRead`; source/API resolution
+and consumable health frames stay under ModuleFramework. Customers implement the
+public plan and use normal guarded APIs, never these private engines. Native
+mutation health admission, independent writers, aggregate Save, entry advertisement
+and metadata-only pages retain their owning protocols. Post-write outcome projection
+only projects supplied results; a later data reread uses this guarded read path,
+without replaying the write.
 
 ## App registration and guarded Admin API
 
@@ -410,12 +478,11 @@ the entire form Save with 409, even when hidden by a presentation replacement;
 optional omitted sections are excluded explicitly from the participant set. Every
 write revalidates availability; discovery is never authority for a later request.
 
-Point 3 covers two pages from one owner with one unavailable optional target,
-independent sibling lookup grants, mismatched option identities, typed widget
-freshness and page/build identity. Points 4–5 cover compiled registry mismatch,
-required component blocking and controlled lookup requests; final point 12 runs
-complete affected-area verification. No rendered or runtime PASS follows from
-these revised signatures.
+Relevant regression scenarios include two pages from one owner with an unavailable
+optional target, independent sibling lookup grants, mismatched option identities,
+typed widget freshness, page/build identity, compiled registry mismatch, required
+component blocking and controlled lookup requests. Source signatures alone do not
+establish rendered or runtime acceptance.
 
 Malformed declarations/DTOs throw `InvalidArgumentException`; owning validation
 and revision conflicts retain their safe errors. HTTP maps unauthenticated to 401,
@@ -457,8 +524,9 @@ Source component keys resolve to their owning module's existing
 `src/app/resources/js/components/admin/<key>.vue`. Symlinks, imports, foreign keys
 and missing source are refused in source-bearing environments. Production strips
 Vue sources and validates the generated evidence against the current module
-manifest instead. Browser registry resolution, development-server evidence publication and shell
-replacement are implemented in point 4; final rendered acceptance remains point 12.
+manifest instead. Browser registry resolution, development-server evidence
+publication and shell replacement are delivered through the
+[frontend contract](frontend.md).
 
 Bootstrap selects the first authorized declared default, otherwise the first
 page ordered by order/key. Owners with no authorized page disappear. Page reads
@@ -533,3 +601,38 @@ uses the equivalent string/PL-EN-map union. Plain source strings can be translat
 through AdminApplication.messages; explicit language values take precedence. These
 are display values only: URLs, actions, permission keys and revisions stay unchanged.
 See the [presentation contract](frontend.md#polish-and-english-presentation).
+
+## Structured management fields
+
+Owner: module framework (declaration), Admin (guarded projection and presentation).
+Module/App Management providers declare `ManagementField` through the existing
+public constructor:
+
+```php
+ManagementField::__construct(string $key, string $type, array $names, array $descriptions,
+    bool $filterable = false, bool $sortable = false, bool $writable = false,
+    bool $sensitive = false, ?string $referenceModule = null, ?string $referenceOperation = null,
+    bool $required = false, ?int $maxLength = null, array $choices = [], bool $multiple = false)
+```
+
+Type `json` carries native lists/maps or null in `ManagementRecord.values`.
+Structured command inputs use native arrays/maps in `ManagementWrite.values`;
+owning writers must validate their shape, as for other field types. Auth delivery
+accepts a list only. Encoded JSON strings and other scalar projections are refused.
+Nested values retain the existing Management payload limit (depth 8, total 64 KiB);
+PHP arrays represent lists/maps, with an empty PHP array serialized as `[]`. PHP
+objects are not supported. Structured fields cannot be sensitive, filterable,
+sortable, UUID references, choices, multiple-selection or maxLength text controls.
+Secret set-state projections keep their separate existing sensitive-field contract.
+
+Supported entrypoints remain guarded Management readers/commands and public Admin
+controllers; the declaration lives in `src/runa/Contracts/Modules`, validation in
+`src/runa/ModuleFramework/Management`, and transport/presentation in the Admin module.
+Delivery/runtime modes are unchanged. Every field still needs its own read/write
+grants; JSON does not make arbitrary keys public or bypass owning write validation.
+
+The supplied readonly field uses escaped ValuePreview. Writable structured values
+require a specialized field/section/page presentation; the generic control reports
+unavailable and does not edit or coerce JSON text. Existing Auth delivery controls
+edit native arrays. Replacement presentations consume the same public AdminJson
+values and controller methods. Scalar field validation remains strict.

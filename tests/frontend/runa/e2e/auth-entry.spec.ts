@@ -46,7 +46,10 @@ test('Auth entry render diagnostic: keyboard errors and responsive theme states'
     await page.setViewportSize({ width, height });
     await page.addInitScript((theme) => {
       localStorage.clear();
-      localStorage.setItem('runa.theme', theme);
+      localStorage.setItem(
+        'runa.preferences:runa:display:global:runa.theme',
+        JSON.stringify({ version: 1, value: theme }),
+      );
     }, theme);
     await page.goto('/__fixtures/ui?preview=auth&flow=login');
     await expect(
@@ -97,7 +100,10 @@ for (const flow of [
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.addInitScript((locale) => {
         localStorage.clear();
-        localStorage.setItem('runa.locale', locale);
+        localStorage.setItem(
+          'runa.preferences:runa:display:global:runa.locale',
+          JSON.stringify({ version: 1, value: locale }),
+        );
       }, locale);
       const writes: string[] = [];
       page.on('request', (request) => {

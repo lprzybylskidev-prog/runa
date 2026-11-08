@@ -200,14 +200,22 @@ class TestService:
             )
         owner = "app" if self.layout.owner == "application" else "runa"
         directory = root / "tests" / ("backend" if scope == "backend" else "frontend") / owner
+        directories = [directory]
         if scope != "backend":
-            directory /= "unit" if scope == "frontend" else "e2e"
+            directories = [directory / ("unit" if scope == "frontend" else "e2e")]
+            if scope == "frontend":
+                directories.append(directory / "modules")
         patterns = (
             ("*Test.php",)
             if scope == "backend"
             else ("*.test.ts", "*.spec.ts", "*.test.js", "*.spec.js")
         )
-        return not any(path.is_file() for pattern in patterns for path in directory.rglob(pattern))
+        return not any(
+            path.is_file()
+            for directory in directories
+            for pattern in patterns
+            for path in directory.rglob(pattern)
+        )
 
     def run_scope(self, scope: Scope, selection: Selection) -> ScopeResult:
         if self.empty(scope, selection):

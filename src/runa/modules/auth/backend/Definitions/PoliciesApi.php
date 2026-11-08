@@ -13,7 +13,7 @@ final class PoliciesApi implements ApiProvider
 {
     public function definition(): ApiDefinition
     {
-        return new ApiDefinition(AuthPolicies::class, PoliciesProxy::class, Policies::class, '3.0.0', [
+        return new ApiDefinition(AuthPolicies::class, PoliciesProxy::class, Policies::class, '4.0.0', [
             'exceptionVersions' => new ApiOperation('policy.exception_versions', 'runa.auth.policy.exceptions'),
             'activeExceptions' => new ApiOperation('policy.active_exceptions', 'runa.auth.policy.exceptions'),
             'exceptions' => new ApiOperation('policy.exceptions', 'runa.auth.policy.exceptions'),

@@ -179,7 +179,7 @@ export function decodeRecord(value: unknown): AdminRecord {
 }
 function field(value: unknown): AdminFieldData {
   const v = object(value);
-  return {
+  const result: AdminFieldData = {
     key: operation(v.key),
     type: key(v.type),
     label: localizedText(v.label, 1024),
@@ -197,6 +197,18 @@ function field(value: unknown): AdminFieldData {
     multiple: boolean(v.multiple),
     component: nullable(v.component, component),
   };
+  if (
+    result.type === 'json' &&
+    (result.filterable ||
+      result.sortable ||
+      result.sensitive ||
+      result.lookup ||
+      result.multiple ||
+      result.max_length !== null ||
+      result.choices.length)
+  )
+    throw new TypeError('Invalid structured Admin field.');
+  return result;
 }
 function command(value: unknown): AdminCommandData {
   const v = object(value);
@@ -387,26 +399,28 @@ export function decodeRead(
           throw new TypeError('Invalid Admin secret state.');
       } else if (value !== null) {
         const valid =
-          field.type === 'text'
-            ? typeof value === 'string' &&
-              (field.max_length === null ||
-                [...value].length <= field.max_length)
-            : field.type === 'boolean'
-              ? typeof value === 'boolean'
-              : field.type === 'integer'
-                ? typeof value === 'number' && Number.isSafeInteger(value)
-                : field.type === 'datetime'
-                  ? typeof value === 'string' && timestamp(value) === value
-                  : field.type === 'dictionary'
-                    ? typeof value === 'string' &&
-                      (!field.choices.length || field.choices.includes(value))
-                    : field.type === 'uuid'
-                      ? field.multiple
-                        ? Array.isArray(value) &&
-                          value.length <= 100 &&
-                          value.every(isPublicId)
-                        : isPublicId(value)
-                      : false;
+          field.type === 'json'
+            ? typeof value === 'object'
+            : field.type === 'text'
+              ? typeof value === 'string' &&
+                (field.max_length === null ||
+                  [...value].length <= field.max_length)
+              : field.type === 'boolean'
+                ? typeof value === 'boolean'
+                : field.type === 'integer'
+                  ? typeof value === 'number' && Number.isSafeInteger(value)
+                  : field.type === 'datetime'
+                    ? typeof value === 'string' && timestamp(value) === value
+                    : field.type === 'dictionary'
+                      ? typeof value === 'string' &&
+                        (!field.choices.length || field.choices.includes(value))
+                      : field.type === 'uuid'
+                        ? field.multiple
+                          ? Array.isArray(value) &&
+                            value.length <= 100 &&
+                            value.every(isPublicId)
+                          : isPublicId(value)
+                        : false;
         if (!valid) throw new TypeError('Invalid Admin field value.');
       }
     }

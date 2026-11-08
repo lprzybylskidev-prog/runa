@@ -304,16 +304,16 @@ final class AdministrationPages implements ManagementPageProvider
                 ...array_map(fn ($key) => self::field($key, ucwords(str_replace('_', ' ', $key)), in_array($key, ['active', 'deleted', 'security_locked', 'password_change_required'], true) ? 'boolean' : 'datetime', read: 'users.read'), ['active', 'deleted', 'security_locked', 'password_change_required', 'activate_at', 'deactivate_at', 'attempt_locked_until'])],
             'invitations' => [],
             'primary_email' => [self::field('current_email', 'Current primary email', read: 'emails.read'), self::field('verified', 'Verified', 'boolean', read: 'emails.read'), self::field('verification_required', 'Verification required', 'boolean', read: 'emails.read'), self::field('email', 'New email', write: 'emails.manage', read: 'profiles.read'), self::field('replacement_email', 'Verified replacement email', write: 'emails.verify_bypass', read: 'profiles.read')],
-            'secondary' => [self::field('secondary_email_limit', 'Secondary email limit', 'integer', read: 'secondary.read'), self::field('addresses', 'Secondary addresses', read: 'secondary.read'), self::field('address_id', 'Secondary address UUID', 'uuid', 'secondary.manage', 'secondary.read'), self::field('email', 'New email', write: 'secondary.manage', read: 'secondary.read')],
-            'sessions' => [self::field('sessions', 'Live sessions', read: 'sessions.manage'), self::field('session_id', 'Session UUID', 'uuid', 'sessions.manage', 'sessions.manage')],
+            'secondary' => [self::field('secondary_email_limit', 'Secondary email limit', 'integer', read: 'secondary.read'), self::field('addresses', 'Secondary addresses', 'json', read: 'secondary.read'), self::field('address_id', 'Secondary address UUID', 'uuid', 'secondary.manage', 'secondary.read'), self::field('email', 'New email', write: 'secondary.manage', read: 'secondary.read')],
+            'sessions' => [self::field('sessions', 'Live sessions', 'json', read: 'sessions.manage'), self::field('session_id', 'Session UUID', 'uuid', 'sessions.manage', 'sessions.manage')],
             'security' => [],
-            'trust' => [self::field('devices', 'Trusted devices', read: 'trust.manage'), self::field('device_id', 'Device UUID', 'uuid', 'trust.manage', 'identities.read')],
+            'trust' => [self::field('devices', 'Trusted devices', 'json', read: 'trust.manage'), self::field('device_id', 'Device UUID', 'uuid', 'trust.manage', 'identities.read')],
             'preferences' => [self::field('locale', ['pl' => 'Język', 'en' => 'Language'], 'dictionary', 'preferences.manage', 'preferences.read', choices: ['pl', 'en']),
                 self::field('theme', ['pl' => 'Motyw', 'en' => 'Theme'], 'dictionary', 'preferences.manage', 'preferences.read', choices: ['light', 'dark', 'system']),
-                self::field('delivery', 'Email preferences', write: 'preferences.manage', read: 'preferences.read'),
-                self::field('recipient_selection_enabled', 'Secondary email selection', 'boolean', read: 'preferences.read'), self::field('categories', 'Email categories', read: 'preferences.read'), self::field('recipients', 'Recipients', read: 'preferences.read'),
+                self::field('delivery', 'Email preferences', 'json', write: 'preferences.manage', read: 'preferences.read'),
+                self::field('recipient_selection_enabled', 'Secondary email selection', 'boolean', read: 'preferences.read'), self::field('categories', 'Email categories', 'json', read: 'preferences.read'), self::field('recipients', 'Recipients', 'json', read: 'preferences.read'),
                 self::field('preference_revision', 'Current preference revision', 'integer', 'preferences.reset', 'preferences.read')],
-            'exceptions' => [self::field('exception_versions', 'Exception versions', read: 'policy.exceptions'), self::field('exceptions', 'Exceptions (latest 50)', read: 'policy.exceptions'), self::field('key', 'Policy key', 'dictionary', 'policy.exceptions', 'policy.exceptions', choices: ['password_expiry_days', 'session_idle_minutes']), self::field('value', 'Value (empty revokes)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('reason', 'Reason', write: 'policy.exceptions', read: 'policy.exceptions'), self::field('expires_at', 'Applies until (optional)', 'datetime', 'policy.exceptions', 'policy.exceptions'), self::field('exception_version', 'Current exception version (0 if absent)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('policy_revision', 'Current policy revision', 'integer', 'policy.exceptions', 'policy.exceptions')],
+            'exceptions' => [self::field('exception_versions', 'Exception versions', 'json', read: 'policy.exceptions'), self::field('exceptions', 'Exceptions (latest 50)', 'json', read: 'policy.exceptions'), self::field('key', 'Policy key', 'dictionary', 'policy.exceptions', 'policy.exceptions', choices: ['password_expiry_days', 'session_idle_minutes']), self::field('value', 'Value (empty revokes)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('reason', 'Reason', write: 'policy.exceptions', read: 'policy.exceptions'), self::field('expires_at', 'Applies until (optional)', 'datetime', 'policy.exceptions', 'policy.exceptions'), self::field('exception_version', 'Current exception version (0 if absent)', 'integer', 'policy.exceptions', 'policy.exceptions'), self::field('policy_revision', 'Current policy revision', 'integer', 'policy.exceptions', 'policy.exceptions')],
         ];
         $features = app(AdministrationFeatures::class);
         foreach (['email' => ['Email', 'text', 'emails.read'], 'verified' => ['Verified', 'boolean', 'emails.read'], 'email_verified_at' => ['Email verification date', 'datetime', 'emails.read'], 'login' => ['Login', 'text', 'profiles.read'],
@@ -356,7 +356,7 @@ final class AdministrationPages implements ManagementPageProvider
         }
         $fields['exceptions'][2] = self::field('key', 'Policy key', 'dictionary', 'policy.exceptions', 'policy.exceptions',
             choices: $features->enabled('password_expiry') ? ['password_expiry_days', 'session_idle_minutes'] : ['session_idle_minutes']);
-        $fields['exceptions'][] = self::field('active_exceptions', 'Active account rules', read: 'policy.exceptions');
+        $fields['exceptions'][] = self::field('active_exceptions', 'Active account rules', 'json', read: 'policy.exceptions');
         $reads = ['eligibility' => 'eligibility.read', 'creation' => 'users.create', 'lifecycle' => 'users.read', 'invitations' => 'identities.read', 'primary_email' => 'profiles.read', 'secondary' => 'secondary.read', 'sessions' => 'sessions.manage', 'security' => 'identities.read', 'trust' => 'trust.manage', 'preferences' => 'preferences.read', 'exceptions' => 'policy.exceptions'];
         foreach ($fields as $key => $items) {
             $sections[] = new ManagementSection($key, ucwords(str_replace('_', ' ', $key)), 'runa.auth.'.$reads[$key], 'runa.auth.'.$reads[$key], $key, $items,
@@ -427,8 +427,8 @@ final class AdministrationPages implements ManagementPageProvider
             new ManagementCommandDefinition('publish', 'Review and publish policy', new ManagementOperation(new ApiOperation('policy.publish', 'runa.auth.policy.write'), $inputs, 'password', previewRequired: true), $binding, proofAction: 'runa.auth.policy.publish'),
         ]);
         $sections[] = new ManagementSection('snapshots', ['pl' => 'Migawki', 'en' => 'Snapshots'], 'runa.auth.policy.read', 'runa.auth.policy.write', 'policy_snapshots', [
-            self::field('snapshots', ['pl' => 'Migawki', 'en' => 'Snapshots'], read: 'policy.read'),
-            self::field('values', ['pl' => 'Wartości', 'en' => 'Values'], read: 'policy.read'),
+            self::field('snapshots', ['pl' => 'Migawki', 'en' => 'Snapshots'], 'json', read: 'policy.read'),
+            self::field('values', ['pl' => 'Wartości', 'en' => 'Values'], 'json', read: 'policy.read'),
             self::field('name', ['pl' => 'Nazwa', 'en' => 'Name'], write: 'policy.write', read: 'policy.read'),
             self::field('snapshot_id', ['pl' => 'Migawka', 'en' => 'Snapshot'], 'uuid', 'policy.write', 'policy.read'),
         ], [
@@ -457,7 +457,7 @@ final class AdministrationPages implements ManagementPageProvider
             $fields[] = new ManagementFieldAccess(new ManagementField($key, 'text', $text, $text, writable: true, sensitive: true, maxLength: 72), 'runa.auth.users.create', 'runa.auth.users.create');
         }
         $fields[] = self::field('identifier_mode', 'Login identifier', 'dictionary', read: 'users.create', choices: ['email', 'login', 'either']);
-        $fields[] = self::field('password_policy', 'Password policy', read: 'users.create');
+        $fields[] = self::field('password_policy', 'Password policy', 'json', read: 'users.create');
         $fields[] = self::field('invitation_allowed', 'Invitation available', 'boolean', read: 'invitations.manage');
         $fields[] = self::field('email_verification_allowed', 'Administrative verification available', 'boolean', read: 'emails.verify_bypass');
 
@@ -524,8 +524,8 @@ final class AdministrationPages implements ManagementPageProvider
             new ManagementBinding('security', SecuritySection::class, [$target(AuthAdministration::class, ['facts'], '2.1.0'), $identity, $target(AuthSecurity::class, ['resetFactors', 'requestPasswordReset'], '1.2.0')]),
             new ManagementBinding('trust', DeviceSection::class, [$identity, $target(AuthSecurity::class, ['trustedDevices', 'revokeDevice', 'revokeDevices'], '1.2.0')]),
             new ManagementBinding('preferences', PreferenceSection::class, [$target(AuthPreferences::class, ['account', 'updateAccount', 'resetAccount'], '1.1.0')]),
-            new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'activeExceptions', 'exceptionVersions', 'exception', 'revokeExceptions'], '3.0.0')]),
-            new ManagementBinding('policy', PolicySection::class, [$target(AuthPolicies::class, ['preview', 'publish'], '3.0.0')]),
+            new ManagementBinding('exceptions', ExceptionSection::class, [$identity, $target(AuthPolicies::class, ['exceptions', 'activeExceptions', 'exceptionVersions', 'exception', 'revokeExceptions'], '4.0.0')]),
+            new ManagementBinding('policy', PolicySection::class, [$target(AuthPolicies::class, ['preview', 'publish'], '4.0.0')]),
             new ManagementBinding('policy_snapshots', PolicySnapshots::class, [
                 $target(AuthStepUp::class, ['assertVerified'], '2.0.0'),
                 new ManagementApiTarget('runa.audit', AuditRecords::class, '1.0.0', ['record']),

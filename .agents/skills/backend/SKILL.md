@@ -5,12 +5,31 @@ description: 'Runa backend engineering guidance for application structure, failu
 
 # Runa Backend
 
+When adding a Runa module or customer-facing capability, apply the owner
+[executable reference obligation](../../../docs/runa/maintainer/development/reference-module.md)
+in the same point. Trace the working example through public APIs and owning tests.
+
 For opt-in Admin generation and independent App pages, follow
 `docs/runa/handbook/modules/admin/examples.md`. Review exact overwrite hashes,
 singular settings-provider ownership and generated business/presentation boundaries;
 generation never installs modules or grants permissions.
 
+For Admin readers using on-use/hybrid APIs, select the exact-call read-plan
+contract in `docs/runa/handbook/modules/admin/declarations.md#read-health-plans`.
+Keep planning in owned source and consume normal guarded APIs; no private engine
+imports or cached authority/availability substitutes.
+
 Use this skill for backend architecture and implementation choices that are broader than Laravel syntax.
+
+For health publication or operation-admission changes, consult
+`docs/runa/handbook/architecture/module-framework.md#delivered-health-services`.
+Keep observation freshness separate from admission validity and retain exact-call expiry.
+
+For module settings, follow [native settings publication](../../../docs/runa/handbook/architecture/module-settings.md).
+Use the documented semantic review identity for deliberate publication and snapshot capture; keep operational generation and current authorization checks distinct.
+Declare access/proof requirements and owning participation on the single settings
+provider; use authorized projections for HTTP and retain the independent native
+runner, atomic proof/publication/Audit and native recovery.
 
 For lists, metadata/bootstrap, authorization intersections and settings/preference
 snapshots, review repeated reads beyond Eloquent relations. Follow
@@ -68,3 +87,8 @@ For standalone or aggregate module writes migrated to native phases, follow
 [owning module transactions](../../../docs/runa/handbook/architecture/module-transactions.md).
 Use the source-owned participant contract and current API versions; Admin does
 not wrap old whole writes or own foreign business validation/persistence.
+
+For owner final backend verification, follow
+[verification evidence continuity](../../../docs/runa/maintainer/testing/strategy.md#verification-evidence-continuity)
+and its temporary SIGSEGV procedure. Keep native results and coverage limits;
+this owner-only policy does not change customer recovery.

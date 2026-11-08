@@ -40,7 +40,20 @@ refused; merge with the owning provider deliberately. See the complete
 public signatures, extension/replacement patterns and persistence limitations.
 Manifest declaration/docs edits require their exact current overwrite hash.
 
-Runa-owned generation additionally requires a receipt-free owner checkout with its real `.git` directory, maintainer tooling and owner contract. Copied owner files in a customer acquisition do not grant permission. Production refuses generation; source/runtime operator diagnostics remain available; no module-management HTTP write endpoint exists.
+Runa-owned generation additionally requires a receipt-free owner checkout with its real `.git` directory, maintainer tooling and owner contract. Copied owner files in a customer acquisition do not grant permission. Production refuses generation; source/runtime operator diagnostics remain available.
+Generation has no HTTP endpoint. Admin exposes only its named guarded operational
+commands, never arbitrary generator or engine dispatch.
+
+## Executable customer reference
+
+The optional development-only `app.reference` module is executable documentation
+of supported Runa module integrations. When selected, use
+`docs/app/modules/reference/README.md` to trace actual UI/backend/CLI scenarios to
+their public contracts, owning declarations, Actions and application tests. Adapt
+application-owned examples while retaining server authority, transactional Audit
+and shared Auth proof orchestration. The example is not a production module or
+permission to import private platform implementations. A clean acquisition may
+omit it; the handbook and generator examples remain independently usable.
 
 ## Welcome catalogue
 
@@ -94,9 +107,9 @@ change the approval policy for customer-owned application modules. Backend-impac
 
 ## Working reference and application integration
 
-The optional first-development example is `app.reference`, version 0.1.2. Choose `--reference-module=include|exclude` in the external source installer, or answer its interactive question. Automation defaults to exclude. Source selection persists on reopen; protected-platform updates preserve customer example edits and never add declined code. Production sparse staging, Docker context and frontend registry exclude it; backend discovery refuses copied reference source. Its central guide is `docs/app/modules/reference/README.md` when selected. The clean variant retains this guide and all public module contracts without needing the example.
+The optional first-development example is `app.reference`, version 0.4.1. Choose `--reference-module=include|exclude` in the external source installer, or answer its interactive question. Automation defaults to exclude. Source selection persists on reopen; protected-platform updates preserve customer example edits and never add declined code. Production sparse staging, Docker context and frontend registry exclude it; backend discovery refuses copied reference source. Its central guide is `docs/app/modules/reference/README.md` when selected. The clean variant retains this guide and all public module contracts without needing the example.
 
-Production builds copy both owners' module source into the frontend build for component discovery and into the PHP dependency stage for runtime discovery, pruning raw frontend and development implementations before the final runtime copy. The Vite module plugin is a build input only. The tracked Runa module root contains the Core Audit, Auth and Permissions source; clean customer builds need no pre-existing local directories. Docker context exclusions remove development examples and tests before these copies.
+Production builds copy both owners' module source into the frontend build for component discovery and into the PHP dependency stage for runtime discovery, pruning raw frontend and development implementations before the final runtime copy. The Vite module plugin is a build input only. The tracked Runa module root contains the Core Audit, Auth, Permissions and Admin source; clean customer builds need no pre-existing local directories. Docker context exclusions remove development examples and tests before these copies.
 
 Module anatomy follows the generated skeleton: strict manifest; owned `backend/Contracts` DTOs/interfaces and guarded implementations; explicit `database/migrations`; local frontend components; central tests under tests/<technology>/<owner>/modules/<code> and central owner docs. Registration, enabled flags, health, source version and successfully installed data version are separate. Inspect `ModuleUpdates::plan(owner)` and apply under the existing trusted application operation journal/maintenance boundary before enabling data-dependent modules. Application update execution is explicit. `ModuleTransitions` previews and atomically applies lifecycle changes; diagnose critical health before enabling. Health policies are defined exclusively in module source through HealthPolicy schema 2 (no runtime overrides); work policies also belong to the module, including retry/checkpoint/cancellation/compensation decisions.
 
@@ -109,9 +122,9 @@ use Runa\Support\Modules\Api\ModuleApis;
 $result = app(ModuleApis::class)->resolve('app.reference', Ping::class, '1.0.0')->read();
 ```
 
-Use only a foreign module's public Contracts through these adapters, exchange public UUIDv7 references and handle operation rejection explicitly. Required dependencies participate in activation/health; optional integrations do not auto-enable or disable either side. Use the shipped Core Audit contracts for manual history and isolated fixtures for dependency policies whose real modules remain undelivered. Never add phantom Core/Admin registrations to make an example boot. Use the [Permissions declaration and grant contract](../modules/permissions/README.md) for source-owned permissions/predefined roles; ordinary action grants do not replace record policies or security steps.
+Use only a foreign module's public Contracts through these adapters, exchange public UUIDv7 references and handle operation rejection explicitly. Required dependencies participate in activation/health; optional integrations do not auto-enable or disable either side. Use the shipped Core contracts and isolated fixtures for dependency/failure scenarios. Do not fabricate Core registrations or bypass installation to make an example boot. Use the [Permissions declaration and grant contract](../modules/permissions/README.md) for source-owned permissions/predefined roles; ordinary action grants do not replace record policies or security steps.
 
-Use ModuleSchema/ModuleModel and ModuleStorage for owned data/files; migrations run only in explicit install/update. No cross-module SQL/models/relations/FKs/path traversal. Settings providers declare typed defaults/validation and immediate/reinitialize handlers; use revision/generation checks and private runtime reads for sensitive values. Facts use ModuleEvents after commit and independent versioned listeners; coordinated critical operations use guarded APIs. Jobs/commands/schedules use classified adapters and cooperative work checkpoints. Frontends opt into ModulePage/navigation/ModuleSlot, validate runtime/build identity before loading and use the shared HTTP client; custom shells remain supported. Logs carry bounded origin/correlation and never raw secrets/payloads.
+Use ModuleSchema/ModuleModel and ModuleStorage for owned data/files; migrations run only in explicit install/update. No cross-module SQL/models/relations/FKs/path traversal. Settings providers declare typed defaults/validation and immediate/reinitialize handlers; use revision/review identity checks and private runtime reads for sensitive values. For authorized HTTP reads/writes, field grants, password proof and owning transactional participation, follow [native settings publication](../architecture/module-settings.md). Facts use ModuleEvents after commit and independent versioned listeners; coordinated critical operations use guarded APIs. Jobs/commands/schedules use classified adapters and cooperative work checkpoints. Frontends opt into ModulePage/navigation/ModuleSlot, validate runtime/build identity before loading and use the shared HTTP client; custom shells remain supported. Logs carry bounded origin/correlation and never raw secrets/payloads.
 
 Troubleshoot in this order: source/manifest synchronization, installed version, administrative state, own/effective health and independent maintenance reasons, active work/fences, then declaration/build compatibility. Inspect `runa:modules:management`, `runa:modules:health` and redacted settings. Source checks cannot prove semantic isolation or replace behavior tests. Test module-specific failure/retry cases and retained-data disable/unregister, and review dependent public contracts whenever the independent module version changes.
 

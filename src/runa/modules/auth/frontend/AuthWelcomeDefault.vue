@@ -5,6 +5,7 @@ const { locale } = useLocale();
 import { applicationSessionOwner } from '../../../resources/js/lib/applicationSession';
 provide(applicationSessionOwner, true);
 import {
+  actionIcons,
   FormNotifications,
   Button,
   TextLink,
@@ -42,9 +43,12 @@ const { text, options, session, failed, loading, load } = useAuthWelcome();
           "
         >
           <template #actions
-            ><Button intent="inspect" @click="load">{{
-              text('Ponów', 'Retry')
-            }}</Button></template
+            ><Button
+              :icon="actionIcons.refresh"
+              intent="inspect"
+              @click="load"
+              >{{ text('Ponów', 'Retry') }}</Button
+            ></template
           >
         </FormNotifications>
         <nav

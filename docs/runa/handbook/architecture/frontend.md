@@ -112,7 +112,7 @@ WCAG 2.2 AA is the project baseline, not a formal certification claim.
 - Prefer semantic HTML before ARIA.
 - All functionality must be keyboard accessible.
 - No keyboard traps.
-- Focus must be visible.
+- Focus must be visible and remain reachable beneath sticky chrome and floating layers.
 - Manage focus for modal/temporary layers and return it appropriately.
 - Forms have real labels; placeholders are not labels.
 - Instructions and errors are programmatically related to controls.
@@ -120,12 +120,26 @@ WCAG 2.2 AA is the project baseline, not a formal certification claim.
 - Color is not the only carrier of meaning.
 - Design-system contrast targets AA.
 - UI must remain functional at 200% zoom/text scaling.
-- Minimum WCAG 2.2 target size is approximately 24x24 CSS px; prefer about 44x44 for frequent touch actions when practical.
+- Check the 24×24 CSS-pixel target criterion with its spacing and other exceptions; prefer about 44×44 for frequent touch actions when practical.
 - Respect `prefers-reduced-motion` without breaking state communication.
 - No critical action/information may exist only on hover.
 - Screen-reader checks are performed periodically for critical/complex flows rather than mechanically for every button.
 
-Accessibility is part of normal component review.
+Accessibility is part of normal component review. Use the applicable criteria from
+[WCAG 2.2](https://www.w3.org/TR/2024/REC-WCAG22-20241212/), especially semantics
+1.3.1, contrast 1.4.3/1.4.11, reflow 1.4.10, keyboard 2.1.1/2.1.2, focus
+2.4.3/2.4.7/2.4.11, targets 2.5.8, labels/errors 3.3.1/3.3.2 and status 4.1.3.
+Check narrow reflow at 320 CSS pixels independently of 200% text resizing;
+meaningful two-dimensional data can retain a bounded horizontal viewport.
+Record criterion-specific exceptions and actual observed limits.
+
+For modals, review the [WAI-ARIA dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/):
+move focus inside, contain the tab sequence, make underlying content inert and
+restore focus to a usable opener or logical successor. Choose initial focus for
+the content; a reading heading can be appropriate for a long structured dialog.
+A role/aria-modal attribute alone does not implement these behaviors. Preserve
+Runa's documented busy/closure and protected-flow contracts. Pattern examples and
+automated assertions do not prove complete conformance.
 
 ## Content robustness
 
@@ -219,7 +233,7 @@ Rendered behavior is the acceptance truth.
 
 Before creating a page or form, inspect two analogous existing pages/forms when available and search existing shared controls/layouts. If fewer exist, inspect what is available and establish the first pattern deliberately. Never invent examples that do not exist.
 
-The maintained catalogue lives in `docs/runa/handbook/development/frontend/components.md`; page, form and table patterns live alongside it. Update those references in the same task whenever a reusable component or pattern is established, replaced or removed. Record real paths, intended use, relevant contracts and canonical examples. Persist reusable user corrections without waiting for a separate documentation request.
+Use the [UI standards and guidance map](../design/visual-direction.md#ui-standards-and-guidance-map) to select only affected topics. The maintained catalogue lives in `docs/runa/handbook/development/frontend/components.md`; page, form and table patterns live alongside it. Update those references in the same task whenever a reusable component or pattern is established, replaced or removed. Record real paths, intended use, relevant contracts and canonical examples. Persist reusable user corrections without waiting for a separate documentation request.
 
 Disable native form validation for controlled application forms and show errors through the common application UX. Preserve labels, input semantics, autofill/password-manager support and accessible error associations. Block known invalid submits and duplicate submits; preserve recoverable input on 409/422/server failures. A conflict offers a clear refresh/recovery path instead of silent overwriting.
 
@@ -227,7 +241,7 @@ Disable native form validation for controlled application forms and show errors 
 
 Import individual existing primitives from `@/runa/ui` (Vite, Vitest and TypeScript share the alias). The facade exports Button, Tooltip, Icon, Form, Select, LoadingOverlay and Logo without importing a layout, router, registry or global installation. Include the application's `src/runa/resources/css/app.css` for theme tokens/fonts/styles. The underlying App-prefixed components remain the single implementations.
 
-Public identity, navigation, preference-storage, selection/export/provider and print types live behind the same facade. Identity, exact-path page resolution and versioned preferences are implemented. Selection/export/provider/print contracts include delivered bounded browser export adapters; domain endpoints and server jobs remain application-owned. Existing `runa.locale`/`runa.theme` behavior remains unchanged. Application versions are independent of platform versions; URL-derived route context is separate from persisted navigation appearance.
+Public identity, navigation, preference-storage, selection/export/provider and print types live behind the same facade. Identity, exact-path page resolution and versioned preferences are implemented. Selection/export/provider/print contracts include delivered bounded browser export adapters; domain endpoints and server jobs remain application-owned. Language/theme controls use scoped versioned preferences; obsolete flat browser keys are ignored. Application versions are independent of platform versions; URL-derived route context is separate from persisted navigation appearance.
 
 ## Minimal layout and branding
 
@@ -283,7 +297,7 @@ Workspace order is heading/description/actions, breadcrumbs, optional statistics
 
 Below 64rem the sidebar is an inert offscreen panel until opened. Its drawer traps Tab/Shift+Tab, closes on Escape/backdrop and restores focus; successful navigation closes it and focuses main. Body scrolling is locked only while the drawer is open, and listeners/body style are cleaned up on unmount or resize. At desktop size the sidebar is viewport-fixed with its own scrollable navigation region. The top header is sticky and remains visible during page scrolling; the toolbar scrolls normally. The owner's later point-3 feedback supersedes the original nonsticky-header premise. The sidebar brand row and top header both use 64px height; the Runa mark uses the same 42px square as MinimalLayout. The collapse/expand or phone-drawer control precedes top navigation. Sidebar groups are whole-row disclosure buttons, with their chevron inside the control rather than beside a navigable parent label. The top header uses a compact 64px row, with the navigation scrollbar flush to its bottom edge. Top navigation overflows horizontally without widening the document. Its internal AppTopNavigation renders group triggers and teleports each open dropdown card outside the scrolling nav into body. Cards are viewport-clamped below the trigger/header, overlay workspace content and never change header height; sidebar groups continue expanding inline. Escape returns focus, Tab/Shift+Tab reconnect to the trigger/next navigation item, and outside clicks, navigation, document scroll and resize dismiss the card; horizontal nav scrolling updates its anchor position. While it overflows, wheel events over navigation move it horizontally and do not scroll the document, including at either end; horizontal trackpad deltas and line/page wheel modes are supported, while Ctrl+wheel keeps native zoom behavior. Collapsed link tooltips use a narrow right-placement extension of the existing tooltip; the hover-dismissal correction was delivered and accepted in point 9.
 
-Both layouts share AppPreferenceControls/useDisplayPreferences and preserve cover timing, inert content and focus return. The default PreferenceStore now binds verified account sessions to Auth-owned PostgreSQL preferences with immediate revision-checked writes, reload/new-login convergence, account-switch/late-response isolation and visible failure/reload feedback in both layouts. Display and navigation schemas are declared by Auth; each module declares its exact table/statistics view schemas. Guest values retain versioned localStorage plus legacy locale/theme fallback and denied-storage memory. Reset tombstones prevent legacy resurrection; only guest writes update compatibility keys. Explicit ownership-confirmed allowlisted adoption never overwrites existing server values. Account values stay in memory and never enter guest storage. Custom injected stores retain their own lifecycle responsibility. See the [account preference contract](../modules/auth/preferences.md) for declarations, APIs and boundaries; preference storage never contains credentials, drafts or authorization state.
+Both layouts share AppPreferenceControls/useDisplayPreferences and preserve cover timing, inert content and focus return. The default PreferenceStore now binds verified account sessions to Auth-owned PostgreSQL preferences with immediate revision-checked writes, reload/new-login convergence, account-switch/late-response isolation and visible failure/reload feedback in both layouts. Display and navigation schemas are declared by Auth; each module declares its exact table/statistics view schemas. Guest values use scoped versioned localStorage and denied-storage memory. Flat locale/theme keys are ignored; guest changes write only the scoped envelope and reset writes a scoped tombstone. Explicit ownership-confirmed allowlisted adoption never overwrites existing server values. Account values stay in memory and never enter guest storage. Custom injected stores retain their own lifecycle responsibility. See the [account preference contract](../modules/auth/preferences.md) for declarations, APIs and boundaries; preference storage never contains credentials, drafts or authorization state.
 
 Shell controls use a 36px sidebar toggle inset 24px from the header left edge. Top-navigation overflow has decorative dotted edge indicators, shown only in directions containing hidden content; scroll, viewport/sidebar resizing and navigation-content changes refresh them. Indicators fade over 160ms, with reduced-motion support, and do not intercept input. The collapsed sidebar centers disabled icons identically to enabled entries, omits the supplementary sidebar-bottom slot and retains the platform version without the RUNA prefix in its footer.
 
@@ -333,7 +347,7 @@ The ApplicationLayout top menu and sidebar, including their entries, disclosures
 
 ## Shared action controls
 
-Public `@/runa/ui` action imports include Button, ButtonGroup and Icon, with exported ControlSize/ControlTone/ButtonVariant types. Controls remain shell-independent. Button preserves its original neutral/md appearance and compact compatibility; explicit variants use shared semantic tokens. Busy state blocks native activation. ButtonGroup joins adjacent controls with one divider. ApplicationLayout consumes Button while retaining its unique initials profile control. Action-list/split buttons and reusable avatars are deferred until a concrete need exists, per owner review. See the component catalogue for full contracts.
+Public `@/runa/ui` action imports include Button, ButtonGroup and Icon, with exported ControlSize/ControlTone/ButtonVariant types. Controls remain shell-independent. Button defaults to neutral/md and uses iconOnly for square controls; explicit variants use shared semantic tokens. Busy state blocks native activation. ButtonGroup joins adjacent controls with one divider. ApplicationLayout consumes Button while retaining its unique initials profile control. Action-list/split buttons and reusable avatars are deferred until a concrete need exists, per owner review. See the component catalogue for full contracts.
 
 The retired catalog has no application entry. Isolated component scenarios remain under tests/frontend/fixtures/browser; reusable component contracts stay in the frontend skill catalogue.
 
@@ -433,7 +447,7 @@ The public `Table` component supports explicit bounded client and paginated serv
 
 Semantic feedback components supply a reactive nearest-parent tone context for nested feedback only. Buttons use explicit source-owned action intents, independent of surrounding feedback and password proof. Shared defaults, confirmation projection and hierarchy follow the [action button semantics](../development/frontend/components.md#action-button-semantics).
 
-Table personalization persists presentation/query snapshots in the existing scoped PreferenceStore (schema v2, v1 migration). TablePreferences provides column visibility, drag/keyboard ordering, width controls and named-view create/select/update/rename/delete/default/reset. Hidden columns remain part of query processing; only explicit descriptor removal invalidates filters/sorts. Current and saved snapshots reconcile unavailable/new columns before application. Applying a view resets pagination to page 1. See the table reference for public integration, bounds, default/re-entry behavior and storage fallback; this is UX state, with account persistence through declared schemas when signed in, never a permissions model.
+Table personalization persists presentation/query snapshots in the existing scoped PreferenceStore (schema v2; obsolete versions use defaults). TablePreferences provides column visibility, drag/keyboard ordering, width controls and named-view create/select/update/rename/delete/default/reset. Hidden columns remain part of query processing; only explicit descriptor removal invalidates filters/sorts. Current and saved snapshots reconcile unavailable/new columns before application. Applying a view resets pagination to page 1. See the table reference for public integration, bounds, default/re-entry behavior and storage fallback; this is UX state, with account persistence through declared schemas when signed in, never a permissions model.
 
 Table toolbar composition groups Search/page size with optional view preferences and sm icon export/print buttons. Export scope and PDF orientation live in the shared settings Popover; selection/bulk controls appear contextually. The toolbar slot exposes a per-instance feedbackTarget for TableActions, keeping operation feedback below the header without changing alignment. Print tables use separate zero-spacing cell borders and uniform 1pt CSS separators.
 

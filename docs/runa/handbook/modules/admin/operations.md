@@ -2,11 +2,15 @@
 
 # Admin Core operations and application settings
 
-Status: independent commands, native atomic profile/access Save and complete Auth
-administration are delivered in RM-2026-016 points 5–7. Auth owns its declarations,
-reads and operation adapters; [Auth administration](../auth/administration.md)
-records the exact grants, signatures, proofs and independent protocols. Point 8 delivers [Permissions administration](../permissions/administration.md) and the [Audit viewer](../audit/administration.md). Point 9 delivers framework operational dashboard/settings/work through the fixed
-AdminOperations API below, with native transactional Audit. Point 10 delivers platform-owned application global settings and runtime presentation; complete release acceptance remains point 12.
+Admin 1.0.0, delivered with platform 0.7.0, supplies independent commands, native
+atomic profile/access Save, Core administration, framework operations and
+application settings. Auth owns its declarations, reads and operation adapters;
+[Auth administration](../auth/administration.md) records their grants, signatures,
+proofs and independent protocols. [Permissions administration](../permissions/administration.md)
+and the [Audit viewer](../audit/administration.md) retain their owning contracts.
+The fixed AdminOperations API below supplies framework diagnostics/settings/work
+with native transactional Audit. Platform-owned application settings supply
+runtime presentation.
 
 ## Core operation coverage
 
@@ -42,7 +46,7 @@ DTO constructors, validation, safe errors, bounds and stronger proof requirement
 
 The private compatibility ledger enumerates **every** currently declared API
 method, its complete native signature, source definition, operation, permission,
-API version and audience. It records the historical baseline; current handlers follow reviewed current contracts and versions, not a frozen signature requirement. the
+API version and audience. It records the historical baseline; current handlers follow reviewed current contracts and versions, not a frozen signature requirement. The
 public table above records their disposition rather than exposing private classes.
 
 ## Administrative Auth reads
@@ -52,9 +56,9 @@ field projection and lifecycle read are owned by the
 [Auth administration guide](../auth/administration.md#guarded-administrative-reads).
 The implementation stays in Auth; Admin never queries foreign users, addresses or
 preferences. Existing Identity/Eligibility and other guarded signatures remain
-unchanged. Source-only additions are included in the existing unreleased Auth
-2.0.0 candidate and its native_transactions forward history; no version-only edge
-or runtime migration is added.
+defined by their owning contracts. Auth module 5.0.2 includes these reads;
+AuthAdministration uses its independent API version 2.1.0. Installation/update
+history is declared by Auth, never inferred from the interface version.
 
 ## Framework operation adapters and Audit
 
@@ -76,8 +80,8 @@ target/source/revision checks. No generic engine-method dispatcher is allowed.
 
 If a signature above is abbreviated, parameter/return types are inherited exactly
 from the explicitly named first signature, never inferred from an HTTP payload.
-SettingsParticipant publication hooks retain their native behavior. Point 9 adds
-OperationalParticipant for
+SettingsParticipant publication hooks retain their native behavior. The framework
+uses OperationalParticipant for
 lifecycle boundaries and cancellation. A post-commit wrapper record is
 insufficient. Recovery retains pending/recovery_required and owner cancellation
 limits; do not show committed before native completion. The new transaction/Audit
@@ -111,7 +115,7 @@ Distinct from module settings: ordinary App source declares a small set of dynam
 business/presentation values; the platform supplies guarded storage and projection.
 No fake app module and no app business data under `runa_admin`. New public extension
 values live under `Runa\Contracts\Settings`; adapters under
-`Runa\Support\Settings`. These exact signatures are delivered in point 10:
+`Runa\Support\Settings`. The delivered signatures are:
 
 ```php
 interface ApplicationSettingProvider
@@ -289,14 +293,14 @@ owned and can reject a selected asset for that consumer. These rules do not make
 platform version, application ID, compatibility, APP_URL/KEY, debug, credentials,
 drivers, knowledge endpoints or infrastructure editable.
 
-The native transaction redesign is retained by independent Auth 4.0.0 and
-Permissions 2.1.0, with guarded AuthProfiles 2.1.0 / PermissionsAccess 2.2.0. Other current guarded
+The native transaction redesign is retained by independent Auth 6.0.1 and
+Permissions 2.1.2, with guarded AuthProfiles 2.1.0 / PermissionsAccess 2.2.0. Other current guarded
 interfaces remain at their declared versions. The
 [native transaction contract](../../architecture/module-transactions.md) and
 [current composition guide](composition.md) supersede the original unchanged-API
 lock/preview ordering proposal. No generic framework method dispatch is introduced.
 
-## Operational HTTP and presentation contract (point 9)
+## Operational HTTP and presentation contract
 
 Owner: framework for engines, Admin for guarded coordination. Supported audience:
 application presentation through AdminOperations 1.0.0 and the `@/runa/admin`

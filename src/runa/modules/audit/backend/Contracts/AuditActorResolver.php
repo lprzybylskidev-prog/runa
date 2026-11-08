@@ -2,7 +2,7 @@
 
 namespace Runa\Modules\Audit\Contracts;
 
-/** Server-owned binding; future Auth may provide a safe historical display label. */
+/** Server-owned binding for optional safe historical actor-label enrichment. */
 interface AuditActorResolver
 {
     public function resolve(): AuditActor;

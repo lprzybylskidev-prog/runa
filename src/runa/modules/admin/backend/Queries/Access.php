@@ -2,8 +2,8 @@
 
 namespace Runa\Modules\Admin\Queries;
 
-use Runa\Contracts\Modules\OperationContext;
 use Runa\Integration\Core\AdminEntry;
+use Runa\Integration\Core\AdminRead;
 use Runa\Modules\Admin\Actions\Aggregate;
 use Runa\Modules\Admin\Actions\Command;
 use Runa\Modules\Admin\Contracts\AdminAccess;
@@ -12,7 +12,7 @@ use Runa\Support\Settings\ApplicationPresentation;
 
 final readonly class Access implements AdminAccess
 {
-    public function __construct(private AdminEntry $entry, private ApplicationPresentation $presentation, private Projection $projection, private Command $commands, private Aggregate $aggregate, AdminRegistry $registry)
+    public function __construct(private AdminEntry $entry, private AdminRead $reads, private ApplicationPresentation $presentation, private Projection $projection, private Command $commands, private Aggregate $aggregate, AdminRegistry $registry)
     {
         // Resolving the bootstrap registry runs App-owned afterResolving registrations
         // before discovery freezes them. Cold command boot never loads Admin classes.
@@ -26,10 +26,16 @@ final readonly class Access implements AdminAccess
 
     public function bootstrap(): array
     {
-        return $this->entry->read(fn (OperationContext $context): array => $this->projection->bootstrap() + [
-            'presentation' => $this->presentation->read(),
-            'activity' => $this->entry->activity(false),
-        ]);
+        $discovery = null;
+
+        return $this->reads->run(function () use (&$discovery): array {
+            return $this->projection->widgetReadPlans($discovery);
+        }, function (\Closure $invoke, array $failed) use (&$discovery): array {
+            return $this->projection->bootstrap($invoke, $failed, $discovery) + [
+                'presentation' => $this->presentation->read(),
+                'activity' => $this->entry->activity(false),
+            ];
+        });
     }
 
     public function page(string $owner, string $page): array
@@ -39,7 +45,16 @@ final readonly class Access implements AdminAccess
 
     public function read(string $owner, string $page, string $section, array $query): array
     {
-        return $this->entry->read(fn (): array => $this->projection->read($owner, $page, $section, $query));
+        $selection = null;
+
+        return $this->reads->run(function () use ($owner, $page, $section, $query, &$selection): array {
+            return ['resource' => $this->projection->readPlan($owner, $page, $section, $query, $selection)];
+        }, function (\Closure $invoke) use ($owner, $page, $section, $query, &$selection): array {
+            /** @var array<string,mixed> $result */
+            $result = $invoke('resource', fn (): array => $this->projection->read($owner, $page, $section, $query, $selection));
+
+            return $result;
+        });
     }
 
     public function preview(string $owner, string $page, array $input): array

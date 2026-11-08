@@ -1,4 +1,28 @@
+import { iconNames } from './icons';
 import type { IconName } from './icons';
+const declarations = {
+  ...import.meta.glob<unknown>('../../../../modules/*/frontend/icon.ts', {
+    eager: true,
+    import: 'default',
+  }),
+  ...import.meta.glob<unknown>(
+    '../../../../../app/modules/*/frontend/icon.ts',
+    { eager: true, import: 'default' },
+  ),
+};
+function declaredIcon(id: string): IconName | undefined {
+  const [owner, code] = id.split('.');
+  const entry = Object.entries(declarations).find(
+    ([path]) =>
+      path.endsWith(`/modules/${code}/frontend/icon.ts`) &&
+      (owner === 'app'
+        ? path.includes('/app/modules/')
+        : !path.includes('/app/modules/')),
+  )?.[1];
+  return typeof entry === 'string' && iconNames.includes(entry as IconName)
+    ? (entry as IconName)
+    : undefined;
+}
 export interface ModulePresentation {
   readonly id: string;
   readonly name: { readonly pl: string; readonly en: string };
@@ -31,7 +55,7 @@ export const moduleCatalogue: readonly ModulePresentation[] = Object.values(
     id: module.id,
     name: module.name,
     description: module.description,
-    icon: icons[module.id] ?? 'layers-intersect',
+    icon: declaredIcon(module.id) ?? icons[module.id] ?? 'layers-intersect',
   }));
 export function getModulePresentation(id: string): ModulePresentation {
   return (

@@ -6,6 +6,7 @@ import { usePreferencePending } from './preferences/usePreferencePending';
 import { useAdminEntry } from './useAdminEntry';
 import { useAuthPresentation } from './presentation';
 import {
+  actionIcons,
   Alert,
   providePresentationVisibility,
   FormNotifications,
@@ -210,7 +211,7 @@ const contentReadiness = useViewReadiness({
     >
       <Alert tone="danger">
         {{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
-        <Button intent="inspect" @click="refresh">{{
+        <Button :icon="actionIcons.refresh" intent="inspect" @click="refresh">{{
           text('Ponów', 'Retry')
         }}</Button>
       </Alert>
@@ -313,7 +314,7 @@ const contentReadiness = useViewReadiness({
       ></slot>
       <Alert v-else-if="!session" tone="danger">
         {{ text('Nie można wczytać sesji.', 'Session could not be loaded.') }}
-        <Button intent="inspect" @click="refresh">{{
+        <Button :icon="actionIcons.refresh" intent="inspect" @click="refresh">{{
           text('Ponów', 'Retry')
         }}</Button>
       </Alert>
@@ -335,9 +336,12 @@ const contentReadiness = useViewReadiness({
           "
         >
           <template #actions
-            ><Button intent="inspect" @click="refresh">{{
-              text('Odśwież sesję', 'Refresh session')
-            }}</Button></template
+            ><Button
+              :icon="actionIcons.refresh"
+              intent="inspect"
+              @click="refresh"
+              >{{ text('Odśwież sesję', 'Refresh session') }}</Button
+            ></template
           >
         </FormNotifications>
         <Alert v-if="warning" tone="warning" role="status">
@@ -347,6 +351,7 @@ const contentReadiness = useViewReadiness({
           {{ Math.ceil(remaining / 1000) }} s.
           <Button
             v-if="session.activity.extension"
+            :icon="actionIcons.confirm"
             intent="commit"
             @click="activity('click')"
             >{{ text('Kontynuuj pracę', 'Continue working') }}</Button

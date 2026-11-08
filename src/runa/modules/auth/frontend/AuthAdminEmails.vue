@@ -7,6 +7,7 @@ import type {
   AdminSectionPresentationProps,
 } from '@/runa/admin';
 import {
+  actionIcons,
   Alert,
   Button,
   Card,
@@ -65,25 +66,18 @@ const available = (section: AdminSectionData | undefined, command: string) =>
   section?.commands.some((item) => item.key === command && item.available) ===
   true;
 const addresses = computed(() => {
-  try {
-    const value: unknown = JSON.parse(
-      String(get('secondary', 'addresses') ?? '[]'),
-    );
-    return Array.isArray(value)
-      ? value.filter(
-          (
-            row,
-          ): row is { public_id: string; email: string; verified: boolean } =>
-            !!row &&
-            typeof row === 'object' &&
-            typeof row.public_id === 'string' &&
-            typeof row.email === 'string' &&
-            typeof row.verified === 'boolean',
-        )
-      : [];
-  } catch {
-    return [];
-  }
+  const value = get('secondary', 'addresses');
+  return Array.isArray(value)
+    ? value.filter(
+        (row): row is { public_id: string; email: string; verified: boolean } =>
+          !!row &&
+          typeof row === 'object' &&
+          !Array.isArray(row) &&
+          typeof row.public_id === 'string' &&
+          typeof row.email === 'string' &&
+          typeof row.verified === 'boolean',
+      )
+    : [];
 });
 const editing = ref<'primary'>();
 const method = ref('change');
@@ -237,6 +231,7 @@ function remove(publicId: string) {
       <Alert v-if="missing" tone="warning"
         >{{ t('Unable to load the current record.')
         }}<Button
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="refreshing"
           size="sm"
@@ -262,6 +257,7 @@ function remove(publicId: string) {
               get('primary_email', 'verified') === false &&
               available(primary, 'verify')
             "
+            :icon="actionIcons.confirm"
             intent="commit"
             variant="outline"
             size="sm"
@@ -273,6 +269,7 @@ function remove(publicId: string) {
           >
           <Button
             v-if="available(primary, 'change') || available(primary, 'replace')"
+            :icon="actionIcons.edit"
             intent="commit"
             size="sm"
             variant="outline"
@@ -391,12 +388,12 @@ function remove(publicId: string) {
         @keep="controller.resolve(conflict.path, 'local')"
       />
       <template #actions
-        ><Button intent="commit" type="submit">{{
+        ><Button :icon="actionIcons.save" intent="commit" type="submit">{{
           method === 'change'
             ? text('Wyślij link zmiany', 'Send change link')
             : text('Zapisz adres', 'Save email')
         }}</Button
-        ><Button intent="cancel" @click="close">{{
+        ><Button :icon="actionIcons.cancel" intent="cancel" @click="close">{{
           t('Cancel')
         }}</Button></template
       >

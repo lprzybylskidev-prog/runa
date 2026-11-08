@@ -7,6 +7,7 @@ const publicFiles = new Set(
   [
     'http/index.ts',
     'auth/index.ts',
+    'admin/index.ts',
     'modules/index.ts',
     'modules/presentation.ts',
     ...[

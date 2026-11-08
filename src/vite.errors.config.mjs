@@ -17,6 +17,9 @@ if (
 
 export default defineConfig({
   base: '/runa-error/',
+  cacheDir: fileURLToPath(
+    new URL('../.runtime/frontend/vite/errors', import.meta.url),
+  ),
   // The private renderer lives outside src/node_modules; ship a self-contained build tool.
   ssr: { noExternal: true },
   resolve: {

@@ -1,10 +1,16 @@
 # Auth entry screens
 
-Auth 0.8.0 supplies entry and restricted-session Vue screens using the existing
+Auth supplies entry and restricted-session Vue screens using the existing
 MinimalLayout, Polish/English copy, shared form controls and theme tokens. The
-explicit source-only `0.7.0 -> 0.8.0` update changes no stored data or settings.
+historical source-only `0.7.0 -> 0.8.0` update changed no stored data or settings.
 Apply through ModuleUpdates; unchanged installations remain no-ops. Account
-self-service and session-expiry integration are supplied by [Auth 0.9.0](account-ui.md).
+self-service and session-expiry integration are supplied by [the account UI](account-ui.md).
+
+The default login view uses its heading and labelled fields without an
+introductory paragraph. Registration explains possible activation requirements;
+recovery and restricted steps retain their conditional outcomes, security
+consequences and instructions. The entry controller keeps its optional description
+(empty for login), including for customer presentation replacements.
 
 ## Composition and routes
 

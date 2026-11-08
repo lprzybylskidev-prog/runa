@@ -1,13 +1,16 @@
 # Auth entry transport
 
-Auth 0.2.0 adds the explicit transactional `0.1.0 -> 0.2.0` edge after initial
-identity installation. Its additive migration creates owned `runa_auth.entry_tokens`
+Current Auth initialization verifies the owned `runa_auth.entry_tokens` storage
+created by its current CREATE migration
 with bigint identity, UUIDv7, same-module RESTRICT user FK, hashed single-use secret,
 UTC deadlines, revocation generation and private delivery state. No default user,
 credential or administrative authority is installed. Existing stored settings gain
 only missing immediate defaults under the reserved updater; retained values stay
 unchanged, revision advances once and synchronous `settings.upgrade` Audit persists
 in that transaction. Matching installed versions remain no-ops.
+
+Current module/dependency and API versions are listed in the [Auth contract](README.md);
+historical development edges are not replayed during current initialization.
 
 ## Native primitives and browser transport
 
@@ -36,7 +39,7 @@ registration/token policy belongs to encrypted module settings, not environment
 credentials. Auth 0.3.0 supplies [operational session controls](sessions.md): bounded concurrency,
 activity/absolute deadlines, optional remembered-cookie persistence, own list/revoke,
 protected administrative contracts, technical trust storage and cleanup.
-Auth 0.4.0 adds [password recovery/2FA, trust issuance and step-up](security.md).
+Auth 0.4.0 introduced [password recovery/2FA, trust issuance and step-up](security.md).
 
 Login verifies hashes before evaluating all independent account blockers, including
 scheduled activation. Unknown, incorrect, deleted or security/attempt-locked

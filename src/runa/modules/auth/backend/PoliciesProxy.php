@@ -31,18 +31,18 @@ final class PoliciesProxy extends GuardedApi implements AuthPolicies
         return $result;
     }
 
-    public function preview(array $patch, int $revision, int $generation): array
+    public function preview(array $patch, int $revision, string $reviewId): array
     {
-        /** @var array{revision: int, generation: int, changes: array<string, array{old: mixed, new: mixed}>, consequences: array<string, mixed>} $result */
-        $result = $this->invoke(__FUNCTION__, [$patch, $revision, $generation]);
+        /** @var array{revision: int, review_id: string, changes: array<string, array{old: mixed, new: mixed}>, consequences: array<string, mixed>} $result */
+        $result = $this->invoke(__FUNCTION__, [$patch, $revision, $reviewId]);
 
         return $result;
     }
 
-    public function publish(array $patch, int $revision, int $generation): array
+    public function publish(array $patch, int $revision, string $reviewId): array
     {
         /** @var array{operation: string, status: string} $result */
-        $result = $this->invoke(__FUNCTION__, [$patch, $revision, $generation]);
+        $result = $this->invoke(__FUNCTION__, [$patch, $revision, $reviewId]);
 
         return $result;
     }

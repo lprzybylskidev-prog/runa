@@ -5,11 +5,11 @@ metadata, static hints, owner errors and customer replacements. See its exact
 [field composition and delivery contract](../../modules/admin/frontend.md#delivered-field-composition).
 Default Admin forms use useAdminForm/AdminForm/AdminSection for field-bound lookups,
 controlled drafts, safe errors, dirty guards and automatic reconciliation without
-replay or remounting. Independent writes are delivered; native multi-owner Save
-execution retains roadmap point 6. Public formValuesEqual compares finite JSON
+replay or remounting. Independent writes and native multi-owner Save are delivered
+through the [owning transaction protocol](../../architecture/module-transactions.md). Public formValuesEqual compares finite JSON
 values independently of object key order for feature reconciliation.
 
-Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. Auth entry/restricted and own-account forms consume these controls with guarded backend writes; see the [Auth entry contract](../../modules/auth/entry-ui.md). Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. the isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
+Public imports use `@/runa/ui`. Form extends the existing AppForm; FormSection, FormField, TextInput, NumberInput and useForm supply shell-independent composition. Auth entry/restricted and own-account forms consume these controls with guarded backend writes; see the [Auth entry contract](../../modules/auth/entry-ui.md). Both accepted layouts contain no provisional text/numeric form fields to replace; root preferences remain buttons. The isolated ApplicationScenario test fixture's Select toolbar now shares the normalized field appearance; selection modes now share the themed panel.
 
 ## Container and field composition
 
@@ -85,12 +85,22 @@ Autofill browser constraints: [MDN :autofill](https://developer.mozilla.org/en-U
 
 ## Automatic read reconciliation
 
-Current and future data views refresh authoritative reads in place after their own
-mutations, when returning to a visible view and when a stale write is rejected.
-Coalesce overlapping reads and refresh on navigation as appropriate. Reuse the
-feature controller and shared HTTP client; do not add unconditional polling or a
-whole-document reload. Failed reads may offer Retry loading; successful automatic
-refresh does not require a generic Reload current values action.
+Current and future data views read on entry, explicit refresh, filter/sort/page
+changes, deliberate operation previews and their own successful mutations. An
+older displayed snapshot is valid presentation. Focus, visible return, pageshow,
+incidental history events and successful same-session security checks do not
+reload business data, preferences or branding. Keep necessary session/protected-
+place expiry and access checks independent of data freshness. Real identity/access
+loss clears protected content and fences late responses immediately. Reuse the
+feature controller and shared HTTP client; add no polling, freshness cache,
+replacement coordinator or whole-document reload.
+
+At mutation time submit the version/review belonging to the displayed draft.
+Do not fetch a newer token before writing or substitute one merely because a
+session check succeeded. The backend rechecks current authority, availability,
+version/review and business constraints in its owning transaction/locks. Inserts
+use owning uniqueness/reference validation; idempotent actions need no mechanical
+version. Reviewed bulk writes validate the current selected set and effects.
 
 Track confirmed server baselines separately from local drafts. Update clean
 fields/lists automatically and merge disjoint changes while retaining dirty
@@ -108,8 +118,9 @@ conservative local review. A removed target cannot be retained as a valid edit.
 `current`, `locale`, `busy`, `allowKeep` props and `accept`/`keep` events. The feature
 owns merging, resolution, token advancement and subsequent explicit submission.
 
-On a stale-revision HTTP 409, automatically fetch current data without replaying
-the write. Report the version conflict and retain its draft. HTTP status alone
+On a stable, recognized stale-state refusal, fetch only the affected data without
+replaying the write. Treat removed targets explicitly and block further edits to
+them. Report the version conflict and retain its draft. HTTP status alone
 is insufficient: business refusals can also use 409. Preserve their stable reason
 through owner adapters and aggregate coordinators, and show reviewed localized
 copy for that reason instead of claiming a stale revision or successful refresh.
@@ -176,7 +187,7 @@ useDependentFields takes a stable array of keyed definitions and a Ref<Record<st
 
 useDirtyGuard({dirty,enabled?,confirmLeave}) registers beforeunload only while enabled and dirty, removing it on cleanup. Browser unload confirmation requires browser-supported user activation and uses browser-owned text; it never validates fields. confirmLeave is an application-supplied boolean/Promise<boolean>, so a screen can use inline confirmation or a dialog. requestLeave(action) preserves the draft on refusal, blocks concurrent confirmations and invokes only an approved action; it does not mark values clean or discard them. beforeLeave is the router adapter. Use usePageResolver(pages,{beforeLeave:guard.beforeLeave}) for named, known same-origin routes. navigate stays synchronous without a guard and returns Promise<boolean> for guarded transitions. Guarded resolver history entries carry an internal position; browser Back/Forward retains the current view until consent and restores the prior entry after refusal. History entries created outside this resolver need their owning router/document-navigation adapter; do not mix arbitrary pushState calls into its guarded history. Modified/new-tab links retain native behavior; wrap other intentional exits with requestLeave. Only a successful save or deliberate reset should alter useForm’s dirty baseline.
 
-useWizard accepts stable keyed steps, validate(key), submit() and optional disabled input. go/next validate intervening forward steps; previous/backward go preserve values without validation. finish revalidates all steps and stops at the earliest error before calling submit. Rejected/thrown validation or submit leaves a retryable failed state; busy prevents duplicate work and scope disposal prevents a later submit. Values/errors remain in the caller’s useForm; neither composable nor Wizard stores drafts. Wizard is a controlled view: pass steps/index/busy/failed and bind go/next/previous/finish; optional progress defaults on. It supplies accessible step/current semantics, busy fieldset, localized controls and active-heading/error focus. Call its exposed focusInvalid after nextTick when an already-failed validation changes messages without changing failed. The feature owns server writes, validation rules and error feedback.
+useWizard accepts stable keyed steps, validate(key), submit() and optional disabled input. go/next validate intervening forward steps; previous/backward go preserve values without validation. finish revalidates all steps and stops at the earliest error before calling submit. Rejected/thrown validation or submit leaves a retryable failed state; busy prevents duplicate work and scope disposal prevents a later submit. Values/errors remain in the caller’s useForm; neither composable nor Wizard stores drafts. Wizard uses spacing without an action-area divider, matching ordinary forms. Wizard is a controlled view: pass steps/index/busy/failed and bind go/next/previous/finish; optional progress defaults on. It supplies accessible step/current semantics, busy fieldset, localized controls and active-heading/error focus. Call its exposed focusInvalid after nextTick when an already-failed validation changes messages without changing failed. The feature owns server writes, validation rules and error feedback.
 
 For modal confirmation, render ConfirmDialog under the owning screen and resolve useDirtyGuard’s confirmLeave promise on confirm/cancel. Set modelValue false after resolving; Escape/X/cancel must resolve false so a pending navigation never hangs. Async form confirmations keep the dialog open while the caller sets busy/error, reporting failures through FormNotifications inside the modal focus boundary and closing only after success. Dialog’s content fieldset disables native inputs while busy; external operations still enforce their own write guards.
 
@@ -209,7 +220,10 @@ Keep associated field errors beside controls. Failures stay until dismissed and
 include recovery buttons where needed; successful notifications expire. Bind
 error/success/invalid/locale and increment attempt on deliberate submits so repeated
 identical validation failures can be announced after dismissal. The component
-retains one current outcome and never retries writes itself. Preserve deliberate multi-step
+retains one current outcome and never retries writes itself. Locale changes update
+visible outcomes in place, preserving identity/focus. Explicitly dismissed or expired
+outcomes remain absent when labels or caller-owned error/success text translate;
+a deliberate new attempt or new outcome may announce again. Preserve deliberate multi-step
 security and destructive confirmation. Where one form needs multiple endpoints,
 validate first, respect each proof/version, stop on failure and report partial
 success without replay. The [account editor](../../modules/auth/account-ui.md)

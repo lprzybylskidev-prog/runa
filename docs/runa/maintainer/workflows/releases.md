@@ -63,6 +63,18 @@ guidance in the owning roadmap point, and remove superseded implementation. Do
 not add adapters, duplicate models, frozen-signature gates, special execution
 orders or exclusions solely to keep an old interface unchanged.
 
+Owner clarification, 2026-11-06: this applies to corrective architecture as well
+as signature compatibility. Do not add adapters, decorators, startup shims or
+workarounds to preserve an existing Runa implementation or execution path,
+including integrations constrained by third-party tooling. Correct or redesign
+the owning Runa integration, update current consumers and remove its superseded
+path. Judge the design by correct behavior and maintainability, not by retaining
+today's launch sequence or minimizing changes. An external dependency limitation
+must be assessed explicitly; it does not itself authorize an adapter, private
+hook, heuristic or bypass. This does not require renaming/removing existing
+documented public integration entrypoints solely because they are called adapters.
+New dependencies or dependency updates retain their separate approval policy.
+
 This is standing change authorization, not authorization to weaken security,
 ignore business invariants, discard durable data, rewrite published tags/closed
 records or skip roadmap/final verification. New architectural/behavioral/security
@@ -157,7 +169,7 @@ Near roadmap completion:
 15. publish GitHub Release,
 16. delete roadmap branch.
 
-Reviewed release-only edits after the full gate are limited to VERSION, the matching version field in src/runa/platform.json, CHANGELOG, roadmap checklist/closure/report evidence and the maintainer README block's version/active-roadmap values. Reindex affected knowledge and run focused docs/release checks. Capability prose, procedures, validators or runtime changes require an inserted fix point and a new full gate. Do not reuse a PASS for substantive changes. Repeat docs/release checks as part of main sanity.
+Reviewed release-only edits after the full gate are limited to VERSION, the matching version field in src/runa/platform.json, CHANGELOG, roadmap checklist/closure/report evidence and the maintainer README block's version/active-roadmap values. Reindex affected knowledge and run focused docs/release checks. Capability prose, procedures, validators or runtime changes require an inserted fix point and revalidation of the complete final scope under the owner evidence-continuity procedure. Do not reuse invalidated evidence for substantive changes. Repeat docs/release checks as part of main sanity.
 
 ## Release 1.0
 
@@ -186,15 +198,15 @@ Use these fields as a checked projection of existing sources, not as a second so
 
 ## Temporary owner backend SIGSEGV disposition
 
-Apply the standing [owner testing policy](../testing/strategy.md#backend-sigsegv-owner-acceptance)
-during closure and publication without renewed approval. Its separate evidence
-assessment governs the narrow case where the release validator requires an
-all-green coordinator that cannot represent accepted native worker SIGSEGV/139.
-Preserve failed native/validator reports, complete every other selected check and
-real prerequisite, and disclose the exception in release evidence. The validator
-limitation does not cancel owner authorization; it does not waive unrelated
-failures or authorize fake PASS, repeated backend execution or runtime validator
-patches. Remove this section with the canonical exception retirement.
+Follow the [temporary owner procedure](../testing/strategy.md#backend-sigsegv-owner-acceptance).
+Exhausted confirmed SIGSEGV interruptions require explicit owner acceptance before
+release; the former standing automatic PASS is superseded. Preserve native and
+validator failures, accepted cases/attempts, successful guarded cleanup and coverage
+limits in the separate release assessment. Complete every other selected check and
+real prerequisite. A validator's inability to represent an explicitly accepted
+exception does not revoke that decision; it never waives unrelated failures,
+unknown/unexecuted coverage or authorizes fake PASS or runtime validator patches.
+Remove this summary with canonical exception retirement.
 
 ## Selected-scope evidence
 
@@ -202,7 +214,8 @@ New roadmaps record `quality_groups` (comma-separated names or `all`) and a none
 `quality_rationale` before final execution. Preview through the supported quality
 plan command. Final and closure must match this declaration, graph/commands, actual
 complete PASS and candidate commit. An exploratory/narrower or stale run cannot
-close the roadmap. After failures or scope changes, rerun the complete agreed plan
-from the beginning. Only reviewed release-only metadata may follow PASS. Legacy
+close the roadmap. After failures or scope changes, revalidate the complete agreed plan under
+[verification evidence continuity](../testing/strategy.md#verification-evidence-continuity):
+retain valid unrelated results and rerun unresolved/invalidated scope and prerequisites. Only reviewed release-only metadata may follow PASS. Legacy
 flag-free workflows retain existing behavior; the agent normally chooses groups
 without asking the owner on every invocation. See the quality guide.

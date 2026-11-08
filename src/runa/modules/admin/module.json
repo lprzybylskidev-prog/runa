@@ -2,9 +2,9 @@
   "schema_version": 1,
   "id": "runa.admin",
   "kind": "core",
-  "version": "1.0.0",
-  "platform": ">=0.7.0 <0.8.0",
-  "framework_api": "^1.0.0",
+  "version": "2.0.0",
+  "platform": ">=0.7.0 <0.9.0",
+  "framework_api": "^2.1.0",
   "name": {
     "pl": "Panel administratora",
     "en": "Administrator panel"
@@ -16,7 +16,7 @@
   "dependencies": {
     "required": {
       "runa.audit": "^1.0.0",
-      "runa.auth": "^5.0.0",
+      "runa.auth": "^6.0.0",
       "runa.permissions": "^2.0.0"
     },
     "optional": {}

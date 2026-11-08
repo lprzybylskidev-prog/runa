@@ -46,6 +46,7 @@ Implementation points produce code, tests and documentation; only small, fast ch
   - Prerequisites: completed implementation and a working application with current assets/data and authorized access.
   - Completion: explicit owner result recorded with tested source/environment; repairs precede this point and affected acceptance is repeated.
 - [ ] N. Full verification, release finalization, merge, and final report.
+  - Evidence: candidate/source and environment, selected commands/checks, native results/report paths, coverage and remaining scope, validity after changes, and explicit decisions for any permitted exceptions. Preserve native failures and follow the applicable owner's verification/recovery policy; an exception never implies unexecuted assertions passed.
 
 ## Execution handoff (optional)
 

@@ -63,3 +63,11 @@ For selected-account review composition reuse public `AuthAdminBulkAction` throu
 `@/runa/auth`; its typed composition contract is in
 `docs/runa/handbook/modules/auth/administration.md`. The native owning module retains
 selection admission, reviewed writes, password proof and transactional Audit.
+
+For action/module/feedback iconography, follow the public components guide's
+Semantic icons contract. Reuse the typed Tabler catalogue and actionIcons;
+keep action color, icon identity and proof independent. Known domain tools use
+source-owned semantic family/command mappings across single and bulk contexts;
+reserve the generic action glyph for operations without an authored meaning. Preserve visible action
+labels, busy geometry and accessible icon-only names. Module authors declare
+frontend/icon.ts in their owned module; never edit protected presentation maps.

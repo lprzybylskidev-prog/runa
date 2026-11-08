@@ -227,10 +227,9 @@ export function createAccountPreferenceStore(
         const stale =
           error instanceof ApiError &&
           error.status === 409 &&
-          (!authFailure(error).reason ||
-            ['preferences_stale', 'identity_stale'].includes(
-              authFailure(error).reason!,
-            ));
+          ['preferences_stale', 'identity_stale'].includes(
+            authFailure(error).reason ?? '',
+          );
         // Refresh reads, never replay the rejected mutation with a new revision.
         ready = false;
         mutationEpoch++;
@@ -340,6 +339,7 @@ export function createAccountPreferenceStore(
     hold: (next: string, app = 'runa') => clear(next, app),
     signedIn: () => account !== null,
     currentAccount: () => account,
+    hydrated: () => ready || pending > 0,
     application: () => application,
     setApplication: (app: string) => {
       if (application !== app) {
@@ -430,9 +430,12 @@ export function bindPreferenceSession(
       typeof data.public_id === 'string' &&
       Array.isArray(data.restrictions)
     ) {
-      if (data.restrictions.length === 0)
-        void store.connect(data.public_id, store.application()).catch(() => {});
-      else store.hold(data.public_id, store.application());
+      if (data.restrictions.length === 0) {
+        if (store.currentAccount() !== data.public_id || !store.hydrated())
+          void store
+            .connect(data.public_id, store.application())
+            .catch(() => {});
+      } else store.hold(data.public_id, store.application());
     }
   });
 }

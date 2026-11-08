@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref, watch, onScopeDispose, nextTick } from 'vue';
 import {
+  actionIcons,
   Button,
   Card,
   ConfirmDialog,
@@ -259,6 +260,7 @@ defineExpose({ beginReset, reload });
           </p>
           <Button
             v-if="failure"
+            :icon="actionIcons.refresh"
             intent="inspect"
             :busy="busy || account.refreshing.value"
             variant="outline"
@@ -322,10 +324,16 @@ defineExpose({ beginReset, reload });
               "
             />
             <template v-if="dirty(choice)" #actions>
-              <Button intent="commit" type="submit" size="sm" :busy="busy">{{
-                text('Zapisz', 'Save')
-              }}</Button>
               <Button
+                :icon="actionIcons.save"
+                intent="commit"
+                type="submit"
+                size="sm"
+                :busy="busy"
+                >{{ text('Zapisz', 'Save') }}</Button
+              >
+              <Button
+                :icon="actionIcons.discard"
                 intent="discard"
                 size="sm"
                 :disabled="busy"
@@ -336,6 +344,7 @@ defineExpose({ beginReset, reload });
                 v-if="
                   failure === 'refresh_failed' && failedKey === keyOf(choice)
                 "
+                :icon="actionIcons.refresh"
                 intent="inspect"
                 :busy="busy || account.refreshing.value"
                 size="sm"
@@ -356,6 +365,7 @@ defineExpose({ beginReset, reload });
     "
     :confirm-label="text('Przywróć domyślne', 'Restore defaults')"
     confirm-intent="discard"
+    confirm-icon="arrow-back-up"
     :locale="locale"
     :busy="busy"
     @update:model-value="closeReset"
@@ -377,12 +387,14 @@ defineExpose({ beginReset, reload });
       ><template #actions
         ><Button
           v-if="failure === 'csrf'"
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="busy"
           @click="account.refreshCsrf"
           >{{ text('Odśwież zabezpieczenie', 'Renew form security') }}</Button
         ><Button
           v-if="failure === 'refresh_failed'"
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="busy || account.refreshing.value"
           @click="account.refresh()"

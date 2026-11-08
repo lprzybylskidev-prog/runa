@@ -1,6 +1,6 @@
 # Account preferences and security delivery
 
-Auth 0.6.0 adds `AuthPreferences` and `AuthDelivery` 1.0.0. Auth owns persistence;
+Auth supplies `AuthPreferences` 1.1.0 and `AuthDelivery` 1.0.0. Auth owns persistence;
 originating modules own preference schemas, notification categories and content.
 These are user preferences, separate from global versioned `ModuleSettings`.
 There is no Notifications runtime or operational in-app channel.
@@ -52,7 +52,7 @@ optional module and key scope. This POST read surface uses the normal cookie/CSR
 transport. Both ingress and the Action recheck unrestricted tracked sessions.
 Responses are private/no-store and include account/revision. The snapshot projects
 current source defaults as well as stored values for the selected application and
-shared `runa` display namespace. Other devices converge on visible return, navigation, conflict refresh or new login;
+shared `runa` display namespace. Other devices converge on explicit reads, applicable view entry, conflict refresh or new login;
 there is no polling or WebSocket synchronization.
 
 Snapshot reads validate each available provider's declarations once, then load
@@ -93,7 +93,7 @@ current account revision/recipient rules. Save/Revert affects only its row; inco
 preserve dirty rows and expose overlapping recipient changes locally without
 generating writes. The shell's compact preference controls retain their cycling contract.
 
-## Browser integration and legacy ownership
+## Browser integration and guest ownership
 
 Public `@/runa/ui` exports retain `createPreferenceStore`, `defaultPreferenceStore`,
 `accountPreferences` and `createAccountPreferenceStore`. Generic versioned guest
@@ -102,11 +102,34 @@ and session binding, and the default UI composes that adapter once. Injected sto
 retain their own lifecycle; do not create a second adapter for each account card
 or import the private session/transport modules.
 
+The public UI preference definition is owned by the shared frontend, consumed by
+application UI through `@/runa/ui`, and implemented in
+`src/runa/resources/js/lib/preferenceStore.ts`. It is a runtime TypeScript
+contract independent of module PHP API versions:
+
+```ts
+interface PreferenceDefinition<T> {
+  version: number;
+  defaultValue: T;
+  validate(value: unknown): value is T;
+  migrate?: (value: unknown, version: number) => unknown;
+}
+```
+
+`createPreferenceStore(adapter?: PreferenceStorage): PreferenceStore` defaults to
+browser storage. It reads only the versioned scoped envelope; unsupported versions
+use `defaultValue` unless the supplied `migrate` produces a valid current value.
+The retired `legacyKey` option is removed. Applications owning real preference
+schema evolution can still supply `migrate`; Auth providers retain their separate
+`migratePreference` hook. Neither hook implies conversion of built-in obsolete
+formats.
+
 `defaultPreferenceStore`, `usePreference`, language/theme, navigation,
 `useStatisticsMode` and `useTableViews` use the same account adapter. Signed-in
 values are memory-only caches; PostgreSQL values/defaults are authoritative.
 The shell probes the session once and binds successful unrestricted login/session
-responses through the shared HTTP wrapper. A custom authentication host may call
+responses through the shared HTTP wrapper. Revalidating an already hydrated same
+account does not reload its snapshot; explicit connect/refresh remains available. A custom authentication host may call
 `accountPreferences.connect(publicId, applicationId)` after its verified session
 response, and `disconnect()` at logout. Restricted sessions hold defaults until
 an unrestricted session refresh. Refresh session after completing a restricted flow.
@@ -126,10 +149,12 @@ Inventory and mapping:
 | Statistics                                    | application / owning module / view / statistics.mode   | Exact module view/key, v1                        |
 | Columns, filters, current/named/default views | application / owning module / view / table-views       | Exact module view/key, v2                        |
 
-Guest `createPreferenceStore` retains validated versioned scoped localStorage and
-legacy `runa.locale`/`runa.theme` fallback; denied storage uses lifetime memory.
-Reset writes a tombstone so legacy data cannot reappear. Only guest changes write
-legacy keys. Account values never enter guest/legacy storage. All mounted consumers
+Guest `createPreferenceStore` uses validated versioned scoped localStorage;
+denied storage uses lifetime memory. Language/theme use only the scope/control
+keys listed above, encoded through `preferenceKey`. Old flat `runa.locale` and
+`runa.theme` entries are ignored and never written or imported; a browser with only
+those entries uses application defaults. Reset writes a scoped tombstone.
+Account values never enter guest storage. All mounted consumers
 subscribe to account changes and guest writes/resets, and incoming hydration does not generate new saves.
 Initial locale/theme application to document attributes is also read-only: mounting
 a consumer while its account snapshot is pending must not write defaults back.
@@ -244,8 +269,10 @@ The account adapter exposes `refresh()` for a queued snapshot without clearing t
 current account cache and `mutate(callback)` for feature-owned delivery writes.
 The callback receives the shared current revision and account-fenced AbortSignal,
 returns the normal account/revision envelope, and is followed by a queued snapshot.
-All presentation/delivery writes share this queue. On 409, current reads refresh
-without replay; older queued mutations are canceled. Failed synchronization offers
+All presentation/delivery writes share this queue. Delivery submits its displayed
+snapshot revision; it never prefetches a new revision to admit an older draft.
+On recognized preferences_stale/identity_stale refusals, affected reads refresh
+without replay; unrelated business 409s retain their own refusal without a read; older queued mutations are canceled. Failed synchronization offers
 an explicit read retry. A successful refresh never calls the destructive form reset.
 
 Preferences tab entry and account refresh perform one delivery read per refresh
@@ -271,7 +298,7 @@ the display timezone without changing UTC storage or date-only values. See
 
 ## Administrative account preferences
 
-Auth 3.1.0 supplies additive `AuthPreferences` API **1.1.0**. Existing self-service
+The guarded `AuthPreferences` API uses independent version **1.1.0**. Existing self-service
 methods retain their current-principal binding and signatures. Administrative
 methods explicitly select another account through the guarded adapter:
 

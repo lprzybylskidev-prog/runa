@@ -1,11 +1,14 @@
 # Auth sessions and login abuse defenses
 
-Auth 0.3.0 adds the explicit `0.2.0 -> 0.3.0` settings-default upgrade and owned
+The historical Auth 0.3.0 release introduced the explicit `0.2.0 -> 0.3.0` settings-default upgrade and owned
 `sessions`, `trusted_devices` and `login_windows` migrations. Upgrade through the
 normal fenced ModuleUpdates transport. Existing untracked 0.2.0 sessions require
 login again. No dependency, new service or native Laravel recaller is introduced.
-Auth 0.4.0 adds [trust issuance, second factors and reusable step-up](security.md),
+Auth 0.4.0 introduced [trust issuance, second factors and reusable step-up](security.md),
 with a forward credential migration; session signatures remain compatible.
+
+Current module/dependency versions are in the [Auth contract](README.md); the
+versions above identify retained upgrade history.
 
 ## Admission, deadlines and revocation
 
@@ -46,6 +49,28 @@ never extends the captured deadline. Turning remember duration to zero invalidat
 remembered sessions. Native file/cookie lifetime is a 30-day storage ceiling; it is
 not an authorization deadline. Ordinary cookies remain expire-on-close; remembered
 cookies have an expiry. Old cookie replay cannot restore a removed/revoked row.
+
+### Laravel remember-token compatibility
+
+`runa_auth.users.remember_token` is deliberately retained for Laravel authentication
+integration. The inherited Authenticatable contract exposes that field even though
+Runa's current remembered-session flow does not consume a recaller. Current non-use
+is not evidence that the column is obsolete. Keeping it alone does not guarantee
+compatibility with an alternative authentication configuration: any such integration
+must preserve tracked sessions, current eligibility, security generation, revocation,
+expiry and the remaining Auth guarantees. No schema removal is implied.
+
+### Bounded policy reads
+
+Auth groups one synchronous account-admission computation and standalone eligibility,
+factor-restriction and session-lifetime evaluations in short default-connection
+transactions. The registry shared lock stabilizes settings during each computation;
+existing outer operations retain ownership when the read nests in a savepoint.
+Admission consumes one freshly loaded user and current session locally and ends
+before the owning handler runs. Each later operation rereads account/session state,
+policy exceptions and time-dependent deadlines. No request/worker eligibility or
+authorization cache is introduced. Writes, rollback, a new root transaction and
+reconnection retain the existing registry/settings invalidation behavior.
 
 ## Activity and own APIs
 

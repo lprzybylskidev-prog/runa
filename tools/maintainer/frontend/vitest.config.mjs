@@ -46,7 +46,10 @@ export default defineConfig({
     fs: { allow: [fileURLToPath(new URL('../../..', import.meta.url))] },
   },
   test: {
-    include: ['../tests/frontend/runa/unit/**/*.test.ts'],
+    include: [
+      '../tests/frontend/runa/unit/**/*.test.ts',
+      '../tests/frontend/runa/modules/**/*.test.ts',
+    ],
     attachmentsDir: '../.runtime/artifacts/playwright/runa/vitest',
     restoreMocks: true,
     browser: {

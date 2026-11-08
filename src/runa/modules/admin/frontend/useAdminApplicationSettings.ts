@@ -355,7 +355,16 @@ export function useAdminApplicationSettings(
         ? { images: { ...images.value } }
         : {}),
     });
-    if (!response) return;
+    if (!response) {
+      if (operations.conflict.value) {
+        const refusal = operations.error.value;
+        const context = operations.contextRevision.value;
+        await refresh();
+        if (context === operations.contextRevision.value)
+          operations.error.value = refusal;
+      }
+      return;
+    }
     // A successful own publication adopts only the exact frozen draft; controls are
     // disabled throughout the single write lane. Subsequent reads reconcile in place.
     images.value = {};

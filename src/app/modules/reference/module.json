@@ -2,24 +2,32 @@
   "schema_version": 1,
   "id": "app.reference",
   "kind": "optional",
-  "version": "0.2.0",
+  "version": "0.4.1",
   "platform": ">=0.7.0 <1.0.0",
-  "framework_api": "^1.0.0",
+  "framework_api": "^2.1.0",
   "name": {
-    "pl": "Modu\u0142 referencyjny",
+    "pl": "Moduł referencyjny",
     "en": "Reference module"
   },
   "description": {
-    "pl": "Deweloperski przyk\u0142ad publicznych kontrakt\u00f3w modu\u0142\u00f3w.",
+    "pl": "Deweloperski przykład publicznych kontraktów modułów.",
     "en": "Development-only working example of public module contracts."
   },
   "dependencies": {
     "required": {},
-    "optional": {}
+    "optional": {
+      "runa.admin": "^2.0.0",
+      "runa.audit": "^1.1.0",
+      "runa.auth": "^6.0.0",
+      "runa.permissions": "^2.1.0"
+    }
   },
   "providers": [],
   "declarations": {
-    "apis": ["App\\Modules\\Reference\\Definitions\\ReferenceApi"],
+    "apis": [
+      "App\\Modules\\Reference\\Definitions\\ReferenceApi",
+      "App\\Modules\\Reference\\Definitions\\ReferenceToolsApi"
+    ],
     "health": ["App\\Modules\\Reference\\Definitions\\ReferenceHealthPolicy"],
     "lifecycle": ["App\\Modules\\Reference\\Definitions\\ReferenceWorkPolicy"],
     "settings": ["App\\Modules\\Reference\\Definitions\\ReferenceSettings"],
@@ -35,5 +43,8 @@
     "upgrades": ["App\\Modules\\Reference\\Definitions\\ReferenceUpgrades"]
   },
   "docs": ["docs/app/modules/reference/README.md"],
-  "tests": ["tests/backend/app/modules/reference"]
+  "tests": [
+    "tests/backend/app/modules/reference",
+    "tests/frontend/app/modules/reference"
+  ]
 }

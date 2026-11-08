@@ -45,7 +45,7 @@ import {
 } from './useAdmin';
 import { useAdminResource } from './useAdminResource';
 import { validateAdminField } from './fieldValidation';
-import { writeFailure } from './writeFailure';
+import { writeFailure, staleWrite } from './writeFailure';
 
 const forms = new WeakMap<AdminPageController, AdminFormController>();
 const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
@@ -371,6 +371,7 @@ export function useAdminForm(
     overlaps.value = {};
     errors.value = {};
     editors.value = {};
+    activated.value = new Set();
     failures.value = new Set();
     clearReviews();
     error.value = undefined;
@@ -545,6 +546,9 @@ export function useAdminForm(
     lanes.get(key)?.scope.stop();
     lanes.delete(key);
     delete editors.value[key];
+    activated.value = new Set(
+      [...activated.value].filter((active) => active !== key),
+    );
     return true;
   }
   async function beforeSectionLeave(key: string): Promise<boolean> {
@@ -794,7 +798,7 @@ export function useAdminForm(
             section.fields.map((field) => field.key),
           ),
         );
-        if (cause instanceof ApiError && cause.status === 409) await refresh();
+        if (staleWrite(cause)) await readSection(section);
         if (cause instanceof ApiError && cause.status === 401 && admin)
           refuseAdmin(admin, cause);
       }
@@ -1018,7 +1022,7 @@ export function useAdminForm(
           }
           if (cause.status === 401 || entry) refuseAdmin(admin, cause);
         }
-        if (cause instanceof ApiError && cause.status === 409) {
+        if (staleWrite(cause)) {
           clearReviews();
           void refresh();
         }

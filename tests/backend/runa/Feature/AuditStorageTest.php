@@ -25,6 +25,7 @@ use Runa\Support\Logging\LogContext;
 use Runa\Support\Modules\Api\ModuleApis;
 use Runa\Support\Modules\Api\OperationRejected;
 use Runa\Support\Modules\Development\ModuleContractSuite;
+use Runa\Support\Modules\Settings\ModuleSettings;
 use Tests\Fixtures\CoreModuleStorage;
 
 beforeEach(function (): void {
@@ -230,4 +231,38 @@ it('keeps independent Audit available when optional Auth actor enrichment cannot
     $event = DB::table('runa_audit.events')->first();
     expect($event->actor_kind)->toBe('human')->and($event->actor_public_id)->toBe($principal->publicId)
         ->and($event->actor_label)->toBeNull();
+});
+
+it('updates the current Core schema once without replaying initialization effects', function (): void {
+    $settings = app(ModuleSettings::class);
+    $values = [];
+    foreach ($settings->read('runa.auth')['settings'] as $key => $setting) {
+        $values[$key] = $setting['value'];
+    }
+    $values['password_min_length'] = 19;
+    unset($values['identifier_mode']);
+    $before = DB::table('shared.modules')->where('module_id', 'runa.auth')->first();
+    DB::table('shared.modules')->where('module_id', 'runa.auth')->update(['settings_values' => app('encrypter')->encrypt(json_encode($values, JSON_THROW_ON_ERROR), false)]);
+    $role = DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('public_id');
+    foreach (['auth' => '6.0.0', 'audit' => '1.1.1', 'permissions' => '2.1.1', 'admin' => '1.1.0'] as $code => $version) {
+        DB::table('shared.modules')->where('module_id', 'runa.'.$code)->update(['installed_version' => $version]);
+    }
+    DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    $updates = app(ModuleUpdates::class);
+    $progress = [];
+    $updates->apply('runa', str_repeat('b', 40), function (string $module, string $step) use (&$progress): void {
+        $progress[] = [$module, $step];
+    });
+    expect($progress)->toHaveCount(4)
+        ->and(DB::table('runa_audit.events')->where('action', 'audit.store_ready')->count())->toBe(0)
+        ->and(DB::table('runa_audit.events')->where('action', 'system_role.created')->count())->toBe(0)
+        ->and(DB::table('runa_permissions.roles')->where('code', 'runa.permissions.super_admin')->value('public_id'))->toBe($role)
+        ->and($settings->integer('runa.auth', 'password_min_length'))->toBe(19)
+        ->and($settings->text('runa.auth', 'identifier_mode'))->toBe('email')
+        ->and($settings->read('runa.auth')['revision'])->toBe($before->settings_revision + 1)
+        ->and(DB::table('runa_auth.policy_versions')->where('phase', 'upgrade')->count())->toBe(1);
+    $events = DB::table('runa_audit.events')->count();
+    $updates->apply('runa', str_repeat('b', 40), static function (): void {});
+    expect(DB::table('runa_audit.events')->count())->toBe($events)
+        ->and(DB::table('runa_auth.policy_versions')->where('phase', 'upgrade')->count())->toBe(1);
 });

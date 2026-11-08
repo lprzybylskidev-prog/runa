@@ -6,6 +6,7 @@ import AuthAdminBulkAction from '../AuthAdminBulkAction.vue';
 import AuthAdminCreation from '../AuthAdminCreation.vue';
 import { computed, watch } from 'vue';
 import {
+  actionIcons,
   formatApplicationInstant,
   FormNotifications,
   Button,
@@ -60,18 +61,12 @@ const rows = computed<Record<string, AdminJson>[]>(() => {
   const values =
     result && 'values' in result ? result.values : record.value?.values;
   const raw = collection.value && values?.[collection.value.key];
-  if (typeof raw !== 'string') return [];
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed)
-      ? parsed.filter(
-          (row): row is Record<string, AdminJson> =>
-            row !== null && typeof row === 'object' && !Array.isArray(row),
-        )
-      : [];
-  } catch {
-    return [];
-  }
+  return Array.isArray(raw)
+    ? raw.filter(
+        (row): row is Record<string, AdminJson> =>
+          row !== null && typeof row === 'object' && !Array.isArray(row),
+      )
+    : [];
 });
 const paged = computed(
   () =>
@@ -193,6 +188,7 @@ function select(row: Record<string, AdminJson>) {
       </ul>
       <div v-if="paged" class="mb-4 flex gap-2">
         <Button
+          :icon="actionIcons.load"
           intent="inspect"
           size="sm"
           :disabled="resource.busy.value || !next"
@@ -200,6 +196,7 @@ function select(row: Record<string, AdminJson>) {
           >{{ tr('Older entries') }}</Button
         >
         <Button
+          :icon="actionIcons.refresh"
           intent="inspect"
           size="sm"
           :disabled="resource.busy.value"

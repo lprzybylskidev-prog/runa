@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BooleanBadge, formatApplicationInstant } from '@/runa/ui';
+import { actionIcons, BooleanBadge, formatApplicationInstant } from '@/runa/ui';
 import { Dialog, Button, FormNotifications } from '@/runa/ui';
 import type { HistoryValue } from './historyDetails';
 import type {
@@ -130,9 +130,13 @@ function value(v: HistoryValue, field?: string): string {
       "
     >
       <template #actions
-        ><Button intent="inspect" variant="outline" @click="$emit('retry')">{{
-          text('Ponów', 'Retry')
-        }}</Button></template
+        ><Button
+          :icon="actionIcons.refresh"
+          intent="inspect"
+          variant="outline"
+          @click="$emit('retry')"
+          >{{ text('Ponów', 'Retry') }}</Button
+        ></template
       >
     </FormNotifications>
     <div v-else-if="detail" class="space-y-5" data-history-detail>
@@ -221,9 +225,13 @@ function value(v: HistoryValue, field?: string): string {
       </p>
     </div>
     <template #footer
-      ><Button intent="cancel" variant="outline" @click="$emit('close')">{{
-        text('Zamknij', 'Close')
-      }}</Button></template
+      ><Button
+        :icon="actionIcons.cancel"
+        intent="cancel"
+        variant="outline"
+        @click="$emit('close')"
+        >{{ text('Zamknij', 'Close') }}</Button
+      ></template
     >
   </Dialog>
 </template>

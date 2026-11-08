@@ -205,7 +205,7 @@ class OperationContracts(unittest.TestCase):
                 ".agents/example": "excluded",
                 "bin/knowledge": "excluded",
                 "tools/application/knowledge/example.py": "excluded",
-                "bin/operations": "launcher",
+                "bin/deploy": "launcher",
                 "bin/production": "launcher",
                 "docs/runa/handbook/ai/example.md": "excluded",
                 "docs/runa/maintainer/internal.md": "excluded",
@@ -291,7 +291,7 @@ class OperationContracts(unittest.TestCase):
                 self.assertTrue((release / "tools/application/knowledge/cli.py").exists())
                 for excluded in ("tools", "tests"):
                     self.assertFalse((release / "src/runa" / excluded).exists())
-                self.assertTrue((release / "bin/operations").is_file())
+                self.assertTrue((release / "bin/deploy").is_file())
                 self.assertTrue((release / "docker/php/Dockerfile").is_file())
                 self.assertEqual(self.deployment.source.checkout(sha), release)
                 alias = Path(folder) / "aliased-state"

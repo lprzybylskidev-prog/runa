@@ -7,5 +7,5 @@ final readonly class RegistrySnapshot
     /** @param array<string, ModuleRecord> $modules
      * @param  list<string>  $fenced
      */
-    public function __construct(public int $generation, public array $modules, public array $fenced = []) {}
+    public function __construct(public int $generation, public array $modules, public array $fenced = [], public int $healthRevision = 0) {}
 }

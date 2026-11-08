@@ -2,6 +2,48 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.8.0] - 2026-11-08
+
+Feature release — RM-2026-017.
+
+- Deliver common source-owned settings access, field grants, password proof and
+  transactional effects. Separate semantic review identity from operational
+  generation; preserve encrypted values, native publication/recovery and Audit.
+  Authorized settings reads compose with admitted Admin reads while unrelated
+  open transactions remain refused. Framework API advances to 2.1.0.
+- Prepare exact declared Admin API reads before locking, retaining current
+  principal, grant, Policy, source, connection, expiry and rollback fences.
+  Keep unchanged healthy observations fresh without invalidating operation
+  generation; group repeated owning settings/permission computations without
+  persistent identity or grant caches.
+- Complete executable reference examples for audited editing, field grants,
+  settings and snapshots, protected durable work, authorized history, four Admin
+  pages and the typed standalone workspace. Admin is 2.0.0, Auth 6.0.1,
+  Audit 1.1.2, Permissions 2.1.2 and reference 0.4.1; App stays independent
+  at0.0.0 and its declared range admits platform0.8.0.
+- Replace historical initialization paths with current CREATE definitions and
+  null-to-current initialization, preserving refusal of unknown retired histories
+  and explicit supported development/test reconciliation.
+- Reconcile business reads after explicit actions and recognized conflicts;
+  preserve dirty drafts and original reviewed revisions. Remove passive business
+  reloads and distinguish cancellation from live failures and lost access.
+- Refine Polish/English interface copy, shared form feedback, settings composition,
+  trusted-device disclosure, module navigation order and consistent pinned icons.
+  Preserve responsive light/dark presentation and public replacement contracts.
+- Remove obsolete Button.compact, flat preference keys/table-v1 conversion and
+  retired bin/check/bin/operations aliases; migrate current consumers directly.
+- Use one native Pest command for serial/parallel Artisan testing and PHPUnit
+  classes, preserving literal arguments, guarded lifecycle, terminal/signals and
+  native exit codes. Noninteractive children cannot consume supervisor stdin.
+- Bound generated Vite/tool state to workspace .runtime and refresh development
+  setup fingerprints without destructive editor reopen or AI startup coupling.
+- Reconcile documentation/source ownership and current command/test fixtures;
+  preserve immutable historical reconciliation evidence. Improve required
+  current-intent retrieval without changing original golden expectations.
+- Establish manual verification evidence continuity and bounded SIGSEGV handling
+  without automated retries, runtime diagnosis or customer recovery tolerance.
+  Preserve failed native runs and require explicit acceptance of exhausted cases.
+
 ## [0.7.0] - 2026-11-06
 
 Feature release — RM-2026-016. Core Admin 1.0.0 with source-owned administration, native security/Audit and customer presentation contracts. Backend accepted under the standing owner SIGSEGV/139 exception; retained native failures and interrupted coverage remain disclosed.

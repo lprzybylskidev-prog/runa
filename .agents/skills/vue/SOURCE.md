@@ -26,3 +26,8 @@ See `docs/runa/handbook/ai/skills-policy.md`.
 Local placement reconciliation on 2026-10-28 (RM-2026-012 point 17) routes generated
 module components to the public module guide and opt-in frontend/components
 contract. No upstream update or new dependency was adopted.
+
+Route-splitting guidance follows the local frontend architecture performance
+contract: measure genuine heavy/isolated boundaries and preserve the existing
+routing model. This removes blanket lazy-loading advice without an upstream
+revision change, new dependency or public API change.

@@ -4,7 +4,7 @@ namespace Runa\Contracts\Modules;
 
 use Illuminate\Database\Connection;
 
-/** Mandatory synchronous persistence; exceptions roll back the publication. */
+/** Optional SettingsProvider extension and required framework persistence; errors roll back publication. */
 interface SettingsParticipant
 {
     public function publishing(Connection $connection, SettingsPublication $publication): void;

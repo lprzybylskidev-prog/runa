@@ -32,12 +32,13 @@ dirty-draft, explicit retry and native pending/recovery semantics in App composi
 
 For application settings and runtime branding composition, follow
 `docs/runa/handbook/modules/admin/frontend.md#application-global-settings-and-runtime-branding`
-and its owning settings contract. Use public App registration/adapters and shared
+and its owning settings contract. Dashboard content uses the operations renderer's
+named dashboard slot and stays out of application settings. Use public App registration/adapters and shared
 controllers; preserve canonical identity and technical/source policy ownership.
 
-For password/2FA proof before entry or a sensitive operation, use the public Auth
+For password confirmation before protected entry or a sensitive operation, use the public Auth
 [operation-proof composition](../../../../docs/runa/handbook/modules/auth/entry-ui.md#operation-proof-composition)
-with its inline or MinimalLayout page default. Reuse the caller's session and
+with its shared full-page default. Reuse the caller's session and
 proof controller; presentation replacements do not duplicate credential requests.
 
 Admin follows the shared application language preference (Polish default, English
@@ -53,3 +54,10 @@ For area/module sidebar versus subview top-bar placement and nested PageNavigati
 or custom-layout usePageNavigationHost, follow
 `docs/runa/handbook/development/frontend/page-layouts.md#page-level-navigation-composition`.
 Preserve the owning controller's guards and history; keep operation controls in content.
+
+Custom Admin pages that use owning HTTP compose public `useAdminPageContext` for
+the native admitted identity and exit guard; use the existing single shell and
+Auth confirmation host. See the custom-page lifecycle contract in
+`docs/runa/handbook/modules/admin/frontend.md` and the optional reference workspace.
+Keep one controller per aggregate and connect its exposed exit check to standalone
+routing; presentation replacement does not authorize private platform imports.

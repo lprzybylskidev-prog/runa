@@ -15,14 +15,21 @@ const props = withDefaults(
 const { messages, show, dismiss } = useToasts();
 let current: string | undefined;
 watch(
-  () => [props.error, props.success, props.invalid, props.attempt] as const,
-  ([error, success, invalid]) => {
+  () =>
+    [
+      props.error,
+      props.success,
+      props.invalid,
+      props.attempt,
+      props.locale,
+    ] as const,
+  ([error, success, invalid, attempt, locale], previous) => {
     const result =
       error || invalid
         ? {
             title:
               error ||
-              (props.locale === 'pl'
+              (locale === 'pl'
                 ? 'Sprawdź zaznaczone pola formularza.'
                 : 'Check the highlighted form fields.'),
             description: error && success ? success : '',
@@ -41,6 +48,16 @@ watch(
     ) {
       // Replace the current outcome in place, without a second entering/exiting toast.
       messages.value = [{ ...result, id: current }];
+    } else if (
+      current &&
+      previous &&
+      previous[4] !== locale &&
+      previous[3] === attempt &&
+      previous[2] === invalid
+    ) {
+      // Localized caller text can change with locale too. A dismissed/expired
+      // outcome stays absent until a new outcome or deliberate submit attempt.
+      return;
     } else current = show(result);
   },
   { immediate: true },

@@ -15,3 +15,9 @@ Maintain application-specific patterns in local guidance/docs/app. Ordinary App
 code and optional app modules are supported; copied owner files or a Contracts
 namespace never authorize platform/internal APIs. Preserve installed local
 extensions during reviewed updates. This default contains no owner-only procedure.
+
+Native `php artisan test` uses the pinned Pest engine for serial and parallel
+execution, including PHPUnit classes. Use the public
+`docs/runa/handbook/testing/strategy.md#concurrency-and-acceptance`
+for literal CLI input, supported flags, coverage, signals and guarded cleanup;
+do not adapt global argv or invoke Collision's internal Laravel test command.

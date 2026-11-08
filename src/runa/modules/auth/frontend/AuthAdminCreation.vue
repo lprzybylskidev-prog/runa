@@ -9,6 +9,7 @@ import type {
 } from '@/runa/admin';
 import { AuthIdentityFields } from '@/runa/auth';
 import {
+  actionIcons,
   Button,
   Checkbox,
   ContentLoading,
@@ -85,21 +86,25 @@ watch(canVerify, (allowed) => {
   if (!allowed && get('email_verified') === true) set('email_verified', false);
 });
 const policy = computed<EntryOptions['password'] | undefined>(() => {
-  try {
-    const value: unknown = JSON.parse(string('password_policy'));
-    if (
-      !value ||
-      typeof value !== 'object' ||
-      !('min_length' in value) ||
-      !('max_bytes' in value) ||
-      typeof value.min_length !== 'number' ||
-      value.max_bytes !== 72
-    )
-      return undefined;
-    return value as EntryOptions['password'];
-  } catch {
+  const value = get('password_policy');
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    Array.isArray(value) ||
+    typeof value.min_length !== 'number' ||
+    value.max_bytes !== 72 ||
+    typeof value.mixed_case !== 'boolean' ||
+    typeof value.numbers !== 'boolean' ||
+    typeof value.symbols !== 'boolean'
+  )
     return undefined;
-  }
+  return {
+    min_length: value.min_length,
+    max_bytes: 72,
+    mixed_case: value.mixed_case,
+    numbers: value.numbers,
+    symbols: value.symbols,
+  };
 });
 const passwordHint = computed(() => {
   const p = policy.value;
@@ -366,9 +371,13 @@ async function submit() {
             )
           "
         />
-        <Button intent="inspect" :busy="busy" @click="read(true)">{{
-          text('Spróbuj ponownie', 'Retry loading')
-        }}</Button>
+        <Button
+          :icon="actionIcons.refresh"
+          intent="inspect"
+          :busy="busy"
+          @click="read(true)"
+          >{{ text('Spróbuj ponownie', 'Retry loading') }}</Button
+        >
       </template>
       <div class="min-w-0 space-y-6" data-auth-creation>
         <FormSection :title="text('Dane użytkownika', 'User details')">
@@ -589,6 +598,7 @@ async function submit() {
     /></template>
     <template #actions
       ><Button
+        :icon="actionIcons.register"
         intent="commit"
         type="submit"
         :disabled="!record || readonly || controller.blocked.value"

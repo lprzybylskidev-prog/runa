@@ -2,6 +2,11 @@ import type { AdminMessages } from './contracts';
 
 /** Reviewed Polish presentation for source-owned Admin/Core labels; never business values. */
 export const adminMessages: AdminMessages = {
+  'Application identity': 'Identyfikacja aplikacji',
+  'Name, logo and favicon.': 'Nazwa, logo i ikona aplikacji.',
+  'Default preferences': 'Ustawienia domyślne',
+  'Language, theme and time zone.': 'Język, motyw i strefa czasowa.',
+  'Additional settings': 'Dodatkowe ustawienia',
   'Enter a snapshot name of 1–80 characters without control characters.':
     'Podaj nazwę migawki od 1 do 80 znaków, bez znaków sterujących.',
   'This snapshot name is already used or the limit of 100 snapshots has been reached.':

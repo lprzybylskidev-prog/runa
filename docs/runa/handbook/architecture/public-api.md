@@ -69,6 +69,13 @@ and operation rather than granting access to that whole directory:
 | Audit       | Guarded `AuditRecords`, `AuditReads`, `OwnHistory`, `OwnHistoryDetails` and their values/exceptions; `Auditable` and `AuditModelPolicy` for opt-in capture; scoped `AuditSuppression::run` under the Audit transaction/redaction rules. | `AuditWriter`, `AuditActorResolver`; suppression's `active()` is capture plumbing.                                |
 | Permissions | Guarded `Permissions`, `PermissionsAccess`, `PermissionsAuthority`, `PermissionsAuthorityBatch`, `PermissionsSelections` and their preview/selection/declaration values.                                                                | `DevelopmentAccess`, only for explicit development contributors.                                                  |
 
+The source-check policy also records exact internal Core callers. Admin's
+Access query consumes the trusted `Integration/Core/AdminRead` orchestration;
+its Projection query consumes the internal `Management/ReadHandlerPlan` value.
+Auth's account admission policy anchors current registry reads through the internal
+`ModuleRegistry`, like existing owning policy/permission integration. These exact
+caller declarations do not expose those symbols to application/module authors.
+
 Reserved contracts support the existing named Core integration, owning Actions,
 transaction participants and operator/development procedures in each module's
 guide. They do not authorize application security-binding replacement, direct
@@ -83,11 +90,22 @@ keys and delegates execution there. Auth HTTP adapters use `Http/Controllers`,
 named HTTP endpoints, without importing these implementation classes. Combined
 settings declaration/application handlers retain their existing source identity.
 
-Initialization and historical `Upgrade*.php` files deliberately retain their
-module-root paths and classes. Their bytes, edge keys and fingerprints participate
-in installed-history and interrupted-update validation. Do not consolidate empty
-handlers or regroup these persisted identities as directory cleanup. A compatible
-source change adds its own forward edge without rewriting prior steps.
+Current `Initialize*.php` and `Update*.php` handlers use module-root paths
+and classes. Their bytes, edge keys and fingerprints participate in installed-history
+and interrupted-update validation. Preserve identities needed by supported deployed
+installations and real recovery evidence; assess those consumers before changing
+retained steps. A forward update edge is needed when an actual supported installed
+baseline requires it, rather than for every source-only development change.
+
+The standing Runa owner authorization before platform 1.0.0 permits consolidating
+unpublished development steps and correcting their owning initializers, with current
+consumers and identified dev/test storage/ledgers reconciled coherently. It does not
+permit fabricating applied history, weakening recovery checks, discarding durable
+data or rewriting published tags and closed records. See the public
+[module version policy](../development/modules.md#independent-module-versions) and
+[database policy](database.md) for the delivered boundaries. Customers keep Runa
+source protected; this owner authorization does not grant platform maintenance
+permission to application agents.
 
 ## Platform implementation homes
 
@@ -112,6 +130,16 @@ framework, Core integration and development providers explicitly. Auth transport
 keeps its separate Fortify/HTTP provider. Platform boot retains logging, queue
 admission and heartbeat ordering. Composer excludes module source from classmap
 scanning; the guarded module loader remains responsible for module classes.
+
+The current Framework API is 2.0.0. Settings publication and snapshot capture use
+semantic review identities under the [native settings contract](module-settings.md);
+current source manifests and generated consumers select `framework_api ^2.0.0`.
+
+Framework API 1.1.0 adds public ManagementReadPlanProvider/ManagementReadCall
+source extensions for [Admin read-health preparation](../modules/admin/declarations.md#read-health-plans).
+Implementation planning/discovery, ApiDefinitions, AdminRead and consumable health
+frames remain private. ModuleApis retains its supported resolve/invoke behavior;
+its constructor is framework composition, not an application extension seam.
 
 ## Frontend composition and replacement
 
@@ -142,7 +170,7 @@ remains authoritative. Module pages/slots retain manifest/build identity checks.
 | `src/runa/Settings`                                                                                   | Private platform settings catalogue/persistence, using the protected singleton migration; no customer engine imports.                                                                                                                                                      |
 | `src/runa/Support/Modules`                                                                            | Retained public adapters/values listed below. ModuleJob is the deliberately retained internal persisted envelope.                                                                                                                                                          |
 | `src/runa/ModuleFramework`, `src/runa/Integration/Core`                                               | Internal engines and named Core bridges. Runtime module diagnostics remain available without developer dependencies.                                                                                                                                                       |
-| `src/runa/modules/<code>/backend`                                                                     | Module-owned public Contracts, private Actions/Queries/Models/Proxies, HTTP Controllers/Requests/Resources, pure Definitions, source-owned Management adapters and executable Work. Retain module-root historical upgrade identities.                                      |
+| `src/runa/modules/<code>/backend`                                                                     | Module-owned public Contracts, private Actions/Queries/Models/Proxies, HTTP Controllers/Requests/Resources, pure Definitions, source-owned Management adapters and executable Work. Retained upgrade identities follow the installed-history policy above.                 |
 | `src/runa/Providers`, `Configuration`, `Identity`, `Logging`, `Mail`, `Runtime`, `Foundation`, `Http` | Platform composition and internal infrastructure, except explicitly documented public adapters/controllers.                                                                                                                                                                |
 | `src/runa/Database`, `src/runa/database`                                                              | PHP database infrastructure versus migration/seed/deploy resources. These are distinct responsibilities; preserve persisted migration identities.                                                                                                                          |
 | `src/runa/resources/js/runa`                                                                          | Public frontend facade/type/style entrypoints; compose their exports from application-owned code.                                                                                                                                                                          |
@@ -320,6 +348,14 @@ implementation and corresponding boundary checks are delivered together.
 
 ## Native transactional source extension
 
+SettingsProvider authors may additionally implement public SettingsAccessProvider,
+SettingsAuthorization and SettingsParticipant, using SettingsAccess metadata.
+The container-owned ModuleSettings adapter supplies readAuthorized alongside native
+update. [Native settings publication](module-settings.md) owns complete signatures,
+field grants, admission, proof/publication/Audit atomicity and source placement.
+The private settings coordinator is a named caller of reserved TransactionSecurity;
+this does not make that bridge an application API.
+
 The framework supplies TransactionalMutation, MutationDefinition, MutationAccess
 and MutationProof plus the container-owned ModuleTransactions adapter under
 Runa\Support\Modules\Data. Follow [owning module transactions](module-transactions.md)
@@ -362,7 +398,7 @@ import or Admin reverse dependency is introduced.
 
 AdminOperations 1.0.0 is a guarded Admin consumption API for its finite operational
 views/commands. Complete signatures, source homes, grants, safe projections and
-native runner boundaries are owned by [Admin operations](../modules/admin/operations.md#operational-http-and-presentation-contract-point-9).
+native runner boundaries are owned by [Admin operations](../modules/admin/operations.md#operational-http-and-presentation-contract).
 The Integration/Core bridge and OperationalParticipant remain reserved framework
 integration; consumers cannot write Audit or invoke engines through them. Public
 Vue replacements use AdminOperations/useAdminOperations from `@/runa/admin` and

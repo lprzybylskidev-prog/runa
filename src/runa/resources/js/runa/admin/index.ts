@@ -56,3 +56,5 @@ export { adminBooleanTone } from '../../../../modules/admin/frontend/booleanTone
 export { default as AdminSettingsPage } from '../../../../modules/admin/frontend/AdminSettingsPage.vue';
 export { useAdminSettingsSnapshots } from '../../../../modules/admin/frontend/useAdminSettingsSnapshots';
 export type { AdminSettingsGroup } from '../../../../modules/admin/frontend/useAdminSettingsSnapshots';
+
+export { useAdminPageContext } from '../../../../modules/admin/frontend/useAdminPageContext';

@@ -1,0 +1,12 @@
+<?php
+fwrite(STDERR, "native stderr\n");
+echo json_encode(['arguments' => array_slice($argv, 1), 'environment' => [
+    'APP_ENV' => getenv('APP_ENV'), 'TEST_TOKEN' => getenv('TEST_TOKEN'),
+    'development' => getenv('RUNA_NATIVE_FIXTURE_DEVELOPMENT'),
+    'parallel' => getenv('LARAVEL_PARALLEL_TESTING'),
+    'databases' => getenv('LARAVEL_PARALLEL_TESTING_WITHOUT_DATABASES'),
+    'cache' => getenv('LARAVEL_PARALLEL_TESTING_WITHOUT_CACHE'),
+    'recreate' => getenv('LARAVEL_PARALLEL_TESTING_RECREATE_DATABASES'),
+    'drop' => getenv('LARAVEL_PARALLEL_TESTING_DROP_DATABASES'),
+]]).PHP_EOL;
+exit(7);

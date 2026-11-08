@@ -11,12 +11,17 @@ use Runa\Contracts\Modules\ManagementField;
 use Runa\Contracts\Modules\ManagementFieldAccess;
 use Runa\Contracts\Modules\ManagementOperation;
 use Runa\Contracts\Modules\ManagementPage;
-use Runa\Contracts\Modules\ManagementPageProvider;
+use Runa\Contracts\Modules\ManagementReadPlanProvider;
+use Runa\Contracts\Modules\ManagementRead;
+use Runa\Contracts\Modules\ManagementOptionsRead;
 use Runa\Contracts\Modules\ManagementSection;
 use Runa\Contracts\Modules\ManagementWidget;
 
-final class Provider implements ManagementPageProvider
+final class Provider implements ManagementReadPlanProvider
 {
+    public static array $readCalls = [];
+    public function readPlan(string $binding, string $capability, ManagementRead|ManagementOptionsRead $input): array { return self::$readCalls; }
+
     public static bool $duplicate = false;
     public static string $view = 'record';
     public static bool $optionalPage = false;

@@ -117,6 +117,19 @@ it('hydrates the shared shell and updates presentation after a current publicati
     app.mount(root);
     await flushPromises();
     await vi.waitFor(() => expect(root.textContent).toBe('Atlas 2.4.1'));
+    const before = vi.mocked(window.fetch).mock.calls.length;
+    window.dispatchEvent(new Event('focus'));
+    document.dispatchEvent(new Event('visibilitychange'));
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    await request('/runa/auth/session');
+    await request('/runa/auth/step-up', { method: 'POST' });
+    await flushPromises();
+    expect(
+      vi
+        .mocked(window.fetch)
+        .mock.calls.slice(before)
+        .filter(([path]) => String(path).endsWith('/presentation')),
+    ).toHaveLength(0);
     name = 'Updated Atlas';
     await request('/admin/operations/application.update', { method: 'POST' });
     await flushPromises();
@@ -146,8 +159,8 @@ it('hydrates application display defaults and favicon while retaining explicit u
   };
   guestPreferenceStore.reset(scope, 'runa.locale');
   guestPreferenceStore.reset(scope, 'runa.theme');
-  localStorage.removeItem('runa.locale');
-  localStorage.removeItem('runa.theme');
+  localStorage.removeItem('runa.preferences:runa:display:global:runa.locale');
+  localStorage.removeItem('runa.preferences:runa:display:global:runa.theme');
   const favicon =
     '/api/presentation/assets/logo_icon/' + 'a'.repeat(64) + '.png';
   let timezone = 'America/New_York';
@@ -197,7 +210,61 @@ it('hydrates application display defaults and favicon while retaining explicit u
     root.remove();
     guestPreferenceStore.reset(scope, 'runa.locale');
     guestPreferenceStore.reset(scope, 'runa.theme');
-    localStorage.removeItem('runa.locale');
-    localStorage.removeItem('runa.theme');
+    localStorage.removeItem('runa.preferences:runa:display:global:runa.locale');
+    localStorage.removeItem('runa.preferences:runa:display:global:runa.theme');
+  }
+});
+
+it('action-driven refresh changes branding for actual identity transitions and ignores unchanged session checks', async () => {
+  let account = 'account-x';
+  let name = 'Initial';
+  const fetch = vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
+    const path = String(input);
+    if (path.endsWith('/presentation'))
+      return response({ name, logo: null, revision: 1 });
+    if (path.endsWith('/session'))
+      return response({
+        public_id: account,
+        session: { public_id: account + '-session' },
+      });
+    return response({});
+  });
+  const root = document.createElement('div');
+  document.body.append(root);
+  const app = createApplication(
+    defineComponent({
+      setup() {
+        const identity = useIdentity();
+        return () => h('p', identity.value.applicationName);
+      },
+    }),
+  );
+  try {
+    app.mount(root);
+    await vi.waitFor(() => expect(root.textContent).toBe('Initial'));
+    await request('/runa/auth/session');
+    name = 'Other publication';
+    const before = fetch.mock.calls.length;
+    await request('/runa/auth/session');
+    window.dispatchEvent(new Event('focus'));
+    document.dispatchEvent(new Event('visibilitychange'));
+    await flushPromises();
+    expect(
+      fetch.mock.calls
+        .slice(before)
+        .filter(([path]) => String(path).endsWith('/presentation')),
+    ).toHaveLength(0);
+    expect(root.textContent).toBe('Initial');
+    account = 'account-y';
+    await request('/runa/auth/session');
+    await vi.waitFor(() => expect(root.textContent).toBe('Other publication'));
+    expect(
+      fetch.mock.calls
+        .slice(before)
+        .filter(([path]) => String(path).endsWith('/presentation')),
+    ).toHaveLength(1);
+  } finally {
+    app.unmount();
+    root.remove();
   }
 });

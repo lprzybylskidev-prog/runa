@@ -14,12 +14,17 @@ import type {
   AdminFieldProps,
   AdminFieldValue,
 } from '@/runa/admin';
+import { decodeRead } from '../../../../src/runa/modules/admin/frontend/decode';
+import type { AdminSectionData } from '@/runa/admin';
 import type { SelectionProvider } from '@/runa/ui';
 import CustomerAdminField from './fixtures/customization/CustomerAdminField.vue';
 enableAutoUnmount(afterEach);
 afterEach(() => savePreference('runa.locale', 'en'));
 beforeEach(() => {
-  localStorage.setItem('runa.locale', 'en');
+  localStorage.setItem(
+    'runa.preferences:runa:display:global:runa.locale',
+    JSON.stringify({ version: 1, value: 'en' }),
+  );
 });
 function field(change: Partial<AdminFieldData> = {}): AdminFieldData {
   return {
@@ -426,3 +431,67 @@ it.each(['boolean', 'dictionary', 'integer'])(
     expect(wrapper.find('.sr-only').exists()).toBe(true);
   },
 );
+
+it('structured fields decode native data, refuse encoded or scalar alternatives and preserve text validation', () => {
+  const descriptor: AdminSectionData = {
+    key: 'settings',
+    title: 'Settings',
+    view: 'record',
+    readonly: false,
+    required: false,
+    component: null,
+    commands: [],
+    record: null,
+    diagnostic: null,
+    fields: [field({ key: 'values', type: 'json' })],
+  };
+  const read = (value: AdminFieldValue) =>
+    decodeRead(
+      {
+        data: {
+          public_id: null,
+          revision: '1',
+          values: { values: value },
+        },
+      },
+      { kind: 'record' },
+      descriptor,
+    );
+  for (const value of [
+    [],
+    { label: '<script>unsafe</script>', nested: [true, null] },
+    null,
+  ]) {
+    expect(read(value)).toEqual({
+      public_id: null,
+      revision: '1',
+      values: { values: value },
+    });
+    expect(validateAdminField(descriptor.fields[0]!, value)).toEqual([]);
+  }
+  for (const value of ['[]', '{}', '', 1, false]) {
+    expect(() => read(value)).toThrow('Invalid Admin field value');
+    expect(validateAdminField(descriptor.fields[0]!, value)).not.toEqual([]);
+  }
+  descriptor.fields[0] = field({ key: 'values', type: 'text' });
+  expect(() => read({ label: 'text' })).toThrow('Invalid Admin field value');
+});
+
+it('structured readonly fields escape their data and generic writable fields refuse text editing', () => {
+  const readonly = mount(AdminField, {
+    props: {
+      field: field({ type: 'json', readonly: true }),
+      modelValue: { label: '<script>unsafe</script>' },
+      errors: [],
+      readonly: true,
+      busy: false,
+    },
+  });
+  expect(readonly.text()).toContain('<script>unsafe</script>');
+  expect(readonly.find('script').exists()).toBe(false);
+  const writable = controlled(field({ type: 'json' }), { enabled: true });
+  expect(writable.wrapper.text()).toContain(
+    'This field is currently unavailable.',
+  );
+  expect(writable.wrapper.find('input').exists()).toBe(false);
+});

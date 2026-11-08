@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import AppButton from '../components/AppButton.vue';
 defineProps<{
   status: number;
@@ -20,12 +21,16 @@ defineProps<{
   <p class="mt-4 text-sm leading-7 text-muted">{{ description }}</p>
   <div class="mt-6 flex flex-wrap gap-3 text-sm">
     <form action="/" method="get">
-      <AppButton intent="neutral" type="submit">{{ home }}</AppButton>
+      <AppButton :icon="actionIcons.home" intent="neutral" type="submit">{{
+        home
+      }}</AppButton>
     </form>
     <form v-if="[419, 429, 500, 503].includes(status)" method="get">
       <input type="hidden" name="lang" :value="locale" />
       <input type="hidden" name="theme" :value="theme" />
-      <AppButton intent="inspect" type="submit">{{ retry }}</AppButton>
+      <AppButton :icon="actionIcons.retry" intent="inspect" type="submit">{{
+        retry
+      }}</AppButton>
     </form>
   </div>
   <p

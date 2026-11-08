@@ -95,7 +95,10 @@ const respond = (data: unknown, status = 200) =>
 let server: AdminRecord;
 let writes: Record<string, unknown>[];
 beforeEach(() => {
-  localStorage.setItem('runa.locale', 'en');
+  localStorage.setItem(
+    'runa.preferences:runa:display:global:runa.locale',
+    JSON.stringify({ version: 1, value: 'en' }),
+  );
   server = record();
   writes = [];
   vi.spyOn(window, 'fetch').mockImplementation(async (_input, init) => {
@@ -233,7 +236,7 @@ it('Admin forms merge disjoint reads without reinitializing edited fields or adv
   expect(form.dirty.value).toBe(false);
 });
 
-it('Admin forms refresh a 409 automatically without replay and retain a locally resolvable draft', async () => {
+it('action-driven refresh reconciles a stale revision automatically without replay and retain a locally resolvable draft', async () => {
   const { form } = harness();
   await vi.waitFor(() => expect(form.records.value.profile).toBeDefined());
   form.set('profile.name', 'Draft');
@@ -245,7 +248,7 @@ it('Admin forms refresh a 409 automatically without replay and retain a locally 
         revision: 'r2',
         values: { ...server.values, name: 'Remote' },
       });
-      return respond({ reason: 'stale_revision' }, 409);
+      return respond({ reason: 'identity_stale' }, 409);
     }
     return respond({ data: server });
   });
@@ -253,7 +256,7 @@ it('Admin forms refresh a 409 automatically without replay and retain a locally 
   await vi.waitFor(() => expect(form.conflicts.value).toHaveLength(1));
   expect(posts).toBe(1);
   expect(form.values.value['profile.name']).toBe('Draft');
-  expect(form.error.value?.message).toContain('not saved');
+  expect(form.error.value?.reason).toBe('identity_stale');
   form.resolve('profile.name', 'remote');
   expect(form.values.value['profile.name']).toBe('Remote');
   expect(posts).toBe(1);
@@ -1082,6 +1085,7 @@ it('settings snapshot preview preserves a dirty draft and cancellation never pub
       required: false,
       max_length: null,
       readonly: key === 'snapshots' || key === 'values',
+      type: key === 'snapshots' || key === 'values' ? 'json' : 'text',
     })),
   });
   vi.mocked(window.fetch).mockImplementation(async (url) => {
@@ -1091,13 +1095,13 @@ it('settings snapshot preview preserves a dirty draft and cancellation never pub
         ? record({
             public_id: String(url).includes('public_id=') ? otherId : null,
             values: {
-              snapshots: JSON.stringify(catalog),
+              snapshots: catalog,
               name: null,
               snapshot_id: null,
-              values: JSON.stringify({
+              values: {
                 name: 'Snapshot value',
                 enabled: false,
-              }),
+              },
             },
           })
         : server,
@@ -1132,4 +1136,85 @@ it('settings snapshot preview preserves a dirty draft and cancellation never pub
   expect(form.values.value['profile.enabled']).toBe(true);
   expect(form.dirty.value).toBe(true);
   expect(writes).toHaveLength(0);
+});
+
+it('Admin lazy sections end their activation at subject changes and explicit close', async () => {
+  const data = descriptor();
+  const profile = data.sections[0]!;
+  data.sections = [
+    { ...profile, key: 'creation', required: false, commands: [], fields: [] },
+    { ...profile, required: false },
+  ];
+  const reads: string[] = [];
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const url = new URL(String(input), window.location.origin);
+    reads.push(url.pathname + url.search);
+    return respond({
+      data: record({
+        public_id: url.pathname.endsWith('/creation')
+          ? null
+          : url.searchParams.get('public_id'),
+        values: url.pathname.endsWith('/creation')
+          ? {}
+          : { name: 'Other account', enabled: false, token: { set: true } },
+      }),
+    });
+  });
+  const { form } = harness(data, { autoRead: false });
+  await form.activateSection('creation');
+  expect(reads).toHaveLength(1);
+  expect(form.records.value.creation?.public_id).toBeNull();
+  expect(await form.selectSubject(otherId)).toBe(true);
+  await form.activateSection('profile');
+  await form.refresh();
+  expect(reads.filter((url) => url.includes('/creation'))).toHaveLength(1);
+  expect(form.records.value.creation).toBeUndefined();
+  expect(form.records.value.profile?.public_id).toBe(otherId);
+  expect(await form.closeSection('profile')).toBe(true);
+  const count = reads.length;
+  await form.refresh();
+  expect(reads).toHaveLength(count);
+  expect(form.sections.value).toHaveLength(0);
+  await form.activateSection('profile');
+  expect(reads).toHaveLength(count + 1);
+});
+
+it.each([
+  'identifier_conflict',
+  'access_definition_conflict',
+  'last_superadmin_required',
+])(
+  'action-driven refresh preserves a business refusal %s without reads or token substitution',
+  async (reason) => {
+    const { form } = harness();
+    await vi.waitFor(() => expect(form.records.value.profile).toBeDefined());
+    form.set('profile.name', 'Draft');
+    const fetch = vi.mocked(window.fetch);
+    fetch.mockClear();
+    fetch.mockResolvedValue(respond({ reason }, 409));
+    expect(await form.execute('profile', 'save')).toBeUndefined();
+    await flushPromises();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0]![1]?.method).toBe('POST');
+    expect(form.records.value.profile?.revision).toBe('r1');
+    expect(form.values.value['profile.name']).toBe('Draft');
+    expect(form.error.value?.reason).toBe(reason);
+    expect(form.conflicts.value).toEqual([]);
+  },
+);
+
+it('action-driven refresh refuses a removed target and blocks resubmission while retaining the local draft', async () => {
+  const { form } = harness();
+  await vi.waitFor(() => expect(form.records.value.profile).toBeDefined());
+  form.set('profile.name', 'Unsaved');
+  const fetch = vi.mocked(window.fetch);
+  fetch.mockClear();
+  fetch.mockResolvedValue(respond({ reason: 'identity_missing' }, 404));
+  await form.execute('profile', 'save');
+  await flushPromises();
+  expect(fetch).toHaveBeenCalledTimes(2);
+  expect(form.values.value['profile.name']).toBe('Unsaved');
+  expect(form.error.value?.reason).toBe('identity_missing');
+  await form.execute('profile', 'save');
+  expect(fetch).toHaveBeenCalledTimes(2);
 });

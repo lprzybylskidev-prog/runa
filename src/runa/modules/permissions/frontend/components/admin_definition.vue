@@ -8,6 +8,7 @@ import {
 } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
 import {
+  actionIcons,
   Button,
   Card,
   ConfirmDialog,
@@ -318,6 +319,7 @@ watch([() => props.page.state.value, () => record.value?.public_id], () =>
           <Button
             v-for="command in commands"
             :key="command.key"
+            :icon="actionIcons.delete"
             intent="danger"
             :disabled="controller.busy.value || !!conflicts.length"
             @click="submit(command.key)"
@@ -334,12 +336,14 @@ watch([() => props.page.state.value, () => record.value?.public_id], () =>
         <template #actions>
           <template v-if="canStore && (dirty || !record.public_id)">
             <Button
+              :icon="actionIcons.save"
               intent="commit"
               type="submit"
               :disabled="!!conflicts.length"
               >{{ text('Zapisz', 'Save') }}</Button
             >
             <Button
+              :icon="actionIcons.discard"
               intent="discard"
               :disabled="controller.busy.value"
               @click="revert"
@@ -351,6 +355,7 @@ watch([() => props.page.state.value, () => record.value?.public_id], () =>
       </Form>
       <Button
         v-else
+        :icon="actionIcons.refresh"
         intent="inspect"
         :busy="controller.busy.value"
         @click="controller.refresh()"

@@ -150,6 +150,15 @@ changed architectural/security premise through the applicable roadmap workflow.
    cases for authorization-related changes. Follow the normal verification phase
    rules; this review does not authorize early broad suites or new infrastructure.
 
+The framework's trusted PermissionAuthorizer groups a single decision in a short
+default-connection transaction and anchors the registry lock before nested Auth
+reads. It still rereads current grants and availability for every decision. Internal
+management discovery similarly groups source declaration collection without running
+resource, widget or write handlers. Both retain their existing signatures and private
+runtime ownership; neither is an application extension API or a request-wide cache.
+Auth's [bounded policy reads](../modules/auth/sessions.md#bounded-policy-reads)
+follow the same lock-lifetime rule. No additional request is introduced.
+
 Include frontend request counts and server-to-application payload size in that
 review. Coalesce overlapping read triggers while retaining a trailing invalidation
 for later focus/publication changes. Keep independent prerequisites explicit;
@@ -171,4 +180,4 @@ The application manifest src/app/application.json defines independent identity/v
 
 ## Module framework design
 
-The [module framework contracts](module-framework.md) describe delivered strict manifest validation, owner-scoped discovery, persistent registry snapshots, module autoloading, graph-only lifecycle previews and durable atomic administrative transitions, module-owned health policies, effective availability, independent maintenance reasons and PostgreSQL/storage boundaries, and availability-aware typed PHP/HTTP adapters, managed queue/work leases and cooperative cancellation, classified Artisan/schedule adapters, independent after-commit public events and optional integration toggles, typed encrypted settings, management/frontend descriptors, structured logging and owner-scoped installation/upgrade orchestration. Application-module installation remains an explicit customer deployment invocation; generators/reference delivery follow later. Managed synchronous module operations use the declared gateways; class loading and low-level storage/data helpers do not authorize operations. Ordinary application code remains supported.
+The [module framework contracts](module-framework.md) describe delivered strict manifest validation, owner-scoped discovery, persistent registry snapshots, module autoloading, graph-only lifecycle previews and durable atomic administrative transitions, module-owned health policies, effective availability, independent maintenance reasons and PostgreSQL/storage boundaries, and availability-aware typed PHP/HTTP adapters, managed queue/work leases and cooperative cancellation, classified Artisan/schedule adapters, independent after-commit public events and optional integration toggles, typed encrypted settings, management/frontend descriptors, structured logging and owner-scoped installation/upgrade orchestration. Application-module installation remains an explicit customer deployment invocation. The delivered [module generator and optional development reference](../development/modules.md#working-reference-and-application-integration) provide reviewed source scaffolding and working examples; generation does not register, install or enable a module. Managed synchronous module operations use the declared gateways; class loading and low-level storage/data helpers do not authorize operations. Ordinary application code remains supported.

@@ -225,7 +225,7 @@ allow bounded comparison without dumping entire documents. Use `read --section`
 for missing neighboring evidence rather than continually increasing top-k.
 
 Current intent applies declared-purpose factors (current guidance 1.2, history
-0.65, proposal 0.5, unknown 1) alongside existing status factors. History intent
+1, proposal 0.5, unknown 1) alongside existing status factors. History intent
 uses history 1.2/current 0.9/proposal 0.8/unknown 1 and neutral status. Audit uses
 neutral purpose/status factors: it does not hide historical or contrary evidence.
 All channels still share exact filters; no mode infers truth or uses an LLM.

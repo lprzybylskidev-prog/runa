@@ -33,6 +33,7 @@ class DevelopmentSetup:
                 "src/composer.lock",
                 "src/pnpm-lock.yaml",
                 "src/vite.config.mjs",
+                "src/vite.errors.config.mjs",
                 "src/tsconfig.json",
                 ".env",
                 "tools/application/development.py",
@@ -51,11 +52,24 @@ class DevelopmentSetup:
             "src/runa/config",
             "src/app/config",
             "src/app/resources",
+            "src/runa/resources",
+            "src/runa/frontend",
+            "src/runa/build",
             "src/runa/database/migrations",
             "src/app/database/migrations",
             "resources",
         ):
             paths.extend(p for p in (self.workspace.root / directory).rglob("*") if p.is_file())
+        for owner in ("runa", "app"):
+            modules = self.workspace.root / "src" / owner / "modules"
+            for module in modules.iterdir() if modules.is_dir() else ():
+                if not module.is_dir() or module.name.startswith("."):
+                    continue
+                # Registry imports and build evidence consume both manifest and frontend.
+                manifest = module / "module.json"
+                if manifest.is_file():
+                    paths.append(manifest)
+                paths.extend(p for p in (module / "frontend").rglob("*") if p.is_file())
         digest = hashlib.sha256()
         for path in sorted(paths):
             digest.update(str(path.relative_to(self.workspace.root)).encode())

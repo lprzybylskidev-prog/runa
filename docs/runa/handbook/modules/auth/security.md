@@ -1,12 +1,15 @@
 # Passwords, second factors, trust and step-up
 
-Auth 0.4.0 adds the forward `0.3.0 -> 0.4.0` credential/settings upgrade.
+The historical Auth 0.4.0 release introduced the forward `0.3.0 -> 0.4.0` credential/settings upgrade.
 Install through ModuleUpdates. Existing password hashes retain their values and
 start their password age at the upgrade; hashes cannot prove previous complexity.
 No dependency or service is added. Fortify's installed Google2FA engine generates
 and checks TOTP; native Laravel hashing, encryption, cookies and CSRF remain in use.
 Package routes remain disabled. Entry/restricted screens use the [Auth UI contract](entry-ui.md); optional own-account
 management uses the [account UI contract](account-ui.md).
+
+Use the current [Auth module and API versions](README.md); the edge above
+identifies retained installation history.
 
 ## Password policy and recovery
 

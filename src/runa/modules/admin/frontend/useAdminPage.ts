@@ -1,6 +1,6 @@
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import type { Ref } from 'vue';
-import { request } from '@/runa/http';
+import { request, RequestCancelledError } from '@/runa/http';
 import type {
   AdminController,
   AdminError,
@@ -72,7 +72,12 @@ export function useAdminPage(
       loadedStamp = adminPresentationIdentity(admin.session) ?? undefined;
       status.value = 'ready';
     } catch (cause) {
-      if (!alive || own !== epoch || stamp !== sessionStamp(admin.session))
+      if (
+        !alive ||
+        own !== epoch ||
+        stamp !== sessionStamp(admin.session) ||
+        cause instanceof RequestCancelledError
+      )
         return;
       const failure = adminFailure(cause);
       page.value = undefined;

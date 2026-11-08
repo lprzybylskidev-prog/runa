@@ -251,6 +251,85 @@ class StartupContracts(DevelopmentFixture):
             self.assertIn("frontend build skipped", output.getvalue())
             self.assertEqual(marker.read_text(), "current\n")
 
+    def test_frontend_input_changes_rebuild_setup_without_data_operations(self) -> None:
+        root = Path(self.temporary.name)
+        marker = self.setup_fixture(root)
+        # Minimal source fixture; no installed dependency, real env or service is consumed.
+        fixed = (
+            "src/composer.json",
+            "src/runa/composer.json",
+            "src/app/composer.json",
+            "src/package.json",
+            "src/runa/package.json",
+            "src/app/package.json",
+            "src/app/application.json",
+            "src/runa/platform.json",
+            "src/composer.lock",
+            "src/pnpm-lock.yaml",
+            "src/vite.config.mjs",
+            "src/vite.errors.config.mjs",
+            "src/tsconfig.json",
+            "tools/application/development.py",
+            "tools/application/development_config.py",
+            "tools/application/development_setup.py",
+            "tools/application/development_runtime.py",
+            "tools/application/python_toolchain.py",
+            "tools/application/python/requirements.lock",
+            "tools/application/python/pip-bootstrap.lock.json",
+            "tools/application/python/pyright.lock.json",
+            "tools/application/processes.py",
+            "tools/application/dependencies.py",
+        )
+        changing = (
+            "src/runa/resources/js/components/Button.vue",
+            "src/runa/frontend/module-components.mjs",
+            "src/runa/build/errors/render.mjs",
+            "src/runa/modules/auth/frontend/account.vue",
+            "src/runa/modules/auth/module.json",
+            "src/app/modules/example/frontend/panel.vue",
+            "src/app/modules/example/module.json",
+        )
+        for name in (*fixed, *changing):
+            path = root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("fixture\n")
+        with (
+            self.bind(root),
+            patch.object(type(self.dev.configuration), "environment_files"),
+            patch.object(type(self.dev.setup), "register_boost"),
+            patch.object(self.processes, "run", return_value=SimpleNamespace(returncode=0)) as run,
+        ):
+            marker.write_text(self.dev.setup.setup_fingerprint() + "\n")
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(self.dev.application_setup(["--if-needed"]), 0)
+            self.assertNotIn(
+                ["pnpm", "--dir", "src", "run", "build"], [c.args[0] for c in run.call_args_list]
+            )
+            for name in (*changing, "src/vite.errors.config.mjs"):
+                with self.subTest(source=name), contextlib.redirect_stdout(io.StringIO()):
+                    run.reset_mock()
+                    (root / name).write_text("changed\n")
+                    self.assertEqual(self.dev.application_setup(["--if-needed"]), 0)
+                    commands = [c.args[0] for c in run.call_args_list]
+                    self.assertIn(["pnpm", "--dir", "src", "run", "build"], commands)
+                    self.assertFalse(
+                        any(
+                            c[:3] in (["php", "artisan", "migrate"], ["php", "artisan", "db:seed"])
+                            for c in commands
+                        )
+                    )
+                    self.assertEqual(marker.read_text().strip(), self.dev.setup.setup_fingerprint())
+            # Generated cache bytes are not build inputs and cannot cause rebuild loops.
+            run.reset_mock()
+            cache = root / ".runtime/frontend/vite/application/deps.json"
+            cache.parent.mkdir(parents=True)
+            cache.write_text("generated\n")
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(self.dev.application_setup(["--if-needed"]), 0)
+            self.assertNotIn(
+                ["pnpm", "--dir", "src", "run", "build"], [c.args[0] for c in run.call_args_list]
+            )
+
     def test_missing_current_document_or_stale_fingerprint_runs_full_setup(self) -> None:
         for reason in ("missing_document", "stale_fingerprint"):
             with self.subTest(reason=reason), tempfile.TemporaryDirectory() as folder:

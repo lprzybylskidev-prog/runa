@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { useHorizontalScroll } from '../composables/useHorizontalScroll';
 import { usePageNavigationHost } from '../composables/usePageNavigationHost';
 import { inject, toRef } from 'vue';
@@ -294,14 +295,13 @@ onScopeDispose(() => {
         </a>
         <AppButton
           v-if="mobile"
+          :icon="actionIcons.cancel"
           intent="cancel"
           icon-only
           class="shell-group-toggle"
           :aria-label="t('closeNavigation')"
           @click="closeDrawer()"
-        >
-          ×
-        </AppButton>
+        ></AppButton>
       </div>
       <div class="shell-sidebar-scroll">
         <p v-if="!sidebarCollapsed" class="shell-eyebrow">

@@ -9,7 +9,7 @@ use Throwable;
 
 final class ManageModuleSettings extends Command
 {
-    protected $signature = 'runa:modules:settings {module?} {--write : Read a JSON patch envelope from standard input} {--revision= : Expected settings revision} {--generation= : Expected registry generation} {--recover= : Recover an interrupted settings operation}';
+    protected $signature = 'runa:modules:settings {module?} {--write : Read a JSON patch envelope from standard input} {--revision= : Expected settings revision} {--review= : Expected settings review identity} {--recover= : Recover an interrupted settings operation}';
 
     protected $description = 'Read redacted module settings or apply a revision-checked trusted settings change';
 
@@ -27,8 +27,8 @@ final class ManageModuleSettings extends Command
                     return self::SUCCESS;
                 }
                 $revision = $this->option('revision');
-                $generation = $this->option('generation');
-                if (! is_string($revision) || ! is_string($generation) || preg_match('/\A(?:0|[1-9][0-9]{0,15})\z/D', $revision) !== 1 || preg_match('/\A(?:0|[1-9][0-9]{0,15})\z/D', $generation) !== 1 || stream_isatty(STDIN)) {
+                $review = $this->option('review');
+                if (! is_string($revision) || ! is_string($review) || preg_match('/\A(?:0|[1-9][0-9]{0,15})\z/D', $revision) !== 1 || preg_match('/\A[a-f0-9]{64}\z/D', $review) !== 1 || stream_isatty(STDIN)) {
                     throw new \RuntimeException('Expected revisions and piped JSON input.');
                 }
                 $json = stream_get_contents(STDIN, 65537);
@@ -50,7 +50,7 @@ final class ManageModuleSettings extends Command
                 if ($actor !== null && (! is_array($actor) || count($actor) !== 2 || ! is_string($actor['kind'] ?? null) || ! is_string($actor['id'] ?? null))) {
                     throw new \RuntimeException;
                 }
-                $result = $settings->update($module, $values, (int) $revision, (int) $generation, $actor === null ? null : new SettingsActor($actor['kind'], $actor['id']));
+                $result = $settings->update($module, $values, (int) $revision, $review, $actor === null ? null : new SettingsActor($actor['kind'], $actor['id']));
             } else {
                 throw new \RuntimeException;
             }

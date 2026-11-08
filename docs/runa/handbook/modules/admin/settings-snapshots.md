@@ -14,17 +14,25 @@ Subclasses define protected string constants MODULE, SCOPE, READ_PERMISSION, WRI
 and `public static function keys(): array` (list of non-sensitive setting keys).
 Its public management signatures are `read(ManagementRead): ManagementRecord`,
 `page(ManagementRead): ManagementPageResult`, `preview(ManagementWrite): ManagementReview`
-and `execute(ManagementWrite): ManagementOutcome`. Catalog records expose JSON text
-`snapshots`, nullable text `name`, nullable UUID `snapshot_id` and JSON text `values`.
+and `execute(ManagementWrite): ManagementOutcome`. Catalog records expose a native `snapshots` list, nullable text `name`, nullable
+UUID `snapshot_id` and native `values` field map. Declare snapshots/values with
+[ManagementField type json](declarations.md#structured-management-fields).
+An unselected catalog read returns null for values; loaded values contain only the
+selected scope. Encoded string representations are refused. Empty PHP maps/lists
+serialize as []; snapshot definitions should select the actual setting keys.
 A record read with publicId returns only that scope's selected snapshot values.
 Commands `capture` (name) and `delete` (snapshot_id) never publish settings.
+Records carry `revision:review_id`, using the [native semantic review contract](../../architecture/module-settings.md).
+The adapter prepares exact read/write/Audit and applicable Auth calls before locks
+for standalone entry, or joins the existing native mutation/Admin prepared-read
+scope. Unprepared/expired calls remain refused, including nested reads.
 Deletion consumes DELETE_ACTION password proof within the same transaction as Audit.
 
 The trusted store signatures are `catalog(string $module, string $scope): array`,
-`capture(string $module, string $scope, array $keys, string $name, int $revision, int $generation): string`,
+`capture(string $module, string $scope, array $keys, string $name, int $revision, string $reviewId): string`,
 `load(string $module, string $scope, array $keys, string $publicId): array` and
 `delete(string $module, string $scope, string $publicId): void`.
-Capture checks the displayed settings revision/generation; module/scope/name is unique
+Capture checks the displayed settings revision/review identity; module/scope/name is unique
 among live snapshots, with a maximum of 100 live snapshots per scope. Names are plain
 text, trimmed and bounded to 80 characters. Deletion is soft. Captures and deletions
 write explicit Audit in their storage transaction, excluding configuration values.
@@ -95,3 +103,13 @@ start-aligned, with ordinary viewport collision handling. Save/apply/capture use
 commit, load uses inspect, delete uses danger and snapshot Cancel uses cancel;
 discarding an ordinary draft uses discard, following
 [shared action semantics](../../development/frontend/components.md#action-button-semantics).
+
+Application-owned settings views using an existing owning HTTP API can compose
+the same public UI controls and Auth `useOperationProof` with their own reviewed
+draft controller; they never copy native session/proof internals. A custom Admin
+page joins native identity, initial readiness and exit guards through
+[useAdminPageContext](frontend.md#custom-page-lifecycle). Keep one controller for
+the owning aggregate, source-projected names/descriptions, field grants and exact
+review identities. The optional reference workspace demonstrates the shared
+Admin/standalone case. Native Management form/resource settings consumers retain
+AdminSettingsPage/useAdminSettingsSnapshots above.

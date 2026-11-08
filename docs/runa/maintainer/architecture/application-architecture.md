@@ -110,7 +110,7 @@ Each request has a safe correlation ID for diagnostics, propagated to related wo
 
 ### Delivered composition
 
-One Laravel application lives under `src`, with one autoloader, container and composed dependency graph. Customer business code can remain ordinary PHP/Vue; module roots are reserved for RM-2026-006 and have no registry/runtime behavior here.
+One Laravel application lives under `src`, with one autoloader, container and composed dependency graph. Customer business code can remain ordinary PHP/Vue or use the delivered optional application-module framework. The four supplied Core modules live under src/runa/modules; application modules live under src/app/modules. Registration, installation and effective availability are separate states; use the [current module contracts](../../handbook/architecture/module-framework.md).
 
 ```text
 repository/
@@ -119,12 +119,11 @@ repository/
       providers.php              # application provider registrations
       application.json           # independent identity/version/compatibility
       database/                  # application migrations/explicit seeders/factories
-      tests/                     # application PHP/frontend/browser tests
     runa/                        # protected platform namespace directories and resources
       platform.json              # platform runtime/build identity
       database/                  # isolated platform migrations/required seed root
-      management/                # cold commands; excluded from runtime images
-    tests/{TestCase.php,Pest.php} # guarded native application test support/discovery
+      Tooling/Management/        # cold command registry; excluded from runtime images
+      Testing/                   # reusable development-only test support
     bootstrap/                   # Laravel composition and generated cache
     public/                      # front controller and published generated assets
     storage/
@@ -134,6 +133,7 @@ repository/
     artisan
     composer.json, composer.lock # composed dependency inputs and reviewed lock
     package.json, pnpm-lock.yaml
+  tests/{backend,frontend,tools}/app/ # authored customer tests and fixtures
   docs/app/                      # application documentation and roadmaps
   docs/runa/handbook/             # public Runa procedures/contracts
   .agents/skills/                # supplied customer agent guidance
@@ -170,6 +170,6 @@ ApplicationManifest/VersionCompatibility validate before configuration and exter
 
 External distribution/bootstrap.py obtains a verified Runa release for first development; distribution/initialize.py selects a complete customer branch/tag/SHA for teammates/production. Atomic publication refuses existing destinations and preserves customer remotes/history. Clones prepare their own local dev/prod role; another workstation's acquisition receipt/journal is unnecessary. Local role metadata is not a trusted source inventory or signature. See [acquisition](../tooling/bootstrap.md) and [installation](../tooling/installation.md).
 
-The development-only external updater independently retrieves original/target releases, compares delivered src/runa, checks dependencies/compatibility and reviews customized infrastructure. Read-only preflight/plan is nonmutating. Apply/resume uses the existing operation lock and private pending journal, fences HTTP/writers, replaces only platform source, builds and executes platform forward migrations/required seeds. Resume revalidates source/tag/database identities and completed effects. It preserves customer scaffold/locks/infrastructure/application data; changed customization requires a new bound continue/abort decision. No automatic code/data rollback, customer commit/push or infrastructure engine exists. See [updates](../tooling/updates.md).
+The development-only external updater independently retrieves original/target releases, compares delivered src/runa, checks dependencies/compatibility and reviews customized infrastructure. Read-only preflight/plan is nonmutating. Apply/resume uses the existing operation lock and private pending journal, fences HTTP/writers, replaces protected platform source and applies the exact approved eligible delivered-file changes, builds and executes platform forward migrations/required seeds/supplied-module upgrades. Resume revalidates source/tag/database identities and completed effects. It preserves application source/data, composed dependency inputs/locks, private settings and local additions. Eligible scaffold/infrastructure replacements require the exact bound file plan; changed customization requires a new continue/abort decision. Local instruction extensions remain manual reconciliation. No automatic code/data rollback, customer commit/push or infrastructure engine exists. See [updates](../tooling/updates.md).
 
-Customer developers manually reconcile release-required scaffold/container/env changes, verify and commit/push the complete project. Teammates pull and explicitly initialize pending local data; ordinary reopen/setup/up remains nondestructive. Production deploy fetches only the tested customer revision and runs forward platform migrations/required seeds before application migrations/explicit DatabaseSeeder. Additional declared services/volumes are supported, with actual config/image/runtime/AI isolation hard gates. Production never accesses owner releases or runs the owner updater. See [reconciliation](../../handbook/release/platform-reconciliation.md) and [deployment acceptance](../production/deployment.md).
+Customer developers manually reconcile release-required scaffold/container/env changes, verify and commit/push the complete project. Teammates pull and explicitly initialize pending local data; ordinary reopen/setup/up remains nondestructive. Production deploy fetches only the tested customer revision and runs forward platform migrations/required seeds/supplied-module upgrades before application migrations/explicit DatabaseSeeder. Application-module installation still requires an explicit customer-owned integration. Additional declared services/volumes are supported, with actual config/image/runtime/AI isolation hard gates. Production never accesses owner releases or runs the owner updater. See [reconciliation](../../handbook/release/platform-reconciliation.md) and [deployment acceptance](../production/deployment.md).

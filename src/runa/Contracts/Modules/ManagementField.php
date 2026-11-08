@@ -19,7 +19,8 @@ final readonly class ManagementField
     ) {
         new ApiOperation($key);
         ManagementAction::localization($names, $descriptions, 1);
-        if (! in_array($type, ['text', 'boolean', 'integer', 'datetime', 'uuid', 'dictionary'], true)
+        if (! in_array($type, ['text', 'boolean', 'integer', 'datetime', 'uuid', 'dictionary', 'json'], true)
+            || ($type === 'json' && ($filterable || $sortable || $sensitive))
             || ($sensitive && ($filterable || $sortable))
             || (($referenceModule === null) !== ($referenceOperation === null))) {
             throw new InvalidArgumentException('Invalid management field.');

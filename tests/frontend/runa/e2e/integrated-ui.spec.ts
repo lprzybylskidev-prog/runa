@@ -33,8 +33,14 @@ for (const locale of ['pl', 'en'])
         });
         await page.addInitScript(
           ({ locale, theme }) => {
-            localStorage.setItem('runa.locale', locale);
-            localStorage.setItem('runa.theme', theme);
+            localStorage.setItem(
+              'runa.preferences:runa:display:global:runa.locale',
+              JSON.stringify({ version: 1, value: locale }),
+            );
+            localStorage.setItem(
+              'runa.preferences:runa:display:global:runa.theme',
+              JSON.stringify({ version: 1, value: theme }),
+            );
           },
           { locale, theme },
         );
@@ -138,8 +144,14 @@ for (const [device, width, height] of [
         const errors = recordBrowserProblems(page, { anonymousSession: true });
         await page.addInitScript(
           ({ locale, theme }) => {
-            localStorage.setItem('runa.locale', locale);
-            localStorage.setItem('runa.theme', theme);
+            localStorage.setItem(
+              'runa.preferences:runa:display:global:runa.locale',
+              JSON.stringify({ version: 1, value: locale }),
+            );
+            localStorage.setItem(
+              'runa.preferences:runa:display:global:runa.theme',
+              JSON.stringify({ version: 1, value: theme }),
+            );
           },
           { locale, theme },
         );
@@ -475,7 +487,11 @@ for (const locale of ['pl', 'en']) {
     page,
   }) => {
     await page.addInitScript(
-      (locale) => localStorage.setItem('runa.locale', locale),
+      (locale) =>
+        localStorage.setItem(
+          'runa.preferences:runa:display:global:runa.locale',
+          JSON.stringify({ version: 1, value: locale }),
+        ),
       locale,
     );
     await page.goto('/__fixtures/ui?category=additional');

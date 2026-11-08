@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { nextTick } from 'vue';
 import AppAlert from './AppAlert.vue';
 import AppButton from './AppButton.vue';
@@ -45,11 +46,18 @@ async function resolve(keep = false) {
     <p class="whitespace-pre-wrap [overflow-wrap:anywhere]">{{ current }}</p>
     <slot />
     <div class="mt-3 flex flex-wrap gap-2">
-      <AppButton intent="discard" :disabled="busy" @click="resolve()">{{
-        locale === 'pl' ? 'Użyj aktualnych danych' : 'Use current values'
-      }}</AppButton>
+      <AppButton
+        :icon="actionIcons.discard"
+        intent="discard"
+        :disabled="busy"
+        @click="resolve()"
+        >{{
+          locale === 'pl' ? 'Użyj aktualnych danych' : 'Use current values'
+        }}</AppButton
+      >
       <AppButton
         v-if="allowKeep"
+        :icon="actionIcons.confirm"
         intent="commit"
         variant="outline"
         :disabled="busy"

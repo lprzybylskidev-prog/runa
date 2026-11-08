@@ -30,6 +30,11 @@ $cases = [
  ['<?php use Runa\Contracts\Modules\{WorkHandler, AuthorityGuard as Guard};', ['reserved_api_import'], ''],
  ['<?php new \Runa\ModuleFramework\ModuleRegistry;', ['internal_platform_import'], ''],
  ['<?php use Runa\Support\Modules\Work\WorkContext; use Runa\Support\Modules\Data\ModuleModel;', [], ''],
+ ['<?php use Runa\Contracts\Modules\{SettingsAccess, SettingsAccessProvider, SettingsAuthorization, SettingsParticipant};', [], ''],
+ ['<?php use Runa\Contracts\Modules\TransactionSecurity;', ['reserved_api_import'], 'src/app/Settings.php'],
+ ['<?php use Runa\Contracts\Modules\TransactionSecurity;', [], 'src/runa/ModuleFramework/Settings/SettingsSecurity.php'],
+ ['<?php use Runa\Contracts\Modules\TransactionSecurity;', [], 'src/runa/Providers/ModuleFrameworkServiceProvider.php'],
+ ['<?php use Runa\ModuleFramework\Settings\SettingsSecurity;', ['internal_platform_import'], 'src/app/Settings.php'],
  ['<?php use Runa\Modules\Auth\Contracts\Unknown;', ['foreign_module_import'], ''],
  ['<?php use Runa\Modules\Auth\Contracts\AuthorizationIdentity;', [], 'src/runa/Integration/Core/AuthAuthorizationIdentity.php'],
  ['<?php use Runa\Modules\Auth\Contracts\AuthorizationIdentity;', ['reserved_api_import'], 'src/app/AuthAuthorizationIdentity.php'],
@@ -39,6 +44,9 @@ $cases = [
 ];
 foreach ($cases as [$source, $expected, $path]) {
  if ($boundary->php($source, 'App\Modules\Own\\', $path) !== $expected) { fwrite(STDERR, $source); exit(10); }
+}
+foreach (['src/runa/ModuleFramework/Settings/SettingsAdmission.php', 'src/runa/ModuleFramework/Settings/SettingsSecurity.php', 'src/runa/Providers/ModuleFrameworkServiceProvider.php'] as $path) {
+ if ($boundary->php(file_get_contents($argv[1].'/'.$path), 'Runa\\', $path) !== []) { fwrite(STDERR, $path); exit(11); }
 }
 $parser = new Runa\Development\ApiSourceCheck;
 $source = '<?php namespace Runa\Contracts\Modules; interface Unknown { public function x(AuthorityGuard $guard): void; }';
@@ -82,6 +90,9 @@ const config = await eslint.calculateConfigForFile(filename);
 if (!config.rules?.['runa/public-imports']) throw new Error('Audience rule missing from resolved source config');
 for (const [source, expected] of [
  ["import type { AuthEntryController } from '@/runa/auth'; export type X = AuthEntryController;", 0],
+ ["import type { AdminWidgetData } from '@/runa/admin'; export type X = AdminWidgetData;", 0],
+ ["export { AdminSection, useAdminLocale } from '@/runa/admin';", 0],
+ ["export * from '../../../runa/modules/admin/frontend/contracts';", 1],
  ["export { http } from '@runa/lib/http';", 1],
  ["export * from '../../../runa/modules/auth/frontend/contracts/controllers';", 1],
  ["void import('@runa/components/AppButton.vue');", 1],
@@ -185,7 +196,7 @@ foreach (['auth' => 'IdentityUpgrades', 'audit' => 'AuditUpgrades', 'permissions
  $steps = (new $class)->upgrades();
  $last = end($steps);
  $manifest = json_decode(file_get_contents($argv[1].'/src/runa/modules/'.$code.'/module.json'), true, flags: JSON_THROW_ON_ERROR);
- if ($last->to !== $manifest['version'] || !array_any($steps, fn ($step) => $step->key === 'verification_contracts')) exit(41);
+ if ($last->to !== $manifest['version'] || !array_any($steps, fn ($step) => $step->key === 'initialize' && $step->from === null && $step->to === $manifest['version'])) exit(41);
  if (!(new Runa\Support\VersionCompatibility)->supports($manifest['platform'], '0.7.0')) exit(42);
 }
 """,

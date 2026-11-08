@@ -12,9 +12,11 @@ return new class extends Migration
     {
         (new ModuleSchema(DB::connection(), new ModuleIdentity('app.reference')))->create('samples', function (Blueprint $table): void {
             $table->string('code', 40)->unique();
+            $table->bigInteger('revision')->default(1);
             $table->timestampsTz();
             $table->softDeletesTz();
         });
+        DB::statement('ALTER TABLE app_reference.samples ADD CONSTRAINT reference_sample_revision_positive CHECK (revision > 0)');
     }
 
     public function down(): void

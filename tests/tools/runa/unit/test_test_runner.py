@@ -88,6 +88,22 @@ def test_owner_empty_scope_is_a_failure(tmp_path: Path) -> None:
     assert service.execute(Selection(("tooling",))) == 1
 
 
+def test_module_only_frontend_scope_executes_native_runner(tmp_path: Path) -> None:
+    service, runner = fixture(tmp_path)
+    (tmp_path / "tests/frontend/app/unit/example.test.ts").unlink()
+    module = tmp_path / "tests/frontend/app/modules/example/presentation.test.ts"
+    module.parent.mkdir(parents=True)
+    module.touch()
+    assert service.execute(Selection(("frontend",))) == 0
+    assert results(tmp_path)[0]["status"] == "passed"
+    assert runner.calls[0].argv[:4] == ("pnpm", "exec", "vitest", "run")
+    runner.calls.clear()
+    module.unlink()
+    assert service.execute(Selection(("frontend",))) == 0
+    assert results(tmp_path)[0]["status"] == "empty"
+    assert not runner.calls
+
+
 def test_interruption_stops_scheduling_and_records_pending_scopes(tmp_path: Path) -> None:
     service, _ = fixture(tmp_path)
 

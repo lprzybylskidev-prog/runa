@@ -1,11 +1,13 @@
 <?php
 
 use Runa\Contracts\Modules\ApiOperation;
+use Runa\Contracts\Modules\ManagementApiTarget;
 use Runa\Contracts\Modules\ManagementBinding;
 use Runa\Contracts\Modules\ManagementCommandDefinition;
 use Runa\Contracts\Modules\ManagementOperation;
 use Runa\Contracts\Modules\ManagementPage;
 use Runa\Contracts\Modules\ManagementRead;
+use Runa\Contracts\Modules\ManagementReadCall;
 use Runa\Contracts\Modules\ManagementSection;
 use Runa\Contracts\Modules\ManagementWidget;
 use Runa\Contracts\Modules\OperationAuthorizer;
@@ -285,4 +287,21 @@ it('requires separate table export authority before reading and excludes sensiti
     $calls = $this->handlerClass::$calls;
     expect(fn () => $this->projection->read('app', 'users', 'profile', ['kind' => 'page', 'export' => true]))->toThrow(OperationRejected::class);
     expect($this->handlerClass::$calls)->toBe($calls);
+});
+
+it('validates exact read plans without executing handlers or guessing write targets', function (): void {
+    $definition = $this->declarations->discover()['owners']['app'];
+    $binding = new ManagementBinding('profile', $this->handlerClass, [new ManagementApiTarget('app.absent', 'App\\Absent\\Read', '1.0.0', ['read'])]);
+    $class = $this->providerClass;
+    $call = new ManagementReadCall('app.absent', 'App\\Absent\\Read', '1.0.0', 'read');
+    $class::$readCalls = [$call, $call];
+    expect($this->declarations->readPlan($definition, $binding, 'read', new ManagementRead))->toEqual([$call, $call]);
+    foreach ([['unexpected'], array_fill(0, 129, $call), [new ManagementReadCall('app.absent', 'App\\Absent\\Read', '1.0.0', 'write')]] as $invalid) {
+        $class::$readCalls = $invalid;
+        expect(fn () => $this->declarations->readPlan($definition, $binding, 'read', new ManagementRead))->toThrow(OperationRejected::class);
+    }
+    $class::$readCalls = [];
+    expect(fn () => $this->declarations->readPlan($definition, $binding, 'options', new ManagementRead))->toThrow(OperationRejected::class);
+    expect($this->declarations->readPlan($definition, $binding, 'page', new ManagementRead))->toBe([]);
+    expect($this->handlerClass::$calls)->toBe(0);
 });

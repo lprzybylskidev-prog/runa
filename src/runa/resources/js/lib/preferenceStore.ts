@@ -8,7 +8,6 @@ export interface PreferenceDefinition<T> {
   defaultValue: T;
   validate(value: unknown): value is T;
   migrate?: (value: unknown, version: number) => unknown;
-  legacyKey?: string;
 }
 
 export interface PreferenceStore {
@@ -110,15 +109,6 @@ export function createPreferenceStore(
           }
         } catch {
           /* Corrupt JSON resets to validated defaults. */
-        }
-      } else if (definition.legacyKey) {
-        const legacy = read(definition.legacyKey);
-        if (definition.validate(legacy)) {
-          write(
-            key,
-            JSON.stringify({ version: definition.version, value: legacy }),
-          );
-          return legacy;
         }
       }
       return definition.defaultValue;

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, useId } from 'vue';
 import {
+  actionIcons,
   Alert,
   Button,
   Card,
@@ -168,6 +169,7 @@ const reviewed = computed(
             />
           </div>
           <Button
+            :icon="actionIcons.load"
             intent="inspect"
             :disabled="
               blocked ||
@@ -181,6 +183,7 @@ const reviewed = computed(
           >
           <Button
             v-if="snapshotWritable"
+            :icon="actionIcons.delete"
             intent="danger"
             variant="outline"
             :disabled="
@@ -193,6 +196,7 @@ const reviewed = computed(
           >
           <Button
             v-if="snapshotWritable"
+            :icon="actionIcons.capture"
             intent="commit"
             variant="outline"
             :disabled="blocked || !form.records.value[snapshotsSection]"
@@ -231,9 +235,12 @@ const reviewed = computed(
         >{{
           label('Nie udało się wczytać ustawień.', 'Unable to load settings.')
         }}
-        <Button intent="inspect" @click="form.refresh">{{
-          t('Retry')
-        }}</Button></Alert
+        <Button
+          :icon="actionIcons.refresh"
+          intent="inspect"
+          @click="form.refresh"
+          >{{ t('Retry') }}</Button
+        ></Alert
       >
       <div v-else class="columns-1 gap-4 xl:columns-2">
         <Card
@@ -365,6 +372,7 @@ const reviewed = computed(
     <template #actions>
       <Button
         v-if="writable"
+        :icon="actionIcons.save"
         intent="commit"
         :disabled="
           blocked || !form.dirty.value || !!snapshots.resource.busy.value
@@ -378,6 +386,7 @@ const reviewed = computed(
       >
       <Button
         v-if="snapshots.previous.value"
+        :icon="actionIcons.cancel"
         intent="cancel"
         variant="outline"
         :disabled="form.busy.value"
@@ -386,6 +395,7 @@ const reviewed = computed(
       >
       <Button
         v-else-if="form.dirty.value"
+        :icon="actionIcons.discard"
         intent="discard"
         variant="outline"
         :disabled="form.busy.value"
@@ -423,6 +433,7 @@ const reviewed = computed(
       />
       <template #actions
         ><Button
+          :icon="actionIcons.capture"
           intent="commit"
           type="submit"
           :busy="form.busy.value"
@@ -444,13 +455,18 @@ const reviewed = computed(
   >
     <template #footer
       ><Button
+        :icon="actionIcons.publish"
         intent="commit"
         :disabled="blocked || !reviewed"
         @click="apply"
         >{{ label('Zatwierdź', 'Confirm') }}</Button
-      ><Button intent="cancel" variant="outline" @click="reviewOpen = false">{{
-        label('Anuluj', 'Cancel')
-      }}</Button></template
+      ><Button
+        :icon="actionIcons.cancel"
+        intent="cancel"
+        variant="outline"
+        @click="reviewOpen = false"
+        >{{ label('Anuluj', 'Cancel') }}</Button
+      ></template
     >
   </Dialog>
 </template>

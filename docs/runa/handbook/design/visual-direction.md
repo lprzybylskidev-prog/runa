@@ -1,5 +1,47 @@
 # Runa Visual Direction
 
+## UI standards and guidance map
+
+Preserve the accepted IBM Plex Mono typography, palette, local Tabler subset,
+moderately compact density and restrained decoration. The reference notes below
+retain design provenance; the current contracts linked here own delivered behavior.
+An unimplemented historical detail is not permission to add a feature or redesign.
+
+Select the topics changed by the task, then open their relevant sections and an
+analogous consumer. A copy-only edit needs the copy contract and its translation
+owner, not every forms/table/session guide. Expand scope when a label also changes
+an action's meaning, accessible name or security consequence. Vue and Tailwind
+skills supply implementation guidance only for their respective technologies.
+
+| Topic                                              | Canonical owner                                                                                                                              | Review focus                                                                                             |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Identity, tokens, typography, density              | This guide; [palette](color-palette.md); [asset provenance](assets.md)                                                                       | Preserve existing tokens/controls before adding variants.                                                |
+| Interaction, accessibility, robust content         | [Frontend architecture](../architecture/frontend.md#accessibility-baseline)                                                                  | Keyboard/focus, semantics, contrast, reflow, long content and disabled/busy states.                      |
+| Reusable controls and action meaning               | [Component catalogue](../development/frontend/components.md#action-button-semantics)                                                         | Public signatures, shared states and explicit effects.                                                   |
+| Forms, validation and feedback                     | [Forms](../development/frontend/forms.md)                                                                                                    | Controlled drafts, local fields, FormNotifications and truthful recovery.                                |
+| Read reconciliation and state                      | [Forms reconciliation](../development/frontend/forms.md#automatic-read-reconciliation)                                                       | Retain dirty drafts; resolve overlaps locally; never replay writes.                                      |
+| Tables, filters, counts, selection and exports     | [Tables](../development/frontend/tables.md)                                                                                                  | Real provider capabilities and bounded rows; no invented totals or progress.                             |
+| Navigation, page hierarchy and layout              | [Page patterns](../development/frontend/page-layouts.md#page-level-navigation-composition)                                                   | Sidebar area/module; top-bar subviews; complete breadcrumbs and dirty guards.                            |
+| Loading and asynchronous readiness                 | [Loading](../development/frontend/loading.md)                                                                                                | Immediate frames, dependent-region settlement, retained refresh and access-loss cleanup.                 |
+| Motion and reduced motion                          | [Motion](../development/frontend/motion.md)                                                                                                  | Existing component-owned transitions, immediate input/focus and safe interrupted exits.                  |
+| Responsive layout and PL/EN copy                   | Density/responsive and interface-copy sections below; [content robustness](../architecture/frontend.md#content-robustness)                   | Both themes/locales; meaningful labels, long content and usable narrow layouts.                          |
+| Public presentation and session/security ownership | [Customization](../development/frontend/customization.md); [Auth proof composition](../modules/auth/entry-ui.md#operation-proof-composition) | App-owned presentation, usable defaults, one Runa session/proof owner and omitted disabled capabilities. |
+
+### Accepted refinements
+
+Use the final accepted direction when older design notes differ. Detailed behavior
+belongs to the owning guide; these routes prevent restoration of superseded UI.
+
+| Earlier direction                                                           | Current contract                                                                                                                                              |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| English-only Admin                                                          | Shared Polish-default/English-secondary application preference.                                                                                               |
+| Whole-page initial placeholder                                              | [Immediate frames and local readiness](../development/frontend/loading.md); required dependent regions settle together.                                       |
+| Circular content loaders                                                    | Pulsing content geometry; Table reads, busy Buttons and the preference cover retain their explicitly owned indicators.                                        |
+| Solid primary actions or blue modal openers                                 | [Quiet outlines and effect colors](../development/frontend/components.md#action-button-semantics); purple mixed tools, concrete final effect.                 |
+| Runtime health/integration editors or a generic settings tab                | Source-owned technical policy; module-owned settings pages and [named snapshots](../modules/admin/settings-snapshots.md). Loading a snapshot changes a draft. |
+| Generic large access forms or a separate account-access area in Permissions | [Owning assignment editor and Auth account tools](../modules/permissions/administration.md); definition management remains in Permissions.                    |
+| Operation factor/inline credential forms                                    | Shared full-page Auth password confirmation; second factors authenticate login. Enrollment still validates its setup code.                                    |
+
 ## Reference interpretation
 
 Reference images contribute only the features explicitly selected by the user. An image is not approval to reproduce its entire interface. Unmentioned layout, typography, components, spacing and decoration remain undecided. Explicit rejections are recorded separately; the user does not need to enumerate everything they dislike.
@@ -63,7 +105,7 @@ Original author/source URL: not supplied.
 
 ### Shared layout and navigation semantics
 
-Use the same shell design and navigation behavior for the user application and admin panel. Existing language conventions remain: Polish by default for the user application, English for admin.
+Use the same shell design, navigation behavior and application language preference for the user application and admin panel: Polish by default, English secondary. This current rule replaces the earlier English-only Admin direction. See [language](../architecture/frontend.md#language) for the shared contract.
 
 Reuse the accepted grid, diffuse corner gradients and static constellations for both shells. The original REF-001 page circles are superseded; REF-003 does not select a different backdrop.
 
@@ -94,6 +136,12 @@ Point 2 implements the configurable dual-version footer for MinimalLayout, inclu
 ## Icons
 
 User decision (2026-10-17): use Tabler Icons as the project's icon family. This selection is approved and implemented as a small local SVG subset in the root preview. Do not infer adoption of other Tabler UI components or styling. Source revisions, preserved licenses and hashes are recorded in [asset provenance](assets.md); no icon package dependency was added.
+
+Use the [semantic icon contract](../development/frontend/components.md#semantic-icons)
+for the shared action vocabulary, busy/accessible control behavior, feedback and
+module identity declarations. Preserve visible labels on ordinary actions and use
+icons selectively where they improve recognition. Action color and password
+requirements never select an icon automatically.
 
 ## Theme development
 
@@ -172,7 +220,17 @@ Respect `prefers-reduced-motion`, reducing or removing nonessential movement. Tr
 
 ## Interface copy and preference controls
 
-User correction: use concise, professional, factual UI copy. Avoid promotional slogans, generic motivational wording and repeated workspace/growth taglines. Omit unnecessary text instead of replacing it with another slogan.
+Use concise, professional, factual Polish and equivalent English. Use natural
+sentence case, domain names and action verbs; translate human labels rather than
+technical keys, API payloads or Audit history. A heading identifies the task, a
+label names the value, help explains an unusual constraint and feedback reports
+an outcome. Remove duplicate introductions, summaries and promotional filler.
+Keep security consequences, refusal/recovery guidance and necessary context.
+
+Use the shared language catalogue or source-owned PL/EN metadata, including
+accessible names, empty states and errors. A locale change preserves mounted
+controllers and dirty drafts. Shell preference tooltips and the explicit Account
+Preferences presentation below retain their scoped contracts.
 
 Shell and entry-page language/theme preferences use exactly two compact buttons, not selects or expanded option groups. Language cycles PL/EN; theme cycles system/light/dark and updates its icon. Use short application-styled tooltips: “Zmień język” / “Zmień motyw” (English: “Change language” / “Change theme”). Accessible names may additionally describe current/next choices; preserve keyboard operation and preference persistence.
 

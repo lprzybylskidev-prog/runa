@@ -1,9 +1,5 @@
 import { ref, onScopeDispose } from 'vue';
 import type { Ref } from 'vue';
-import {
-  ApiError,
-  RequestCancelledError,
-} from '../../../../resources/js/lib/http';
 import { accountPreferences } from '../preferences/session';
 import { authPost, data, record } from '../entry';
 import { accountRequest } from '../account';
@@ -19,6 +15,7 @@ export function createAccountDelivery(
   const { confirmed, failure, notice } = state;
   const delivery = ref<DeliveryChoice[]>([]);
   let deliveryReadEpoch = 0;
+  let deliveryRevision = 0;
   async function readDelivery() {
     await fetchDelivery();
   }
@@ -54,38 +51,25 @@ export function createAccountDelivery(
       lifetime.active &&
       own === deliveryReadEpoch &&
       accountPreferences.currentAccount() === lifetime.accountId
-    )
+    ) {
+      deliveryRevision = Number(p.revision);
       delivery.value = list;
+    }
     return { revision: Number(p.revision), categories: list };
   }
   async function saveDelivery(choice: DeliveryChoice) {
-    const before = delivery.value.find(
-      (item) => item.module === choice.module && item.key === choice.key,
-    );
-    if (!before) return;
+    if (
+      !delivery.value.some(
+        (item) => item.module === choice.module && item.key === choice.key,
+      )
+    )
+      return;
+    // Submit the revision actually displayed with this draft, even if a queued
+    // sibling preference write advances the shared account snapshot meanwhile.
+    const revision = deliveryRevision;
+    const submitted = { ...choice, recipients: [...choice.recipients] };
     await perform(async () => {
       await accountPreferences.mutate(async (_revision, signal) => {
-        // A shared snapshot can advance the revision before this row has reconciled.
-        // Re-read and compare this row inside the same queue before using its token.
-        const fresh = await fetchDelivery(
-          AbortSignal.any([signal, lifetime.signal]),
-        );
-        if (!lifetime.active || signal.aborted)
-          throw new RequestCancelledError();
-        const current = fresh.categories.find(
-          (item) => item.module === choice.module && item.key === choice.key,
-        );
-        const recipients = (item: DeliveryChoice) =>
-          [...item.recipients].sort().join('\0');
-        if (
-          !current ||
-          current.mandatory ||
-          current.sensitive ||
-          (recipients(choice) !== recipients(before) &&
-            recipients(current) !== recipients(before) &&
-            recipients(choice) !== recipients(current))
-        )
-          throw new ApiError(409, {});
         return accountRequest(
           'delivery-preferences',
           'POST',
@@ -93,15 +77,9 @@ export function createAccountDelivery(
             operation: 'write',
             module: choice.module,
             category: choice.key,
-            revision: fresh.revision,
-            enabled:
-              choice.enabled === before.enabled
-                ? current.enabled
-                : choice.enabled,
-            recipients:
-              recipients(choice) === recipients(before)
-                ? current.recipients
-                : choice.recipients,
+            revision,
+            enabled: submitted.enabled,
+            recipients: submitted.recipients,
           },
           AbortSignal.any([signal, lifetime.signal]),
         );

@@ -50,7 +50,7 @@ final readonly class CreationSection implements ManagementResourceReader, Manage
             'activate_at' => null, 'deactivate_at' => null, 'security_locked' => false,
             'attempt_locked_until' => null, 'password_change_required' => false,
             'identifier_mode' => $this->settings->value('runa.auth', 'identifier_mode'),
-            'password_policy' => json_encode($policy, JSON_THROW_ON_ERROR),
+            'password_policy' => $policy,
             'invitation_allowed' => true,
             'email_verification_allowed' => $this->settings->boolean('runa.auth', 'admin_email_verification_bypass'),
         ]);

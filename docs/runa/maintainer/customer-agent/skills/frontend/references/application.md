@@ -2,18 +2,30 @@
 
 Inspect analogous App pages and the public component catalogue before new markup. Extract repeated application controls into src/app/resources/js/components and maintain local patterns. Consume public facades without protected edits. Rendered behavior is acceptance truth: keyboard/focus, responsive, PL/EN, themes, reduced motion and full loading/error/dirty states.
 
-Load only the relevant canonical procedure:
+Select only the relevant public guide/section; the
+`docs/runa/handbook/design/visual-direction.md#ui-standards-and-guidance-map`
+owns the topic map and accepted refinements. A copy-only task stops at interface
+copy and its owning translations. Expand to the matching topics for behavior.
 
-- Visual direction and selected references: `docs/runa/handbook/design/visual-direction.md`.
-- Components and contracts: `docs/runa/handbook/development/frontend/components.md`.
-- Page structures: `docs/runa/handbook/development/frontend/page-layouts.md`.
-- Fields, feedback and automatic read reconciliation: `docs/runa/handbook/development/frontend/forms.md`.
-- Measured read/request growth and review coverage: `docs/runa/handbook/architecture/application-architecture.md#read-path-performance`.
-- Table providers/selection/loading/export: `docs/runa/handbook/development/frontend/tables.md`.
-- Motion: `docs/runa/handbook/development/frontend/motion.md`.
-- Presentation replacement and controller lifetime: `docs/runa/handbook/development/frontend/customization.md`.
-- Account screens/security cleanup: `docs/runa/handbook/modules/auth/account-ui.md`.
-- Admin delivery status and catalogue versus access: `docs/runa/handbook/modules/admin/README.md#delivery-status-and-acceptance-ownership`.
+| Topic                                    | Canonical guide (under docs/runa/handbook)                                |
+| ---------------------------------------- | ------------------------------------------------------------------------- |
+| Visual identity, copy and density        | design/visual-direction.md; design/color-palette.md                       |
+| Accessibility/keyboard/responsive review | architecture/frontend.md#accessibility-baseline                           |
+| Controls and action semantics            | development/frontend/components.md; select the component/intent section   |
+| Page/navigation composition              | development/frontend/page-layouts.md#page-level-navigation-composition    |
+| Validation/outcomes                      | development/frontend/forms.md#values-dirty-baselines-and-request-failures |
+| Dirty drafts/refresh                     | development/frontend/forms.md#automatic-read-reconciliation               |
+| Temporal fields/timezone                 | development/frontend/forms.md#dates-times-and-application-timezone        |
+| Data views and provider capabilities     | development/frontend/tables.md                                            |
+| Loading/async settlement                 | development/frontend/loading.md                                           |
+| Motion/reduced motion                    | development/frontend/motion.md                                            |
+| Public replacement/session/capabilities  | development/frontend/customization.md                                     |
+| Measured request/query performance       | architecture/application-architecture.md#read-path-performance            |
+| Account default/replacement composition  | modules/auth/account-ui.md                                                |
+| Admin delivery and examples              | modules/admin/frontend.md; modules/admin/examples.md                      |
+
+The module-specific routes below apply only to the corresponding task. Their
+presence does not require loading every module guide for a shared copy edit.
 
 Maintain application-specific patterns in local guidance/docs/app. Ordinary App
 code and optional app modules are supported; copied owner files or a Contracts
@@ -71,7 +83,9 @@ follow `docs/runa/handbook/development/frontend/forms.md#visible-operation-progr
 Generic scope or loading copy never substitutes for shared progress presentation.
 
 For actionable failures, follow the public forms guide's
-`Values, dirty baselines and request failures` and `Automatic read reconciliation`.
+`Values, dirty baselines and request failures` and `Automatic read reconciliation`,
+including its action-driven triggers, original submission tokens and separation
+of security checks from business-data reads.
 Keep stable business reasons distinct from stale revisions across adapters and
 aggregate writes; use reviewed localized copy and affected fields. A generic
 fallback is for unknown failures, never a substitute for a known refusal.
@@ -111,3 +125,15 @@ Blue denotes reads/refresh/preview; never use solid action fills in supplied vie
 For Permissions presentation composition and selected-user copy/preset tools use
 `docs/runa/handbook/modules/permissions/administration.md`. Keep definition management
 separate from account access, and preserve the native reviewed source fingerprints.
+
+Custom Admin pages using owning HTTP compose public `useAdminPageContext` for the
+native admitted identity and exit guard. Follow the custom-page lifecycle contract
+in `docs/runa/handbook/modules/admin/frontend.md`; the optional reference workspace
+is a working consumer. Reuse the single shell and Auth confirmation host. Connect
+the exposed exit check to standalone routing; never import private platform state.
+
+For action/module/feedback iconography, select the public components guide's
+Semantic icons contract. Consume the typed Tabler catalogue and actionIcons through
+@/runa/ui, retaining visible action labels, busy geometry and accessible compact
+control names. Module authors declare frontend/icon.ts inside their own module;
+never edit protected presentation maps. Color and password proof do not select icons.

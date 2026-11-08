@@ -417,6 +417,10 @@ When consuming shared HTTP directly, treat RequestCancelledError as cancellation
 of a departing document's observation, not a server success. Avoid an error flash
 in that discarded view, retain real live errors, and never replay a canceled write:
 its server completion may be unknown. New explicit reads may reconcile state.
+The supplied Admin bootstrap/page and Auth protected-activity controllers observe
+this distinction as well: document departure does not manufacture an unavailable
+page or expire a protected section. Real network/API failures, proof expiry,
+identity/access invalidation and current-time access expiry retain their own refusal.
 The same lifecycle wraps response-body reads; idle pages carry no beforeunload
 request guard, and synchronous dirty-form guards take precedence.
 

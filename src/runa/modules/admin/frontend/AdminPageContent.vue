@@ -3,7 +3,7 @@ import { useAdminLocale } from './localization';
 const { t: tr } = useAdminLocale();
 import { toRef } from 'vue';
 import { useAdminInitialReadiness } from './initialReadiness';
-import { Alert, Button } from '@/runa/ui';
+import { actionIcons, Alert, Button } from '@/runa/ui';
 import type {
   AdminComponentRegistry,
   AdminController,
@@ -42,9 +42,12 @@ const presentation = useAdminPresentation();
           tr('This administration page is unavailable.'),
       )
     }}
-    <Button intent="inspect" @click="controller.refresh">{{
-      tr('Retry')
-    }}</Button>
+    <Button
+      :icon="actionIcons.refresh"
+      intent="inspect"
+      @click="controller.refresh"
+      >{{ tr('Retry') }}</Button
+    >
   </Alert>
   <AdminComponentBoundary
     v-else

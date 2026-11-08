@@ -17,8 +17,14 @@ for (const [device, width, height] of [
         await page.setViewportSize({ width, height });
         await page.addInitScript(
           ({ locale, theme }) => {
-            localStorage.setItem('runa.locale', locale);
-            localStorage.setItem('runa.theme', theme);
+            localStorage.setItem(
+              'runa.preferences:runa:display:global:runa.locale',
+              JSON.stringify({ version: 1, value: locale }),
+            );
+            localStorage.setItem(
+              'runa.preferences:runa:display:global:runa.theme',
+              JSON.stringify({ version: 1, value: theme }),
+            );
           },
           { locale, theme },
         );

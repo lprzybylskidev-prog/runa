@@ -1,10 +1,11 @@
 # Private account, addresses and avatar
 
-Auth 0.5.0 adds the additive `0.4.0 -> 0.5.0` profile/settings upgrade and requires
-Audit `^0.3.0` for its bounded own-history contract. Run normal fenced ModuleUpdates;
-do not run module migrations independently. Existing identity/lifecycle, entry,
-session and credential API signatures remain compatible. The private [account UI](account-ui.md) consumes this backend capability. No public
-profile is supplied.
+Auth supplies private profile, address and avatar capabilities consumed by the
+[account UI](account-ui.md). No public profile is supplied. Current module,
+dependency and guarded API versions are listed in the [Auth contract](README.md).
+Current initialization includes profile storage prerequisites; historical
+development edges are retired. Use fenced ModuleUpdates; do not run module
+migrations independently.
 
 ## Own-account transport
 

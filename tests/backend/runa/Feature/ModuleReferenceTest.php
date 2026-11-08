@@ -1,9 +1,11 @@
 <?php
 
 use App\Modules\Reference\Contracts\Ping;
+use App\Modules\Reference\Management\ReferenceReader;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Queue\WorkerOptions;
 use Illuminate\Support\Facades\DB;
+use Runa\Contracts\Modules\ManagementRead;
 use Runa\ModuleFramework\Api\ModuleHttp;
 use Runa\ModuleFramework\Console\ModuleConsole;
 use Runa\ModuleFramework\ModuleDiscovery;
@@ -28,7 +30,7 @@ it('integrates reference updates HTTP frontend scheduler worker and draining lif
         $updates = app(ModuleUpdates::class);
         $updates->apply('app', str_repeat('e', 40), static function (): void {});
         $record = $registry->snapshot()->modules['app.reference'];
-        expect($record->enabled)->toBeFalse()->and($record->installedVersion)->toBe('0.2.0')
+        expect($record->enabled)->toBeFalse()->and($record->installedVersion)->toBe('0.4.1')
             ->and(DB::table('app_reference.samples')->count())->toBe(1)
             ->and(DB::table('app_reference.samples')->value('public_id'))->toMatch('/^[a-f0-9-]{14}7[a-f0-9-]+$/')
             ->and((new ModuleContractSuite(base_path(), true))->runtime($record))->toBe([]);
@@ -40,13 +42,26 @@ it('integrates reference updates HTTP frontend scheduler worker and draining lif
         expect($preview->ready())->toBeTrue();
         expect($transitions->apply($preview)->status)->toBe('succeeded');
         app(ModuleHttp::class)->register();
-        $this->getJson('/api/app/reference/ping')->assertOk()->assertJson(['message' => 'reference']);
         $api = app(ModuleApis::class)->resolve('app.reference', Ping::class, '1.0.0');
         expect($api->read()->message)->toBe('reference');
         $settings = app(ModuleSettings::class);
         $state = $settings->read('app.reference');
-        expect($settings->update('app.reference', ['label' => 'Updated'], $state['revision'], $state['generation'])->status)->toBe('succeeded');
+        expect($settings->update('app.reference', ['label' => 'Updated'], $state['revision'], $state['review_id'])->status)->toBe('succeeded');
         expect($api->read()->message)->toBe('Updated');
+        // Finish trusted operator publication before starting an HTTP request context.
+        $this->getJson('/api/app/reference/ping')->assertOk()->assertJson(['message' => 'Updated']);
+        // The presentation adapter consumes the same guarded API and never exposes settings secrets.
+        $reader = app(ReferenceReader::class);
+        $record = $reader->read(new ManagementRead);
+        expect($record->publicId)->toBeNull()
+            ->and($record->values)->toBe(['message' => 'Updated'])
+            ->and($reader->page(new ManagementRead)->total)->toBe(1)
+            ->and($reader->widget(new ManagementRead)->observedAt)->toBeNull();
+        foreach ([new ManagementRead(publicId: '01900000-0000-7000-8000-000000000001'),
+            new ManagementRead(cursor: 'foreign'), new ManagementRead(filters: ['message' => 'x']),
+            new ManagementRead(sort: [['key' => 'message', 'direction' => 'asc']])] as $query) {
+            expect(fn () => $reader->read($query))->toThrow(OperationRejected::class);
+        }
         config(['queue.default' => 'database', 'queue.connections.database.queue' => 'reference-acceptance']);
         $work = app(ModuleWork::class);
         $worker = static fn () => app('queue.worker')->runNextJob('database', 'reference-acceptance', new WorkerOptions(sleep: 0, maxTries: 1, force: true));
@@ -81,12 +96,13 @@ it('integrates reference updates HTTP frontend scheduler worker and draining lif
         expect($work->status($pendingId)->status)->toBe('cancelled');
         expect($transitions->resume($disable->operationId)->status)->toBe('succeeded');
         expect(fn () => $api->read())->toThrow(OperationRejected::class);
+        expect(fn () => $reader->read(new ManagementRead))->toThrow(OperationRejected::class);
         $this->getJson('/api/app/reference/ping')->assertStatus(503);
         expect(DB::table('app_reference.samples')->count())->toBe(1);
         expect($transitions->apply($transitions->preview('unregister', 'app.reference'))->status)->toBe('succeeded');
         $registry->registerAgain('app.reference');
         expect($registry->snapshot()->modules['app.reference']->enabled)->toBeFalse()
-            ->and($registry->snapshot()->modules['app.reference']->installedVersion)->toBe('0.2.0')
+            ->and($registry->snapshot()->modules['app.reference']->installedVersion)->toBe('0.4.1')
             ->and(DB::table('app_reference.samples')->count())->toBe(1)
             ->and(app(ModuleStorage::class)->disk('app.reference')->get('last-observation.txt'))->toBe('Reference work completed.');
     } finally {

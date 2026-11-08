@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="Query">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { computed, ref, watch } from 'vue';
 import AppButton from './AppButton.vue';
 import AppIcon from './AppIcon.vue';
@@ -274,9 +275,13 @@ async function bulk(action: string) {
                 ]"
                 :disabled="operation.busy.value"
               />
-              <AppButton intent="neutral" size="sm" @click="close()">{{
-                english ? 'Done' : 'Gotowe'
-              }}</AppButton>
+              <AppButton
+                :icon="actionIcons.confirm"
+                intent="neutral"
+                size="sm"
+                @click="close()"
+                >{{ english ? 'Done' : 'Gotowe' }}</AppButton
+              >
             </div>
           </template>
         </AppPopover>
@@ -284,6 +289,7 @@ async function bulk(action: string) {
           <AppButton
             v-for="action in bulkProvider?.actions ?? []"
             :key="action.key"
+            :icon="actionIcons.action"
             :intent="action.intent ?? 'neutral'"
             size="sm"
             :disabled="operation.busy.value"

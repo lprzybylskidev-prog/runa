@@ -102,12 +102,14 @@ nested checks within that logical admission reuse only that scope's evidence.
 After sealing, a missing/expired/changed admission is refused; no external health
 check starts inside the business transaction. Current cached failure/expiry,
 maintenance, source/generation changes and current authorization still refuse.
+A still-valid healthy observation renewal preserves operation generation but never extends the original exact-call evidence expiry. Failed/expired/policy-changed publications and failure/recovery still invalidate admission.
 The scope always unwinds on exception and is never a client token or global cache.
 
 Reserved `Runa\Contracts\Modules\TransactionSecurity` has
 `lockSubjects(array $publicIds): void` and
-`proof(MutationProof $proof, bool $consume): void`. Only the fixed framework root
-and named Core/Auth integration may consume it. Auth owns actual identity locking
+`proof(MutationProof $proof, bool $consume): void`. Only the fixed framework root,
+the [native settings coordinator](module-settings.md) and named Core/Auth integration
+may consume it. Auth owns actual identity locking
 and existing session/security-bound StepUp verification/consumption; no user model
 or connection crosses this boundary. Other modules never import Auth persistence.
 
@@ -118,15 +120,15 @@ acceptance belongs to the roadmap's final verification, not per-point execution.
 
 ## Current native API versions and intentional break
 
-Auth 3.1.0 and Permissions 2.1.0 retain the intentional replacement
+Auth 6.0.1 and Permissions 2.1.2 retain the intentional replacement
 of arbitrary ambient transaction nesting on AuthProfiles.edit and
 PermissionsAccess.applyAssignments. Their guarded API versions are AuthProfiles 2.1.0 and PermissionsAccess 2.2.0; other
 Core guarded APIs remain at their declared versions. Call standalone writes with
 no ambient transaction. Source-owned composition uses the documented phases;
 there is no v1 alias or nested whole-write compatibility path. Current native
 consumers and rollback fixtures follow that contract. Supplied modules require
-platform >=0.7.0 <0.8.0; private owner fixtures explicitly select that candidate
-runtime while released platform VERSION remains unchanged until closure.
+platform >=0.7.0 <0.8.0, matching the delivered 0.7.0 platform.
+Module versions and guarded API versions are independent.
 
 Authorization/introspection and effective-permission previews read current cached
 availability; they do not run external on-use checks for unrelated permission

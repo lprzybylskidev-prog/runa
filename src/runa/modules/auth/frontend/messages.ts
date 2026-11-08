@@ -10,9 +10,8 @@ const pl = {
   passwordChange: 'Zmień hasło',
   enrollment: 'Skonfiguruj drugi składnik',
   challenge: 'Potwierdź drugi składnik',
-  loginHelp: 'Podaj dane swojego konta.',
   registerHelp:
-    'Wypełnij dane konta. Aktywacja może wymagać potwierdzenia adresu lub zatwierdzenia przez administratora.',
+    'Aktywacja może wymagać potwierdzenia adresu lub aktywacji przez administratora.',
   forgotHelp:
     'Jeśli konto może odzyskać dostęp, wyślemy wiadomość z dalszymi instrukcjami.',
   resetHelp:
@@ -126,9 +125,8 @@ const en: Copy = {
   passwordChange: 'Change password',
   enrollment: 'Set up a second factor',
   challenge: 'Confirm second factor',
-  loginHelp: 'Enter your account credentials.',
   registerHelp:
-    'Enter your account details. Activation may require email verification or administrator approval.',
+    'Activation may require email verification or activation by an administrator.',
   forgotHelp:
     'If the account is eligible for recovery, we will email further instructions.',
   resetHelp:

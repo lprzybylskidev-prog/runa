@@ -1,5 +1,67 @@
 # Auth module changelog
 
+## 6.0.1 — 2026-11-08
+
+- Admit the verified platform0.8.0 release in the supplied>=0.7.0 <0.9.0
+  compatibility range; module/API versions and runtime behavior are unchanged.
+
+- Use distinct semantic single/bulk action-family and final-command icons. Treat
+  shared HTTP document cancellation as canceled protected-activity observation,
+  preserving real proof/network/availability refusal.
+
+- Use the shared semantic action/feedback icons with visible labels and preserved
+  busy, keyboard, proof and operation behavior; no backend contract/storage change.
+
+- Use native structured management reads for password policy, addresses, sessions,
+  trusted devices, exceptions and preference collections. Preference writes accept
+  delivery arrays only; preserve grants, original revisions, proof and atomic Audit.
+  Require Framework API ^2.1.0. These changes join the unreleased Auth 6 MAJOR.
+
+- Initialize directly at the current schema/version; remove historical development
+  upgrade scaffolding. Retain the 6.0.0 → 6.0.1 current-schema update,
+  reserved declaration/Audit participation and native history/recovery refusals.
+  Published Core databases with replaced migration history require explicit
+  development reconciliation; no historical schema conversion is provided.
+
+## 6.0.0 — Unreleased
+
+- Use action-driven business reads: remove passive account/resource reads and
+  same-session preference/branding/Admin cascades while retaining security checks
+  and actual identity/access invalidation. Reconcile recognized stale-state refusals
+  only, preserve drafts/original submission tokens, and stop delivery prefetch from
+  silently replacing its reviewed revision.
+
+- Start the own-account trusted-device list collapsed using public Accordion;
+  retain mounted table state and independent trust-browser/prerequisite controls.
+
+- Remove the redundant login introduction in Polish/English and the repeated
+  registration instruction; retain activation, recovery and security guidance.
+  Keep the existing optional-description presentation contract.
+
+- Replace AuthPolicies publication/preview generation integers with semantic review identities (API 4.0.0). Require Framework API ^2.0.0; keep current grants, action-specific password proof, policy consequences and atomic history/Audit. Publish the current settings review contract without data conversion.
+
+## 5.0.2 — Unreleased
+
+- Consume Framework API ^1.2.0 native settings access/proof/publication contracts.
+  Declare current policy read/write grants and one-use password confirmation on
+  IdentitySettings; persist policy consequences/history through its owning hook.
+  Remove Core Audit dispatch to Auth and the separate proof consumer. Preserve
+  guarded API signatures, current encrypted settings, credentials, exception
+  invalidation, native recovery and supported history validation.
+
+## 5.0.1 — Unreleased
+
+- End user-dialog reads on close and isolate subsequent bulk editing; retain dirty
+  drafts when closing is refused. Use administrator activation terminology in both
+  registration locales.
+
+- Group synchronous admission, eligibility, factor-restriction and session-lifetime
+  settings reads under short registry-locked transactions. Reuse the current
+  admission's user/session locally; recheck every subsequent operation, expiry,
+  revocation and rollback. Public guarded APIs and data remain compatible.
+- Retain the Laravel remember-token column deliberately; Runa's remembered
+  sessions continue to use the tracked operational session.
+
 ## 5.0.0 — Unreleased
 
 - Retain in-progress authenticator enrollment when refreshed actions replace Begin with Confirm. Retain the shared full-page password-confirmation flow.

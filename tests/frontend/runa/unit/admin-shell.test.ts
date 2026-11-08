@@ -24,12 +24,14 @@ import {
   useAdminApplicationSettings,
   useAdminForm,
   useAdminPage,
+  useAdminPageContext,
   useAdminResource,
   useAdminTable,
   AdminResourceTable,
   useAdminPresentation,
 } from '@/runa/admin';
 import {
+  useApplicationSession,
   ApplicationSessionShell,
   AuthOperationProofPage,
   AuthPresentationProvider,
@@ -132,7 +134,10 @@ beforeEach(() => {
   window.history.replaceState({}, '', '/admin');
   accountPreferences.disconnect();
   localStorage.clear();
-  localStorage.setItem('runa.locale', 'en');
+  localStorage.setItem(
+    'runa.preferences:runa:display:global:runa.locale',
+    JSON.stringify({ version: 1, value: 'en' }),
+  );
   vi.spyOn(window, 'fetch').mockImplementation(async (input) => {
     const path = String(input);
     if (path === '/api/admin/entry')
@@ -237,7 +242,11 @@ it('uses one supplied session, follows the English application preference and pl
   );
   expect(w.find('nav a[href="/account"]').exists()).toBe(false);
   expect(w.find('[aria-label*="Change language"]').exists()).toBe(false);
-  expect(localStorage.getItem('runa.locale')).toBe('en');
+  expect(
+    JSON.parse(
+      localStorage.getItem('runa.preferences:runa:display:global:runa.locale')!,
+    ).value,
+  ).toBe('en');
   expect(
     vi
       .mocked(window.fetch)
@@ -1768,7 +1777,7 @@ it('Admin entry proof preserves a retry when the shared session read fails befor
 });
 
 it('Admin bilingual presentation follows the shared preference and keeps a dirty field mounted without refetching', async () => {
-  localStorage.removeItem('runa.locale');
+  localStorage.removeItem('runa.preferences:runa:display:global:runa.locale');
   const data = bootstrap();
   data.owners[0]!.title = {
     pl: 'Ustawienia własnej aplikacji',
@@ -1865,7 +1874,10 @@ it('Admin bilingual presentation follows the shared preference and keeps a dirty
 });
 
 it('Admin bilingual password admission changes language without losing transient input or starting another proof', async () => {
-  localStorage.setItem('runa.locale', 'pl');
+  localStorage.setItem(
+    'runa.preferences:runa:display:global:runa.locale',
+    JSON.stringify({ version: 1, value: 'pl' }),
+  );
   vi.mocked(window.fetch).mockImplementation(async () =>
     respond({ reason: 'step_up_required' }, 403),
   );
@@ -2553,4 +2565,192 @@ it('bounded Admin advertisement timeout releases initial readiness and fences a 
   await flushPromises();
   expect(wrapper.find('[data-ready-body]').exists()).toBe(false);
   expect(document.querySelector('.account-menu a[href="/admin"]')).toBeNull();
+});
+
+it('custom Admin pages share admitted identity, register exit refusal and remove it on disposal', async () => {
+  const session = sessionFixture(),
+    navigate = vi.fn(),
+    show = ref(true);
+  const beforeLeave = vi.fn(async () => false);
+  let admin!: ReturnType<typeof useAdmin>;
+  let page!: ReturnType<typeof useAdminPage>;
+  let context!: ReturnType<typeof useAdminPageContext>;
+  const baseFetch = vi.mocked(window.fetch).getMockImplementation()!;
+  vi.mocked(window.fetch).mockImplementation(async (input, init) =>
+    String(input) === '/api/admin/app/settings'
+      ? respond({
+          data: {
+            schema_version: 1,
+            owner: 'app',
+            key: 'settings',
+            title: 'Settings',
+            generation: 7,
+            revision: 'page',
+            component: null,
+            sections: [],
+          },
+        })
+      : baseFetch(input, init),
+  );
+  const Child = defineComponent({
+    setup() {
+      context = useAdminPageContext(page, { beforeLeave, dirty: () => true });
+      return () => h('output', context.identity.value);
+    },
+  });
+  const wrapper = mount(
+    defineComponent({
+      setup() {
+        admin = useAdmin({ session, navigate });
+        page = useAdminPage(admin, ref({ owner: 'app', page: 'settings' }));
+        return () => (show.value ? h(Child) : null);
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(context.identity.value).toBeDefined());
+  const original = context.identity.value;
+  session.authorityRevision.value++;
+  await flushPromises();
+  expect(context.identity.value).toBe(original);
+  expect(await admin.navigate({ owner: 'app', page: 'settings' })).toBe(false);
+  expect(beforeLeave).toHaveBeenCalledTimes(1);
+  expect(navigate).not.toHaveBeenCalled();
+  session.paused.value = true;
+  expect(context.identity.value).toBeUndefined();
+  session.paused.value = false;
+  await vi.waitFor(() => expect(context.identity.value).toBeDefined());
+  show.value = false;
+  await wrapper.vm.$nextTick();
+  expect(await admin.navigate({ owner: 'app', page: 'settings' })).toBe(true);
+  expect(beforeLeave).toHaveBeenCalledTimes(1);
+  expect(navigate).toHaveBeenCalledWith('/admin/app/settings');
+});
+
+it('action-driven refresh keeps same-session security checks independent of Admin resources and preferences', async () => {
+  accountPreferences.disconnect();
+  const current = sessionFixture().session.value!;
+  let denied = false;
+  vi.mocked(window.fetch).mockImplementation(async (input) => {
+    const path = String(input).split('?')[0]!;
+    if (path.endsWith('/csrf')) return respond({});
+    if (path.endsWith('/auth/session'))
+      return denied
+        ? respond({ error: { code: 'signed_out' } }, 401)
+        : respond({ data: current });
+    if (path.endsWith('/auth/preferences'))
+      return respond({
+        data: {
+          account: current.public_id,
+          revision: 0,
+          values: [],
+          legacy_claimed: true,
+        },
+      });
+    if (path === '/api/admin/activity')
+      return respond({
+        data: { remaining_seconds: 900, heartbeat_seconds: 30 },
+      });
+    if (path === '/api/admin') return respond({ data: bootstrap() });
+    if (path === '/api/admin/app/settings')
+      return respond({ data: resourcePage() });
+    if (path.includes('/sections/profile'))
+      return respond({
+        data: {
+          public_id: identity,
+          revision: 'r1',
+          values: { name: 'Retained' },
+        },
+      });
+    return respond({}, 404);
+  });
+  let session!: ApplicationSessionController;
+  let page!: AdminPageController;
+  let resource!: AdminResourceController;
+  mount(
+    defineComponent({
+      setup() {
+        session = useApplicationSession(vi.fn());
+        const admin = useAdmin({ session });
+        page = useAdminPage(admin, ref({ owner: 'app', page: 'settings' }));
+        resource = useAdminResource(page, 'profile');
+        return () => h('div');
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  await resource.read({ kind: 'record', public_id: identity });
+  await flushPromises();
+  const revision = session.authorityRevision.value;
+  const before = vi.mocked(window.fetch).mock.calls.length;
+  window.dispatchEvent(new Event('focus'));
+  document.dispatchEvent(new Event('visibilitychange'));
+  window.dispatchEvent(
+    new PageTransitionEvent('pageshow', { persisted: true }),
+  );
+  await flushPromises();
+  await session.refresh();
+  await flushPromises();
+  const calls = vi
+    .mocked(window.fetch)
+    .mock.calls.slice(before)
+    .map(([path]) => String(path));
+  expect(calls.some((path) => path.endsWith('/auth/session'))).toBe(true);
+  expect(
+    calls.filter(
+      (path) =>
+        !path.endsWith('/csrf') &&
+        !path.endsWith('/auth/session') &&
+        !path.endsWith('/admin/activity'),
+    ),
+  ).toEqual([]);
+  expect(session.authorityRevision.value).toBe(revision);
+  expect(resource.result.value).toMatchObject({ values: { name: 'Retained' } });
+  await resource.read({ kind: 'record', public_id: identity });
+  expect(vi.mocked(window.fetch).mock.calls.at(-1)![0]).toContain(
+    '/sections/profile',
+  );
+  denied = true;
+  await session.refresh();
+  await flushPromises();
+  expect(session.paused.value).toBe(true);
+  expect(resource.result.value).toBeUndefined();
+  expect(accountPreferences.currentAccount()).toBeNull();
+});
+
+it('Admin document cancellation preserves admitted bootstrap and page while real errors still refuse', async () => {
+  const { RequestCancelledError } = await import('@/runa/http');
+  let admin!: AdminController, page!: AdminPageController;
+  vi.mocked(window.fetch).mockImplementation(async (input) =>
+    respond({
+      data: String(input) === '/api/admin' ? bootstrap() : resourcePage(),
+    }),
+  );
+  mount(
+    defineComponent({
+      setup() {
+        admin = useAdmin({ session: sessionFixture(), navigate: vi.fn() });
+        page = useAdminPage(admin, ref({ owner: 'app', page: 'settings' }));
+        return () => h('div');
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  const original = page.page.value;
+  vi.mocked(window.fetch).mockRejectedValue(new RequestCancelledError());
+  await admin.refresh();
+  await page.refresh();
+  expect(admin.state.value).toBe('ready');
+  expect(admin.error.value).toBeUndefined();
+  expect(page.state.value).toBe('ready');
+  expect(page.page.value).toBe(original);
+  expect(page.error.value).toBeUndefined();
+  vi.mocked(window.fetch).mockImplementation(async () =>
+    respond({ reason: 'availability_changed' }, 503),
+  );
+  await page.refresh();
+  expect(page.state.value).toBe('unavailable');
+  expect(page.page.value).toBeUndefined();
+  await admin.refresh();
+  expect(admin.state.value).toBe('unavailable');
+  expect(admin.bootstrap.value).toBeUndefined();
 });

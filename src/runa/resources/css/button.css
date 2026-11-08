@@ -163,3 +163,17 @@
 .app-button[aria-busy='true'] {
   cursor: progress;
 }
+
+.button-icon,
+.button-spinner {
+  flex-shrink: 0;
+}
+.app-button[data-size='sm'] .button-spinner {
+  --runa-spinner-size: 18px;
+}
+.app-button[data-size='md'] .button-spinner {
+  --runa-spinner-size: 20px;
+}
+.app-button[data-size='lg'] .button-spinner {
+  --runa-spinner-size: 22px;
+}

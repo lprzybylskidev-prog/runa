@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { withTableFilters } from '@/runa/ui';
+import { actionIcons, withTableFilters } from '@/runa/ui';
 import { formatApplicationInstant, instantTimestamp } from '@/runa/ui';
 import { computed, ref, watch } from 'vue';
 import {
@@ -401,6 +401,7 @@ const passwordHint = computed(() =>
       </h2>
       <Button
         v-if="tab === 'preferences'"
+        icon="rotate-2"
         intent="discard"
         size="sm"
         variant="outline"
@@ -418,12 +419,18 @@ const passwordHint = computed(() =>
             'Unsaved values for this account were retained in memory.',
           )
         }}
-        <Button intent="inspect" @click="restoreDraft">{{
-          text('Przywróć do przejrzenia', 'Restore for review')
-        }}</Button>
-        <Button intent="discard" @click="draft = null">{{
-          text('Odrzuć', 'Discard')
-        }}</Button>
+        <Button
+          :icon="actionIcons.discard"
+          intent="inspect"
+          @click="restoreDraft"
+          >{{ text('Przywróć do przejrzenia', 'Restore for review') }}</Button
+        >
+        <Button
+          :icon="actionIcons.discard"
+          intent="discard"
+          @click="draft = null"
+          >{{ text('Odrzuć', 'Discard') }}</Button
+        >
       </Alert>
       <AuthAccountEditor
         v-if="tab === 'details' && !['deactivate', 'delete'].includes(task)"
@@ -439,6 +446,7 @@ const passwordHint = computed(() =>
       >
         <Button
           v-if="has('self_deactivate')"
+          :icon="actionIcons.enable"
           intent="caution"
           variant="outline"
           @click="selectTask('deactivate')"
@@ -446,6 +454,7 @@ const passwordHint = computed(() =>
         >
         <Button
           v-if="has('self_delete')"
+          :icon="actionIcons.delete"
           intent="danger"
           variant="outline"
           @click="selectTask('delete')"
@@ -453,6 +462,7 @@ const passwordHint = computed(() =>
         >
         <Button
           v-if="task !== 'details'"
+          :icon="actionIcons.discard"
           intent="cancel"
           @click="selectTask('details')"
           >{{ text('Wróć do danych konta', 'Back to account details') }}</Button
@@ -598,6 +608,7 @@ const passwordHint = computed(() =>
         </FormSection>
         <template #actions
           ><Button
+            :icon="actionIcons.confirm"
             :intent="
               task === 'deactivate'
                 ? 'caution'
@@ -640,6 +651,7 @@ const passwordHint = computed(() =>
               v-if="
                 tab === 'accountHistory' && !row.action?.startsWith('password.')
               "
+              :icon="actionIcons.inspect"
               intent="inspect"
               variant="outline"
               @click="account.openHistoryDetail(row.public_id)"
@@ -647,6 +659,7 @@ const passwordHint = computed(() =>
             >
             <Button
               v-else-if="!history"
+              :icon="tab === 'sessions' ? 'logout' : 'device-desktop-off'"
               intent="danger"
               :busy="busy"
               :disabled="busy"
@@ -661,6 +674,7 @@ const passwordHint = computed(() =>
         </Table>
         <Button
           v-if="cursor"
+          :icon="actionIcons.load"
           intent="inspect"
           :busy="busy"
           @click="perform(() => readPage(true))"
@@ -693,6 +707,7 @@ const passwordHint = computed(() =>
     <template #actions>
       <Button
         v-if="failure === 'csrf'"
+        :icon="actionIcons.refresh"
         intent="inspect"
         :busy="busy"
         @click="refreshCsrf"
@@ -700,6 +715,7 @@ const passwordHint = computed(() =>
       >
       <Button
         v-if="failure && (!ready || failure === 'refresh_failed')"
+        :icon="actionIcons.refresh"
         intent="inspect"
         :busy="busy || account.refreshing.value"
         @click="!ready ? initialize() : account.refresh()"

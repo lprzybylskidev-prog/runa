@@ -89,7 +89,7 @@ export function createApplication(root: Component) {
         if (pending) {
           // The pending read may precede this publication. Discard it and fetch
           // current data once after it settles. Repeated invalidations coalesce
-          // into that same trailing read without losing a later focus event.
+          // into that same trailing read.
           epoch++;
           reread = true;
         } else void refresh();
@@ -99,25 +99,40 @@ export function createApplication(root: Component) {
           identity.value = resolved;
         }
       });
+      let sessionIdentity: string | undefined;
       const stop = observeRequests((event) => {
+        if (
+          event.phase === 'end' &&
+          event.status === 200 &&
+          event.path === '/runa/auth/session'
+        ) {
+          const payload = event.payload as {
+            data?: { public_id?: string; session?: { public_id?: string } };
+          };
+          const next = payload?.data?.public_id;
+          if (typeof next === 'string') {
+            const stamp = JSON.stringify([
+              next,
+              payload.data?.session?.public_id,
+            ]);
+            const changed =
+              sessionIdentity !== undefined && sessionIdentity !== stamp;
+            sessionIdentity = stamp;
+            if (changed) published();
+          }
+        }
         if (
           event.phase === 'end' &&
           event.status !== undefined &&
           event.status >= 200 &&
           event.status < 300 &&
           (event.path === '/admin/operations/application.update' ||
-            /^\/runa\/auth\/(?:session|login|logout|step-up)$/.test(event.path))
+            /^\/runa\/auth\/(?:login|logout)$/.test(event.path))
         )
           published();
       });
-      function visible() {
-        if (document.visibilityState === 'visible') published();
-      }
       onMounted(() => {
         void refresh();
-        window.addEventListener('focus', published);
-        window.addEventListener('popstate', published);
-        document.addEventListener('visibilitychange', visible);
       });
       onScopeDispose(() => {
         alive = false;
@@ -126,9 +141,6 @@ export function createApplication(root: Component) {
         stop();
         applyIcon(null);
         applyApplicationDisplayDefaults();
-        window.removeEventListener('focus', published);
-        window.removeEventListener('popstate', published);
-        document.removeEventListener('visibilitychange', visible);
       });
       return () => {
         const { logo: sourceLogo, ...canonical } = identity.value;

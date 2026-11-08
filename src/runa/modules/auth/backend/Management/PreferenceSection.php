@@ -35,8 +35,8 @@ final readonly class PreferenceSection implements ManagementResourceReader, Mana
 
         return new ManagementRecord($input->publicId, (string) $state['revision'], [
             'locale' => $state['locale'], 'theme' => $state['theme'],
-            'delivery' => json_encode(array_map(fn ($entry) => array_intersect_key($entry, array_flip(['module', 'key', 'enabled', 'recipients'])), $state['categories']), JSON_THROW_ON_ERROR),
-            'categories' => json_encode($state['categories'], JSON_THROW_ON_ERROR), 'recipients' => json_encode($state['recipients'], JSON_THROW_ON_ERROR),
+            'delivery' => array_map(fn ($entry) => array_intersect_key($entry, array_flip(['module', 'key', 'enabled', 'recipients'])), $state['categories']),
+            'categories' => $state['categories'], 'recipients' => $state['recipients'],
             'preference_revision' => $state['revision'],
             'recipient_selection_enabled' => $this->settings->boolean('runa.auth', 'secondary_emails_enabled'),
         ]);
@@ -48,16 +48,13 @@ final readonly class PreferenceSection implements ManagementResourceReader, Mana
             throw new OperationRejected('admin_input_invalid', 'runa.auth', 'preferences.admin_write', 422);
         }
         if ($input->command === 'save' && count($input->values) === 3 && is_string($input->values['locale'] ?? null)
-            && is_string($input->values['theme'] ?? null) && is_string($input->values['delivery'] ?? null)) {
+            && is_string($input->values['theme'] ?? null) && is_array($input->values['delivery'] ?? null)) {
             try {
-                $delivery = json_decode($input->values['delivery'], true, flags: JSON_THROW_ON_ERROR);
-                if (! is_array($delivery)) {
-                    throw new \InvalidArgumentException('Invalid delivery preferences.');
-                }
+                $delivery = $input->values['delivery'];
                 $this->api()->updateAccount($input->publicId, $input->values['locale'], $input->values['theme'], DeliveryInput::decode($delivery), (int) $input->revision);
             } catch (IdentityConflict) {
                 throw new OperationRejected('preferences_stale', 'runa.auth', 'preferences.admin_write', 409);
-            } catch (\JsonException|\InvalidArgumentException|\TypeError) {
+            } catch (\InvalidArgumentException|\TypeError) {
                 throw new OperationRejected('admin_input_invalid', 'runa.auth', 'preferences.admin_write', 422);
             }
         } elseif ($input->command === 'reset' && $input->confirmed && count($input->values) === 1

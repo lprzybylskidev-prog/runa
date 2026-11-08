@@ -16,6 +16,7 @@ use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
 use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\Runtime\MaintenanceState;
+use Runa\Support\Modules\Api\OperationRejected;
 use Tests\Fixtures\HealthPolicy;
 use Tests\Fixtures\ModuleSources;
 use Tests\Fixtures\TransitionPolicy;
@@ -387,4 +388,51 @@ it('uses exact operation health admission inside one transaction and refuses mis
     // The scope is gone: the next real use executes a new check, never stale admission.
     expect($this->availability->statuses($id, 'write')[$id]->available)->toBeTrue()
         ->and(HealthPolicy::$calls[$id])->toBe(2);
+});
+
+it('accepts only neutral health publications during graph evaluation', function (bool $failure): void {
+    $base = ($this->add)('scheduled');
+    $second = ($this->add)();
+    ($this->sync)();
+    $this->health->recover();
+    $this->travel(1)->seconds();
+    $armed = true;
+    DB::connection()->beforeExecuting(function (string $sql) use ($base, $failure, &$armed): void {
+        if (! $armed || ! str_contains($sql, 'pg_try_advisory_lock')) {
+            return;
+        }
+        $armed = false;
+        // Publish between evaluating the first module and checking the second,
+        // before either check owns a process deadline.
+        if ($failure) {
+            HealthPolicy::$checks[$base] = fn (): bool => false;
+            $this->health->diagnose($base);
+            HealthPolicy::$checks[$base] = fn (): bool => true;
+        }
+        $this->health->diagnose($base);
+    });
+    $statuses = $this->availability->statuses([$base, $second], 'read');
+    expect($armed)->toBeFalse();
+    expect($statuses[$base]->available)->toBe(! $failure)
+        ->and($statuses[$second]->available)->toBe(! $failure);
+    if ($failure) {
+        expect($statuses[$base]->reasons[0]->code)->toBe('availability_changed');
+    }
+})->with([false, true]);
+
+it('never extends exact operation evidence when another healthy observation renews', function (): void {
+    $id = ($this->add)();
+    ($this->sync)();
+    $admissions = app(HealthAdmissions::class);
+    $admissions->run(function () use ($id): void {
+        expect($this->availability->statuses($id, 'write')[$id]->available)->toBeTrue();
+    }, function () use ($id, $admissions): void {
+        $before = $this->registry->snapshot();
+        $this->travel(10)->seconds();
+        expect($this->health->diagnose($id)['state'])->toBe('healthy');
+        expect($this->registry->snapshot()->generation)->toBe($before->generation);
+        $this->travel(10)->seconds();
+        expect($this->availability->statuses($id)[$id]->available)->toBeTrue();
+        expect(fn () => $admissions->assertCurrent())->toThrow(fn (OperationRejected $error) => expect($error->reason)->toBe('admission_expired'));
+    });
 });

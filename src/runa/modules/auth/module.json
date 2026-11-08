@@ -2,9 +2,9 @@
   "schema_version": 1,
   "id": "runa.auth",
   "kind": "core",
-  "version": "5.0.0",
-  "platform": ">=0.7.0 <0.8.0",
-  "framework_api": "^1.0.0",
+  "version": "6.0.1",
+  "platform": ">=0.7.0 <0.9.0",
+  "framework_api": "^2.1.0",
   "name": {
     "pl": "Uwierzytelnianie",
     "en": "Authentication"

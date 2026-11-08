@@ -17,6 +17,11 @@ final class InitializePermissions implements UpgradeHandler
     public function run(UpgradeContext $context): void
     {
         $connection = $context->connection;
+        foreach (['presets', 'preset_roles', 'preset_permissions', 'user_access', 'development_fixtures'] as $table) {
+            if (! $connection->getSchemaBuilder()->hasTable('runa_permissions.'.$table)) {
+                throw new \RuntimeException('Permissions initialization storage unavailable.');
+            }
+        }
         $registry = app(ModuleRegistry::class);
         $declarations = app(ModuleDeclarations::class);
         $sync = app(SynchronizeDeclarations::class);

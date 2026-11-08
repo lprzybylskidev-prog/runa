@@ -21,8 +21,15 @@ import type {
 } from '@/runa/admin';
 enableAutoUnmount(afterEach);
 afterEach(() => savePreference('runa.locale', 'en'));
-beforeEach(() => localStorage.setItem('runa.locale', 'en'));
-afterEach(() => localStorage.removeItem('runa.locale'));
+beforeEach(() =>
+  localStorage.setItem(
+    'runa.preferences:runa:display:global:runa.locale',
+    JSON.stringify({ version: 1, value: 'en' }),
+  ),
+);
+afterEach(() =>
+  localStorage.removeItem('runa.preferences:runa:display:global:runa.locale'),
+);
 const id = '01900000-0000-7000-8000-000000000001';
 const other = '01900000-0000-7000-8000-000000000002';
 const field = (key: string, readonly = true): AdminFieldData => ({

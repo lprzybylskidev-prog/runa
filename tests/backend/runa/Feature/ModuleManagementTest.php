@@ -65,7 +65,7 @@ afterEach(function (): void {
 it('combines localized versioned metadata and redacted settings while disabled without executing actions', function (): void {
     $settings = app(ModuleSettings::class);
     $state = $settings->read($this->id);
-    $settings->update($this->id, ['token' => 'private-management-test'], $state['revision'], $state['generation']);
+    $settings->update($this->id, ['token' => 'private-management-test'], $state['revision'], $state['review_id']);
     SettingsCalls::$contexts = [];
     $view = $this->management->read($this->id);
     expect($view->schemaVersion)->toBe(1)->and($view->status->enabled)->toBeFalse()

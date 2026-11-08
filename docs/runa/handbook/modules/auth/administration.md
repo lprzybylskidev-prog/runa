@@ -2,11 +2,10 @@
 
 # Auth administration
 
-Auth 4.0.0 supplies source-owned administration declarations and adapters, consumed
+Auth 6.0.1 supplies source-owned administration declarations and adapters, consumed
 by Admin without a reverse backend dependency. Business behavior remains available
-through the owning guarded APIs without Admin. This is unreleased source for
-platform 0.7.0; complete browser/security/release verification belongs to
-RM-2026-016 point 12.
+through the owning guarded APIs without Admin. These contracts are delivered with
+platform 0.7.0; the interface versions below are independent of the module version.
 
 ## Guarded administrative reads
 
@@ -146,7 +145,7 @@ shared form controller's dirty-navigation confirmation, never a foreign model.
 | factor reset                    | AuthSecurity.resetFactors; `two_factor.reset`                                                                                           | Version, confirmation, password `runa.auth.two_factor.reset`; native authority/revocation                                                                                            |
 | preferences reset               | AuthPreferences.resetAccount; `preferences.read`, `preferences.reset`                                                                   | Account preference revision and confirmation; presentation-only reset                                                                                                                |
 | exceptions                      | AuthPolicies; `policy.exceptions`                                                                                                       | Policy and per-key exception revisions, bounded reason/expiry, password `runa.auth.policy.exception`; null value revokes                                                             |
-| policy / named snapshots        | AuthPolicies + owning ModuleSettings; `policy.read`, `policy.write`                                                                     | Exact settings revision/generation, reviewed differences and consequences, password `runa.auth.policy.publish`; snapshot deletion requires its own password proof                    |
+| policy / named snapshots        | AuthPolicies + owning ModuleSettings; `policy.read`, `policy.write`                                                                     | Exact settings revision/review identity, reviewed differences and consequences, password `runa.auth.policy.publish`; snapshot deletion requires its own password proof               |
 | bulk selected sessions          | AuthBulkSessions; `sessions.bulk_revoke` and native Permissions selection grants                                                        | Max 100 accounts/10,000 session/trust IDs; exact native preview fingerprint, confirmation; no additional operation proof                                                             |
 
 Account creation is in the directory Card header's right actions area. All
@@ -247,13 +246,17 @@ UUID. Native conflict/refusal/Audit behavior remains authoritative.
 
 Policy fields are typed from Auth's definitions and presented in semantic groups.
 One native publication validates the entire editable policy against the current
-revision/generation. Named snapshots capture committed values; loading populates
+revision/review identity. Named snapshots capture committed values; loading populates
 only the draft. Publication shows committed only for native `succeeded`;
 pending/recovery states retain operation identity. Audit and revision history are
 absent from this editor. See [snapshot composition](../admin/settings-snapshots.md).
 
-The legacy default collection presentations carry bounded authorized address and
-exception lists as JSON text in declared readonly fields, decoded only for display.
+Collection presentations carry bounded authorized address, session, trusted-device
+and exception lists as native structured values in declared json fields. Creation
+password_policy and exception_versions are native maps. Preferences categories,
+recipients and delivery are native lists; save submits delivery as a list, never
+encoded JSON text. Old encoded representations are refused. The json field
+contract is owned by [Management declarations](../admin/declarations.md#structured-management-fields).
 No nested list bypasses field authorization. Session/trust tables retain their shared
 paging/export/print contracts. Failed reads remain unavailable; changing subjects
 clears obsolete lanes. Reconciliation preserves unrelated dirty drafts.
@@ -302,6 +305,13 @@ Admin-owned public presentation consumption, implemented in its frontend and
 exported through `@/runa/admin`; no server capability or new runtime dependency is
 introduced. App source remains under `src/app`; no sample page/provider is added
 to the minimal scaffold.
+
+Closing the user dialog discards only after the shared dirty guard accepts, then
+ends its selected-subject scope and clears activated reads, records, lookups and
+proofs. A refused close preserves the draft. Opening bulk editing starts a fresh
+subject-free scope and sets the exact explicit selection; later refreshes do not
+reread the previous user's details or creation form. Tabs within one open user
+retain their shared drafts and atomic participant activation.
 
 Bounded collection entries use public ValuePreview for escaped long read-only
 values and structured JSON; known instant fields retain application-timezone
@@ -456,7 +466,7 @@ individual-action presentation remains outside this bulk-protection change.
 
 ## Task-based user details
 
-Auth 4.0.0 replaces the default per-section tabs with at most two nonempty
+The default administration replaces per-section tabs with at most two nonempty
 areas: User and Security. User starts with individual action
 buttons, then editable identity/avatar, one complete account-status grid, primary/secondary emails,
 searchable assignments, preferences and user rules. Status consolidates authorized verification
@@ -498,7 +508,7 @@ consumers through `ModuleApis`; management adapters are private:
 ```php
 // AuthSecurity API 1.2.0, permission runa.auth.trust.manage
 public function revokeDevices(string $publicId, int $expectedVersion): bool;
-// AuthPolicies API 3.0.0, permission runa.auth.policy.exceptions
+// AuthPolicies API 4.0.0, permission runa.auth.policy.exceptions
 // Fresh password runa.auth.policy.exception proof, consumed once in transaction.
 public function revokeExceptions(string $publicId, int $expectedVersion): bool;
 ```
@@ -517,7 +527,7 @@ their existing resolution and authority boundaries; customers never copy private
 Auth controllers or access foreign models. The new default detail components are
 private presentation implementations, not additional customer imports.
 
-`AuthPolicies` 3.0.0 additionally exposes
+`AuthPolicies` 4.0.0 additionally exposes
 `exceptionVersions(string $publicId): array<string, int>` under
 `runa.auth.policy.exceptions`. It projects each key's current monotonic version
 independently of the bounded history page, so editing another rule remains correct
@@ -597,7 +607,14 @@ with subtle vertical separators and wrap on narrow screens; unavailable categori
 are omitted. Separators appear only between groups on the same rendered row;
 the first group on every wrapped row has no separator or extra leading indent.
 Resize and translated label changes update that presentation without clipping
-button focus outlines. Existing grouped operation selectors retain their native reviewed commands.
+button focus outlines. Launcher icons identify the operation family: activity, schedule,
+attempt/security locks, verification/invitations, password/factors, sessions/devices,
+preferences/avatar/exceptions, deletion and authority. The same source identity maps
+single-account and selected-account tools to the same decorative icon; concrete
+reviewed actions distinguish opposing effects (activate/deactivate, schedule add/remove,
+delete/restore, lock/unlock). Review retains the inspect icon. Labels, effect colors,
+password proof and native commands remain independent. Existing grouped operation
+selectors retain their native reviewed commands.
 Account status groups project authorized facts in a fixed sequence: activity,
 locks, email, password/authentication, sessions/devices and invitation. Additional
 authorized facts retain a final section rather than disappearing. Field grants,
@@ -632,8 +649,8 @@ see [composition and storage](../admin/settings-snapshots.md). The select and ad
 delete action manage named snapshots. Capture stores committed values; load is a
 local draft preview with previous-value markers and cancellation to the earlier draft.
 The former history section/revision restore is absent. Settings changes remain
-transactionally audited; Audit has its own viewer. AuthPolicies is 3.0.0 and Auth
-is 5.0.0 for removal of guarded history restore. Operator recovery remains CLI-only.
+transactionally audited; Audit has its own viewer. AuthPolicies is 4.0.0 and Auth
+is 6.0.0, including removal of guarded history restore and semantic settings reviews. Operator recovery remains CLI-only.
 
 Permissions contributes ordinary access copying/preset application and a separately
 granted protected-authority action to this same user-details screen. Account access

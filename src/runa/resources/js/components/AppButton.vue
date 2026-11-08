@@ -3,6 +3,8 @@ import { computed, inject } from 'vue';
 import { formActivity } from '../composables/formActivity';
 import { buttonIntentTones } from '../runa/ui/controls';
 import AppSpinner from './AppSpinner.vue';
+import AppIcon from './AppIcon.vue';
+import type { IconName } from '../runa/ui/icons';
 import type {
   ButtonTone,
   ButtonIntent,
@@ -12,7 +14,6 @@ import type {
 const props = withDefaults(
   defineProps<{
     type?: 'button' | 'submit' | 'reset';
-    compact?: boolean;
     disabled?: boolean;
     busy?: boolean | undefined;
     size?: ControlSize;
@@ -20,17 +21,18 @@ const props = withDefaults(
     tone?: ButtonTone | undefined;
     intent?: ButtonIntent | undefined;
     iconOnly?: boolean;
+    icon?: IconName | undefined;
   }>(),
   {
     tone: undefined,
     intent: undefined,
     variant: undefined,
     type: 'button',
-    compact: false,
     disabled: false,
     busy: undefined,
     size: 'md',
     iconOnly: false,
+    icon: undefined,
   },
 );
 const formBusy = inject(formActivity, undefined);
@@ -41,6 +43,7 @@ const busy = computed(
 const tone = computed(() =>
   props.intent ? buttonIntentTones[props.intent] : (props.tone ?? 'neutral'),
 );
+const iconSize = computed(() => ({ sm: 18, md: 20, lg: 22 })[props.size]);
 const variant = computed(
   () => props.variant ?? (tone.value === 'neutral' ? 'neutral' : 'outline'),
 );
@@ -56,7 +59,7 @@ const variant = computed(
     :data-variant="variant"
     :data-size="size"
     class="app-button"
-    :class="{ 'app-button-compact': compact || iconOnly }"
+    :class="{ 'app-button-compact': iconOnly }"
   >
     <AppSpinner
       v-if="busy"
@@ -65,7 +68,13 @@ const variant = computed(
       size="sm"
       decorative
     />
-    <slot v-if="!busy || !(compact || iconOnly)" />
+    <AppIcon
+      v-else-if="icon"
+      :name="icon"
+      :size="iconSize"
+      class="button-icon"
+    />
+    <slot v-if="!busy || !iconOnly" />
   </button>
 </template>
 

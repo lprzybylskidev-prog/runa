@@ -35,7 +35,7 @@ final readonly class SettingsSnapshots
     }
 
     /** @param list<string> $keys */
-    public function capture(string $module, string $scope, array $keys, string $name, int $revision, int $generation): string
+    public function capture(string $module, string $scope, array $keys, string $name, int $revision, string $reviewId): string
     {
         $connection = $this->transaction();
         $name = trim($name);
@@ -46,7 +46,7 @@ final readonly class SettingsSnapshots
             throw $this->reject($module, 'settings_snapshot_name_or_limit', 409);
         }
         $state = $this->settings->read($module);
-        if ($state['revision'] !== $revision || $state['generation'] !== $generation) {
+        if ($state['revision'] !== $revision || $state['review_id'] !== $reviewId) {
             throw $this->reject($module, 'settings_snapshot_stale', 409);
         }
         $hash = $this->fingerprint($module, $keys);

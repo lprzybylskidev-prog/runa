@@ -102,7 +102,7 @@
     {
       "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-005-platform-installation-updates.md",
       "source_hash": "2360483776dac45e1db6f1c3cde6e497d346f552d048d19e576523e36df20d33",
-      "section": "RM-2026-005 \u2014 Platform ownership, installation and GitHub updates > Specification > Decisions",
+      "section": "RM-2026-005 — Platform ownership, installation and GitHub updates > Specification > Decisions",
       "metadata": {
         "purpose": "historical_evidence",
         "effective_date": null,
@@ -127,6 +127,50 @@
             "date": "2026-10-21",
             "version": null,
             "supersedes": ["RM005-deploy-platform-excluded"]
+          }
+        ]
+      }
+    },
+    {
+      "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-016-admin-panel.md",
+      "source_hash": "34a2ab548dacb163577f277c619fa05de30abe04e002bb17928ce1b8287523b9",
+      "section": "RM-2026-016 — Admin Panel Core administration framework > Point 11a2 — Complete bilingual panel naming — 2026-10-31 > Point 11a93 — Explicit shared action semantics and snapshot markers",
+      "metadata": {
+        "purpose": "historical_evidence",
+        "effective_date": null,
+        "applicable_version": null,
+        "decisions": [
+          {
+            "id": "RM016-action-solid-blue-openers",
+            "problem": "Consistent supplied action-button presentation.",
+            "solution": "Use solid main actions and blue tool openers.",
+            "rationale": null,
+            "status": "superseded",
+            "date": "2026-11-05",
+            "version": null,
+            "supersedes": []
+          }
+        ]
+      }
+    },
+    {
+      "source_path": "docs/runa/maintainer/roadmaps/closed/RM-2026-016-admin-panel.md",
+      "source_hash": "34a2ab548dacb163577f277c619fa05de30abe04e002bb17928ce1b8287523b9",
+      "section": "RM-2026-016 — Admin Panel Core administration framework > Point 11a2 — Complete bilingual panel naming — 2026-10-31 > Point 11a95 — Quiet outlines and effect-colored modal tools",
+      "metadata": {
+        "purpose": "historical_evidence",
+        "effective_date": null,
+        "applicable_version": null,
+        "decisions": [
+          {
+            "id": "RM016-action-outline-effect-openers",
+            "problem": "Consistent supplied action-button presentation.",
+            "solution": "Use quiet outlines; modal openers retain operation effect, mixed effects use purple, final confirmation uses its concrete effect.",
+            "rationale": null,
+            "status": "accepted",
+            "date": "2026-11-05",
+            "version": null,
+            "supersedes": ["RM016-action-solid-blue-openers"]
           }
         ]
       }

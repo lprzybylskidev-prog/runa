@@ -1,10 +1,9 @@
 # Application entry and own-account screens
 
-Auth 0.9.0 adds `AuthWelcome` and `AuthApplication` to `@/runa/auth`. The explicit
-`0.8.0 -> 0.9.0` ModuleUpdates edge adds the `public_welcome_enabled` setting with
-default true, without a migration or dependency. Fresh installations use the same
-default. Existing identities, sessions and settings remain intact. Audit ^0.3.0 and
-framework API ^1.0.0 remain compatible; apply the normal fenced module update.
+Auth exports `AuthWelcome` and `AuthApplication` from `@/runa/auth`. The
+`public_welcome_enabled` setting defaults to true. Apply the normal fenced module
+update before using changed source; the current module/dependency and guarded API
+versions are listed in the [Auth contract](README.md).
 
 ## Entry, routes and settings
 
@@ -15,8 +14,9 @@ the documented headless contracts when customizing App.
 Named document routes are `runa.auth.pages.application`, `runa.auth.pages.account`
 and the [existing entry routes](entry-ui.md). Unknown paths remain 404. Document
 GETs contain no account data and never grant access; every account request uses
-the server's module/session/eligibility/CSRF boundaries. The separately owned [Admin shell](../admin/frontend.md) is delivered for platform
-0.7.0 development; its generated business screens remain in progress.
+the server's module/session/eligibility/CSRF boundaries. The separately owned
+[Admin shell and generated forms](../admin/frontend.md) are delivered with
+platform 0.7.0.
 
 With public welcome enabled, guests see sign-in and registration only when public
 registration is enabled. Authenticated visitors see application access; restricted
@@ -26,16 +26,16 @@ projection also sends the frontend to sign-in; a loaded document never treats th
 flag as authentication. An existing session resolves into the app or its required
 security flow. Disabling welcome neither revokes sessions nor relaxes checks.
 
-The trusted operator reads current revision/generation with:
+The trusted operator reads current revision/review identity with:
 
 ```sh
 ./bin/artisan runa:modules:settings runa.auth
 ```
 
-Then writes a revision-checked JSON patch using those actual values (replace R/G):
+Then writes a revision-checked JSON patch using those actual values (replace R/HASH):
 
 ```sh
-printf '%s' '{"values":{"public_welcome_enabled":false}}' | ./bin/artisan runa:modules:settings runa.auth --write --revision=R --generation=G
+printf '%s' '{"values":{"public_welcome_enabled":false}}' | ./bin/artisan runa:modules:settings runa.auth --write --revision=R --review=HASH
 ```
 
 Use true to restore welcome. This uses existing settings publication/history/Audit,
@@ -310,13 +310,15 @@ use the refreshed version. Custom screens use the public controller from
 `@/runa/auth` once per keyed account, including its returned conflict and list state.
 
 The public account controller refreshes profile, security/options, active lists,
-loaded trusted devices and visible delivery settings on tab changes, visible return,
-window focus/pageshow and rejected conflicts. Reads coalesce and retain account/view
+loaded trusted devices and visible delivery settings on applicable tab entry,
+explicit refresh, own successful actions and recognized stale-state refusals.
+Focus, visibility and pageshow do not trigger account reads. Reads coalesce and retain account/view
 fences. It does not poll, remount the view, move focus or replay writes. Read failures
 preserve drafts and expose Retry loading. Preference hydration refreshes visible
 delivery categories; theme, navigation, table and delivery writes share one queue
-and current account revision. Session refresh of the same account retains cached
-presentation until the authoritative snapshot arrives; logout/switch still fences it.
+and current account revision. A successful check of the same unrestricted session
+does not reload preferences, optional shell profile or entry options; logout/switch
+still fences protected state.
 
 Clean profile fields merge automatically. Dirty identity/email fields, secondary
 address editors, avatar files and password/factor drafts remain in memory. Overlapping
@@ -341,7 +343,15 @@ redundant verified-email, secondary-address introduction, avatar instructions,
 enrolled-method summaries/status lines, trust explanation and delivery-editor
 introduction. Keep actionable verification errors and enrollment prerequisites.
 The avatar preview is centered within its Card. Trust actions appear directly
-inside the two-factor Card. Its Trusted devices heading identifies the inline table.
+inside the two-factor Card. Its Trusted devices Accordion identifies the device list and starts collapsed on
+account entry. The trust-browser action and factor prerequisite remain outside.
+The mounted table preserves filters, sorting, pagination and view configuration on
+close/reopen; refresh does not change disclosure state. Native button keyboard
+activation, expanded/control semantics and the shared inert, reduced-motion collapse
+apply. Disabling the capability omits the entire section and resets disclosure;
+identity/access loss retains the controller's protected-data clearing. Full account
+presentation replacements compose the public Accordion and existing account
+controller; no extra session/security owner or persistence is introduced.
 
 Trusted-device management is visible whenever the feature is configured, even
 with no active records. Load its authorized list at initialization, visible refresh

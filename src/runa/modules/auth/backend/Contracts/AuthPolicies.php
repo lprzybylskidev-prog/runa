@@ -21,15 +21,15 @@ interface AuthPolicies
 
     /**
      * @param  array<string, mixed>  $patch
-     * @return array{revision: int, generation: int, changes: array<string, array{old: mixed, new: mixed}>, consequences: array<string, mixed>}
+     * @return array{revision: int, review_id: string, changes: array<string, array{old: mixed, new: mixed}>, consequences: array<string, mixed>}
      */
-    public function preview(array $patch, int $revision, int $generation): array;
+    public function preview(array $patch, int $revision, string $reviewId): array;
 
     /**
      * @param  array<string, mixed>  $patch
      * @return array{operation: string, status: string}
      */
-    public function publish(array $patch, int $revision, int $generation): array;
+    public function publish(array $patch, int $revision, string $reviewId): array;
 
     /** @return array<string, int> */
     public function exceptionVersions(string $publicId): array;

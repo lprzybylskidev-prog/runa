@@ -14,6 +14,7 @@ use Runa\Contracts\Modules\OperationAuthorizer;
 use Runa\Contracts\Modules\PreparationParticipant;
 use Runa\Contracts\Modules\SettingsObserver;
 use Runa\Contracts\Modules\SettingsParticipant;
+use Runa\Contracts\Modules\TransactionSecurity;
 use Runa\Database\DatabaseScope;
 use Runa\Identity\PlatformManifest;
 use Runa\Integration\Core\AnonymousAccountPolicy;
@@ -24,6 +25,7 @@ use Runa\ModuleFramework\Api\OperationGuard;
 use Runa\ModuleFramework\Api\OperationScope;
 use Runa\ModuleFramework\Api\PrincipalScope;
 use Runa\ModuleFramework\Console\ModuleConsole;
+use Runa\ModuleFramework\Data\AuthorityLock;
 use Runa\ModuleFramework\Data\ModuleDataPaths;
 use Runa\ModuleFramework\Events\EventDefinitions;
 use Runa\ModuleFramework\Events\EventSubscriptions;
@@ -44,6 +46,7 @@ use Runa\ModuleFramework\ModuleRegistry;
 use Runa\ModuleFramework\ModuleTransitions;
 use Runa\ModuleFramework\Settings\IgnoreSettingsChanges;
 use Runa\ModuleFramework\Settings\SettingsDefinitions;
+use Runa\ModuleFramework\Settings\SettingsSecurity;
 use Runa\ModuleFramework\Settings\SettingTypes;
 use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
@@ -73,7 +76,7 @@ final class ModuleFrameworkServiceProvider extends ServiceProvider
         $this->app->singleton(LifecyclePolicies::class, fn () => new LifecyclePolicies(base_path(), $this->app, $this->app->make(ModuleAutoloader::class), $this->app->environment(['local', 'testing'])));
         $this->app->singleton(ModuleTransitions::class, fn () => new ModuleTransitions($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(LifecyclePolicies::class), $this->app->make(Encrypter::class), PlatformManifest::load(base_path('runa/platform.json'))->version, $this->app->make(ModuleHealth::class), $this->app->make(OperationalParticipant::class)));
         $this->app->singleton(HealthPolicies::class, fn () => new HealthPolicies(base_path(), $this->app, $this->app->make(ModuleAutoloader::class), $this->app->environment(['local', 'testing'])));
-        $this->app->singleton(HealthAdmissions::class);
+        $this->app->singleton(HealthAdmissions::class, fn () => new HealthAdmissions($this->app->make(DatabaseManager::class)->connection()));
         $this->app->singleton(ModuleHealth::class, fn () => new ModuleHealth(app(HealthAdmissions::class), $this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(HealthPolicies::class), new HealthDeadline));
         $this->app->singleton(ModuleAvailability::class, fn () => new ModuleAvailability($this->app->make(ModuleRegistry::class), $this->app->make(ModuleHealth::class), $this->app->make(LifecyclePolicies::class), PlatformManifest::load(base_path('runa/platform.json'))->version));
         $this->app->singleton(MaintenanceState::class, fn () => new MaintenanceState($this->app, $this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(ModuleAvailability::class)));
@@ -101,7 +104,8 @@ final class ModuleFrameworkServiceProvider extends ServiceProvider
         $this->app->singleton(ModuleUpdates::class, fn () => new ModuleUpdates($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), base_path(), PlatformManifest::load(base_path('runa/platform.json'))->version, $this->app->environment(['local', 'testing']), $this->app->make(PreparationParticipant::class)));
         $this->app->singleton(OperationGuard::class, fn () => new OperationGuard($this->app->make(ModuleRegistry::class), $this->app->make(ModuleAvailability::class), $this->app->make(MaintenanceState::class), $this->app->make(OperationAuthorizer::class), $this->app, $this->app->make(OperationScope::class)));
         $this->app->singleton(ModuleFrontend::class, fn () => new ModuleFrontend($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(ModuleDeclarations::class), $this->app->make(ModuleAvailability::class), $this->app->make(OperationAuthorizer::class)));
-        $this->app->singleton(ModuleSettings::class, fn () => new ModuleSettings($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(SettingsDefinitions::class), $this->app->make(Encrypter::class), $this->app->make(SettingsObserver::class), $this->app->make(SettingsParticipant::class)));
+        $this->app->scoped(SettingsSecurity::class, fn () => new SettingsSecurity($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(OperationGuard::class), $this->app->make(PrincipalScope::class), $this->app->make(AuthorityLock::class), $this->app->make(TransactionSecurity::class), $this->app->make(HealthAdmissions::class), $this->app));
+        $this->app->scoped(ModuleSettings::class, fn () => new ModuleSettings($this->app->make(DatabaseManager::class)->connection(), $this->app->make(ModuleRegistry::class), $this->app->make(SettingsDefinitions::class), $this->app->make(Encrypter::class), $this->app->make(SettingsObserver::class), $this->app->make(SettingsParticipant::class), $this->app->make(SettingsSecurity::class)));
         ModuleAutoloader::register();
     }
 }

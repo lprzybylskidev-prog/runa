@@ -297,6 +297,7 @@ class BootstrapContracts(unittest.TestCase):
             "src/app/modules/reference/module.json",
             "src/app/modules/module_probe/module.json",
             "docs/app/modules/reference/README.md",
+            "tests/frontend/app/modules/reference/presentation.test.ts",
         ):
             file = repo / name
             file.parent.mkdir(parents=True, exist_ok=True)
@@ -394,6 +395,8 @@ class BootstrapContracts(unittest.TestCase):
                 )
                 example = destination / "src/app/modules/reference/module.json"
                 self.assertEqual(example.exists(), include)
+                frontend = destination / "tests/frontend/app/modules/reference/presentation.test.ts"
+                self.assertEqual(frontend.exists(), include)
                 self.assertEqual(receipt["reference_module"], include)
                 self.assertFalse((destination / "src/app/modules/module_probe").exists())
                 if include:
@@ -404,6 +407,7 @@ class BootstrapContracts(unittest.TestCase):
                     capture_output=True,
                 )
                 self.assertEqual(example.exists(), include)
+                self.assertEqual(frontend.exists(), include)
                 if include:
                     self.assertEqual(example.read_text(), "customer edit\n")
                 production = Path(folder) / "production"
@@ -568,12 +572,16 @@ class BootstrapContracts(unittest.TestCase):
                 for name, content in custom_frontend.items():
                     self.assertEqual((destination / name).read_text(), content)
                 for area in ("frontend", "vue", "tailwind"):
-                    self.assertIn(
-                        "docs/runa/handbook/development/frontend/customization.md",
-                        (
-                            destination / ".agents/skills" / area / "references/application.md"
-                        ).read_text(),
-                    )
+                    guidance = (
+                        destination / ".agents/skills" / area / "references/application.md"
+                    ).read_text()
+                    if area == "frontend":
+                        self.assertIn("Canonical guide (under docs/runa/handbook)", guidance)
+                        self.assertIn("development/frontend/customization.md", guidance)
+                    else:
+                        self.assertIn(
+                            "docs/runa/handbook/development/frontend/customization.md", guidance
+                        )
                 # Customer repository commits its projected working tree, never owner files.
                 exported = Path(folder) / "exported"
                 shutil.copytree(destination, exported, ignore=shutil.ignore_patterns(".git"))
@@ -600,10 +608,16 @@ class BootstrapContracts(unittest.TestCase):
                 for name, content in custom_frontend.items():
                     self.assertEqual((clone / name).read_text(), content)
                 for area in ("frontend", "vue", "tailwind"):
-                    self.assertIn(
-                        "docs/runa/handbook/development/frontend/customization.md",
-                        (clone / ".agents/skills" / area / "references/application.md").read_text(),
-                    )
+                    guidance = (
+                        clone / ".agents/skills" / area / "references/application.md"
+                    ).read_text()
+                    if area == "frontend":
+                        self.assertIn("Canonical guide (under docs/runa/handbook)", guidance)
+                        self.assertIn("development/frontend/customization.md", guidance)
+                    else:
+                        self.assertIn(
+                            "docs/runa/handbook/development/frontend/customization.md", guidance
+                        )
                 for guidance in (ROOT / "docs/runa/maintainer/customer-agent/skills").glob(
                     "*/references/application.md"
                 ):

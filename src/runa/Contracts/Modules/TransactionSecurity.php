@@ -2,7 +2,7 @@
 
 namespace Runa\Contracts\Modules;
 
-/** Reserved framework/Core integration. Never an ordinary App identity/proof resolver. */
+/** Reserved native transaction/settings/Core integration. Never an ordinary App identity/proof resolver. */
 interface TransactionSecurity
 {
     /** @param list<string> $publicIds */

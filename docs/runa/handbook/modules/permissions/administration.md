@@ -1,6 +1,6 @@
 # Permissions administration
 
-RM-2026-016 point 8 supplies Permissions-owned Admin declarations and adapters at
+Permissions supplies its own Admin declarations and adapters at
 module 2.1.0 / PermissionsAccess 2.2.0, PermissionsAuthority and Permissions 1.0.0.
 All pages require current Admin entry/password proof and module availability;
 Permissions owns native validation, record rules, revisions, proof and Audit.

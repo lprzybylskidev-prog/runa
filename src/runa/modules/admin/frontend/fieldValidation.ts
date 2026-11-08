@@ -30,6 +30,11 @@ function validateField(
   value: AdminFieldValue,
 ): readonly string[] {
   if (field.readonly) return [];
+  if (field.type === 'json') {
+    if (value === null)
+      return field.required ? ['This field is required.'] : [];
+    return typeof value === 'object' ? [] : ['Enter a valid value.'];
+  }
   if (
     field.sensitive &&
     value !== null &&

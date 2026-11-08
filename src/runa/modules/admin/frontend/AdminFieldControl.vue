@@ -81,6 +81,8 @@ const options = computed(() =>
 const display = computed(() => {
   if (props.field.sensitive) return secretSet.value ? tr('Set') : tr('Not set');
   if (props.modelValue === null || props.modelValue === '') return '—';
+  if (props.field.type === 'json')
+    return JSON.stringify(props.modelValue, null, 2);
   if (props.field.type === 'datetime' && typeof props.modelValue === 'string')
     return formatApplicationInstant(props.modelValue, adminLocale.value);
   if (typeof props.modelValue === 'boolean')

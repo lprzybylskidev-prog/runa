@@ -4,6 +4,7 @@ const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref } from 'vue';
 import { useAdminInitialReadiness } from './initialReadiness';
 import {
+  actionIcons,
   ValuePreview,
   ContentLoading,
   Alert,
@@ -102,6 +103,7 @@ async function retry() {
             : tr('Unable to load the current record.')
         }}
         <Button
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="controller.busy.value"
           size="sm"
@@ -193,6 +195,7 @@ async function retry() {
         <div class="flex flex-wrap gap-2">
           <Button
             v-if="command.preview_required"
+            :icon="actionIcons.inspect"
             intent="inspect"
             :disabled="controller.busy.value || !command.available"
             @click="controller.reviewCommand(section.key, command.key)"

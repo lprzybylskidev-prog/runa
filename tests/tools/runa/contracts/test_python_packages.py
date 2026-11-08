@@ -235,6 +235,14 @@ def test_external_source_bundle_needs_no_install_or_application_tree(tmp_path: P
 
 def test_migration_reconciliation_covers_every_baseline_identity() -> None:
     import json
+    import posixpath
+
+    # RM-2026-012's ledger describes its immutable release, not future aliases.
+    released = subprocess.check_output(["git", "ls-tree", "-r", "v0.6.0"], cwd=ROOT, text=True)
+    entries = {
+        name: (metadata.split()[0], metadata.split()[2])
+        for metadata, name in (line.split("\t", 1) for line in released.splitlines())
+    }
 
     directory = ROOT / "docs/runa/maintainer/tooling/python-rebuild"
     baseline = json.loads((directory / "inventory.json").read_text())
@@ -251,13 +259,27 @@ def test_migration_reconciliation_covers_every_baseline_identity() -> None:
         assert len(rows) == len({row["path"] for row in rows})
         assert {row["path"] for row in rows} == {row["path"] for row in baseline[group]}
         for row in rows:
-            path = ROOT / row["path"]
             if row["disposition"] in ("retired", "relocated"):
-                assert not path.exists() and not path.is_symlink(), row["path"]
+                assert row["path"] not in entries, row["path"]
             else:
-                assert path.is_file(), row["path"]
+                assert row["path"] in entries, row["path"]
             for target in row.get("targets", []):
-                assert (ROOT / target).is_file(), (row["path"], target)
+                assert target in entries, (row["path"], target)
             if group == "aliases":
-                assert path.is_symlink() and os.readlink(path) == row["target"]
-                assert path.resolve() == ROOT / row["resolved_target"]
+                mode, blob = entries[row["path"]]
+                target = subprocess.check_output(
+                    ["git", "cat-file", "blob", blob], cwd=ROOT, text=True
+                )
+                assert mode == "120000" and target == row["target"]
+                resolved = row["path"]
+                seen: set[str] = set()
+                while entries[resolved][0] == "120000":
+                    assert resolved not in seen
+                    seen.add(resolved)
+                    target = subprocess.check_output(
+                        ["git", "cat-file", "blob", entries[resolved][1]], cwd=ROOT, text=True
+                    )
+                    resolved = posixpath.normpath(
+                        posixpath.join(posixpath.dirname(resolved), target)
+                    )
+                assert resolved == row["resolved_target"]

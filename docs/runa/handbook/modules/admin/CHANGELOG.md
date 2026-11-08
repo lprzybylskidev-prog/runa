@@ -1,5 +1,65 @@
 # Admin module changelog
 
+## 2.0.0 — 2026-11-08
+
+- Admit the verified platform0.8.0 release in the supplied>=0.7.0 <0.9.0
+  compatibility range; module/API versions and runtime behavior are unchanged.
+
+- Keep canceled departing-document bootstrap/page reads from producing a false
+  unavailable warning. Preserve live failures and admitted identity/access fences.
+
+- Use the shared semantic action/feedback icons with visible labels and preserved
+  busy, keyboard, proof and operation behavior; no backend contract/storage change.
+
+- Carry snapshot catalogs/values and Auth management collections as native json
+  fields, with strict backend/frontend projection and declaration constraints.
+  Snapshot consumers must provide native lists/maps; encoded strings are refused.
+  Unselected snapshot values are null. Readonly fields use escaped ValuePreview;
+  generic structured editing remains unavailable. Require Framework API ^2.1.0.
+- This MAJOR includes the preceding unreleased changes below and supersedes the
+  1.1.1 candidate. Initialize directly at 2.0.0; retain the published 1.0.0 and
+  current 1.1.0 preparation paths without a storage conversion.
+
+## 1.1.1 — Unreleased
+
+- Initialize directly at the current schema/version; remove historical development
+  upgrade scaffolding. Retain the 1.1.0 → 1.1.1 current-schema update and published Admin 1.0.0 update,
+  reserved declaration/Audit participation and native history/recovery refusals.
+  Published Core databases with replaced migration history require explicit
+  development reconciliation; no historical schema conversion is provided.
+
+## 1.1.0 — Unreleased
+
+- Remove passive resource reads and same-session bootstrap/page/resource cascades.
+  Retain security/identity fences, reconcile recognized stale-state and removed-target
+  refusals in their affected resource, and preserve drafts and specific business
+  refusal messages. Application settings reconcile actual revision conflicts
+  without replay or hiding the refusal.
+
+- Expose native `useAdminPageContext` through the public frontend facade for
+  custom owning-HTTP pages: admitted account/session/page identity and registered
+  initial readiness and dirty/pending exit checks, with scope cleanup and no second session owner.
+  The optional application reference workspace is the executable consumer.
+  Preserve storage and AdminAccess 1.0.0.
+
+## 1.0.1 — Unreleased
+
+- Require Framework API ^2.0.0 and Auth ^6.0.0 for semantic settings review and
+  native snapshot admission. Existing AdminAccess/controller signatures and
+  stored presentation remain unchanged; this candidate's source contract requires no data migration.
+
+- Prepare separately declared read-health occurrences outside locks, then retain
+  current entry/proof/authority and owning reads inside the existing transaction.
+  Cover record/page/options/widget adapters, per-call consumption, expiry/source/
+  rollback/reconnect fences and optional widget failure isolation. Guarded AdminAccess
+  1.0.0 signatures and native mutations are unchanged. Framework API 1.1.0 owns
+  the additive source-plan extension.
+
+- End lazy form section activation when selecting another subject, withdrawing
+  access or explicitly closing that editor. Prevent creation sections from reading
+  an existing subject after an editor-context change. Preserve automatic headless
+  reads, guarded dirty drafts and late-response cancellation.
+
 ## 1.0.0 — 2026-11-06
 
 - Complete the first stable Admin creation release with guarded PL/EN administration, owning module declarations and application presentation extensions. Record the explicit creation-release upgrade boundary after development 0.2.0; no application tables or business data changes.

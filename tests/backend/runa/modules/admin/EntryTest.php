@@ -1,5 +1,8 @@
 <?php
 
+use App\Modules\Reference\Contracts\Ping;
+use App\Modules\Reference\Contracts\ReferenceTools;
+use App\Modules\Reference\Definitions\ReferenceHealthPolicy;
 use App\Settings\PointTenFixture\Settings;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Encryption\Encrypter;
@@ -9,7 +12,14 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Monolog\Handler\AbstractProcessingHandler;
+use Monolog\LogRecord;
+use Runa\Contracts\Modules\ApiOperation;
+use Runa\Contracts\Modules\HealthContext;
+use Runa\Contracts\Modules\HealthDefinition;
+use Runa\Contracts\Modules\HealthPolicy;
 use Runa\Contracts\Modules\ManagementRead;
 use Runa\Contracts\Modules\ManagementWrite;
 use Runa\Contracts\Modules\Preparation;
@@ -18,6 +28,7 @@ use Runa\Contracts\Modules\TrustedPrincipal;
 use Runa\Http\HttpErrorPage;
 use Runa\Identity\ApplicationIdentity;
 use Runa\Integration\Core\AdminDiagnostics;
+use Runa\Integration\Core\AdminEntry;
 use Runa\Integration\Core\AdminHttpGuard;
 use Runa\Integration\Core\AdminOperationalAuthority;
 use Runa\Mail\MailBranding;
@@ -32,6 +43,8 @@ use Runa\ModuleFramework\ModuleAvailability;
 use Runa\ModuleFramework\ModuleHealth;
 use Runa\ModuleFramework\ModuleOperationHistory;
 use Runa\ModuleFramework\ModuleRegistry;
+use Runa\ModuleFramework\ModuleTransitions;
+use Runa\ModuleFramework\Transactions\HealthAdmissions;
 use Runa\ModuleFramework\Updates\ModuleUpdates;
 use Runa\Modules\Admin\Contracts\AdminAccess;
 use Runa\Modules\Admin\Contracts\AdminRegistry;
@@ -74,6 +87,7 @@ use Tests\Fixtures\AggregateCompetition;
 use Tests\Fixtures\CoreModuleStorage;
 use Tests\Fixtures\ModuleSources;
 use Tests\Fixtures\OperationalModule;
+use Tests\Fixtures\OperatorSettings;
 use Tests\Fixtures\TransitionPolicy;
 use Tests\PlatformTestCase;
 
@@ -99,7 +113,7 @@ beforeEach(function (): void {
     config()->set('queue.default', 'database');
     config()->set('hashing.bcrypt.rounds', 4);
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'disabled'], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'disabled'], $settings['revision'], $settings['review_id']);
     $identity = app(ChangeIdentity::class)->create(new NewIdentity('admin-entry@example.test', name: 'Admin entry', active: true));
     $this->adminUser = User::where('public_id', $identity->publicId)->firstOrFail();
     DB::transaction(function (): void {
@@ -234,7 +248,7 @@ it('installs Admin through explicit forward history and declares bounded guarded
     $suite = new ModuleContractSuite(base_path(), true);
     expect($suite->source('runa.admin'))->toBe([])
         ->and($suite->runtime(app(ModuleRegistry::class)->snapshot()->modules['runa.admin']))->toBe([])
-        ->and(DB::table('shared.module_update_steps')->where('step', 'upgrade:initialize:install:0.1.0')->where('status', 'succeeded')->exists())->toBeTrue();
+        ->and(DB::table('shared.module_update_steps')->where('module_id', DB::table('shared.modules')->where('module_id', 'runa.admin')->value('id'))->where('step', 'upgrade:initialize:install:2.0.0')->where('status', 'succeeded')->exists())->toBeTrue();
     $api = app(ModuleApis::class)->resolve('runa.admin', AdminAccess::class, '1.0.0');
     expect($api)->toBeInstanceOf(AdminAccess::class)
         ->and(app('router')->getRoutes()->getByName('runa.admin.bootstrap')->uri())->toBe('api/admin');
@@ -774,7 +788,7 @@ it('fails closed when an Admin aggregate rollback refusal Audit is unavailable',
     $input = adminAggregateReview($this, adminAggregateInput($this, $target->publicId, [$permission]));
     DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT aggregate_refusal_failure CHECK (action NOT IN ('assignments.changed', 'access.refused')) NOT VALID");
     try {
-        $this->postJson('/api/admin/runa.auth/users/save', $input)->assertServiceUnavailable()->assertJsonPath('reason', 'transaction_refusal_unavailable');
+        $this->postJson('/api/admin/runa.auth/users/save', $input)->assertServiceUnavailable()->assertJsonPath('error.code', 'transaction_refusal_unavailable');
         expect(User::where('public_id', $target->publicId)->value('name'))->toBe('Before')
             ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $target->publicId)->count())->toBe(0)
             ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
@@ -837,7 +851,7 @@ it('Auth administration dispatches every lifecycle intent with native revisions 
         $this->adminUser->save();
     });
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['registration_activation' => 'administrator', 'password_expiry_days' => 30], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['registration_activation' => 'administrator', 'password_expiry_days' => 30], $settings['revision'], $settings['review_id']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('lifecycle-admin@example.test', name: 'Lifecycle target'));
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.deleted.read', 'runa.auth.users.manage']);
     foreach (['activate', 'schedule_activation', 'schedule_deactivation', 'set_attempt_lock', 'set_security_lock', 'require_password_change', 'deactivate', 'delete', 'restore'] as $operation) {
@@ -871,11 +885,11 @@ it('Auth administration keeps creations invitations secondary addresses and pref
     $this->postJson('/api/admin/runa.auth/users/sections/invitations/commands', $invite)->assertOk();
     // Secondary addresses retain native enablement; Admin cannot override policy.
     $state = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['secondary_emails_enabled' => true], $state['revision'], $state['generation']);
+    OperatorSettings::update('runa.auth', ['secondary_emails_enabled' => true], $state['revision'], $state['review_id']);
     $input = ['command' => 'add', 'public_id' => $user->public_id, 'revision' => (string) $user->version, 'values' => ['email' => 'secondary-admin@example.test']];
     $this->postJson('/api/admin/runa.auth/users/sections/secondary/commands', $input)->assertOk();
     $record = authAdministrationRead($this, 'secondary', $user->public_id);
-    $addresses = json_decode($record['values']['addresses'], true);
+    $addresses = $record['values']['addresses'];
     expect($addresses)->toHaveCount(1)->and($addresses[0]['verified'])->toBeFalse();
     $input['revision'] = $record['revision'];
     $input['command'] = 'change';
@@ -895,7 +909,7 @@ it('Auth administration keeps creations invitations secondary addresses and pref
 
 it('Auth administration refuses stronger operations without native password proof', function (string $section, string $command, array $values, string $grant): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'new', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'new', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['review_id']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('strong-admin@example.test', name: 'Strong target', active: true));
     authAdministrationLogin($this, ['runa.auth.profiles.read', 'runa.auth.policy.exceptions', 'runa.auth.'.$grant]);
     if ($section === 'exceptions') {
@@ -929,8 +943,9 @@ it('Auth administration exposes bounded policy reads history reviews and stale p
     expect($review['changes'])->toHaveKey('summary')->and($review['requirement'])->toBe('password');
     $input['review'] = $review;
     $this->postJson('/api/admin/runa.auth/policy/sections/policy/commands', $input)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
-    $input['revision'] = '0:0';
-    $this->postJson('/api/admin/runa.auth/policy/sections/policy/preview', $input)->assertConflict();
+    [$revision, $reviewId] = explode(':', $record['revision'], 2);
+    $input['revision'] = ((int) $revision + 1).':'.$reviewId;
+    $this->postJson('/api/admin/runa.auth/policy/sections/policy/preview', $input)->assertConflict()->assertJsonPath('error.code', 'policy_stale');
     $this->getJson('/api/admin/runa.auth/policy/sections/history')->assertNotFound();
 });
 
@@ -960,7 +975,7 @@ it('Auth administration writes indefinite rules and future dates beyond thirty d
         ])->assertOk()->json('data');
         expect($result['status'])->toBe('committed');
         $fresh = authAdministrationRead($this, 'exceptions', $this->adminUser->public_id);
-        $active = json_decode($fresh['values']['active_exceptions'], true);
+        $active = $fresh['values']['active_exceptions'];
         if ($index === 2) {
             expect($active)->toBe([]);
         } else {
@@ -987,7 +1002,7 @@ it('Auth administration publishes through the native policy runner and refuses h
 
 it('Auth administration confirms selected bulk revocation without another identity proof', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['review_id']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('bulk-admin@example.test', name: 'Bulk target', active: true));
     authAdministrationLogin($this, ['runa.auth.sessions.bulk_revoke', 'runa.permissions.users.select']);
     $input = ['command' => 'revoke', 'public_id' => null, 'revision' => '0', 'values' => ['public_ids' => [$target->publicId], 'trust' => true], 'confirmed' => true];
@@ -1025,7 +1040,7 @@ it('Auth administration never treats a read grant as write authority', function 
 
 it('Auth administration preserves native session and trust scoping without disclosing session credentials', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['review_id']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('sessions-admin@example.test', name: 'Session target', active: true));
     $user = User::where('public_id', $target->publicId)->firstOrFail();
     $sessions = DB::transaction(fn () => [
@@ -1036,17 +1051,17 @@ it('Auth administration preserves native session and trust scoping without discl
     DB::table('runa_auth.trusted_devices')->insert(['public_id' => $deviceId, 'user_id' => $user->id, 'browser' => 'Firefox', 'platform' => 'Linux', 'last_used_at' => now(), 'token_hash' => hash('sha256', 'auth-admin-disposable-device'), 'security_version' => $user->security_version, 'factor_method' => 'totp', 'created_at' => now(), 'expires_at' => now()->addDay()]);
     authAdministrationLogin($this, ['runa.auth.sessions.manage', 'runa.auth.trust.manage']);
     $record = authAdministrationRead($this, 'sessions', $target->publicId);
-    expect(json_decode($record['values']['sessions'], true))->toHaveCount(2)
+    expect($record['values']['sessions'])->toHaveCount(2)
         ->and(json_encode($record))->not->toContain('session_hash', 'auth-admin-session-one', 'security_version');
     $this->postJson('/api/admin/runa.auth/users/sections/sessions/commands', ['command' => 'revoke', 'public_id' => $target->publicId, 'revision' => $record['revision'], 'values' => ['session_id' => $sessions[0]], 'confirmed' => true])->assertOk();
     $remaining = authAdministrationRead($this, 'sessions', $target->publicId);
-    expect(json_decode($remaining['values']['sessions'], true))->toHaveCount(1);
+    expect($remaining['values']['sessions'])->toHaveCount(1);
     $this->postJson('/api/admin/runa.auth/users/sections/sessions/commands', ['command' => 'revoke_all', 'public_id' => $target->publicId, 'revision' => $remaining['revision'], 'values' => [], 'confirmed' => true])->assertOk();
-    expect(json_decode(authAdministrationRead($this, 'sessions', $target->publicId)['values']['sessions'], true))->toBe([]);
+    expect(authAdministrationRead($this, 'sessions', $target->publicId)['values']['sessions'])->toBe([]);
     $trust = authAdministrationRead($this, 'trust', $target->publicId);
-    expect(json_decode($trust['values']['devices'], true)[0]['public_id'])->toBe($deviceId)->and(json_decode($trust['values']['devices'], true)[0]['browser'])->toBe('Firefox')->and(json_decode($trust['values']['devices'], true)[0]['platform'])->toBe('Linux')->and(json_decode($trust['values']['devices'], true)[0]['current'])->toBeFalse()->and(json_encode($trust))->not->toContain('token_hash', 'factor_method');
+    expect($trust['values']['devices'][0]['public_id'])->toBe($deviceId)->and($trust['values']['devices'][0]['browser'])->toBe('Firefox')->and($trust['values']['devices'][0]['platform'])->toBe('Linux')->and($trust['values']['devices'][0]['current'])->toBeFalse()->and(json_encode($trust))->not->toContain('token_hash', 'factor_method');
     $this->postJson('/api/admin/runa.auth/users/sections/trust/commands', ['command' => 'revoke_device', 'public_id' => $target->publicId, 'revision' => $trust['revision'], 'values' => ['device_id' => $deviceId], 'confirmed' => true])->assertOk();
-    expect(json_decode(authAdministrationRead($this, 'trust', $target->publicId)['values']['devices'], true))->toBe([]);
+    expect(authAdministrationRead($this, 'trust', $target->publicId)['values']['devices'])->toBe([]);
 });
 
 it('Auth administration runs native strong account actions with one use proof', function (string $section, string $command, array $values, string $grant, string $proof): void {
@@ -1058,7 +1073,7 @@ it('Auth administration runs native strong account actions with one use proof', 
     if ($patch !== []) {
         DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['email_verified_at' => now()]);
         $state = app(ModuleSettings::class)->read('runa.auth');
-        app(ModuleSettings::class)->update('runa.auth', $patch, $state['revision'], $state['generation']);
+        OperatorSettings::update('runa.auth', $patch, $state['revision'], $state['review_id']);
     }
     $target = app(ChangeIdentity::class)->create(new NewIdentity('strong-success@example.test', name: 'Strong target', active: true));
     if ($command === 'password_reset') {
@@ -1114,7 +1129,7 @@ it('Auth creation verification defaults on and remains configurable in the Auth 
         ->and($field['label']['pl'])->toBe('Administracyjne potwierdzanie adresów e-mail');
     expect(authAdministrationRead($this, 'creation')['values']['email_verification_allowed'])->toBeTrue();
     $state = $settings->read('runa.auth');
-    $settings->update('runa.auth', ['admin_email_verification_bypass' => false], $state['revision'], $state['generation']);
+    OperatorSettings::update('runa.auth', ['admin_email_verification_bypass' => false], $state['revision'], $state['review_id']);
     expect(authAdministrationRead($this, 'creation')['values']['email_verification_allowed'])->toBeFalse();
     $this->postJson('/api/admin/runa.auth/users/sections/creation/preview', ['command' => 'create', 'public_id' => null, 'revision' => '0',
         'values' => authCreationValues(['email_verified' => true])])->assertForbidden()->assertJsonPath('error.code', 'email_bypass_disabled');
@@ -1127,7 +1142,7 @@ it('Auth creation atomically configures credentials schedules verification and l
         $this->adminUser->save();
     });
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'all', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'all', 'admin_email_verification_bypass' => true], $settings['revision'], $settings['review_id']);
     authAdministrationStrongProof($this, 'runa.auth.users.create');
     $password = 'initial-user-password';
     $input = ['command' => 'create', 'public_id' => null, 'revision' => '0', 'values' => authCreationValues([
@@ -1175,7 +1190,7 @@ it('Auth creation queues inactive invitations atomically and rolls back proof an
 it('Auth creation refuses unsupported credentials schedules and verification without partial accounts', function (): void {
     authAdministrationLogin($this, ['runa.auth.users.create']);
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['password_expiry_days' => 0], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['password_expiry_days' => 0], $settings['revision'], $settings['review_id']);
     $page = $this->getJson('/api/admin/runa.auth/users')->assertOk()->json('data');
     $creation = array_values(array_filter($page['sections'], fn ($section) => $section['key'] === 'creation'))[0];
     expect(array_column($creation['commands'], 'key'))->toContain('create')
@@ -2027,7 +2042,7 @@ it('uses Auth protected section idle access for Admin and never trusts activity 
 
 it('Auth user administration hides disabled feature metadata and refuses hidden commands', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['totp_enabled' => false, 'email_otp_enabled' => false, 'avatar_editor' => 'user', 'password_expiry_days' => 0], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['totp_enabled' => false, 'email_otp_enabled' => false, 'avatar_editor' => 'user', 'password_expiry_days' => 0], $settings['revision'], $settings['review_id']);
     authAdministrationLogin($this, ['runa.auth.users.read', 'runa.auth.users.manage', 'runa.auth.profiles.read', 'runa.auth.emails.read', 'runa.auth.emails.reverify', 'runa.auth.emails.verify_bypass', 'runa.auth.secondary.read', 'runa.auth.trust.manage', 'runa.auth.two_factor.reset', 'runa.auth.passwords.reset', 'runa.auth.policy.exceptions']);
     $page = $this->getJson('/api/admin/runa.auth/users')->assertOk()->json('data');
     $sections = collect($page['sections'])->keyBy('key');
@@ -2069,7 +2084,7 @@ it('Auth user administration reports native live sessions and authorized account
 it('Auth user administration filters all authorized facts before pagination and binds cursors', function (): void {
     expect(fn () => new ManagementRead(filters: array_fill_keys(array_map(fn ($i) => 'field'.$i, range(1, 65)), true)))->toThrow(InvalidArgumentException::class);
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'new', 'email_otp_enabled' => true, 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'new', 'email_otp_enabled' => true, 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['review_id']);
     DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['password_changed_at' => now()]);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('filter-facts@example.test', firstName: 'Anna', surname: 'Test', active: true));
     DB::table('runa_auth.users')->where('public_id', $target->publicId)->update(['email_verified_at' => now(), 'password' => Hash::make('test-password'), 'password_changed_at' => now()->subDays(40), 'totp_secret' => app(Encrypter::class)->encrypt('test-secret'), 'recovery_hashes' => json_encode(['one', 'two'])]);
@@ -2095,7 +2110,7 @@ it('Auth user administration filters all authorized facts before pagination and 
 
 it('Auth user administration executes each native bulk operation with its declared proof', function (string $operation): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'new', 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'new', 'password_expiry_days' => 30, 'trusted_devices_enabled' => true], $settings['revision'], $settings['review_id']);
     DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['password_changed_at' => now()]);
     $ids = [];
     foreach (['one', 'two'] as $suffix) {
@@ -2413,6 +2428,9 @@ it('edits target preferences atomically without changing the administrator or we
     $target = app(ChangeIdentity::class)->create(new NewIdentity('target-preferences@example.test', name: 'Target', active: false));
     $path = '/api/admin/runa.auth/users/sections/preferences';
     $record = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
+    expect($record['values']['delivery'])->toBeArray();
+    $this->postJson($path.'/commands', ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'],
+        'values' => ['locale' => 'en', 'theme' => 'dark', 'delivery' => json_encode($record['values']['delivery'], JSON_THROW_ON_ERROR)]])->assertUnprocessable();
     $values = ['locale' => 'en', 'theme' => 'dark', 'delivery' => $record['values']['delivery']];
     $input = ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'], 'values' => $values];
     $this->postJson($path.'/commands', $input)->assertOk()->assertJsonPath('data.record.values.locale', 'en')->assertJsonPath('data.record.values.theme', 'dark');
@@ -2420,9 +2438,9 @@ it('edits target preferences atomically without changing the administrator or we
         ->and(DB::table('runa_audit.events')->where('action', 'preferences.admin_changed')->count())->toBe(1);
     $this->postJson($path.'/commands', $input)->assertConflict();
     $fresh = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
-    $categories = json_decode($fresh['values']['categories'], true, flags: JSON_THROW_ON_ERROR);
+    $categories = $fresh['values']['categories'];
     $mandatory = array_values(array_filter($categories, fn ($entry) => $entry['mandatory'] || $entry['sensitive']))[0];
-    $bad = ['locale' => 'pl', 'theme' => 'light', 'delivery' => json_encode([['module' => $mandatory['module'], 'key' => $mandatory['key'], 'enabled' => false, 'recipients' => ['primary']]], JSON_THROW_ON_ERROR)];
+    $bad = ['locale' => 'pl', 'theme' => 'light', 'delivery' => [['module' => $mandatory['module'], 'key' => $mandatory['key'], 'enabled' => false, 'recipients' => ['primary']]]];
     $this->postJson($path.'/commands', ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $fresh['revision'], 'values' => $bad])->assertUnprocessable();
     $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->assertJsonPath('data.values.locale', 'en')->assertJsonPath('data.revision', $fresh['revision']);
 });
@@ -2436,10 +2454,10 @@ it('separates target preference read manage and recipient-address grants', funct
     $target = app(ChangeIdentity::class)->create(new NewIdentity('private-preferences@example.test', name: 'Private', active: true));
     $path = '/api/admin/runa.auth/users/sections/preferences';
     $record = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
-    expect(json_decode($record['values']['recipients'], true))->toBe([])
-        ->and(json_decode($record['values']['categories'], true))->toBe([]);
+    expect($record['values']['recipients'])->toBe([])
+        ->and($record['values']['categories'])->toBe([]);
     $this->postJson($path.'/commands', ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'],
-        'values' => ['locale' => 'en', 'theme' => 'dark', 'delivery' => '[]']])->assertUnprocessable();
+        'values' => ['locale' => 'en', 'theme' => 'dark', 'delivery' => []]])->assertUnprocessable();
     expect(User::where('public_id', $target->publicId)->value('preference_revision'))->toBe(0);
 });
 
@@ -2491,7 +2509,7 @@ it('preserves identifier refusals through Admin profile and secondary adapters w
     $target = app(ChangeIdentity::class)->create(new NewIdentity('refusal-target@example.test', name: 'Before', login: 'refusal_target'));
     app(ChangeIdentity::class)->create(new NewIdentity('occupied@example.test', name: 'Occupied', login: 'occupied_login'));
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['secondary_emails_enabled' => true, 'secondary_email_sharing' => false], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['secondary_emails_enabled' => true, 'secondary_email_sharing' => false], $settings['revision'], $settings['review_id']);
     $profile = authAdministrationRead($this, 'profile', $target->publicId);
     $values = array_intersect_key($profile['values'], array_flip(['name', 'first_name', 'surname', 'login']));
     $values['login'] = 'occupied_login';
@@ -2537,7 +2555,7 @@ it('confirms existing addresses through native Admin commands and refreshes reci
     authAdministrationLogin($this, ['runa.auth.profiles.read', 'runa.auth.emails.read', 'runa.auth.secondary.read', 'runa.auth.secondary.manage', 'runa.auth.emails.verify_bypass', 'runa.auth.preferences.read', 'runa.auth.addresses.read']);
     DB::table('runa_auth.users')->where('id', $this->adminUser->id)->update(['email_verified_at' => now()]);
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['email_verification' => 'all', 'secondary_emails_enabled' => true, 'admin_email_verification_bypass' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['email_verification' => 'all', 'secondary_emails_enabled' => true, 'admin_email_verification_bypass' => true], $settings['revision'], $settings['review_id']);
     $target = app(ChangeIdentity::class)->create(new NewIdentity('verify-existing-admin@example.test', name: 'Verify existing', active: true));
     $address = $kind === 'secondary' ? app(ManageProfiles::class)->addSecondary($target->publicId, 1, 'verify-existing-secondary@example.test') : null;
     $section = $kind === 'secondary' ? 'secondary' : 'primary_email';
@@ -2552,7 +2570,7 @@ it('confirms existing addresses through native Admin commands and refreshes reci
     } else {
         expect(DB::table('runa_auth.secondary_emails')->where('public_id', $address)->value('verified_at'))->not->toBeNull();
         $preferences = authAdministrationRead($this, 'preferences', $target->publicId);
-        expect(array_column(json_decode($preferences['values']['recipients'], true, flags: JSON_THROW_ON_ERROR), 'value'))->toContain($address);
+        expect(array_column($preferences['values']['recipients'], 'value'))->toContain($address);
     }
     expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.email.admin_bypass')->whereNotNull('consumed_at')->exists())->toBeTrue()
         ->and(DB::table('runa_audit.events')->where('action', $address === null ? 'email.admin_verified' : 'secondary.admin_verified')->count())->toBe(1);
@@ -2560,7 +2578,7 @@ it('confirms existing addresses through native Admin commands and refreshes reci
 
 it('supplied tables order authorized server datasets before cursor paging and guard security exports', function (): void {
     $settings = app(ModuleSettings::class)->read('runa.auth');
-    app(ModuleSettings::class)->update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['generation']);
+    OperatorSettings::update('runa.auth', ['trusted_devices_enabled' => true], $settings['revision'], $settings['review_id']);
     $ids = [];
     foreach (['Zulu', 'Alpha', 'Alpha', 'Middle'] as $index => $name) {
         $identity = app(ChangeIdentity::class)->create(new NewIdentity('table-order-'.$index.'@example.test', name: 'Table order '.$name, active: true));
@@ -2629,15 +2647,16 @@ it('named settings snapshots load without publishing and require transactional p
     authAdministrationLogin($this, ['runa.auth.policy.read', 'runa.auth.policy.write']);
     $url = '/api/admin/runa.auth/policy/sections/snapshots';
     $state = $this->getJson($url)->assertOk()->json('data');
+    expect($state['values']['snapshots'])->toBeArray()->and($state['values']['values'])->toBeNull();
     $before = app(ModuleSettings::class)->read('runa.auth');
     $capture = ['command' => 'capture', 'public_id' => null, 'revision' => $state['revision'], 'values' => ['name' => 'Before security review']];
     $created = $this->postJson($url.'/commands', $capture)->assertOk()->json('data.record');
-    $catalog = json_decode($created['values']['snapshots'], true, flags: JSON_THROW_ON_ERROR);
+    $catalog = $created['values']['snapshots'];
     expect($catalog)->toHaveCount(1)->and($catalog[0]['name'])->toBe('Before security review');
     $id = $catalog[0]['public_id'];
     expect(DB::table('shared.module_settings_snapshots')->where('public_id', $id)->value('settings_values'))->not->toContain('public_welcome_enabled');
     $loaded = $this->getJson($url.'?public_id='.$id)->assertOk()->json('data');
-    $values = json_decode($loaded['values']['values'], true, flags: JSON_THROW_ON_ERROR);
+    $values = $loaded['values']['values'];
     expect($values['public_welcome_enabled'])->toBe($before['settings']['public_welcome_enabled']['value'])
         ->and(app(ModuleSettings::class)->read('runa.auth')['revision'])->toBe($before['revision']);
     $this->postJson($url.'/commands', $capture)->assertConflict();
@@ -2675,4 +2694,172 @@ it('Permissions navigation stays definition-only and selected-user source lookup
     $this->getJson('/api/admin/runa.permissions/roles/sections/editor?'.http_build_query(['kind' => 'options', 'field' => 'permissions', 'filters' => json_encode(['search' => 'runa.audit.read', 'language' => 'pl'])]))->assertOk()->assertJsonPath('data.items.0.value', $permission->public_id)->assertJsonPath('data.items.0.label', $permission->name_pl);
     DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)->where('permission_id', DB::table('runa_permissions.permissions')->where('code', 'runa.auth.users.read')->value('id'))->delete();
     $this->getJson($path.'?'.http_build_query($query))->assertNotFound()->assertJsonMissingPath('data');
+});
+
+it('guards the reference Admin showcase independently from public Ping and withdraws revoked inspect access', function (): void {
+    $registry = app(ModuleRegistry::class);
+    expect($registry->snapshot()->modules)->not->toHaveKey('app.reference');
+    try {
+        app(ModuleUpdates::class)->apply('app', str_repeat('e', 40), static function (): void {});
+        expect(app(ModuleHealth::class)->diagnose('app.reference')['blocked'])->toBeFalse();
+        $transitions = app(ModuleTransitions::class);
+        expect($transitions->apply($transitions->preview('enable', 'app.reference'))->status)->toBe('succeeded');
+        ($this->adminGrant)('runa.admin.enter');
+        ($this->adminLogin)();
+        ($this->adminProof)();
+        $path = '/api/admin/app.reference/inspect';
+        $this->getJson($path)->assertNotFound();
+        $this->getJson('/api/admin')->assertOk()->assertJsonMissing(['id' => 'app.reference']);
+        ($this->adminGrant)('app.reference.reference.inspect');
+        $page = $this->getJson($path)->assertOk()->json('data');
+        expect($page['sections'][0]['readonly'])->toBeTrue()
+            ->and($page['sections'][0]['commands'])->toBe([]);
+        expect(app(ModuleAvailability::class)->statuses('app.reference', 'reference.read')['app.reference']->available)->toBeTrue();
+        expect(app(ModuleApis::class)->resolve('app.reference', Ping::class, '1.0.0')->read()->message)->toBe('reference');
+        $this->getJson($path.'/sections/response?kind=record')->assertOk()
+            ->assertJsonPath('data.public_id', null)->assertJsonPath('data.values.message', 'reference');
+        $bootstrap = $this->getJson('/api/admin')->assertOk()->json('data');
+        $widget = collect($bootstrap['dashboard']['widgets'])->firstWhere('id', 'app.reference.response');
+        expect($widget['diagnostic'])->toBeNull()->and($widget['values'])->toBe(['message' => 'reference'])
+            ->and($widget['observed_at'])->toBeNull();
+        // Revoke during independent health preparation, after initial selection.
+        app()->bind(ReferenceHealthPolicy::class, fn () => new class($this->adminUser->public_id) implements HealthPolicy
+        {
+            public function __construct(private string $actor) {}
+
+            public function schemaVersion(): int
+            {
+                return 2;
+            }
+
+            public function definition(): HealthDefinition
+            {
+                return (new ReferenceHealthPolicy)->definition();
+            }
+
+            public function check(string $check, HealthContext $context): bool
+            {
+                expect(DB::connection()->transactionLevel())->toBe(0);
+                $permission = DB::table('runa_permissions.permissions')->where('code', 'app.reference.reference.inspect')->value('id');
+                DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->actor)->where('permission_id', $permission)->delete();
+
+                return true;
+            }
+        });
+        $this->getJson($path.'/sections/response?kind=record')->assertNotFound()->assertJsonMissingPath('data');
+        app()->bind(ReferenceHealthPolicy::class, ReferenceHealthPolicy::class);
+        ($this->adminGrant)('app.reference.reference.inspect');
+        $permission = DB::table('runa_permissions.permissions')->where('code', 'app.reference.reference.inspect')->value('id');
+        DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)
+            ->where('permission_id', $permission)->delete();
+        $this->getJson($path.'/sections/response?kind=record')->assertNotFound()->assertJsonMissingPath('data');
+        $this->getJson('/api/admin')->assertOk()->assertJsonMissing(['id' => 'app.reference']);
+        // Reader failure keeps an available, currently granted widget diagnostic local.
+        ($this->adminGrant)('app.reference.reference.inspect');
+        $logger = Log::channel()->getLogger();
+        $handlers = $logger->getHandlers();
+        $logger->pushHandler(new class extends AbstractProcessingHandler
+        {
+            protected function write(LogRecord $record): void
+            {
+                if ($record->message === 'Reference public API observed.') {
+                    throw new RuntimeException('Controlled read failure.');
+                }
+            }
+        });
+        try {
+            $failedRead = $this->getJson('/api/admin')->assertOk()->json('data');
+            $widget = collect($failedRead['dashboard']['widgets'])->firstWhere('id', 'app.reference.response');
+            expect($widget['diagnostic'])->toBe('admin_widget_unavailable')->and($widget['values'])->toBe([]);
+        } finally {
+            $logger->setHandlers($handlers);
+        }
+        // Critical health failure withdraws the owner's effective grants: omit its widget.
+
+        app()->bind(ReferenceHealthPolicy::class, fn () => new class implements HealthPolicy
+        {
+            public function schemaVersion(): int
+            {
+                return 2;
+            }
+
+            public function definition(): HealthDefinition
+            {
+                return (new ReferenceHealthPolicy)->definition();
+            }
+
+            public function check(string $check, HealthContext $context): bool
+            {
+                expect(DB::connection()->transactionLevel())->toBe(0);
+
+                return false;
+            }
+        });
+        $failed = $this->getJson('/api/admin')->assertOk()->json('data');
+        $widget = collect($failed['dashboard']['widgets'])->firstWhere('id', 'app.reference.response');
+        expect($widget)->toBeNull()->and($failed)->toHaveKeys(['presentation', 'activity', 'owners']);
+
+    } finally {
+        // Only this test's newly installed reference module in the isolated worker database.
+        $id = DB::table('shared.modules')->where('module_id', 'app.reference')->value('id');
+        DB::table('shared.module_update_steps')->where('module_id', $id)->delete();
+        DB::table('shared.module_transitions')->where('target', 'app.reference')->delete();
+        DB::table('shared.modules')->where('module_id', 'app.reference')->delete();
+        DB::statement('DROP TABLE IF EXISTS app_reference.samples RESTRICT');
+        DB::statement('DROP SCHEMA IF EXISTS app_reference RESTRICT');
+        DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    }
+});
+
+it('refuses Admin read results after entry proof expires during the locked read', function (): void {
+    ($this->adminGrant)('runa.admin.enter');
+    ($this->adminLogin)();
+    ($this->adminProof)();
+    expect(fn () => app(AdminEntry::class)->read(function (): array {
+        CarbonImmutable::setTestNow(CarbonImmutable::now()->addSeconds(301));
+
+        return ['protected' => 'Never returned'];
+    }))->toThrow(OperationRejected::class);
+    expect(DB::connection()->transactionLevel())->toBe(0);
+});
+
+it('joins hybrid snapshot reads to the exact prepared Admin call and refuses missing expired or revoked admission', function (): void {
+    expect(app(ModuleRegistry::class)->snapshot()->modules)->not->toHaveKey('app.reference');
+    try {
+        app(ModuleUpdates::class)->apply('app', str_repeat('e', 40), static function (): void {});
+        expect(app(ModuleHealth::class)->diagnose('app.reference')['blocked'])->toBeFalse();
+        $transitions = app(ModuleTransitions::class);
+        expect($transitions->apply($transitions->preview('enable', 'app.reference'))->status)->toBe('succeeded');
+        ($this->adminGrant)('app.reference.settings.read');
+        $admissions = app(HealthAdmissions::class);
+        $api = app(ModuleApis::class)->resolve('app.reference', ReferenceTools::class, '1.0.0');
+        $identity = ['app.reference', ReferenceTools::class, '1.0.0', 'snapshots'];
+        app(PrincipalScope::class)->run(new TrustedPrincipal($this->adminUser->public_id), function () use ($admissions, $api, $identity): void {
+            $prepare = fn () => $admissions->prepareRead($identity, fn () => app(OperationGuard::class)->enter(
+                'app.reference', new ApiOperation('settings.snapshots', 'app.reference.settings.read')));
+            $call = $prepare();
+            $values = DB::transaction(fn () => $admissions->read([$call], DB::connection(), fn () => $api->snapshots()));
+            expect($values['snapshots'])->toBe([]);
+            expect(fn () => DB::transaction(fn () => $admissions->read([], DB::connection(), fn () => $api->snapshots())))->toThrow(OperationRejected::class);
+            $call = $prepare();
+            try {
+                $this->travel(121)->seconds();
+                expect(fn () => DB::transaction(fn () => $admissions->read([$call], DB::connection(), fn () => $api->snapshots())))->toThrow(OperationRejected::class);
+            } finally {
+                $this->travelBack();
+            }
+            $call = $prepare();
+            $permission = DB::table('runa_permissions.permissions')->where('code', 'app.reference.settings.read')->value('id');
+            DB::table('runa_permissions.user_permissions')->where('user_public_id', $this->adminUser->public_id)->where('permission_id', $permission)->delete();
+            expect(fn () => DB::transaction(fn () => $admissions->read([$call], DB::connection(), fn () => $api->snapshots())))->toThrow(OperationRejected::class);
+        });
+    } finally {
+        $id = DB::table('shared.modules')->where('module_id', 'app.reference')->value('id');
+        DB::table('shared.module_update_steps')->where('module_id', $id)->delete();
+        DB::table('shared.module_transitions')->where('target', 'app.reference')->delete();
+        DB::table('shared.modules')->where('module_id', 'app.reference')->delete();
+        DB::statement('DROP TABLE IF EXISTS app_reference.samples RESTRICT');
+        DB::statement('DROP SCHEMA IF EXISTS app_reference RESTRICT');
+        DB::table('shared.module_registry_state')->where('id', 1)->increment('generation');
+    }
 });

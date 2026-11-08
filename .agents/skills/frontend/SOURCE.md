@@ -37,3 +37,21 @@ It adds no upstream dependency or protected-platform edit authority.
 Read/request amplification review routing comes from local RM-2026-016 runtime
 measurements and the public application architecture/loading guides. No upstream
 refresh, dependency or workflow/quality-gate change is involved.
+
+## Current selection and standards sources
+
+Topic selection follows the public UI standards map in
+`docs/runa/handbook/design/visual-direction.md#ui-standards-and-guidance-map`.
+The frontend selector remains mandatory for frontend work, but loads only the
+affected topic and canonical sections. Feedback/loading/security rules retain
+their owning contracts; a copy-only task does not load unrelated procedures.
+This is a local consolidation of accepted Runa behavior, not an upstream refresh.
+
+Accessibility references were checked on 2026-11-06 against W3C's
+[WCAG 2.2 Recommendation, 2024-12-12](https://www.w3.org/TR/2024/REC-WCAG22-20241212/)
+and [WAI-ARIA modal dialog pattern](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/).
+The handbook accessibility baseline owns their application. Only links and local
+paraphrases are used; no upstream text/code/assets, installer or dependency was
+copied. APG is pattern guidance rather than conformance evidence. Original
+Sablier provenance remains unchanged; community planning candidates were not
+adopted or relabelled as newly reviewed.

@@ -9,6 +9,8 @@ import { useDisplayPreferences } from '../../../../src/runa/resources/js/composa
 import { enrollmentQrCode } from '../../../../src/runa/modules/auth/frontend/totpEnrollment';
 import AuthAvatarCropper from '../../../../src/runa/modules/auth/frontend/AuthAvatarCropper.vue';
 import {
+  Accordion,
+  Table,
   Avatar,
   ApplicationLayout,
   providePresentationVisibility,
@@ -47,6 +49,8 @@ import {
 } from '../../../../src/runa/modules/auth/frontend/account';
 import { accountPreferences } from '../../../../src/runa/modules/auth/frontend/preferences/session';
 import { request } from '../../../../src/runa/resources/js/lib/http';
+
+import type { TableQuery } from '@/runa/ui';
 
 type MultiSelectInstance = ComponentPublicInstance<
   Parameters<typeof Select<true>>[0]
@@ -1647,7 +1651,7 @@ it('secondary address conflicts keep both drafts and never replay the write auto
     .get('[data-account-section=details] [name=name]')
     .setValue('Unsaved identity');
   await w.get('[name=secondary_email]').setValue('pending@example.test');
-  write = () => json('conflict', 409);
+  write = () => json('identity_stale', 409);
   await submitAccount(w.get('[data-account-section=secondary]'));
   await vi.waitFor(() =>
     expect(
@@ -1743,6 +1747,94 @@ it('account session sorting uses instants across month boundaries and concise En
   await vi.waitFor(() => expect(w.get('tbody tr').text()).toContain('Inna'));
   await w.get('th[data-column-key="expires"] button').trigger('click');
   await vi.waitFor(() => expect(w.get('tbody tr').text()).toContain('Bieżąca'));
+});
+
+it('trusted disclosure starts collapsed and retains the mounted table query across toggles and refresh', async () => {
+  currentSecurity = { ...security, trusted_devices_enabled: true };
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await loaded(w);
+  const section = w.get('[data-trusted-devices]');
+  const accordion = section.getComponent(Accordion);
+  const trigger = accordion.get('button');
+  const panel = () => accordion.get('[id]');
+  expect(trigger.text()).toContain('Zaufane urządzenia');
+  expect(trigger.attributes('aria-expanded')).toBe('false');
+  expect(trigger.attributes('aria-controls')).toBe(panel().attributes('id'));
+  expect(panel().attributes('inert')).toBeDefined();
+  expect(panel().attributes('aria-hidden')).toBe('true');
+  const trust = section
+    .findAll('button')
+    .find((button) => button.text() === 'Zaufaj tej przeglądarce')!;
+  expect(trust.element.closest('[inert]')).toBeNull();
+  expect(section.get('p').element.closest('[inert]')).toBeNull();
+  await trigger.trigger('click');
+  expect(trigger.attributes('aria-expanded')).toBe('true');
+  const table = accordion.getComponent(Table);
+  const element = table.element;
+  const query = {
+    page: 2,
+    perPage: 10,
+    sort: { key: 'browser', direction: 'desc' as const },
+    search: 'Firefox',
+    filters: { platform: 'Linux' },
+  };
+  table.vm.$emit('update:query', query);
+  await flushPromises();
+  const retainedQuery = JSON.parse(
+    JSON.stringify((table.props() as { query: TableQuery }).query),
+  );
+  await trigger.trigger('click');
+  await w.getComponent(AuthAccountEditor).props('account').loadTrustedDevices();
+  await flushPromises();
+  expect(trigger.attributes('aria-expanded')).toBe('false');
+  await trigger.trigger('click');
+  expect(accordion.getComponent(Table).element).toBe(element);
+  expect((table.props() as { query: TableQuery }).query).toEqual(retainedQuery);
+  expect(panel().attributes('inert')).toBeUndefined();
+  expect(writes).toHaveLength(0);
+});
+
+it('trusted disclosure omits disabled capability and clears hidden rows on account switch', async () => {
+  currentSecurity = { ...security, trusted_devices_enabled: true };
+  const w = mount(AccountFixture, {
+    attachTo: document.body,
+    props: { accountId: id },
+  });
+  await loaded(w);
+  const state = w.getComponent(AuthAccountEditor).props('account');
+  const accordion = w.get('[data-trusted-devices]').getComponent(Accordion);
+  await accordion.get('button').trigger('click');
+  state.security.value = {
+    ...state.security.value!,
+    trusted_devices_enabled: false,
+  };
+  await flushPromises();
+  expect(w.find('[data-trusted-devices]').exists()).toBe(false);
+  state.security.value = {
+    ...state.security.value!,
+    trusted_devices_enabled: true,
+  };
+  await flushPromises();
+  expect(
+    w.get('[data-trusted-devices]').getComponent(Accordion).props('modelValue'),
+  ).toBe(false);
+  state.trustedRows.value = [{ public_id: id, browser: 'Private browser' }];
+  await flushPromises();
+  expect(w.get('[data-trusted-devices]').text()).toContain('Private browser');
+  sessionAccount = other;
+  currentProfile = { ...profile, public_id: other };
+  await w.setProps({ accountId: other });
+  await loaded(w);
+  expect(w.text()).not.toContain('Private browser');
+  expect(
+    w.get('[data-trusted-devices]').getComponent(Accordion).props('modelValue'),
+  ).toBe(false);
+  expect(state.trustedRows.value).toEqual([]);
+  expect(state.trustedCursor.value).toBeNull();
+  expect(state.trustedLoaded.value).toBe(false);
 });
 
 it('trusted devices live inside two-factor settings and cannot be enabled without an enrolled factor', async () => {
@@ -1887,6 +1979,11 @@ it('trusted device management keeps isolated cursor rows and confirms revocation
     props: { accountId: id },
   });
   await loaded(w);
+  await w
+    .get('[data-trusted-devices]')
+    .getComponent(Accordion)
+    .get('button')
+    .trigger('click');
   const state = w.getComponent(AuthAccountEditor).props('account');
   state.rows.value = [{ public_id: other, current: true }];
   await vi.waitFor(() =>
@@ -2046,7 +2143,7 @@ function preferenceDeliveryFixture() {
           values: [],
         });
       if (body.operation === 'write') {
-        if (body.revision !== revision) return json('version_conflict', 409);
+        if (body.revision !== revision) return json('preferences_stale', 409);
         revision++;
         return json({
           account: id,
@@ -2070,7 +2167,7 @@ function preferenceDeliveryFixture() {
   });
   write = (path, body) => {
     if (path.endsWith('/delivery-preferences')) {
-      if (body.revision !== revision) return json('version_conflict', 409);
+      if (body.revision !== revision) return json('preferences_stale', 409);
       const category = categories.find(
         (choice) => choice.key === body.category,
       )!;
@@ -2159,6 +2256,7 @@ it('disabled module notification options omit recipient controls and remain expl
     enabled: false,
     recipients: ['primary'],
   });
+  await vi.waitFor(() => expect(row.attributes('aria-busy')).toBe('false'));
   await row.get('input[role=switch]').setValue(true);
   expect(row.findComponent(Select).exists()).toBe(true);
 });
@@ -2257,12 +2355,13 @@ it('inline delivery conflicts refresh automatically and preserve the draft witho
   await row.get('input[role=switch]').setValue(false);
   await flushPromises();
   categories[0]!.recipients = [other];
-  write = () => json('version_conflict', 409);
+  write = () => json('preferences_stale', 409);
   await row.trigger('submit');
   await vi.waitFor(() =>
     expect(row.find('[data-form-conflict]').exists()).toBe(true),
   );
-  expect(writes).toHaveLength(0);
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.body.revision).toBe(3);
   expect(row.getComponent(Switch).props('modelValue')).toBe(false);
   expect(row.text()).not.toContain('Wczytaj zapisane');
   await row
@@ -2271,7 +2370,8 @@ it('inline delivery conflicts refresh automatically and preserve the draft witho
     .trigger('click');
   expect(row.find('[data-form-conflict]').exists()).toBe(false);
   expect(row.attributes('data-dirty')).toBe('true');
-  expect(writes).toHaveLength(0);
+  expect(writes).toHaveLength(1);
+  expect(writes[0]?.body.revision).toBe(3);
 });
 
 it('header preference reset requires confirmation and cancel never resets the account', async () => {
@@ -2407,7 +2507,7 @@ it('overlapping identity refresh requires a local decision before a versioned sa
   const state = w.getComponent(AuthAccountEditor).props('account');
   state.fields.name = 'My name';
   currentProfile = { ...currentProfile, version: 6, name: 'Remote name' };
-  window.dispatchEvent(new Event('focus'));
+  await state.refresh();
   await vi.waitFor(() => expect(state.profile.value?.version).toBe(6));
   await flushPromises();
   const details = w.get('[data-account-section=details]');
@@ -2459,7 +2559,7 @@ it('inline delivery rejection refreshes reads without replay or a reload action'
   await openPreferences(w);
   const row = w.get('[data-delivery-category=optional]');
   await row.get('input[role=switch]').setValue(false);
-  write = () => json('version_conflict', 409);
+  write = () => json('preferences_stale', 409);
   await row.trigger('submit');
   const state = w.getComponent(AuthAccountPreferences).props('account');
   await vi.waitFor(() => expect(state.busy.value).toBe(false));
@@ -2545,7 +2645,7 @@ it('disabled module secondary editing closes the existing draft without changing
   expect(writes).toHaveLength(0);
 });
 
-it('account refresh retains a trailing focus invalidation while an earlier read is pending', async () => {
+it('action-driven refresh ignores passive events even while an explicit account read is pending', async () => {
   const w = mount(AccountFixture, {
     attachTo: document.body,
     props: { accountId: id },
@@ -2570,9 +2670,21 @@ it('account refresh retains a trailing focus invalidation while an earlier read 
   await vi.waitFor(() => expect(release).toBeDefined());
   currentProfile = { ...currentProfile, version: 6, name: 'Remote update' };
   window.dispatchEvent(new Event('focus'));
+  const calls = vi.mocked(window.fetch).mock.calls.length;
+  document.dispatchEvent(new Event('visibilitychange'));
+  window.dispatchEvent(new Event('pageshow'));
   release!(json(profile));
   await first;
-  await vi.waitFor(() => expect(state.profile.value?.version).toBe(6));
+  await flushPromises();
+  expect(state.profile.value?.version).toBe(profile.version);
+  expect(
+    vi
+      .mocked(window.fetch)
+      .mock.calls.slice(calls)
+      .filter(([input]) => String(input).endsWith('/profile')),
+  ).toHaveLength(0);
+  await state.refresh();
+  expect(state.profile.value?.version).toBe(6);
   expect(state.refreshing.value).toBe(false);
   expect(state.fields.name).toBe('My pending draft');
   expect(state.detailConflicts.name).toBe('Remote update');
@@ -2678,8 +2790,7 @@ it('reads delivery once per preference tab entry or account refresh while retain
           (JSON.parse(String(init?.body)) as { operation?: string })
             .operation === 'read',
       ).length;
-  // A real browser focus is a separate invalidation. Focus the document while
-  // still on Details, then measure the tab refresh independently of that event.
+  // Browser focus does not invalidate business snapshots.
   await loaded(w);
   w.get<HTMLButtonElement>(
     'nav[aria-label="Ustawienia konta"] button',
@@ -2701,7 +2812,8 @@ it('reads delivery once per preference tab entry or account refresh while retain
   await flushPromises();
   expect(reads()).toBe(3);
   window.dispatchEvent(new Event('focus'));
-  await vi.waitFor(() => expect(reads()).toBe(4));
+  await flushPromises();
+  expect(reads()).toBe(3);
 });
 
 it('account history opens safe detail changes, handles retry and never restores a closed late response', async () => {
@@ -2888,7 +3000,7 @@ it('customization: keyed account replacements discard the previous account draft
   expect(writes).toEqual([]);
 });
 
-it('account orchestration: a save waits for the shared refresh and uses its revision without clearing other drafts', async () => {
+it('account orchestration: a save waits for the shared refresh and submits its original version without clearing other drafts', async () => {
   const { state } = mountController(() => useAuthAccount(id));
   await vi.waitFor(() =>
     expect(state.ready.value && !state.busy.value).toBe(true),
@@ -2935,7 +3047,7 @@ it('account orchestration: a save waits for the shared refresh and uses its revi
   expect(profileReads).toBe(2); // One coalesced read, then one confirmation after the write.
   expect(writes).toHaveLength(1);
   expect(writes[0]?.body).toMatchObject({
-    version: 6,
+    version: 5,
     name: 'Local name',
     login: 'remote-login',
   });
@@ -3087,7 +3199,8 @@ it.each(['decoded', 'error', 'timeout'] as const)(
           .getComponent(ApplicationSessionShell)
           .props('session');
         await session.refresh();
-        await vi.waitFor(() => expect(images).toHaveLength(2));
+        // Same-session checks do not reload business profile or avatar data.
+        expect(images).toHaveLength(1);
         expect(w.get('input[aria-label="Coordinated draft"]').element).toBe(
           input.element,
         );

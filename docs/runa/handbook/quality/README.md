@@ -249,3 +249,9 @@ Quality planning, execution, state/status and evidence are shared services with
 explicit application paths. The private owner planner and release rules are not
 part of customer execution. See [Python tooling](../development/python-tooling.md)
 for the delivered development configuration and application composition contract.
+
+Documentation source checks include local Markdown heading anchors, duplicate
+heading suffixes, fenced-example exclusion, required sources and a single leading
+title. Customer instruction links resolve against their installed logical paths;
+owner-only links remain refused in public projection. See the public
+[authoring conventions](../development/documentation.md). These checks do not replace semantic review or external-link verification.

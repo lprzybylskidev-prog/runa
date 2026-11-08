@@ -6,6 +6,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Runa\Modules\Auth\Models\User;
 use Runa\Modules\Auth\Support\EntryTransaction;
@@ -106,6 +107,12 @@ final readonly class SessionStore
 
     /** @param SessionRow $row */
     public function live(object $row): bool
+    {
+        return DB::connection()->transaction(fn (): bool => $this->liveCurrent($row));
+    }
+
+    /** @param SessionRow $row */
+    private function liveCurrent(object $row): bool
     {
         $user = User::where('id', $row->user_id)->first();
         if ($user === null) {

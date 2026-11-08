@@ -2,7 +2,7 @@
 
 # Admin frontend contract
 
-Status: points 4–5 deliver the PL/EN session shell, guarded reads and independent
+Admin 2.0.0 supplies the PL/EN session shell, guarded reads and independent
 commands, compiled component resolution, presentation providers, generated record
 forms and cursor tables. Public facade `@/runa/admin` exports AdminApplication,
 AdminLayout, AdminPage, AdminSection, AdminForm, AdminField, AdminAction,
@@ -13,9 +13,14 @@ useAdminResource/useAdminTable and validateAdminField. Source home is
 `src/app/resources/js`; HTTP uses `@/runa/http`, UI primitives use `@/runa/ui`.
 
 Record forms execute explicit independent commands or compatible native atomic
-preview/Save through the shared form owner. Point 6 delivers server coordination
-and initial profile/access record adapters. Point 9 delivers operational dashboard,
-module diagnosis, lifecycle/work controls and retained settings operation recovery. Point 10 delivers application global settings and runtime branding. Point 8 supplies owning Permissions and Audit pages through their public presentation facades. Point 7 supplies the Auth Users, policy and bulk-session pages; see [Auth administration](../auth/administration.md). Final rendered/release acceptance remains point 12.
+preview/Save through the shared form owner. Native server coordination supplies
+profile/access record adapters. Framework operations supply the dashboard,
+module diagnosis, lifecycle/work controls, retained settings operation recovery,
+application global settings and runtime branding. Owning Permissions and Audit
+pages use their public presentation facades. Auth supplies Users, policy and
+bulk-session controls; see [Auth administration](../auth/administration.md).
+These are delivered 0.7.0 contracts; later changes retain the roadmap's rendered
+and automated acceptance requirements.
 
 ## Initial presentation
 
@@ -218,17 +223,15 @@ replaceable. AdminEntryProof has no slots or emitted events. Confirmation clears
 the password, admits no duplicate submission and refreshes only bootstrap;
 account/session invalidation and disposal erase it. Failure never replays a
 business operation. `authorityRevision` on ApplicationSessionController increments
-after successful session validation; unchanged activity/heartbeat observations do
-not trigger new Admin advertisements or descriptor reads. Session identity,
-restrictions, suspension, loading, pending logout and that revision fence protected
-reads. Pre-admission password input uses the current unrestricted account/session
-identity rather than the observation revision: same-session revalidation keeps its
-page and input mounted while bootstrap is checked in the background. An unchanged
-native step_up_required result preserves that form; a real denial/invalidation or
-successful bootstrap admission clears its credentials. Same-session observations retain mounted bootstrap/page presentation and dirty
-forms while revalidating; request/operation stamps still invalidate every old
-authority observation. Real identity/access loss clears protected state immediately.
-No proof/business write is replayed. See [view readiness](../../development/frontend/loading.md).
+on initial admission or a real account/session/restriction change. Successful
+same-session validation and activity/heartbeat observations do not trigger Admin
+advertisements, bootstrap, descriptors, resources or preference reads. Explicit
+refresh remains available. Identity, restrictions, suspension, loading, pending
+logout and the authority revision fence protected reads. Necessary session and
+protected-place expiry checks remain independent. Real identity/access loss clears
+protected state immediately. Same-context explicit reads retain mounted password
+confirmation and dirty forms until actual denial/admission. No proof/business
+write is replayed. See [view readiness](../../development/frontend/loading.md).
 
 Composables mount once per keyed account/page; scope disposal aborts requests and
 removes listeners/dirty guards. They own cancellation, session/CSRF/proof handling,
@@ -340,7 +343,7 @@ Create the controller once in the owning page's Vue scope. It owns the resource
 read lane: change `query` or call `refresh`, rather than sending independent
 record/options reads through `resource`. The latter exposes read status/error/busy
 and decoded results. Do not reuse a controller between pages or accounts.
-`useAdminResource` retains native admission, visibility refresh, response fencing
+`useAdminResource` retains native admission, action-driven reads, response fencing
 and disposal. Account/access/page changes erase table filters and cursor state;
 same-session observations and descriptor updates preserve allowed query controls,
 reset cursor/selection intent and restart page 1.
@@ -408,7 +411,13 @@ frontend and delivery is bundled presentation. The signatures above are the
 complete public contract. One creating Vue scope owns the controller per page;
 later consumers receive the same controller, with no competing draft/read lane.
 The default page uses autoRead=false: mounted default/custom record sections join
-with activateSection(key). Headless consumers default to automatic reads. Required
+with activateSection(key). Lazy activation belongs to the selected subject/editor:
+selectSubject and identity/access withdrawal clear it, and closeSection removes
+that section's activation. Mount the intended subject's sections again (or call
+activateSection explicitly) after selecting it. Previously opened creation or
+other-subject sections never join the next refresh automatically. Presentation-only
+tab changes retain active siblings and their drafts within the same subject.
+Headless consumers default to automatic reads. Required
 editable sections that have not joined, failed reads and unavailable declared
 field/section builds block aggregate Save. setAvailable(identity,available) joins
 custom boundaries to that contract; default boundaries report failures themselves.
@@ -715,7 +724,7 @@ controls, secret set-state and existing cursor/query/disposal behavior. Source
 `view` is presentation intent, never additional authority. The default `record`
 intent mounts one existing resource lane, reads the projected subject UUID (or
 the owning singleton when null), and displays only returned, readable values.
-Loading, safe failure/explicit Retry, descriptor/visibility refresh and account
+Loading, safe failure/explicit Retry, applicable descriptor/explicit refresh and account
 invalidation retain `useAdminResource` behavior. Omitted values have no fabricated
 empty field; secret values show only Set/Not set. Editable values bind to the one
 page form controller and execute explicit declared commands. Form/controller props
@@ -787,8 +796,8 @@ to useAdmin and ApplicationSessionShell directly; it does not nest AuthApplicati
 Only the creator owns disposal, request observation, heartbeat/activity listeners,
 logout and session refresh. Consumers never dispose a supplied controller. Account
 switch/expiry fences every Admin response and clears protected state; shell locale
-stays scoped. Actual facade consumers change together in point 4, without old-shape
-adapters or copied security logic. App routers can supply a controller across route
+stays scoped. Facade consumers share these props and the supplied controller without copied
+security logic. App routers can supply a controller across route
 changes; the default dispatcher owns one for its mounted application boundary.
 
 A minimal advertisement is implemented on AdminAccess:
@@ -806,7 +815,8 @@ the existing action-bound entry proof and native owning checks. The advertisemen
 cannot authorize a subsequent request or bypass protected bootstrap.
 
 The shell fetches advertisement once after session validation and revalidates on
-session/authority refresh and return to the application. A known same-session link
+actual session/authority transitions or a new shell entry. Successful checks of
+the same session do not reload the advertisement. A known same-session link
 stays visible during the optional background read, then follows its result;
 malformed/failed/denied reads hide it. Session/account change, restriction or lost
 session immediately hides it and cancels/fences stale responses. Reopening the
@@ -886,8 +896,16 @@ guides. No security/session ownership moves into customer presentation.
 `AdminOperationView`, `AdminOperationCommand` and `AdminOperationData`.
 The dashboard composes operational content alongside independently isolated module
 widgets. `AdminOperations` props: `{ admin: AdminController }`; default slot:
-`{ controller: AdminOperationsController }`. The component exposes `controller`.
-`AdminPresentation.operations?: Component` replaces that default with the same prop.
+`{ controller: AdminOperationsController }`. Its optional named `dashboard` slot
+has no slot props and supplies module widget content on the Modules subview only.
+Application settings never render that slot. The component exposes `controller`.
+`AdminPresentation.operations?: Component` replaces that default with the same prop
+and named dashboard slot; App replacements place that slot in their dashboard body.
+The default scoped slot still replaces the complete operations presentation.
+These platform-owned runtime composition APIs live in the Admin frontend and are
+consumed through `@/runa/admin`; widget renderers retain their existing props and
+independent failure boundaries. A standalone dashboard without an admin controller
+continues to render its supplied widgets.
 
 `AdminOperationResult` accepts `{ result: AdminOperationData }`. Diagnostic outcomes
 use semantic health/blocked colors and safe reasons without redundant module identity;
@@ -917,7 +935,7 @@ beforeLeave(): Promise<boolean>
 
 `AdminOperationData = Record<string, AdminJson>`. The exact finite views/commands,
 inputs, grants and native result shapes are in the
-[operational transport contract](operations.md#operational-http-and-presentation-contract-point-9).
+[operational transport contract](operations.md#operational-http-and-presentation-contract).
 Replacement editors set `dirty`, call `beforeLeave()` before target/editor changes,
 clear account-local data on `contextRevision`, and observe `changed` for refreshed
 reads. Keep dirty drafts during read refresh/conflicts; an accepted reload may
@@ -957,6 +975,12 @@ its exposed `settings` is the same controller. Replace it through
 `useAdminApplicationSettings(operations: AdminOperationsController)` once in an
 App-owned component. All symbols/types are exported from `@/runa/admin`.
 Source home: `src/runa/modules/admin/frontend`; App replacements stay in App.
+The supplied application editor groups authorized identity, default preferences and
+additional source fields with FormSection inside its single Card/Form. Empty groups
+are omitted. Compact per-field restore actions retain localized names; refresh/save
+share the footer. Module dashboard widgets belong to Modules and are absent from
+this settings editor. Field/widget helpers remain private rendering components;
+replacement consumers retain the public controllers and slot contracts above.
 
 The controller returns `operations`, `revision: Ref<number>`,
 `fields: ShallowRef<AdminApplicationSetting[]>`, `base/draft: Ref<Record<string,
@@ -986,7 +1010,8 @@ these protocols; it does not copy private session/security code.
 Promise<ApplicationPresentation | undefined>`. Failure returns undefined so a
 consumer can restore source defaults. `createApplication` hydrates presentation
 separately from canonical identity and refreshes after application-setting writes,
-Auth session changes and focus/visibility/history navigation. Per-app epochs cancel
+actual Auth identity transitions. Same-session checks and passive focus/visibility/
+history navigation do not reload presentation. Per-app epochs cancel
 older reads; unmount cleans observers/listeners. The root/layout renders immediately while logo decoding updates branding in place; failed background reads retain confirmed presentation. It never stores branding in guest
 preferences or changes canonical IDs/versions. Custom roots may use the same loader
 and IdentityProvider; retain lifecycle fencing and source fallback.
@@ -1320,3 +1345,30 @@ See the [shared capability contract](../../development/frontend/tables.md).
 
 Named module settings snapshots and the public AdminSettingsPage/controller are
 documented in [settings snapshots](settings-snapshots.md).
+
+## Custom page lifecycle
+
+Owner: Admin. Audience: application/module custom Admin pages. Public frontend
+entrypoint: `useAdminPageContext(page: AdminPageController, options?: {
+beforeLeave?: () => Promise<boolean>; dirty?: () => boolean; settled?: () => boolean;
+}): { identity: ComputedRef<string | undefined> }` from `@/runa/admin`.
+Implementation: `modules/admin/frontend/useAdminPageContext.ts`, delivered in the
+frontend runtime. Call inside the custom page's Vue scope. The returned identity
+is the native admitted account/session/page key, withdrawn on actual access loss;
+same-session observations do not replace it. Supplied native page controllers are
+required; unknown/headless controllers fail closed. The optional exit callback
+joins native Admin navigation and document-link guards and is removed on disposal.
+It returns false to retain pending writes or declined dirty drafts. Optional
+`settled` joins the shell's existing initial-readiness region; return true after
+the custom initial read succeeds, fails or is omitted, keeping refresh in place. Supply `dirty`
+for document-link interception only while a draft/write needs protection. Use the public
+UI dirty guard/dialog and expose the same callback to a standalone caller's router.
+This does not start a session, grant access, coordinate/retry domain writes or
+replace the native form/resource mutation lane. A page using custom owning HTTP
+must use one custom controller for that aggregate and omit competing native forms.
+The reference module's `tools_page.vue` is an executable consumer.
+
+Structured field declarations and native list/map values follow the public
+[json field contract](declarations.md#structured-management-fields). Snapshot
+controllers consume native catalogs/values; supplied readonly fields render escaped
+ValuePreview, while writable structured values use their specialized presentation.

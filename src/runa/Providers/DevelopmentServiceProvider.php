@@ -26,8 +26,8 @@ final class DevelopmentServiceProvider extends ServiceProvider
         $this->app->extend(TestMakeCommand::class,
             fn ($command, Application $app) => $app->make(ApplicationTestMakeCommand::class));
         if ($this->app->environment(['local', 'testing']) && class_exists(TestCommand::class)) {
-            $this->app->extend(TestCommand::class,
-                fn (TestCommand $command, Application $app) => new ApplicationTestCommand($command));
+            // Collision registers this command identity; Runa owns its implementation.
+            $this->app->bind(TestCommand::class, ApplicationTestCommand::class);
         }
         if ($this->app->environment(['local', 'testing'])) {
             $this->commands([MakeModule::class, CheckTestDatabase::class, DevelopmentAccounts::class]);

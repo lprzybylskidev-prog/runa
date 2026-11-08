@@ -4,6 +4,7 @@ namespace Tests\Fixtures;
 
 use Closure;
 use Runa\Contracts\Modules\SettingChange;
+use Runa\Contracts\Modules\SettingsAccess;
 use Runa\Contracts\Modules\SettingsContext;
 use Runa\Contracts\Modules\SettingsObserver;
 
@@ -14,6 +15,12 @@ final class SettingsCalls implements SettingsObserver
     public static ?Closure $compensate = null;
 
     public static ?Closure $observe = null;
+
+    public static ?Closure $authorize = null;
+
+    public static ?Closure $publish = null;
+
+    public static ?SettingsAccess $access = null;
 
     public static bool $invalidDefault = false;
 
@@ -34,6 +41,8 @@ final class SettingsCalls implements SettingsObserver
     public static function reset(): void
     {
         self::$apply = self::$compensate = self::$observe = null;
+        self::$authorize = self::$publish = null;
+        self::$access = null;
         self::$contexts = self::$changes = [];
         self::$invalidDefault = false;
     }

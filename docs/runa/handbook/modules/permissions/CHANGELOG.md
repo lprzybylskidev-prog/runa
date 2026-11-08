@@ -1,5 +1,23 @@
 # Permissions module changelog
 
+## 2.1.2 — 2026-11-08
+
+- Admit the verified platform0.8.0 release in the supplied>=0.7.0 <0.9.0
+  compatibility range; module/API versions and runtime behavior are unchanged.
+
+- Use the shared semantic action/feedback icons with visible labels and preserved
+  busy, keyboard, proof and operation behavior; no backend contract/storage change.
+
+- Initialize directly at the current schema/version; remove historical development
+  upgrade scaffolding. Retain the 2.1.1 → 2.1.2 current-schema update,
+  reserved declaration/Audit participation and native history/recovery refusals.
+  Published Core databases with replaced migration history require explicit
+  development reconciliation; no historical schema conversion is provided.
+
+## 2.1.1 — Unreleased
+
+- Declare Framework API ^2.0.0 and Auth ^6.0.0 compatibility. Publish the current source contract; existing permission/grant APIs and assignment storage remain unchanged.
+
 ## 2.1.0 — Unreleased
 
 - Retain the required eligible administrator during bulk superadministrator removal and apply the remaining reviewed changes. Reuse the existing protected-account warning/count, fingerprint the retained set and preserve native single-write lockout protection, password proof and atomic Audit.

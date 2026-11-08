@@ -2,16 +2,21 @@
 
 namespace Runa\ModuleFramework\Management;
 
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Runa\Contracts\Modules\ApiProvider;
 use Runa\Contracts\Modules\ManagementBinding;
 use Runa\Contracts\Modules\ManagementContribution;
 use Runa\Contracts\Modules\ManagementHandler;
+use Runa\Contracts\Modules\ManagementOptionsRead;
 use Runa\Contracts\Modules\ManagementOptionsReader;
 use Runa\Contracts\Modules\ManagementPage;
 use Runa\Contracts\Modules\ManagementPageProvider;
 use Runa\Contracts\Modules\ManagementParticipant;
 use Runa\Contracts\Modules\ManagementProvider;
+use Runa\Contracts\Modules\ManagementRead;
+use Runa\Contracts\Modules\ManagementReadCall;
+use Runa\Contracts\Modules\ManagementReadPlanProvider;
 use Runa\Contracts\Modules\ManagementResourceReader;
 use Runa\Contracts\Modules\ManagementSection;
 use Runa\Contracts\Modules\ManagementWidget;
@@ -27,7 +32,7 @@ use Throwable;
 
 /** Internal discovery of additive declarations. No handler invocation or authorization.
  *
- * @phpstan-type OwnerDefinition array{title:string|array{pl:string,en:string},pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}
+ * @phpstan-type OwnerDefinition array{title:string|array{pl:string,en:string},pages:array<string,ManagementPage>,bindings:array<string,ManagementBinding>,contributions:array<string,ManagementContribution>,widgets:array<string,ManagementWidget>,read_planners:array<string,ManagementReadPlanProvider>,components:array<string,array{key:string,owner:string,manifest_hash:?string,build_id:?string}>}
  * @phpstan-type Discovery array{generation:int,revision:string,owners:array<string,OwnerDefinition>,diagnostics:array<string,string>}
  */
 final readonly class ManagementPages
@@ -38,6 +43,12 @@ final readonly class ManagementPages
 
     /** @return Discovery */
     public function discover(): array
+    {
+        return DB::connection()->transaction(fn (): array => $this->discoverCurrent());
+    }
+
+    /** @return Discovery */
+    private function discoverCurrent(): array
     {
         $snapshot = $this->registry->snapshot();
         $statuses = $this->availability->statuses();
@@ -85,8 +96,14 @@ final readonly class ManagementPages
         ksort($owners);
         ksort($hashes);
 
+        $identityOwners = $owners;
+        foreach ($identityOwners as &$definition) {
+            $definition['read_planners'] = array_map(static fn (ManagementReadPlanProvider $provider): string => $provider::class, $definition['read_planners']);
+        }
+        unset($definition);
+
         return ['generation' => $snapshot->generation,
-            'revision' => hash('sha256', serialize([$hashes, $owners])),
+            'revision' => hash('sha256', serialize([$hashes, $identityOwners])),
             'owners' => $owners, 'diagnostics' => $diagnostics];
     }
 
@@ -109,6 +126,36 @@ final readonly class ManagementPages
         return $instance instanceof ManagementHandler ? $instance : throw new InvalidArgumentException('Invalid management handler.');
     }
 
+    /** @param OwnerDefinition $definition
+     * @return list<ManagementReadCall> */
+    public function readPlan(array $definition, ManagementBinding $binding, string $capability, ManagementRead|ManagementOptionsRead $input): array
+    {
+        if (! in_array($capability, ['read', 'page', 'options', 'widget'], true) || (($capability === 'options') !== ($input instanceof ManagementOptionsRead))) {
+            throw new OperationRejected('admin_read_plan_invalid', 'runa.admin', 'section.read', 422);
+        }
+        $provider = $definition['read_planners'][$binding->key] ?? null;
+        try {
+            $calls = $provider?->readPlan($binding->key, $capability, $input) ?? [];
+        } catch (Throwable) {
+            throw new OperationRejected('admin_read_plan_invalid', 'runa.admin', 'section.read', 422);
+        }
+        /** @var array<array-key,mixed> $calls */
+        if (! array_is_list($calls) || count($calls) > 128) {
+            throw new OperationRejected('admin_read_plan_invalid', 'runa.admin', 'section.read', 422);
+        }
+        foreach ($calls as $call) {
+            if (! $call instanceof ManagementReadCall) {
+                throw new OperationRejected('admin_read_plan_invalid', 'runa.admin', 'section.read', 422);
+            }
+            $matches = array_filter($binding->targets, static fn ($target): bool => $target->module === $call->module && $target->contract === $call->contract && $target->version === $call->version && in_array($call->method, $target->methods, true));
+            if ($matches === []) {
+                throw new OperationRejected('admin_read_plan_invalid', 'runa.admin', 'section.read', 422);
+            }
+        }
+
+        return $calls;
+    }
+
     public function participant(string $owner, ManagementBinding $binding): ManagementParticipant
     {
         if ($binding->participant === null || ! $this->bindingAvailable($binding)) {
@@ -129,10 +176,16 @@ final readonly class ManagementPages
     private function collect(string $owner, array $providers, string|array $title, ?ModuleRecord $record): array
     {
         $components = [];
-        $result = ['title' => $title, 'pages' => [], 'bindings' => [], 'contributions' => [], 'widgets' => []];
+        $result = ['title' => $title, 'pages' => [], 'bindings' => [], 'contributions' => [], 'widgets' => [], 'read_planners' => []];
         foreach ($providers as $provider) {
             $result['pages'] = $this->merge($result['pages'], $provider->pages(), ManagementPage::class, 32);
-            $result['bindings'] = $this->merge($result['bindings'], $provider->bindings(), ManagementBinding::class, 128);
+            $bindings = $provider->bindings();
+            $result['bindings'] = $this->merge($result['bindings'], $bindings, ManagementBinding::class, 128);
+            if ($provider instanceof ManagementReadPlanProvider) {
+                foreach ($bindings as $binding) {
+                    $result['read_planners'][$binding->key] = $provider;
+                }
+            }
             $result['contributions'] = $this->merge($result['contributions'], $provider->contributions(), ManagementContribution::class, 64);
             $result['widgets'] = $this->merge($result['widgets'], $provider->widgets(), ManagementWidget::class, 32);
         }

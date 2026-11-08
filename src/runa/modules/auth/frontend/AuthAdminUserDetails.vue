@@ -16,6 +16,7 @@ import type {
   AdminText,
 } from '@/runa/admin';
 import {
+  actionIcons,
   Button,
   Card,
   ConfirmDialog,
@@ -30,6 +31,8 @@ import {
   groupAuthActions,
   authActionIntent,
   authActionGroupIntent,
+  authActionToolIcon,
+  authActionIcon,
 } from './bulkGroups';
 import AuthAdminUserStatus from './AuthAdminUserStatus.vue';
 import AuthAdminPolicyExceptions from './AuthAdminPolicyExceptions.vue';
@@ -772,6 +775,7 @@ function supplied(section: AdminSectionData) {
             <AuthAdminActionGroups :groups="actionGroups">
               <template #default="{ item }">
                 <Button
+                  :icon="authActionToolIcon(item.actions.map(actionKey))"
                   :intent="actionGroupIntent(item.actions)"
                   size="sm"
                   variant="outline"
@@ -980,6 +984,19 @@ function supplied(section: AdminSectionData) {
         /></template>
         <template #actions>
           <Button
+            :icon="
+              command?.preview_required && !review
+                ? actionIcons.inspect
+                : pending
+                  ? authActionIcon(
+                      actionKey(pending),
+                      typeof form.values.value[path('enabled')] === 'boolean'
+                        ? (form.values.value[path('enabled')] as boolean)
+                        : null,
+                      form.values.value[path('at')] === null,
+                    )
+                  : actionIcons.confirm
+            "
             :intent="
               command?.preview_required && !review
                 ? 'inspect'
@@ -1000,7 +1017,12 @@ function supplied(section: AdminSectionData) {
                 ? text('Sprawdź zmiany', 'Review changes')
                 : text('Zatwierdź', 'Confirm')
             }}</Button
-          ><Button intent="cancel" @click="close()">{{ t('Cancel') }}</Button>
+          ><Button
+            :icon="actionIcons.cancel"
+            intent="cancel"
+            @click="close()"
+            >{{ t('Cancel') }}</Button
+          >
         </template>
       </Form>
     </Dialog>

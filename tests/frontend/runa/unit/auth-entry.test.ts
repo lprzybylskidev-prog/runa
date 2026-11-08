@@ -1,3 +1,6 @@
+import { defineComponent, h, toRef, type PropType } from 'vue';
+import type { EntryPage } from '@/runa/auth';
+import { provideLocale } from '../../../../src/runa/resources/js/composables/useLocale';
 import { Button } from '@/runa/ui';
 import AuthRecoveryCodesDialog from '../../../../src/runa/modules/auth/frontend/AuthRecoveryCodesDialog.vue';
 import { afterEach, beforeEach, expect, it, vi } from '@runa/testing/vitest';
@@ -573,3 +576,46 @@ it('entry readiness exposes an initial failure and deliberate retry instead of w
   retry.click();
   await settled(w);
 });
+
+const LocalizedEntry = defineComponent({
+  props: {
+    locale: { type: String as PropType<'pl' | 'en'>, required: true },
+    page: { type: String as PropType<EntryPage>, required: true },
+  },
+  setup(props) {
+    provideLocale(toRef(props, 'locale'));
+    return () => h(AuthEntry, { page: props.page });
+  },
+});
+
+for (const locale of ['pl', 'en'] as const) {
+  it(`keeps entry labels and recovery guidance without redundant introductions (${locale})`, async () => {
+    const login = mount(LocalizedEntry, { props: { locale, page: 'login' } });
+    await settled(login);
+    const heading = login.get('#auth-title');
+    expect(heading.text()).toBe(locale === 'pl' ? 'Zaloguj się' : 'Sign in');
+    expect(heading.element.parentElement?.querySelector('p')).toBeNull();
+    expect(login.find('input[autocomplete="username"]').exists()).toBe(true);
+    await login.get('form').trigger('submit');
+    await flushPromises();
+    expect(login.text()).toContain(
+      locale === 'pl' ? 'Wypełnij to pole.' : 'Complete this field.',
+    );
+    expect(calls).toHaveLength(0);
+    login.unmount();
+
+    const recovery = mount(LocalizedEntry, {
+      props: { locale, page: 'forgot-password' },
+    });
+    await settled(recovery);
+    expect(
+      recovery.get('#auth-title').element.parentElement?.querySelector('p')
+        ?.textContent,
+    ).toContain(
+      locale === 'pl'
+        ? 'Jeśli konto może odzyskać dostęp'
+        : 'If the account is eligible for recovery',
+    );
+    expect(recovery.find('input[type="email"]').exists()).toBe(true);
+  });
+}

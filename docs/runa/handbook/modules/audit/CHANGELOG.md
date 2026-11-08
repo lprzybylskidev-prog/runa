@@ -1,5 +1,23 @@
 # Audit module changelog
 
+## 1.1.2 — 2026-11-08
+
+- Admit the verified platform0.8.0 release in the supplied>=0.7.0 <0.9.0
+  compatibility range; module/API versions and runtime behavior are unchanged.
+
+- Use the shared semantic action/feedback icons with visible labels and preserved
+  busy, keyboard, proof and operation behavior; no backend contract/storage change.
+
+- Initialize directly at the current schema/version; remove historical development
+  upgrade scaffolding. Retain the 1.1.1 → 1.1.2 current-schema update,
+  reserved declaration/Audit participation and native history/recovery refusals.
+  Published Core databases with replaced migration history require explicit
+  development reconciliation; no historical schema conversion is provided.
+
+## 1.1.1 — Unreleased
+
+- Declare Framework API ^2.0.0 compatibility after native settings review publication changes. Publish the current source contract; Audit APIs, event storage and immutable history remain unchanged.
+
 ## 1.1.0 — 2026-10-30
 
 - Extend AuditReads to 1.1.0 with optional SQL summary ordering before cursor paging, nulls last and stable append-identity ties; expose implemented sort keys in the Admin history table without changing immutable events or read authority.

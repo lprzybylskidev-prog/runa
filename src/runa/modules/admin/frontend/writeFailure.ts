@@ -93,3 +93,34 @@ export function writeFailure(
   }
   return failure;
 }
+
+/** Only reviewed stale snapshots/removals require a new owning read. Business 409s do not. */
+export function staleWrite(cause: unknown): boolean {
+  if (!(cause instanceof ApiError) || ![404, 409].includes(cause.status))
+    return false;
+  return [
+    'identity_stale',
+    'identity_conflict',
+    'identity_missing',
+    'preferences_stale',
+    'policy_stale',
+    'exception_stale',
+    'access_definition_stale',
+    'access_preview_stale',
+    'access_definition_missing',
+    'access_subject_missing',
+    'secondary_missing',
+    'avatar_missing',
+    'admin_revision_stale',
+    'admin_revision_changed',
+    'admin_review_stale',
+    'admin_participants_changed',
+    'user_preview_stale',
+    'session_preview_stale',
+    'application_settings_revision_changed',
+    'settings_snapshot_stale',
+    'settings_snapshot_missing',
+    'settings_revision_stale',
+    'settings_review_stale',
+  ].includes(adminFailure(cause).error.reason);
+}

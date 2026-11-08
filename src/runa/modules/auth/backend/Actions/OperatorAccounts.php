@@ -184,7 +184,7 @@ final readonly class OperatorAccounts
         }
         $settings = app(ModuleSettings::class);
         $state = $settings->read('runa.auth');
-        $result = $settings->update('runa.auth', app(Policies::class)->restoreValues($revision), $state['revision'], $state['generation'], new SettingsActor('system', 'operator.cli'));
+        $result = $settings->update('runa.auth', app(Policies::class)->restoreValues($revision), $state['revision'], $state['review_id'], new SettingsActor('system', 'operator.cli'));
         if ($result->status !== 'succeeded') {
             throw new \RuntimeException('Operator policy restoration did not complete.');
         }

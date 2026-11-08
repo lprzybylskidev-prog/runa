@@ -10,7 +10,7 @@ Bundled MinimalLayout and ApplicationLayout pages share `/favicon.ico`, declared
 
 ## Minimal layout
 
-Canonical source: `src/runa/resources/js/layouts/MinimalLayout.vue`, public import `MinimalLayout` from `@/runa/ui`. Use MinimalLayout for compact public pages rather than a separate auth wrapper point 2.
+Canonical source: `src/runa/resources/js/layouts/MinimalLayout.vue`, public import `MinimalLayout` from `@/runa/ui`. Use MinimalLayout for compact public pages with the same shared frame for Auth entry screens.
 
 Owns the accepted backdrop, default identity header, cycling language/theme controls, skip link/focusable main and configurable footer. Optional named slots: header, header-actions, content, illustration, actions, footer. Content falls back to the default slot; slots expose translator `t`. The supplied Runa illustration is built in and visible by default; content occupies the left panel, the illustration the right at `lg`, with a compact 240px illustration above content on narrow screens. Set `illustration: false` explicitly for one column, or override the illustration slot. Actions follow content. Footer stays in normal flow at the viewport bottom on short pages and after long content. `footer.visible: false` hides even a custom footer slot.
 
@@ -35,7 +35,7 @@ The layout owns locale/theme composables once. Consumers use scoped `t`, preserv
 ## Preserved root welcome view
 
 The source-owned welcome catalogue uses localized module manifests, including
-Admin 0.1.0 with the existing adjustments icon. Catalogue visibility does not
+Admin with the existing adjustments icon. Catalogue visibility does not
 indicate installation, access grants or rendered Admin availability; see
 [Admin delivery status](../../modules/admin/README.md#delivery-status-and-acceptance-ownership).
 

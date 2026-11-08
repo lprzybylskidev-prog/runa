@@ -8,6 +8,23 @@ Every durable `./bin/*` command must:
 - avoid secrets in output,
 - be documented here in the same roadmap point that introduces/changes it.
 
+## Command location and transport
+
+Run `php artisan ...` in the configured development PHP terminal. The repository
+root `artisan` forwards to canonical `src/artisan`, so either the checkout root or
+`src` works. Native test/tool arguments retain their own working directory;
+backend runner paths resolve from `src`. Run `pnpm --dir src ...`, root `./bin/...`
+transports and owner `python3 tools/maintainer/...` examples from the checkout root.
+Application PHP/Composer/Node tools stay in project containers.
+
+On the native Linux host, use `./bin/artisan ...` for initial setup or unavailable
+runtime recovery; host lifecycle work is dispatched through the executor. It does
+not require host PHP/Node. The internal post-create setup command is a fixed
+Dev Container integration, not another daily command interface. Production
+operations run in the separately prepared operator environment. See
+[environment setup](../development/environment.md) and
+[host execution](host-executor.md).
+
 ## Runtime-independent Artisan transport
 
 Artisan is the public domain-command registry. Normal configured-environment use is
@@ -46,7 +63,7 @@ Management discovery runs the inspected immutable image ID with no network, moun
 
 ### Explicit operation commands
 
-Retained recovery aliases: `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test` (backend/frontend/tooling aggregate), `./bin/deploy`, `./bin/logs`; Composer/pnpm/Boost remain tool transports. Removed multi-action aliases are listed in the migration map. Git hooks use dedicated `tools/application/bin/pre-commit` and `commit-msg` transports. `./bin/command`, `./bin/check` and `./bin/operations` only show discovery.
+Retained recovery aliases: `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test` (backend/frontend/tooling aggregate), `./bin/deploy`, `./bin/logs`; Composer/pnpm/Boost remain tool transports. Removed multi-action aliases are listed in the migration map. Git hooks use dedicated `tools/application/bin/pre-commit` and `commit-msg` transports. `./bin/command` shows discovery; use `./bin/artisan --management list` for cold Artisan discovery. The retired `./bin/check` and `./bin/operations` aliases are removed; retained recovery aliases point directly to their shared transport.
 
 Internal Python services live under `tools/application`; fixed package command modules do not form a public bin registry. Development setup starts `python3 -m tools.application.development` from the selected tool checkout. Their argument parsing is defensive process validation, not a separately documented CLI. Preserve mature Compose/scanner/Git/quality/RAG mechanics; application-facing source-check orchestration and Xdebug behavior live in PHP Actions. Do not mechanically translate process engines to PHP or introduce Docker-in-Docker.
 
@@ -83,7 +100,7 @@ Executed on the host through the private executor: `build [service ...]` builds 
 
 ### `php artisan runa:doctor:development`
 
-Alias for `php artisan runa:doctor:development`. From the host, first validates Docker service health/setup exit status, then delegates application diagnostics into the app container. Inside the devcontainer, checks configuration/migrations, fresh shared queue/scheduler heartbeats, Nginx/Mailpit HTTP readiness and effective resource values. Optional AI service/freshness diagnostics have bounded deadlines and report degradation separately; strict model/retrieval acceptance remains `php artisan runa:knowledge:doctor` and `php artisan runa:knowledge:eval`. Shared heartbeat freshness does not replace the instance-bound Docker healthchecks. This path requires no Docker socket inside the devcontainer.
+From the host, first validates Docker service health/setup exit status, then delegates application diagnostics into the app container. Inside the devcontainer, checks configuration/migrations, fresh shared queue/scheduler heartbeats, Nginx/Mailpit HTTP readiness and effective resource values. Optional AI service/freshness diagnostics have bounded deadlines and report degradation separately; strict model/retrieval acceptance remains `php artisan runa:knowledge:doctor` and `php artisan runa:knowledge:eval`. Shared heartbeat freshness does not replace the instance-bound Docker healthchecks. This path requires no Docker socket inside the devcontainer.
 
 ## Module discovery
 
@@ -124,17 +141,23 @@ Run application backend, frontend and tooling tests by default. Repeated
 for native options, for example `runa:test --scope=backend --parallel`.
 `runa:test:backend` remains PHP-only; `runa:test:python` discovers application Python
 tests and accepts `--path=tests/tools/app/test_example.py`, `--marker=...`
-and `--collect-only`. Native `php artisan test` remains PHP-only. See
+and `--collect-only`. Native `php artisan test` remains PHP-only and launches the pinned Pest engine
+for both serial and parallel modes, including PHPUnit classes. Native
+`--filter`, `--configuration`/`-c`, coverage/report flags, `--compact` and `--profile`
+retain engine parsing and refusals. Use `--coverage --min=80` for its coverage
+threshold, and `--without-tty` for piped execution. See
 [application testing](../testing/strategy.md) for authored roots, public support,
 empty/failure semantics, reports and guarded cleanup.
 
 ### `php artisan runa:test:frontend`
 
-Run only application Vitest/Vue component tests from `tests/frontend/app/unit`, using `src/vitest.config.mjs`.
+Run only application Vitest/Vue component tests from `tests/frontend/app/unit` and
+`tests/frontend/app/modules/<code>`, using `src/vitest.config.mjs`. Optional module
+tests are delivered together with their module source.
 
 ### `php artisan runa:test:e2e --critical`
 
-Run application Playwright tests from `tests/frontend/app/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build`. Start the Compose testing profile on the host before running inside the development container; the host entrypoint starts it automatically and removes only run-owned endpoint containers on exit. Existing manual endpoints are preserved; see [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle). `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `.runtime/artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
+Run application Playwright tests from `tests/frontend/app/e2e` against the real isolated Nginx/PHP-FPM endpoint (`http://nginx-test:8080`), using `src/playwright.config.mjs`. Build assets first with `pnpm --dir src run build` in the development container. Start the Compose testing profile on the host before running inside the development container; the host entrypoint starts it automatically and removes only run-owned endpoint containers on exit. Existing manual endpoints are preserved; see [test resource lifecycle](../testing/strategy.md#test-resource-lifecycle). `RUNA_E2E_BASE_URL` can select another already provisioned application test endpoint. The runner never resets the application database or starts the platform fixture harness. Failure traces/screenshots and the HTML report go to `.runtime/artifacts/playwright/application/`. The retained `--critical` spelling runs the application suite; select individual tests using normal Playwright filters.
 
 ## Xdebug
 
@@ -297,11 +320,13 @@ Standard make:* commands generate application artifacts. make:controller, make:m
 
 ### `php artisan runa:modules:settings [module]`
 
-Trusted redacted settings read. `--write --revision=N --generation=N` accepts a bounded JSON envelope from piped standard input, never secret arguments. `--recover=UUID` without a module restores/compensates an interrupted settings change. Failure/ambiguous recovery exits 1 with safe diagnostics. See the [declarative settings contract](../architecture/module-framework.md#delivered-declarative-settings) for payload, revision, handler and external-key semantics. No management HTTP endpoint or Admin UI is supplied.
+Trusted redacted settings read. `--write --revision=N --review=HASH` accepts a bounded JSON envelope from piped standard input, never secret arguments. `--recover=UUID` without a module restores/compensates an interrupted settings change. Failure/ambiguous recovery exits 1 with safe diagnostics. See the [declarative settings contract](../architecture/module-framework.md#delivered-declarative-settings) for payload, revision, handler and external-key semantics. The CLI is distinct from the named guarded Admin settings operations;
+see [Core operations and settings](../modules/admin/operations.md).
 
 ### `php artisan runa:modules:management <module>`
 
-Trusted versioned combined management metadata: localized identity, status/root causes/dependencies, redacted settings, integrations, bounded active work and declared permissions/actions/component keys. Exit 1 means missing/incomplete metadata or a concurrent generation change; disabled/unhealthy state remains inspectable. No action is executed and no management HTTP endpoint is exposed. See the [management descriptor contract](../architecture/module-framework.md#delivered-management-descriptors).
+Trusted versioned combined management metadata: localized identity, status/root causes/dependencies, redacted settings, integrations, bounded active work and declared permissions/actions/component keys. Exit 1 means missing/incomplete metadata or a concurrent generation change; disabled/unhealthy state remains inspectable. This diagnostic executes no action and exposes no generic management HTTP
+endpoint. Admin uses separate explicit page/operation bindings. See the [management descriptor contract](../architecture/module-framework.md#delivered-management-descriptors).
 
 ### `php artisan runa:make:module <owner.code> [type] [name]`
 

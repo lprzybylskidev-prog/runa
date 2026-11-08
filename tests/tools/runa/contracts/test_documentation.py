@@ -14,8 +14,10 @@ import unittest
 from dataclasses import replace
 from pathlib import Path
 
+from tests.tools.runa.acceptance.documentation_fixture import copy_reference_sources
 from tools.application import docs_checks
 from tools.application.documentation import maintainer_checkout, roadmap_root
+from tools.application.documentation_markdown import anchors
 from tools.application.hooks import commit_message
 from tools.application.knowledge import corpus
 from tools.application.knowledge.configuration import golden, load
@@ -23,6 +25,128 @@ from tools.application.knowledge.context import KnowledgeContext
 from tools.maintainer.knowledge_cli import configuration as owner_configuration
 
 ROOT = Path(__file__).resolve().parents[4]
+
+
+class DocumentationMarkdown(unittest.TestCase):
+    """Small isolated source fixtures; no application/database/browser setup."""
+
+    def setUp(self) -> None:
+        folder = tempfile.TemporaryDirectory(prefix="runa-doc-links-")
+        self.addCleanup(folder.cleanup)
+        self.root = Path(folder.name)
+
+    def write(self, name: str, content: str) -> Path:
+        path = self.root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content)
+        return path
+
+    def test_markdown_links_require_real_heading_targets(self) -> None:
+        self.write("guide.md", "# Guide\n\n## API `public_id`\n\n## Żółć &amp; _safe_\n")
+        source = self.write(
+            "index.md",
+            "# Index\n[API](guide.md#api-public_id)\n"
+            "[Polish](guide.md#%C5%BC%C3%B3%C5%82%C4%87--safe)\n",
+        )
+        docs_checks.links(self.root, [source])
+        source.write_text("# Index\n[Missing](guide.md#not-present)\n")
+        with self.assertRaisesRegex(ValueError, "Broken documentation anchor.*not-present"):
+            docs_checks.links(self.root, [source])
+
+    def test_markdown_duplicate_and_setext_headings_have_stable_targets(self) -> None:
+        content = "# Root\n\n## Same\n\n## Same\n\n## Same-1\n\nSetext\n------\n"
+        self.assertEqual(anchors(content), {"root", "same", "same-1", "same-1-1", "setext"})
+        source = self.write("guide.md", content + "\n[Repeat](#same-1-1)\n")
+        docs_checks.links(self.root, [source])
+
+    def test_markdown_long_fences_and_examples_do_not_create_links_or_titles(self) -> None:
+        content = (
+            '---\ntitle: "[metadata](missing.md)"\n---\n# Root\n\n````markdown\n'
+            "```\n# Example\n[example](missing.md#absent)\n``` not a closing fence\n"
+            "````\n\n~~~text\n# Another example\n~~~\n"
+            "`[inline](missing.md)`\n\n<!-- [comment](missing.md) -->\n"
+            '<a id="stable"></a>\n[Explicit](#stable)\n'
+        )
+        source = self.write("guide.md", content)
+        docs_checks.links(self.root, [source])
+        docs_checks.structure([source])
+        source.write_text(content + "\n[False example target](#example)\n")
+        with self.assertRaisesRegex(ValueError, "Broken documentation anchor"):
+            docs_checks.links(self.root, [source])
+        source.write_text("# Root\n````\n```\n")
+        with self.assertRaisesRegex(ValueError, "Unclosed documentation code fence"):
+            docs_checks.links(self.root, [source])
+
+    def test_markdown_projection_uses_customer_headings_and_self_links(self) -> None:
+        source = self.write(
+            "private/AGENTS.md",
+            "# Application\n[Self](#application)\n[Peer](skills/SKILL.md#public)\n",
+        )
+        peer = self.write("private/skills/SKILL.md", "# Public\n")
+        self.write("AGENTS.md", "# Different owner title\n")
+        mapping = {source: self.root / "AGENTS.md", peer: self.root / "skills/SKILL.md"}
+        docs_checks.links(self.root, [source, peer], logical_paths=mapping)
+        source.write_text("# Application\n[Owner](docs/runa/maintainer/private.md#private)\n")
+        with self.assertRaisesRegex(ValueError, "owner-only"):
+            docs_checks.links(self.root, [source], logical_paths=mapping)
+        source.write_text(
+            "# Application\n\n- Parent\n    - [Owner](docs/runa/maintainer/private.md#private)\n"
+        )
+        with self.assertRaisesRegex(ValueError, "owner-only"):
+            docs_checks.links(self.root, [source], logical_paths=mapping)
+
+    def test_code_comment_delimiters_cannot_hide_real_links_or_headings(self) -> None:
+        examples = (
+            ("```html\n<!--\n```", "```html\n-->\n```"),
+            ("Opener: `<!--`.", "Closer: `-->`."),
+            ("Opener: ``literal ` <!--``.", "Closer: ``--> ` literal``."),
+            ("Opener: `literal\n<!--`.", "Closer: `-->\nliteral`."),
+        )
+        for opening, closing in examples:
+            with self.subTest(opening=opening):
+                source = self.write(
+                    "guide.md",
+                    f"# Root\n\n{opening}\n\n## Real\n[Broken](missing.md)\n\n{closing}\n",
+                )
+                self.assertIn("real", anchors(source.read_text()))
+                with self.assertRaisesRegex(ValueError, "Broken documentation link"):
+                    docs_checks.links(self.root, [source])
+                source.write_text(source.read_text().replace("## Real", "# Second title"))
+                with self.assertRaisesRegex(ValueError, "level-one title"):
+                    docs_checks.structure([source])
+
+    def test_real_comments_and_multiline_code_still_exclude_example_links(self) -> None:
+        source = self.write(
+            "guide.md",
+            "# Root\n\n<!--\n```html\n# Hidden\n[Hidden](missing.md)\n-->\n"
+            "\n``example ` [Example](missing.md)\n# Fake title\n<a id='fake'></a> <!--``\n"
+            "\n## Real\n[Read](#real)\n",
+        )
+        docs_checks.links(self.root, [source])
+        docs_checks.structure([source])
+        self.assertEqual(anchors(source.read_text()), {"root", "real"})
+
+    def test_markdown_reference_destinations_and_encoded_paths_are_checked(self) -> None:
+        self.write("a guide.md", "# Guide\n")
+        source = self.write("index.md", "# Index\n[Read][guide]\n\n[guide]: <a%20guide.md#guide>\n")
+        docs_checks.links(self.root, [source])
+        source.write_text("# Index\n[guide]: a%20guide.md#missing\n")
+        with self.assertRaisesRegex(ValueError, "Broken documentation anchor"):
+            docs_checks.links(self.root, [source])
+        source.write_text("# Index\n[Escape](%2e%2e/outside.md)\n")
+        with self.assertRaisesRegex(ValueError, "escapes checkout"):
+            docs_checks.links(self.root, [source])
+
+    def test_markdown_structure_requires_one_real_leading_title(self) -> None:
+        source = self.write("guide.md", "---\nkind: guide\n---\n# Guide\n\n## Section\n")
+        docs_checks.structure([source])
+        for content in ("## Missing title\n", "# One\n# Two\n", "#\n"):
+            source.write_text(content)
+            with (
+                self.subTest(content=content),
+                self.assertRaisesRegex(ValueError, "level-one title"),
+            ):
+                docs_checks.structure([source])
 
 
 class DocumentationOwnership(unittest.TestCase):
@@ -43,6 +167,7 @@ class DocumentationOwnership(unittest.TestCase):
         shutil.copy2(product / "AGENTS.md", self.root / "AGENTS.md")
         shutil.rmtree(self.root / ".agents/skills")
         shutil.copytree(product / "skills", self.root / ".agents/skills")
+        copy_reference_sources(self.root)
         self.copy("tools/application/quality.yml")
         self.receipt = self.root / ".git/runa-bootstrap.json"
         self.receipt.write_text("{}\n")
@@ -84,11 +209,14 @@ class DocumentationOwnership(unittest.TestCase):
         with self.assertRaises(ValueError):
             docs_checks.validate(self.root, owner_guidance=True)
         self.receipt.unlink()
-        self.write("AGENTS.md", "[Owner guide](docs/runa/maintainer/internal.md)\n")
+        self.write(
+            "AGENTS.md", "# Owner guidance\n[Owner guide](docs/runa/maintainer/internal.md)\n"
+        )
         with contextlib.redirect_stdout(io.StringIO()):
             docs_checks.validate(self.root, owner_guidance=True)
         self.write(
-            "docs/app/README.md", "[Forbidden owner guide](../runa/maintainer/internal.md)\n"
+            "docs/app/README.md",
+            "# Application\n[Forbidden owner guide](../runa/maintainer/internal.md)\n",
         )
         with self.assertRaisesRegex(ValueError, "owner-only"):
             docs_checks.validate(self.root, owner_guidance=True)
@@ -127,7 +255,12 @@ class DocumentationOwnership(unittest.TestCase):
             reference = entry.parent / "references/application.md"
             self.assertIn("references/application.md", entry.read_text())
             public = "docs/runa/handbook/" + guide
-            self.assertIn(public, reference.read_text())
+            navigation = reference.read_text()
+            if domain == "frontend":
+                self.assertIn("Canonical guide (under docs/runa/handbook)", navigation)
+                self.assertIn(guide, navigation)
+            else:
+                self.assertIn(public, navigation)
             self.assertTrue((self.root / public).is_file())
             self.assertNotIn("docs/runa/maintainer", reference.read_text())
         reference = self.root / ".agents/skills/frontend/references/application.md"
@@ -196,7 +329,7 @@ class DocumentationOwnership(unittest.TestCase):
     def test_public_link_cannot_require_owner_source_even_when_it_exists(self) -> None:
         self.copy_owner_inputs()
         self.receipt.unlink()
-        self.write("docs/app/notes.md", "[Internal](../runa/maintainer/internal.md)\n")
+        self.write("docs/app/notes.md", "# Notes\n[Internal](../runa/maintainer/internal.md)\n")
         with self.assertRaisesRegex(ValueError, "owner-only"):
             self.validate()
 

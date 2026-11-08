@@ -16,6 +16,10 @@ If code and documentation disagree, investigate staleness. Do not blindly make e
 
 Project-specific rules override upstream skills and generic best practices.
 
+Roadmap precedence does not make agent-authored restrictions owner decisions.
+Follow the decision-provenance review in
+docs/runa/maintainer/workflows/roadmaps.md#discussion-and-activation.
+
 ## Pre-1.0 development
 
 Until Runa platform 1.0.0, backward compatibility is not a design requirement.
@@ -26,6 +30,14 @@ consumers, generators, tests and documentation. Remove obsolete paths instead of
 adding adapters, duplicate APIs or execution workarounds solely to preserve old
 interfaces. An independent Core module's 1.x version does not override this
 platform-development decision.
+
+For corrective work before platform 1.0.0, do not introduce adapters, decorators,
+startup shims or workarounds to preserve the current implementation or execution
+path, including around dependency integrations. Correct or redesign the owning
+Runa integration and update its current consumers. An external dependency's
+limitation is a constraint to assess, not permission to add an adapter or bypass.
+Follow the canonical owner policy below; significant new premises and dependency
+changes still require their applicable discussion or approval.
 
 Assess and record module/API versions honestly. This authorization does not waive
 security/business invariants, data protection, roadmap discussion of significant
@@ -112,11 +124,11 @@ If verification finds work:
 - keep the roadmap active,
 - insert a fix point before manual acceptance when present, otherwise immediately before final verification,
 - implement and verify the fix point,
-- rerun final verification from the beginning.
+- revalidate the complete final scope, retaining valid unrelated evidence and rerunning unresolved/invalidated checks and real prerequisites.
 
-During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then restart final verification from the beginning. This exception does not authorize broad checks during ordinary implementation points.
+During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then revalidate final verification under the owner evidence-continuity procedure below, retaining valid unrelated results. This exception does not authorize broad checks during ordinary implementation points.
 
-For owner backend verification, treat a run whose only test execution failure is a confirmed worker SIGSEGV/exit 139 as PASS under the `docs/runa/maintainer/testing/strategy.md#backend-sigsegv-owner-acceptance`. Preserve native failed reports, require successful cleanup and disclose interrupted coverage. Other failures remain blocking. This standing owner decision requires no repeated approval, mandatory restart, retry loop or root-cause investigation. Apply it during final verification, closure, merge and publication without asking again; a validator that cannot represent the exception does not revoke it. Use the canonical separate evidence disposition instead of rewriting native FAILED reports or restarting an already accepted backend solely for release metadata. Retire this temporary owner rule only after corrected PHP/runtime verification meets the canonical removal condition; customer application policy is unchanged.
+For owner final verification, follow [verification evidence continuity](docs/runa/maintainer/testing/strategy.md#verification-evidence-continuity): preserve valid unrelated results, rerun invalidated checks and real prerequisites, and consolidate ordinary backend failures before repairs. For confirmed SIGSEGV, inspect existing evidence, manually attempt a reliably identified interrupted case at most twice more, continue remaining coverage and obtain explicit owner acceptance of exhausted confirmed interruptions before release under [the temporary owner procedure](docs/runa/maintainer/testing/strategy.md#backend-sigsegv-owner-acceptance). Preserve native failures; unknown/unexecuted coverage, ordinary failures and unsafe cleanup remain blocking. No recovery automation, root-cause investigation or customer tolerance is authorized. Retire the temporary exception after confirmed corrected-runtime stability; keep general evidence continuity.
 
 If the failure reveals an architectural/behavioral assumption problem, stop and discuss it with the user.
 
@@ -262,7 +274,7 @@ Load `.agents/skills/postgresql/SKILL.md` and `docs/runa/handbook/architecture/d
 - Rendered UI is the acceptance truth.
 - Accessibility is part of normal component review.
 - Views follow the public [readiness contract](docs/runa/handbook/development/frontend/loading.md): mount layout frames immediately, localize loading to dependent elements/regions, refresh in place, bound optional image waits and clear protected content on identity/access loss.
-- Data views follow the public forms guide automatic read reconciliation: refresh in place, preserve dirty drafts, share aggregate mutation revisions, resolve overlapping changes locally and never silently replay writes or reinitialize edited forms.
+- Data views follow the public forms guide action-driven read reconciliation: preserve initial/explicit/own-action reads and dirty drafts, submit original versions/reviews, share aggregate mutation revisions and resolve actual conflicts locally. Passive focus/visible-return and unchanged-session checks do not reload business data. Never silently replay writes or reinitialize edited forms.
 - TypeScript strict mode.
 - No `any` for known API payloads.
 - No global state library unless a real shared-state need appears.
@@ -375,7 +387,8 @@ Read `docs/runa/handbook/ai/skills-policy.md` and `docs/runa/handbook/ai/knowled
 ## Documentation maintenance
 
 Synchronize affected current-state docs and durable guidance in the owning point,
-preserving historical evidence. Follow [documentation ownership](docs/README.md)
+preserving historical evidence. Follow [documentation ownership](docs/README.md),
+[authoring conventions](docs/runa/handbook/development/documentation.md)
 and [guidance editing](docs/runa/handbook/ai/skills-policy.md#editing-reusable-guidance):
 replace obsolete rules, remove duplication and keep procedures in their canonical
 home. Current instructions exclude task chatter, speculation, abandoned ideas and
@@ -400,6 +413,12 @@ Use the public guide's source-placement table; generated and handwritten consume
 follow the same boundary. Update both instruction products when a reusable rule changes.
 
 ## Module development
+
+The reference module is executable customer documentation. Every new Runa module
+and every new customer-facing capability of an existing module must extend its
+working examples, documentation and tests in the same roadmap point. Follow the
+[reference module maintenance contract](docs/runa/maintainer/development/reference-module.md);
+source declarations or CLI listings alone do not demonstrate an interactive use case.
 
 For module implementation, use the [module development guide](docs/runa/handbook/development/modules.md) and existing guarded public adapters. New modules develop as 0.x.y and receive 1.0.0 at verified closure of their creation roadmap. Later compatible features use MINOR and compatible corrections PATCH. Incompatible changes follow the standing pre-1.0 authorization above; from platform 1.0.0 they require an explicitly owner-approved MAJOR before implementation. Platform versioning remains independent. The agent owns assessing and updating each changed module's independent manifest version and central changelog, reviewing dependent contracts and running the scoped source/runtime/version checks. Static analysis does not prove semantic compatibility or isolate malicious trusted code. Generator previews and exact per-file hash authorizations govern existing-file overwrite; production and customer-to-Runa generation are refused.
 
@@ -426,7 +445,9 @@ When preparing release `1.0.0` or a later update to the stable application, load
 
 ## Documentation ownership
 
-This root owner contract governs receipt-free Runa maintenance; customer application instructions are authored separately and substituted at delivery. Runa roadmaps, release metadata, quality definitions, dependency review records and maintenance reports live under docs/runa/maintainer. Read the public placement rules in docs/README.md; do not deliver this directory to customer installations. Closed roadmap contents and dated audit evidence remain immutable when relocated.
+Follow [placement rules](docs/README.md). Owner roadmap/release/quality/engineering
+records stay private under docs/runa/maintainer; customer instructions are a
+separate product substituted at delivery. Preserve closed and dated evidence.
 
 ## Instruction product maintenance
 

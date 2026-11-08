@@ -5,10 +5,11 @@ import {
   groupAuthActions,
   authBulkGroup,
   authBulkActionIntent,
+  authActionToolIcon,
 } from '../bulkGroups';
 import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
-import { Button, Card, ContentLoading, Dialog } from '@/runa/ui';
+import { actionIcons, Button, Card, ContentLoading, Dialog } from '@/runa/ui';
 import {
   AdminComponentBoundary,
   AdminForm,
@@ -204,7 +205,7 @@ async function openBulk(chosen: (typeof bulkChoices.value)[number]) {
   )
     return;
   const ids = [...selection.value];
-  if (!(await props.form.beforeLeave())) return;
+  if (!(await props.form.selectSubject(null))) return;
   if (!(await props.form.editSection(chosen.section.key, null))) return;
   props.form.set(props.form.fieldPath(chosen.section.key, 'public_ids'), ids);
   activeBulk.value = chosen.value;
@@ -215,13 +216,7 @@ async function openBulk(chosen: (typeof bulkChoices.value)[number]) {
 async function close() {
   if (!(await props.form.beforeLeave())) return;
   props.form.reset();
-  if (
-    mode.value === 'bulk' &&
-    !(await props.form.closeSection(
-      openedBulk.value?.section.key ?? 'bulk_sessions',
-    ))
-  )
-    return;
+  if (!(await props.form.selectSubject(null))) return;
   open.value = false;
   table.selected.value = undefined;
 }
@@ -244,6 +239,7 @@ watch(
       <template #actions>
         <Button
           v-if="canCreate"
+          :icon="actionIcons.register"
           intent="commit"
           size="sm"
           :disabled="form.busy.value"
@@ -281,6 +277,11 @@ watch(
             <AuthAdminActionGroups :groups="bulkGroups">
               <template #default="{ item: choice }">
                 <Button
+                  :icon="
+                    authActionToolIcon(
+                      choice.commands.map((command) => command.key),
+                    )
+                  "
                   :intent="
                     authBulkActionIntent(
                       choice.commands.map((command) => command.key),
@@ -317,6 +318,7 @@ watch(
         </template>
         <template #actions="{ row }">
           <Button
+            :icon="actionIcons.inspect"
             intent="inspect"
             size="sm"
             :disabled="form.busy.value"

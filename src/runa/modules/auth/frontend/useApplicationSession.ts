@@ -135,21 +135,24 @@ export function useApplicationSession(
       await authGet('csrf', abort.signal);
       const next = activityResponse(await authGet('session', abort.signal));
       if (!alive || own !== epoch) return;
-      if (
-        session.value &&
-        (session.value.public_id !== next.public_id ||
-          session.value.session.public_id !== next.session.public_id)
-      ) {
-        clearAccountDraft();
+      const identityChanged =
+        session.value?.public_id !== next.public_id ||
+        session.value?.session.public_id !== next.session.public_id;
+      const authorityChanged =
+        identityChanged ||
+        JSON.stringify(session.value?.restrictions) !==
+          JSON.stringify(next.restrictions);
+      if (identityChanged) {
+        if (session.value) clearAccountDraft();
         profileLoading.value = true;
       }
       if (profile.value?.public_id !== next.public_id)
         profile.value = undefined;
       session.value = next;
       failure.value = '';
-      authorityRevision.value++;
+      if (authorityChanged) authorityRevision.value++;
       if (next.restrictions.length) suspend();
-      else {
+      else if (identityChanged) {
         const read = ++presentationRead;
         // Public navigation policy is optional presentation, never session authority.
         void authGet('entry-options', abort.signal)
