@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { Button, TextInput } from '@/runa/ui';
+import { actionIcons, Button, TextInput } from '@/runa/ui';
 import type { OperationProofController } from './useOperationProof';
 import { operationProofCopy } from './operationProofCopy';
 import { useLocale } from '../../../resources/js/composables/useLocale';
@@ -32,6 +32,7 @@ const copy = computed(() =>
     />
     <div class="flex flex-wrap gap-2">
       <Button
+        :icon="actionIcons.password"
         intent="commit"
         :type="submit ? 'submit' : 'button'"
         :busy="controller.busy.value"
@@ -39,6 +40,7 @@ const copy = computed(() =>
         >{{ copy.confirm }}</Button
       >
       <Button
+        :icon="actionIcons.cancel"
         intent="cancel"
         type="button"
         variant="outline"

@@ -21,7 +21,28 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10r completed, 2026-11-08
+## Current execution state — point 10s completed, 2026-11-08
+
+**Points 1–10s are complete. Point 10t renews runtime/assets before owner acceptance
+11; final automated verification/release remains 12.** The
+[icon source review](../../reviews/RM-2026-017-icons.md) records explicit action and
+feedback icons, owned module declarations, 34 pinned original SVG additions,
+public signatures, working reference and instruction-product/version assessment.
+Six focused owner Chromium cases and one application reference case pass with
+native exit 0 / cleanup 0. No current rebuilt assets, full suites or owner acceptance
+are claimed by this source point. Previous 10r assets certify only their old source.
+Platform/module/API candidates remain unchanged.
+
+## Historical execution state — icon extension authorized, 2026-11-08
+
+**Points 1–10r are complete. Point 10s is in progress; 10t renews readiness before
+sole owner acceptance 11 and final verification/release 12.** The owner approved
+consistent icons across actions, modules and useful feedback/empty states, delegated
+icon selection and requested implementation now. Existing Tabler family and action
+color semantics remain; no new package dependency or release-metadata change.
+Previous 10r assets identify their older source until 10t prepares the new candidate.
+
+## Historical execution state — point 10r completed, 2026-11-08
 
 **Points 1–10r are complete. Point 11 awaits explicit owner manual acceptance.**
 The [post-refactor readiness review](../../reviews/RM-2026-017-post-refactor-readiness.md)
@@ -1845,9 +1866,41 @@ below are retained as historical records only.
     establish readiness, not complete native installation/test/security/AI PASS.
     Full automated verification/release remains 12 under unchanged gate policy.
 
+- [x] 10s. Deliver consistent semantic action, module and feedback icons.
+  - **Owner approval, 2026-11-08:** implement the discussed icon extension now;
+    icon selection is agent-owned and may be refined after owner manual review.
+    Existing feature/0.8.0 projection remains appropriate and unchanged.
+  - Extend the approved pinned local Tabler outline subset with original SVGs,
+    retained MIT attribution and exact provenance/hashes; no Composer/pnpm package.
+    Maintain one public typed Icon catalogue and an explicit semantic action map.
+  - Add optional explicit icon support to public Button/LinkButton and confirmation
+    composition; colors and proof requirements do not determine icon identity.
+    Preserve existing slots/icon-only consumers, accessible names, keyboard/form
+    semantics and busy dimensions; loading replaces the leading icon, retaining text.
+  - Apply consistent icons across supplied Auth/Admin/Audit/Permissions/reference
+    actions, relevant empty/feedback states and existing module representations.
+    Keep text on ordinary actions; avoid decorating every field/header/subview.
+    Module authors declare their icon through an application-owned frontend source
+    entrypoint, consumed consistently by the shared catalogue without protected edits.
+  - Update current public contracts, working reference example/tests, central
+    changelog, frontend pattern guidance and both affected instruction products.
+    Assess module/API versions honestly; preserve current security/data behavior.
+    Author meaningful shared-component/module regressions; only necessary bounded
+    diagnostics run here. Full automated suites remain 12.
+
+- [ ] 10t. Renew icon runtime/assets and manual acceptance handoff.
+  - **Dependency:** committed 10s. Build supported application and native/emergency
+    assets from the coherent candidate, preserving existing accounts/data/services.
+  - Observe actual Nginx pages/APIs and sample action/module/feedback icons at
+    desktop/narrow widths, PL/EN, light/dark and keyboard/busy states. Record exact
+    source/build identity and bounded evidence, preserving older 10r observations.
+  - Refresh the acceptance sheet with representative shared-component samples and
+    directly changed behavior, including the reference module's declared icon.
+    Only owner acceptance completes 11; final automated verification remains 12.
+
 - [ ] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
-  - **Preconditions:** completed implementation/review/readiness, including 10k–10r,
+  - **Preconditions:** completed implementation/review/readiness, including 10k–10t,
     matching current assets/data and usable authorized application, acceptance sheet supplied.
   - **Deliverables:** concrete clickable URLs derived from the current environment
     and actual route/page declarations; what to inspect per view; relevant roles/
@@ -5848,3 +5901,43 @@ change. Mandatory hooks and staged incremental knowledge synchronization apply.
 Platform remains 0.7.0 / approved feature-0.8.0; module/API versions are unchanged
 from completed source candidates. Only the owner's explicit tested result completes
 point 11; point 12 remains last. No owner acceptance, full suite or release is claimed.
+
+## Owner icon scope extension accepted, 2026-11-08
+
+Before manual acceptance the owner requested richer, consistent iconography for
+submits/actions and module identities, accepted the proposed relevant feedback/
+empty-state scope, delegated exact icon selection and authorized roadmap planning
+and implementation. Add 10s for source/contracts/examples and 10t for renewed
+committed-source readiness. Point 11 remains the sole penultimate manual acceptance;
+12 remains final automated verification/release. Existing approved feature/0.8.0
+metadata is unchanged; no dependency, security or broad verification policy changes.
+
+## Point 10s completion — shared semantic icons, 2026-11-08
+
+The owner-authorized [icon implementation review](../../reviews/RM-2026-017-icons.md)
+records the owning public signatures and source decisions, selected static action
+vocabulary, current supplied consumers and module/icon fallback semantics. Button/
+LinkButton accept explicit icons; ConfirmDialog supports final-action selection/
+opt-out. Busy swaps the leading icon for equal-size decorative progress while
+retaining labels and native semantics. Feedback/empty states share Tabler symbols.
+The same finite catalogue owns 34 new pinned originals with exact hash/license
+provenance; there is no package or runtime fetch.
+
+The app.reference frontend/icon.ts example supplies flask to the common module
+catalogue/sidebar/cards, while guarded controller/grant/proof/dirty/version behavior
+remains unchanged. Current public docs, visual guidance, reference example and
+central/module changelogs are synchronized. Both owner and customer frontend
+reference products route to the canonical semantic icon contract; root invariants
+need no new text. Existing unreleased module candidates/Framework API 2.1.0 and
+platform 0.7.0 / projected feature-0.8.0 remain unchanged.
+
+Supported focused owner frontend controls/feedback --filter='semantic icons' passes
+6 Chromium cases; application reference presentation passes 1 case. Both native
+exit 0 / cleanup 0. These resolve new glyph/geometry, confirmation/announcement and
+module discovery questions, not complete frontend or release verification. Native
+warnings and earlier diagnostics remain under .runtime/dev/RM-2026-017-10s.
+No data/credentials, service, database, volume or dependency was changed. All caches,
+backups and evidence are preserved; no Docker resources were created or removed.
+Mandatory hooks and staged incremental knowledge synchronization apply. Point 10t
+must prepare coherent committed-source assets and current real Nginx observations
+before the sole owner acceptance 11; final automated verification remains 12.

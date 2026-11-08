@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Dialog, Button } from '@/runa/ui';
+import { actionIcons, Dialog, Button } from '@/runa/ui';
 import { ref, watch, nextTick } from 'vue';
 import type {
   AuthRecoveryCodesDialogProps,
@@ -59,6 +59,7 @@ watch(
     </div>
     <template #footer>
       <Button
+        :icon="actionIcons.confirm"
         intent="neutral"
         variant="outline"
         :busy="busy"

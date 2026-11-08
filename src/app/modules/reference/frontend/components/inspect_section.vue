@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { AdminSection, useAdminLocale } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
-import { Button, Card } from '@/runa/ui';
+import { actionIcons, Button, Card } from '@/runa/ui';
 const props = defineProps<AdminSectionPresentationProps>();
 const refreshing = ref(false);
 async function refresh() {
@@ -24,6 +24,7 @@ const { t } = useAdminLocale();
     >
     <template #actions>
       <Button
+        :icon="actionIcons.refresh"
         intent="inspect"
         size="sm"
         :busy="refreshing || controller.busy.value"

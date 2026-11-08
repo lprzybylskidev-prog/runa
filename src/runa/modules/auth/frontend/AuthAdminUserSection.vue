@@ -16,6 +16,7 @@ import type {
   AdminComponentRegistry,
 } from '@/runa/admin';
 import {
+  actionIcons,
   Alert,
   BooleanBadge,
   Button,
@@ -643,6 +644,7 @@ async function refreshTable() {
             class="md:col-span-2"
             >{{ t('Unable to load the current record.') }}
             <Button
+              :icon="actionIcons.refresh"
               intent="inspect"
               :busy="controller.busy.value"
               size="sm"
@@ -686,6 +688,7 @@ async function refreshTable() {
                 <Button
                   v-for="command in rowCommands"
                   :key="command.key"
+                  :icon="actionIcons.revoke"
                   intent="danger"
                   size="sm"
                   variant="outline"
@@ -728,6 +731,7 @@ async function refreshTable() {
                 <div v-if="!section.readonly" class="mt-3 flex flex-wrap gap-2">
                   <Button
                     v-if="kind === 'secondary'"
+                    :icon="actionIcons.edit"
                     intent="commit"
                     size="sm"
                     variant="outline"
@@ -746,6 +750,7 @@ async function refreshTable() {
                       )[kind]?.includes(command.key),
                     )"
                     :key="command.key"
+                    :icon="kind === 'secondary' ? 'trash' : 'shield-x'"
                     intent="danger"
                     size="sm"
                     variant="outline"
@@ -780,6 +785,7 @@ async function refreshTable() {
               class="flex gap-2"
             >
               <Button
+                :icon="actionIcons.refresh"
                 intent="inspect"
                 size="sm"
                 :disabled="
@@ -791,6 +797,7 @@ async function refreshTable() {
                 >{{ t('Latest entries') }}</Button
               >
               <Button
+                :icon="actionIcons.load"
                 intent="inspect"
                 size="sm"
                 :disabled="
@@ -1024,6 +1031,7 @@ async function refreshTable() {
             !section.readonly &&
             (dirty || kind === 'secondary')
           "
+          :icon="actionIcons.save"
           intent="commit"
           type="submit"
           :busy="controller.busy.value"
@@ -1041,6 +1049,7 @@ async function refreshTable() {
         >
         <Button
           v-if="dirty && !section.readonly"
+          :icon="actionIcons.discard"
           intent="discard"
           :disabled="controller.busy.value"
           @click="revert"
@@ -1048,6 +1057,7 @@ async function refreshTable() {
         >
         <Button
           v-if="kind === 'secondary' && get('address_id')"
+          :icon="actionIcons.cancel"
           intent="cancel"
           :disabled="controller.busy.value"
           @click="

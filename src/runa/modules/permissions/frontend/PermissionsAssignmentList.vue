@@ -2,7 +2,12 @@
 import { computed, nextTick, onScopeDispose, reactive, ref, watch } from 'vue';
 import { useAdminLocale, useAdminResource } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
-import { Button, ContentLoading, FormNotifications } from '@/runa/ui';
+import {
+  actionIcons,
+  Button,
+  ContentLoading,
+  FormNotifications,
+} from '@/runa/ui';
 const props = defineProps<
   AdminSectionPresentationProps & {
     field: 'roles' | 'permissions';
@@ -363,6 +368,7 @@ const locked = computed(
     >
       <template #actions
         ><Button
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="resource.busy.value || selectedResource.busy.value"
           size="sm"

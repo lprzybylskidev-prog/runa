@@ -9,7 +9,13 @@ import {
   AuthPresentationProvider,
   useAuthPresentation,
 } from '@/runa/auth';
-import { Alert, Button, MinimalLayout, getModulePresentation } from '@/runa/ui';
+import {
+  actionIcons,
+  Alert,
+  Button,
+  MinimalLayout,
+  getModulePresentation,
+} from '@/runa/ui';
 import type { NavigationEntry } from '@/runa/ui';
 import type { AdminApplicationProps, AdminController } from './contracts';
 import { useAdmin } from './useAdmin';
@@ -119,9 +125,12 @@ const validPath = computed(
             tone="danger"
           >
             {{ tr('Session could not be loaded.') }}
-            <Button intent="inspect" @click="controller.session.refresh">{{
-              tr('Retry')
-            }}</Button>
+            <Button
+              :icon="actionIcons.refresh"
+              intent="inspect"
+              @click="controller.session.refresh"
+              >{{ tr('Retry') }}</Button
+            >
           </Alert>
           <Alert v-else tone="warning">
             {{
@@ -130,9 +139,12 @@ const validPath = computed(
                   tr('The administrator panel is unavailable.'),
               )
             }}
-            <Button intent="inspect" @click="controller.refresh">{{
-              tr('Retry')
-            }}</Button>
+            <Button
+              :icon="actionIcons.refresh"
+              intent="inspect"
+              @click="controller.refresh"
+              >{{ tr('Retry') }}</Button
+            >
           </Alert>
         </component>
       </template>

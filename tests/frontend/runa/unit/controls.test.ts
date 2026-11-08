@@ -172,3 +172,83 @@ it('distinguishes mixed Auth tools from concrete operation effects', () => {
     mount(Button, { props: { intent: 'mixed' } }).attributes('data-tone'),
   ).toBe('primary');
 });
+
+it.each(['sm', 'md', 'lg'] as const)(
+  'semantic icons preserve %s labelled action geometry while busy',
+  async (size) => {
+    const wrapper = mount(Button, {
+      attachTo: document.body,
+      props: { size, icon: 'device-floppy', type: 'submit', intent: 'commit' },
+      slots: { default: 'Zapisz zmiany' },
+    });
+    const button = wrapper.element as HTMLButtonElement;
+    const bounds = () => [
+      button.getBoundingClientRect().width,
+      button.getBoundingClientRect().height,
+    ];
+    const original = bounds();
+    const glyphSize = wrapper.get('svg').attributes('width');
+    expect(wrapper.get('svg').attributes('aria-hidden')).toBe('true');
+    expect(wrapper.text()).toBe('Zapisz zmiany');
+    await wrapper.setProps({ busy: true });
+    expect(wrapper.find('svg').exists()).toBe(false);
+    expect(wrapper.get('.button-spinner').attributes('aria-hidden')).toBe(
+      'true',
+    );
+    expect(
+      wrapper.get('.app-spinner-ring').element.getBoundingClientRect().width,
+    ).toBe(Number(glyphSize));
+    expect(bounds()).toEqual(original);
+    expect(wrapper.text()).toBe('Zapisz zmiany');
+    expect(wrapper.attributes('type')).toBe('submit');
+    await wrapper.setProps({ busy: false, icon: 'send' });
+    expect(wrapper.getComponent(Icon).props('name')).toBe('send');
+    expect(bounds()).toEqual(original);
+  },
+);
+
+it('semantic icons retain native link semantics and render every catalogued glyph', async () => {
+  const { LinkButton, actionIcons } = await import('@/runa/ui');
+  const { iconNames } =
+    await import('../../../../src/runa/resources/js/runa/ui/icons');
+  const link = mount(LinkButton, {
+    props: { href: '/account', icon: actionIcons.inspect },
+    slots: { default: 'Konto' },
+  });
+  expect(link.element.tagName).toBe('A');
+  expect(link.attributes('href')).toBe('/account');
+  expect(link.text()).toBe('Konto');
+  for (const name of iconNames) {
+    const icon = mount(Icon, { props: { name } });
+    expect(
+      icon
+        .find('path, rect, circle, line, polyline, polygon, ellipse')
+        .exists(),
+      name,
+    ).toBe(true);
+    expect(icon.attributes('aria-hidden')).toBe('true');
+    icon.unmount();
+  }
+});
+
+it('semantic icons retain explicit final-action selection and confirmation opt-out', async () => {
+  const { ConfirmDialog } = await import('@/runa/ui');
+  const wrapper = mount(ConfirmDialog, {
+    props: {
+      modelValue: true,
+      title: 'Usuń przykład',
+      confirmLabel: 'Usuń',
+      confirmIntent: 'danger',
+      confirmIcon: 'trash',
+    },
+  });
+  const finalAction = () =>
+    wrapper
+      .findAllComponents(Button)
+      .find((button) => button.text() === 'Usuń')!;
+  expect(finalAction().props('icon')).toBe('trash');
+  expect(finalAction().attributes('data-tone')).toBe('danger');
+  await wrapper.setProps({ confirmIcon: false });
+  expect(finalAction().find('svg').exists()).toBe(false);
+  expect(finalAction().text()).toBe('Usuń');
+});

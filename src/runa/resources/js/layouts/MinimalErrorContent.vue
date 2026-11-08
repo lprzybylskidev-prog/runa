@@ -20,7 +20,9 @@ defineProps<{
   <p class="mt-4 text-sm leading-7 text-muted">{{ description }}</p>
   <div class="mt-6 flex flex-wrap gap-3 text-sm">
     <form action="/" method="get">
-      <AppButton intent="neutral" type="submit">{{ home }}</AppButton>
+      <AppButton icon="home" intent="neutral" type="submit">{{
+        home
+      }}</AppButton>
     </form>
     <form v-if="[419, 429, 500, 503].includes(status)" method="get">
       <input type="hidden" name="lang" :value="locale" />

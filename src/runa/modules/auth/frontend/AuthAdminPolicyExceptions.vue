@@ -2,7 +2,14 @@
 import { computed, ref } from 'vue';
 import { useAdminLocale } from '@/runa/admin';
 import type { AdminJson, AdminSectionPresentationProps } from '@/runa/admin';
-import { Alert, Badge, Button, Card, ContentLoading } from '@/runa/ui';
+import {
+  actionIcons,
+  Alert,
+  Badge,
+  Button,
+  Card,
+  ContentLoading,
+} from '@/runa/ui';
 import AuthPolicyExceptionFacts from './AuthPolicyExceptionFacts.vue';
 import { policyRuleNames, usePolicyExceptions } from './policyExceptions';
 const props = defineProps<AdminSectionPresentationProps>();
@@ -76,6 +83,7 @@ function operation(key: string, revoke = false) {
       <Alert v-if="!record" tone="warning"
         >{{ t('Unable to load the current record.') }}
         <Button
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="refreshing"
           size="sm"
@@ -110,6 +118,7 @@ function operation(key: string, revoke = false) {
               <div v-if="writable" class="flex flex-wrap gap-2">
                 <Button
                   v-if="choices.includes(key)"
+                  :icon="actionIcons.edit"
                   intent="commit"
                   size="sm"
                   variant="outline"
@@ -127,6 +136,7 @@ function operation(key: string, revoke = false) {
                 >
                 <Button
                   v-if="active.some((row) => row.key === key)"
+                  icon="rotate-2"
                   intent="caution"
                   size="sm"
                   variant="outline"

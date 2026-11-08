@@ -202,21 +202,21 @@ function drop(key: string) {
               />
               <div class="flex items-center gap-1">
                 <AppButton
+                  icon="arrow-up"
                   intent="neutral"
                   size="sm"
                   :disabled="index === 0"
                   :aria-label="`${text('Przesuń wyżej', 'Move up')}: ${columns.find((c) => c.key === column.key)?.label}`"
                   @click="controller.move(column.key, -1)"
-                  >↑</AppButton
-                >
+                ></AppButton>
                 <AppButton
+                  icon="arrow-down"
                   intent="neutral"
                   size="sm"
                   :disabled="index === state.current.columns.length - 1"
                   :aria-label="`${text('Przesuń niżej', 'Move down')}: ${columns.find((c) => c.key === column.key)?.label}`"
                   @click="controller.move(column.key, 1)"
-                  >↓</AppButton
-                >
+                ></AppButton>
               </div>
               <div
                 class="col-span-3 flex items-start justify-end gap-2 sm:col-span-1"
@@ -240,18 +240,19 @@ function drop(key: string) {
                   />
                 </div>
                 <AppButton
+                  :icon="'rotate-2'"
                   intent="neutral"
                   size="sm"
                   icon-only
                   :disabled="column.width === undefined"
                   :aria-label="`${text('Automatyczna szerokość', 'Automatic width')}: ${columns.find((c) => c.key === column.key)?.label}`"
                   @click="width(column.key, null)"
-                  >↺</AppButton
-                >
+                ></AppButton>
               </div>
             </li>
           </ul>
           <AppButton
+            icon="rotate-2"
             intent="discard"
             size="sm"
             @click="
@@ -281,6 +282,7 @@ function drop(key: string) {
           />
           <div class="flex flex-wrap gap-2">
             <AppButton
+              :icon="actionIcons.save"
               intent="commit"
               variant="outline"
               size="sm"
@@ -294,6 +296,7 @@ function drop(key: string) {
               >{{ text('Zapisz jako nowy', 'Save as new') }}</AppButton
             >
             <AppButton
+              :icon="actionIcons.save"
               intent="commit"
               size="sm"
               :disabled="!selected || invalidWidths"
@@ -306,6 +309,7 @@ function drop(key: string) {
               >{{ text('Zapisz zmiany', 'Save changes') }}</AppButton
             >
             <AppButton
+              :icon="actionIcons.edit"
               intent="commit"
               variant="outline"
               size="sm"
@@ -319,6 +323,7 @@ function drop(key: string) {
               >{{ text('Zmień nazwę', 'Rename') }}</AppButton
             >
             <AppButton
+              :icon="actionIcons.confirm"
               intent="commit"
               variant="outline"
               size="sm"
@@ -327,6 +332,7 @@ function drop(key: string) {
               >{{ text('Ustaw domyślny', 'Set default') }}</AppButton
             >
             <AppButton
+              :icon="actionIcons.cancel"
               intent="caution"
               size="sm"
               :disabled="!state.defaultId"
@@ -334,6 +340,7 @@ function drop(key: string) {
               >{{ text('Usuń domyślny', 'Clear default') }}</AppButton
             >
             <AppButton
+              :icon="actionIcons.delete"
               intent="danger"
               size="sm"
               variant="outline"
@@ -342,9 +349,15 @@ function drop(key: string) {
               >{{ text('Usuń widok', 'Delete view') }}</AppButton
             >
           </div>
-          <AppButton intent="discard" size="sm" @click="controller.reset()">{{
-            text('Przywróć ustawienia początkowe', 'Reset current view')
-          }}</AppButton>
+          <AppButton
+            icon="rotate-2"
+            intent="discard"
+            size="sm"
+            @click="controller.reset()"
+            >{{
+              text('Przywróć ustawienia początkowe', 'Reset current view')
+            }}</AppButton
+          >
           <p v-if="state.defaultId" class="text-xs text-muted">
             {{ text('Domyślny', 'Default') }}:
             {{ state.views.find((v) => v.id === state.defaultId)?.name }}

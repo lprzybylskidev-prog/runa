@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue';
-import { Button, Card, Form, FormNotifications } from '@/runa/ui';
+import { actionIcons, Button, Card, Form, FormNotifications } from '@/runa/ui';
 import { request } from '@/runa/http';
 
 defineOptions({ name: 'ReferencePanel' });
@@ -82,9 +82,13 @@ async function load() {
         </dl>
       </slot>
       <template #actions>
-        <Button type="submit" intent="inspect" :busy="busy">{{
-          copy.load
-        }}</Button>
+        <Button
+          :icon="actionIcons.load"
+          type="submit"
+          intent="inspect"
+          :busy="busy"
+          >{{ copy.load }}</Button
+        >
       </template>
     </Form>
   </Card>

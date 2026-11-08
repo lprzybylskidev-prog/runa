@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onScopeDispose, nextTick } from 'vue';
 import {
+  actionIcons,
   Button,
   ConfirmDialog,
   FormNotifications,
@@ -217,6 +218,7 @@ async function remove() {
     :title="text('Usunąć dodatkowy adres?', 'Remove secondary address?')"
     :confirm-label="text('Usuń adres', 'Remove address')"
     confirm-intent="danger"
+    confirm-icon="trash"
     :locale="locale"
     :busy="busy"
     @update:model-value="!$event && (removing = undefined)"
@@ -255,6 +257,7 @@ async function remove() {
       <template #actions>
         <Button
           v-if="failure === 'csrf'"
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="busy"
           @click="account.refreshCsrf"

@@ -2,6 +2,7 @@
 import { computed, onScopeDispose, ref, watch } from 'vue';
 import { ApiError, request } from '@/runa/http';
 import {
+  actionIcons,
   Avatar,
   Button,
   ConfirmDialog,
@@ -223,6 +224,7 @@ async function mutate(remove = false) {
     <div class="flex flex-wrap gap-3">
       <Button
         v-if="files.length"
+        :icon="actionIcons.crop"
         intent="commit"
         :disabled="controller.busy.value || cropping"
         @click="cropOpen = true"
@@ -230,6 +232,7 @@ async function mutate(remove = false) {
       >
       <Button
         v-if="originals.length"
+        :icon="actionIcons.discard"
         intent="discard"
         :disabled="controller.busy.value || cropping"
         @click="clearDraft"
@@ -237,6 +240,7 @@ async function mutate(remove = false) {
       >
       <Button
         v-if="files.length"
+        :icon="actionIcons.save"
         intent="commit"
         :disabled="!!conflict || controller.busy.value || cropping"
         @click="mutate()"
@@ -244,6 +248,7 @@ async function mutate(remove = false) {
       >
       <Button
         v-if="record.values.has_avatar"
+        :icon="actionIcons.delete"
         intent="danger"
         variant="outline"
         :disabled="controller.busy.value || cropping || !!originals.length"
@@ -272,12 +277,14 @@ async function mutate(remove = false) {
       />
       <template #footer>
         <Button
+          :icon="actionIcons.cancel"
           intent="cancel"
           :disabled="cropping"
           @click="closeCrop(false)"
           >{{ tr({ pl: 'Anuluj', en: 'Cancel' }) }}</Button
         >
         <Button
+          :icon="actionIcons.confirm"
           intent="commit"
           :busy="cropping"
           :disabled="!cropReady"
@@ -287,6 +294,8 @@ async function mutate(remove = false) {
       </template>
     </Dialog>
     <ConfirmDialog
+      confirm-intent="danger"
+      confirm-icon="trash"
       :model-value="removing"
       :locale="locale"
       :busy="controller.busy.value"

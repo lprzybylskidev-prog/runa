@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import { computed } from 'vue';
 import AppAlert from './AppAlert.vue';
@@ -94,6 +95,7 @@ const errorText = computed(() => {
       <div class="mt-2 flex flex-wrap gap-2">
         <AppButton
           v-if="operation.canCancel.value"
+          :icon="actionIcons.cancel"
           intent="caution"
           size="sm"
           @click="operation.cancel()"
@@ -101,6 +103,7 @@ const errorText = computed(() => {
         >
         <AppButton
           v-if="operation.canRetry.value"
+          :icon="actionIcons.refresh"
           intent="inspect"
           size="sm"
           @click="operation.retry()"
@@ -108,6 +111,7 @@ const errorText = computed(() => {
         >
         <AppButton
           v-if="operation.download.value"
+          :icon="actionIcons.load"
           intent="inspect"
           size="sm"
           @click="downloadExport(operation.download.value)"

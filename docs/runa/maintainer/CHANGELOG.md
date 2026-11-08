@@ -4,6 +4,13 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Extend the pinned local Tabler catalogue with consistent explicit action icons
+  across supplied forms, module operations and the reference workspace. Add public
+  Button/LinkButton icon and ConfirmDialog confirmIcon composition, semantic
+  actionIcons/feedbackIcons, decorative feedback/empty icons and module-owned
+  frontend/icon.ts declarations. Preserve labels, action colors, native controls,
+  busy geometry and all guarded business/security behavior.
+
 - Remove retired discovery-only bin/check and bin/operations aliases; retained
   recovery aliases point directly to bin/command. Reconcile MT-2026-002 as
   resolved in the already released platform 0.5.0; retain MT-2026-001.

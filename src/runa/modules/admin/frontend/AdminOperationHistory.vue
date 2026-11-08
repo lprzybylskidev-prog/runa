@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { withTableFilters } from '@/runa/ui';
+import { actionIcons, withTableFilters } from '@/runa/ui';
 import { formatApplicationInstant, instantTimestamp } from '@/runa/ui';
 import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue';
 import { FormNotifications, Badge, Button, Table } from '@/runa/ui';
@@ -272,6 +272,7 @@ async function exportRows() {
     <FormNotifications :locale="locale" :error="!pending ? tr(error) : ''">
       <template #actions
         ><Button
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="loading"
           :disabled="pending"
@@ -304,6 +305,7 @@ async function exportRows() {
       >
       <template #actions="{ row }">
         <Button
+          :icon="actionIcons.inspect"
           intent="inspect"
           size="sm"
           :disabled="
@@ -316,6 +318,7 @@ async function exportRows() {
         <Button
           v-for="command in actions(row)"
           :key="command"
+          :icon="command === 'modules.resume' ? 'player-play' : 'x'"
           :intent="command === 'modules.resume' ? 'commit' : 'caution'"
           size="sm"
           :disabled="
@@ -328,6 +331,7 @@ async function exportRows() {
     </Table>
     <Button
       v-if="cursor"
+      :icon="actionIcons.load"
       intent="inspect"
       :busy="loading"
       size="sm"

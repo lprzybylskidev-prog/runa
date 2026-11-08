@@ -662,6 +662,7 @@ function changePage(value: number) {
           }}</AppButton
         >
         <AppButton
+          :icon="actionIcons.cancel"
           intent="neutral"
           size="sm"
           :disabled="!selectedCount"
@@ -853,9 +854,11 @@ function changePage(value: number) {
                 "
                 class="px-4 py-8 text-center text-muted"
               >
-                <span role="status">{{
-                  text('Brak wyników', 'No results')
-                }}</span>
+                <span role="status" class="inline-flex items-center gap-2"
+                  ><AppIcon name="inbox" :size="20" />{{
+                    text('Brak wyników', 'No results')
+                  }}</span
+                >
               </td>
             </tr>
             <tr
@@ -940,6 +943,7 @@ function changePage(value: number) {
       />
       <div v-else class="flex items-center gap-2">
         <AppButton
+          :icon="actionIcons.previous"
           intent="neutral"
           size="sm"
           :disabled="loading || query.page <= 1"
@@ -947,6 +951,7 @@ function changePage(value: number) {
           >{{ text('Poprzednia', 'Previous') }}</AppButton
         ><span>{{ query.page }}</span
         ><AppButton
+          :icon="actionIcons.next"
           intent="neutral"
           size="sm"
           :disabled="loading || !page?.hasNext"

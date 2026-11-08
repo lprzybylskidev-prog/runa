@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, useId, watch } from 'vue';
-import { Badge, Button, Form, TextInput } from '@/runa/ui';
+import { actionIcons, Badge, Button, Form, TextInput } from '@/runa/ui';
 import type { AuthSecondaryEmailFieldsProps } from './contracts/fields';
 const props = defineProps<AuthSecondaryEmailFieldsProps>();
 const emit = defineEmits<{
@@ -80,6 +80,7 @@ defineExpose({
         <div class="flex flex-wrap gap-1">
           <Button
             v-if="canChange"
+            :icon="actionIcons.edit"
             intent="commit"
             variant="ghost"
             size="sm"
@@ -92,6 +93,7 @@ defineExpose({
           >
           <Button
             v-if="!address.verified && canChange"
+            :icon="actionIcons.send"
             intent="commit"
             :busy="busy"
             variant="ghost"
@@ -108,6 +110,7 @@ defineExpose({
           >
           <Button
             v-if="!address.verified && canVerify"
+            :icon="actionIcons.confirm"
             intent="commit"
             variant="ghost"
             size="sm"
@@ -123,6 +126,7 @@ defineExpose({
           >
           <Button
             v-if="canRemove"
+            :icon="actionIcons.delete"
             intent="danger"
             variant="ghost"
             size="sm"
@@ -190,6 +194,7 @@ defineExpose({
         </div>
         <div class="flex flex-wrap gap-2">
           <Button
+            :icon="actionIcons.save"
             intent="commit"
             type="submit"
             :busy="busy"
@@ -202,6 +207,7 @@ defineExpose({
           >
           <Button
             v-if="editing || email"
+            :icon="actionIcons.cancel"
             intent="cancel"
             :disabled="busy"
             @click="emit('cancel')"

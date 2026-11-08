@@ -2,6 +2,9 @@
 
 ## 2.0.0 — Unreleased
 
+- Use the shared semantic action/feedback icons with visible labels and preserved
+  busy, keyboard, proof and operation behavior; no backend contract/storage change.
+
 - Carry snapshot catalogs/values and Auth management collections as native json
   fields, with strict backend/frontend projection and declaration constraints.
   Snapshot consumers must provide native lists/maps; encoded strings are refused.

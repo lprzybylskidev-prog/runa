@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { computed } from 'vue';
 import { useLocale } from '../composables/useLocale';
 import { useFeedbackTone } from '../composables/useFeedbackTone';
 import AppButton from './AppButton.vue';
+import AppIcon from './AppIcon.vue';
+import { feedbackIcons } from '../runa/ui/actionIcons';
 import type { FeedbackTone } from '../runa/ui/feedback';
 const props = withDefaults(
   defineProps<{
@@ -23,13 +26,6 @@ const props = withDefaults(
   },
 );
 defineEmits<{ close: [] }>();
-const symbols = {
-  neutral: 'i',
-  success: '✓',
-  info: 'i',
-  warning: '!',
-  danger: '!',
-};
 const tone = useFeedbackTone(() => props.tone, 'info');
 const { t } = useLocale();
 const closeLabel = computed(() => props.closeLabel || t('close'));
@@ -42,7 +38,7 @@ const closeLabel = computed(() => props.closeLabel || t('close'));
     :role="announce ? (tone === 'danger' ? 'alert' : 'status') : undefined"
     :aria-atomic="announce || undefined"
   >
-    <span class="alert-symbol" aria-hidden="true">{{ symbols[tone] }}</span>
+    <AppIcon :name="feedbackIcons[tone]" :size="20" class="alert-symbol" />
     <div class="alert-content">
       <p v-if="title" class="font-semibold">{{ title }}</p>
       <div v-if="$slots.default"><slot /></div>
@@ -55,14 +51,14 @@ const closeLabel = computed(() => props.closeLabel || t('close'));
     </div>
     <AppButton
       v-if="dismissible"
+      :icon="actionIcons.cancel"
       intent="cancel"
       icon-only
       size="sm"
       :variant="tone === 'neutral' ? 'neutral' : 'ghost'"
       :aria-label="closeLabel"
       @click="$emit('close')"
-      >×</AppButton
-    >
+    ></AppButton>
   </div>
 </template>
 <style scoped>
@@ -101,9 +97,6 @@ const closeLabel = computed(() => props.closeLabel || t('close'));
   height: 20px;
   align-items: center;
   justify-content: center;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  font-weight: 600;
   flex-shrink: 0;
 }
 .alert-content {

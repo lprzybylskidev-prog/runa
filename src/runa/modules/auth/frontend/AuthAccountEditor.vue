@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
+  actionIcons,
   Avatar,
   Button,
   Card,
@@ -283,9 +284,13 @@ function closeCrop(value: boolean) {
             {{ profile.email }}
           </p>
           <template #actions
-            ><Button intent="commit" type="submit" :busy="busy">{{
-              text('Zapisz dane', 'Save details')
-            }}</Button></template
+            ><Button
+              :icon="actionIcons.save"
+              intent="commit"
+              type="submit"
+              :busy="busy"
+              >{{ text('Zapisz dane', 'Save details') }}</Button
+            ></template
           >
         </Form>
         <dl
@@ -310,6 +315,7 @@ function closeCrop(value: boolean) {
         </dl>
         <Button
           v-if="has('email_verification_enabled') && !profile.email_verified"
+          :icon="actionIcons.send"
           intent="commit"
           class="mt-5"
           :busy="busy"
@@ -353,9 +359,13 @@ function closeCrop(value: boolean) {
             />
           </div>
           <template #actions
-            ><Button intent="commit" type="submit" :busy="busy">{{
-              text('Zapisz hasło', 'Save password')
-            }}</Button></template
+            ><Button
+              :icon="actionIcons.password"
+              intent="commit"
+              type="submit"
+              :busy="busy"
+              >{{ text('Zapisz hasło', 'Save password') }}</Button
+            ></template
           >
         </Form>
       </Card>
@@ -443,6 +453,7 @@ function closeCrop(value: boolean) {
             />
             <Button
               v-if="originals[0] && files.length"
+              :icon="actionIcons.crop"
               intent="commit"
               @click="cropOpen = true"
               >{{ text('Popraw kadr', 'Adjust crop') }}</Button
@@ -450,6 +461,7 @@ function closeCrop(value: boolean) {
           </template>
           <template #actions
             ><Button
+              :icon="actionIcons.save"
               intent="commit"
               type="submit"
               :busy="busy || cropping"
@@ -458,6 +470,7 @@ function closeCrop(value: boolean) {
             >
             <Button
               v-if="canAvatar && profile.has_avatar"
+              :icon="actionIcons.delete"
               intent="danger"
               variant="outline"
               :disabled="busy || cropping || originals.length > 0"
@@ -489,6 +502,7 @@ function closeCrop(value: boolean) {
     :title="text('Usunąć avatar?', 'Remove avatar?')"
     :confirm-label="text('Usuń avatar', 'Remove avatar')"
     confirm-intent="danger"
+    confirm-icon="trash"
     :locale="locale"
     :busy="busy"
     @confirm="confirmRemoval"
@@ -529,6 +543,7 @@ function closeCrop(value: boolean) {
       <template #actions>
         <Button
           v-if="failure === 'csrf'"
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="busy"
           @click="account.refreshCsrf"
@@ -556,10 +571,15 @@ function closeCrop(value: boolean) {
       @ready="cropReady = $event"
     />
     <template #footer>
-      <Button intent="cancel" :disabled="cropping" @click="closeCrop(false)">{{
-        text('Anuluj', 'Cancel')
-      }}</Button>
       <Button
+        :icon="actionIcons.cancel"
+        intent="cancel"
+        :disabled="cropping"
+        @click="closeCrop(false)"
+        >{{ text('Anuluj', 'Cancel') }}</Button
+      >
+      <Button
+        :icon="actionIcons.confirm"
         intent="commit"
         :busy="cropping"
         :disabled="!cropReady"

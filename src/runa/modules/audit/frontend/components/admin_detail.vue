@@ -3,6 +3,7 @@ import { useAdminLocale } from '@/runa/admin';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, ref, watch } from 'vue';
 import {
+  actionIcons,
   formatApplicationInstant,
   FormNotifications,
   Button,
@@ -98,9 +99,13 @@ function display(key: string) {
       <p class="text-sm text-muted">
         {{ tr('Unable to load the current record.') }}
       </p>
-      <Button intent="inspect" size="sm" @click="retry">{{
-        tr('Retry loading')
-      }}</Button>
+      <Button
+        :icon="actionIcons.refresh"
+        intent="inspect"
+        size="sm"
+        @click="retry"
+        >{{ tr('Retry loading') }}</Button
+      >
     </div>
     <p v-else-if="!record.public_id" class="text-sm text-muted">
       {{ tr('Select an event to read its immutable details.') }}
@@ -213,6 +218,7 @@ function display(key: string) {
         </p>
         <div class="flex flex-wrap gap-2">
           <Button
+            :icon="actionIcons.load"
             intent="inspect"
             size="sm"
             :disabled="resource.busy.value || !record.values.payload_next"
@@ -220,6 +226,7 @@ function display(key: string) {
             >{{ tr('Next payload part') }}</Button
           >
           <Button
+            :icon="actionIcons.previous"
             intent="inspect"
             size="sm"
             :disabled="

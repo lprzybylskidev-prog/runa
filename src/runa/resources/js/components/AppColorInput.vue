@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { computed, ref, watch } from 'vue';
 import AppTextInput from './AppTextInput.vue';
 import AppPopover from './AppPopover.vue';
@@ -237,6 +238,7 @@ function update(value: string | null) {
             class="mt-3 flex justify-between gap-2 border-t border-line pt-3"
           >
             <AppButton
+              :icon="actionIcons.cancel"
               intent="neutral"
               size="sm"
               variant="ghost"
@@ -246,6 +248,7 @@ function update(value: string | null) {
               "
               >{{ text('Wyczyść', 'Clear') }}</AppButton
             ><AppButton
+              :icon="actionIcons.confirm"
               intent="neutral"
               size="sm"
               variant="soft"

@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import AppIcon from './AppIcon.vue';
 import type { IconName } from '../runa/ui/icons';
-defineProps<{ title: string; description?: string; icon?: IconName }>();
+withDefaults(
+  defineProps<{ title: string; description?: string; icon?: IconName }>(),
+  { icon: 'inbox', description: '' },
+);
 </script>
 <template>
   <div

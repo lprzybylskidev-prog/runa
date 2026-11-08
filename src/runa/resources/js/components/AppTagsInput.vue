@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { useLocale } from '../composables/useLocale';
 import { computed, nextTick, ref, watch } from 'vue';
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
@@ -127,14 +128,15 @@ const duplicateMessage = computed(
           <span class="min-w-0 break-all">{{ tag }}</span
           ><AppButton
             v-if="!readonly"
+            icon-only
+            :icon="actionIcons.cancel"
             intent="discard"
             size="sm"
             variant="ghost"
             :disabled="disabled"
             :aria-label="`${removeLabel}: ${tag}`"
             @click="remove(index)"
-            >×</AppButton
-          >
+          ></AppButton>
         </li>
       </TransitionGroup>
       <input

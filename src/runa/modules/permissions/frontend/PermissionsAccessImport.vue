@@ -5,7 +5,7 @@ import type {
   AdminFieldLookup,
   AdminSectionPresentationProps,
 } from '@/runa/admin';
-import { Button, Dialog, FormNotifications } from '@/runa/ui';
+import { actionIcons, Button, Dialog, FormNotifications } from '@/runa/ui';
 const props = defineProps<AdminSectionPresentationProps & { dirty: boolean }>();
 const emit = defineEmits<{
   submit: [section: string, command: string, fields?: string[]];
@@ -117,6 +117,7 @@ watch(
       <Button
         v-for="key in methods"
         :key="key"
+        :icon="actionIcons.capture"
         intent="mixed"
         size="sm"
         :disabled="blocked"
@@ -179,6 +180,7 @@ watch(
       </div>
       <template #footer>
         <Button
+          :icon="actionIcons.confirm"
           :intent="
             controller.values.value[path('mode')] === 'replace'
               ? 'discard'
@@ -189,6 +191,7 @@ watch(
           >{{ text('Zastosuj', 'Apply') }}</Button
         >
         <Button
+          :icon="actionIcons.cancel"
           intent="neutral"
           :disabled="controller.busy.value"
           @click="close"

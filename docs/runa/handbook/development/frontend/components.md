@@ -106,7 +106,7 @@ Viewport clamping and collision fallback remain active.
 
 ## AppButton
 
-- Source: `src/runa/resources/js/components/AppButton.vue`; public `Button`. Native attributes/listeners inherit; safe default `type="button"`. No shell dependency.
+- Source: `src/runa/resources/js/components/AppButton.vue`; public `Button`. Native attributes/listeners inherit; safe default `type="button"`. Optional leading icon and busy replacement follow [semantic icons](#semantic-icons). No shell dependency.
 - `variant`: neutral, solid, outline, soft, ghost. `tone`: neutral, primary, secondary, success, danger, warning, info, accent. Public `ButtonIntent` supplies action meaning; `ButtonTone` includes neutral. `size`: sm (36px), md (44px), lg (52px). Use md for usual touch actions.
 - `busy?: boolean` disables activation and exposes aria-busy plus a decorative spinner; slot text supplies context. When omitted, a `type="submit"` Button inherits the nearest public Form's busy state; other buttons and standalone submit buttons default to false. Explicit true/false overrides this local default. The private form-activity injection is UI implementation, not another public entrypoint. `disabled` uses native semantics. `aria-pressed` supports toggle feedback. `iconOnly?: boolean` (default false; `icon-only` in templates) makes a square and hides the default slot while busy; provide an accessible name through `aria-label`. Text buttons keep their slot while busy. Tooltip is separate.
 - Intent overrides a low-level tone. With no explicit variant, every colored intent uses outline; neutral uses neutral. Shipped views use no solid action fills, including main Save and confirmation actions. The low-level solid variant remains available for explicit custom presentation; it is not the default visual language. Without intent/tone, the button is neutral. Busy preserves the action color and blocks activation; unavailable controls use disabled tokens.
@@ -580,8 +580,9 @@ The complete shape is `{readonly id: string; readonly name: {pl:string;en:string
 readonly description: {pl:string;en:string}; readonly icon: IconName}`. Source home
 is `src/runa/resources/js/runa/ui/modulePresentation.ts`, delivered in the frontend
 runtime. Names/descriptions come from validated platform/App module manifests;
-platform icons use one source-owned map and unknown modules use layers-intersect
-with their ID as the name. Welcome filters this catalogue to platform modules;
+Core icons use source-owned defaults; the [module icon declaration](#module-icon-declaration)
+selects a consistent owned icon. Undeclared unknown modules use layers-intersect;
+missing catalogue identities use their ID as the name. Welcome filters this catalogue to platform modules;
 Admin applies it only to already authorized owners/diagnostic results. This source
 catalogue does not describe installation, health, enabled state or access.
 
@@ -662,3 +663,61 @@ NumberInput and FormField label presentation. Use an explicit stable ID for a
 visible external label; hideLabel keeps the built-in label visually hidden.
 The Admin module settings editor uses this contract for its compact rows; see
 [named settings](../../modules/admin/settings-snapshots.md#localized-setting-identity-and-compact-presentation).
+
+## Semantic icons
+
+UI owns the runtime icon catalogue and semantic action vocabulary for platform
+views, modules and application presentation. Consume `Icon`, `IconName`,
+`actionIcons` and `feedbackIcons` from `@/runa/ui`; implementation lives in
+`resources/js/components/AppIcon.vue` and `resources/js/runa/ui/icons.ts` /
+`actionIcons.ts` under src/runa. Local SVG originals and license/provenance are in
+the design assets guide. No icon package, CDN or backend permission contract is added.
+
+`Button` adds `icon?: IconName`; `LinkButton` adds `icon?: IconName`. The decorative
+leading icon inherits action color, uses 18/20/22px at Button sm/md/lg (LinkButton
+20px) and does not replace the slot label. The existing default slot and native
+attributes/events remain supported; omitted icon renders no automatic symbol.
+Button's busy spinner occupies the same leading position/size, replacing icon while
+retaining text. Icon-only consumers may use either this prop or their existing
+slot; provide the accessible control name. Do not supply the same icon twice.
+`ConfirmDialog` adds `confirmIcon?: IconName | false` (check by default; false opts
+out); Cancel uses x. Effects with a distinct meaning pass their own final-action
+icon independently of `confirmIntent` and proof requirements.
+
+`actionIcons` is a readonly Record with keys save, create, edit, confirm, cancel,
+close, back, discard, reset, refresh, retry, inspect, review, publish, delete,
+revoke, copy, load, capture, dispatch, send, login, register, password, trust,
+security, enable, disable, download, next, previous, history, crop and action.
+Its values are IconName. It is a presentation vocabulary, never an authorization
+or action dispatcher. Color intent and icon identity are explicit independent
+choices; do not infer them from translated labels, HTTP verbs or password prompts.
+
+Use device-floppy for save, plus/user-plus for creation, pencil for editing,
+check for confirmation, send for publication/delivery, eye for inspect/review,
+refresh for refresh/retry, copy for copy/snapshot capture, arrow-back-up for
+discard, rotate-2 for defaults, trash for deletion and shield-x for revocation.
+Feedback uses info-circle, circle-check, alert-triangle and alert-circle for
+neutral/info, success, warning and danger; text and existing live-region ownership
+remain. EmptyState defaults to inbox (an explicit icon or icon slot can replace it).
+
+Use one Tabler outline family, shared stroke/spacing and currentColor. Ordinary
+actions retain visible text; compact icon-only tools retain localized names and
+keyboard tooltips where applicable. Keep module identity stable across sidebar,
+catalogue and cards. Avoid adding decoration to every field, header or subview.
+
+### Module icon declaration
+
+Module authors own `frontend/icon.ts` inside their module, exporting a default
+`IconName`, for example `export default 'flask' satisfies IconName` with a type-only
+import from `@/runa/ui`. This is a supported frontend source extension consumed by
+the existing public `moduleCatalogue: readonly ModulePresentation[]` and
+`getModulePresentation(id: string): ModulePresentation`. Implementation stays in
+`src/runa/resources/js/runa/ui/modulePresentation.ts`; no manifest/backend field
+or protected edit is required. The declaration ships with the owning frontend;
+production still excludes development-only module source. It must be synchronous,
+side-effect-free metadata and grants no runtime availability or authority.
+
+Known Core module icons remain source-owned defaults. A module's valid declaration
+selects its catalogue icon consistently; absent/invalid declarations retain
+layers-intersect for unknown modules and the existing Core defaults. Module names,
+descriptions and guarded navigation continue to use their existing owners.

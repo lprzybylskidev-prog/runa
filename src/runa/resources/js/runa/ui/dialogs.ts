@@ -1,4 +1,5 @@
 import type { ContentLoadingShape } from './loading';
+import type { IconName } from './icons';
 import type { ButtonIntent } from './controls';
 export type DialogSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 export type DialogCloseReason = 'close' | 'escape' | 'outside';
@@ -22,4 +23,5 @@ export interface ConfirmDialogProps extends DialogProps {
   confirmLabel?: string;
   cancelLabel?: string;
   confirmIntent?: ButtonIntent | undefined;
+  confirmIcon?: IconName | false | undefined;
 }

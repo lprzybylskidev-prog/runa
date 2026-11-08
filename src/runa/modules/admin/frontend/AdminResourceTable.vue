@@ -5,6 +5,7 @@ import { adminBooleanTone } from './booleanTone';
 import { computed } from 'vue';
 import type { TableColumn } from '@/runa/ui';
 import {
+  actionIcons,
   Table,
   BooleanBadge,
   formatApplicationInstant,
@@ -62,6 +63,7 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
   >
     <template #actions
       ><Button
+        :icon="actionIcons.refresh"
         intent="inspect"
         :busy="controller.resource.busy.value"
         size="sm"
@@ -121,6 +123,7 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
               (command) => command.intent === 'create' && command.available,
             )
           "
+          :icon="actionIcons.create"
           intent="commit"
           size="sm"
           @click="controller.select(null)"
@@ -154,6 +157,7 @@ function displayCell(column: TableColumn<AdminRecord>, row: AdminRecord) {
     >
       <slot name="actions" v-bind="scope"
         ><Button
+          :icon="actionIcons.inspect"
           intent="inspect"
           size="sm"
           @click="controller.select(scope.row.public_id)"

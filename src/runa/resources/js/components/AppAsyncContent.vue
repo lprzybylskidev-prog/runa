@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { useLocale } from '../composables/useLocale';
 import { useContentMotion } from '../composables/useContentMotion';
 import { computed, ref } from 'vue';
@@ -54,6 +55,7 @@ const emptyTitle = computed(() => props.emptyTitle || t('noResults'));
           >{{ errorMessage
           }}<template v-if="retryLabel" #actions
             ><AppButton
+              :icon="actionIcons.refresh"
               intent="inspect"
               :size="actionSize"
               @click="emit('retry')"

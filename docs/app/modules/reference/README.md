@@ -338,3 +338,18 @@ credentials. Admin composition requires Admin ^2.0.0; source requires Framework
 API ^2.1.0. Use the working settings/snapshot page with its existing read/write
 grants to capture a committed label, load it without publishing, cancel back to
 the prior draft, then deliberately review/publish through the native proof flow.
+
+### Semantic icon example
+
+The development reference declares frontend/icon.ts, default-exporting the public
+IconName flask. The shared moduleCatalogue/getModulePresentation entrypoints render
+this same identity in the welcome catalogue, sidebar and Admin cards. Applications
+can add the same declaration in their own module without protected edits; it is
+presentation metadata and changes no grants, source availability or production
+exclusion. See [semantic icons](../../../runa/handbook/development/frontend/components.md#semantic-icons).
+
+The working workspace and read panel consume public Button/actionIcons for refresh,
+inspect, save, review, publication, snapshot capture/load/delete and work dispatch.
+Their visible labels, original revisions, normal full-page proof and dirty/conflict
+behavior remain with the existing controller. Button's icon is replaced by its busy
+spinner while the label and dimensions remain; the public default slot is preserved.

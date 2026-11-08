@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import AppDialog from './AppDialog.vue';
 import AppButton from './AppButton.vue';
 import type { ConfirmDialogProps, DialogCloseReason } from '../runa/ui/dialogs';
@@ -6,6 +7,7 @@ const props = withDefaults(defineProps<ConfirmDialogProps>(), {
   confirmLabel: '',
   cancelLabel: '',
   confirmIntent: 'commit',
+  confirmIcon: 'check',
   description: '',
   size: 'md',
   busy: false,
@@ -36,6 +38,7 @@ const emit = defineEmits<{
     <template #default="{ close }"><slot :close="close" /></template>
     <template #footer="{ close }"
       ><AppButton
+        :icon="actionIcons.cancel"
         intent="cancel"
         data-dialog-cancel
         :disabled="busy || !closable"
@@ -43,6 +46,7 @@ const emit = defineEmits<{
         >{{ cancelLabel || (locale === 'pl' ? 'Anuluj' : 'Cancel') }}</AppButton
       ><AppButton
         :intent="confirmIntent"
+        :icon="confirmIcon || undefined"
         :busy="busy"
         :disabled="loading"
         variant="outline"

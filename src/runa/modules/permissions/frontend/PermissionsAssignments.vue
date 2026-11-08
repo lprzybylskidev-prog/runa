@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useAdminLocale } from '@/runa/admin';
 import type { AdminSectionPresentationProps } from '@/runa/admin';
 import {
+  actionIcons,
   Card,
   Button,
   ContentLoading,
@@ -183,21 +184,29 @@ function revert() {
         />
         <template v-if="dirty && writable" #actions
           ><Button
+            :icon="actionIcons.inspect"
             intent="inspect"
             type="submit"
             variant="outline"
             :disabled="!!conflicts.length"
             >{{ t({ pl: 'Sprawdź zmiany', en: 'Review changes' }) }}</Button
-          ><Button intent="discard" @click="revert">{{
-            t({ pl: 'Cofnij zmiany', en: 'Revert changes' })
-          }}</Button></template
+          ><Button
+            :icon="actionIcons.discard"
+            intent="discard"
+            @click="revert"
+            >{{ t({ pl: 'Cofnij zmiany', en: 'Revert changes' }) }}</Button
+          ></template
         >
       </Form>
       <div v-else class="space-y-3">
         <p>{{ t('Unable to load the current record.') }}</p>
-        <Button intent="inspect" :busy="controller.busy.value" @click="retry">{{
-          t('Retry loading')
-        }}</Button>
+        <Button
+          :icon="actionIcons.refresh"
+          intent="inspect"
+          :busy="controller.busy.value"
+          @click="retry"
+          >{{ t('Retry loading') }}</Button
+        >
       </div>
     </ContentLoading>
   </Card>

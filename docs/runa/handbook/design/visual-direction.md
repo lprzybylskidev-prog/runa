@@ -137,6 +137,12 @@ Point 2 implements the configurable dual-version footer for MinimalLayout, inclu
 
 User decision (2026-10-17): use Tabler Icons as the project's icon family. This selection is approved and implemented as a small local SVG subset in the root preview. Do not infer adoption of other Tabler UI components or styling. Source revisions, preserved licenses and hashes are recorded in [asset provenance](assets.md); no icon package dependency was added.
 
+Use the [semantic icon contract](../development/frontend/components.md#semantic-icons)
+for the shared action vocabulary, busy/accessible control behavior, feedback and
+module identity declarations. Preserve visible labels on ordinary actions and use
+icons selectively where they improve recognition. Action color and password
+requirements never select an icon automatically.
+
 ## Theme development
 
 Develop the dark visual direction first, then derive a coherent light theme. Both themes remain required. REF-001 itself supplies no light palette. The derived light palette and matching dark palette were accepted by the user on 2026-10-17; see the color palette document. Validate their actual rendering during implementation.

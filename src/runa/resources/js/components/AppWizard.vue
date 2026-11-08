@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { useContentMotion } from '../composables/useContentMotion';
 import { nextTick, ref, watch } from 'vue';
 import AppButton from './AppButton.vue';
@@ -93,6 +94,7 @@ useContentMotion(content, () => props.modelValue);
     <slot name="feedback" />
     <div class="flex flex-wrap gap-3 pt-5">
       <AppButton
+        :icon="actionIcons.discard"
         intent="cancel"
         :disabled="busy || modelValue <= 0"
         @click="emit('previous')"
@@ -100,14 +102,20 @@ useContentMotion(content, () => props.modelValue);
       >
       <AppButton
         v-if="modelValue < steps.length - 1"
+        :icon="actionIcons.next"
         intent="neutral"
         :busy="busy"
         @click="emit('next')"
         >{{ text('Dalej', 'Next') }}</AppButton
       >
-      <AppButton v-else intent="commit" :busy="busy" @click="emit('finish')">{{
-        text('Zakończ', 'Finish')
-      }}</AppButton>
+      <AppButton
+        v-else
+        :icon="actionIcons.confirm"
+        intent="commit"
+        :busy="busy"
+        @click="emit('finish')"
+        >{{ text('Zakończ', 'Finish') }}</AppButton
+      >
       <slot name="actions" />
     </div>
   </section>

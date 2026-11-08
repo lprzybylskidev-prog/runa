@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { computed } from 'vue';
 import type { ControlSize } from '../runa/ui/controls';
 import AppButton from './AppButton.vue';
@@ -29,12 +30,14 @@ const visible = computed(() =>
 <template>
   <nav :aria-label="label" class="flex flex-wrap items-center gap-1">
     <AppButton
+      icon-only
+      :icon="actionIcons.previous"
       intent="neutral"
       :size="size ?? 'md'"
       :disabled="disabled || page === 1"
       :aria-label="previousLabel"
       @click="emit('update:modelValue', page - 1)"
-      >‹</AppButton
+    ></AppButton
     ><template v-for="(value, index) in visible" :key="value"
       ><span
         v-if="index && value > visible[index - 1]! + 1"
@@ -52,12 +55,13 @@ const visible = computed(() =>
         >{{ value }}</AppButton
       ></template
     ><AppButton
+      icon-only
+      :icon="actionIcons.next"
       intent="neutral"
       :size="size ?? 'md'"
       :disabled="disabled || page === count"
       :aria-label="nextLabel"
       @click="emit('update:modelValue', page + 1)"
-      >›</AppButton
-    >
+    ></AppButton>
   </nav>
 </template>

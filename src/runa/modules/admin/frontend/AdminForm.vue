@@ -3,6 +3,7 @@ import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import { computed, nextTick, ref } from 'vue';
 import {
+  actionIcons,
   ValuePreview,
   Alert,
   Button,
@@ -79,6 +80,7 @@ async function save() {
       <slot name="actions" :controller="controller">
         <Button
           v-if="atomic"
+          :icon="actionIcons.inspect"
           intent="inspect"
           :busy="controller.busy.value"
           :disabled="
@@ -89,6 +91,7 @@ async function save() {
         >
         <Button
           v-if="atomic"
+          :icon="actionIcons.save"
           intent="commit"
           type="submit"
           :disabled="
@@ -98,6 +101,7 @@ async function save() {
         >
         <Button
           v-if="controller.dirty.value"
+          :icon="actionIcons.discard"
           intent="discard"
           @click="controller.reset"
           >{{ tr('Discard changes') }}</Button

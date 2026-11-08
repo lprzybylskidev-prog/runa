@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { useAccountPreferenceStatus } from '../composables/useAccountPreferenceStatus';
 import { accountPreferences } from '../../../modules/auth/frontend/preferences/session';
 import AppFormNotifications from './AppFormNotifications.vue';
@@ -29,9 +30,14 @@ function reload() {
     "
   >
     <template v-if="status.error !== 'conflict'" #actions
-      ><AppButton intent="inspect" @click="reload">{{
-        locale === 'pl' ? 'Wczytaj ustawienia' : 'Reload settings'
-      }}</AppButton></template
+      ><AppButton
+        :icon="actionIcons.refresh"
+        intent="inspect"
+        @click="reload"
+        >{{
+          locale === 'pl' ? 'Wczytaj ustawienia' : 'Reload settings'
+        }}</AppButton
+      ></template
     >
   </AppFormNotifications>
 </template>

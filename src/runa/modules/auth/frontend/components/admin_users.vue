@@ -8,7 +8,7 @@ import {
 } from '../bulkGroups';
 import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
-import { Button, Card, ContentLoading, Dialog } from '@/runa/ui';
+import { actionIcons, Button, Card, ContentLoading, Dialog } from '@/runa/ui';
 import {
   AdminComponentBoundary,
   AdminForm,
@@ -238,6 +238,7 @@ watch(
       <template #actions>
         <Button
           v-if="canCreate"
+          :icon="actionIcons.register"
           intent="commit"
           size="sm"
           :disabled="form.busy.value"
@@ -275,6 +276,7 @@ watch(
             <AuthAdminActionGroups :groups="bulkGroups">
               <template #default="{ item: choice }">
                 <Button
+                  :icon="actionIcons.action"
                   :intent="
                     authBulkActionIntent(
                       choice.commands.map((command) => command.key),
@@ -311,6 +313,7 @@ watch(
         </template>
         <template #actions="{ row }">
           <Button
+            :icon="actionIcons.inspect"
             intent="inspect"
             size="sm"
             :disabled="form.busy.value"

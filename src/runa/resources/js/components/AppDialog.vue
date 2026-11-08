@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import { computed, provide, ref, useId } from 'vue';
 import AppContentLoading from './AppContentLoading.vue';
@@ -118,14 +119,14 @@ defineExpose({ focus: layer.focus });
             </div>
             <AppButton
               v-if="closable"
+              :icon="actionIcons.cancel"
               intent="cancel"
               icon-only
               size="sm"
               :disabled="busy"
               :aria-label="locale === 'pl' ? 'Zamknij dialog' : 'Close dialog'"
               @click="close()"
-              >×</AppButton
-            >
+            ></AppButton>
           </header>
           <div data-dialog-content class="dialog-content">
             <fieldset :disabled="busy" class="min-w-0 space-y-4">

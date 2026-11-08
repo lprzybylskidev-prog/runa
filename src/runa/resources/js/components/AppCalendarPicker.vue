@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { useContentMotion } from '../composables/useContentMotion';
 import { computed, nextTick, ref } from 'vue';
 import AppButton from './AppButton.vue';
@@ -174,13 +175,13 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
   <div ref="root" class="calendar-picker space-y-3">
     <div class="flex items-center justify-between gap-1">
       <AppButton
+        :icon="actionIcons.previous"
         intent="neutral"
         size="sm"
         icon-only
         :aria-label="text('Poprzedni', 'Previous')"
         @click="navigate(-1)"
-        >‹</AppButton
-      >
+      ></AppButton>
       <div class="flex min-w-0 items-center gap-1" aria-live="polite">
         <AppButton
           intent="neutral"
@@ -200,13 +201,13 @@ useContentMotion(root, () => `${mode.value}:${shown.value}`);
         >
       </div>
       <AppButton
+        :icon="actionIcons.next"
         intent="neutral"
         size="sm"
         icon-only
         :aria-label="text('Następny', 'Next')"
         @click="navigate(1)"
-        >›</AppButton
-      >
+      ></AppButton>
     </div>
     <div
       v-if="mode === 'days'"

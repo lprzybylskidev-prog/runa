@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { withTableFilters } from '@/runa/ui';
+import { actionIcons, withTableFilters } from '@/runa/ui';
 import { useAdminLocale } from './localization';
 const { locale: adminLocale, t: tr } = useAdminLocale();
 import AdminOperationResult from './AdminOperationResult.vue';
@@ -601,6 +601,7 @@ defineExpose({ controller });
       >
         <template #actions
           ><Button
+            :icon="actionIcons.refresh"
             intent="inspect"
             :busy="controller.refreshing.value"
             :disabled="controller.busy.value"
@@ -756,6 +757,7 @@ defineExpose({ controller });
           >
             <Button
               v-if="!selectedModule.enabled"
+              :icon="actionIcons.enable"
               intent="commit"
               variant="outline"
               :disabled="controller.busy.value"
@@ -764,12 +766,14 @@ defineExpose({ controller });
             >
             <Button
               v-else
+              :icon="actionIcons.enable"
               intent="caution"
               :disabled="controller.busy.value"
               @click="review('disable')"
               >{{ tr('Disable module') }}</Button
             >
             <Button
+              :icon="actionIcons.delete"
               intent="danger"
               variant="outline"
               :disabled="controller.busy.value"
@@ -779,6 +783,7 @@ defineExpose({ controller });
           </div>
           <Button
             v-if="has('health.diagnose')"
+            :icon="actionIcons.inspect"
             intent="inspect"
             class="ml-auto"
             variant="outline"
@@ -851,6 +856,7 @@ defineExpose({ controller });
             <template #actions="{ row }">
               <Button
                 v-if="has('work.cancel') && cancellable(row)"
+                :icon="actionIcons.cancel"
                 intent="caution"
                 size="sm"
                 :disabled="controller.busy.value"
@@ -860,6 +866,7 @@ defineExpose({ controller });
                 >{{ tr('Request cancellation') }}</Button
               >
               <Button
+                :icon="actionIcons.refresh"
                 intent="inspect"
                 size="sm"
                 :disabled="controller.busy.value || controller.refreshing.value"
@@ -877,6 +884,7 @@ defineExpose({ controller });
 
       <template #footer
         ><Button
+          :icon="actionIcons.cancel"
           intent="cancel"
           variant="outline"
           :disabled="controller.busy.value"
@@ -907,6 +915,7 @@ defineExpose({ controller });
     <template #footer>
       <Button
         v-if="controller.error.value && !diagnosis"
+        :icon="actionIcons.refresh"
         intent="inspect"
         :busy="pendingCommand === 'health.diagnose'"
         :disabled="controller.busy.value"
@@ -914,6 +923,7 @@ defineExpose({ controller });
         >{{ tr('Retry') }}</Button
       >
       <Button
+        :icon="actionIcons.cancel"
         intent="cancel"
         data-diagnosis-close
         variant="outline"
@@ -997,6 +1007,7 @@ defineExpose({ controller });
       </template>
       <Button
         v-else-if="!previewLoading"
+        :icon="actionIcons.inspect"
         intent="inspect"
         :disabled="controller.busy.value"
         @click="review(intent)"
@@ -1005,6 +1016,7 @@ defineExpose({ controller });
     </div>
     <template #footer>
       <Button
+        :icon="actionIcons.cancel"
         intent="cancel"
         data-lifecycle-cancel
         variant="outline"
@@ -1013,6 +1025,7 @@ defineExpose({ controller });
         >{{ tr('Cancel') }}</Button
       >
       <Button
+        :icon="intent === 'unregister' ? 'trash' : 'power'"
         :intent="
           intent === 'enable'
             ? 'commit'

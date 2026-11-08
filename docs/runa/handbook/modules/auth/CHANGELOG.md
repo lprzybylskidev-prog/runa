@@ -2,6 +2,9 @@
 
 ## 6.0.1 — Unreleased
 
+- Use the shared semantic action/feedback icons with visible labels and preserved
+  busy, keyboard, proof and operation behavior; no backend contract/storage change.
+
 - Use native structured management reads for password policy, addresses, sessions,
   trusted devices, exceptions and preference collections. Preference writes accept
   delivery arrays only; preserve grants, original revisions, proof and atomic Audit.

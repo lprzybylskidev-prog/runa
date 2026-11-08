@@ -1,4 +1,5 @@
-import type { ButtonIntent } from '@/runa/ui';
+import { actionIcons } from '@/runa/ui';
+import type { IconName, ButtonIntent } from '@/runa/ui';
 /** Private presentation grouping; native projected commands retain all admission/proof authority. */
 export const authBulkGroups = [
   {
@@ -204,4 +205,43 @@ export function groupAuthActions<T>(
       },
     );
   return groups.filter((group) => group.items.length);
+}
+
+/** Source action identity; independent of translated labels, proof and feedback. */
+export function authActionIcon(
+  key: string,
+  enabled?: boolean | null,
+): IconName {
+  if (key === 'toggle_deletion' && enabled === false) return actionIcons.back;
+  if (['delete', 'remove', 'remove_avatar', 'toggle_deletion'].includes(key))
+    return actionIcons.delete;
+  if (
+    [
+      'revoke',
+      'revoke_device',
+      'revoke_trust',
+      'revoke_superadmin',
+      'factor_reset',
+      'revoke_exceptions',
+    ].includes(key)
+  )
+    return actionIcons.revoke;
+  if (['invite', 'invalidate_invitation', 'require_verification'].includes(key))
+    return actionIcons.send;
+  if (
+    [
+      'password_reset',
+      'require_password_change',
+      'set_attempt_lock',
+      'set_security_lock',
+      'toggle_security_lock',
+    ].includes(key)
+  )
+    return actionIcons.password;
+  if (['activate', 'deactivate', 'toggle_activation'].includes(key))
+    return actionIcons.enable;
+  if (key === 'restore') return actionIcons.back;
+  if (key === 'reset_preferences') return actionIcons.reset;
+  if (key === 'grant_superadmin') return actionIcons.trust;
+  return actionIcons.confirm;
 }

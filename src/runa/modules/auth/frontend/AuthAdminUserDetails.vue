@@ -16,6 +16,7 @@ import type {
   AdminText,
 } from '@/runa/admin';
 import {
+  actionIcons,
   Button,
   Card,
   ConfirmDialog,
@@ -772,6 +773,7 @@ function supplied(section: AdminSectionData) {
             <AuthAdminActionGroups :groups="actionGroups">
               <template #default="{ item }">
                 <Button
+                  :icon="actionIcons.action"
                   :intent="actionGroupIntent(item.actions)"
                   size="sm"
                   variant="outline"
@@ -980,6 +982,7 @@ function supplied(section: AdminSectionData) {
         /></template>
         <template #actions>
           <Button
+            :icon="actionIcons.confirm"
             :intent="
               command?.preview_required && !review
                 ? 'inspect'
@@ -1000,7 +1003,12 @@ function supplied(section: AdminSectionData) {
                 ? text('Sprawdź zmiany', 'Review changes')
                 : text('Zatwierdź', 'Confirm')
             }}</Button
-          ><Button intent="cancel" @click="close()">{{ t('Cancel') }}</Button>
+          ><Button
+            :icon="actionIcons.cancel"
+            intent="cancel"
+            @click="close()"
+            >{{ t('Cancel') }}</Button
+          >
         </template>
       </Form>
     </Dialog>

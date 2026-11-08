@@ -23,8 +23,8 @@ withDefaults(
 }
 .app-spinner-ring {
   display: block;
-  width: 24px;
-  height: 24px;
+  width: var(--runa-spinner-size, 24px);
+  height: var(--runa-spinner-size, 24px);
   border: 2px solid var(--loading-spinner-border, var(--runa-border));
   border-top-color: currentColor;
   border-right-color: currentColor;
@@ -32,14 +32,14 @@ withDefaults(
   animation: loading-spin 700ms linear infinite;
 }
 .app-spinner[data-size='sm'] .app-spinner-ring {
-  width: 14px;
-  height: 14px;
+  width: var(--runa-spinner-size, 14px);
+  height: var(--runa-spinner-size, 14px);
   border-color: currentColor;
   border-right-color: transparent;
 }
 .app-spinner[data-size='lg'] .app-spinner-ring {
-  width: 44px;
-  height: 44px;
+  width: var(--runa-spinner-size, 44px);
+  height: var(--runa-spinner-size, 44px);
 }
 @keyframes loading-spin {
   to {

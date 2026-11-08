@@ -320,13 +320,14 @@ onScopeDispose(cancel);
         </button>
         <AppButton
           v-if="clearable && values.length"
+          icon-only
+          :icon="actionIcons.cancel"
           intent="neutral"
           :size="size"
           :disabled="disabled || readonly"
           :aria-label="text('Wyczyść wybór', 'Clear selection')"
           @click="update([])"
-          >×</AppButton
-        >
+        ></AppButton>
       </div>
       <Teleport :to="teleportTarget">
         <Transition
@@ -419,6 +420,7 @@ onScopeDispose(cancel);
             <div class="flex flex-wrap gap-2">
               <AppButton
                 v-if="failed"
+                :icon="actionIcons.refresh"
                 intent="inspect"
                 :size="size"
                 @click="load(retryAppend)"
@@ -426,6 +428,7 @@ onScopeDispose(cancel);
               >
               <AppButton
                 v-if="!provider && offset > 0"
+                :icon="actionIcons.previous"
                 intent="neutral"
                 :size="size"
                 @click="
@@ -436,15 +439,20 @@ onScopeDispose(cancel);
               >
               <AppButton
                 v-if="canMore"
+                :icon="actionIcons.load"
                 intent="inspect"
                 :size="size"
                 :disabled="loading"
                 @click="more"
                 >{{ text('Kolejne wyniki', 'More results') }}</AppButton
               >
-              <AppButton intent="neutral" :size="size" @click="close(true)">{{
-                text('Gotowe', 'Done')
-              }}</AppButton>
+              <AppButton
+                :icon="actionIcons.confirm"
+                intent="neutral"
+                :size="size"
+                @click="close(true)"
+                >{{ text('Gotowe', 'Done') }}</AppButton
+              >
             </div>
           </section>
         </Transition>

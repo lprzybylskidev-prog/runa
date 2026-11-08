@@ -2,6 +2,9 @@
 
 ## 1.1.2 — Unreleased
 
+- Use the shared semantic action/feedback icons with visible labels and preserved
+  busy, keyboard, proof and operation behavior; no backend contract/storage change.
+
 - Initialize directly at the current schema/version; remove historical development
   upgrade scaffolding. Retain the 1.1.1 → 1.1.2 current-schema update,
   reserved declaration/Audit participation and native history/recovery refusals.

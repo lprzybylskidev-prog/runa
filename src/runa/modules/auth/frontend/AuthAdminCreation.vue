@@ -9,6 +9,7 @@ import type {
 } from '@/runa/admin';
 import { AuthIdentityFields } from '@/runa/auth';
 import {
+  actionIcons,
   Button,
   Checkbox,
   ContentLoading,
@@ -370,9 +371,13 @@ async function submit() {
             )
           "
         />
-        <Button intent="inspect" :busy="busy" @click="read(true)">{{
-          text('Spróbuj ponownie', 'Retry loading')
-        }}</Button>
+        <Button
+          :icon="actionIcons.refresh"
+          intent="inspect"
+          :busy="busy"
+          @click="read(true)"
+          >{{ text('Spróbuj ponownie', 'Retry loading') }}</Button
+        >
       </template>
       <div class="min-w-0 space-y-6" data-auth-creation>
         <FormSection :title="text('Dane użytkownika', 'User details')">
@@ -593,6 +598,7 @@ async function submit() {
     /></template>
     <template #actions
       ><Button
+        :icon="actionIcons.register"
         intent="commit"
         type="submit"
         :disabled="!record || readonly || controller.blocked.value"

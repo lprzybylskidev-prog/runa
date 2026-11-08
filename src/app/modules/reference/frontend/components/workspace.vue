@@ -1,6 +1,8 @@
 <script setup lang="ts">
+defineOptions({ name: 'ReferenceWorkspace' });
 import { computed, ref, watch } from 'vue';
 import {
+  actionIcons,
   Button,
   Card,
   ConfirmDialog,
@@ -169,6 +171,7 @@ const submit = () =>
       <template #actions>
         <Button
           v-if="allowed"
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="busy"
           @click="controller.refresh()"
@@ -214,6 +217,7 @@ const submit = () =>
                 <template v-if="canEditCode" #actions="{ row }">
                   <Button
                     v-if="row.code !== undefined"
+                    :icon="actionIcons.inspect"
                     intent="inspect"
                     size="sm"
                     :disabled="busy"
@@ -243,6 +247,7 @@ const submit = () =>
                   @keep="controller.resolveSample(true)"
                 />
                 <Button
+                  :icon="actionIcons.save"
                   type="submit"
                   intent="commit"
                   :busy="busy"
@@ -313,6 +318,7 @@ const submit = () =>
               />
               <div v-if="writable" class="flex flex-wrap gap-2">
                 <Button
+                  :icon="actionIcons.inspect"
                   type="submit"
                   intent="inspect"
                   :busy="busy"
@@ -321,6 +327,7 @@ const submit = () =>
                 >
                 <Button
                   v-if="review"
+                  :icon="actionIcons.publish"
                   intent="commit"
                   :busy="busy"
                   @click="controller.publish"
@@ -349,6 +356,7 @@ const submit = () =>
                     @update:model-value="snapshotName = $event ?? ''"
                   />
                   <Button
+                    :icon="actionIcons.capture"
                     intent="commit"
                     :busy="busy"
                     :disabled="!!settingsConflict"
@@ -367,6 +375,7 @@ const submit = () =>
                 >
                   <template v-if="writable" #actions="{ row }">
                     <Button
+                      :icon="actionIcons.load"
                       intent="inspect"
                       size="sm"
                       :disabled="busy"
@@ -374,6 +383,7 @@ const submit = () =>
                       >{{ copy.load }}</Button
                     >
                     <Button
+                      :icon="actionIcons.delete"
                       intent="danger"
                       size="sm"
                       :disabled="busy"
@@ -396,6 +406,7 @@ const submit = () =>
               />
               <Button
                 v-if="next"
+                :icon="actionIcons.load"
                 intent="inspect"
                 :busy="busy"
                 @click="controller.refresh(true)"
@@ -405,6 +416,7 @@ const submit = () =>
             <template v-if="view === 'work'">
               <Button
                 v-if="writable"
+                :icon="actionIcons.dispatch"
                 intent="commit"
                 :busy="busy"
                 @click="controller.dispatch"
@@ -431,6 +443,7 @@ const submit = () =>
     :locale="locale"
     :confirm-label="copy.discard"
     confirm-intent="discard"
+    confirm-icon="arrow-back-up"
     @confirm="controller.answerLeave(true)"
     @cancel="controller.answerLeave(false)"
     @update:model-value="!$event && controller.answerLeave(false)"
@@ -442,6 +455,7 @@ const submit = () =>
     :locale="locale"
     :confirm-label="copy.remove"
     confirm-intent="danger"
+    confirm-icon="trash"
     @confirm="removeSnapshot"
     @cancel="deleteTarget = undefined"
     @update:model-value="!$event && (deleteTarget = undefined)"

@@ -3,6 +3,8 @@ import { computed, inject } from 'vue';
 import { formActivity } from '../composables/formActivity';
 import { buttonIntentTones } from '../runa/ui/controls';
 import AppSpinner from './AppSpinner.vue';
+import AppIcon from './AppIcon.vue';
+import type { IconName } from '../runa/ui/icons';
 import type {
   ButtonTone,
   ButtonIntent,
@@ -19,6 +21,7 @@ const props = withDefaults(
     tone?: ButtonTone | undefined;
     intent?: ButtonIntent | undefined;
     iconOnly?: boolean;
+    icon?: IconName | undefined;
   }>(),
   {
     tone: undefined,
@@ -29,6 +32,7 @@ const props = withDefaults(
     busy: undefined,
     size: 'md',
     iconOnly: false,
+    icon: undefined,
   },
 );
 const formBusy = inject(formActivity, undefined);
@@ -39,6 +43,7 @@ const busy = computed(
 const tone = computed(() =>
   props.intent ? buttonIntentTones[props.intent] : (props.tone ?? 'neutral'),
 );
+const iconSize = computed(() => ({ sm: 18, md: 20, lg: 22 })[props.size]);
 const variant = computed(
   () => props.variant ?? (tone.value === 'neutral' ? 'neutral' : 'outline'),
 );
@@ -62,6 +67,12 @@ const variant = computed(
       label=""
       size="sm"
       decorative
+    />
+    <AppIcon
+      v-else-if="icon"
+      :name="icon"
+      :size="iconSize"
+      class="button-icon"
     />
     <slot v-if="!busy || !iconOnly" />
   </button>

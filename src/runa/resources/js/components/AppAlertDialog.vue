@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import AppDialog from './AppDialog.vue';
 import AppButton from './AppButton.vue';
 import type { DialogProps } from '../runa/ui/dialogs';
@@ -41,6 +42,7 @@ function accept() {
     <slot />
     <template #footer
       ><AppButton
+        :icon="actionIcons.confirm"
         intent="neutral"
         data-dialog-accept
         variant="outline"

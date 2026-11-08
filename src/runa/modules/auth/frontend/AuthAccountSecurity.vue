@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { withTableFilters } from '@/runa/ui';
+import { actionIcons, withTableFilters } from '@/runa/ui';
 import { trustedDeviceColumns } from './trustedDeviceColumns';
 import { computed, ref, watch, onScopeDispose } from 'vue';
 import {
@@ -284,6 +284,7 @@ watch(
             <p class="text-xs text-muted">{{ securityMethod.description }}</p>
           </div>
           <Button
+            :icon="securityMethod.enrolled ? 'shield-x' : 'shield-check'"
             :intent="securityMethod.enrolled ? 'danger' : 'commit'"
             variant="outline"
             :disabled="busy || modal !== null || !securityMethod.available"
@@ -302,6 +303,7 @@ watch(
           security.recovery_codes_enabled &&
           security.enrolled.includes('totp')
         "
+        icon="rotate-2"
         intent="caution"
         variant="outline"
         :disabled="busy || modal !== null"
@@ -327,6 +329,7 @@ watch(
         </p>
         <div class="flex flex-wrap gap-2">
           <Button
+            :icon="actionIcons.trust"
             intent="commit"
             variant="outline"
             :disabled="busy || !canTrustDevice"
@@ -361,6 +364,7 @@ watch(
             >
               <template #actions="{ row }"
                 ><Button
+                  :icon="actionIcons.revoke"
                   intent="danger"
                   size="sm"
                   variant="outline"
@@ -375,6 +379,7 @@ watch(
             </Table>
             <Button
               v-if="trustedCursor"
+              :icon="actionIcons.load"
               intent="inspect"
               :busy="trustedLoading"
               :disabled="busy"
@@ -425,6 +430,7 @@ watch(
 
       <template #actions>
         <Button
+          :icon="actionIcons.confirm"
           :intent="
             overviewAction === 'disable'
               ? 'danger'
@@ -438,9 +444,13 @@ watch(
           :disabled="overviewAction === 'trustIssue' && !canTrustDevice"
           >{{ operationLabel }}</Button
         >
-        <Button intent="cancel" :disabled="busy" @click="close(false)">{{
-          text('Anuluj', 'Cancel')
-        }}</Button>
+        <Button
+          :icon="actionIcons.cancel"
+          intent="cancel"
+          :disabled="busy"
+          @click="close(false)"
+          >{{ text('Anuluj', 'Cancel') }}</Button
+        >
       </template>
     </Form>
     <FormNotifications
@@ -454,6 +464,7 @@ watch(
       <template #actions
         ><Button
           v-if="failure === 'csrf'"
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="busy"
           @click="account.refreshCsrf"
@@ -467,6 +478,7 @@ watch(
     :title="text('Unieważnić zaufanie?', 'Revoke device trust?')"
     :confirm-label="text('Unieważnij', 'Revoke')"
     confirm-intent="danger"
+    confirm-icon="shield-x"
     :locale="locale"
     :busy="busy"
     @update:model-value="
@@ -493,6 +505,7 @@ watch(
       <template #actions
         ><Button
           v-if="failure === 'csrf'"
+          :icon="actionIcons.refresh"
           intent="inspect"
           :busy="busy"
           @click="account.refreshCsrf"

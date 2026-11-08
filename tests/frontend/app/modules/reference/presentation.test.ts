@@ -182,3 +182,19 @@ it('reference Admin section composes the public controller and retains its value
   await vi.waitFor(() => expect(wrapper.text()).toContain('Updated response'));
   expect(wrapper.getComponent(Button).props('busy')).toBe(false);
 });
+
+it('semantic icons use the module-owned reference declaration through the public catalogue', async () => {
+  const { getModulePresentation, moduleCatalogue, actionIcons } =
+    await import('@/runa/ui');
+  const { default: declaredIcon } =
+    await import('../../../../../src/app/modules/reference/frontend/icon');
+  expect(declaredIcon).toBe('flask');
+  expect(getModulePresentation('app.reference').icon).toBe(declaredIcon);
+  expect(
+    moduleCatalogue.find((module) => module.id === 'app.reference')?.icon,
+  ).toBe(declaredIcon);
+  expect(getModulePresentation('app.unknown').icon).toBe('layers-intersect');
+  expect(getModulePresentation('runa.auth').icon).toBe('key');
+  const wrapper = mount(Panel);
+  expect(wrapper.getComponent(Button).props('icon')).toBe(actionIcons.load);
+});

@@ -4,6 +4,7 @@ const { locale: adminLocale, t: tr } = useAdminLocale();
 import { onMounted, ref } from 'vue';
 import { useAdminInitialReadiness } from './initialReadiness';
 import {
+  actionIcons,
   Alert,
   FileInput,
   Form,
@@ -60,6 +61,7 @@ onMounted(async () => {
       >
         <div class="flex flex-wrap items-center justify-end gap-3">
           <Button
+            :icon="actionIcons.refresh"
             intent="inspect"
             :busy="controller.refreshing.value"
             :disabled="controller.busy.value"
@@ -85,6 +87,7 @@ onMounted(async () => {
           <template #actions>
             <Button
               v-if="settings.invalid.value || controller.error.value"
+              :icon="actionIcons.refresh"
               intent="inspect"
               :busy="controller.refreshing.value"
               :disabled="controller.busy.value"
@@ -234,6 +237,7 @@ onMounted(async () => {
           </p>
           <Button
             v-else
+            icon="rotate-2"
             intent="discard"
             :disabled="controller.busy.value || settings.imageBusy.value"
             :aria-label="tr('Restore defaults') + ': ' + tr(field.title)"
@@ -251,12 +255,14 @@ onMounted(async () => {
             {{ settings.base.value[field.key] ?? tr('Source default') }}.
             <div class="mt-2 flex flex-wrap gap-3">
               <Button
+                :icon="actionIcons.discard"
                 intent="discard"
                 :disabled="controller.busy.value"
                 @click="settings.resolve(field.key, false)"
                 >{{ tr('Use current value') }}</Button
               >
               <Button
+                :icon="actionIcons.confirm"
                 intent="commit"
                 variant="outline"
                 :disabled="controller.busy.value"
@@ -268,6 +274,7 @@ onMounted(async () => {
         </div>
         <Button
           v-if="settings.fields.value.some((field) => field.writable)"
+          :icon="actionIcons.save"
           intent="commit"
           :disabled="
             controller.busy.value ||

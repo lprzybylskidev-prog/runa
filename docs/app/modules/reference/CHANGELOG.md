@@ -2,6 +2,9 @@
 
 ## 0.4.1 — Unreleased
 
+- Use the shared semantic action/feedback icons with visible labels and preserved
+  busy, keyboard, proof and operation behavior; no backend contract/storage change.
+
 - Consume native snapshot lists/maps in the interactive Admin/standalone settings
   workspace, preserving draft load/cancel and deliberate proof-protected publication.
   Require Framework API ^2.1.0 and optional Admin ^2.0.0. ReferenceTools 1.0.0 is

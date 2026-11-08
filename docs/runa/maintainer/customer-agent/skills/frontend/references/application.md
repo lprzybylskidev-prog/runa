@@ -131,3 +131,9 @@ native admitted identity and exit guard. Follow the custom-page lifecycle contra
 in `docs/runa/handbook/modules/admin/frontend.md`; the optional reference workspace
 is a working consumer. Reuse the single shell and Auth confirmation host. Connect
 the exposed exit check to standalone routing; never import private platform state.
+
+For action/module/feedback iconography, select the public components guide's
+Semantic icons contract. Consume the typed Tabler catalogue and actionIcons through
+@/runa/ui, retaining visible action labels, busy geometry and accessible compact
+control names. Module authors declare frontend/icon.ts inside their own module;
+never edit protected presentation maps. Color and password proof do not select icons.

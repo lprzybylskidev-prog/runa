@@ -211,3 +211,5 @@ export type { ContentLoadingProps, ContentLoadingShape } from './loading';
 export { default as BooleanBadge } from '../../components/AppBooleanBadge.vue';
 
 export { providePresentationVisibility } from '../../composables/usePresentationVisibility';
+
+export { actionIcons, feedbackIcons } from './actionIcons';

@@ -503,3 +503,28 @@ it('keeps dismissed form outcomes absent across PL EN translation until a delibe
     'Nie zapisano.',
   );
 });
+
+it('semantic icons preserve feedback announcement and empty-state text ownership', async () => {
+  const { Icon, EmptyState, feedbackIcons } = await import('@/runa/ui');
+  const alert = mount(Alert, {
+    props: {
+      tone: 'danger',
+      title: 'Nie udało się zapisać',
+      dismissible: true,
+    },
+  });
+  expect(alert.attributes('role')).toBe('alert');
+  expect(
+    alert.findAllComponents(Icon).map((icon) => icon.props('name')),
+  ).toEqual([feedbackIcons.danger, 'x']);
+  expect(alert.get('button').attributes('aria-label')).toBeTruthy();
+  await alert.setProps({ tone: 'success', announce: false });
+  expect(alert.attributes('role')).toBeUndefined();
+  expect(alert.findAllComponents(Icon)[0]?.props('name')).toBe(
+    feedbackIcons.success,
+  );
+  const empty = mount(EmptyState, { props: { title: 'Brak wyników' } });
+  expect(empty.getComponent(Icon).props('name')).toBe('inbox');
+  expect(empty.get('h3').text()).toBe('Brak wyników');
+  expect(empty.find('[role=status]').exists()).toBe(false);
+});

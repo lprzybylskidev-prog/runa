@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { computed, onMounted, ref, useAttrs, watch } from 'vue';
 import AppFormField from './AppFormField.vue';
 import AppPopover from './AppPopover.vue';
@@ -349,6 +350,7 @@ defineExpose({ reset, focus: () => control.value?.focus() });
               class="mt-3 flex justify-between gap-2 border-t border-line pt-3"
             >
               <AppButton
+                :icon="actionIcons.cancel"
                 intent="neutral"
                 size="sm"
                 variant="ghost"
@@ -358,6 +360,7 @@ defineExpose({ reset, focus: () => control.value?.focus() });
                 "
                 >{{ text('Wyczyść', 'Clear') }}</AppButton
               ><AppButton
+                :icon="actionIcons.confirm"
                 intent="neutral"
                 size="sm"
                 variant="soft"

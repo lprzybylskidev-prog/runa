@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { computed, ref, watch } from 'vue';
 import AppFormField from './AppFormField.vue';
 import AppPopover from './AppPopover.vue';
@@ -184,13 +185,22 @@ defineExpose({ reset, focus: () => trigger.value?.focus() });
                 {{ message }}
               </p>
               <div class="flex flex-wrap justify-end gap-2">
-                <AppButton intent="neutral" size="sm" @click="clear(close)">{{
-                  text('Wyczyść', 'Clear')
-                }}</AppButton>
-                <AppButton intent="cancel" size="sm" @click="close()">{{
-                  text('Anuluj', 'Cancel')
-                }}</AppButton>
                 <AppButton
+                  :icon="actionIcons.cancel"
+                  intent="neutral"
+                  size="sm"
+                  @click="clear(close)"
+                  >{{ text('Wyczyść', 'Clear') }}</AppButton
+                >
+                <AppButton
+                  :icon="actionIcons.cancel"
+                  intent="cancel"
+                  size="sm"
+                  @click="close()"
+                  >{{ text('Anuluj', 'Cancel') }}</AppButton
+                >
+                <AppButton
+                  :icon="actionIcons.confirm"
                   intent="commit"
                   size="sm"
                   :disabled="!draftValid"

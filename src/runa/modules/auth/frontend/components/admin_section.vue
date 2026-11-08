@@ -6,6 +6,7 @@ import AuthAdminBulkAction from '../AuthAdminBulkAction.vue';
 import AuthAdminCreation from '../AuthAdminCreation.vue';
 import { computed, watch } from 'vue';
 import {
+  actionIcons,
   formatApplicationInstant,
   FormNotifications,
   Button,
@@ -187,6 +188,7 @@ function select(row: Record<string, AdminJson>) {
       </ul>
       <div v-if="paged" class="mb-4 flex gap-2">
         <Button
+          :icon="actionIcons.load"
           intent="inspect"
           size="sm"
           :disabled="resource.busy.value || !next"
@@ -194,6 +196,7 @@ function select(row: Record<string, AdminJson>) {
           >{{ tr('Older entries') }}</Button
         >
         <Button
+          :icon="actionIcons.refresh"
           intent="inspect"
           size="sm"
           :disabled="resource.busy.value"
