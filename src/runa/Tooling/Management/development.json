@@ -395,14 +395,14 @@
     "name": "runa:test",
     "tool": "test",
     "prefix": [],
-    "signature": "{arguments?*} {--scope=*} {--parallel} {--processes=} {--filter=} {--compact} {--path=*} {--marker=} {--collect-only}",
+    "signature": "{arguments?*} {--scope=*} {--parallel} {--processes=} {--filter=} {--compact} {--path=*} {--marker=} {--collect-only} {--evidence}",
     "description": "Run application backend, frontend and tooling tests"
   },
   {
     "name": "runa:test:backend",
     "tool": "test",
     "prefix": ["backend"],
-    "signature": "{arguments?*} {--filter=}",
+    "signature": "{arguments?*} {--filter=} {--evidence}",
     "description": "Run application backend tests"
   },
   {

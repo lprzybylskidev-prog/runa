@@ -54,7 +54,7 @@ base:
     depends_on: [configuration]
     exclusive_group: testing-state
     description: Run backend tests in parallel-safe testing isolation.
-    command: python3 tools/maintainer/test-backend --parallel
+    command: python3 tools/maintainer/test-backend --parallel --evidence
     severity: hard_fail
 
   - id: php-static-analysis

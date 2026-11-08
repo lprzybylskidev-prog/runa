@@ -185,8 +185,14 @@ their existing behavior; duration alone does not create a new handoff workflow.
 ## Current execution state
 
 Activation is committed as `13e3c715`. Point 1 is complete under the approved
-producer-side evidence extension; point 2 is complete; point 3 is next. No broad test suite or final quality run has
-been started.
+producer-side evidence extension; points 2–3 are complete; point 4 is next. No broad test suite or final quality run has
+been started. Small supported fixture diagnostics passed: first/second successful
+retry normalization (2 cases) and omitted-retry rejection (1 case). They resolve
+implementation uncertainties, not final acceptance. The pinned zero-issue worker
+receipt diagnostic also passed (1 case); partial TeamCity markers alone do not
+prove warning/deprecation-free results. Later source changes still require final
+complete affected-area verification. The original diagnostic
+results are not a full tooling/backend PASS.
 
 ### Evidence-contract finding and proposed decision
 
@@ -313,7 +319,7 @@ frontend acceptance is not applicable; reassess if scope changes.
     predecessors, broad selections, no cycles, no test-bearing successor and
     invalidation/revalidation ordering. Do not run real expensive suites merely
     to demonstrate their scheduling. Synchronize quality/command documentation.
-- [ ] 3. Validate complete recovered evidence through the existing closure path.
+- [x] 3. Validate complete recovered evidence through the existing closure path.
   - Prerequisites: points 1–2 and sufficient native artifact contracts.
   - Extend the existing evidence model/validator with the agreed candidate-bound
     recovery input; retain the normal complete graph path and original failures.

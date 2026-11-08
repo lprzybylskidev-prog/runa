@@ -55,6 +55,8 @@ def metadata(path: Path) -> tuple[dict[str, JsonValue], str]:
 
         parsed = roadmap_metadata(path)
         result.update({key: parsed.get(key) for key in ("quality_groups", "quality_rationale")})
+        if "quality_recovery" in parsed:
+            result["quality_recovery"] = parsed["quality_recovery"]
     identifier = result.get("id")
     if (
         not isinstance(identifier, str)
@@ -121,6 +123,7 @@ def closure_policy() -> ClosurePolicy:
         frozenset(
             {"VERSION", "src/runa/platform.json", docs + "/CHANGELOG.md", docs + "/README.md"}
         ),
+        recovered_backend=True,
     )
 
 

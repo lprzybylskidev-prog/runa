@@ -247,7 +247,7 @@ archive, proof of validity or supported resume flag. A new coordinator starts it
 selected graph from the beginning; use supported individual check commands for
 remaining scope and report their results separately, never edit coordinator state.
 Producer-bound recovered evidence follows the
-[quality contract](../quality/README.md#owner-backend-sigsegv-disposition).
+[quality evidence contract](../quality/README.md#recovered-backend-evidence).
 Evidence validation must never resume or retry commands.
 
 ## Backend SIGSEGV owner acceptance

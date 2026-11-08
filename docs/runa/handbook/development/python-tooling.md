@@ -192,7 +192,13 @@ process launcher and command transport; closure receives a separate configuratio
 reader contract. Parsing a definition does not execute its commands.
 The private release validator supplies allowed closure metadata; customer closure
 uses application manifest/changelog defaults. Serialized scope, graph hashes,
-commands, timing and candidate checks retain their existing contracts.
+commands, timing and candidate checks retain their existing contracts. The owner policy may additionally validate
+producer-bound native backend recovery without changing historical failed state;
+customer closure retains its strict native graph policy. Optional backend evidence
+uses the same test service, scope/cleanup result and guarded native transport. Its
+schema-2 provenance and predecessor link are documented in the
+[testing guide](../testing/strategy.md#native-backend-evidence); no recovery process
+or separate ledger is introduced.
 
 The concurrent scheduler owns its distinct multi-child lifecycle and uses core
 process-group cleanup. It preserves native exits, four ready-node slots,
