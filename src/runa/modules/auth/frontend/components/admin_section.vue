@@ -60,18 +60,12 @@ const rows = computed<Record<string, AdminJson>[]>(() => {
   const values =
     result && 'values' in result ? result.values : record.value?.values;
   const raw = collection.value && values?.[collection.value.key];
-  if (typeof raw !== 'string') return [];
-  try {
-    const parsed: unknown = JSON.parse(raw);
-    return Array.isArray(parsed)
-      ? parsed.filter(
-          (row): row is Record<string, AdminJson> =>
-            row !== null && typeof row === 'object' && !Array.isArray(row),
-        )
-      : [];
-  } catch {
-    return [];
-  }
+  return Array.isArray(raw)
+    ? raw.filter(
+        (row): row is Record<string, AdminJson> =>
+          row !== null && typeof row === 'object' && !Array.isArray(row),
+      )
+    : [];
 });
 const paged = computed(
   () =>

@@ -65,7 +65,7 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             $values = match (static::KEY) {
                 'primary_email' => ['current_email' => $profile->primaryEmail['email'] ?? null, 'verified' => $profile->primaryEmail['verified'] ?? null,
                     'verification_required' => $profile->primaryEmail['verification_required'] ?? null, 'email' => null, 'replacement_email' => null],
-                'secondary' => ['secondary_email_limit' => $this->settings->integer('runa.auth', 'secondary_email_limit'), 'addresses' => json_encode($profile->secondaryEmails, JSON_THROW_ON_ERROR), 'address_id' => null, 'email' => null],
+                'secondary' => ['secondary_email_limit' => $this->settings->integer('runa.auth', 'secondary_email_limit'), 'addresses' => $profile->secondaryEmails, 'address_id' => null, 'email' => null],
                 'preferences' => ['preference_revision' => $profile->preferenceRevision],
             };
         } else {
@@ -73,16 +73,16 @@ abstract readonly class SubjectSection implements ManagementResourceReader, Mana
             $version = $identity->version;
             $values = match (static::KEY) {
                 'eligibility' => $this->eligibility($id),
-                'sessions' => ['sessions' => json_encode($this->api(AuthSessions::class)->listFor($id, $input->cursor), JSON_THROW_ON_ERROR), 'session_id' => null],
-                'trust' => ['devices' => json_encode($this->api(AuthSecurity::class, '1.2.0')->trustedDevices($id, $input->cursor), JSON_THROW_ON_ERROR), 'device_id' => null],
-                'exceptions' => ['active_exceptions' => json_encode($this->api(AuthPolicies::class, '4.0.0')->activeExceptions($id), JSON_THROW_ON_ERROR), 'exception_versions' => json_encode($this->api(AuthPolicies::class, '4.0.0')->exceptionVersions($id), JSON_THROW_ON_ERROR), 'exceptions' => json_encode($this->api(AuthPolicies::class, '4.0.0')->exceptions($id), JSON_THROW_ON_ERROR), 'key' => 'session_idle_minutes', 'value' => null,
+                'sessions' => ['sessions' => $this->api(AuthSessions::class)->listFor($id, $input->cursor), 'session_id' => null],
+                'trust' => ['devices' => $this->api(AuthSecurity::class, '1.2.0')->trustedDevices($id, $input->cursor), 'device_id' => null],
+                'exceptions' => ['active_exceptions' => $this->api(AuthPolicies::class, '4.0.0')->activeExceptions($id), 'exception_versions' => $this->api(AuthPolicies::class, '4.0.0')->exceptionVersions($id), 'exceptions' => $this->api(AuthPolicies::class, '4.0.0')->exceptions($id), 'key' => 'session_idle_minutes', 'value' => null,
                     'reason' => null, 'expires_at' => null, 'exception_version' => 0, 'policy_revision' => $this->settings->read('runa.auth')['revision']],
                 default => [],
             };
         }
 
         if (static::KEY === 'exceptions') {
-            $values['exception_version'] = Values::map(json_decode(Values::string($values['exception_versions']), true, flags: JSON_THROW_ON_ERROR))['session_idle_minutes'] ?? 0;
+            $values['exception_version'] = $values['exception_versions']['session_idle_minutes'] ?? 0;
         }
 
         return new ManagementRecord($id, (string) $version, $values);

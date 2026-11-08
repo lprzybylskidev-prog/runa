@@ -30,22 +30,17 @@ export function useAdminSettingsSnapshots(
       section.value?.fields.filter((f) => !f.readonly && !f.sensitive) ?? [],
   );
   const catalog = computed<{ public_id: string; name: string }[]>(() => {
-    const raw = form.records.value[snapshotsSection]?.values.snapshots;
-    if (typeof raw !== 'string') return [];
-    try {
-      const rows: unknown = JSON.parse(raw);
-      return Array.isArray(rows)
-        ? rows.filter(
-            (row): row is { public_id: string; name: string } =>
-              row !== null &&
-              typeof row === 'object' &&
-              typeof row.public_id === 'string' &&
-              typeof row.name === 'string',
-          )
-        : [];
-    } catch {
-      return [];
-    }
+    const rows = form.records.value[snapshotsSection]?.values.snapshots;
+    return Array.isArray(rows)
+      ? rows.filter(
+          (row): row is { public_id: string; name: string } =>
+            row !== null &&
+            typeof row === 'object' &&
+            !Array.isArray(row) &&
+            typeof row.public_id === 'string' &&
+            typeof row.name === 'string',
+        )
+      : [];
   });
   const changes = computed(() =>
     fields.value
@@ -106,9 +101,7 @@ export function useAdminSettingsSnapshots(
       await form.refresh();
       return;
     }
-    const raw = result.values.values;
-    if (typeof raw !== 'string') return;
-    const values: unknown = JSON.parse(raw);
+    const values = result.values.values;
     if (!values || typeof values !== 'object' || Array.isArray(values)) return;
     const patch = values as Record<string, AdminJson>;
     if (

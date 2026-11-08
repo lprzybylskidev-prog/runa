@@ -14,8 +14,12 @@ Subclasses define protected string constants MODULE, SCOPE, READ_PERMISSION, WRI
 and `public static function keys(): array` (list of non-sensitive setting keys).
 Its public management signatures are `read(ManagementRead): ManagementRecord`,
 `page(ManagementRead): ManagementPageResult`, `preview(ManagementWrite): ManagementReview`
-and `execute(ManagementWrite): ManagementOutcome`. Catalog records expose JSON text
-`snapshots`, nullable text `name`, nullable UUID `snapshot_id` and JSON text `values`.
+and `execute(ManagementWrite): ManagementOutcome`. Catalog records expose a native `snapshots` list, nullable text `name`, nullable
+UUID `snapshot_id` and native `values` field map. Declare snapshots/values with
+[ManagementField type json](declarations.md#structured-management-fields).
+An unselected catalog read returns null for values; loaded values contain only the
+selected scope. Encoded string representations are refused. Empty PHP maps/lists
+serialize as []; snapshot definitions should select the actual setting keys.
 A record read with publicId returns only that scope's selected snapshot values.
 Commands `capture` (name) and `delete` (snapshot_id) never publish settings.
 Records carry `revision:review_id`, using the [native semantic review contract](../../architecture/module-settings.md).

@@ -251,8 +251,12 @@ only the draft. Publication shows committed only for native `succeeded`;
 pending/recovery states retain operation identity. Audit and revision history are
 absent from this editor. See [snapshot composition](../admin/settings-snapshots.md).
 
-The legacy default collection presentations carry bounded authorized address and
-exception lists as JSON text in declared readonly fields, decoded only for display.
+Collection presentations carry bounded authorized address, session, trusted-device
+and exception lists as native structured values in declared json fields. Creation
+password_policy and exception_versions are native maps. Preferences categories,
+recipients and delivery are native lists; save submits delivery as a list, never
+encoded JSON text. Old encoded representations are refused. The json field
+contract is owned by [Management declarations](../admin/declarations.md#structured-management-fields).
 No nested list bypasses field authorization. Session/trust tables retain their shared
 paging/export/print contracts. Failed reads remain unavailable; changing subjects
 clears obsolete lanes. Reconciliation preserves unrelated dirty drafts.

@@ -18,21 +18,14 @@ export interface PolicyException {
   policy_revision: number;
   version: number;
 }
-function parse(value: AdminJson): unknown {
-  if (typeof value !== 'string') return null;
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
-}
 function rows(value: AdminJson): PolicyException[] {
-  const result = parse(value);
+  const result: unknown = value;
   if (!Array.isArray(result)) return [];
   return result.filter(
     (row): row is PolicyException =>
       !!row &&
       typeof row === 'object' &&
+      !Array.isArray(row) &&
       typeof row.public_id === 'string' &&
       typeof row.key === 'string' &&
       typeof row.value === 'number' &&
@@ -87,7 +80,7 @@ export function usePolicyExceptions(
   }
   onScopeDispose(() => clearTimeout(timer));
   function version(key: string): number {
-    const versions = parse(get('exception_versions'));
+    const versions = get('exception_versions');
     if (!versions || typeof versions !== 'object' || Array.isArray(versions))
       return 0;
     const value: unknown = (versions as Record<string, unknown>)[key];

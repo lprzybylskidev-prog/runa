@@ -17,6 +17,26 @@ assets/runtime/source identities and data/access preparation in 10r before the
 sole owner acceptance point 11. Final automated verification remains 12. See the
 [compatibility audit and dispositions](RM-2026-017-pre1-compatibility-audit.md).
 
+## Structured read correction — source scenarios from point 10o
+
+Owner accepted the native json field correction on 2026-11-08. Renew runtime/assets
+in 10r before using these scenarios for point 11; prior 10i observations do not
+certify the changed contract.
+
+- In Auth policy, capture committed settings, load a snapshot into a dirty draft,
+  cancel to restore the draft and deliberately publish through the original review
+  and native password proof. Loading alone never publishes; deletion requires proof.
+- In user creation, verify current password requirements; in user details check
+  addresses, sessions, trusted devices, paging/export and exception expiry/version
+  selection. Address/session/device collections retain authorized data only.
+- In preferences, change category/recipient controls and save; confirm conflict
+  handling retains drafts and the original revision. Disabled secondary-email
+  configuration still omits recipient selection.
+- Repeat reference settings snapshot capture/load/cancel/publication in its Admin
+  and standalone presentations. No credential value appears in snapshot contents.
+- Sample readonly structured ValuePreview with nested values and escaped markup;
+  default generic writable json fields report unavailable and have no text editor.
+
 ## Button correction — source scenarios from point 10n
 
 Point 10n (2026-11-08) removes Button.compact and migrates all four language/theme

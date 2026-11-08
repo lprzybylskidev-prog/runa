@@ -2,7 +2,7 @@
 
 Core `runa.auth` is delivered at independent version `6.0.1` for
 platform >=0.7.0 <0.8.0, requiring
-`runa.audit ^1.0.0` and framework API `^2.0.0`. Its owned `runa_auth.users`
+`runa.audit ^1.0.0` and framework API `^2.1.0`. Its owned `runa_auth.users`
 storage is installed through the standard fenced module updater, after Audit.
 The transactional `null -> 6.0.1` initialization creates no user, password or
 administrative shortcut. Matching installed versions are no-ops. There is no

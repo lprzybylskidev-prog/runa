@@ -1,5 +1,16 @@
 # Admin module changelog
 
+## 2.0.0 — Unreleased
+
+- Carry snapshot catalogs/values and Auth management collections as native json
+  fields, with strict backend/frontend projection and declaration constraints.
+  Snapshot consumers must provide native lists/maps; encoded strings are refused.
+  Unselected snapshot values are null. Readonly fields use escaped ValuePreview;
+  generic structured editing remains unavailable. Require Framework API ^2.1.0.
+- This MAJOR includes the preceding unreleased changes below and supersedes the
+  1.1.1 candidate. Initialize directly at 2.0.0; retain the published 1.0.0 and
+  current 1.1.0 preparation paths without a storage conversion.
+
 ## 1.1.1 — Unreleased
 
 - Initialize directly at the current schema/version; remove historical development

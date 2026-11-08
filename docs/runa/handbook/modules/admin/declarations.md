@@ -601,3 +601,38 @@ uses the equivalent string/PL-EN-map union. Plain source strings can be translat
 through AdminApplication.messages; explicit language values take precedence. These
 are display values only: URLs, actions, permission keys and revisions stay unchanged.
 See the [presentation contract](frontend.md#polish-and-english-presentation).
+
+## Structured management fields
+
+Owner: module framework (declaration), Admin (guarded projection and presentation).
+Module/App Management providers declare `ManagementField` through the existing
+public constructor:
+
+```php
+ManagementField::__construct(string $key, string $type, array $names, array $descriptions,
+    bool $filterable = false, bool $sortable = false, bool $writable = false,
+    bool $sensitive = false, ?string $referenceModule = null, ?string $referenceOperation = null,
+    bool $required = false, ?int $maxLength = null, array $choices = [], bool $multiple = false)
+```
+
+Type `json` carries native lists/maps or null in `ManagementRecord.values`.
+Structured command inputs use native arrays/maps in `ManagementWrite.values`;
+owning writers must validate their shape, as for other field types. Auth delivery
+accepts a list only. Encoded JSON strings and other scalar projections are refused.
+Nested values retain the existing Management payload limit (depth 8, total 64 KiB);
+PHP arrays represent lists/maps, with an empty PHP array serialized as `[]`. PHP
+objects are not supported. Structured fields cannot be sensitive, filterable,
+sortable, UUID references, choices, multiple-selection or maxLength text controls.
+Secret set-state projections keep their separate existing sensitive-field contract.
+
+Supported entrypoints remain guarded Management readers/commands and public Admin
+controllers; the declaration lives in `src/runa/Contracts/Modules`, validation in
+`src/runa/ModuleFramework/Management`, and transport/presentation in the Admin module.
+Delivery/runtime modes are unchanged. Every field still needs its own read/write
+grants; JSON does not make arbitrary keys public or bypass owning write validation.
+
+The supplied readonly field uses escaped ValuePreview. Writable structured values
+require a specialized field/section/page presentation; the generic control reports
+unavailable and does not edit or coerce JSON text. Existing Auth delivery controls
+edit native arrays. Replacement presentations consume the same public AdminJson
+values and controller methods. Scalar field validation remains strict.

@@ -1085,6 +1085,7 @@ it('settings snapshot preview preserves a dirty draft and cancellation never pub
       required: false,
       max_length: null,
       readonly: key === 'snapshots' || key === 'values',
+      type: key === 'snapshots' || key === 'values' ? 'json' : 'text',
     })),
   });
   vi.mocked(window.fetch).mockImplementation(async (url) => {
@@ -1094,13 +1095,13 @@ it('settings snapshot preview preserves a dirty draft and cancellation never pub
         ? record({
             public_id: String(url).includes('public_id=') ? otherId : null,
             values: {
-              snapshots: JSON.stringify(catalog),
+              snapshots: catalog,
               name: null,
               snapshot_id: null,
-              values: JSON.stringify({
+              values: {
                 name: 'Snapshot value',
                 enabled: false,
-              }),
+              },
             },
           })
         : server,

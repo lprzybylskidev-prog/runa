@@ -102,8 +102,9 @@ export function settings(value: Record<string, unknown>): Settings {
       : {}),
   };
 }
+/** Native guarded snapshot catalog; no encoded read representation is supported. */
 export function snapshots(value: Record<string, unknown>): Snapshot[] {
-  return list(JSON.parse(text(value.snapshots)) as unknown, (item) => ({
+  return list(value.snapshots, (item) => ({
     public_id: text(item.public_id),
     name: text(item.name),
     source_revision: integer(item.source_revision),

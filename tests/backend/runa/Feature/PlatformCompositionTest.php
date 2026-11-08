@@ -109,7 +109,7 @@ final class PlatformCompositionTest extends TestCase
         self::assertCount(4, $plan);
         foreach ($plan as $module) {
             $expected = match ($module['module']) {
-                'runa.admin' => ['1.1.1', null, ['initialize']],
+                'runa.admin' => ['2.0.0', null, ['initialize']],
                 'runa.auth' => ['6.0.1', '6.0.0', ['current_initialization']],
                 'runa.audit' => ['1.1.2', '1.1.1', ['current_initialization']],
                 'runa.permissions' => ['2.1.2', '2.1.1', ['current_initialization']],

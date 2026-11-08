@@ -199,9 +199,9 @@ it('loads committed snapshots into values without publishing or copying secrets'
     expect($response->status())->toBe(409, $response->getContent());
     $this->postJson('/api/app/reference/snapshots', [...$input, 'name' => 'Committed label'])->assertOk()->assertJsonPath('data.status', 'committed');
     $catalog = $this->getJson('/api/app/reference/snapshots')->assertOk()->json('data');
-    $snapshot = json_decode($catalog['snapshots'], true, flags: JSON_THROW_ON_ERROR)[0];
+    $snapshot = $catalog['snapshots'][0];
     $loaded = $this->getJson('/api/app/reference/snapshots?public_id='.$snapshot['public_id'])->assertOk()->json('data');
-    expect(json_decode($loaded['values'], true, flags: JSON_THROW_ON_ERROR))->toBe(['label' => $state['settings']['label']['value']]);
+    expect($loaded['values'])->toBe(['label' => $state['settings']['label']['value']]);
     $this->getJson('/api/app/reference/settings')->assertOk()->assertJsonPath('data.revision', $state['revision']);
     $this->deleteJson('/api/app/reference/snapshots', [...$input, 'public_id' => $snapshot['public_id']])->assertForbidden();
     ($this->proof)('app.reference.settings.snapshot_delete');

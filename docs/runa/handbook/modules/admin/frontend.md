@@ -2,7 +2,7 @@
 
 # Admin frontend contract
 
-Admin 1.1.1 supplies the PL/EN session shell, guarded reads and independent
+Admin 2.0.0 supplies the PL/EN session shell, guarded reads and independent
 commands, compiled component resolution, presentation providers, generated record
 forms and cursor tables. Public facade `@/runa/admin` exports AdminApplication,
 AdminLayout, AdminPage, AdminSection, AdminForm, AdminField, AdminAction,
@@ -1353,3 +1353,8 @@ This does not start a session, grant access, coordinate/retry domain writes or
 replace the native form/resource mutation lane. A page using custom owning HTTP
 must use one custom controller for that aggregate and omit competing native forms.
 The reference module's `tools_page.vue` is an executable consumer.
+
+Structured field declarations and native list/map values follow the public
+[json field contract](declarations.md#structured-management-fields). Snapshot
+controllers consume native catalogs/values; supplied readonly fields render escaped
+ValuePreview, while writable structured values use their specialized presentation.

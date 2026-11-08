@@ -2,6 +2,11 @@
 
 ## 0.4.1 — Unreleased
 
+- Consume native snapshot lists/maps in the interactive Admin/standalone settings
+  workspace, preserving draft load/cancel and deliberate proof-protected publication.
+  Require Framework API ^2.1.0 and optional Admin ^2.0.0. ReferenceTools 1.0.0 is
+  still unpublished; this corrects that new API before its first release.
+
 - Initialize directly at the current schema/version; remove historical development
   upgrade scaffolding. Define sample revision/default/positive CHECK in
   the original CREATE; remove the additional ALTER. Existing recorded reference

@@ -4,7 +4,7 @@
   "kind": "optional",
   "version": "0.4.1",
   "platform": ">=0.7.0 <1.0.0",
-  "framework_api": "^2.0.0",
+  "framework_api": "^2.1.0",
   "name": {
     "pl": "Moduł referencyjny",
     "en": "Reference module"
@@ -16,7 +16,7 @@
   "dependencies": {
     "required": {},
     "optional": {
-      "runa.admin": "^1.1.0",
+      "runa.admin": "^2.0.0",
       "runa.audit": "^1.1.0",
       "runa.auth": "^6.0.0",
       "runa.permissions": "^2.1.0"

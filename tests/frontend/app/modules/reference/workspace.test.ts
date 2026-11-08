@@ -41,15 +41,15 @@ const settings = (label = 'Committed', revision = 1) => ({
   },
 });
 const snapshots = (values: object = {}) => ({
-  snapshots: JSON.stringify([
+  snapshots: [
     {
       public_id: id,
       name: 'Saved label',
       source_revision: 1,
       created_at: '2026-11-07T12:00:00Z',
     },
-  ]),
-  values: JSON.stringify(values),
+  ],
+  values: values,
 });
 function harness(view: ReferenceView) {
   const authority = ref(access()),

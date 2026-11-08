@@ -80,7 +80,7 @@ spinner implementation is needed.
 ## Admin integration status
 
 The 0.4.0 source retains exact-call health planning and now requires Framework API
-^2.0.0. Focused native regressions cover the guarded inspect page/widget and access
+^2.1.0. Focused native regressions cover the guarded inspect page/widget and access
 revocation, including withdrawal between selection and health preparation. Health
 checks run before the locked business read; the hybrid policy is unchanged. Final
 development runtime alignment and rendered/manual acceptance remain roadmap work,
@@ -196,19 +196,19 @@ All named authenticated routes below use `/api/app/reference/` and return
 `{data: ...}` with no-store responses. Route names use `app.reference.` plus the
 operation key in the table. The existing Ping route remains public/nonsensitive.
 
-| Operation         | Method/path           | Grant suffix and observable result                                                                                                            |
-| ----------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| samples.read      | GET samples           | samples.read; bounded items with public_id/revision, code only with samples.code.read                                                         |
-| samples.edit      | PATCH samples         | samples.write plus samples.read and samples.code.write; public_id/revision/code input returns the new monotonic revision and safe projection  |
-| settings.read     | GET settings          | settings.read; revision, review_id and localized settings; credential set-state requires settings.credential.read                             |
-| settings.review   | POST settings/review  | settings.write plus settings.read; values/revision/review_id input returns redacted changes and encrypted review                              |
-| settings.publish  | POST settings/publish | same grants, exact original input plus review; one-use password action app.reference.settings.publish; operation/status result                |
-| snapshots.read    | GET snapshots         | settings.read; optional public_id loads committed label only; snapshots/values are JSON text                                                  |
-| snapshots.capture | POST snapshots        | settings.write plus settings.read; name/revision/review_id captures committed label with Audit                                                |
-| snapshots.delete  | DELETE snapshots      | same grants; public_id/revision/review_id and own password action app.reference.settings.snapshot_delete                                      |
-| history.read      | GET history           | history.read plus independent runa.audit.read; optional sample/before UUIDv7 filters; safe event identity/action/time/outcome and next cursor |
-| work.dispatch     | POST work             | work.dispatch; password action app.reference.work.dispatch commits durable work intent and explicit Audit; work_id/status admitted            |
-| work.read         | GET work              | work.read; bounded owning work identities, statuses, progress, attempts and cancellation state                                                |
+| Operation         | Method/path           | Grant suffix and observable result                                                                                                               |
+| ----------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| samples.read      | GET samples           | samples.read; bounded items with public_id/revision, code only with samples.code.read                                                            |
+| samples.edit      | PATCH samples         | samples.write plus samples.read and samples.code.write; public_id/revision/code input returns the new monotonic revision and safe projection     |
+| settings.read     | GET settings          | settings.read; revision, review_id and localized settings; credential set-state requires settings.credential.read                                |
+| settings.review   | POST settings/review  | settings.write plus settings.read; values/revision/review_id input returns redacted changes and encrypted review                                 |
+| settings.publish  | POST settings/publish | same grants, exact original input plus review; one-use password action app.reference.settings.publish; operation/status result                   |
+| snapshots.read    | GET snapshots         | settings.read; optional public_id loads committed label only; snapshots is a native list; values is null until selected, then a native field map |
+| snapshots.capture | POST snapshots        | settings.write plus settings.read; name/revision/review_id captures committed label with Audit                                                   |
+| snapshots.delete  | DELETE snapshots      | same grants; public_id/revision/review_id and own password action app.reference.settings.snapshot_delete                                         |
+| history.read      | GET history           | history.read plus independent runa.audit.read; optional sample/before UUIDv7 filters; safe event identity/action/time/outcome and next cursor    |
+| work.dispatch     | POST work             | work.dispatch; password action app.reference.work.dispatch commits durable work intent and explicit Audit; work_id/status admitted               |
+| work.read         | GET work              | work.read; bounded owning work identities, statuses, progress, attempts and cancellation state                                                   |
 
 Grant suffixes above use `app.reference.`. Credential replacement/clear additionally
 requires settings.credential.write, and the backend independently enforces it.
@@ -329,3 +329,12 @@ Application regressions live in `tests/frontend/app/modules/reference/workspace.
 plus the retained presentation cases. Their supported application frontend runner
 owns disposal/reporting; complete suites, browser states, current runtime/assets
 and owner acceptance are separate roadmap stages.
+
+Snapshot reads demonstrate native structured Management values through the guarded
+framework snapshot owner. The standalone/replacement workspace reads these values
+directly, loads only label into the local draft and preserves the original settings
+revision/review until publication. It does not parse an encoded fallback or expose
+credentials. Admin composition requires Admin ^2.0.0; source requires Framework
+API ^2.1.0. Use the working settings/snapshot page with its existing read/write
+grants to capture a committed label, load it without publishing, cancel back to
+the prior draft, then deliberately review/publish through the native proof flow.

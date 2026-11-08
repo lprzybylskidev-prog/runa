@@ -38,13 +38,13 @@ function defaults(): Record<string, AdminJson> {
     attempt_locked_until: null,
     password_change_required: false,
     identifier_mode: 'email',
-    password_policy: JSON.stringify({
+    password_policy: {
       min_length: 12,
       max_bytes: 72,
       mixed_case: false,
       numbers: false,
       symbols: false,
-    }),
+    },
     invitation_allowed: true,
     email_verification_allowed: true,
   };
@@ -70,13 +70,15 @@ function fixture() {
       key,
       label: key,
       type:
-        key === 'credential_mode' || key === 'identifier_mode'
-          ? 'dictionary'
-          : typeof value === 'boolean'
-            ? 'boolean'
-            : key.endsWith('_at') || key === 'attempt_locked_until'
-              ? 'datetime'
-              : 'text',
+        key === 'password_policy'
+          ? 'json'
+          : key === 'credential_mode' || key === 'identifier_mode'
+            ? 'dictionary'
+            : typeof value === 'boolean'
+              ? 'boolean'
+              : key.endsWith('_at') || key === 'attempt_locked_until'
+                ? 'datetime'
+                : 'text',
       readonly: metadata.includes(key),
       sensitive: ['password', 'password_confirmation'].includes(key),
       filterable: false,

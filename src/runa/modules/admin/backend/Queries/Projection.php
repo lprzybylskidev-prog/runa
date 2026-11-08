@@ -583,6 +583,7 @@ final readonly class Projection
                 }
             } elseif ($value !== null) {
                 $valid = match ($access->field->type) {
+                    'json' => is_array($value),
                     'text' => is_string($value) && ($access->field->maxLength === null || mb_strlen($value) <= $access->field->maxLength),
                     'boolean' => is_bool($value),
                     'integer' => is_int($value),

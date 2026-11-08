@@ -47,9 +47,9 @@ abstract readonly class SettingsSnapshotSection implements ManagementResourceRea
             $state = $this->settings->read(static::MODULE);
 
             return new ManagementRecord($input->publicId, $state['revision'].':'.$state['review_id'], [
-                'snapshots' => json_encode($this->snapshots->catalog(static::MODULE, static::SCOPE), JSON_THROW_ON_ERROR),
+                'snapshots' => $this->snapshots->catalog(static::MODULE, static::SCOPE),
                 'name' => null, 'snapshot_id' => null,
-                'values' => json_encode($input->publicId === null ? new \stdClass : $this->snapshots->load(static::MODULE, static::SCOPE, static::keys(), $input->publicId), JSON_THROW_ON_ERROR),
+                'values' => $input->publicId === null ? null : $this->snapshots->load(static::MODULE, static::SCOPE, static::keys(), $input->publicId),
             ]);
         });
     }

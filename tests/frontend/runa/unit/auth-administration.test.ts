@@ -35,7 +35,20 @@ function field(key: string, readonly = true): AdminFieldData {
   return {
     key,
     label: key,
-    type: 'text',
+    type: [
+      'addresses',
+      'sessions',
+      'devices',
+      'exceptions',
+      'active_exceptions',
+      'exception_versions',
+      'password_policy',
+      'delivery',
+      'categories',
+      'recipients',
+    ].includes(key)
+      ? 'json'
+      : 'text',
     readonly,
     sensitive: false,
     filterable: key === 'display_name' || key === 'state',
@@ -318,13 +331,13 @@ it('Auth administration collection sections use only authorized fields and expos
       public_id: target,
       revision: '1',
       values: {
-        addresses: JSON.stringify([
+        addresses: [
           {
             public_id: target,
             email: 'secondary@example.test',
             verified: false,
           },
-        ]),
+        ],
         address_id: null,
         email: null,
       },
@@ -913,14 +926,14 @@ it('rebuilt user details groups capabilities and keeps revision tokens out of op
         ? {
             locale: 'pl',
             theme: 'system',
-            delivery: '[]',
-            categories: '[]',
-            recipients: '[]',
+            delivery: [],
+            categories: [],
+            recipients: [],
             preference_revision: 7,
           }
         : key === 'exceptions'
           ? {
-              exceptions: '[]',
+              exceptions: [],
               key: 'session_idle_minutes',
               exception_version: 0,
               policy_revision: 8,
@@ -1017,7 +1030,7 @@ it('named account rules open focused editors and status uses authoritative activ
       revision: '1',
       values: url.pathname.endsWith('/exceptions')
         ? {
-            exceptions: JSON.stringify([
+            exceptions: [
               {
                 ...activeRule,
                 public_id: actor,
@@ -1025,13 +1038,13 @@ it('named account rules open focused editors and status uses authoritative activ
                 revoked_at: new Date().toISOString(),
                 reason: 'Old historical value',
               },
-            ]),
-            active_exceptions: JSON.stringify(activeRules),
+            ],
+            active_exceptions: activeRules,
             key: 'session_idle_minutes',
             value: null,
             reason: null,
             expires_at: null,
-            exception_versions: '{"session_idle_minutes":2}',
+            exception_versions: { session_idle_minutes: 2 },
             exception_version: 0,
             policy_revision: 8,
           }
@@ -1435,7 +1448,9 @@ it('hides admin recipient selectors when the owning module disables secondary em
       type:
         key === 'recipient_selection_enabled'
           ? ('boolean' as const)
-          : ('text' as const),
+          : ['delivery', 'categories', 'recipients'].includes(key)
+            ? ('json' as const)
+            : ('text' as const),
     })),
   );
   const controller = page([preferences]);
@@ -1447,7 +1462,7 @@ it('hides admin recipient selectors when the owning module disables secondary em
         locale: 'en',
         theme: 'system',
         recipient_selection_enabled: false,
-        categories: JSON.stringify([
+        categories: [
           {
             module: 'runa.auth',
             key: 'optional',
@@ -1455,19 +1470,19 @@ it('hides admin recipient selectors when the owning module disables secondary em
             mandatory: false,
             sensitive: false,
           },
-        ]),
-        delivery: JSON.stringify([
+        ],
+        delivery: [
           {
             module: 'runa.auth',
             key: 'optional',
             enabled: true,
             recipients: ['primary'],
           },
-        ]),
-        recipients: JSON.stringify([
+        ],
+        recipients: [
           { value: 'primary', label: 'target@example.test' },
           { value: actor, label: 'secondary@example.test' },
-        ]),
+        ],
       },
     }),
   );
@@ -1629,13 +1644,13 @@ it('email management validates native commands and keeps secondary row identity 
       values: String(input).includes('/secondary')
         ? {
             secondary_email_limit: 5,
-            addresses: JSON.stringify([
+            addresses: [
               {
                 public_id: actor,
                 email: 'other@example.test',
                 verified: false,
               },
-            ]),
+            ],
             address_id: null,
             email: '',
           }
@@ -2173,7 +2188,7 @@ it('offers explicit administrative verification for pending addresses without ov
       )
         ? { current_email: 'primary@example.test', verified: false }
         : {
-            addresses: JSON.stringify([
+            addresses: [
               {
                 public_id: target,
                 email: 'pending@example.test',
@@ -2184,7 +2199,7 @@ it('offers explicit administrative verification for pending addresses without ov
                 email: 'verified@example.test',
                 verified: true,
               },
-            ]),
+            ],
             secondary_email_limit: 5,
             address_id: null,
             email: 'unsaved@example.test',
@@ -2308,7 +2323,7 @@ it.each(['sessions', 'trust'])(
       await import('../../../../src/runa/modules/auth/frontend/AuthAdminUserSection.vue');
     const { TextInput } = await import('@/runa/ui');
     const key = kind === 'sessions' ? 'sessions' : 'devices';
-    const spec = section(kind, [field(key)]);
+    const spec = section(kind, [{ ...field(key), type: 'json' }]);
     spec.export_allowed = true;
     const controller = page([spec]);
     const entries = [
@@ -2341,7 +2356,7 @@ it.each(['sessions', 'trust'])(
       return response({
         public_id: target,
         revision: '1',
-        values: { [key]: JSON.stringify(entries) },
+        values: { [key]: entries },
       });
     });
     const wrapper = mount(

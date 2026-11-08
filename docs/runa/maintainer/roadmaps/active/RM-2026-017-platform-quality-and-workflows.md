@@ -21,21 +21,24 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10o design stop, 2026-11-08
+## Current execution state — point 10o completed, 2026-11-08
 
-**Points 1–10n remain complete; point 10o is open and awaits contract discussion.**
-The [structured-read source review](../../reviews/RM-2026-017-structured-reads.md)
-confirms redundant encodings but corrects P08's premise: ManagementRecord/AdminJson
-support nesting, whereas ManagementField, backend projection and frontend read
-validation permit only scalar/UUID field types. Native arrays would be rejected.
-Preference delivery also has an encoded write contract that must be addressed.
+**Points 1–10o are complete. Point 10p is next; 10p–10r remain open.** The owner
+accepted the source-verified correction: explicit bounded json fields now carry
+native snapshot/Auth projections and preference delivery writes. Admin backend and
+frontend validators, specialized/default controls and reference consumers use one
+representation. Encoded alternatives are refused without relaxing text fields.
 
-The review proposes an explicit bounded structured field type and coherent owning
-projection/consumer correction. This proposal is not an owner decision; no runtime
-implementation started and no tests, assets, storage/ledger changes or acceptance
-are claimed. Point 10o remains open pending agreement under the significant-unknown
-rule. Readiness stays 10r, owner acceptance 11 and final verification/release 12.
-Platform VERSION 0.7.0 and approved feature/0.8.0 projection remain unchanged.
+The [structured-read source/evidence review](../../reviews/RM-2026-017-structured-reads.md)
+records the original premise correction, public contract, versions, 3 focused
+backend cases (62 assertions), 9 focused frontend cases, native failed/refused
+attempts and preservation limits. Framework API is 2.1.0 and Admin is 2.0.0 for
+its released snapshot consumer break. Auth remains 6.0.1, Audit 1.1.2, Permissions
+2.1.2 and reference 0.4.1. These are source candidates; no installed state is claimed.
+
+Platform VERSION remains 0.7.0 / approved feature-0.8.0. No complete suites,
+static analysis, rebuilt assets/runtime, owner acceptance or final PASS is claimed.
+Combined preparation remains 10r, owner acceptance 11 and final release 12.
 
 ## Historical execution state — point 10n completed, 2026-11-08
 
@@ -1729,11 +1732,13 @@ below are retained as historical records only.
     and both instruction products where affected. No replacement alias or adapter.
     Include affected controls in the renewed owner acceptance sheet.
 
-- [ ] 10o. Normalize structured management read projections.
+- [x] 10o. Normalize structured management read projections.
   - **Dependency:** 10k/10l; complete before 10r. Own P08. Trace the concrete native
     snapshot/Auth read fields and consumers, separating structured read metadata
     from intentional editable text, encrypted storage, hashes, URL values and Audit
-    display chunks. Use existing bounded AdminJson/ManagementRecord capabilities.
+    display chunks. Owner accepted the 2026-11-08 source review: extend the field
+    vocabulary with bounded json, including coherent preference delivery writes,
+    then use existing bounded AdminJson/ManagementRecord containers.
   - Return native arrays/objects for the redundant encoded read collections and
     update their Admin/Auth/reference controllers, authored wire types and current
     tests/docs together. Remove old string decoders; do not accept both formats.
@@ -5609,3 +5614,40 @@ Only owner planning/evidence documents changed. Existing instruction products
 already prescribe public-boundary ownership and this discussion gate; no guidance
 rule is added. No tests or broad checks ran; no runtime/storage/resources changed.
 Point 10o remains open and none of 10p–12 is advanced.
+
+## Point 10o contract correction accepted — 2026-11-08
+
+The owner explicitly accepted the structured-read proposal after its explanation.
+Add the bounded json field type, align backend/frontend declarations and validators,
+migrate snapshot/Auth/reference consumers and delivery array writes, and refuse
+encoded alternatives. Existing security and final-only verification rules remain.
+
+## Point 10o completion — native structured Management fields, 2026-11-08
+
+The owner accepted the bounded json contract correction after the documented
+source stop. Implemented explicit field constraints, strict native backend/frontend
+projections, readonly safe display and refusal of generic text editing. Migrated
+snapshot/Auth/native preference writes, controllers and actual reference consumers;
+removed redundant string decoding without adding a dual representation.
+
+The [complete source and focused evidence review](../../reviews/RM-2026-017-structured-reads.md)
+records original/accepted premises, public signatures, consumer inventory, source
+version rationale and honest diagnostic limits. Framework API 2.1.0 is additive;
+Admin 2.0.0 owns the real published snapshot-controller break under standing pre-1.0
+authority. Auth 6.0.1 and reference 0.4.1 incorporate the correction in their already
+unreleased candidates; other guarded API signatures/versions are unchanged.
+Current public docs, working reference examples/tests, changelogs and pending owner
+scenarios are synchronized. Both instruction products need no duplicated wire rule;
+their existing public-contract/handbook references apply.
+
+Focused evidence: 3 backend cases / 62 assertions in supported one-worker parallel
+mode; 9 frontend cases across 5 files through owner/application commands. All final
+focused runs exit 0, cleanup 0. Preserve the earlier nonparallel fixture refusal
+(exit 2), concurrent-run lock refusal (exit 1) and existing generated Vitest import
+warning in the linked review; none is presented as passing coverage.
+
+No database/ledger/runtime/asset, dependency or Docker resource change occurred.
+The supported backend runner removed its identified disposable runa_test_test_1;
+base test/development data, services, volumes, model caches and reports remain.
+Full suites/static/security/AI gates stay 12, working runtime/assets and storage
+reconciliation stay 10r and sole owner acceptance stays 11. Point 10p is next.

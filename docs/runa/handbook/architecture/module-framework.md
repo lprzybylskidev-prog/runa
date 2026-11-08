@@ -531,6 +531,8 @@ Declare pure owned `ManagementProvider` classes under `declarations.management`.
 
 ManagementEntityProvider additionally declares bounded schema-version-1 entities
 with localized identity, read permission, safe fields and actual backend operations.
+ManagementField supports the bounded structured json type (Framework API 2.1.0);
+see [structured field semantics](../modules/admin/declarations.md#structured-management-fields).
 ManagementField supports filterable/sortable/writable/sensitive flags, public UUID
 reference module/operation, and optional required/maxLength/choices/multiple input
 controls. Choices are bounded static codes; multiple applies only to UUID references.

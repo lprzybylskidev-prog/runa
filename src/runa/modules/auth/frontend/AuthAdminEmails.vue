@@ -65,25 +65,18 @@ const available = (section: AdminSectionData | undefined, command: string) =>
   section?.commands.some((item) => item.key === command && item.available) ===
   true;
 const addresses = computed(() => {
-  try {
-    const value: unknown = JSON.parse(
-      String(get('secondary', 'addresses') ?? '[]'),
-    );
-    return Array.isArray(value)
-      ? value.filter(
-          (
-            row,
-          ): row is { public_id: string; email: string; verified: boolean } =>
-            !!row &&
-            typeof row === 'object' &&
-            typeof row.public_id === 'string' &&
-            typeof row.email === 'string' &&
-            typeof row.verified === 'boolean',
-        )
-      : [];
-  } catch {
-    return [];
-  }
+  const value = get('secondary', 'addresses');
+  return Array.isArray(value)
+    ? value.filter(
+        (row): row is { public_id: string; email: string; verified: boolean } =>
+          !!row &&
+          typeof row === 'object' &&
+          !Array.isArray(row) &&
+          typeof row.public_id === 'string' &&
+          typeof row.email === 'string' &&
+          typeof row.verified === 'boolean',
+      )
+    : [];
 });
 const editing = ref<'primary'>();
 const method = ref('change');

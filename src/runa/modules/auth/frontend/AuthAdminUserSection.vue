@@ -88,18 +88,12 @@ const set = (key: string, value: AdminJson) =>
 function array(key: string): Record<string, AdminJson>[] {
   const result = resource.result.value;
   const value = result && 'values' in result ? result.values[key] : get(key);
-  if (typeof value !== 'string') return [];
-  try {
-    const parsed: unknown = JSON.parse(value);
-    return Array.isArray(parsed)
-      ? parsed.filter(
-          (row): row is Record<string, AdminJson> =>
-            !!row && typeof row === 'object' && !Array.isArray(row),
-        )
-      : [];
-  } catch {
-    return [];
-  }
+  return Array.isArray(value)
+    ? value.filter(
+        (row): row is Record<string, AdminJson> =>
+          !!row && typeof row === 'object' && !Array.isArray(row),
+      )
+    : [];
 }
 const kind = computed(() =>
   props.section.key.endsWith('.assignments')
@@ -379,12 +373,10 @@ function updateDelivery(
 ) {
   set(
     'delivery',
-    JSON.stringify(
-      delivery.value.map((item) =>
-        item.module === row.module && item.key === row.key
-          ? { ...item, ...patch }
-          : item,
-      ),
+    delivery.value.map((item) =>
+      item.module === row.module && item.key === row.key
+        ? { ...item, ...patch }
+        : item,
     ),
   );
 }
@@ -501,9 +493,7 @@ async function exportRows(signal: AbortSignal) {
     result.public_id !== id
   )
     throw new Error('permission_denied');
-  const raw = result.values[collectionKey.value!];
-  if (typeof raw !== 'string') throw new Error('permission_denied');
-  const parsed: unknown = JSON.parse(raw);
+  const parsed = result.values[collectionKey.value!];
   if (
     !Array.isArray(parsed) ||
     parsed.some((row) => !row || typeof row !== 'object' || Array.isArray(row))

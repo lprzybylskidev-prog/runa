@@ -548,9 +548,7 @@ export function useReferenceWorkspace(
       const result = await api('snapshots', 'GET', undefined, {
         public_id: row.public_id,
       });
-      label.value = wire.text(
-        wire.object(JSON.parse(wire.text(result.values)) as unknown).label,
-      );
+      label.value = wire.text(wire.object(result.values).label);
       review.value = undefined;
     }, true);
   }

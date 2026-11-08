@@ -248,7 +248,7 @@ it('installs Admin through explicit forward history and declares bounded guarded
     $suite = new ModuleContractSuite(base_path(), true);
     expect($suite->source('runa.admin'))->toBe([])
         ->and($suite->runtime(app(ModuleRegistry::class)->snapshot()->modules['runa.admin']))->toBe([])
-        ->and(DB::table('shared.module_update_steps')->where('module_id', DB::table('shared.modules')->where('module_id', 'runa.admin')->value('id'))->where('step', 'upgrade:initialize:install:1.1.1')->where('status', 'succeeded')->exists())->toBeTrue();
+        ->and(DB::table('shared.module_update_steps')->where('module_id', DB::table('shared.modules')->where('module_id', 'runa.admin')->value('id'))->where('step', 'upgrade:initialize:install:2.0.0')->where('status', 'succeeded')->exists())->toBeTrue();
     $api = app(ModuleApis::class)->resolve('runa.admin', AdminAccess::class, '1.0.0');
     expect($api)->toBeInstanceOf(AdminAccess::class)
         ->and(app('router')->getRoutes()->getByName('runa.admin.bootstrap')->uri())->toBe('api/admin');
@@ -889,7 +889,7 @@ it('Auth administration keeps creations invitations secondary addresses and pref
     $input = ['command' => 'add', 'public_id' => $user->public_id, 'revision' => (string) $user->version, 'values' => ['email' => 'secondary-admin@example.test']];
     $this->postJson('/api/admin/runa.auth/users/sections/secondary/commands', $input)->assertOk();
     $record = authAdministrationRead($this, 'secondary', $user->public_id);
-    $addresses = json_decode($record['values']['addresses'], true);
+    $addresses = $record['values']['addresses'];
     expect($addresses)->toHaveCount(1)->and($addresses[0]['verified'])->toBeFalse();
     $input['revision'] = $record['revision'];
     $input['command'] = 'change';
@@ -974,7 +974,7 @@ it('Auth administration writes indefinite rules and future dates beyond thirty d
         ])->assertOk()->json('data');
         expect($result['status'])->toBe('committed');
         $fresh = authAdministrationRead($this, 'exceptions', $this->adminUser->public_id);
-        $active = json_decode($fresh['values']['active_exceptions'], true);
+        $active = $fresh['values']['active_exceptions'];
         if ($index === 2) {
             expect($active)->toBe([]);
         } else {
@@ -1050,17 +1050,17 @@ it('Auth administration preserves native session and trust scoping without discl
     DB::table('runa_auth.trusted_devices')->insert(['public_id' => $deviceId, 'user_id' => $user->id, 'browser' => 'Firefox', 'platform' => 'Linux', 'last_used_at' => now(), 'token_hash' => hash('sha256', 'auth-admin-disposable-device'), 'security_version' => $user->security_version, 'factor_method' => 'totp', 'created_at' => now(), 'expires_at' => now()->addDay()]);
     authAdministrationLogin($this, ['runa.auth.sessions.manage', 'runa.auth.trust.manage']);
     $record = authAdministrationRead($this, 'sessions', $target->publicId);
-    expect(json_decode($record['values']['sessions'], true))->toHaveCount(2)
+    expect($record['values']['sessions'])->toHaveCount(2)
         ->and(json_encode($record))->not->toContain('session_hash', 'auth-admin-session-one', 'security_version');
     $this->postJson('/api/admin/runa.auth/users/sections/sessions/commands', ['command' => 'revoke', 'public_id' => $target->publicId, 'revision' => $record['revision'], 'values' => ['session_id' => $sessions[0]], 'confirmed' => true])->assertOk();
     $remaining = authAdministrationRead($this, 'sessions', $target->publicId);
-    expect(json_decode($remaining['values']['sessions'], true))->toHaveCount(1);
+    expect($remaining['values']['sessions'])->toHaveCount(1);
     $this->postJson('/api/admin/runa.auth/users/sections/sessions/commands', ['command' => 'revoke_all', 'public_id' => $target->publicId, 'revision' => $remaining['revision'], 'values' => [], 'confirmed' => true])->assertOk();
-    expect(json_decode(authAdministrationRead($this, 'sessions', $target->publicId)['values']['sessions'], true))->toBe([]);
+    expect(authAdministrationRead($this, 'sessions', $target->publicId)['values']['sessions'])->toBe([]);
     $trust = authAdministrationRead($this, 'trust', $target->publicId);
-    expect(json_decode($trust['values']['devices'], true)[0]['public_id'])->toBe($deviceId)->and(json_decode($trust['values']['devices'], true)[0]['browser'])->toBe('Firefox')->and(json_decode($trust['values']['devices'], true)[0]['platform'])->toBe('Linux')->and(json_decode($trust['values']['devices'], true)[0]['current'])->toBeFalse()->and(json_encode($trust))->not->toContain('token_hash', 'factor_method');
+    expect($trust['values']['devices'][0]['public_id'])->toBe($deviceId)->and($trust['values']['devices'][0]['browser'])->toBe('Firefox')->and($trust['values']['devices'][0]['platform'])->toBe('Linux')->and($trust['values']['devices'][0]['current'])->toBeFalse()->and(json_encode($trust))->not->toContain('token_hash', 'factor_method');
     $this->postJson('/api/admin/runa.auth/users/sections/trust/commands', ['command' => 'revoke_device', 'public_id' => $target->publicId, 'revision' => $trust['revision'], 'values' => ['device_id' => $deviceId], 'confirmed' => true])->assertOk();
-    expect(json_decode(authAdministrationRead($this, 'trust', $target->publicId)['values']['devices'], true))->toBe([]);
+    expect(authAdministrationRead($this, 'trust', $target->publicId)['values']['devices'])->toBe([]);
 });
 
 it('Auth administration runs native strong account actions with one use proof', function (string $section, string $command, array $values, string $grant, string $proof): void {
@@ -2427,6 +2427,9 @@ it('edits target preferences atomically without changing the administrator or we
     $target = app(ChangeIdentity::class)->create(new NewIdentity('target-preferences@example.test', name: 'Target', active: false));
     $path = '/api/admin/runa.auth/users/sections/preferences';
     $record = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
+    expect($record['values']['delivery'])->toBeArray();
+    $this->postJson($path.'/commands', ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'],
+        'values' => ['locale' => 'en', 'theme' => 'dark', 'delivery' => json_encode($record['values']['delivery'], JSON_THROW_ON_ERROR)]])->assertUnprocessable();
     $values = ['locale' => 'en', 'theme' => 'dark', 'delivery' => $record['values']['delivery']];
     $input = ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'], 'values' => $values];
     $this->postJson($path.'/commands', $input)->assertOk()->assertJsonPath('data.record.values.locale', 'en')->assertJsonPath('data.record.values.theme', 'dark');
@@ -2434,9 +2437,9 @@ it('edits target preferences atomically without changing the administrator or we
         ->and(DB::table('runa_audit.events')->where('action', 'preferences.admin_changed')->count())->toBe(1);
     $this->postJson($path.'/commands', $input)->assertConflict();
     $fresh = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
-    $categories = json_decode($fresh['values']['categories'], true, flags: JSON_THROW_ON_ERROR);
+    $categories = $fresh['values']['categories'];
     $mandatory = array_values(array_filter($categories, fn ($entry) => $entry['mandatory'] || $entry['sensitive']))[0];
-    $bad = ['locale' => 'pl', 'theme' => 'light', 'delivery' => json_encode([['module' => $mandatory['module'], 'key' => $mandatory['key'], 'enabled' => false, 'recipients' => ['primary']]], JSON_THROW_ON_ERROR)];
+    $bad = ['locale' => 'pl', 'theme' => 'light', 'delivery' => [['module' => $mandatory['module'], 'key' => $mandatory['key'], 'enabled' => false, 'recipients' => ['primary']]]];
     $this->postJson($path.'/commands', ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $fresh['revision'], 'values' => $bad])->assertUnprocessable();
     $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->assertJsonPath('data.values.locale', 'en')->assertJsonPath('data.revision', $fresh['revision']);
 });
@@ -2450,10 +2453,10 @@ it('separates target preference read manage and recipient-address grants', funct
     $target = app(ChangeIdentity::class)->create(new NewIdentity('private-preferences@example.test', name: 'Private', active: true));
     $path = '/api/admin/runa.auth/users/sections/preferences';
     $record = $this->getJson($path.'?public_id='.$target->publicId)->assertOk()->json('data');
-    expect(json_decode($record['values']['recipients'], true))->toBe([])
-        ->and(json_decode($record['values']['categories'], true))->toBe([]);
+    expect($record['values']['recipients'])->toBe([])
+        ->and($record['values']['categories'])->toBe([]);
     $this->postJson($path.'/commands', ['command' => 'save', 'public_id' => $target->publicId, 'revision' => $record['revision'],
-        'values' => ['locale' => 'en', 'theme' => 'dark', 'delivery' => '[]']])->assertUnprocessable();
+        'values' => ['locale' => 'en', 'theme' => 'dark', 'delivery' => []]])->assertUnprocessable();
     expect(User::where('public_id', $target->publicId)->value('preference_revision'))->toBe(0);
 });
 
@@ -2566,7 +2569,7 @@ it('confirms existing addresses through native Admin commands and refreshes reci
     } else {
         expect(DB::table('runa_auth.secondary_emails')->where('public_id', $address)->value('verified_at'))->not->toBeNull();
         $preferences = authAdministrationRead($this, 'preferences', $target->publicId);
-        expect(array_column(json_decode($preferences['values']['recipients'], true, flags: JSON_THROW_ON_ERROR), 'value'))->toContain($address);
+        expect(array_column($preferences['values']['recipients'], 'value'))->toContain($address);
     }
     expect(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.auth.email.admin_bypass')->whereNotNull('consumed_at')->exists())->toBeTrue()
         ->and(DB::table('runa_audit.events')->where('action', $address === null ? 'email.admin_verified' : 'secondary.admin_verified')->count())->toBe(1);
@@ -2643,15 +2646,16 @@ it('named settings snapshots load without publishing and require transactional p
     authAdministrationLogin($this, ['runa.auth.policy.read', 'runa.auth.policy.write']);
     $url = '/api/admin/runa.auth/policy/sections/snapshots';
     $state = $this->getJson($url)->assertOk()->json('data');
+    expect($state['values']['snapshots'])->toBeArray()->and($state['values']['values'])->toBeNull();
     $before = app(ModuleSettings::class)->read('runa.auth');
     $capture = ['command' => 'capture', 'public_id' => null, 'revision' => $state['revision'], 'values' => ['name' => 'Before security review']];
     $created = $this->postJson($url.'/commands', $capture)->assertOk()->json('data.record');
-    $catalog = json_decode($created['values']['snapshots'], true, flags: JSON_THROW_ON_ERROR);
+    $catalog = $created['values']['snapshots'];
     expect($catalog)->toHaveCount(1)->and($catalog[0]['name'])->toBe('Before security review');
     $id = $catalog[0]['public_id'];
     expect(DB::table('shared.module_settings_snapshots')->where('public_id', $id)->value('settings_values'))->not->toContain('public_welcome_enabled');
     $loaded = $this->getJson($url.'?public_id='.$id)->assertOk()->json('data');
-    $values = json_decode($loaded['values']['values'], true, flags: JSON_THROW_ON_ERROR);
+    $values = $loaded['values']['values'];
     expect($values['public_welcome_enabled'])->toBe($before['settings']['public_welcome_enabled']['value'])
         ->and(app(ModuleSettings::class)->read('runa.auth')['revision'])->toBe($before['revision']);
     $this->postJson($url.'/commands', $capture)->assertConflict();
@@ -2834,7 +2838,7 @@ it('joins hybrid snapshot reads to the exact prepared Admin call and refuses mis
                 'app.reference', new ApiOperation('settings.snapshots', 'app.reference.settings.read')));
             $call = $prepare();
             $values = DB::transaction(fn () => $admissions->read([$call], DB::connection(), fn () => $api->snapshots()));
-            expect(json_decode($values['snapshots'], true, flags: JSON_THROW_ON_ERROR))->toBe([]);
+            expect($values['snapshots'])->toBe([]);
             expect(fn () => DB::transaction(fn () => $admissions->read([], DB::connection(), fn () => $api->snapshots())))->toThrow(OperationRejected::class);
             $call = $prepare();
             try {

@@ -4,6 +4,13 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Add bounded native json Management fields (Framework API 2.1.0) and strict
+  declaration/projection/frontend validation. Replace encoded snapshot/Auth reads
+  and preference delivery writes with native lists/maps; remove matching decoders.
+  Preserve owning grants, original review/revisions, proof, secret projection and
+  Audit. Admin advances to 2.0.0 for its released snapshot consumer contract break;
+  Auth 6.0.1 and reference 0.4.1 remain their existing unreleased candidates.
+
 - Remove the duplicate public Button.compact prop; use iconOnly (icon-only in
   templates). Migrate language/theme controls and preserve square sizing,
   accessible names, busy slot behavior and native focus/activation semantics.

@@ -2,6 +2,11 @@
 
 ## 6.0.1 — Unreleased
 
+- Use native structured management reads for password policy, addresses, sessions,
+  trusted devices, exceptions and preference collections. Preference writes accept
+  delivery arrays only; preserve grants, original revisions, proof and atomic Audit.
+  Require Framework API ^2.1.0. These changes join the unreleased Auth 6 MAJOR.
+
 - Initialize directly at the current schema/version; remove historical development
   upgrade scaffolding. Retain the 6.0.0 → 6.0.1 current-schema update,
   reserved declaration/Audit participation and native history/recovery refusals.
