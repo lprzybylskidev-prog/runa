@@ -1,85 +1,62 @@
 # RM-2026-017 current owner acceptance scenarios
 
-Point 10i preparation, 2026-11-07. Development runtime/assets and actual routes
-are observed in the [combined readiness review](RM-2026-017-combined-readiness.md).
-Point 10i is complete, including the guarded test-base provenance repair. This
-sheet is the owner's manual handoff, not owner acceptance or final automated PASS. Point 11 requires the owner's explicit result;
-complete automated verification/release remains point 12. The earlier point-10
-report's runtime observations remain historical evidence.
-
-## Post-audit handoff dependency
-
-The owner's additional pre-1.0 audit adds proposed corrections 10k–10q and renewed
-combined readiness 10r in the same active roadmap. The current environment and
-observations below still identify the completed 10i source. They cannot accept
-future preference, control or structured-read changes. Renew affected scenarios,
-assets/runtime/source identities and data/access preparation in 10r before the
-sole owner acceptance point 11. Final automated verification remains 12. See the
-[compatibility audit and dispositions](RM-2026-017-pre1-compatibility-audit.md).
-
-## Structured read correction — source scenarios from point 10o
-
-Owner accepted the native json field correction on 2026-11-08. Renew runtime/assets
-in 10r before using these scenarios for point 11; prior 10i observations do not
-certify the changed contract.
-
-- In Auth policy, capture committed settings, load a snapshot into a dirty draft,
-  cancel to restore the draft and deliberately publish through the original review
-  and native password proof. Loading alone never publishes; deletion requires proof.
-- In user creation, verify current password requirements; in user details check
-  addresses, sessions, trusted devices, paging/export and exception expiry/version
-  selection. Address/session/device collections retain authorized data only.
-- In preferences, change category/recipient controls and save; confirm conflict
-  handling retains drafts and the original revision. Disabled secondary-email
-  configuration still omits recipient selection.
-- Repeat reference settings snapshot capture/load/cancel/publication in its Admin
-  and standalone presentations. No credential value appears in snapshot contents.
-- Sample readonly structured ValuePreview with nested values and escaped markup;
-  default generic writable json fields report unavailable and have no text editor.
-
-## Button correction — source scenarios from point 10n
-
-Point 10n (2026-11-08) removes Button.compact and migrates all four language/theme
-button branches to iconOnly. These are source scenarios for renewed preparation
-in 10r; the 10i assets/observations below do not certify this source.
-
-- On `/` and `/auth/login`, inspect the language/theme controls in the entry layout;
-  on `/account` and `/admin`, inspect their shell equivalents. Use PL/EN, light/dark,
-  narrow/desktop and keyboard focus/activation. Controls keep square dimensions,
-  localized accessible names/tooltips and their existing preference effects.
-- Native/emergency error pages use the same controls with GET navigation: language
-  and theme buttons retain their independent submitted name/value and companion
-  hidden preference. Prepare a supported error-page scenario in 10r; do not invent
-  a route or trigger destructive failures for acceptance.
-- For the existing shared Table refresh/reset, table-preference/export settings and
-  Dialog close controls, sample keyboard names/focus and available busy states.
-  Their existing iconOnly callers are unchanged. Icon-only busy buttons retain
-  their name and dimensions while replacing the icon with a decorative spinner;
-  text buttons retain their text. Owner acceptance remains point 11.
+Point 10r preparation, 2026-11-08. The [post-refactor readiness review](RM-2026-017-post-refactor-readiness.md)
+records current source/runtime/assets, bounded observations and preserved resources.
+Point 11 requires the owner's explicit result for this environment. Full automated
+verification/release remains point 12. Prior 10i screenshots identify older source.
 
 ## Preconditions and identity
 
-Expected local origin remains `http://localhost:8080`; internal diagnostics use
-the existing Nginx sibling `http://nginx:8080`. Both were reconfirmed in 10i through real Nginx requests and Chromium views. Use normal login and the
-existing privately configured authorized development administrator account
-(role runa.permissions.super_admin); never reset a
-password, issue substitute credentials or bypass grants/maintenance for readiness.
+Open [the application](http://localhost:8080), then use normal login with the existing
+privately configured development administrator (role `runa.permissions.super_admin`).
+Admin entry uses the native full-page password confirmation. No password reset,
+substitute credential or guard bypass is needed. Safe account discovery remains
+`php artisan runa:seed:accounts`; credentials stay private.
 
-Candidate source: platform VERSION 0.7.0, projected release 0.8.0; Framework API
-2.0.0; Admin 1.1.0, Auth 6.0.0, Audit 1.1.1, Permissions 2.1.1, reference 0.4.0.
-These versions are installed in the development database after explicit forward
-updates. Current SPA entry is /build/assets/index-3bYqUnwF.js; the linked readiness
-review records exact source/build hashes and services. No early VERSION preparation
-was needed. Test-base storage and real installation ledgers were rebuilt under
-standing pre-1.0 authority; the native two-user case passes there. No lifecycle
-toggle, fake version or production inclusion of reference was used.
+Runtime source: `5903593ccde714088b3816fbe8493889a76067c9` plus the documentation-only
+10r handoff commit. Platform VERSION remains 0.7.0, approved feature projection 0.8.0;
+Framework API 2.1.0. Installed/source versions match: Admin 2.0.0, Auth 6.0.1,
+Audit 1.1.2, Permissions 2.1.2 and reference 0.4.1. Current development SPA entry:
+`/build/assets/index-CaW1iAUP.js`. Exact build hashes are in the linked review.
+Both identified development/test reference sample tables and their installation
+provenance were rebuilt; each now contains the current `welcome` example. Existing
+accounts, credentials, settings, enabled flags and Core history were preserved.
 
-The [application Core matrix](../../../app/modules/reference/core-capabilities.md)
-owns executable source/API/test links and noninteractive/internal exclusions.
-Reference grant names below have prefix `app.reference.`; source synchronization
-never assigns them. Add only the intended grants through normal authorized
-Permissions administration. Native Admin entry independently requires
-`runa.admin.enter` and its own full-page password confirmation.
+The [Core matrix](../../../app/modules/reference/core-capabilities.md) owns source/API/test
+links and noninteractive exclusions. Reference grants have prefix `app.reference.`;
+source synchronization never assigns them. Native Admin requires `runa.admin.enter`.
+Use existing authorized access; inspect restricted states in prepared isolated fixtures.
+
+## Post-refactor scenarios
+
+- **Current preference formats:** in [account preferences](http://localhost:8080/account?tab=preferences),
+  change language/theme deliberately, reload and inspect retained account values.
+  In a separate guest browser, inspect defaults and deliberate guest changes; login
+  must keep the documented account/guest adoption boundary. Obsolete flat display
+  keys and table v1 envelopes select current defaults; current scoped values and v2
+  named/default table views retain edits. Use an isolated browser for obsolete-key
+  fixtures rather than overwriting the owner's normal local storage.
+- **Button consumers:** inspect language/theme buttons on `/`, `/auth/login`,
+  `/account` and `/admin`. Repeat PL/EN, light/dark, desktop/390px and keyboard
+  focus/Enter/Space. Buttons stay square and have localized accessible names.
+  Sample Table refresh/reset, preference/export controls and Dialog close; busy
+  icon buttons retain names/dimensions and text buttons retain text.
+- **Native errors:** [this nonexistent subpath](http://localhost:8080/account/preferences?lang=pl&theme=light)
+  deliberately returns the supported 404 document (`/account` itself is valid).
+  Language/theme GET buttons retain the companion preference. This uses ordinary
+  missing-page handling and changes no application state; no error route was added.
+- **Native structured reads:** in [Auth policy](http://localhost:8080/admin/runa.auth/policy),
+  inspect snapshots; capture committed settings, load into a dirty draft, cancel,
+  then deliberately review/publish through normal password proof. Loading alone
+  does not publish; deletion has separate destructive proof. In user creation,
+  inspect password requirements; user details expose authorized addresses, delivery
+  preferences, policy exceptions, sessions and trusted devices. Confirm dirty draft
+  retention and actual revision conflicts. Repeat reference snapshot/load/cancel/
+  publication through its supplied workspace. No credential value enters snapshots.
+- **Proof and conflicts:** cancel a reference publication proof and retain the draft;
+  background-tab return sends no business reload. Explicit refresh preserves a
+  dirty form. Two authorized browser sessions editing the same example produce a
+  real stale-write refusal and local conflict choices; writes never replay silently.
 
 ## Scenario sheet
 
@@ -89,8 +66,8 @@ need separate intent. Preserve existing user/application data.
 
 | Route / view                                                          | Access and concrete scenario                                                                                                                                                                           | Expected result                                                                                                                                                                                                                                                                                                      |
 | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`, `/auth/login`, enabled registration                              | Guest/authenticated navigation, labels, validation and PL/EN                                                                                                                                           | Correct entry/activation terminology; actionable copy preserved. Login has no introduction paragraph; registration retains activation guidance; root retains concise factual context. Aligned current assets include 10f; owner copy acceptance remains pending.                                                     |
-| `/account` and top-bar subviews                                       | Account/security/preferences/history, dirty close/cancel, feedback dismissal then locale switch                                                                                                        | Drafts and focus retained, dismissed outcomes stay dismissed. Trusted-device disclosure and action-driven refresh are implemented in 10g/10h; bounded current-runtime observations belong to 10i and owner acceptance remains 11. See the action-driven refresh review for simulated versus native backend evidence. |
+| `/`, `/auth/login`, enabled registration                              | Guest/authenticated navigation, labels, validation and PL/EN                                                                                                                                           | Correct entry/activation terminology; actionable copy preserved. Login has no introduction paragraph; registration retains activation guidance; root retains concise factual context. Aligned current assets include 10f and 10k–10q; owner copy acceptance remains pending.                                         |
+| `/account` and top-bar subviews                                       | Account/security/preferences/history, dirty close/cancel, feedback dismissal then locale switch                                                                                                        | Drafts and focus retained, dismissed outcomes stay dismissed. Trusted-device disclosure and action-driven refresh are implemented in 10g/10h; bounded current-runtime observations belong to 10r and owner acceptance remains 11. See the action-driven refresh review for simulated versus native backend evidence. |
 | `/admin/runa.auth/users`                                              | Create, close, open details, copy-from-user open/cancel, Security; dirty refusal and bulk preview/cancel                                                                                               | No false 422/toast, no stale prior-subject reads. No accidental bulk/security writes.                                                                                                                                                                                                                                |
 | `/admin/runa.permissions/{permissions,roles,presets}` and user access | Read definitions, filters/pages, assignment/search preview/cancel                                                                                                                                      | Source definitions readonly; ordinary/protected authority and reviewed effects remain distinct.                                                                                                                                                                                                                      |
 | `/admin/runa.audit/history`                                           | Range/sort, immutable detail, long values and narrow scrolling                                                                                                                                         | Authorized read-only viewer; no mutation form or leaked private payload.                                                                                                                                                                                                                                             |
@@ -113,9 +90,13 @@ do not stand in for missing view coverage. Prepared isolated fixtures/tests own
 revocation, proof expiry/replay, Audit failure and concurrent writes; the owner
 does not need to damage real account security to inspect those states.
 
-The combined readiness review records source/build hashes, routes/APIs, actual
-services/installed versions, existing administrator access and preserved resources.
-Its test-base provenance blocker is resolved; this candidate is ready for point 11. Copy/device/refresh
-expectations reflect completed 10f–10h and inserted readiness repairs. Only the owner's explicit
-result for that prepared environment completes 11; later UI repairs repeat the
-affected manual acceptance. No final PASS, release or acceptance is recorded here.
+Use PL/EN, light/dark, desktop/tablet/mobile and keyboard for affected interactions.
+At most five representative views per shared component class suffice; every directly
+changed distinct behavior above and in the table still needs its own scenario.
+Standalone reference composition is a component/composable entrypoint, not an
+additional invented route; its source and component tests are linked in the Core matrix.
+
+Readiness observations are agent diagnostics. Only the owner's explicit result
+completes point 11. Record the tested source/environment, feedback and accepted
+limits; any later UI repair repeats affected acceptance. No full-suite, security,
+AI, release or owner acceptance PASS is claimed by this handoff.

@@ -234,7 +234,7 @@ Existing installations carrying the earlier CREATE/ALTER fingerprints require
 explicit identified development/test storage and module-ledger reconciliation;
 ordinary update refuses changed migration history. A native application wipe alone
 does not reset module completion or installed-version provenance. See the
-[database reset policy](../../../runa/handbook/architecture/database.md#migration-policy). Core source compatibility includes Admin ^1.1.0 for its frontend lifecycle seam, Auth ^6.0.0,
+[database reset policy](../../../runa/handbook/architecture/database.md#migration-policy). Core source compatibility includes Admin ^2.0.0 for its frontend lifecycle seam, Auth ^6.0.0,
 Audit ^1.1.0 and Permissions ^2.1.0; those modules require their current explicit
 forward updates before protected workflows can run. The reference workspace is implemented in source; aligned runtime/assets and
 owner acceptance remain separate. No UI acceptance is claimed by the backend cases.

@@ -21,7 +21,28 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10q completed, 2026-11-08
+## Current execution state — point 10r completed, 2026-11-08
+
+**Points 1–10r are complete. Point 11 awaits explicit owner manual acceptance.**
+The [post-refactor readiness review](../../reviews/RM-2026-017-post-refactor-readiness.md)
+reconciles P01–P10 and records actual installed storage/runtime, current asset
+identities, existing authorized access and renewed bounded browser observations.
+The [current acceptance sheet](../../reviews/RM-2026-017-current-acceptance.md)
+is ready at http://localhost:8080.
+
+Both identified databases now match source: Audit 1.1.2, Auth 6.0.1, Permissions
+2.1.2, Admin 2.0.0 and reference 0.4.1. Core updated through native current-schema
+steps. Only reference samples and their installation provenance were reset and
+natively reinitialized under standing pre-1.0 authority; accounts, credentials,
+settings, Core history, enabled flags and all volumes remain preserved.
+
+Current assets use index-CaW1iAUP.js. Real Nginx pages/APIs, operational development
+doctor and bounded draft/proof/preference/structured-read/control observations
+succeed. The focused native independent-user conflict case passes 14 assertions,
+exit 0 / cleanup 0. No complete suites, owner acceptance or final PASS is claimed.
+Platform stays 0.7.0 / approved feature-0.8.0. Point 12 stays after owner acceptance.
+
+## Historical execution state — point 10q completed, 2026-11-08
 
 **Points 1–10q are complete. Point 10r is next.** Retired discovery-only
 `bin/check` and `bin/operations` are removed. Six retained recovery aliases now
@@ -1808,7 +1829,7 @@ below are retained as historical records only.
     preserve dated migration records. Assess instruction products without copying
     owner-only maintenance policy into customer guidance.
 
-- [ ] 10r. Prepare the combined post-refactor runtime and manual acceptance handoff.
+- [x] 10r. Prepare the combined post-refactor runtime and manual acceptance handoff.
   - **Dependency:** completed 10k–10q. Reconcile every audit finding with its actual
     implementation/disposition, current consumers, tests/docs and module/API versions.
     Prepare supported assets and required dev/test storage/ledger state from that
@@ -5777,3 +5798,53 @@ manifest, runtime configuration, database/ledger, dependency or security excepti
 changes. No Docker resource was created or removed; development/base test data,
 shared/model/Qdrant caches, backups and verification evidence remain. Point 10r
 is next; owner acceptance 11 and final verification/release 12 remain open.
+
+## Point 10r completion — post-refactor runtime and owner handoff, 2026-11-08
+
+The [post-refactor readiness review](../../reviews/RM-2026-017-post-refactor-readiness.md)
+records source `5903593ccde714088b3816fbe8493889a76067c9`, all ten audit dispositions,
+current contracts/consumers and actual installed/source versions. The 10r commit
+changes documentation only. Reference README's stale Admin ^1.1.0 range is corrected
+to its actual manifest ^2.0.0; no dependency or API change is introduced.
+
+Existing production-operation/test-suite locks and owned manual maintenance covered
+native forward Core updates and the disclosed reference-only development/test reset.
+Actual database/role/owner and schema/table ownership were verified. A transactional
+owner operation removed only app_reference.samples, its eight completion rows per
+database and installed-version provenance; native ModuleUpdates then created and
+initialized current 0.4.1 with genuine success records. This explicitly includes
+clearing installed_version to null during reset; it is not a forward upgrade or a
+fabricated success. Old ledger fingerprints/statuses remain in the operation journal.
+No generic reset command, guard bypass or compatibility conversion was added.
+
+Both databases now have zero pending update steps/reservations and no maintenance
+reasons; development retains 15 users, testing its two pre-operation users. User-row
+and encrypted-settings/revision hashes match before/after; enabled flags and Core
+history remain. Each reference base has one new welcome sample. All databases,
+Docker resources/volumes, caches, backups and old/current evidence are preserved.
+No Docker resource was created or removed; browser processes/contexts closed and
+the focused backend runner reports no disposable workers to clean.
+
+Supported operational builds, development-mode reference assets, standalone error
+assets and development doctor pass. Current index-CaW1iAUP.js/build identity and
+actual Nginx browser/API observations are recorded under
+.runtime/artifacts/playwright/RM-2026-017-point10r; operation/build/doctor/test evidence
+is under .runtime/dev/RM-2026-017-10r. Earlier failed diagnostic attempts remain.
+Bounded observations cover current pages, native snapshot/password projections,
+trusted-device disclosure, passive-return/explicit-refresh draft retention,
+review/password-proof cancellation, narrow PL/EN settings and keyboard entry/native
+404 preference controls. These are readiness evidence, not complete behavior matrices.
+
+The supported focused command php artisan runa:test:backend
+--filter='keeps two independent users snapshots' passes 1 case/14 assertions,
+native exit 0 / cleanup 0 on the prepared base. Complete backend/frontend/native/
+security/AI scopes and release remain 12. Current warning output is preserved.
+
+The [acceptance sheet](../../reviews/RM-2026-017-current-acceptance.md) replaces stale
+10i identity and renews concrete current scenarios/access at http://localhost:8080.
+Owner/customer instruction products already express the applicable rules; this
+operational/docs point adds no reusable rule or public capability requiring their
+change. Mandatory hooks and staged incremental knowledge synchronization apply.
+Platform remains 0.7.0 / approved feature-0.8.0; module/API versions are unchanged
+from completed source candidates. Only the owner's explicit tested result completes
+point 11; point 12 remains last. No owner acceptance, full suite or release is claimed.
