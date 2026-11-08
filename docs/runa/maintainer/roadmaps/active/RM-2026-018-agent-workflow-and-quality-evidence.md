@@ -178,6 +178,71 @@ their existing behavior; duration alone does not create a new handoff workflow.
 
 - 2026-11-08 — The owner authorized activation and continuous execution of this roadmap, retaining the mandatory final background handoff.
 
+## Current execution state
+
+Activation is committed as `13e3c715`. Point 1 remains open. Implementation is
+paused at its explicit evidence-contract discussion boundary; no runtime,
+validator, dependency or instruction behavior has been changed. No test suite or
+background quality run has been started.
+
+### Evidence-contract finding and proposed decision
+
+Source review on 2026-11-08 established:
+
+- `tools/application/quality_evidence.py::check_evidence` requires a single native
+  passed graph and verifies its commands, selection and candidate. It has no
+  machine-readable link to separate native backend reports or continuations.
+- `tools/application/testing/runner.py::TestService.execute` writes schema 1 of
+  `.runtime/tests/{owner}-results.json`: owner, scope, status, exit code and cleanup
+  exit code. It records no candidate, command, run identity, time, runtime identity,
+  inventory or report hashes. Subsequent commands overwrite that file. Native
+  backend discovery returns before writing it.
+- Existing native JUnit and TeamCity artifacts identify tests/datasets and their
+  outcomes, but do not independently bind them to a repository candidate or the
+  guarded runner's cleanup. A TeamCity unfinished case alone does not establish
+  which worker actually crashed. Existing ParaTest `_status` files record native
+  progress; their contents are not a reliable process exit-139 receipt.
+- The historical RM-2026-017 coverage assessment is an agent-authored read-only
+  assessment of retained reports, not a native provenance receipt. Its explicit
+  one-release representation decision cannot supply future validator authority.
+
+Consequently, accepting new manually annotated candidate/attempt/coverage fields
+alone would violate this roadmap's requirement to reject unsupported agent claims.
+The requested recovered path needs a producer-side provenance contract, not only
+a consumer-side validator change. This expands the implementation premise from
+interpreting existing artifacts to recording facts that are currently absent.
+
+Proposed bounded contract, awaiting owner agreement:
+
+1. Extend the existing shared Python test result format and its producer, rather
+   than adding a runner, service, separate ledger or persistence engine. Record
+   native invocation identity, owner, candidate/working-state identity, literal
+   command/selection, execution mode, start/end, environment compatibility identity
+   and the existing process/cleanup outcomes. Do not record secrets.
+2. Bind the result to the exact native discovery inventory and JUnit/TeamCity/
+   diagnostic artifacts with owned paths and content hashes captured by the
+   producer. Preserve original bytes and native exit codes. Retain each original
+   result/artifact set before subsequent invocations overwrite latest output.
+3. Keep discovery, retry and continuation invocation agent-directed through the
+   existing supported entrypoints. Add no automatic retry, skip, recovery decision,
+   PHP worker ownership or attribution instrumentation. If existing native crash
+   diagnostics cannot reliably attribute an interrupted case, refuse recovered
+   acceptance for that unknown evidence rather than guessing.
+4. Reference retained producer records from the existing roadmap evidence metadata.
+   Extend the existing closure validator to check provenance, exact identity-set
+   coverage, compatible candidates/modes/environments, cleanup, chronological
+   retry limits and successful recovery terminal conditions. A list of claimed
+   case names, an unbound XML file or a hash supplied only by an agent is
+   insufficient. Preserve the current complete native graph path.
+5. Reassess final quality scope for the shared test-lifecycle producer change.
+   Exercise its recording/selection behavior with deterministic process fixtures
+   through the supported tooling suite. Select real backend execution only if a
+   changed native runtime contract requires it; then place it last. No PHP/runtime
+   dependency change or historical-record rewrite is proposed.
+
+This proposal concerns evidence production and its trust boundary, not the known
+PHP fault's root cause. The existing no-investigation decision remains binding.
+
 ## Implementation plan
 
 Implementation points deliver code, regression scenarios and synchronized current
