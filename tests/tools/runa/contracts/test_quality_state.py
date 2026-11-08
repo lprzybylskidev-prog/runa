@@ -78,6 +78,29 @@ def test_active_status_preserves_evidence_and_renders_native_exit_timing(
     assert read_state(tmp_path)["steps"]["failed"].get("exit_code") == -15
 
 
+def test_active_progress_exposes_the_complete_recorded_scope(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    source = run_record(
+        {
+            "status": "running",
+            "steps": {
+                "done": {"status": "passed", "exit_code": 0},
+                "working": {"status": "running"},
+                "not-started": {"status": "pending"},
+                "blocked": {"status": "blocked"},
+            },
+        }
+    )
+    save(tmp_path, source)
+    original = (tmp_path / "state.json").read_bytes()
+    status(tmp_path, True)
+    output = capsys.readouterr().out
+    assert "pending=1, running=1, passed=1, failed=0, blocked=1, interrupted=0" in output
+    assert output.rstrip().endswith("Process is still running.")
+    assert (tmp_path / "state.json").read_bytes() == original
+
+
 def test_spawn_refusal_preserves_literal_transport_and_fixed_diagnostic(tmp_path: Path) -> None:
     import signal
     import subprocess

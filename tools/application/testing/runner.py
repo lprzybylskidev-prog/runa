@@ -8,11 +8,12 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Literal
 
+from tools.application.testing.evidence import BackendEvidence, backend_anchor, validate_selection
 from tools.core.context import WorkspaceContext
 from tools.core.lifecycle import interrupt_signals
 from tools.core.process import InputMode, ProcessRunner, ProcessSpec
 from tools.core.reporting import SafeFailure
-from tools.core.state import FileLock, JsonStore, StateDirectory, json_value
+from tools.core.state import FileLock, JsonStore, JsonValue, StateDirectory, json_value
 
 Scope = Literal["backend", "frontend", "tooling", "e2e"]
 SCOPES: tuple[Scope, ...] = ("backend", "frontend", "tooling", "e2e")
@@ -87,6 +88,7 @@ class Selection:
     python_paths: tuple[str, ...] = ()
     marker: str = "not docker and not network and not knowledge and not database and not packaging"
     collect_only: bool = False
+    evidence: bool = False
 
     def __post_init__(self) -> None:
         if (
@@ -101,6 +103,10 @@ class Selection:
             raise ValueError("Python paths require the tooling scope.")
         if self.collect_only and self.scopes != ("tooling",):
             raise ValueError("Collection requires the tooling scope.")
+        if self.evidence and self.scopes != ("backend",):
+            raise ValueError("Native evidence requires one explicit backend scope.")
+        if self.evidence:
+            validate_selection(self.arguments)
 
 
 @dataclass(frozen=True)
@@ -109,6 +115,7 @@ class ScopeResult:
     status: Literal["passed", "failed", "empty", "blocked", "interrupted"]
     exit_code: int
     cleanup_exit_code: int = 0
+    evidence: dict[str, JsonValue] | None = None
 
 
 @dataclass(frozen=True)
@@ -134,7 +141,9 @@ class TestService:
         if scope == "backend":
             if selection.filter:
                 args.append("--filter=" + selection.filter)
-            if "--parallel" in args and not any(a.startswith("--processes") for a in args):
+            if any(a in args for a in ("--parallel", "-p")) and not any(
+                a.startswith("--processes") for a in args
+            ):
                 args.append("--processes=" + self.environment.get("TEST_WORKERS", "4"))
             return (
                 "vendor/bin/pest",
@@ -217,7 +226,9 @@ class TestService:
             for path in directory.rglob(pattern)
         )
 
-    def run_scope(self, scope: Scope, selection: Selection) -> ScopeResult:
+    def run_scope(
+        self, scope: Scope, selection: Selection, previous: JsonValue = None
+    ) -> ScopeResult:
         if self.empty(scope, selection):
             if self.layout.owner == "application":
                 legacy = self.workspace.root / "src/app/tests"
@@ -258,12 +269,32 @@ class TestService:
             if before:
                 return ScopeResult(scope, "blocked", before)
         cleanup = 0
+        evidence = None
         try:
             if scope == "e2e":
                 built = self.process(("php", "runa/build/errors/build.php"))
                 if built:
                     return ScopeResult(scope, "blocked", built)
-            status = self.process(command, source=scope != "tooling")
+            if selection.evidence:
+                evidence = BackendEvidence(
+                    self.workspace.root,
+                    self.runner,
+                    self.environment,
+                    self.report,
+                    self.layout.owner,
+                    selection.arguments
+                    + (("--filter=" + selection.filter,) if selection.filter else ()),
+                    previous,
+                )
+                try:
+                    status = evidence.execute(command)
+                except (OSError, SafeFailure, ValueError):
+                    if evidence.native_exit_code is None:
+                        raise
+                    status = evidence.native_exit_code
+                    evidence.record["incomplete"] = True
+            else:
+                status = self.process(command, source=scope != "tooling")
         finally:
             if scope == "backend":
                 try:
@@ -271,7 +302,20 @@ class TestService:
                 except (OSError, SafeFailure):
                     cleanup = 127
         # pytest 5 is a collection/filter failure, never a successful empty scope.
-        return ScopeResult(scope, "passed" if status == cleanup == 0 else "failed", status, cleanup)
+        recorded = None
+        if evidence is not None:
+            try:
+                recorded = evidence.finish()
+            except (OSError, SafeFailure, ValueError):
+                recorded = dict(evidence.record, incomplete=True)
+            if recorded.get("incomplete") is True:
+                self.report(
+                    "Native evidence collection is incomplete; native exit and cleanup results are retained."
+                )
+                return ScopeResult(scope, "blocked", status, cleanup, recorded)
+        return ScopeResult(
+            scope, "passed" if status == cleanup == 0 else "failed", status, cleanup, recorded
+        )
 
     def execute(self, selection: Selection) -> int:
         ownership_roots = (
@@ -302,10 +346,18 @@ class TestService:
         results: list[ScopeResult] = []
         code = 0
         with lock.acquire(), interrupt_signals():
+            result_store = JsonStore(directory)
+            result_name = f"{self.layout.owner}-results.json"
+            previous: JsonValue = None
+            if (directory.path / result_name).exists():
+                prior = result_store.read(result_name)
+                if not isinstance(prior, dict):
+                    raise ValueError("Invalid previous test result.")
+                previous = prior.get("last_backend", {"unrecorded": True})
             try:
                 for scope in selection.scopes:
                     try:
-                        result = self.run_scope(scope, selection)
+                        result = self.run_scope(scope, selection, previous)
                     except (OSError, SafeFailure):
                         result = ScopeResult(scope, "blocked", 127)
                     results.append(result)
@@ -322,25 +374,38 @@ class TestService:
                     for scope in selection.scopes
                     if scope not in completed
                 )
-                JsonStore(directory).write(
+                records = [
+                    json_value(
+                        {
+                            "scope": r.scope,
+                            "status": r.status,
+                            "exit_code": r.exit_code,
+                            "cleanup_exit_code": r.cleanup_exit_code,
+                            **({"evidence": r.evidence} if r.evidence is not None else {}),
+                        }
+                    )
+                    for r in results
+                ]
+                for record in records:
+                    assert isinstance(record, dict)
+                    if record["scope"] == "backend" and record["status"] != "empty":
+                        previous = backend_anchor(record)
+                result_store.write(
                     f"{self.layout.owner}-results.json",
                     {
-                        "schema_version": 1,
+                        "schema_version": 2,
                         "owner": self.layout.owner,
-                        "scopes": [
-                            {
-                                "scope": r.scope,
-                                "status": r.status,
-                                "exit_code": r.exit_code,
-                                "cleanup_exit_code": r.cleanup_exit_code,
-                            }
-                            for r in results
-                        ],
+                        "last_backend": previous,
+                        "scopes": records,
                     },
                 )
-        failed = [r for r in results if r.exit_code or r.cleanup_exit_code]
+        failed = [
+            r
+            for r in results
+            if r.exit_code or r.cleanup_exit_code or r.status not in ("passed", "empty")
+        ]
         if code:
             return code
         if len(results) == 1:
-            return results[0].exit_code or results[0].cleanup_exit_code
+            return results[0].exit_code or results[0].cleanup_exit_code or (1 if failed else 0)
         return 1 if failed else 0

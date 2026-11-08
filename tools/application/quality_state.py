@@ -23,6 +23,7 @@ class StepRecord(TypedDict):
     exclusive_group: NotRequired[str | None]
     depends_on_if_selected: NotRequired[list[str]]
     command_if_selected: NotRequired[dict[str, str]]
+    terminal: NotRequired[bool]
     pid: NotRequired[int | None]
     exit_code: NotRequired[int | None]
     started_at: NotRequired[str | None]

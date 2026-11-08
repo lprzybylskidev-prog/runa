@@ -1,5 +1,6 @@
 """Quality state publication and compatible latest-run status rendering."""
 
+from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -37,6 +38,14 @@ def status(directory: Path, active: bool, *, anchor: Path | None = None) -> None
             if node["status"] == "running":
                 node["status"] = "interrupted"
         save(directory, state, anchor=anchor)
+    counts = Counter(node["status"] for node in state["steps"].values())
+    print(
+        "Recorded executions: "
+        + ", ".join(
+            f"{name}={counts[name]}"
+            for name in ("pending", "running", "passed", "failed", "blocked", "interrupted")
+        )
+    )
     for key, node in state["steps"].items():
         if active and node["status"] != "running":
             continue

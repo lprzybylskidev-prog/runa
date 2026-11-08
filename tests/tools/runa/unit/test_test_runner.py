@@ -135,6 +135,13 @@ def test_filters_are_native_and_raw_arguments_require_an_explicit_scope(tmp_path
         parse(["--scope=frontend", "--scope=frontend"])
 
 
+def test_parallel_alias_obeys_the_same_profile_worker_limit(tmp_path: Path) -> None:
+    service, _ = fixture(tmp_path)
+    for option in ("-p", "--parallel"):
+        command = service.command("backend", Selection(("backend",), (option,)))
+        assert "--processes=4" in command
+
+
 def test_scoped_native_exit_and_discovery_do_not_cleanup_workers(tmp_path: Path) -> None:
     service, runner = fixture(tmp_path, (7,))
     assert service.execute(Selection(("backend",), ("--list-tests",))) == 7

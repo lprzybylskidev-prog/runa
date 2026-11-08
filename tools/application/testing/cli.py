@@ -42,6 +42,11 @@ def parse(argv: Sequence[str]) -> Selection:
     )
     parser.add_argument("--marker", default=Selection().marker)
     parser.add_argument("--collect-only", action="store_true")
+    parser.add_argument(
+        "--evidence",
+        action="store_true",
+        help="Record candidate-bound native backend reports; output is displayed after completion.",
+    )
     args = list(argv)
     # Retain the established focused positional transport spellings.
     scope = args.pop(0) if args and args[0] in SCOPES else None
@@ -60,6 +65,7 @@ def parse(argv: Sequence[str]) -> Selection:
         tuple(options.path),
         options.marker,
         options.collect_only,
+        options.evidence,
     )
 
 

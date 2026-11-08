@@ -50,10 +50,11 @@ base:
     severity: hard_fail
 
   - id: backend-tests
+    terminal: true
     depends_on: [configuration]
     exclusive_group: testing-state
     description: Run backend tests in parallel-safe testing isolation.
-    command: python3 tools/maintainer/test-backend --parallel
+    command: python3 tools/maintainer/test-backend --parallel --evidence
     severity: hard_fail
 
   - id: php-static-analysis
@@ -148,7 +149,7 @@ impact_areas:
 
   database:
     - id: database-migrations
-      depends_on: [backend-tests]
+      depends_on: [configuration]
       exclusive_group: testing-state
       command: python3 tools/maintainer/check-database-migrations
       severity: hard_fail
@@ -402,7 +403,8 @@ final:
 execution:
   base_and_selected_impact_areas: union
   missing_dependency: invalid_definition
-  final_phase: after_all_selected_base_and_impact_steps_pass
+  final_phase: after_selected_nonterminal_steps_pass
+  terminal_backend: after_all_other_selected_steps_pass
   exclusive_groups: serialize_members
   production_simulation: isolated_from_real_deployments
   trivy_images: scan_actual_built_images_when_selected
@@ -446,7 +448,8 @@ groups:
   frontend:
     [frontend-build, frontend-typecheck, frontend-tests, formatting, lint]
   e2e: [frontend-browser, frontend-render-diagnostics]
-  database: [database-migrations, database-constraints, seeding-contract]
+  database:
+    [database-migrations, database-constraints, seeding-contract, backend-tests]
   development:
     [
       dependency-composition-contracts,

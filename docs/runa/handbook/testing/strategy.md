@@ -67,6 +67,34 @@ any failure and 130 on interruption. No scope is silently retried. Python JUnit
 output is `.runtime/python/reports/application-pytest.xml`; frontend/browser
 reports retain their established paths. Setup/reopen never executes these suites.
 
+## Native backend evidence
+
+`php artisan runa:test --scope=backend --parallel --evidence` optionally records
+native report provenance through the same shared test service; host transport is
+`./bin/artisan`. The command owns native inventory/JUnit/TeamCity logging and the
+standard runner. Do not combine it with custom `--log-*`, `--list-*`, `--tmp-dir`,
+runner/repetition overrides or split `--processes N`; use `--processes=N` instead.
+
+Schema 2 of the existing latest result keeps native status/exit/cleanup fields and
+adds recorded backend provenance when requested: candidate/cleanliness, command,
+mode/workers, timestamps, opaque configuration/runtime fingerprints and artifact
+hashes. Native reports and exact captured output live in private unique
+`.runtime/tests/native/<run-id>/` directories. This mode displays captured output
+after completion (64 MiB capture bound); ordinary execution keeps live inherited
+output. Native discovery records the selected inventory before execution; no test
+is automatically retried. A recording failure marks the scope blocked while
+preserving the actual engine exit and cleanup codes. The normal lock, guarded cleanup and native exit semantics
+remain authoritative. Missing/invalid evidence is never a passing verification.
+
+The latest result preserves one backend receipt hash link across frontend/tooling
+runs; unrecorded backend execution breaks that link. Retain results before their
+latest file is overwritten and preserve supporting report directories. These are
+local producer records, not a customer acceptance override or protection against
+an operator rewriting all local evidence. Keep receipts, logs and opaque
+fingerprints private and out of Git. Native `php artisan test` does not implement
+this wrapper option. The existing customer segfault recovery policy is unchanged.
+The Python recording classes are internal tooling, not an application extension API.
+
 ## PHP
 
 Native `php artisan test` and `php artisan runa:test:backend` select src/phpunit.xml and tests/backend/app/Feature and Unit. Pest and PHPUnit are available. Standard make:test writes tests/backend/app/Feature or Unit; Tests\TestCase in src/runa/Testing/TestCase.php supplies reusable guarded application isolation. The Pest contribution lives in tests/backend/app/Pest.php. Native Artisan uses the development-only Runa command to select that root, and the application wrapper passes the same explicit root/configuration. Direct Pest execution from src uses `vendor/bin/pest --test-directory=../tests/backend/app`; bare Pest retains its upstream tests-directory default. The obsolete src/tests directory is absent. The common testing namespace is dev-only Composer autoload, excluded from production images. Customer test setup never invokes owner migration tools or discovers platform tests; fresh parallel worker databases receive forward-only technical preparation from the delivered primitive before application migrations.

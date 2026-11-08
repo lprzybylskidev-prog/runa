@@ -25,7 +25,7 @@ def select(
         if node["id"] in nodes and nodes[node["id"]] != node:
             raise ValueError("Conflicting step: " + node["id"])
         nodes[node["id"]] = node.copy()
-    preceding = list(nodes)
+    preceding = [key for key, node in nodes.items() if not node.get("terminal", False)]
     if final:
         for node in definition["final"]:
             if node["id"] in nodes:
@@ -54,6 +54,14 @@ def select(
         if any(d not in nodes for d in node["depends_on"]):
             raise ValueError("Missing dependency: " + key)
         QualityStep.parse(node)
+    terminal = [key for key, node in nodes.items() if node.get("terminal", False)]
+    if len(terminal) > 1:
+        raise ValueError("Only one terminal quality boundary is permitted.")
+    if terminal:
+        key = terminal[0]
+        node = nodes.pop(key)
+        node["depends_on"] = list(dict.fromkeys(node["depends_on"] + list(nodes)))
+        nodes[key] = node
     done: set[str] = set()
     while len(done) < len(nodes):
         ready = {k for k, n in nodes.items() if k not in done and set(n["depends_on"]) <= done}

@@ -97,6 +97,10 @@ class QualityExecutor:
                         continue
                     definition = definitions[key]
                     deps = [state["steps"][d]["status"] for d in definition.dependencies]
+                    if definition.terminal:
+                        deps += [
+                            other["status"] for name, other in state["steps"].items() if name != key
+                        ]
                     if any(s in ("failed", "blocked", "interrupted") for s in deps):
                         node["status"] = "blocked"
                     elif all(s == "passed" for s in deps) and len(running) < 4:

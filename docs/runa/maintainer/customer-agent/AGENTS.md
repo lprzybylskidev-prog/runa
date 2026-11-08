@@ -23,6 +23,15 @@ decisions. Follow the application decision-provenance review in
 docs/runa/handbook/workflows/roadmaps.md#discussion-and-activation; application
 roadmap approval never authorizes protected Runa source edits.
 
+Explicit project decisions, accepted limitations and rejected approaches are binding.
+Before invoking a governed operation, check its stage, prerequisites and actual
+evidence, validity of completed work, execution cost and required handoff. Follow
+the existing procedure autonomously; do not turn a prohibition into a permission
+request. Reopen an explicit decision only for materially new evidence making it
+inapplicable, contradictory or unsafe; identify the decision, evidence and exact
+new decision needed. Recurrence of a known incident is not new evidence. Ordinary
+new defects and implementation choices remain open to investigation.
+
 ## Roadmap gate
 
 No application implementation, runtime configuration change, migration, or production-impacting change may start without an active roadmap.
@@ -82,6 +91,14 @@ acceptance. Place repairs before that point and repeat affected manual acceptanc
 after UI changes. Final automated verification/release stays last. Follow
 `docs/runa/handbook/workflows/roadmaps.md#manual-frontend-acceptance`; this grants
 no authority to edit protected platform versions/source.
+
+The complete final backend suite runs after ALL other required validation,
+corrections and regression suites have valid successful evidence. Check the whole
+selected acceptance scope before launch, not just browser completion. Reuse valid
+evidence; after relevant changes, complete affected non-backend checks before
+repeating an invalidated backend suite last. Only reports, focused release metadata
+checks and non-test bookkeeping may follow; never schedule another acceptance
+suite after it. The owning roadmap workflow defines prerequisites and repairs.
 
 The final point completes all verification for the affected areas and release finalization, including the current-state documentation review in `docs/runa/handbook/workflows/roadmaps.md` and closure synchronization in `docs/runa/handbook/workflows/releases.md`.
 
@@ -424,6 +441,6 @@ contract; ordinary group choices do not require repeated owner approval.
 
 Discover the supported operation in `docs/runa/handbook/tooling/commands.md` and Artisan list/help before choosing a runner. Use its documented host/container transport (`./bin/artisan` from the host). Preserve command guards, locks, reporting and exit codes. Application default `runa:test` runs backend, frontend and tooling; focused `runa:test:backend`, `runa:test:frontend`, `runa:test:python` and `runa:test:e2e` retain explicit scope. Author application tooling/tests and optional discovery configuration under src/app; consume delivered support through the public testing guide. Owner commands are unavailable. Do not substitute internal runners or detached log-only processes for supported tests/acceptance/quality. A direct runner is allowed only as a documented scoped entrypoint or a focused one-off diagnostic with no suitable command; explain why and receive its result before completing the point. Propose a missing command only for a reusable operational need.
 
-Implementation points permit only necessary small, fast checks resolving a concrete uncertainty; receive their results, repair failures and continue. Duration alone does not authorize handing monitoring to the user. Only final full verification uses background quality: run `runa:quality:roadmap`, end the turn and provide `runa:quality:status` through the same documented transport. Status does not observe unrelated processes; `tail` is not its replacement.
+Implementation points permit only necessary small, fast checks resolving a concrete uncertainty; receive their results, repair failures and continue. Duration alone does not authorize handing monitoring to the user. Only final full verification uses background quality: run `runa:quality:roadmap`, end the turn and provide `runa:quality:status` through the same documented transport. Successful launch is the turn's terminal condition: give the status command, log/report locations, completion meaning and remaining work, then end the turn. No polling, waiting, edits or automatic continuation; resume only on new user input. Status does not observe unrelated processes; `tail` is not its replacement.
 
 Maintain local AGENTS/skills and application pattern references when application work establishes reusable rules. Replace obsolete guidance instead of appending contradictions. Keep application-specific records in docs/app; never modify undelivered owner authoring templates. Commit application version/dependency declarations in src/app, with composed manifests/locks maintained through supported commands.

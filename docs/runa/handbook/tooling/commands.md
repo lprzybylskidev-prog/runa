@@ -147,7 +147,10 @@ for both serial and parallel modes, including PHPUnit classes. Native
 retain engine parsing and refusals. Use `--coverage --min=80` for its coverage
 threshold, and `--without-tty` for piped execution. See
 [application testing](../testing/strategy.md) for authored roots, public support,
-empty/failure semantics, reports and guarded cleanup.
+empty/failure semantics, reports and guarded cleanup. The explicit backend scope
+also accepts `--evidence` to bind native reports to the candidate and execution;
+see [native backend evidence](../testing/strategy.md#native-backend-evidence) for
+report ownership, delayed captured output and supported option combinations.
 
 ### `php artisan runa:test:frontend`
 

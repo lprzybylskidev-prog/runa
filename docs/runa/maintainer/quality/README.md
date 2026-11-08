@@ -11,6 +11,18 @@ Quality is enforced locally through:
 
 `docs/runa/maintainer/quality/gates.yml` is the canonical gate definition.
 
+## Final backend execution boundary
+
+The source-owned full backend node is `terminal: true`. Selection adds every other
+selected node as its prerequisite, including final workflow tests and acceptance.
+The executor independently refuses launch until all other nodes have passed;
+failed, blocked or interrupted validation blocks backend. Definitions with multiple
+terminal nodes or an incoming dependency on backend fail graph validation. The
+preview places backend last and shows its complete prerequisites. Manual remaining
+checks and repair loops must preserve the same order; review evidence validity
+before repeating expensive completed work. Focused post-release metadata checks
+and main sanity retain their documented scope, not another acceptance suite.
+
 ## Modes
 
 ### `python3 tools/maintainer/quality-plan`
@@ -29,7 +41,9 @@ Run final closure verification. Validate the agreed final scope and run its comp
 
 ### `python3 tools/maintainer/quality-status`
 
-Inspect the latest run.
+Inspect the latest run. The summary counts all recorded execution states, including
+pending and blocked checks while only active logs are displayed. Native run status
+is distinct from current closure acceptance and evidence validity.
 
 While running:
 
@@ -51,6 +65,78 @@ requires bounded agent-directed attempts and explicit owner acceptance of exhaus
 confirmed interruptions. Preserve native/coordinator failures and record the
 separate disposition; ordinary failures, unknown coverage and other required gates
 remain blocking. No automatic resume, retry, skip or acceptance is delivered.
+
+## Recovered backend evidence
+
+The owner closure validator accepts either one complete passed graph or complete
+producer-bound backend recovery after a failed terminal backend node. For recovery,
+every other selected node must already have passed before backend started, on the
+same agreed graph and candidate. The original graph and native failed executions
+stay failed. A successful permitted retry is recovered PASS and needs no owner
+approval; only exhausted confirmed interruptions use the existing owner procedure.
+
+The full owner backend node uses `python3 tools/maintainer/test-backend --parallel
+--evidence`. For a manual exact retry or remaining selection, use the same supported
+command with `--evidence` and its native file/filter selection. Preserve workers and
+execution mode. Do not restart the graph or replay a recovered case. Before the next
+invocation overwrites `.runtime/tests/runa-results.json`, retain that exact file
+under a distinct `.runtime/verification/retained/` name. Its native artifacts stay
+at their original unique `.runtime/tests/native/<run-id>/` paths; do not move,
+rewrite or delete them while they support verification.
+
+The existing result format is schema 2. A recorded backend scope includes source
+candidate/cleanliness at entry and exit, native command/selection and discovery,
+mode/workers, timezone-aware start/end, opaque configuration/runtime fingerprints,
+coordinator run/step binding and hashes of native inventory, JUnit, TeamCity,
+console and available worker diagnostic files. The collector invokes native XML
+discovery of the same selection before tests; it never retries or assigns workers.
+It captures native stdout/stderr through the existing process transport (64 MiB
+bound), retains their bytes, and displays output after completion. Ordinary runs
+keep inherited output. Collection failures or incomplete artifacts cannot prove PASS.
+
+The latest result also preserves a single `last_backend` receipt hash link across
+non-backend invocations. Recorded native receipts link to their predecessor; omitted
+retries, intervening unrecorded backend execution and reordered/duplicate records
+break continuity. This is provenance in the existing result, not an attempt ledger
+or recovery scheduler. A source/environment change requires reassessing validity;
+this automated recovery path requires an unchanged clean candidate and matching
+configuration/runtime/mode. Do not substitute an agent-authored case list or hash.
+
+After inspecting native results, list retained result files, original first and
+then each manual invocation in chronological order, in owner roadmap frontmatter:
+
+```yaml
+quality_recovery:
+  - .runtime/verification/retained/original-backend.json
+  - .runtime/verification/retained/exact-retry.json
+  - .runtime/verification/retained/remaining-backend.json
+```
+
+The validator reads bounded, regular, operator-owned files without following
+symlinks/hardlinks or accepting writable shared artifacts. It verifies source,
+graph, command, mode, environment and artifact bindings; derives exact native
+class/method/dataset identities; deduplicates completed coverage; and requires the
+full original inventory. TeamCity omits warning/deprecation events, so partial
+finished markers are credited only with a matching completed worker's native
+zero-issue TestResult and count. The pinned PHPUnit 13.4.5 serialized receipt is
+recognized as bytes without deserializing PHP objects; issues, baseline suppression,
+retries, time limits and unknown receipt shapes are refused. Finished cases from
+crashed/cancelled workers without that proof remain unverified and require valid
+later coverage. This preserves proven results without hiding warnings.
+Native worker-crash diagnostics plus that worker's native
+unfinished event identify a parallel interruption; printer order or arbitrary text
+containing 139 is insufficient. Direct confirmed serial SIGSEGV requires exactly
+one unfinished case. At most two additional attempts are permitted per interrupted
+case. Success terminates that case; an ordinary failure terminates its recovery
+path. Native errors/ignored cases, failed cleanup, unknown attribution, malformed
+or stale evidence, missing coverage and inconsistent exception fields block closure.
+
+These are trusted local tool receipts with consistency and hash checks, not remote
+attestation against an operator able to rewrite the checkout and every receipt.
+Opaque fingerprints and logs are private verification artifacts: never commit them
+or disclose configuration/secret contents. No manual PASS override is provided.
+Customer closure does not enable this owner recovery policy. Existing historical
+one-release representation decisions remain immutable and authorize no new waiver.
 
 ## Manual group selection
 
@@ -147,7 +233,8 @@ Closure validates complete PASS against the agreed scope and unchanged candidate
 command-altered or narrower evidence blocks closure. Changing final scope requires
 updating the roadmap and revalidating its complete selection under owner evidence
 continuity. Retain valid unrelated results and execute unresolved/invalidated checks
-and prerequisites; native closure validators do not automatically combine reports.
+and prerequisites. The owner validator combines only the bounded native SIGSEGV
+recovery evidence described below; it never resumes commands or grants exceptions.
 
 Customer catalogues use delivered application commands only; see the
 [public quality guide](../../handbook/quality/README.md). Owner acquisition/update,

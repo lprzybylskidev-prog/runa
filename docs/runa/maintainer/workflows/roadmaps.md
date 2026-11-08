@@ -272,6 +272,18 @@ the manual point when present, otherwise immediately before final verification.
 
 ## Final verification point
 
+Before the complete final backend suite, finish every selected non-backend test,
+analysis, lint, tooling/workflow test, browser, installation/update/client,
+packaging/build and database validation, including repairs and relevant regression.
+Check actual current PASS evidence and absence of known code defects or pending
+mandatory stages. The full backend suite is the final test execution boundary;
+no planned test suite may follow. Graph previews and manual continuations follow
+this same order. After new defects, reassess evidence, complete affected non-backend
+checks, then repeat backend last only if invalidated. Complete affected-area repair
+requirements still apply, in this order, before completing a repair point.
+Reporting, non-test release bookkeeping and the release workflow's focused metadata
+validation/main sanity may follow without introducing unverified behavior.
+
 The final point runs complete checks for changed behavior/contracts, their real prerequisites and the mandatory baseline, then performs release finalization. Full verification means completing that agreed scope; it does not mean all groups at every closure. Record `quality_groups` (comma-separated names or `all`) and `quality_rationale` in frontmatter before execution. The agent chooses scope proportionately; owner steering overrides it. Excluded groups are not PASS. Flag-free workflows retain legacy behavior for compatibility. See the quality guide for group availability and closure evidence.
 
 Ordinary scope must explain every heavy area and exclude unrelated suites. Apply
@@ -305,8 +317,9 @@ Long final quality runs may execute in the background.
 
 When the agent starts a long final gate:
 
-- it must end its current turn/work,
-- it must not poll in a loop waiting for completion,
+- successful launch is the terminal condition: confirm launch only and end the turn,
+- no polling, waiting, partial-log inspection, edits or further work after launch; resume only on a new user instruction,
+- provide the exact supported status command, log/report paths, success/exit-status interpretation and remaining work,
 - the user can later provide `python3 tools/maintainer/quality-status` output or relevant full logs.
 
 The quality tool stores only the latest run.
@@ -338,6 +351,18 @@ Then:
 6. delete the roadmap branch.
 
 Closed roadmap history is immutable after merge.
+
+## Acceptance progress reporting
+
+At meaningful milestones, report verified stages, remaining mandatory gates,
+blockers and the next required operation against the complete roadmap scope.
+Distinguish pending, running, passed, failed, blocked and invalidated results;
+recovered tests are distinct from incomplete suites and owner exceptions. Keep
+implementation completion, preliminary validation, final acceptance, release and
+formal closure separate. Passing test counts do not prove overall completion.
+Never imply that only closure remains while technical gates are pending or invent
+completion percentages/time estimates. Reuse valid evidence rather than repeating
+expensive checks without a concrete invalidation or missing-coverage reason.
 
 ## Final report
 

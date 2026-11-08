@@ -47,7 +47,7 @@ Owner `test-backend` shares the [public worker lifecycle](../../handbook/testing
 
 ## Backend test framework
 
-Pest 5.3.2 with pest-plugin-laravel 5.0.1 is installed on PHP 8.4 / Laravel 13. PHPUnit 13.4.2 and ParaTest 7.27.2 are resolved testing dependencies in `src/composer.lock`.
+Pest 5.3.4 with pest-plugin-laravel 5.0.1 is installed on PHP 8.4 / Laravel 13. PHPUnit 13.4.5 and ParaTest 7.27.4 are resolved testing dependencies in `src/composer.lock`.
 
 Feature tests are the default for application behavior that crosses Laravel boundaries.
 
@@ -246,7 +246,9 @@ reports remain local evidence and must stay available. There is no automatic
 archive, proof of validity or supported resume flag. A new coordinator starts its
 selected graph from the beginning; use supported individual check commands for
 remaining scope and report their results separately, never edit coordinator state.
-No new persistence engine or tooling change is required by this procedure.
+Producer-bound recovered evidence follows the
+[quality evidence contract](../quality/README.md#recovered-backend-evidence).
+Evidence validation must never resume or retry commands.
 
 ## Backend SIGSEGV owner acceptance
 
@@ -273,6 +275,10 @@ known PHP fault's root cause or change runtime/dependency pins for this procedur
    success or an ordinary failure. Preserve the failing mode where supported;
    explain selection/mode limitations. Do not add retry scripts or runner logic.
 4. A later PASS proves that later selection only; the original run stays failed.
+   Successful authorized recovery is terminal for that case/dataset: record
+   recovered PASS, stop retries and do not reopen diagnosis, mark it unresolved
+   or request owner approval. Historical exit 139 is not a current blocker after
+   recovery. Complete remaining coverage before declaring the backend gate passed.
    Continue remaining safely executable backend coverage and collect ordinary
    failures before repairs under verification evidence continuity above. Do not
    immediately restart the full backend suite after each interruption.
@@ -297,7 +303,9 @@ recorded acceptance and valid complete remaining scope.
 No custom/replacement runner, Runa-managed workers, automatic retries/skips/
 acceptance, per-worker attribution infrastructure, attempt ledger, SIGSEGV state
 machine, Pest/ParaTest changes or scripts automating these decisions are authorized.
-The agent inspects evidence and invokes existing commands itself.
+The agent inspects evidence and invokes existing commands itself. Recording native
+provenance with the supported evidence option and validating retained results do
+not authorize automatic recovery or worker attribution instrumentation.
 
 Retire this temporary procedure/exception when a corrected PHP/runtime replacement
 is established and passes complete parallel backend verification without the
