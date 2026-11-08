@@ -166,6 +166,12 @@ class DocumentationOwnership(unittest.TestCase):
         shutil.copy2(product / "AGENTS.md", self.root / "AGENTS.md")
         shutil.rmtree(self.root / ".agents/skills")
         shutil.copytree(product / "skills", self.root / ".agents/skills")
+        for name in (
+            "src/app/modules/reference",
+            "tests/backend/app/modules/reference",
+            "tests/frontend/app/modules/reference",
+        ):
+            shutil.copytree(ROOT / name, self.root / name)
         self.copy("tools/application/quality.yml")
         self.receipt = self.root / ".git/runa-bootstrap.json"
         self.receipt.write_text("{}\n")
@@ -207,11 +213,14 @@ class DocumentationOwnership(unittest.TestCase):
         with self.assertRaises(ValueError):
             docs_checks.validate(self.root, owner_guidance=True)
         self.receipt.unlink()
-        self.write("AGENTS.md", "[Owner guide](docs/runa/maintainer/internal.md)\n")
+        self.write(
+            "AGENTS.md", "# Owner guidance\n[Owner guide](docs/runa/maintainer/internal.md)\n"
+        )
         with contextlib.redirect_stdout(io.StringIO()):
             docs_checks.validate(self.root, owner_guidance=True)
         self.write(
-            "docs/app/README.md", "[Forbidden owner guide](../runa/maintainer/internal.md)\n"
+            "docs/app/README.md",
+            "# Application\n[Forbidden owner guide](../runa/maintainer/internal.md)\n",
         )
         with self.assertRaisesRegex(ValueError, "owner-only"):
             docs_checks.validate(self.root, owner_guidance=True)
@@ -250,7 +259,12 @@ class DocumentationOwnership(unittest.TestCase):
             reference = entry.parent / "references/application.md"
             self.assertIn("references/application.md", entry.read_text())
             public = "docs/runa/handbook/" + guide
-            self.assertIn(public, reference.read_text())
+            navigation = reference.read_text()
+            if domain == "frontend":
+                self.assertIn("Canonical guide (under docs/runa/handbook)", navigation)
+                self.assertIn(guide, navigation)
+            else:
+                self.assertIn(public, navigation)
             self.assertTrue((self.root / public).is_file())
             self.assertNotIn("docs/runa/maintainer", reference.read_text())
         reference = self.root / ".agents/skills/frontend/references/application.md"
@@ -319,7 +333,7 @@ class DocumentationOwnership(unittest.TestCase):
     def test_public_link_cannot_require_owner_source_even_when_it_exists(self) -> None:
         self.copy_owner_inputs()
         self.receipt.unlink()
-        self.write("docs/app/notes.md", "[Internal](../runa/maintainer/internal.md)\n")
+        self.write("docs/app/notes.md", "# Notes\n[Internal](../runa/maintainer/internal.md)\n")
         with self.assertRaisesRegex(ValueError, "owner-only"):
             self.validate()
 

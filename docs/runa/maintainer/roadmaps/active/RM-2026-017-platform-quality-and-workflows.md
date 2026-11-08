@@ -2196,6 +2196,17 @@ below are retained as historical records only.
     have no overflow/page error. No full-suite/release or owner acceptance claim,
     storage reset, business write or Docker resource change.
 
+- [x] 10y. Reconcile testing guidance and documentation fixtures before final verification.
+  - Correct the aggregate `runa:test` description and use an explicit backend
+    scope for native parallel flags and PHP-only filter examples.
+  - Verify against `tools/application/testing/runner.py` and the public testing
+    guide; run the complete documentation ownership check before completion.
+  - Repair stale documentation fixtures discovered by the complete check: include
+    linked reference source/test files, valid title-bearing negative examples and
+    the customer frontend topic table's documented relative-path navigation.
+  - This corrects owner-only guidance/tests. Public/customer guidance already describes
+    the aggregate and explicit scopes; no reusable rule or UI changes.
+
 - [x] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
   - **Preconditions:** completed implementation/review/readiness, including 10k–10x,
@@ -6330,3 +6341,31 @@ or release-metadata decision is needed. The accepted discussion is
 The exact internal representation is selected in that review before implementation;
 new behavior/security premises still return to discussion. Manual acceptance 11
 and complete automated verification/release 12 remain last.
+
+## Point 10y — final documentation repair, 2026-11-08
+
+Native host checkout is `/home/lprzybylski/Documents/php/runa`, branch and committed
+handoff `0dd6c641` confirmed; Python 3.12.3, Docker Compose 5.1.4 and configured
+hooks are available. The application and knowledge services remain healthy.
+Knowledge was current (243 documents / 13,707 chunks); current-intent retrieval
+was verified against roadmap final-verification and security review sources.
+
+Source review confirmed the owner testing table and parallel/filter examples still
+claimed the old PHP-only aggregate. They now match the shared runner's
+`DEFAULT_SCOPES` and public testing guide. Documentation contracts initially
+reported 17 PASS / 4 failures, exit 1 / cleanup 0. Their fixtures omitted linked
+reference sources, used titleless negative examples after title validation was
+introduced, and expected a full path where the customer frontend topic table
+intentionally declares its common handbook prefix. Corrected these fixtures,
+preserving real source links and public/owner refusal checks; no validator weakened.
+Complete documentation ownership contracts now pass **21 cases, exit 0 / cleanup 0**;
+`python3 tools/maintainer/check-docs` passes both public and owner checks.
+Initial native XML/provenance is retained at
+`.runtime/verification/retained/RM-2026-017-point12-docs-initial/`; passing latest XML
+is `.runtime/python/reports/runa-pytest.xml` until retained before another run.
+
+Owner/customer instruction products were assessed against their current testing
+and frontend guidance. Both already route to aggregate/focused commands and the
+canonical public topic map, so no instruction change is needed. No UI/runtime,
+module/API version, dependency, database or asset change occurred. Owner acceptance
+11 remains applicable. This repair does not complete point 12 or claim final PASS.

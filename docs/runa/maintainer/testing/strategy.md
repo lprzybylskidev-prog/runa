@@ -57,11 +57,11 @@ Do not over-mock Laravel/application behavior merely to make a test "unit."
 
 ## Application and platform suite ownership
 
-Customer defaults are application-only: `php artisan test` and `php artisan runa:test` use `src/phpunit.xml` with `tests/backend/app/Feature` and `Unit`; `runa:test:frontend` uses `src/vitest.config.mjs` with `tests/frontend/app/unit` and `tests/frontend/app/modules`; `runa:test:e2e` uses `src/playwright.config.mjs` with `tests/frontend/app/e2e`. The welcome scaffold includes one PHP, component and browser smoke test. Native `make:test` still writes application tests, including PHPUnit tests extending the reusable `Tests\TestCase` in `src/runa/Testing/TestCase.php`. The native test adapter selects `tests/backend/app` directly; there is no forwarding bootstrap in `src/tests`.
+Customer defaults are application-only: `php artisan test` and `php artisan runa:test --scope=backend` use `src/phpunit.xml` with `tests/backend/app/Feature` and `Unit`; `runa:test:frontend` uses `src/vitest.config.mjs` with `tests/frontend/app/unit` and `tests/frontend/app/modules`; `runa:test:e2e` uses `src/playwright.config.mjs` with `tests/frontend/app/e2e`. The welcome scaffold includes one PHP, component and browser smoke test. Native `make:test` still writes application tests, including PHPUnit tests extending the reusable `Tests\TestCase` in `src/runa/Testing/TestCase.php`. The native test adapter selects `tests/backend/app` directly; there is no forwarding bootstrap in `src/tests`.
 
 Owner commands `python3 tools/maintainer/test-backend`, `test-frontend` and `test-e2e` select private configurations under `tests/backend/runa`. The owner backend uses `Tests\PlatformTestCase`, a private fixture autoloader and explicit platform migration preparation. The shared customer base performs application migrations and bootstraps a fresh worker's missing technical platform history only through the delivered forward-only primitive, preserving guarded worker storage/database/cache isolation. Customer test setup never invokes owner distribution tools. Platform suites and `src/runa/tools` harnesses are excluded from customer acquisition; production images exclude both owners' tests.
 
-The three `runa:test*` wrappers, native `php artisan test` and owner runners share a nonblocking checkout suite lock and preserve child failure codes. Native read-only test discovery bypasses lifecycle mutation. Direct Pest/Node runners bypass the wrapper lock and cleanup; use supported runners for execution. Runner options filter the selected suite; configurations and test roots are explicit rather than inferred from which private directories happen to be present.
+The aggregate and focused `runa:test*` wrappers, native `php artisan test` and owner runners share a nonblocking checkout suite lock and preserve child failure codes. Native read-only test discovery bypasses lifecycle mutation. Direct Pest/Node runners bypass the wrapper lock and cleanup; use supported runners for execution. Runner options filter the selected suite; configurations and test roots are explicit rather than inferred from which private directories happen to be present.
 
 ## Test database and isolation
 
@@ -96,7 +96,7 @@ Tests should be parallel-safe from the start:
 
 Canonical command:
 
-`php artisan runa:test --parallel`
+`php artisan runa:test --scope=backend --parallel`
 
 If parallel execution reveals a concurrency/isolation defect:
 
@@ -354,12 +354,12 @@ Run these inside the configured development container. The host recovery launche
 | `php artisan runa:lint`                                       | ESLint recommended JS/TS/Vue correctness rules; zero warnings                     |
 | `php artisan runa:typecheck`                                  | Strict Vue/TypeScript application and test checking                               |
 | `php artisan runa:analyse`                                    | Larastan/PHPStan `max`, no baseline, one analysis process with a 1 GiB PHP limit  |
-| `php artisan runa:test`                                       | Application backend tests, serial                                                 |
-| `php artisan runa:test --parallel`                            | Application backend tests, `TEST_WORKERS` from the resource profile               |
+| `php artisan runa:test`                                       | Application backend, frontend and tooling tests                                   |
+| `php artisan runa:test --scope=backend --parallel`            | Application backend tests, `TEST_WORKERS` from the resource profile               |
 | `php artisan runa:test:frontend`                              | Application Vitest + Vue Test Utils in headless Chromium                          |
 | `php artisan runa:test:e2e --critical`                        | Application Playwright in Chromium, Firefox and mobile Chromium                   |
 
-Runner options can follow the test selector, for example `php artisan runa:test --filter=Welcome` or `php artisan runa:test:e2e --project=firefox`. `--critical` currently selects the entire small critical suite. Each wrapper provides English `--help`. Host wrappers execute the same tools in `app`; they do not use host PHP/Node. Normal configured-environment commands use `php artisan`; `./bin/artisan` is the initial/recovery host transport. Run `php artisan runa:dev:prepare` and start the development environment first.
+Runner options can follow the test selector, for example `php artisan runa:test --scope=backend --filter=Welcome` or `php artisan runa:test:e2e --project=firefox`. `--critical` currently selects the entire small critical suite. Each wrapper provides English `--help`. Host wrappers execute the same tools in `app`; they do not use host PHP/Node. Normal configured-environment commands use `php artisan`; `./bin/artisan` is the initial/recovery host transport. Run `php artisan runa:dev:prepare` and start the development environment first.
 
 Pint excludes the vendored `src/runa/lang/` snapshot and generated/runtime trees. Prettier also excludes localization data and lockfiles. Formatting establishes consistent source layout without changing the catalog's integrity hashes. ESLint owns correctness, Prettier owns layout; the core assignment rule is disabled only for Vue SFCs because template reads are invisible to that core rule. Other recommended rules remain active. PHPStan uses one analysis process to bound memory and avoid the native parallel-worker crash observed during toolchain verification.
 
