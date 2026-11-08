@@ -788,7 +788,7 @@ it('fails closed when an Admin aggregate rollback refusal Audit is unavailable',
     $input = adminAggregateReview($this, adminAggregateInput($this, $target->publicId, [$permission]));
     DB::statement("ALTER TABLE runa_audit.events ADD CONSTRAINT aggregate_refusal_failure CHECK (action NOT IN ('assignments.changed', 'access.refused')) NOT VALID");
     try {
-        $this->postJson('/api/admin/runa.auth/users/save', $input)->assertServiceUnavailable()->assertJsonPath('reason', 'transaction_refusal_unavailable');
+        $this->postJson('/api/admin/runa.auth/users/save', $input)->assertServiceUnavailable()->assertJsonPath('error.code', 'transaction_refusal_unavailable');
         expect(User::where('public_id', $target->publicId)->value('name'))->toBe('Before')
             ->and(DB::table('runa_permissions.user_access')->where('user_public_id', $target->publicId)->count())->toBe(0)
             ->and(DB::table('runa_auth.step_up_proofs')->where('action', 'runa.permissions.access.manage')->value('consumed_at'))->toBeNull();
@@ -943,8 +943,9 @@ it('Auth administration exposes bounded policy reads history reviews and stale p
     expect($review['changes'])->toHaveKey('summary')->and($review['requirement'])->toBe('password');
     $input['review'] = $review;
     $this->postJson('/api/admin/runa.auth/policy/sections/policy/commands', $input)->assertForbidden()->assertJsonPath('error.code', 'step_up_required');
-    $input['revision'] = '0:0';
-    $this->postJson('/api/admin/runa.auth/policy/sections/policy/preview', $input)->assertConflict();
+    [$revision, $reviewId] = explode(':', $record['revision'], 2);
+    $input['revision'] = ((int) $revision + 1).':'.$reviewId;
+    $this->postJson('/api/admin/runa.auth/policy/sections/policy/preview', $input)->assertConflict()->assertJsonPath('error.code', 'policy_stale');
     $this->getJson('/api/admin/runa.auth/policy/sections/history')->assertNotFound();
 });
 

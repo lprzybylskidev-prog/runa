@@ -23,23 +23,33 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 12 native-host verification preparation, 2026-11-08
+## Current execution state — point 12 repairs in progress, 2026-11-08
 
 Owner acceptance 11 remains valid for bb5abb29 runtime / 8d30518b documentation
 and index-BdXz_X9Q.js. Native-host handoff 0dd6c641 is received. Point 10y repair
 5926a491 reconciles owner command guidance/documentation fixtures; complete
 21-case documentation contracts and check-docs pass. No frontend changes occurred.
 
-Point 12 remains open. The actual current-state guidance and changed security
-boundaries have been reviewed; retained report:
-`.runtime/artifacts/RM-2026-017-point12-source-review.md`. It records exact source
-owners, no blocking source finding, instruction-product/version assessment and
-remaining automated checks; source review is not final verification PASS. The new
-local attestation must bind this report and current changed surface before launch.
-The exact declared 13-group graph was previewed on the native host. Launch its
-supported background run only after this preparation is committed and indexed;
-end the turn after successful launch. Application reference backend/frontend runs,
-result/evidence review, scoped cleanup and release closure remain subsequent work.
+The declared 13-group background run on candidate 75958d87 failed. Its native
+state and evidence are preserved unchanged; repair point 10z and final point 12
+remain open. Continue individual affected checks under evidence continuity rather
+than restarting the complete graph. The preparation report and attestation predate
+these repairs and cannot attest to the changed candidate.
+
+Repairs have passing complete Feature coverage (702 tests / 7,493 assertions),
+owner frontend coverage (577 tests), clean-source PHP static analysis, lint and
+formatting. Required knowledge evaluation and native documentation-live acceptance
+pass with unchanged golden expectations. After correcting the two Admin assertions,
+the complete owner backend passes: 852 tests / 10,506 assertions, four parallel
+processes, native exit 0 and cleanup 0. Preserve earlier failed SIGSEGV executions
+separately; the later complete PASS does not rewrite those native results.
+
+Native installation now passes the source-boundary/projection checks but its
+customer `php artisan test` exits 139. Installation/update/customer-knowledge
+acceptance is not PASS; later phases remain unexecuted. The owner-only SIGSEGV
+procedure does not waive customer installation acceptance or authorize runtime
+root-cause investigation. No release, merge or repair-point completion is justified
+while selected gates, coverage, cleanup and current security evidence remain open.
 
 ## Execution handoff
 
@@ -2246,6 +2256,17 @@ below are retained as historical records only.
     the customer frontend topic table's documented relative-path navigation.
   - This corrects owner-only guidance/tests. Public/customer guidance already describes
     the aggregate and explicit scopes; no reusable rule or UI changes.
+
+- [ ] 10z. Repair consolidated final-verification failures from candidate 75958d87.
+  - Preserve the failed native graph and reports; retain valid unrelated checks.
+  - Reconcile exact trusted Core source-import declarations, synthetic debug
+    fixture output, reference lint fixtures, stale public projection/release and
+    alias inventory expectations, and frontend tests against agreed current UX.
+  - Diagnose ordinary backend interruption and continue reachable coverage before
+    repairs; no SIGSEGV is confirmed by the initial exit-0 worker failure.
+  - Resolve required knowledge retrieval failure without relaxing original goldens.
+  - Receive complete affected-area checks in their original modes before commit;
+    repeat owner frontend acceptance only if runtime UI behavior changes.
 
 - [x] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
@@ -6409,3 +6430,57 @@ and frontend guidance. Both already route to aggregate/focused commands and the
 canonical public topic map, so no instruction change is needed. No UI/runtime,
 module/API version, dependency, database or asset change occurred. Owner acceptance
 11 remains applicable. This repair does not complete point 12 or claim final PASS.
+
+## Point 12 failure triage / point 10z opened — 2026-11-08
+
+Candidate 75958d8734093af3b88099d363116059049e1c56: 13-group native background
+quality-roadmap ended FAILED after 499.2 seconds. Unchanged native state/logs,
+latest Python reports, source-review attestation/report and application-result
+state are preserved under
+`.runtime/verification/retained/RM-2026-017-point12-failed-75958d87-20261108T144123Z/`.
+Original reports, browser artifacts and timestamped knowledge comparisons remain.
+
+Failures: lint (two Vue fixture warnings), backend parallel interruption (worker
+exit 0 plus PCRE compilation warnings, no confirmed signal 139), source boundary
+imports (also blocking module/static/install checks), synthetic stderr debug match,
+5 owner frontend cases, stale documentation/bootstrap/release/alias test fixtures,
+and required current-intent knowledge coverage. Browser/render, database,
+packaging and release/cleanliness dependents remain blocked/unexecuted.
+
+Dependency audits, secrets, configuration/templates, formatting, frontend build
+and typecheck, source security checks, ordinary documentation ownership/source
+validation, knowledge doctor/freshness, development contracts/doctor/hooks,
+transport contracts/native acceptance and other recorded passing source checks
+remain retained evidence for their exact unchanged surfaces. Reassess each result
+against repairs before reuse; do not rerun the entire graph or edit its native
+FAILED state. Point 12 remains open, as does inserted repair 10z. App reference
+complete backend/frontend runs are still separate outstanding scope.
+
+### Complete backend rerun after Admin assertion repair — 2026-11-08
+
+The owner requested repair of the two ordinary Admin failures followed by only a
+complete backend rerun. The refusal assertion now reads the native OperationRejected
+JSON field `error.code`. The policy conflict test sends a syntactically valid
+revision with an incremented version and the original review ID, and asserts the
+owning `policy_stale` code; malformed `0:0` correctly belongs to input validation.
+No runtime behavior, authorization, dependency or public signature changed in
+these two assertion repairs; owner/customer instruction products need no change.
+
+`python3 tools/maintainer/test-backend --parallel` with native TeamCity/JUnit
+report options passes **852 tests / 10,506 assertions in 718.10 seconds**, using
+four processes, native exit 0 and cleanup 0. Reports:
+`.runtime/verification/retained/RM-2026-017-10z-backend-final.xml`,
+`RM-2026-017-10z-backend-final-teamcity.log` in the same directory and
+`.runtime/artifacts/RM-2026-017-10z-backend-final.log`.
+Both repaired tests passed in this full run. No PHP crash occurred. Prior native
+failures remain intact; no root-cause investigation or exception acceptance was
+needed for this successful complete run. No other suite or quality graph reran.
+
+Before the run, the abandoned three-file
+`src/app/Management/AtomicFixtureb6aea523f7da` was matched exactly against the
+test templates, copied under retained `RM-2026-017-10z-aborted-fixtures/` and
+removed after showing its exact scope. The supported backend runner removed only
+its four disposable worker databases. Development/base test data, volumes,
+Qdrant/model caches and all prior verification evidence remain preserved.
+This records complete backend PASS; remaining non-backend point-12 scope and
+the consolidated point-10z repairs are not declared complete by this result.
