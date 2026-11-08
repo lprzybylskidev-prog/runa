@@ -21,7 +21,23 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10n completed, 2026-11-08
+## Current execution state — point 10o design stop, 2026-11-08
+
+**Points 1–10n remain complete; point 10o is open and awaits contract discussion.**
+The [structured-read source review](../../reviews/RM-2026-017-structured-reads.md)
+confirms redundant encodings but corrects P08's premise: ManagementRecord/AdminJson
+support nesting, whereas ManagementField, backend projection and frontend read
+validation permit only scalar/UUID field types. Native arrays would be rejected.
+Preference delivery also has an encoded write contract that must be addressed.
+
+The review proposes an explicit bounded structured field type and coherent owning
+projection/consumer correction. This proposal is not an owner decision; no runtime
+implementation started and no tests, assets, storage/ledger changes or acceptance
+are claimed. Point 10o remains open pending agreement under the significant-unknown
+rule. Readiness stays 10r, owner acceptance 11 and final verification/release 12.
+Platform VERSION 0.7.0 and approved feature/0.8.0 projection remain unchanged.
+
+## Historical execution state — point 10n completed, 2026-11-08
 
 **Points 1–10n are complete. Point 10o is next; 10o–10r remain open.** Point 10n
 removes the public Button.compact alias and its duplicate sizing/busy conditions.
@@ -5577,3 +5593,19 @@ base test data, containers, volumes, model caches and reports remain preserved;
 no task-created Docker resources require deletion. Mandatory hooks and staged
 incremental knowledge freshness apply. Combined readiness stays 10r, sole owner
 acceptance 11 and final automated verification/release 12. Point 10o is next.
+
+## Point 10o investigation — structured read contract premise, 2026-11-08
+
+The [source review and concrete proposal](../../reviews/RM-2026-017-structured-reads.md)
+trace native snapshots/Auth producers, Admin and reference consumers, both actual
+field validators and the writable preference-delivery path. The generic recursive
+container is insufficient: the declared field vocabulary and wire validators reject
+these native read collections. An explicit owning public contract change is needed.
+Implementation pauses under the existing significant-unknown rule; the proposed
+`json` field semantics are not approved or installed. The accepted normalization
+outcome remains, while this newly verified prerequisite awaits discussion.
+
+Only owner planning/evidence documents changed. Existing instruction products
+already prescribe public-boundary ownership and this discussion gate; no guidance
+rule is added. No tests or broad checks ran; no runtime/storage/resources changed.
+Point 10o remains open and none of 10p–12 is advanced.
