@@ -1,11 +1,12 @@
 # RM-2026-017 current owner acceptance scenarios
 
-**Ready for repeated owner acceptance (point 11):** the widget/settings-layout
-feedback is corrected in 10u, with current assets and actual readiness renewed in 10v.
-See [current layout evidence](RM-2026-017-application-settings-layout.md#renewed-actual-readiness--10v).
-The earlier [health correction readiness](RM-2026-017-health-readiness.md) retains
-its exact older asset identity and valid backend evidence. Only your explicit
-manual result completes 11; full automated verification/release remains 12.
+**Ready for repeated owner acceptance (point 11):** 10w corrects reference menu
+order, semantic Auth action icons and false departing-document warnings; current
+assets and actual readiness are renewed in 10x. See [current evidence](RM-2026-017-navigation-actions.md#renewed-actual-readiness--10x).
+Earlier [settings layout](RM-2026-017-application-settings-layout.md) and
+[health correction](RM-2026-017-health-readiness.md) records retain their exact older
+asset identities and valid unrelated evidence. Only your explicit manual result
+completes 11; full automated verification/release remains 12.
 
 ## Preconditions and identity
 
@@ -15,22 +16,39 @@ Admin entry uses the native full-page password confirmation. No password reset,
 substitute credential or guard bypass is needed. Safe account discovery remains
 `php artisan runa:seed:accounts`; credentials stay private.
 
-Runtime source: `9ed1b543d8960a0dbda5b020f6b647384b0d9575` plus the documentation-only
-10v handoff commit. Platform VERSION remains 0.7.0, approved feature projection 0.8.0;
+Runtime source: `bb5abb29c1cf9055a943e6a751adf580c49fc52b` plus the documentation-only
+10x handoff commit. Platform VERSION remains 0.7.0, approved feature projection 0.8.0;
 Framework API 2.1.0. Installed/source versions match: Admin 2.0.0, Auth 6.0.1,
 Audit 1.1.2, Permissions 2.1.2 and reference 0.4.1. Current development SPA entry:
-`/build/assets/index-Dd2HJQm4.js`. Exact build hashes are in the linked review.
+`/build/assets/index-BdXz_X9Q.js`. Exact build hashes are in the linked review.
 In 10r both identified development/test reference sample tables and their installation
 provenance were rebuilt; each now contains the current `welcome` example. Existing
 accounts, credentials, settings, enabled flags and Core history were preserved.
 The 10s2 repair reconstructed only the identified registry singleton in each base,
 preserving generation/metadata and checked account/settings/reference counts;
-10t/10u/10v perform no further storage reset or account/credential change.
+10t–10x perform no further storage reset or account/credential change.
 
 The [Core matrix](../../../app/modules/reference/core-capabilities.md) owns source/API/test
 links and noninteractive exclusions. Reference grants have prefix `app.reference.`;
 source synchronization never assigns them. Native Admin requires `runa.admin.enter`.
 Use existing authorized access; inspect restricted states in prepared isolated fixtures.
+
+## Reference navigation, Auth actions and departure feedback
+
+In [reference Admin](http://localhost:8080/admin/app.reference/inspect), the
+"Moduł referencyjny" landing link must be first. In
+[Auth users](http://localhost:8080/admin/runa.auth/users), compare icons across
+bulk launchers and account details: activity, schedules, locks, email/invitations,
+password/factors, sessions/devices, preferences/avatar/exceptions and authority
+have appropriate distinct identities. Matching families agree across contexts;
+final operations distinguish activation/deactivation, deletion/restoration and
+locking/unlocking. Review retains eye and existing effect colors/proof stay intact.
+
+Navigate from reference to Admin/Auth and back, also while a read is pending.
+Native departure must not flash the old yellow "Nie udało się wykonać żądania"
+message. Genuine failures and access/proof loss still display their normal feedback
+and withdraw protected data. Inspect PL/EN, themes, narrow widths and keyboard
+focus; do not execute destructive actions merely to inspect their icons.
 
 ## Dashboard and application settings layout
 

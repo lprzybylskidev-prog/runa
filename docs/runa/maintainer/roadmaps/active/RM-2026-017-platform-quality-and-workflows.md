@@ -21,7 +21,20 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — navigation/action feedback repair, 2026-11-08
+## Current execution state — navigation/actions ready for owner acceptance, 2026-11-08
+
+**Points 1–10x are complete; explicit owner acceptance 11 remains open.** Source
+bb5abb29 puts the reference landing first, gives known Auth single/bulk families
+and concrete actions semantic icons, and respects typed document cancellation.
+Seven focused Chromium cases pass. Current assets are rebuilt; actual Nginx native
+navigation records zero false warnings versus five before. Actual UI has 16 distinct
+bulk / 15 distinct single-account tool glyphs; a controlled live-document 503 still
+shows its warning and explicit Retry recovers. See [current evidence](../../reviews/RM-2026-017-navigation-actions.md#renewed-actual-readiness--10x)
+and the [acceptance sheet](../../reviews/RM-2026-017-current-acceptance.md).
+Older source/assets/failures remain preserved. Full verification/release stays 12
+following owner acceptance; versions, accounts/data and resources stay preserved.
+
+## Historical execution state — navigation/action feedback repair, 2026-11-08
 
 The owner requests the reference landing link first, distinct semantic Auth single /
 bulk action icons and diagnosis of a transient yellow navigation message. Insert
@@ -2059,12 +2072,19 @@ below are retained as historical records only.
     Seven focused Chromium cases pass, exit 0 / cleanup 0. Current assets and native
     readiness remain 10x; no broad verification or owner acceptance is claimed.
 
-- [ ] 10x. Renew navigation/action manual readiness.
+- [x] 10x. Renew navigation/action manual readiness.
   - Build current assets and inspect actual Nginx reference order, Auth single/bulk
     semantic icons, ordinary and controlled navigation warning capture, real error
     visibility, PL/EN/themes/narrow layouts, preserving data and existing evidence.
   - Record source/build identity and refresh the acceptance sheet for repeated owner
     acceptance 11. Final automated verification/release remains 12.
+  - **Result:** [actual navigation/action readiness](../../reviews/RM-2026-017-navigation-actions.md#renewed-actual-readiness--10x).
+    Current assets from bb5abb29 use index-BdXz_X9Q.js. Native ordinary/controlled
+    navigation captures zero false warnings; deliberate live-document transport
+    503 remains visible and explicit retry succeeds. Actual reference order and
+    distinct 16 bulk / 15 single tool glyphs agree; PL/EN/light/dark/mobile samples
+    have no overflow/page error. No full-suite/release or owner acceptance claim,
+    storage reset, business write or Docker resource change.
 
 - [ ] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
