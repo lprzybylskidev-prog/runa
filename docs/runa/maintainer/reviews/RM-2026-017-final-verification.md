@@ -213,3 +213,25 @@ module version checks and all Core/App runtime descriptors pass. The first Core
 runtime check refused stale declarations; supported explicit registry synchronization
 preserved installed versions/flags/data and the repeated complete check passed at
 generation1058. No business code, migration, schema/data reset or UI changes.
+
+## Closed release metadata validation
+
+Release metadata now records0.8.0 in VERSION and the protected runtime manifest;
+App remains0.0.0. The roadmap has no open items, is moved to closed with its date/
+final report, and the maintainer README records0.8.0/none. Changelog and module
+release heads agree. Focused check-docs passes, including current-state projections
+and links; dated historical bytes are preserved.
+
+The native closed check-release reaches exactly the owner-approved representation
+limitation: `Final quality evidence does not match the closed roadmap.` It exits1
+and is retained at closure-release-closed.log. Earlier active release metadata,
+application target compatibility and complete actual selected results pass. No
+validator, coordinator state or native report was edited. This is the sole accepted
+release-specific validator failure, under the explicit owner decision recorded
+above; there are no ordinary unresolved failures or unknown coverage.
+
+The432-hash security binding describes the reviewed preclosure implementation.
+Subsequent VERSION/matching protected-manifest values and report/checklist/README/
+changelog closure edits follow the canonical release-only metadata procedure;
+they do not change behavior or invalidate complete runtime coverage. Mandatory
+freshness and focused metadata checks are performed before the closure commit.

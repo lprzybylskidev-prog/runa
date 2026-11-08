@@ -2,7 +2,9 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
-## Unreleased — RM-2026-017
+## [0.8.0] - 2026-11-08
+
+Feature release — RM-2026-017.
 
 - Deliver common source-owned settings access, field grants, password proof and
   transactional effects. Separate semantic review identity from operational

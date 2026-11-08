@@ -1,11 +1,11 @@
 ---
 id: RM-2026-017
 title: Comprehensive platform quality, consistency and development workflows
-status: active
+status: closed
 branch: roadmap/RM-2026-017-platform-quality-and-workflows
 created_at: 2026-11-06
 activated_at: 2026-11-06
-closed_at: null
+closed_at: 2026-11-08
 release_type: feature
 proposed_version: 0.8.0
 quality_groups: backend,database,delivery,development,docs,e2e,frontend,installation,knowledge,security-source,tooling,transport,updates
@@ -23,28 +23,18 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — verification complete, release finalization, 2026-11-08
+## Current execution state — closed at0.8.0, 2026-11-08
 
-Points10z/10za repairs and all selected actual checks are complete. Owner manual
-acceptance11 remains valid: no frontend runtime changed after the accepted source.
-The final backend ran last; native full execution stopped with worker139, and
-manual supported continuations completed all853 current cases without assertion
-failures, ignored cases or missing inventory identities. Every reliably interrupted
-case has later PASS; no exhausted interrupted coverage needs a separate acceptance.
-Native failed executions and cleanup results remain unchanged.
+All implementation/repair points and selected actual checks are complete, including
+853-case backend coverage and final compatibility metadata. Manual acceptance11
+remains valid. VERSION/runtime manifest, changelog, independent module declarations
+and maintainer current-state metadata agree. No roadmap remains active.
 
-Owner frontend577, App backend16/frontend18, Python534 plus packaging2, browser407
-(with139 declared project skips), database migration9/constraints27/seeding6,
-PHP analysis799, format/lint/debug, source-security/secret/dependency checks,
-required knowledge27 and native documentation-live acceptance pass. Installation/
-update/customer-knowledge acceptance passes79 checks with scoped cleanup. Valid
-unchanged prerequisites are retained under evidence continuity. Complete results,
-limits, source review and artifacts are recorded in
-[final verification](../../reviews/RM-2026-017-final-verification.md).
-
-The owner explicitly accepts complete actual individual evidence with the sole
-single-green-coordinator representation exception below. Original FAILED graph
-state is preserved; release metadata/freshness checks and finalization follow.
+The owner-approved single-green-graph representation exception is recorded below;
+original native failed runs remain preserved and no actual selected check or
+unknown coverage is waived. Complete results, limits and retained evidence are in
+[final verification](../../reviews/RM-2026-017-final-verification.md) and the final
+report at the end of this record. Merge/tag/publication are reported separately.
 
 ## Execution handoff
 
@@ -2324,7 +2314,7 @@ below are retained as historical records only.
     in the current execution state and acceptance sheet. No new exception to
     automated, security, cleanup or release gates was requested or inferred.
 
-- [ ] 12. Final automated verification, retained report, cleanup and release closure.
+- [x] 12. Final automated verification, retained report, cleanup and release closure.
   - **Objective:** verify the complete agreed affected-area scope and finalize 0.8.0.
   - **Preconditions:** all implementation and explicit owner acceptance complete;
     clean committed candidate, exact final quality_groups/quality_rationale recorded,
@@ -6575,3 +6565,51 @@ creation/current versions (Admin2.0.0, Auth6.0.1, Audit1.1.2, Permissions2.1.2,
 reference0.4.1). Older development checkpoints remain historical; no implementation
 or declared module version changes. This completes10zb documentation synchronization
 before platform closure; all behavior/metadata contract results remain valid.
+
+## Final report
+
+RM-2026-017 completes the approved feature release0.8.0 from main0.7.0 on
+2026-11-08. VERSION and the protected runtime manifest are synchronized; App remains
+0.0.0 with a range admitting0.8.0. Independent versions are Framework API2.1.0,
+Admin2.0.0, Auth6.0.1, Audit1.1.2, Permissions2.1.2 and reference0.4.1. Their
+current declarations/consumers, changelog heads and supported platform ranges agree.
+
+Delivered common settings authorization/reviews/publication, exact-call health
+read preparation, bounded owning computations, executable reference use cases,
+action-driven form reconciliation, responsive PL/EN presentation and one native
+Pest transport. Current public/owner/customer guidance was reviewed and synchronized;
+no new dependency, runtime pin, Docker/image or production infrastructure change.
+Owner manual frontend acceptance11 remains valid after backend/test/metadata-only
+repairs. All implementation/repair points are committed before closure.
+
+Final backend coverage is853 completed unique cases, no assertion failures,
+ignored events or missing inventory identities. Native full parallel execution
+and supported manual parallel continuations provide that coverage; interrupted
+native runs remain FAILED. Reliably identified cases subsequently pass, with no
+exhausted unresolved case or unknown coverage. Final metadata/graph contracts pass
+75/143 and module-development contracts3/3. All current Core/App descriptor and
+independent version checks pass after explicit nondestructive registry sync.
+
+Other complete results: frontend577; App backend16/163 and frontend18; Python534
+plus packaging2; E2E407 with139 declared project skips; database migrations9/50,
+constraints27/237, seeding6/32; installation/update/customer-knowledge acceptance79;
+PHP analysis799, formatting/lint/debug, secrets/dependencies, source-security432,
+required knowledge27 and native documentation-live/render acceptance. Valid real
+prerequisites are retained under evidence continuity. Full commands, native results,
+provenance and limits are in the [final assessment](../../reviews/RM-2026-017-final-verification.md).
+
+The selected13 groups and rationale remain in frontmatter. Excluded container/image
+scanning/production/fixture-composition groups are not PASS;0.8.0 is not an all-group
+milestone. The original failed coordinator is preserved. The owner's explicit
+one-release decision accepts complete actual individual evidence with the sole
+single-green-graph representation exception. No actual selected gate, ordinary
+failure, cleanup or unknown coverage is waived, and no validator/state is patched.
+
+Cleanup preserves development/base test databases, Qdrant/model caches, backups
+and reports. Supported runners removed owned disposable workers and browser
+endpoints; installation removed30 task containers,2 networks,10 isolated fixture
+volumes and6 image tags plus its named SMTP probe/network after showing exact
+identities. Abandoned template-matched fixtures were retained before scoped removal.
+No global prune or durable data reset occurred. Merge/tag/remote publication follow
+the canonical release workflow; their actual outcome is reported in the closing
+conversation without rewriting this closed record.
