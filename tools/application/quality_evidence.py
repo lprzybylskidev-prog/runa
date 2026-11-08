@@ -385,7 +385,7 @@ def recovered_backend(root: Path, paths: JsonValue, state: RunRecord) -> None:
                     worker_completed[name.removesuffix("_teamcity")] = finished
         if not completed <= cases or not pending <= cases:
             raise ValueError("Native results do not match the discovered selection.")
-        proven = set(completed) if code == 0 else set()
+        proven: set[str] = set(completed) if code == 0 else set()
         if code != 0:
             for name, content in artifacts.items():
                 if not name.endswith("_test_result") or not content:

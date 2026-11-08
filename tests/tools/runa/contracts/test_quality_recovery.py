@@ -93,7 +93,7 @@ class NativeFixture:
     native_completed: bool = False
     unsealed_completed: bool = False
     warning: bool = False
-    calls: list[ProcessSpec] = field(default_factory=list)
+    calls: list[ProcessSpec] = field(default_factory=lambda: list[ProcessSpec]())
     cleanups: int = 0
 
     def run(self, spec: ProcessSpec) -> ProcessResult:
@@ -180,7 +180,7 @@ class NativeFixture:
 class RecoveryFixture:
     root: Path
     candidate: str
-    references: list[str] = field(default_factory=list)
+    references: list[str] = field(default_factory=lambda: list[str]())
 
     def execute(
         self,
@@ -259,7 +259,7 @@ class RecoveryFixture:
         if missing_gate:
             state["steps"]["other-check"].update(status="pending", exit_code=None)
         directory = self.root / ".runtime/quality"
-        directory.mkdir(exist_ok=True)
+        directory.mkdir(parents=True, exist_ok=True)
         save(directory, state, anchor=self.root)
         data: dict[str, JsonValue] = {
             "id": "fixture",

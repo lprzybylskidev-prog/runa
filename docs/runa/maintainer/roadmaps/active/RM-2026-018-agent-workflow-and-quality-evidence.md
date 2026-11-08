@@ -184,8 +184,9 @@ their existing behavior; duration alone does not create a new handoff workflow.
 
 ## Current execution state
 
-Implementation points 1–4 are complete; final verification/release point 5 remains
-open. No final quality run has started. The selected final scope is
+Implementation points 1–4 are complete; final verification/release remains
+open. The first final quality run failed; repair point 5 is complete and renewed
+final verification at point 6 remains pending. The selected final scope is
 `docs,tooling,knowledge,delivery,security-source`, with mandatory baseline and actual
 prerequisites. The [verification review](../../reviews/RM-2026-018-final-verification.md)
 records current-state documentation/instruction assessment, A–Z coverage ownership,
@@ -343,7 +344,25 @@ frontend acceptance is not applicable; reassess if scope changes.
   - Confirm current-state docs and both instruction products agree with code;
     preserve closed roadmap/report bytes. Complete implementation and commit
     before broad final verification.
-- [ ] 5. Final verification, release 0.8.1, merge and final report.
+- [x] 5. Repair failures found by the first final verification.
+  - Preserve the failed candidate `aab4bfa4` logs and reports under
+    `.runtime/verification/retained/RM-2026-018-failed-20261108T193702Z/`.
+    Native outcome: 28 passed, 3 failed, 4 blocked; no PHP backend execution.
+  - Fix the recovery fixture's missing parent directory and strict typing of
+    optional terminal metadata, collection factories and proven coverage.
+  - Run the complete owner Python unit/contracts suite and full Python type,
+    formatting and lint checks before completing this repair point. Record actual
+    results and commit; keep the original failed evidence unchanged.
+  - These are implementation/test corrections, with no reusable guidance or
+    customer capability change; neither instruction product needs another update.
+  - Repair verification: complete owner unit/contracts `580 passed, 3 deselected`
+    in 67.61 seconds, native exit 0 and cleanup 0; full Python typecheck returned
+    zero errors/warnings, formatting checked 233 files, and lint passed. No PHP
+    backend suite ran. Retained first-run failures are not rewritten as PASS.
+  - The final coordinator must bind a new clean candidate after substantive
+    Python changes; its supported start rebuilds the declared graph rather than
+    importing unrelated old statuses. Prior evidence remains retained, not erased.
+- [ ] 6. Final verification, release 0.8.1, merge and final report.
   - Reassess and record `quality_groups`/`quality_rationale`; preview the exact
     supported graph. Final scope is docs/tooling/knowledge/delivery/security-source with their
     mandatory baseline and real prerequisites. Explain any added heavy group;

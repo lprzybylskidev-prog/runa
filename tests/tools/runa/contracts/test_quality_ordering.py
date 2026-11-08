@@ -50,7 +50,7 @@ def test_real_owner_and_customer_graphs_have_no_backend_successor() -> None:
             resolve(definition, [], all_groups=True)[0],
             select(definition, list(definition["impact_areas"]), True),
         ):
-            assert graph[key]["terminal"] is True
+            assert graph[key].get("terminal") is True
             assert set(graph[key]["depends_on"]) == set(graph) - {key}
             assert all(
                 key not in value["depends_on"] for other, value in graph.items() if other != key
