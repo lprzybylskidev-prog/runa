@@ -47,7 +47,7 @@ Owner `test-backend` shares the [public worker lifecycle](../../handbook/testing
 
 ## Backend test framework
 
-Pest 5.3.2 with pest-plugin-laravel 5.0.1 is installed on PHP 8.4 / Laravel 13. PHPUnit 13.4.2 and ParaTest 7.27.2 are resolved testing dependencies in `src/composer.lock`.
+Pest 5.3.4 with pest-plugin-laravel 5.0.1 is installed on PHP 8.4 / Laravel 13. PHPUnit 13.4.5 and ParaTest 7.27.4 are resolved testing dependencies in `src/composer.lock`.
 
 Feature tests are the default for application behavior that crosses Laravel boundaries.
 

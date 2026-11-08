@@ -106,7 +106,7 @@ class BackendEvidence:
             (
                 "php",
                 "-r",
-                "echo json_encode([PHP_VERSION, PHP_BINARY, php_ini_loaded_file(), php_ini_scanned_files(), ini_get_all(null, false), array_map(fn ($name) => [$name, phpversion($name)], get_loaded_extensions())]);",
+                "echo json_encode([PHP_VERSION, PHP_BINARY, php_ini_loaded_file(), php_ini_scanned_files(), ini_get_all(null, false), array_map(fn ($name) => [$name, phpversion($name)], get_loaded_extensions())], JSON_THROW_ON_ERROR);",
             ),
             source=True,
         ).checked()

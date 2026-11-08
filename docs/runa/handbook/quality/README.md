@@ -39,7 +39,9 @@ Run final closure verification. Validate and run the complete agreed final scope
 
 ### `php artisan runa:quality:status`
 
-Inspect the latest run.
+Inspect the latest run. The summary counts all recorded execution states, including
+pending and blocked checks while only active logs are displayed. Native run status
+is distinct from current closure acceptance and evidence validity.
 
 While running:
 

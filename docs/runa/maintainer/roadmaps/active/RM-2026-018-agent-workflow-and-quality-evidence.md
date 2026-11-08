@@ -8,8 +8,8 @@ activated_at: 2026-11-08
 closed_at: null
 release_type: fix
 proposed_version: 0.8.1
-quality_groups: docs,tooling,knowledge,delivery
-quality_rationale: 'Agent guidance, quality planning/execution and closure evidence require docs/tooling; changed indexed guidance requires strict knowledge checks; shared quality tooling and customer instruction assessment require delivery source contracts. No application behavior, database, frontend, image or native installation/update change currently justifies their broad suites. Reassess the exact graph against the final changes before execution.'
+quality_groups: docs,tooling,knowledge,delivery,security-source
+quality_rationale: 'Agent guidance, planner/executor, native result production and closure validation require docs/tooling; delivery covers shared source, command catalogue and customer instructions; indexed guidance requires strict knowledge. Security-source adds locked dependency audits and changed-surface review for artifact filesystem/provenance trust. Tooling includes complete owner unit/contracts, analysis and package checks. Deterministic process fixtures and pinned native report data cover the development-only producer without changing Laravel behavior, PHP engine implementation, UI, schema, containers or native install/update contracts; their broad runtime suites and image scans are excluded. 0.8.1 is not an all-group milestone.'
 impact_areas:
   - tooling
   - documentation
@@ -184,15 +184,14 @@ their existing behavior; duration alone does not create a new handoff workflow.
 
 ## Current execution state
 
-Activation is committed as `13e3c715`. Point 1 is complete under the approved
-producer-side evidence extension; points 2–3 are complete; point 4 is next. No broad test suite or final quality run has
-been started. Small supported fixture diagnostics passed: first/second successful
-retry normalization (2 cases) and omitted-retry rejection (1 case). They resolve
-implementation uncertainties, not final acceptance. The pinned zero-issue worker
-receipt diagnostic also passed (1 case); partial TeamCity markers alone do not
-prove warning/deprecation-free results. Later source changes still require final
-complete affected-area verification. The original diagnostic
-results are not a full tooling/backend PASS.
+Implementation points 1–4 are complete; final verification/release point 5 remains
+open. No final quality run has started. The selected final scope is
+`docs,tooling,knowledge,delivery,security-source`, with mandatory baseline and actual
+prerequisites. The [verification review](../../reviews/RM-2026-018-final-verification.md)
+records current-state documentation/instruction assessment, A–Z coverage ownership,
+preliminary diagnostics, the early management helper build and preserved resources.
+Final automated acceptance, version 0.8.1 finalization, merge/tag/publication are
+pending; preliminary checks are not final acceptance.
 
 ### Evidence-contract finding and proposed decision
 
@@ -332,7 +331,7 @@ frontend acceptance is not applicable; reassess if scope changes.
     recovered acceptance, assertions, stale/incompatible evidence, missing cases,
     failed cleanup, duplicates and excess attempts. No real crash reproduction.
   - Synchronize owning quality/recovery/evidence guidance and supported usage.
-- [ ] 4. Complete cross-contract regression scenarios and instruction review.
+- [x] 4. Complete cross-contract regression scenarios and instruction review.
   - Prerequisites: points 1–3.
   - Review integration with closure/release checks and delivered tooling; add
     missing focused scenarios for altered evidence, prerequisite failure and
@@ -346,7 +345,7 @@ frontend acceptance is not applicable; reassess if scope changes.
     before broad final verification.
 - [ ] 5. Final verification, release 0.8.1, merge and final report.
   - Reassess and record `quality_groups`/`quality_rationale`; preview the exact
-    supported graph. Initial scope is docs/tooling/knowledge/delivery with their
+    supported graph. Final scope is docs/tooling/knowledge/delivery/security-source with their
     mandatory baseline and real prerequisites. Explain any added heavy group;
     excluded backend/browser/native installation suites are not PASS.
   - Run complete affected validator/workflow/tooling suites and selected source,

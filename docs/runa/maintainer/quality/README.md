@@ -41,7 +41,9 @@ Run final closure verification. Validate the agreed final scope and run its comp
 
 ### `python3 tools/maintainer/quality-status`
 
-Inspect the latest run.
+Inspect the latest run. The summary counts all recorded execution states, including
+pending and blocked checks while only active logs are displayed. Native run status
+is distinct from current closure acceptance and evidence validity.
 
 While running:
 

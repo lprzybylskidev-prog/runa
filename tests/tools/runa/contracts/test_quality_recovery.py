@@ -11,7 +11,13 @@ from xml.sax.saxutils import quoteattr
 import pytest
 
 from tests.tools.runa.support.quality import FixtureReader, node
-from tools.application.quality_evidence import ClosurePolicy, check_evidence, clean_worker_result
+from tools.application.quality_evidence import (
+    ClosurePolicy,
+    check_evidence,
+    clean_worker_result,
+    inventory,
+    teamcity,
+)
 from tools.application.quality_models import QualityDefinition
 from tools.application.quality_planning import resolve
 from tools.application.quality_reporting import save
@@ -514,3 +520,36 @@ def test_failed_provenance_collection_preserves_native_exit_and_cleanup(
 def test_evidence_refuses_acceptance_weakening_flags_before_execution(option: str) -> None:
     with pytest.raises(ValueError, match="file/filter"):
         Selection(("backend",), ("--parallel", option), evidence=True)
+
+
+def test_duplicate_case_events_cannot_inflate_coverage() -> None:
+    completed, pending = teamcity(events(("testOne", "testOne")))
+    assert completed == {"Example::testOne"}
+    assert not pending
+    with pytest.raises(ValueError, match="duplicate"):
+        inventory(
+            b'<testSuite><testMethod id="Example::testOne"/><testMethod id="Example::testOne"/></testSuite>'
+        )
+
+
+@pytest.mark.parametrize(
+    "content",
+    [
+        b'<!DOCTYPE testSuite [<!ENTITY item "one">]><testSuite/>',
+        "<!DOCTYPE testSuite><testSuite/>".encode("utf-16"),
+        b"\xff<testSuite/>",
+    ],
+)
+def test_inventory_refuses_declarations_and_non_native_encodings(content: bytes) -> None:
+    with pytest.raises(ValueError):
+        inventory(content)
+
+
+def test_recovery_cannot_reuse_evidence_after_substantive_changes(
+    recovery: RecoveryFixture,
+) -> None:
+    recovery.execute(CASES[:2], crash=CASES[0], original=True)
+    recovery.execute((CASES[0],))
+    (recovery.root / "changed.py").write_text("# changed source\n")
+    with pytest.raises(ValueError, match="Substantive"):
+        recovery.check()

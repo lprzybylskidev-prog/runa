@@ -59,8 +59,8 @@ def inventory(content: bytes) -> set[str]:
     if b"<!DOCTYPE" in content or b"<!ENTITY" in content:
         raise ValueError("Unsafe native inventory XML.")
     try:
-        tree = ET.fromstring(content)
-    except ET.ParseError:
+        tree = ET.fromstring(content.decode("utf-8"))
+    except (ET.ParseError, UnicodeDecodeError):
         raise ValueError("Incomplete native inventory XML.") from None
     identities = [
         element.get("id", "").lstrip("\\")
@@ -402,8 +402,8 @@ def recovered_backend(root: Path, paths: JsonValue, state: RunRecord) -> None:
             if b"<!DOCTYPE" in content or b"<!ENTITY" in content:
                 raise ValueError("Unsafe native result XML.")
             try:
-                junit = ET.fromstring(content)
-            except ET.ParseError:
+                junit = ET.fromstring(content.decode("utf-8"))
+            except (ET.ParseError, UnicodeDecodeError):
                 raise ValueError("Incomplete native result XML.") from None
             junit_ids = [
                 (element.get("classname", element.get("class", "")), element.get("name", ""))
