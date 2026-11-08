@@ -91,4 +91,7 @@ not wrap old whole writes or own foreign business validation/persistence.
 For owner final backend verification, follow
 [verification evidence continuity](../../../docs/runa/maintainer/testing/strategy.md#verification-evidence-continuity)
 and its temporary SIGSEGV procedure. Keep native results and coverage limits;
-this owner-only policy does not change customer recovery.
+this owner-only policy does not change customer recovery. An authorized successful
+retry terminates handling of that case; continue remaining coverage without owner
+approval for recovered PASS. The complete final backend suite runs last under the
+roadmap workflow, after every other selected validation and correction.

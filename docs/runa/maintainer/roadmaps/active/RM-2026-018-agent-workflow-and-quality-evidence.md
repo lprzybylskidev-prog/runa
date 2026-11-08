@@ -166,6 +166,10 @@ their existing behavior; duration alone does not create a new handoff workflow.
 
 ### Decisions
 
+- 2026-11-08 — The owner explicitly approved extending the existing test result
+  producer with revision, command, mode and native-report bindings. Use the
+  bounded contract below; no new runner, automatic retries or SIGSEGV diagnosis.
+
 - 2026-11-08 — The owner replaced the attachment's prohibition on a new roadmap
   with an explicit instruction to create one and release 0.8.1 after completion.
 - 2026-11-08 — The owner explicitly confirmed `release_type: fix` and
@@ -180,10 +184,9 @@ their existing behavior; duration alone does not create a new handoff workflow.
 
 ## Current execution state
 
-Activation is committed as `13e3c715`. Point 1 remains open. Implementation is
-paused at its explicit evidence-contract discussion boundary; no runtime,
-validator, dependency or instruction behavior has been changed. No test suite or
-background quality run has been started.
+Activation is committed as `13e3c715`. Point 1 is complete under the approved
+producer-side evidence extension; point 2 is next. No broad test suite or final quality run has
+been started.
 
 ### Evidence-contract finding and proposed decision
 
@@ -212,7 +215,7 @@ The requested recovered path needs a producer-side provenance contract, not only
 a consumer-side validator change. This expands the implementation premise from
 interpreting existing artifacts to recording facts that are currently absent.
 
-Proposed bounded contract, awaiting owner agreement:
+Owner-approved bounded contract (2026-11-08):
 
 1. Extend the existing shared Python test result format and its producer, rather
    than adding a runner, service, separate ledger or persistence engine. Record
@@ -243,6 +246,37 @@ Proposed bounded contract, awaiting owner agreement:
 This proposal concerns evidence production and its trust boundary, not the known
 PHP fault's root cause. The existing no-investigation decision remains binding.
 
+### Approved concrete evidence interface
+
+- Extend the existing shared test selection with an opt-in backend `--evidence`
+  option. The existing process transport captures native output for this mode,
+  preserves its bytes in private artifacts and displays it after completion.
+  Ordinary invocation output and native runner ownership remain unchanged.
+- Record schema 2 in the existing latest `{owner}-results.json`; keep existing
+  scope/exit/cleanup fields. An evidence-enabled backend scope additionally binds
+  a unique run ID, clean candidate/working-state identity, literal native command,
+  mode/workers, times, configuration/runtime fingerprints and native artifact hashes.
+- Native discovery of the same selection records PHPUnit's XML inventory before
+  tests execute. Use native TeamCity/JUnit and ParaTest temporary reports in a
+  unique workspace-root `.runtime/tests/native/<run-id>/` artifact directory.
+  This is report storage, not a worker lifecycle or attempt ledger.
+- The original full graph's backend evidence is linked to its coordinator run/step.
+  Owner roadmap `quality_recovery` lists paths to retained existing result records,
+  original first and manual invocations in chronological order. No extra state file
+  or manual PASS/exception field is accepted. The owner composition alone enables
+  this recovery path; customer tolerance remains unchanged.
+- The validator reads safe owned artifacts, verifies producer hashes and source/
+  environment/command compatibility, derives exact case IDs from native inventory
+  and TeamCity and deduplicates completed coverage. It accepts only confirmed native
+  SIGSEGV, a reliably identified affected case, at most two additional attempts,
+  successful terminal recovery and complete remaining coverage. Ordinary errors,
+  ambiguous attribution, incomplete artifacts and failed cleanup remain blockers.
+- Point 1 instruction assessment: root and customer AGENTS plus owner/public roadmap
+  workflow share operational decision/progress/handoff guidance. Owner backend skill
+  and owner testing guide retain the SIGSEGV-only procedure. Customer domain skills
+  require no change because they already route to the shared workflow and acquire
+  no owner recovery permission. No application view/API/module contract changes.
+
 ## Implementation plan
 
 Implementation points deliver code, regression scenarios and synchronized current
@@ -252,7 +286,7 @@ remain in force. Each completed point requires a logical commit and checklist
 update under the owning workflow. No frontend change is planned, so owner manual
 frontend acceptance is not applicable; reassess if scope changes.
 
-- [ ] 1. Reconcile operational instructions and establish evidence contracts.
+- [x] 1. Reconcile operational instructions and establish evidence contracts.
   - Prerequisites: explicit owner activation; read the active point, relevant
     decisions, knowledge and owning sources.
   - Inspect root/nested agent instructions, relevant skills, canonical testing,

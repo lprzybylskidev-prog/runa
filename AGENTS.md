@@ -20,6 +20,15 @@ Roadmap precedence does not make agent-authored restrictions owner decisions.
 Follow the decision-provenance review in
 docs/runa/maintainer/workflows/roadmaps.md#discussion-and-activation.
 
+Explicit project decisions, accepted limitations and rejected approaches are binding.
+Before invoking a governed operation, check its stage, prerequisites and actual
+evidence, validity of completed work, execution cost and required handoff. Follow
+the existing procedure autonomously; do not turn a prohibition into a permission
+request. Reopen an explicit decision only for materially new evidence making it
+inapplicable, contradictory or unsafe; identify the decision, evidence and exact
+new decision needed. Recurrence of a known incident is not new evidence. Ordinary
+new defects and implementation choices remain open to investigation.
+
 ## Pre-1.0 development
 
 Until Runa platform 1.0.0, backward compatibility is not a design requirement.
@@ -106,6 +115,14 @@ Place repairs before that point and repeat affected manual acceptance after UI
 changes. Final automated verification/release stays last. See the
 [manual acceptance procedure](docs/runa/maintainer/workflows/roadmaps.md#manual-frontend-acceptance).
 
+The complete final backend suite runs after ALL other required validation,
+corrections and regression suites have valid successful evidence. Check the whole
+selected acceptance scope before launch, not just browser completion. Reuse valid
+evidence; after relevant changes, complete affected non-backend checks before
+repeating an invalidated backend suite last. Only reports, focused release metadata
+checks and non-test bookkeeping may follow; never schedule another acceptance
+suite after it. The owning roadmap workflow defines prerequisites and repairs.
+
 The final point completes all verification for the affected areas and release finalization, including the current-state documentation review in `docs/runa/maintainer/workflows/roadmaps.md` and closure synchronization in `docs/runa/maintainer/workflows/releases.md`.
 
 Ordinary roadmap closure runs only complete checks for changed behavior/contracts
@@ -128,7 +145,7 @@ If verification finds work:
 
 During repairs caused by failed final verification, run the complete supported suite/check for each affected area, preserving the failing execution mode (for example, the full parallel PHP backend suite). Repeat repair and that complete area run until it passes; a filtered regression alone does not complete the repair. Run only affected areas and their real prerequisites in this repair loop, not unrelated suites or the whole quality graph. Receive the results before committing/completing the fix point. Then revalidate final verification under the owner evidence-continuity procedure below, retaining valid unrelated results. This exception does not authorize broad checks during ordinary implementation points.
 
-For owner final verification, follow [verification evidence continuity](docs/runa/maintainer/testing/strategy.md#verification-evidence-continuity): preserve valid unrelated results, rerun invalidated checks and real prerequisites, and consolidate ordinary backend failures before repairs. For confirmed SIGSEGV, inspect existing evidence, manually attempt a reliably identified interrupted case at most twice more, continue remaining coverage and obtain explicit owner acceptance of exhausted confirmed interruptions before release under [the temporary owner procedure](docs/runa/maintainer/testing/strategy.md#backend-sigsegv-owner-acceptance). Preserve native failures; unknown/unexecuted coverage, ordinary failures and unsafe cleanup remain blocking. No recovery automation, root-cause investigation or customer tolerance is authorized. Retire the temporary exception after confirmed corrected-runtime stability; keep general evidence continuity.
+For owner final verification, follow [verification evidence continuity](docs/runa/maintainer/testing/strategy.md#verification-evidence-continuity): preserve valid unrelated results, rerun invalidated checks and real prerequisites, and consolidate ordinary backend failures before repairs. For confirmed SIGSEGV, inspect existing evidence, manually attempt a reliably identified interrupted case at most twice more, stop immediately after an authorized successful retry (recovered PASS needs no owner approval), continue remaining coverage and obtain explicit owner acceptance of exhausted confirmed interruptions before release under [the temporary owner procedure](docs/runa/maintainer/testing/strategy.md#backend-sigsegv-owner-acceptance). Preserve native failures; unknown/unexecuted coverage, ordinary failures and unsafe cleanup remain blocking. No recovery automation, root-cause investigation or customer tolerance is authorized. Retire the temporary exception after confirmed corrected-runtime stability; keep general evidence continuity.
 
 If the failure reveals an architectural/behavioral assumption problem, stop and discuss it with the user.
 
@@ -476,4 +493,4 @@ contract; ordinary group choices do not require repeated owner approval.
 
 Discover the supported entrypoint and scope before running tests, acceptance or operations. Consult docs/runa/maintainer/quality/README.md and docs/runa/handbook/tooling/commands.md. Owner default `python3 tools/maintainer/test` and application default `runa:test` run backend, frontend and tooling. Focused owner `test-backend`, `test-frontend`, `test-e2e`, `test-python` and application Artisan scopes retain explicit ownership. Follow the testing guides for public support, filters and reports. Preserve the documented host/container transport, guards, locks, reporting and native exit codes. Never replace a supported workflow with internal runners or detached log-only scripts. A direct runner is allowed only when documented as the scoped entrypoint or for a focused one-off diagnostic without a suitable command; explain the case and receive the result in the point. Propose new commands only for genuine reusable operational gaps.
 
-During ordinary implementation, run only necessary small, fast, focused checks resolving concrete uncertainty; final-verification repairs follow the complete affected-area loop above. Receive results, repair failures and continue; duration alone is no permission to hand monitoring to the user. Only final full verification uses the supported background handoff: `python3 tools/maintainer/quality-roadmap --background`, end the turn and provide `python3 tools/maintainer/quality-status`. Status tracks its coordinator only; raw tail is not a substitute.
+During ordinary implementation, run only necessary small, fast, focused checks resolving concrete uncertainty; final-verification repairs follow the complete affected-area loop above. Receive results, repair failures and continue; duration alone is no permission to hand monitoring to the user. Only final full verification uses the supported background handoff: `python3 tools/maintainer/quality-roadmap --background`, end the turn and provide `python3 tools/maintainer/quality-status`. Successful launch is the turn's terminal condition: confirm launch only, provide the status command, log/report locations, completion meaning and remaining work, then end the turn. No polling, waiting, edits, other work or automatic continuation; resume only on new user input. Status tracks its coordinator only; raw tail is not a substitute.
