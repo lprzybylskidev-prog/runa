@@ -30,6 +30,7 @@ export const actionIcons = {
   enable: 'power',
   disable: 'power',
   download: 'download',
+  home: 'home',
   next: 'chevron-right',
   previous: 'chevron-left',
   history: 'history',

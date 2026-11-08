@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="Query">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { computed, ref, watch } from 'vue';
 import AppButton from './AppButton.vue';
 import AppIcon from './AppIcon.vue';

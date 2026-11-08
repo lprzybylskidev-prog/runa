@@ -23,7 +23,8 @@ impact_areas:
 
 ## Current execution state — point 10s completed, 2026-11-08
 
-**Points 1–10s are complete. Point 10t renews runtime/assets before owner acceptance
+**Points 1–10s and repair 10s1 are complete. Renewed readiness 10t is next
+before owner acceptance
 11; final automated verification/release remains 12.** The
 [icon source review](../../reviews/RM-2026-017-icons.md) records explicit action and
 feedback icons, owned module declarations, 34 pinned original SVG additions,
@@ -1888,8 +1889,17 @@ below are retained as historical records only.
     Author meaningful shared-component/module regressions; only necessary bounded
     diagnostics run here. Full automated suites remain 12.
 
+- [x] 10s1. Correct icon readiness build findings.
+  - The first 10t build on 9cd43769 reports missing actionIcons imports in generic
+    Select/Table/TableActions/TablePreferences SFCs. Add their ordinary imports; no shim,
+    compiler/config relaxation or new behavior premise is needed.
+  - Complete the native error Retry icon with the shared vocabulary and Home key;
+    update the public vocabulary contract. Preserve all native GET/label/CSP behavior.
+  - Commit source correction and then repeat the supported operational build in
+    10t. Full automated verification remains 12; this is a readiness repair.
+
 - [ ] 10t. Renew icon runtime/assets and manual acceptance handoff.
-  - **Dependency:** committed 10s. Build supported application and native/emergency
+  - **Dependency:** committed 10s/10s1. Build supported application and native/emergency
     assets from the coherent candidate, preserving existing accounts/data/services.
   - Observe actual Nginx pages/APIs and sample action/module/feedback icons at
     desktop/narrow widths, PL/EN, light/dark and keyboard/busy states. Record exact
@@ -5941,3 +5951,26 @@ backups and evidence are preserved; no Docker resources were created or removed.
 Mandatory hooks and staged incremental knowledge synchronization apply. Point 10t
 must prepare coherent committed-source assets and current real Nginx observations
 before the sole owner acceptance 11; final automated verification remains 12.
+
+## Icon readiness build findings — inserted 10s1, 2026-11-08
+
+Operational build on committed 9cd43769 stopped at TypeScript before rebuilding
+assets: generic Select/Table/TableActions/TablePreferences use actionIcons without imports.
+The authoring import insertion missed generic SFC opening tags. Point 10s1 corrects
+the owning components directly and completes the omitted native-error Retry icon;
+no compiler bypass, type suppression or runtime workaround. Preserve the native
+failed build at .runtime/dev/RM-2026-017-10t/build.log. Rebuild the corrected committed
+source in 10t; prior 10r assets still identify older source. No final gate or owner
+acceptance is claimed.
+
+## Point 10s1 completion — direct generic imports and native Retry icon, 2026-11-08
+
+All four generic consumers (Select, Table, TableActions and TablePreferences) now
+import the existing shared actionIcons map normally. A bounded source inventory
+confirms no supplied actionIcons consumer lacks its import. Native errors now use
+the shared Home/Retry symbols; the public vocabulary documents Home. No backend,
+CSP, dependency, configuration, grant, data or module/API candidate changes.
+The initial failed build remains evidence; corrected committed-source operational
+build and actual runtime observations remain in 10t. Hooks and staged knowledge
+freshness apply; broad automated verification remains 12. No test duplicating a
+missing-import assertion is added; the native compiler/build owns that diagnostic.

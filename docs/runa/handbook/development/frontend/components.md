@@ -687,7 +687,7 @@ icon independently of `confirmIntent` and proof requirements.
 `actionIcons` is a readonly Record with keys save, create, edit, confirm, cancel,
 close, back, discard, reset, refresh, retry, inspect, review, publish, delete,
 revoke, copy, load, capture, dispatch, send, login, register, password, trust,
-security, enable, disable, download, next, previous, history, crop and action.
+security, enable, disable, download, home, next, previous, history, crop and action.
 Its values are IconName. It is a presentation vocabulary, never an authorization
 or action dispatcher. Color intent and icon identity are explicit independent
 choices; do not infer them from translated labels, HTTP verbs or password prompts.

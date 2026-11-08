@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="Multiple extends boolean = false">
+import { actionIcons } from '../runa/ui/actionIcons';
 import { computed, nextTick, onScopeDispose, ref, watch } from 'vue';
 import { activateMotionElement, deactivateMotionElement } from '../lib/motion';
 import AppContentLoading from './AppContentLoading.vue';
