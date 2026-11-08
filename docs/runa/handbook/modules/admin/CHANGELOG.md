@@ -2,6 +2,9 @@
 
 ## 2.0.0 — Unreleased
 
+- Keep canceled departing-document bootstrap/page reads from producing a false
+  unavailable warning. Preserve live failures and admitted identity/access fences.
+
 - Use the shared semantic action/feedback icons with visible labels and preserved
   busy, keyboard, proof and operation behavior; no backend contract/storage change.
 

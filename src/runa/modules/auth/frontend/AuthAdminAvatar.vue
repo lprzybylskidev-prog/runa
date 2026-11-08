@@ -248,7 +248,7 @@ async function mutate(remove = false) {
       >
       <Button
         v-if="record.values.has_avatar"
-        :icon="actionIcons.delete"
+        icon="photo-off"
         intent="danger"
         variant="outline"
         :disabled="controller.busy.value || cropping || !!originals.length"
@@ -295,7 +295,7 @@ async function mutate(remove = false) {
     </Dialog>
     <ConfirmDialog
       confirm-intent="danger"
-      confirm-icon="trash"
+      confirm-icon="photo-off"
       :model-value="removing"
       :locale="locale"
       :busy="controller.busy.value"

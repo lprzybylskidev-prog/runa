@@ -2716,3 +2716,41 @@ it('action-driven refresh keeps same-session security checks independent of Admi
   expect(resource.result.value).toBeUndefined();
   expect(accountPreferences.currentAccount()).toBeNull();
 });
+
+it('Admin document cancellation preserves admitted bootstrap and page while real errors still refuse', async () => {
+  const { RequestCancelledError } = await import('@/runa/http');
+  let admin!: AdminController, page!: AdminPageController;
+  vi.mocked(window.fetch).mockImplementation(async (input) =>
+    respond({
+      data: String(input) === '/api/admin' ? bootstrap() : resourcePage(),
+    }),
+  );
+  mount(
+    defineComponent({
+      setup() {
+        admin = useAdmin({ session: sessionFixture(), navigate: vi.fn() });
+        page = useAdminPage(admin, ref({ owner: 'app', page: 'settings' }));
+        return () => h('div');
+      },
+    }),
+  );
+  await vi.waitFor(() => expect(page.state.value).toBe('ready'));
+  const original = page.page.value;
+  vi.mocked(window.fetch).mockRejectedValue(new RequestCancelledError());
+  await admin.refresh();
+  await page.refresh();
+  expect(admin.state.value).toBe('ready');
+  expect(admin.error.value).toBeUndefined();
+  expect(page.state.value).toBe('ready');
+  expect(page.page.value).toBe(original);
+  expect(page.error.value).toBeUndefined();
+  vi.mocked(window.fetch).mockImplementation(async () =>
+    respond({ reason: 'availability_changed' }, 503),
+  );
+  await page.refresh();
+  expect(page.state.value).toBe('unavailable');
+  expect(page.page.value).toBeUndefined();
+  await admin.refresh();
+  expect(admin.state.value).toBe('unavailable');
+  expect(admin.bootstrap.value).toBeUndefined();
+});

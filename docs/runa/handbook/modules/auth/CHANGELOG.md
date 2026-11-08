@@ -2,6 +2,10 @@
 
 ## 6.0.1 — Unreleased
 
+- Use distinct semantic single/bulk action-family and final-command icons. Treat
+  shared HTTP document cancellation as canceled protected-activity observation,
+  preserving real proof/network/availability refusal.
+
 - Use the shared semantic action/feedback icons with visible labels and preserved
   busy, keyboard, proof and operation behavior; no backend contract/storage change.
 

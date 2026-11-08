@@ -21,7 +21,15 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — settings repair ready for owner acceptance, 2026-11-08
+## Current execution state — navigation/action feedback repair, 2026-11-08
+
+The owner requests the reference landing link first, distinct semantic Auth single /
+bulk action icons and diagnosis of a transient yellow navigation message. Insert
+10w source correction and 10x renewed readiness before repeated owner acceptance 11.
+Prior 10v assets/evidence retain their identities. Full verification/release stays
+12; approved feature/0.8.0 and candidate versions remain pending exact assessment.
+
+## Historical execution state — settings repair ready for owner acceptance, 2026-11-08
 
 **Points 1–10v are complete; owner acceptance 11 remains open.** Committed source
 9ed1b543 restricts module widgets to Modules and groups application settings with
@@ -2031,9 +2039,36 @@ below are retained as historical records only.
     page overflow/errors or unexpected refusal. Owner acceptance remains open;
     no full-suite/release claim, storage reset or Docker resource change.
 
+- [x] 10w. Correct reference navigation order, action icons and transient warnings.
+  - **Owner request, 2026-11-08:** reference landing first; use appropriate distinct
+    single/bulk Auth tool/command icons; inventory analogous actions outside Auth.
+  - Use source-owned ManagementPage order and the existing pinned decorative icon
+    family. Centralize semantic command/group identity independently of effect colors,
+    localized labels, grants and password proof. Keep single/bulk meanings aligned.
+  - Capture the actual transient warning under ordinary and bounded controlled native
+    navigation before correcting its owning state/transport integration. Preserve real
+    errors, current access/proof loss, draft guards and uncertain-write refusal; no
+    debounce, hidden warning, arbitrary delay, retry or replay workaround.
+  - Synchronize public/durable guidance, executable reference, icon provenance,
+    instruction products and version assessment. Bounded focused diagnostics only;
+    commit source before 10x. Full suites remain point 12.
+  - **Result:** [source corrections and captured warning](../../reviews/RM-2026-017-navigation-actions.md).
+    Ordinary native navigation captures the false post-beforeunload warning. Three
+    owning consumers honor existing typed HTTP cancellation; real failures remain.
+    Declared reference page order and 16 Auth icon-family identities are corrected.
+    Seven focused Chromium cases pass, exit 0 / cleanup 0. Current assets and native
+    readiness remain 10x; no broad verification or owner acceptance is claimed.
+
+- [ ] 10x. Renew navigation/action manual readiness.
+  - Build current assets and inspect actual Nginx reference order, Auth single/bulk
+    semantic icons, ordinary and controlled navigation warning capture, real error
+    visibility, PL/EN/themes/narrow layouts, preserving data and existing evidence.
+  - Record source/build identity and refresh the acceptance sheet for repeated owner
+    acceptance 11. Final automated verification/release remains 12.
+
 - [ ] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
-  - **Preconditions:** completed implementation/review/readiness, including 10k–10v,
+  - **Preconditions:** completed implementation/review/readiness, including 10k–10x,
     matching current assets/data and usable authorized application, acceptance sheet supplied.
   - **Deliverables:** concrete clickable URLs derived from the current environment
     and actual route/page declarations; what to inspect per view; relevant roles/

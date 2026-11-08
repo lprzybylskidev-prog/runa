@@ -364,7 +364,7 @@ watch(
             >
               <template #actions="{ row }"
                 ><Button
-                  :icon="actionIcons.revoke"
+                  icon="device-desktop-off"
                   intent="danger"
                   size="sm"
                   variant="outline"
@@ -478,7 +478,7 @@ watch(
     :title="text('Unieważnić zaufanie?', 'Revoke device trust?')"
     :confirm-label="text('Unieważnij', 'Revoke')"
     confirm-intent="danger"
-    confirm-icon="shield-x"
+    confirm-icon="device-desktop-off"
     :locale="locale"
     :busy="busy"
     @update:model-value="

@@ -51,7 +51,7 @@ final class ReferenceManagement implements ManagementReadPlanProvider
                 new ManagementFieldAccess(new ManagementField('message', 'text', ['pl' => 'Etykieta', 'en' => 'Label'],
                     ['pl' => 'Bieżąca wartość z publicznego API modułu.', 'en' => 'Current value from the module public API.']), $permission),
             ], component: 'app.reference.inspect_section'),
-        ], default: true),
+        ], order: -10, default: true),
             $this->toolsPage('samples', ['pl' => 'Rekordy', 'en' => 'Samples'], [
                 new ManagementFieldAccess(new ManagementField('code', 'text', ['pl' => 'Kod', 'en' => 'Code'], ['pl' => 'Kod rekordu.', 'en' => 'Sample code.'], writable: true, maxLength: 40), 'app.reference.samples.code.read', 'app.reference.samples.code.write'),
             ], 'samples.write', 'table'),

@@ -252,3 +252,42 @@ it('semantic icons retain explicit final-action selection and confirmation opt-o
   expect(finalAction().find('svg').exists()).toBe(false);
   expect(finalAction().text()).toBe('Usuń');
 });
+
+it('Auth tools keep distinct semantic icons across single and bulk actions and concrete effects', async () => {
+  const { authActionToolIcon, authActionIcon } =
+    await import('../../../../src/runa/modules/auth/frontend/bulkGroups');
+  const tools = [
+    'activate',
+    'schedule_activation',
+    'set_attempt_lock',
+    'set_security_lock',
+    'require_verification',
+    'invite',
+    'require_password_change',
+    'password_reset',
+    'factor_reset',
+    'revoke',
+    'revoke_trust',
+    'reset_preferences',
+    'remove_avatar',
+    'revoke_exceptions',
+    'delete',
+    'grant_superadmin',
+  ];
+  const icons = tools.map((key) => authActionToolIcon([key]));
+  expect(new Set(icons).size).toBe(tools.length);
+  expect(authActionToolIcon(['activate', 'deactivate'])).toBe(
+    authActionToolIcon(['deactivate', 'activate']),
+  );
+  expect(authActionIcon('activate')).not.toBe(authActionIcon('deactivate'));
+  expect(authActionIcon('schedule_activation')).not.toBe(
+    authActionIcon('schedule_deactivation'),
+  );
+  expect(authActionIcon('delete')).not.toBe(authActionIcon('restore'));
+  expect(authActionIcon('set_security_lock', true)).not.toBe(
+    authActionIcon('set_security_lock', false),
+  );
+  expect(authActionIcon('set_attempt_lock', null, true)).not.toBe(
+    authActionIcon('set_attempt_lock'),
+  );
+});

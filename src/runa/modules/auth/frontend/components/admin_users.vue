@@ -5,6 +5,7 @@ import {
   groupAuthActions,
   authBulkGroup,
   authBulkActionIntent,
+  authActionToolIcon,
 } from '../bulkGroups';
 import AuthDirectoryFilters from '../AuthDirectoryFilters.vue';
 import { computed, ref, watch } from 'vue';
@@ -276,7 +277,11 @@ watch(
             <AuthAdminActionGroups :groups="bulkGroups">
               <template #default="{ item: choice }">
                 <Button
-                  :icon="actionIcons.action"
+                  :icon="
+                    authActionToolIcon(
+                      choice.commands.map((command) => command.key),
+                    )
+                  "
                   :intent="
                     authBulkActionIntent(
                       choice.commands.map((command) => command.key),

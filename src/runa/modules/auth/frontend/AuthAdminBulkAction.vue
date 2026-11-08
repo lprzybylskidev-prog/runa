@@ -344,7 +344,13 @@ async function submit() {
           >{{ tr({ pl: 'Sprawdź skutki', en: 'Review impact' }) }}</Button
         >
         <Button
-          :icon="authActionIcon(command?.key ?? '', choice?.enabled)"
+          :icon="
+            authActionIcon(
+              command?.key ?? '',
+              choice?.enabled,
+              choice?.clearDate === true,
+            )
+          "
           :intent="
             authActionIntent(
               command?.key ?? '',

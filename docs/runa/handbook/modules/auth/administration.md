@@ -607,7 +607,14 @@ with subtle vertical separators and wrap on narrow screens; unavailable categori
 are omitted. Separators appear only between groups on the same rendered row;
 the first group on every wrapped row has no separator or extra leading indent.
 Resize and translated label changes update that presentation without clipping
-button focus outlines. Existing grouped operation selectors retain their native reviewed commands.
+button focus outlines. Launcher icons identify the operation family: activity, schedule,
+attempt/security locks, verification/invitations, password/factors, sessions/devices,
+preferences/avatar/exceptions, deletion and authority. The same source identity maps
+single-account and selected-account tools to the same decorative icon; concrete
+reviewed actions distinguish opposing effects (activate/deactivate, schedule add/remove,
+delete/restore, lock/unlock). Review retains the inspect icon. Labels, effect colors,
+password proof and native commands remain independent. Existing grouped operation
+selectors retain their native reviewed commands.
 Account status groups project authorized facts in a fixed sequence: activity,
 locks, email, password/authentication, sessions/devices and invitation. Additional
 authorized facts retain a final section rather than disappearing. Field grants,

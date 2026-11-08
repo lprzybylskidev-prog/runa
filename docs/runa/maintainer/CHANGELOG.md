@@ -4,6 +4,11 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Put the reference landing page first through declared page order. Give Auth
+  single/bulk tool families and concrete commands distinct pinned Tabler icons.
+  Honor shared document cancellation in Admin bootstrap/page and Auth protected
+  activity without false departing-page warnings; preserve live error/access loss.
+
 - Keep module dashboard widgets out of application settings through the operations
   dashboard slot. Group application identity/default preferences/additional fields,
   use named compact reset actions and retain one guarded settings form/controller.

@@ -1,5 +1,5 @@
 import { onScopeDispose, watch } from 'vue';
-import { request } from '@/runa/http';
+import { request, RequestCancelledError } from '@/runa/http';
 
 export interface ProtectedActivityStatus {
   remaining_seconds: number;
@@ -96,7 +96,12 @@ export function useProtectedActivity(options: ProtectedActivityOptions) {
         throw new TypeError('Invalid protected activity response.');
       apply(decodeProtectedActivity(result.data), started);
     } catch (cause) {
-      if (enabled() && own === epoch && identity === options.identity()) {
+      if (
+        !(cause instanceof RequestCancelledError) &&
+        enabled() &&
+        own === epoch &&
+        identity === options.identity()
+      ) {
         cancel();
         // The owner handles proof expiry, session loss and availability failures.
         options.onExpired(cause);

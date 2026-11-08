@@ -15,3 +15,7 @@ source protected and reuse security/session controllers rather than copying them
 Follow `docs/runa/handbook/ai/skills-policy.md#shared-point-workflow` for shared
 point timing, canonical docs and local-extension maintenance. Application scope
 and protected-platform boundaries remain governed by installed AGENTS.
+
+For shared HTTP observation cancellation, select
+`docs/runa/handbook/development/frontend/customization.md`: departing-document
+cancellation is neither live failure nor write success and never authorizes replay.

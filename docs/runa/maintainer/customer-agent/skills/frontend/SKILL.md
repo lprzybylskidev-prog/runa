@@ -38,3 +38,7 @@ For Admin dashboard/settings replacements, follow
 `docs/runa/handbook/modules/admin/frontend.md#operational-dashboard-and-replacements`.
 Forward the public dashboard slot in its own subview; retain the shared settings
 controller and do not copy or edit private platform renderers.
+
+For command icon identity, use the Semantic icons contract in
+`docs/runa/handbook/development/frontend/components.md`. Known domain commands
+share authored single/bulk family mappings rather than one generic action glyph.

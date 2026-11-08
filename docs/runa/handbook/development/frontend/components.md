@@ -689,7 +689,12 @@ close, back, discard, reset, refresh, retry, inspect, review, publish, delete,
 revoke, copy, load, capture, dispatch, send, login, register, password, trust,
 security, enable, disable, download, home, next, previous, history, crop and action.
 Its values are IconName. It is a presentation vocabulary, never an authorization
-or action dispatcher. Color intent and icon identity are explicit independent
+or action dispatcher. Known domain commands use their owning semantic icon map;
+do not assign the generic action glyph to every known tool. Grouped launchers share
+a family identity across single/bulk contexts while final actions reflect the
+concrete selected operation. Generic action remains for unspecified caller-owned
+operations, not as a substitute for available source meaning.
+Color intent and icon identity are explicit independent
 choices; do not infer them from translated labels, HTTP verbs or password prompts.
 
 Use device-floppy for save, plus/user-plus for creation, pencil for editing,

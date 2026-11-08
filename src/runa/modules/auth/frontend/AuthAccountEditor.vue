@@ -470,7 +470,7 @@ function closeCrop(value: boolean) {
             >
             <Button
               v-if="canAvatar && profile.has_avatar"
-              :icon="actionIcons.delete"
+              icon="photo-off"
               intent="danger"
               variant="outline"
               :disabled="busy || cropping || originals.length > 0"
@@ -502,7 +502,7 @@ function closeCrop(value: boolean) {
     :title="text('Usunąć avatar?', 'Remove avatar?')"
     :confirm-label="text('Usuń avatar', 'Remove avatar')"
     confirm-intent="danger"
-    confirm-icon="trash"
+    confirm-icon="photo-off"
     :locale="locale"
     :busy="busy"
     @confirm="confirmRemoval"

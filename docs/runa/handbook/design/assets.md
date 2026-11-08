@@ -114,3 +114,30 @@ remote runtime asset is introduced. The existing MIT license applies.
 | `src/runa/resources/icons/chevron-left.svg`    | `889174801ca4213379fe4e6a574546793a72ab22be35bc2f177e3d8d24576dbd` |
 | `src/runa/resources/icons/chevron-right.svg`   | `83733bb6e03e1d20fd2674d06a493642c8ea6eef76c44ebb2239b9ef17dedff7` |
 | `src/runa/resources/icons/home.svg`            | `069600f461f3e967685765723a851af7b35f24b715e03d41a2928152cf75644c` |
+
+## Auth action identity extension
+
+Distinct Auth single/bulk command families use these additional unchanged outline
+originals from the same pinned Tabler revision and MIT license above. No dependency
+or remote runtime asset is introduced; Icon retains inherited color, decorative
+semantics and the shared stroke. Private Auth command/group mappings select these
+by source identity, independently of translated labels, proof and effect colors.
+
+| Asset                                    | SHA256                                                             |
+| ---------------------------------------- | ------------------------------------------------------------------ |
+| `resources/icons/calendar-clock.svg`     | `89a775e04192b7e5ac1d8f6c8749fba7a8a8c40157d04db17db38d28a079b366` |
+| `resources/icons/calendar-plus.svg`      | `1d61fc3a7c27da01e5a39ac41a8c6bdb62137e29e5651b019679202f4b1be3f9` |
+| `resources/icons/calendar-minus.svg`     | `c24e95683ea07762cd0c1b8207b9429dbe15a36364fb756d5fdf8c50d0baa337` |
+| `resources/icons/lock-access.svg`        | `6fb7d29e47c9f0497aaff766cfab082a9b0d6be261a65f0ff2c631448d4cbe8c` |
+| `resources/icons/lock-open.svg`          | `f1b1ef8aa7cdaad103e0062298ba5bf26c698b9f8a5c142cddeff19ab20b271c` |
+| `resources/icons/key-off.svg`            | `68f3b2b189038f9081b1deeddbb35cddb82183bd7b5c5b84115740d45199e727` |
+| `resources/icons/device-desktop-off.svg` | `3ccc481e2e6573bd8f592aeac5035ce1843f468ccefcf7acf42fe397f98cd67f` |
+| `resources/icons/photo-off.svg`          | `9d554e2af91bb4bec9878543edc2f5ce454767205c2635b494bff8c37956b683` |
+| `resources/icons/clipboard-x.svg`        | `3bd3f5673e0c08d8bb0d6c8851ae2ab4052721d2ab96e5de144437ad1d06b0b9` |
+| `resources/icons/shield-star.svg`        | `ce9e06c68909d390fd61c8707a89e7184c14e4c5c6936c23aad9a734168bdc3d` |
+| `resources/icons/shield-off.svg`         | `a67cc79bc0b41a589a4ce96b6611fca2d504895c27d7f7407e1b6da9d503bac3` |
+| `resources/icons/mail-plus.svg`          | `600b029008408dcfddec52830e89061ae42a451badc8aa02f118470d8c04bb7c` |
+| `resources/icons/mail-x.svg`             | `d630661eb81180c1a30efb4cc81f98c6c3dbd038df0f33db446ccbdbaa6f72fb` |
+| `resources/icons/mail-check.svg`         | `100472168cf629016972a74eb798eeae343e767a64131ea59bfcdcc11b60b423` |
+| `resources/icons/user-check.svg`         | `bbbea83573b85525e35cac636928032ba27d830bee9cbfd229319bff5ccf2251` |
+| `resources/icons/user-off.svg`           | `3cc11a387ee367ab683b8fe4537279a6191257fa109737c0642f2f05e4022376` |

@@ -4,7 +4,7 @@ import {
   useOperationProof,
   useProtectedActivity,
 } from '@/runa/auth';
-import { ApiError, request } from '@/runa/http';
+import { ApiError, request, RequestCancelledError } from '@/runa/http';
 import type {
   ApplicationNavigate,
   ApplicationSessionController,
@@ -154,6 +154,7 @@ export function useAdmin(
     entryProof.reset();
   }
   function fail(cause: unknown) {
+    if (cause instanceof RequestCancelledError) return;
     ++epoch;
     abort.abort();
     clear();

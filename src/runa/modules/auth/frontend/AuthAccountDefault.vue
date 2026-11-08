@@ -659,7 +659,7 @@ const passwordHint = computed(() =>
             >
             <Button
               v-else-if="!history"
-              :icon="actionIcons.revoke"
+              :icon="tab === 'sessions' ? 'logout' : 'device-desktop-off'"
               intent="danger"
               :busy="busy"
               :disabled="busy"

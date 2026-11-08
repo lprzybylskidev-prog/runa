@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { authActionIcon } from './bulkGroups';
 import { identityDrafts } from './identityDrafts';
 import { trustedDeviceColumns } from './trustedDeviceColumns';
 import { computed, reactive, ref, watch } from 'vue';
@@ -688,7 +689,7 @@ async function refreshTable() {
                 <Button
                   v-for="command in rowCommands"
                   :key="command.key"
-                  :icon="actionIcons.revoke"
+                  :icon="authActionIcon(command.key)"
                   intent="danger"
                   size="sm"
                   variant="outline"
@@ -750,7 +751,7 @@ async function refreshTable() {
                       )[kind]?.includes(command.key),
                     )"
                     :key="command.key"
-                    :icon="kind === 'secondary' ? 'trash' : 'shield-x'"
+                    :icon="authActionIcon(command.key)"
                     intent="danger"
                     size="sm"
                     variant="outline"

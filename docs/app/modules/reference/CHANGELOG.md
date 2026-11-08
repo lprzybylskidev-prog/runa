@@ -2,6 +2,9 @@
 
 ## 0.4.1 — Unreleased
 
+- Order the reference landing link before the other Admin module pages through
+  its source-owned ManagementPage order.
+
 - Use the shared semantic action/feedback icons with visible labels and preserved
   busy, keyboard, proof and operation behavior; no backend contract/storage change.
 
