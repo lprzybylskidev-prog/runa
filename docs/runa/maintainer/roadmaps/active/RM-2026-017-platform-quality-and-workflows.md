@@ -6019,3 +6019,28 @@ the owner may inspect the visual work while the formal readiness remains unresol
 No storage reset or Docker resources were created/removed; browser processes closed
 and all reports/recovery state remain. Point 11 and final point 12 stay open;
 no acceptance, complete suite, security/AI gate or release is claimed.
+
+## Native activity correction discussion — proposed behavior, 2026-11-08
+
+The owner chose “discuss the repair now” after the icon readiness stop. The
+[source analysis and proposed correction](../../reviews/RM-2026-017-health-admission-design.md)
+records the actual HTTP failures and source-verified global-generation mechanism:
+healthy reference observation renewal advances the same generation captured and
+rechecked by otherwise independent Auth/Admin admission. The exact older failing
+transaction/generation was not captured; deterministic two-connection reproduction
+remains part of the proposed repair, not an already passing test.
+
+Recommended behavior for owner agreement: successful renewal of the same applicable
+healthy state updates observation freshness without itself invalidating valid
+operations. Real lifecycle/source/settings/health/authority/session/proof/maintenance
+changes still refuse. The representation must preserve cache freshness and exact
+on-use checks; removing a generation bump alone, UI retries and guard suppression
+are not accepted solutions. Existing semantic settings/Admin-read identities inform
+an owning redesign, not an adapter around the current failure.
+
+The proposed sequence is bounded reproduction, exact generation-consumer/design/
+version assessment, owning implementation/regressions/docs and renewed 10t readiness,
+all before the sole owner acceptance 11 and final verification 12. Owner agreement
+has not yet been received; no backend implementation or new persisted revision is
+approved by this discussion record. This does not activate another roadmap or change
+approved feature/0.8.0. No source/data/resource state was mutated by the investigation.
