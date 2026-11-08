@@ -1,6 +1,6 @@
 # Reference module changelog
 
-## 0.4.1 — Unreleased
+## 0.4.1 — 2026-11-08
 
 - Order the reference landing link before the other Admin module pages through
   its source-owned ManagementPage order.

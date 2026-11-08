@@ -1,6 +1,6 @@
 # Permissions module changelog
 
-## 2.1.2 — Unreleased
+## 2.1.2 — 2026-11-08
 
 - Admit the verified platform0.8.0 release in the supplied>=0.7.0 <0.9.0
   compatibility range; module/API versions and runtime behavior are unchanged.

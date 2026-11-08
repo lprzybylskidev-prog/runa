@@ -1,6 +1,6 @@
 # Auth module changelog
 
-## 6.0.1 — Unreleased
+## 6.0.1 — 2026-11-08
 
 - Admit the verified platform0.8.0 release in the supplied>=0.7.0 <0.9.0
   compatibility range; module/API versions and runtime behavior are unchanged.
