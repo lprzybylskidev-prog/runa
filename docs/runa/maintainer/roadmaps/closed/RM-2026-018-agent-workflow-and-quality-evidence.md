@@ -1,11 +1,11 @@
 ---
 id: RM-2026-018
 title: Agent workflow enforcement and recoverable quality evidence
-status: active
+status: closed
 branch: roadmap/RM-2026-018-agent-workflow-and-quality-evidence
 created_at: 2026-11-08
 activated_at: 2026-11-08
-closed_at: null
+closed_at: 2026-11-08
 release_type: fix
 proposed_version: 0.8.1
 quality_groups: docs,tooling,knowledge,delivery,security-source
@@ -184,15 +184,15 @@ their existing behavior; duration alone does not create a new handoff workflow.
 
 ## Current execution state
 
-Implementation points 1–4 are complete; final verification/release remains
-open. The first final quality run failed; repair point 5 is complete and renewed
-final verification at point 6 remains pending. The selected final scope is
-`docs,tooling,knowledge,delivery,security-source`, with mandatory baseline and actual
-prerequisites. The [verification review](../../reviews/RM-2026-018-final-verification.md)
-records current-state documentation/instruction assessment, A–Z coverage ownership,
-preliminary diagnostics, the early management helper build and preserved resources.
-Final automated acceptance, version 0.8.1 finalization, merge/tag/publication are
-pending; preliminary checks are not final acceptance.
+Implementation points 1–4 and repair point 5 are complete. Final verification
+passed all 35 selected checks for candidate `a189ec83307d75533a08a0045451bb198dcf83bf`
+under run `d3a8402a9fd248c4bfea2562c7971770`. Platform release metadata is finalized
+at 0.8.1. The selected scope is `docs,tooling,knowledge,delivery,security-source`,
+with mandatory baseline and actual prerequisites. The
+[pre-verification review](../../reviews/RM-2026-018-final-verification.md) remains
+an immutable pre-gate snapshot; actual final results and limits are recorded below.
+Merge, annotated tag and remote publication follow this closure commit under the
+release workflow; completion is reported in chat rather than editing this record.
 
 ### Evidence-contract finding and proposed decision
 
@@ -362,7 +362,7 @@ frontend acceptance is not applicable; reassess if scope changes.
   - The final coordinator must bind a new clean candidate after substantive
     Python changes; its supported start rebuilds the declared graph rather than
     importing unrelated old statuses. Prior evidence remains retained, not erased.
-- [ ] 6. Final verification, release 0.8.1, merge and final report.
+- [x] 6. Final verification, release 0.8.1, merge and final report.
   - Reassess and record `quality_groups`/`quality_rationale`; preview the exact
     supported graph. Final scope is docs/tooling/knowledge/delivery/security-source with their
     mandatory baseline and real prerequisites. Explain any added heavy group;
@@ -387,3 +387,59 @@ frontend acceptance is not applicable; reassess if scope changes.
     roadmap branch. Preserve all hard gates and historical evidence.
   - Report changed files/contracts, enforcement and remaining limits, actual test
     scope/results, release/merge identity and removed/preserved task resources.
+
+## Final report
+
+RM-2026-018 produces platform 0.8.1 (`release_type: fix`). Owner/customer agent
+instructions enforce established decisions, pre-execution boundaries, truthful
+progress and terminal background handoff. The quality planner and executor place
+selected full backend tests after all other selected checks. The existing native
+result producer and closure validator bind manual recovery evidence to candidate,
+selection, environment, native reports, coverage and bounded retry history without
+automatic retries or rewriting failed executions.
+
+### Verification and repair
+
+- Final selected graph: `docs,tooling,knowledge,delivery,security-source` plus real
+  prerequisites and mandatory baseline; all 35 checks passed with native exit 0.
+- Candidate: `a189ec83307d75533a08a0045451bb198dcf83bf`; run
+  `d3a8402a9fd248c4bfea2562c7971770`, 2026-11-08 19:40:00–19:44:22 UTC,
+  elapsed 262.463 seconds. Evidence: `.runtime/quality/state.json`, runner and
+  per-check logs under `.runtime/quality/`; Python XML under
+  `.runtime/python/reports/`.
+- Full owner Python unit/contracts: 580 passed, 3 deselected in 69.11 seconds.
+  Quality contracts, packaging, strict typecheck, lint, formatting, documentation,
+  live ownership/retrieval/evaluations, security review and configured audit gates
+  passed. The dependency audit reported two moderate pnpm findings within the
+  configured passing threshold; no dependency changes were made.
+- First final run failed on a missing fixture parent directory and strict typing.
+  Inserted point 5 corrected these issues, passed the complete affected Python
+  suite/checks before commit, and the final graph passed on the repaired candidate.
+  Original failures and reports remain under
+  `.runtime/verification/retained/RM-2026-018-failed-20261108T193702Z/`.
+- Backend PHP, browser matrix, native installation/update/deployment and image
+  acceptance were excluded, not PASS. No migrations, database resets, runtime
+  infrastructure, module API/version or application version changes were needed.
+  Pre-1.0 compatibility and the temporary owner SIGSEGV policy remain unchanged.
+
+### Closure review and resources
+
+Current-state procedures and both instruction products were synchronized in their
+owning implementation points; the repair changes no reusable policy or customer
+capability. Release-only closure updates VERSION, matching platform manifest,
+changelog, maintainer README and this roadmap; focused docs/release checks and
+incremental knowledge refresh apply before commit and again on main as required.
+No capability prose or validator behavior is changed after the successful gate.
+
+The live documentation-ownership check removed its disposable Qdrant collection
+and preserved the live collection, volumes/model caches and application data, as
+recorded in its native log. No task-created disposable Docker containers, networks,
+image tags or volumes remain to remove. The active management helper image,
+development/test databases, historical/native reports, backups and shared builder
+caches are preserved. No global cleanup was performed.
+
+The internal clean-worker receipt recognizer is pinned to the verified PHPUnit
+format; a changed upstream report shape is refused and requires review. Native
+PHP fault recovery was covered by deterministic fixtures and retained native data,
+not by reproducing a PHP crash. Publication and merge identities are reported after
+execution without modifying this closed record.

@@ -2,6 +2,21 @@
 
 All release entries are maintained by the agent from roadmap facts.
 
+## [0.8.1] - 2026-11-08
+
+Fix release — RM-2026-018.
+
+- Enforce established agent decisions, execution prerequisites, truthful final
+  progress and immediate handoff after successful background verification launch
+  in owner and customer instructions.
+- Schedule selected full backend testing after every other selected check and
+  block execution until all prerequisites pass.
+- Extend existing native test results with candidate, command, environment and
+  report bindings; validate bounded manual recovery and complete coverage while
+  preserving failed executions and refusing stale or incomplete evidence.
+- Add workflow/recovery regressions and complete execution-state summaries;
+  repair fixture setup and strict Python typing found by final verification.
+
 ## [0.8.0] - 2026-11-08
 
 Feature release — RM-2026-017.
