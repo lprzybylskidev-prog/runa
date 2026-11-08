@@ -8,6 +8,8 @@ activated_at: 2026-11-06
 closed_at: null
 release_type: feature
 proposed_version: 0.8.0
+quality_groups: backend,database,delivery,development,docs,e2e,frontend,installation,knowledge,security-source,tooling,transport,updates
+quality_rationale: 'Changed Core/settings/health and native PHP testing require backend/database; shared UI and reference consumers require frontend/e2e; source projection, module initialization/update contracts require delivery/installation/updates; development fingerprints and retained command aliases require development/transport; guidance, Python tooling and retrieval changes require docs/tooling/knowledge; changed security boundaries require security-source. No Docker/image, production deployment or fixture-composition change justifies containers/security/production/fixture-acceptance; 0.8.0 is not an all-group checkpoint.'
 impact_areas:
   - frontend
   - backend
@@ -21,7 +23,115 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — navigation/actions ready for owner acceptance, 2026-11-08
+## Current execution state — owner accepted; point 12 preparation, 2026-11-08
+
+The owner explicitly accepted the manual review and authorized point 12 in this
+session. Point 11 accepts the current 10x environment documented in the
+[acceptance sheet](../../reviews/RM-2026-017-current-acceptance.md): runtime source
+bb5abb29 and documentation handoff 8d30518b, http://localhost:8080 and
+index-BdXz_X9Q.js. No subsequent UI change or new qualification was requested.
+Point 12 remains open. The exact 13-group graph has been previewed; its declaration
+and heavy-scope rationale are above. No new automated final run or PASS is claimed.
+See the Execution handoff below for the required container-to-host transition,
+preserved historical evidence and remaining prerequisites.
+
+## Execution handoff
+
+### Point 12 — container to native Docker host, 2026-11-08 13:04 UTC
+
+- **Context:** RM-2026-017, point 11 accepted; point 12 preparation remains open.
+  Branch `roadmap/RM-2026-017-platform-quality-and-workflows`, starting HEAD
+  `8d30518b`. The worktree was clean before recording acceptance, scope and this
+  handoff. This documentation-only preparation is committed before transition;
+  obtain its exact HEAD with `git log -1 --oneline` in the receiving session.
+- **Reason:** `/.dockerenv` exists and Docker CLI is absent here. Native
+  `host_executor_host`, `management_host` and installer acceptance require the
+  Docker host. Full filesystem access does not change that execution boundary.
+  Do not start the complete graph inside this container or weaken its selection.
+- **Completed preparation:** explicit owner acceptance recorded against the 10x
+  identity; current knowledge status reports 243 documents / 13,690 chunks, no
+  stale/missing/orphan/pending state; current-intent retrieval was source-verified
+  against the release/quality workflow. Reviewed the supported 13-group graph
+  including native parallel backend, complete owner browser suite, strict AI,
+  dependency/source security and real isolated acquisition/update/transport work.
+  No broad test suite, final gate, new security attestation or release has run.
+- **Evidence continuity:** `.runtime/quality/state.json` is an interrupted
+  RM-2026-016 run at `da1d6b06aa1feabc42ee189eda2cb5dd463ece58`, not evidence
+  for this candidate. Its native state/logs and old security/endpoint metadata
+  are copied unchanged under
+  `.runtime/verification/retained/RM-2026-017-before-point12-20261108T130443Z/`,
+  with `provenance.json` and the exact `point12-plan.txt`. Original files remain.
+  Old source-security evidence belongs to RM-2026-016 and must not be reused.
+- **Environment:** `/workspace` is only the container checkout. Native host path
+  is unverified. Configured Compose files are `compose.yaml` and
+  `.devcontainer/compose.resources.yaml`; old endpoint metadata says project
+  `runa-dev`, run `454f8f080fc946efb9fad9d86e33c264`. This is not a live Docker
+  ownership inspection. No matching test/coordinator process was observed in
+  this container. Native Docker resources/locks/journals still require inspection.
+  Keep the working application and optional knowledge services running; do not
+  recreate the app or bootstrap/reset data merely for this transition.
+
+**Receiving-session procedure:** use **Dev Containers: Reopen Folder Locally**,
+then verify the actual checkout before dependent work:
+
+```sh
+pwd
+git status --short --branch
+docker compose -f compose.yaml -f .devcontainer/compose.resources.yaml ps
+```
+
+Confirm this branch/committed handoff, native Docker/Compose/Python/Git availability,
+actual service identities and safe test-resource state. Follow
+[editor transitions](../../../handbook/development/editor-and-agents.md#moving-work-between-container-and-host)
+and [test resource lifecycle](../../../handbook/testing/strategy.md#test-resource-lifecycle).
+Do not assume the host checkout is `/workspace`. Inspect inherited endpoint run
+ownership and supported cleanup/recovery before any competing browser run.
+
+**Remaining pre-gate work:** complete the source review of current documentation,
+instruction products, public signatures/versions, commands and environment/delivery
+claims; perform the actual changed-surface security review and bind its new report
+through the existing `.runtime/security-review.json` contract. The existing
+attestation is stale and cannot satisfy the selected security gate. One source
+review discrepancy to resolve is the owner testing guide's Local commands table,
+which still labels `runa:test` as backend-only while the public commands guide
+documents the aggregate default. Assess it against current code and use a fix
+point for a confirmed correction. Any substantive repair follows the normal
+fix/evidence-continuity procedure; repeat owner acceptance only for affected UI.
+No new reusable instruction rule is introduced by this acceptance/handoff, so
+owner/customer instruction products require no edit for this preparation itself.
+
+Record the completed source review, final candidate and native prerequisite state,
+commit coherent preparation, refresh knowledge incrementally after staging changed
+durable sources, and preview the same exact graph again before launching:
+
+```sh
+python3 tools/maintainer/quality-plan --group=backend --group=database --group=delivery --group=development --group=docs --group=e2e --group=frontend --group=installation --group=knowledge --group=security-source --group=tooling --group=transport --group=updates
+python3 tools/maintainer/quality-roadmap --group=backend --group=database --group=delivery --group=development --group=docs --group=e2e --group=frontend --group=installation --group=knowledge --group=security-source --group=tooling --group=transport --group=updates --background
+```
+
+End the turn after a successful background launch; later inspect
+`python3 tools/maintainer/quality-status`. Never launch before the prerequisites
+above are complete. Owner suite commands do not establish application reference
+coverage: also obtain complete supported `./bin/artisan runa:test --scope=backend --parallel`
+and `./bin/artisan runa:test:frontend` results, with native reports, real prerequisites
+and safe cleanup, separately from owner results. Retain valid unrelated evidence
+and use supported individual checks for unresolved scope after failures.
+
+**Scope/return:** the graph includes 13 groups plus mandatory/transitive checks.
+Containers, image-scanning security, production deployment and fixture-composition
+qualification are excluded, not PASS; the rationale is in frontmatter. Native
+installation/update acceptance is justified by changed initializers, framework/API
+contracts and customer projection. Native transport is justified by retained alias
+targets/removals and command integration; development by changed startup input
+fingerprints. No all-group checkpoint is due at 0.8.0. Final reporting, scoped
+resource cleanup, verified closure/release metadata, main sanity, tag/publication
+and branch cleanup remain open. No resources were removed; all development/base
+test data, accounts/credentials/settings, caches/Qdrant/models, backups/recovery
+state and evidence are preserved. Reopening locally is safe with configured
+`shutdownAction: none`; returning to the container follows host result/cleanup
+review and an update of this same handoff.
+
+## Historical execution state — navigation/actions ready for owner acceptance, 2026-11-08
 
 **Points 1–10x are complete; explicit owner acceptance 11 remains open.** Source
 bb5abb29 puts the reference landing first, gives known Auth single/bulk families
@@ -2086,7 +2196,7 @@ below are retained as historical records only.
     have no overflow/page error. No full-suite/release or owner acceptance claim,
     storage reset, business write or Docker resource change.
 
-- [ ] 11. Owner manual frontend acceptance (penultimate point).
+- [x] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
   - **Preconditions:** completed implementation/review/readiness, including 10k–10x,
     matching current assets/data and usable authorized application, acceptance sheet supplied.
@@ -2108,6 +2218,10 @@ below are retained as historical records only.
   - **Boundaries/documentation:** use supported runtime preparation and public
     security flows, not bypass credentials/guards. Preserve existing data. No final
     automated broad gate is claimed by this manual checkpoint.
+  - **Owner result, 2026-11-08:** explicitly accepted the manual review and
+    authorized final verification. Accepted environment/source/assets are recorded
+    in the current execution state and acceptance sheet. No new exception to
+    automated, security, cleanup or release gates was requested or inferred.
 
 - [ ] 12. Final automated verification, retained report, cleanup and release closure.
   - **Objective:** verify the complete agreed affected-area scope and finalize 0.8.0.

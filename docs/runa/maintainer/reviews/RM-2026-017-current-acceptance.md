@@ -1,12 +1,21 @@
 # RM-2026-017 current owner acceptance scenarios
 
-**Ready for repeated owner acceptance (point 11):** 10w corrects reference menu
+**Owner accepted point 11 on 2026-11-08 and authorized point 12.** The explicit
+result covers the current 10x environment below: runtime bb5abb29, documentation
+handoff 8d30518b, http://localhost:8080 and index-BdXz_X9Q.js. No new qualification
+or UI repair was requested. Automated final checks, cleanup and release remain
+open; any subsequent UI change requires renewed affected acceptance.
+
+The accepted scenario sheet follows. Its readiness-time pending statements retain
+their original evidence limits; the owner result above now completes point 11.
+
+**Readiness supplied for repeated acceptance:** 10w corrects reference menu
 order, semantic Auth action icons and false departing-document warnings; current
 assets and actual readiness are renewed in 10x. See [current evidence](RM-2026-017-navigation-actions.md#renewed-actual-readiness--10x).
 Earlier [settings layout](RM-2026-017-application-settings-layout.md) and
 [health correction](RM-2026-017-health-readiness.md) records retain their exact older
 asset identities and valid unrelated evidence. Only your explicit manual result
-completes 11; full automated verification/release remains 12.
+completes 11; that result is recorded above. Full automated verification/release remains 12.
 
 ## Preconditions and identity
 
