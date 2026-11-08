@@ -4,6 +4,10 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Keep module dashboard widgets out of application settings through the operations
+  dashboard slot. Group application identity/default preferences/additional fields,
+  use named compact reset actions and retain one guarded settings form/controller.
+
 - Separate module health observation freshness from operation generation. Still-valid
   unchanged successful renewals preserve concurrent admissions while registry caches
   receive current evidence. Preserve hard fences for failures, expiry, policy and

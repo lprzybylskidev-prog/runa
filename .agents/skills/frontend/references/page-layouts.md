@@ -32,7 +32,8 @@ dirty-draft, explicit retry and native pending/recovery semantics in App composi
 
 For application settings and runtime branding composition, follow
 `docs/runa/handbook/modules/admin/frontend.md#application-global-settings-and-runtime-branding`
-and its owning settings contract. Use public App registration/adapters and shared
+and its owning settings contract. Dashboard content uses the operations renderer's
+named dashboard slot and stays out of application settings. Use public App registration/adapters and shared
 controllers; preserve canonical identity and technical/source policy ownership.
 
 For password confirmation before protected entry or a sensitive operation, use the public Auth

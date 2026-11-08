@@ -1450,7 +1450,7 @@ it('application branding fences pending file preparation on account loss', async
   expect(settings.previewImage('logo')).toBeUndefined();
 });
 
-it('application settings use one main heading, bounded fields and adjacent restore buttons', async () => {
+it('application settings group identity and defaults with named compact restore controls', async () => {
   window.history.replaceState({}, '', '/admin?section=application');
   vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
     String(input).endsWith('/capabilities')
@@ -1476,10 +1476,18 @@ it('application settings use one main heading, bounded fields and adjacent resto
   ).toBe(false);
   const buttons = w
     .findAll('button')
-    .filter((button) => button.text() === 'Restore defaults');
+    .filter((button) =>
+      button.attributes('aria-label')?.startsWith('Restore defaults:'),
+    );
   expect(buttons).toHaveLength(6);
+  expect(w.findAll('legend').map((legend) => legend.text())).toEqual([
+    'Application identity',
+    'Default preferences',
+  ]);
   for (const button of buttons) {
     expect(button.attributes('aria-label')).toContain('Restore defaults:');
+    expect(button.text()).toBe('');
+    expect(button.attributes('title')).toBe(button.attributes('aria-label'));
     expect(
       button.element.parentElement?.querySelector(
         'input,button[aria-haspopup="dialog"]',
@@ -1591,4 +1599,36 @@ it('application settings retry failed reads without duplicate parent notificatio
     expect(w.find('input[type=file]').exists()).toBe(true),
   );
   expect(document.querySelectorAll('.app-toast')).toHaveLength(0);
+});
+
+it('dashboard contributions leave application settings and return with the Modules subview', async () => {
+  vi.spyOn(window, 'fetch').mockImplementation(async (input) =>
+    String(input).endsWith('/capabilities')
+      ? response({ capabilities: [] })
+      : response(brandingState()),
+  );
+  const w = mount(AdminOperations, {
+    props: { admin: admin() },
+    slots: {
+      dashboard: () =>
+        h('div', { 'data-test-dashboard-widget': '' }, 'Module widget'),
+    },
+    attachTo: document.body,
+  });
+  await vi.waitFor(() =>
+    expect(w.find('[data-test-dashboard-widget]').exists()).toBe(true),
+  );
+  const link = (label: string) =>
+    w.findAll('button').find((button) => button.text() === label)!;
+  await vi.waitFor(() => expect(link('Application settings')).toBeDefined());
+  await link('Application settings').trigger('click');
+  await vi.waitFor(() =>
+    expect(w.find('input[type="file"]').exists()).toBe(true),
+  );
+  expect(w.find('[data-test-dashboard-widget]').exists()).toBe(false);
+  await link('Modules').trigger('click');
+  await vi.waitFor(() =>
+    expect(w.find('[data-test-dashboard-widget]').exists()).toBe(true),
+  );
+  expect(w.find('input[type="file"]').exists()).toBe(false);
 });

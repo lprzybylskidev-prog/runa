@@ -21,7 +21,14 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10t complete, ready for owner acceptance, 2026-11-08
+## Current execution state — owner manual feedback, settings repair in progress, 2026-11-08
+
+The owner reports that the reference dashboard widget appears in application settings
+and requests a clearer settings layout. Points 10u–10v repair and renew that affected
+acceptance before point 11. The prior 10t candidate remains recorded below; it does
+not certify the new presentation. Approved feature/0.8.0 and current candidates stay.
+
+## Historical execution state — point 10t complete, ready for owner acceptance, 2026-11-08
 
 **Points 1–10t are complete. Point 11 awaits the owner's explicit manual result.**
 The committed owning health correction is bff56568. Renewed operational builds and
@@ -1980,9 +1987,35 @@ below are retained as historical records only.
     initial guest/proof refusals and old failed evidence. Native doctor passes.
     No full-suite, owner-acceptance or release PASS. Existing storage/resources remain.
 
+- [x] 10u. Correct dashboard widget scope and application settings layout.
+  - **Owner request, 2026-11-08:** the reference widget belongs on the dashboard,
+    not application settings; replace the unattractive flat settings layout.
+  - Let the operational dashboard own placement through its optional dashboard
+    content slot; isolate widget rendering as existing module-owned contributions.
+    Preserve custom operations/default-slot composition and standalone widget use.
+  - Group application identity, language/theme/timezone defaults and any additional
+    source-declared fields in shared FormSection within the existing single Card/Form.
+    Use named compact restore controls, bounded previews and responsive layout.
+    Preserve one controller, grants, validation, drafts/conflicts, proof and write lane.
+  - Synchronize public composition/layout guidance, reference narrative, instruction
+    product assessment and version assessment. Run only bounded source diagnostics;
+    commit before renewed operational readiness 10v. Full suites remain point 12.
+  - **Result:** [source correction and focused evidence](../../reviews/RM-2026-017-application-settings-layout.md).
+    Widget placement follows the reactive subview through the additive dashboard
+    slot; one form groups authorized fields with compact named resets. Four focused
+    Chromium cases pass, exit 0 / cleanup 0. Current assets/actual readiness await 10v;
+    no owner acceptance, full-suite PASS, backend/schema or candidate-version change.
+
+- [ ] 10v. Renew application settings and dashboard manual readiness.
+  - Build current assets after committed 10u. Observe actual Nginx dashboard/settings
+    navigation, direct settings entry, PL/EN/light/dark/mobile, restore/refresh/draft
+    behavior and absence of dashboard widgets in settings. Preserve existing data.
+  - Record current source/assets, bounded evidence and refresh the owner sheet;
+    repeat affected manual acceptance in 11. Full verification/release remains 12.
+
 - [ ] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.
-  - **Preconditions:** completed implementation/review/readiness, including 10k–10t,
+  - **Preconditions:** completed implementation/review/readiness, including 10k–10v,
     matching current assets/data and usable authorized application, acceptance sheet supplied.
   - **Deliverables:** concrete clickable URLs derived from the current environment
     and actual route/page declarations; what to inspect per view; relevant roles/

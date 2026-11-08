@@ -123,6 +123,9 @@ readiness, read cancellation, errors and disposal. Customers can edit this examp
 or replace the section through the documented Admin presentation provider, retaining
 one form controller. `response_widget.vue` accepts public `{widget: AdminWidgetData}`;
 it renders only available response values and uses the shared Admin locale.
+The widget appears on the Admin Modules dashboard only, including after returning
+from application settings. It is not part of the global application settings form;
+the owning module pages and standalone response panel retain their own placement.
 
 The standalone `panel.vue` keeps `{locale?: 'pl'|'en'}` (Polish default) and exposes
 a default slot `{busy:boolean, message:string, load:()=>Promise<void>}` for response

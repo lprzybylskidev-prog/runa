@@ -729,6 +729,7 @@ defineExpose({ controller });
           </ContentLoading>
         </section>
       </template>
+      <slot v-if="!applicationSettings" name="dashboard" />
     </div>
     <Dialog
       :model-value="!!selected && !applicationSettings && capabilitiesReady"

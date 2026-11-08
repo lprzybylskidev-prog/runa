@@ -33,3 +33,8 @@ visibility contract; disabled capabilities and empty wrappers are omitted.
 Follow `docs/runa/handbook/ai/skills-policy.md#shared-point-workflow` for source
 ownership, instruction products and verification timing. Rendered behavior remains
 acceptance truth. Customer application authority never permits protected edits.
+
+For Admin dashboard/settings replacements, follow
+`docs/runa/handbook/modules/admin/frontend.md#operational-dashboard-and-replacements`.
+Forward the public dashboard slot in its own subview; retain the shared settings
+controller and do not copy or edit private platform renderers.

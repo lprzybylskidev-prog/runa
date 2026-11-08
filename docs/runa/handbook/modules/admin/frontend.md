@@ -896,8 +896,16 @@ guides. No security/session ownership moves into customer presentation.
 `AdminOperationView`, `AdminOperationCommand` and `AdminOperationData`.
 The dashboard composes operational content alongside independently isolated module
 widgets. `AdminOperations` props: `{ admin: AdminController }`; default slot:
-`{ controller: AdminOperationsController }`. The component exposes `controller`.
-`AdminPresentation.operations?: Component` replaces that default with the same prop.
+`{ controller: AdminOperationsController }`. Its optional named `dashboard` slot
+has no slot props and supplies module widget content on the Modules subview only.
+Application settings never render that slot. The component exposes `controller`.
+`AdminPresentation.operations?: Component` replaces that default with the same prop
+and named dashboard slot; App replacements place that slot in their dashboard body.
+The default scoped slot still replaces the complete operations presentation.
+These platform-owned runtime composition APIs live in the Admin frontend and are
+consumed through `@/runa/admin`; widget renderers retain their existing props and
+independent failure boundaries. A standalone dashboard without an admin controller
+continues to render its supplied widgets.
 
 `AdminOperationResult` accepts `{ result: AdminOperationData }`. Diagnostic outcomes
 use semantic health/blocked colors and safe reasons without redundant module identity;
@@ -967,6 +975,12 @@ its exposed `settings` is the same controller. Replace it through
 `useAdminApplicationSettings(operations: AdminOperationsController)` once in an
 App-owned component. All symbols/types are exported from `@/runa/admin`.
 Source home: `src/runa/modules/admin/frontend`; App replacements stay in App.
+The supplied application editor groups authorized identity, default preferences and
+additional source fields with FormSection inside its single Card/Form. Empty groups
+are omitted. Compact per-field restore actions retain localized names; refresh/save
+share the footer. Module dashboard widgets belong to Modules and are absent from
+this settings editor. Field/widget helpers remain private rendering components;
+replacement consumers retain the public controllers and slot contracts above.
 
 The controller returns `operations`, `revision: Ref<number>`,
 `fields: ShallowRef<AdminApplicationSetting[]>`, `base/draft: Ref<Record<string,
