@@ -21,7 +21,19 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — owner manual feedback, settings repair in progress, 2026-11-08
+## Current execution state — settings repair ready for owner acceptance, 2026-11-08
+
+**Points 1–10v are complete; owner acceptance 11 remains open.** Committed source
+9ed1b543 restricts module widgets to Modules and groups application settings with
+named compact resets. Four focused Chromium cases pass. Current assets are rebuilt;
+actual Nginx navigation/direct entry, draft refresh/reset, PL/EN/light/dark/mobile
+observations pass with no configuration writes, page overflow or unexpected refusal.
+See [layout readiness](../../reviews/RM-2026-017-application-settings-layout.md#renewed-actual-readiness--10v)
+and the [current owner sheet](../../reviews/RM-2026-017-current-acceptance.md).
+Previous 10t evidence retains its older source/assets. Full verification/release
+remains 12 after explicit owner acceptance; candidate versions/data stay preserved.
+
+## Historical execution state — owner manual feedback, settings repair in progress, 2026-11-08
 
 The owner reports that the reference dashboard widget appears in application settings
 and requests a clearer settings layout. Points 10u–10v repair and renew that affected
@@ -2006,12 +2018,18 @@ below are retained as historical records only.
     Chromium cases pass, exit 0 / cleanup 0. Current assets/actual readiness await 10v;
     no owner acceptance, full-suite PASS, backend/schema or candidate-version change.
 
-- [ ] 10v. Renew application settings and dashboard manual readiness.
+- [x] 10v. Renew application settings and dashboard manual readiness.
   - Build current assets after committed 10u. Observe actual Nginx dashboard/settings
     navigation, direct settings entry, PL/EN/light/dark/mobile, restore/refresh/draft
     behavior and absence of dashboard widgets in settings. Preserve existing data.
   - Record current source/assets, bounded evidence and refresh the owner sheet;
     repeat affected manual acceptance in 11. Full verification/release remains 12.
+  - **Result:** [renewed actual readiness](../../reviews/RM-2026-017-application-settings-layout.md#renewed-actual-readiness--10v).
+    Supported assets rebuilt from 9ed1b543. Current SPA index-Dd2HJQm4.js matches
+    actual browser entry. Nginx widget scope/navigation/direct settings entry,
+    refresh/dirty/reset and PL/EN/light/dark/mobile pass; no configuration writes,
+    page overflow/errors or unexpected refusal. Owner acceptance remains open;
+    no full-suite/release claim, storage reset or Docker resource change.
 
 - [ ] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.

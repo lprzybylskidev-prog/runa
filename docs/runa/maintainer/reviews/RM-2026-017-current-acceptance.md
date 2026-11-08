@@ -1,12 +1,11 @@
 # RM-2026-017 current owner acceptance scenarios
 
-**Ready for owner acceptance (point 11):** the health-publication/admission
-correction is committed and renewed 10t preparation succeeds. The
-[current readiness evidence](RM-2026-017-health-readiness.md) records actual
-concurrent reference/session/Admin requests, current assets and preserved data.
-The earlier [icon readiness stop](RM-2026-017-icon-readiness.md) remains historical
-evidence. Only your explicit manual result completes 11; full automated
-verification/release remains 12. Prior 10i/10r screenshots identify older source.
+**Ready for repeated owner acceptance (point 11):** the widget/settings-layout
+feedback is corrected in 10u, with current assets and actual readiness renewed in 10v.
+See [current layout evidence](RM-2026-017-application-settings-layout.md#renewed-actual-readiness--10v).
+The earlier [health correction readiness](RM-2026-017-health-readiness.md) retains
+its exact older asset identity and valid backend evidence. Only your explicit
+manual result completes 11; full automated verification/release remains 12.
 
 ## Preconditions and identity
 
@@ -16,22 +15,34 @@ Admin entry uses the native full-page password confirmation. No password reset,
 substitute credential or guard bypass is needed. Safe account discovery remains
 `php artisan runa:seed:accounts`; credentials stay private.
 
-Runtime source: `bff56568eeaac9128e8390fe3047f79a8d3eb4f9` plus the documentation-only
-10t handoff commit. Platform VERSION remains 0.7.0, approved feature projection 0.8.0;
+Runtime source: `9ed1b543d8960a0dbda5b020f6b647384b0d9575` plus the documentation-only
+10v handoff commit. Platform VERSION remains 0.7.0, approved feature projection 0.8.0;
 Framework API 2.1.0. Installed/source versions match: Admin 2.0.0, Auth 6.0.1,
 Audit 1.1.2, Permissions 2.1.2 and reference 0.4.1. Current development SPA entry:
-`/build/assets/index-B-Ok1op7.js`. Exact build hashes are in the linked review.
+`/build/assets/index-Dd2HJQm4.js`. Exact build hashes are in the linked review.
 In 10r both identified development/test reference sample tables and their installation
 provenance were rebuilt; each now contains the current `welcome` example. Existing
 accounts, credentials, settings, enabled flags and Core history were preserved.
 The 10s2 repair reconstructed only the identified registry singleton in each base,
 preserving generation/metadata and checked account/settings/reference counts;
-10t performs no further storage reset or account/credential change.
+10t/10u/10v perform no further storage reset or account/credential change.
 
 The [Core matrix](../../../app/modules/reference/core-capabilities.md) owns source/API/test
 links and noninteractive exclusions. Reference grants have prefix `app.reference.`;
 source synchronization never assigns them. Native Admin requires `runa.admin.enter`.
 Use existing authorized access; inspect restricted states in prepared isolated fixtures.
+
+## Dashboard and application settings layout
+
+On [Modules](http://localhost:8080/admin), the reference widget belongs below the
+module catalogue. Switch to [application settings](http://localhost:8080/admin?section=application):
+the widget must disappear, including on direct entry/reload, and return on Modules.
+Inspect grouped application identity/default preferences, compact named reset
+controls and the shared refresh/save action row in PL/EN, light/dark and narrow
+layouts. Additional source settings form their own nonempty group when supplied.
+Edit the name without saving, explicitly refresh and check that the draft survives.
+Reset restores the source default locally; saving still follows the native proof
+and revision workflow. Cancel/discard your temporary draft before leaving.
 
 ## Health renewal during ordinary use
 

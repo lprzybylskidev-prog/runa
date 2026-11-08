@@ -46,3 +46,45 @@ other module candidates need no further increment. No dependency, backend/schema
 configuration or data change is introduced. Platform stays 0.7.0 with approved
 feature/0.8.0 projection. Current assets and actual UI readiness are recorded in 10v,
 not inferred from these source checks. Only the owner accepts the rendered result.
+
+## Renewed actual readiness — 10v
+
+Runtime source `9ed1b543d8960a0dbda5b020f6b647384b0d9575` is committed. Supported
+operational preparation passes: `pnpm --dir src run build`, development-mode Vite
+build and standalone native-error finalization, each exit 0. Existing chunk-size
+and ineffective-dynamic-import warnings remain recorded. These builds prepare the
+manual runtime; they do not constitute full frontend/backend/release verification.
+Unchanged backend/services/storage retain their prior 10t diagnostic evidence;
+actual current login, password confirmation and application settings API succeed.
+
+The bounded real Nginx browser observation exits 0. It confirms the reference
+widget on Modules, its absence after switching to application settings, its return
+on Modules and absence on direct `/admin?section=application` entry. The settings
+form exposes the two nonempty localized groups; source extension fields retain
+coverage in the focused readonly/default test. Explicit refresh returns HTTP 200
+and retains a dirty name draft; restoring the name to its source default works
+without a configuration write. The unchanged final draft disables Save. Browser
+observation sends zero application configuration writes and preserves existing data.
+
+Desktop 1440px/light and mobile 390px/dark were observed in PL and EN; direct desktop
+dark entry was also observed. No horizontal page overflow, page error or unexpected
+API refusal occurs. The existing guest 401 and initial step_up_required/403 remain
+expected and are followed by successful native entry. Desktop/mobile screenshots
+were visually inspected. The owner must repeat affected acceptance; these agent
+observations do not accept the design on the owner's behalf.
+
+Current SPA is `/build/assets/index-Dd2HJQm4.js`; index SHA-256:
+`0ae079af07cd0451fef22affde9391af28a70867c48d0e278f72ebbb94be73e6`.
+Source/branch/time and full asset/native-error hashes are retained in
+`.runtime/artifacts/playwright/RM-2026-017-point10v/build-identity.json`.
+The same directory owns settings-layout.json, the runnable browser observation and
+PL/EN desktop/mobile screenshots. Build/browser logs live under
+`.runtime/dev/RM-2026-017-10v/`. Older 10t evidence remains unchanged and identifies
+its own older assets. No database/module update, grant or credential change,
+Docker resource creation/deletion or host transition occurs. Existing volumes,
+base test/development data, model/Qdrant caches, backups and reports remain;
+the browser context and supported focused runner shut down their own processes.
+
+The current acceptance sheet now identifies this candidate and both dashboard /
+application-settings URLs. Point 11 remains open; full automated verification,
+security/AI gates, release and merge remain point 12 after owner acceptance.
