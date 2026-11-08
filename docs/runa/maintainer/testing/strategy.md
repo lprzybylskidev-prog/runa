@@ -436,16 +436,28 @@ Both tests are selected by tooling quality gates, with the real host acceptance 
 
 `CompositionTest` verifies src base/config/database/namespace paths, protected database command registration, route ownership, customer config merging and identical-name file/cache isolation between application and Runa. Existing DB/seeding/queue/health/mail/error/localization tests use the same technical schemas and isolated test identity after namespace relocation. Test worker storage remains outside the development storage tree; E2E still honors LARAVEL_STORAGE_PATH. Platform tests live under tests/backend/runa; tests/backend/app has the customer Pest contribution and separate ApplicationTests autoload namespace. Run wrappers from the repository root; they select src. Native Artisan and the application wrapper select ../tests/backend/app directly; direct Pest uses --test-directory=../tests/backend/app. There is no src/tests directory or forwarding bootstrap. Owner bootstrap and fixture discovery are selected exclusively by the maintainer backend runner.
 
-### Native Pest parallel transport
+### Native PHP command integration
 
-`php artisan test --parallel --processes=2` keeps the application PHP scope and
-shared TestRun lock/worker cleanup. Its adapter passes the central test root to
-Pest before Pest delegates to ParaTest; Collision's separate early ParaTest option
-parser does not support Pest's test-directory flag. Sequential/PHPUnit commands
-continue composing Collision. Both paths retain literal arguments, native exits,
-TTY selection and guarded testing environment; Laravel parallel/cache flags remain
-explicit child inputs. This is a fixed transport to the installed engine, not a
-second scheduler or a reason to bypass the supported command.
+`php artisan test` and its `--parallel --processes=2` mode use one Runa-owned
+Pest process transport with the application configuration/root. PHPUnit classes
+run through Pest's PHPUnit engine. Collision's Laravel command is neither
+composed nor invoked; its registered command identity resolves directly to the
+Runa command. Its installed printer/exception package remains available.
+See the public [native execution contract](../../handbook/testing/strategy.md#concurrency-and-acceptance)
+for flags, literal CLI input, coverage, TTY, signals and guarded lifecycle.
+The shared Python owner/application runner retains its existing layouts, reports
+and lifecycle; no native command calls that already-locked wrapper.
+
+`NativeTestCommandTest` covers forwarding, serial/parallel environment, config
+selection, discovery, non-CLI/config/lock refusals, failures, cleanup and signals
+against isolated subprocess fixtures. For bounded real-engine parity, invoke
+`php src/artisan test --without-tty --configuration=../tests/backend/runa/Fixtures/native-command/phpunit.xml`
+from the repository root, then repeat with `--parallel --processes=2`.
+This private fixture contains one Pest contribution and one PHPUnit class and
+runs through the supported command/lock/cleanup. It is excluded from ordinary
+application discovery and customer delivery. These two cases do not replace
+complete suites or establish production/coverage-driver acceptance. The manual
+SIGSEGV evidence/acceptance procedure above is unchanged.
 
 ### Browser geometry precision
 

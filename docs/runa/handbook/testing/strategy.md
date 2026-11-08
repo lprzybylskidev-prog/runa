@@ -69,7 +69,7 @@ reports retain their established paths. Setup/reopen never executes these suites
 
 ## PHP
 
-Native `php artisan test` and `php artisan runa:test:backend` select src/phpunit.xml and tests/backend/app/Feature and Unit. Pest and PHPUnit are available. Standard make:test writes tests/backend/app/Feature or Unit; Tests\TestCase in src/runa/Testing/TestCase.php supplies reusable guarded application isolation. The Pest contribution lives in tests/backend/app/Pest.php. Native Artisan uses the development-only Runa adapter to select that root, and the application wrapper passes the same explicit root/configuration. Direct Pest execution from src uses `vendor/bin/pest --test-directory=../tests/backend/app`; bare Pest retains its upstream tests-directory default. The obsolete src/tests directory is absent. The common testing namespace is dev-only Composer autoload, excluded from production images. Customer test setup never invokes owner migration tools or discovers platform tests; fresh parallel worker databases receive forward-only technical preparation from the delivered primitive before application migrations.
+Native `php artisan test` and `php artisan runa:test:backend` select src/phpunit.xml and tests/backend/app/Feature and Unit. Pest and PHPUnit are available. Standard make:test writes tests/backend/app/Feature or Unit; Tests\TestCase in src/runa/Testing/TestCase.php supplies reusable guarded application isolation. The Pest contribution lives in tests/backend/app/Pest.php. Native Artisan uses the development-only Runa command to select that root, and the application wrapper passes the same explicit root/configuration. Direct Pest execution from src uses `vendor/bin/pest --test-directory=../tests/backend/app`; bare Pest retains its upstream tests-directory default. The obsolete src/tests directory is absent. The common testing namespace is dev-only Composer autoload, excluded from production images. Customer test setup never invokes owner migration tools or discovers platform tests; fresh parallel worker databases receive forward-only technical preparation from the delivered primitive before application migrations.
 
 Development installation and `runa:dev:initialize` explicitly prepare platform data in both the development database and the isolated base `runa_test` database through the forward-only platform preparation primitive. Application test execution then applies only application-owned migrations. After platform updates, refresh the development clone through initialization before running native application tests.
 
@@ -131,11 +131,25 @@ This recovery does not authorize routine broad testing during implementation.
 
 ## Concurrency and acceptance
 
-The runa:test* wrappers and native php artisan test share a nonblocking checkout suite lock and forward child failure codes. Native sequential/PHPUnit testing composes Collision and restores its scoped raw-argv
-adaptation on every exit. Native Pest parallel testing invokes the same installed
-Pest engine with the application test root, preserving Laravel parallel flags,
-terminal behavior and native exits through the shared lock/cleanup lifecycle.
+The runa:test* wrappers and native php artisan test share a nonblocking checkout
+suite lock and forward child failure codes. The Runa native command launches the
+pinned Pest engine for both serial and parallel execution, including PHPUnit test
+classes. It reads literal Symfony CLI input without changing global argv or
+composing Collision's Laravel command. Pest owns native printing, profiling,
+coverage and ParaTest; Runa owns the application root and guarded lifecycle.
 Use `php artisan test --parallel --processes=2` to select two PHP workers.
+Native filters, paths, configuration, groups/suites and reports pass through as
+literal arguments. An explicit `--configuration`/`-c` or `--no-configuration`
+replaces the default configuration. Use `--coverage --min=80` for native coverage
+and its threshold; a missing driver remains a native failure. `--compact` and
+`--profile` use Pest's installed printer. Unsupported combinations/options retain
+the native refusal. `--ansi`/`--no-ansi` select native colors; `--without-tty`
+disables terminal attachment. Parent SIGINT/SIGTERM is forwarded to the child;
+interruption/signal exits retain 128+signal status and guarded cleanup.
+Laravel parallel database/cache flags remain explicit child environment inputs.
+Artisan `--env` never changes the required isolated testing identity. Native test
+execution requires CLI input; programmatic ArrayInput calls are refused. Artisan
+help/version retain the framework's own read-only behavior.
 Cleanup children discard keys inherited from the development environment before
 loading `.env.testing`; environment parser diagnostics never expose file values.
 Read-only native discovery (list-tests, list-tests-xml, list-suites and list-groups) does not acquire the lock or clean databases. Direct Pest/PHPUnit runners bypass lifecycle protection; use supported runners for execution. Cached application config must be cleared before backend test execution so .env.testing remains effective.

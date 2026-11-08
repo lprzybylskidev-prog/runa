@@ -97,3 +97,9 @@ distributed defaults.
 Native test execution and supported test wrappers share the suite lock and guarded
 worker cleanup. Use the [test resource lifecycle](../../../../docs/runa/handbook/testing/strategy.md#test-resource-lifecycle);
 read-only discovery is exempt, while direct runners bypass protection.
+
+Native `php artisan test` uses the pinned Pest engine for serial and parallel
+execution, including PHPUnit classes. Use the public
+[native execution contract](../../../../docs/runa/handbook/testing/strategy.md#concurrency-and-acceptance)
+for literal CLI input, supported flags, coverage, signals and guarded cleanup;
+do not adapt global argv or invoke Collision's internal Laravel test command.

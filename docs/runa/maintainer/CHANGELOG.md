@@ -4,6 +4,11 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Replace native Artisan testing's global argv adaptation and split Collision/Pest
+  launch paths with one Runa-owned Pest command for serial/parallel execution and
+  PHPUnit classes. Preserve literal native options, guarded lifecycle, discovery,
+  terminal output, signal/failure exits and explicit Laravel worker flags.
+
 - Add bounded native json Management fields (Framework API 2.1.0) and strict
   declaration/projection/frontend validation. Replace encoded snapshot/Auth reads
   and preference delivery writes with native lists/maps; remove matching decoders.

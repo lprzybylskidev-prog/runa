@@ -141,7 +141,11 @@ Run application backend, frontend and tooling tests by default. Repeated
 for native options, for example `runa:test --scope=backend --parallel`.
 `runa:test:backend` remains PHP-only; `runa:test:python` discovers application Python
 tests and accepts `--path=tests/tools/app/test_example.py`, `--marker=...`
-and `--collect-only`. Native `php artisan test` remains PHP-only. See
+and `--collect-only`. Native `php artisan test` remains PHP-only and launches the pinned Pest engine
+for both serial and parallel modes, including PHPUnit classes. Native
+`--filter`, `--configuration`/`-c`, coverage/report flags, `--compact` and `--profile`
+retain engine parsing and refusals. Use `--coverage --min=80` for its coverage
+threshold, and `--without-tty` for piped execution. See
 [application testing](../testing/strategy.md) for authored roots, public support,
 empty/failure semantics, reports and guarded cleanup.
 

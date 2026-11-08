@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../src/vendor/phpunit/phpunit/phpunit.xsd" bootstrap="../../../../../src/vendor/autoload.php" cacheDirectory="../../../../../.runtime/phpunit-native-command" failOnWarning="true" failOnRisky="true" failOnDeprecation="true">
+    <testsuites><testsuite name="NativeCommandParity"><directory>.</directory></testsuite></testsuites>
+</phpunit>

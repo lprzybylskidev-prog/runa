@@ -21,7 +21,24 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10o completed, 2026-11-08
+## Current execution state — point 10p completed, 2026-11-08
+
+**Points 1–10p are complete. Point 10q is next; 10q–10r remain open.** Native
+Artisan PHP testing now uses one Runa-owned Pest launch for serial and parallel
+execution, including PHPUnit classes. Global argv adaptation and Collision command
+composition are removed. Native options/output/exits, guarded TestRun lifecycle,
+read-only discovery and explicit Laravel child flags remain.
+
+The [native integration review](../../reviews/RM-2026-017-native-test-integration.md)
+records the pre-implementation contract, owning design, source/flag parity,
+20 focused command cases (82 assertions), actual Pest/PHPUnit parity in serial and
+two-process modes (2 cases each), expected native refusal and failed attempts.
+No dependency, module/API version, database/ledger or installed runtime change is
+introduced. Platform stays 0.7.0 / approved feature-0.8.0. No complete suite,
+coverage-driver/TTY acceptance, owner acceptance or final PASS is claimed.
+Combined preparation remains 10r, owner acceptance 11 and final release 12.
+
+## Historical execution state — point 10o completed, 2026-11-08
 
 **Points 1–10o are complete. Point 10p is next; 10p–10r remain open.** The owner
 accepted the source-verified correction: explicit bounded json fields now carry
@@ -1747,7 +1764,7 @@ below are retained as historical records only.
     atomic Audit. Keep the common snapshot security owner and current public
     replacement seams. Extend working reference examples for the changed contract.
 
-- [ ] 10p. Correct the owning native test integration.
+- [x] 10p. Correct the owning native test integration.
   - **Dependency:** 10k; complete before 10r. Own P06. Record the exact current
     command/flag/engine contract and source-owned design before implementation.
     Replace the global argv adaptation/split launch plumbing with a coherent owning
@@ -5651,3 +5668,36 @@ The supported backend runner removed its identified disposable runa_test_test_1;
 base test/development data, services, volumes, model caches and reports remain.
 Full suites/static/security/AI gates stay 12, working runtime/assets and storage
 reconciliation stay 10r and sole owner acceptance stays 11. Point 10p is next.
+
+## Point 10p completion — owning native test integration, 2026-11-08
+
+The [source-owned integration review](../../reviews/RM-2026-017-native-test-integration.md)
+records the exact pinned engine/flag contract before implementation and the final
+source/evidence boundaries. One Runa command now launches the required Pest engine
+for serial/parallel PHPUnit and Pest tests; there is no global argv mutation,
+Collision command composition, optional-engine fallback or separate parallel launch.
+The development provider directly binds the upstream command registration identity.
+
+Native literal options, configuration overrides, discovery, color/TTY/stdin,
+signal/failure statuses and Laravel database/cache child controls retain their
+owners. Existing TestRun config/lock/database guards and pre/post cleanup remain;
+shared application/owner Python entrypoints are unchanged. No recovery automation,
+crash investigation, dependency or schema/runtime change is added.
+
+Focused command diagnostics passed 20 cases / 82 assertions (exit 0 / cleanup 0).
+The actual native engine passed one Pest and one PHPUnit fixture in both serial
+and two-process mode. Actual application discovery passed; an unknown native flag
+returned expected exit 2. The linked review preserves the initial version-fixture
+mistake and duplicate-configuration failure plus their corrections. No complete
+suite, coverage-driver/interactive-TTY acceptance or final PASS is claimed.
+
+Public testing/command guidance, owner testing guidance, changelog and both owner
+and customer Laravel reference products are synchronized. Root AGENTS and skill
+selectors require no change because activation, authority, public module contracts
+and selection triggers are unchanged. Module/API candidates and platform VERSION
+0.7.0 / approved feature-0.8.0 are unchanged. Development/base test data, caches,
+backups and reports remain; no Docker resources were created or removed.
+
+Point 10q is next. Combined installed storage/runtime/assets readiness remains 10r,
+sole explicit owner manual acceptance remains 11 and final verification/release 12.
+Mandatory commit hooks and staged incremental knowledge freshness apply.
