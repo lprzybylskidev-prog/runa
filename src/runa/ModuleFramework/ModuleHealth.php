@@ -20,7 +20,7 @@ final class ModuleHealth
     public function __construct(private readonly HealthAdmissions $admissions, private readonly Connection $connection, private readonly ModuleRegistry $registry, private readonly HealthPolicies $policies, private readonly HealthDeadline $deadline) {}
 
     /** Explicit trusted diagnosis also prepares observations before enabling a disabled module.
-     * @return array{state: string, reasons: list<GraphBlocker>, blocked: bool, observations: ?array<string, array{fingerprint: string, passed: bool, checked_at: int, expires_at: int, code: string}>}
+     * @return array{state: string, reasons: list<GraphBlocker>, blocked: bool, generationChange: ?array{before: int, after: int}, observations: ?array<string, array{fingerprint: string, passed: bool, checked_at: int, expires_at: int, code: string}>}
      */
     public function diagnose(string $id): array
     {
@@ -39,9 +39,10 @@ final class ModuleHealth
         }
     }
 
-    /** @return array{state: string, reasons: list<GraphBlocker>, blocked: bool, observations: ?array<string, array{fingerprint: string, passed: bool, checked_at: int, expires_at: int, code: string}>} */
+    /** @return array{state: string, reasons: list<GraphBlocker>, blocked: bool, generationChange: ?array{before: int, after: int}, observations: ?array<string, array{fingerprint: string, passed: bool, checked_at: int, expires_at: int, code: string}>} */
     public function inspect(ModuleRecord $record, ?string $operation = null, string $trigger = 'cached'): array
     {
+        $generationChange = null;
         try {
             $policy = $this->policies->resolve($record);
             $definition = $policy?->definition() ?? new HealthDefinition('none', 'scheduled', []);
@@ -59,13 +60,13 @@ final class ModuleHealth
                     throw new RuntimeException('Health checks require an independent transaction boundary.');
                 }
                 if (isset(self::$running[$record->id])) {
-                    return ['state' => 'unknown', 'reasons' => [new GraphBlocker('health_busy', [$record->id])], 'blocked' => true, 'observations' => null];
+                    return ['state' => 'unknown', 'reasons' => [new GraphBlocker('health_busy', [$record->id])], 'blocked' => true, 'observations' => null, 'generationChange' => $generationChange];
                 }
                 $key = (int) hexdec(substr(hash('sha256', $record->id), 0, 7));
                 /** @var object{acquired: bool} $lock */
                 $lock = $this->connection->selectOne('SELECT pg_try_advisory_lock(73006, ?) AS acquired', [$key]);
                 if (! $lock->acquired) {
-                    return ['state' => 'unknown', 'reasons' => [new GraphBlocker('health_busy', [$record->id])], 'blocked' => true, 'observations' => null];
+                    return ['state' => 'unknown', 'reasons' => [new GraphBlocker('health_busy', [$record->id])], 'blocked' => true, 'observations' => null, 'generationChange' => $generationChange];
                 }
                 self::$running[$record->id] = true;
                 try {
@@ -95,15 +96,24 @@ final class ModuleHealth
                     if ($changed) {
                         // Discard removed definitions and reject old-source/policy results at publication.
                         $observations = array_intersect_key($observations, array_fill_keys(array_map(fn ($check): string => $check->id, $definition->checks), true));
-                        $this->connection->transaction(function () use ($record, $observations): void {
-                            $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
+                        $changedFrom = $this->connection->transaction(function () use ($record, $observations): ?int {
+                            $state = $this->connection->table('shared.module_registry_state')->where('id', 1)->lockForUpdate()->first();
+                            if ($state === null) {
+                                throw new RuntimeException('Module registry migration is required.');
+                            }
                             $current = $this->registry->snapshot()->modules[$record->id] ?? null;
                             if ($current === null || ! $this->samePolicy($record, $current)) {
                                 throw new RuntimeException('Health observation became stale.');
                             }
                             $this->connection->table('shared.modules')->where('module_id', $record->id)->update(['health_observations' => json_encode((object) $observations, JSON_THROW_ON_ERROR), 'updated_at' => now()]);
-                            $this->connection->table('shared.module_registry_state')->where('id', 1)->increment('generation');
+                            // Observation freshness always advances; only a still-valid healthy
+                            // renewal can preserve existing operation admissions.
+                            $renewal = HealthObservations::healthyRenewal($current->healthObservations, $observations, now()->getTimestamp());
+                            $this->connection->table('shared.module_registry_state')->where('id', 1)->incrementEach($renewal ? ['health_revision' => 1] : ['health_revision' => 1, 'generation' => 1]);
+
+                            return $renewal ? null : (int) $state->generation;
                         });
+                        $generationChange = $changedFrom === null ? null : ['before' => $changedFrom, 'after' => $changedFrom + 1];
                     }
                 } finally {
                     unset(self::$running[$record->id]);
@@ -132,9 +142,9 @@ final class ModuleHealth
                 }
             }
 
-            return ['state' => $state, 'reasons' => $reasons, 'blocked' => $blocked, 'observations' => $observations];
+            return ['state' => $state, 'reasons' => $reasons, 'blocked' => $blocked, 'observations' => $observations, 'generationChange' => $generationChange];
         } catch (Throwable) {
-            return ['state' => 'unknown', 'reasons' => [new GraphBlocker('health_policy_unavailable', [$record->id])], 'blocked' => true, 'observations' => null];
+            return ['state' => 'unknown', 'reasons' => [new GraphBlocker('health_policy_unavailable', [$record->id])], 'blocked' => true, 'observations' => null, 'generationChange' => $generationChange];
         }
     }
 

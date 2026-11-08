@@ -544,3 +544,51 @@ it('invalidates prepared Admin read evidence after expiry policy change rollback
     unset(HealthPolicy::$definitions[$this->id]['interval']);
     expect($api->exists($this->publicId))->toBeTrue();
 })->with(['expiry', 'policy', 'rollback', 'reconnect']);
+
+it('fences actual state changes but accepts healthy renewal on another PostgreSQL connection', function (string $change): void {
+    $context = $this->guard->enter($this->id, new ApiOperation('read'));
+    $before = $this->registry->snapshot();
+    config()->set('database.connections.health_publisher', DB::connection()->getConfig());
+    $publisher = DB::connection('health_publisher');
+    $publisher->statement("SET lock_timeout = '2s'");
+    expect($publisher->getPdo())->not->toBe(DB::connection()->getPdo());
+    $registry = new ModuleRegistry($publisher, new ModuleDiscovery($this->sources->root));
+    $health = new ModuleHealth(new HealthAdmissions($publisher), $publisher, $registry,
+        new HealthPolicies($this->sources->root, app(), app(ModuleAutoloader::class), true), new HealthDeadline);
+    try {
+        $this->travel(1)->seconds();
+        if (in_array($change, ['failure', 'recovery'], true)) {
+            HealthPolicy::$checks[$this->id] = fn (): bool => false;
+            expect($health->diagnose($this->id)['state'])->toBe('unhealthy');
+            if ($change === 'recovery') {
+                HealthPolicy::$checks[$this->id] = fn (): bool => true;
+            }
+        } elseif ($change === 'expired') {
+            $this->travel(20)->seconds();
+        } elseif ($change === 'policy') {
+            HealthPolicy::$definitions[$this->id]['interval'] = 11;
+        } elseif ($change === 'disabled') {
+            $publisher->table('shared.modules')->where('module_id', $this->id)->update(['enabled' => false]);
+            $publisher->table('shared.module_registry_state')->where('id', 1)->increment('generation');
+        }
+        if ($change !== 'failure') {
+            expect($health->diagnose($this->id)['state'])->toBe('healthy');
+        }
+        // This is the exact ingress gap: another backend published real health
+        // evidence after admission but before the native final execution fence.
+        $after = $this->registry->snapshot();
+        expect($after->healthRevision)->toBeGreaterThan($before->healthRevision)
+            ->and($after->modules[$this->id]->healthObservations)->toBe($registry->snapshot()->modules[$this->id]->healthObservations);
+        if ($change === 'renewal') {
+            $this->guard->assertCurrent($context);
+            expect($after->generation)->toBe($before->generation)
+                ->and($after->modules[$this->id]->healthObservations['connection']['expires_at'])->toBeGreaterThan($before->modules[$this->id]->healthObservations['connection']['expires_at']);
+        } else {
+            expect(fn () => $this->guard->assertCurrent($context))->toThrow(fn (OperationRejected $error) => expect($error->reason)->toBe('availability_changed'));
+            expect($after->generation)->toBeGreaterThan($before->generation);
+        }
+    } finally {
+        DB::purge('health_publisher');
+        $this->travelBack();
+    }
+})->with(['renewal', 'failure', 'recovery', 'expired', 'policy', 'disabled']);

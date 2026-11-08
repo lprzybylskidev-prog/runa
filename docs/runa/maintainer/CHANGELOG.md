@@ -4,6 +4,11 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Separate module health observation freshness from operation generation. Still-valid
+  unchanged successful renewals preserve concurrent admissions while registry caches
+  receive current evidence. Preserve hard fences for failures, expiry, policy and
+  configuration changes, failure/recovery and original exact-call expiry.
+
 - Extend the pinned local Tabler catalogue with consistent explicit action icons
   across supplied forms, module operations and the reference workspace. Add public
   Button/LinkButton icon and ConfirmDialog confirmIcon composition, semantic

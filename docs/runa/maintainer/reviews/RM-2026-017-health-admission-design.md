@@ -1,9 +1,9 @@
 # RM-2026-017 health publication and operation admission discussion
 
 Date: 2026-11-08. Source baseline: 3e837518, with runtime code e69a3b5f.
-Status: proposed correction, awaiting owner decision. The owner chose to discuss
-the native activity refusal before manual acceptance. That authorizes this source
-investigation and review, not a change to the health/admission premise. No runtime
+Status: owner-approved correction, 2026-11-08. The owner chose to discuss
+the native activity refusal before manual acceptance. The subsequent owner decision explicitly authorizes implementation of the discussed
+behavior; the source analysis below preserves the pre-implementation evidence. No runtime
 source, database, account, health policy, lock, guard or retry behavior changes here.
 Point 10t remains open; point 11 is not ready. Feature/0.8.0 projection is unchanged.
 
@@ -136,3 +136,90 @@ This private proposal adds no current reusable rule; owner/customer instruction
 products remain unchanged until an accepted contract actually changes. Mandatory
 hooks and incremental indexing apply to the discussion record. No diagnostic/test,
 backend fix, broad verification or actual release is claimed by this document.
+
+## Exact owning representation selected for 10s2
+
+Owner accepted implementation on 2026-11-08. Keep registry generation as the existing
+hard fence for meaningful state changes. Add internal health_revision bigint default
+0, nonnegative, to the singleton's original CREATE, and healthRevision freshness metadata to the retained public
+RegistrySnapshot value (fourth optional constructor argument, default 0). Every health
+publication increments health_revision. Generation also advances unless publication
+is exclusively a still-valid successful renewal with identical source/policy/check
+identities. Registry cache lookup compares the pair; transaction locks and existing
+write callbacks retain current ownership. No second registry or public context token.
+
+Only existing, nonfuture, unexpired healthy checks with the same fingerprint/code
+and successful new valid evidence qualify. Missing/failed/expired results and any
+failed-then-recovered history advance generation, preserving ABA invalidation.
+Availability's final observation comparison accepts only this same narrow renewal
+relation and still rejects intervening generation/fence/source changes. Expiry of a
+prepared call remains bounded by its original evidence; renewal never extends it.
+
+Generation consumers reviewed: registry cache; ModuleAvailability; OperationGuard
+and PHP/HTTP gateways; AdminEntry/AdminRead/ManagementPages/ModuleManagement;
+ModuleGraph/Transitions/Updates; SettingsSecurity and settings publication; native
+transaction runner/HealthAdmissions/ReadHealthScope; work/event/command adapters
+and current generation-bound enqueue. All existing generation writers other than
+neutral health renewal stay unchanged. Existing contexts, reviews and admissions
+continue to capture the same hard generation; no signature change is needed there.
+Cache revision is implementation-owned freshness metadata on the public snapshot value, never operation authority or a client token. Its complete additive constructor signature is documented in the owning guide.
+
+Framework API 2.1.0 and current unreleased module candidates remain appropriate:
+no public contract signature or owning module declaration changes. This platform
+internal schema/behavior correction belongs to the approved feature/0.8.0. Runtime
+preparation must reconstruct the identified singleton from its corrected original
+CREATE, preserving the real generation and all source/slot/update metadata;
+no compatibility ALTER migration, database reset, forged version or ledger is added.
+Inspect/disclose exact ownership and scope before that operation. Preparation was required in 10s2 because route bootstrap and the native test identity guard already read the current registry schema.
+
+## Implemented correction and bounded evidence — 10s2
+
+The original two-PDO regression fails before implementation with native
+OperationRejected at OperationGuard::assertCurrent (availability_changed), then
+passes after the owning correction. The final focused run selects six real-connection
+scenarios (neutral renewal, failure, failure/recovery, expired old observation,
+changed policy and disable), graph renewal/ABA races, original exact-operation
+expiry, the existing mid-evaluation failure and per-use/hybrid/scheduled policy cases.
+It passes **13 cases / 73 assertions**, native exit 0, worker cleanup 0.
+Command: `python3 tools/maintainer/test-backend --parallel --processes=1
+--filter='fences actual state changes but accepts healthy renewal|accepts only neutral
+health publications|never extends exact operation evidence|invalidates previously
+evaluated dependents|runs every on-use and hybrid'` (one shell argument for filter).
+
+ModuleAvailability accounts for the before/after generation of only its own
+publications. An unexpected generation between evaluated graph members remains a
+refusal even if all final booleans have recovered. Concurrent neutral publications
+are admitted only through the same bounded HealthObservations comparison.
+OperationGuard, authority/proof/session, maintenance and frontend withdrawal paths
+are unchanged; no new dependency, retry or exception was added.
+
+The first post-code run was blocked by the native base-test identity guard because
+route boot already needed the corrected singleton column. Exact inspection of
+runa/runa_test identified their matching owner roles, no incoming singleton FKs,
+no active transition/reservation and singleton generations 1014/61. Under operation
+and test locks, only shared.module_registry_state was reconstructed transactionally
+using its corrected original migration down/up and restored singleton values.
+Generation, slot order and reservation metadata were preserved; health_revision
+starts at 0. Existing migration ledgers were retained without fabricated entries.
+Preserved row counts before/after: local modules 5, global settings 1, users 15,
+sessions 13, samples 1; testing 5/1/4/4/2. No database, module schema or volume reset.
+This necessary operational preparation moved into 10s2; 10t observes the live runtime.
+
+Intermediate added-test failures are preserved: exception assertions initially
+looked for a safe reason in the deliberately generic exception message, and the
+first graph fixture attempted nested process health deadlines. Corrected assertions
+inspect the typed reason; the graph publication now occurs at the real pre-check
+query boundary, outside either deadline. No runtime deadline behavior was weakened.
+Raw evidence is under `.runtime/dev/RM-2026-017-10s2/`: reproduction-before.log,
+reproduction-after-storage.log, focused-health.log, focused-health-corrected.log,
+focused-health-final.log and storage-{local,testing}-{before,after}.json.
+
+Current architecture/database/transaction guidance, executable reference narrative,
+central changelog and both backend skill selectors are synchronized. Root owner and
+customer AGENTS already delegate exact contracts to these guides and need no new
+policy. Customer skills preserve the protected-engine boundary. Framework API 2.1.0
+already is this roadmap's unreleased additive feature candidate; the snapshot's
+additive freshness value is documented without new authority. No module declaration
+or consumer contract change warrants a further module version increment. Platform
+remains 0.7.0 with approved feature/0.8.0 projection. Current Nginx readiness, full
+suites, final security/AI gates and owner acceptance are not claimed by 10s2.

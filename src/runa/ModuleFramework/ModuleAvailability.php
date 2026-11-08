@@ -4,6 +4,7 @@ namespace Runa\ModuleFramework;
 
 use Runa\Contracts\Modules\GraphBlocker;
 use Runa\Contracts\Modules\ModuleStatus;
+use Runa\Support\Modules\ModuleRecord;
 use Runa\Support\VersionCompatibility;
 use Throwable;
 
@@ -21,7 +22,20 @@ final readonly class ModuleAvailability
         $memo = [];
         $visiting = [];
         $observed = [];
-        $visit = function (string $id) use (&$visit, &$memo, &$visiting, &$observed, $snapshot, $operation): ModuleStatus {
+        $expectedGeneration = $snapshot->generation;
+        $generationChanged = false;
+        $inspect = function (ModuleRecord $record, ?string $operation, string $trigger = 'cached') use (&$expectedGeneration, &$generationChanged): array {
+            $result = $this->health->inspect($record, $operation, $trigger);
+            // Only this evaluation's own publications may advance its fence.
+            // A concurrent failure/recovery cannot disappear behind a healthy result.
+            if ($result['generationChange'] !== null) {
+                $generationChanged = $generationChanged || $result['generationChange']['before'] !== $expectedGeneration;
+                $expectedGeneration = $result['generationChange']['after'];
+            }
+
+            return $result;
+        };
+        $visit = function (string $id) use (&$visit, &$memo, &$visiting, &$observed, $snapshot, $operation, $inspect): ModuleStatus {
             if (isset($memo[$id])) {
                 return $memo[$id];
             }
@@ -41,7 +55,7 @@ final readonly class ModuleAvailability
                 $reasons[] = new GraphBlocker(! $record->enabled ? 'disabled' : 'source_missing', [$id]);
                 if ($record->sourcePresent) {
                     // Disabled is an administrative state, not a replacement own-health value.
-                    $health = $this->health->inspect($record, $operation === '*' ? null : $operation);
+                    $health = $inspect($record, $operation === '*' ? null : $operation);
                     $own = $health['state'];
                     $observed[$id] = $health['observations'];
                     array_push($reasons, ...$health['reasons']);
@@ -49,7 +63,7 @@ final readonly class ModuleAvailability
             } else {
                 // Refused ingress must not publish on-use observations over an active reservation.
                 $fenced = in_array($id, $snapshot->fenced, true);
-                $health = $this->health->inspect($record, $operation === '*' ? null : $operation, $operation === null || $fenced ? 'cached' : 'use');
+                $health = $inspect($record, $operation === '*' ? null : $operation, $operation === null || $fenced ? 'cached' : 'use');
                 $observed[$id] = $health['observations'];
                 $own = $health['state'];
                 $blocked = $health['blocked'];
@@ -103,7 +117,7 @@ final readonly class ModuleAvailability
             $old = $snapshot->modules[$id] ?? null;
             $new = $current->modules[$id] ?? null;
             $healthExpired = $new !== null && $status->available && $this->health->inspect($new, $operation === '*' ? null : $operation)['blocked'];
-            if ($healthExpired || ($old !== null && ($new === null || $old->publicId !== $new->publicId || $old->registered !== $new->registered || $old->enabled !== $new->enabled || $old->sourcePresent !== $new->sourcePresent || $old->manifestHash !== $new->manifestHash || $old->installedVersion !== $new->installedVersion || (isset($observed[$id]) && $observed[$id] != $new->healthObservations)) || $snapshot->fenced !== $current->fenced)) {
+            if ($generationChanged || $current->generation !== $expectedGeneration || $healthExpired || ($old !== null && ($new === null || $old->publicId !== $new->publicId || $old->registered !== $new->registered || $old->enabled !== $new->enabled || $old->sourcePresent !== $new->sourcePresent || $old->manifestHash !== $new->manifestHash || $old->installedVersion !== $new->installedVersion || (isset($observed[$id]) && $observed[$id] != $new->healthObservations && ! HealthObservations::healthyRenewal($observed[$id], $new->healthObservations, now()->getTimestamp()))) || $snapshot->fenced !== $current->fenced)) {
                 foreach ($memo as $key => $value) {
                     $memo[$key] = new ModuleStatus($value->moduleId, $value->publicId, $current->generation, $value->sourceVersion, $value->installedVersion, $value->registered, $value->enabled, $value->sourcePresent, 'unknown', false, [new GraphBlocker('availability_changed', [$key])]);
                 }

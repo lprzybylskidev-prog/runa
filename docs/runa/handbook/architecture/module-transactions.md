@@ -102,6 +102,7 @@ nested checks within that logical admission reuse only that scope's evidence.
 After sealing, a missing/expired/changed admission is refused; no external health
 check starts inside the business transaction. Current cached failure/expiry,
 maintenance, source/generation changes and current authorization still refuse.
+A still-valid healthy observation renewal preserves operation generation but never extends the original exact-call evidence expiry. Failed/expired/policy-changed publications and failure/recovery still invalidate admission.
 The scope always unwinds on exception and is never a client token or global cache.
 
 Reserved `Runa\Contracts\Modules\TransactionSecurity` has

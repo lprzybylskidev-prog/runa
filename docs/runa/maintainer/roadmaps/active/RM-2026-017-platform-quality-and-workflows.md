@@ -21,7 +21,18 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — icons built, point 10t readiness stop, 2026-11-08
+## Current execution state — health correction approved, 2026-11-08
+
+**Points 1–10s2 are complete. The owning health-publication/admission correction
+and 13 focused cases (73 assertions) pass; 10t readiness remains open.** The owner
+explicitly accepted implementation of the discussed direction: unchanged successful
+health renewal must preserve valid operations while caches and real fences stay
+current. This authorizes the owning correction, not UI retries or guard suppression.
+Only owner manual acceptance completes 11; full verification/release remains 12.
+Approved feature/0.8.0 and current module/API candidates remain unchanged pending
+exact contract assessment.
+
+## Historical execution state — icons built, point 10t readiness stop, 2026-11-08
 
 **Points 1–10s and repair 10s1 are complete. Point 10t remains open; point 11 is
 not yet ready.** Source e69a3b5f and current index-B-Ok1op7.js contain the shared
@@ -1915,8 +1926,34 @@ below are retained as historical records only.
   - Commit source correction and then repeat the supported operational build in
     10t. Full automated verification remains 12; this is a readiness repair.
 
+- [x] 10s2. Reproduce and correct observation renewal versus admission validity.
+  - **Owner approval, 2026-11-08:** implement the discussed behavior now. First
+    retain a failing two-connection reproduction through actual health publication
+    and the native operation guard. Review every generation consumer before edits.
+  - Separate persisted observation freshness from generation used for operation
+    fences. Only a still-valid successful same-policy renewal is neutral to operation
+    generation; failed/expired/missing/future/policy-changed evidence and failure/
+    recovery transitions stay invalidating. Maintain exact per-use checks and current
+    time expiry, source/lifecycle/settings/authority/proof/session/maintenance guards.
+  - Repair the owning registry cache, health publication and final availability
+    comparison together; no adapter, retry, frontend swallowing or disabled checks.
+    Correct the original development CREATE with a nonnegative observation revision;
+    reconcile only identified necessary development/test technical storage,
+    preserving singleton metadata, accounts/data and genuine migration evidence.
+  - Author bounded real-connection regressions for healthy overlap/cache freshness,
+    failed-then-recovered evidence and genuine refusal/expiry. Update canonical
+    architecture/contracts, reference example, both instruction products and version
+    assessment in this point. Full suites remain 12; renew real HTTP readiness in 10t.
+  - **Result:** [owning correction and evidence](../../reviews/RM-2026-017-health-admission-design.md#implemented-correction-and-bounded-evidence--10s2).
+    Two actual PDO connections reproduce the old failure and verify renewal/cache
+    freshness versus real fences. 13 focused cases / 73 assertions pass, exit 0 /
+    cleanup 0. Only identified registry singletons were reconstructed from their
+    original CREATE; all prior generation/metadata and checked data counts survive.
+    Necessary storage preparation moved here because native route/identity boot
+    already reads the new column. No module/API candidate change or broad PASS.
+
 - [ ] 10t. Renew icon runtime/assets and manual acceptance handoff.
-  - **Dependency:** committed 10s/10s1. Build supported application and native/emergency
+  - **Dependency:** committed 10s/10s1/10s2. Build supported application and native/emergency
     assets from the coherent candidate, preserving existing accounts/data/services.
   - Observe actual Nginx pages/APIs and sample action/module/feedback icons at
     desktop/narrow widths, PL/EN, light/dark and keyboard/busy states. Record exact
@@ -6044,3 +6081,14 @@ all before the sole owner acceptance 11 and final verification 12. Owner agreeme
 has not yet been received; no backend implementation or new persisted revision is
 approved by this discussion record. This does not activate another roadmap or change
 approved feature/0.8.0. No source/data/resource state was mutated by the investigation.
+
+## Owner health-admission correction approved, 2026-11-08
+
+The owner explicitly answered “Yes, implement this direction” to preserving valid
+operations across unchanged successful health renewal while retaining freshness and
+all real-change checks. Insert 10s2 before 10t in the existing roadmap; no new roadmap
+or release-metadata decision is needed. The accepted discussion is
+[health admission design](../../reviews/RM-2026-017-health-admission-design.md).
+The exact internal representation is selected in that review before implementation;
+new behavior/security premises still return to discussion. Manual acceptance 11
+and complete automated verification/release 12 remain last.

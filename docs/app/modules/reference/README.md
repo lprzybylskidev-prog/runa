@@ -66,7 +66,11 @@ Use the [public module development guide](../../../runa/handbook/development/mod
 
 The health declaration implements HealthPolicy schema 2. Its hybrid mode and
 check timing are defined in ReferenceHealthPolicy source only; no Admin tab or
-database override changes that policy.
+database override changes that policy. Refreshing samples demonstrates a guarded
+hybrid call: a successful renewal of still-valid unchanged health updates diagnostic
+freshness without invalidating concurrent Auth/Admin activity. Failure, expiry,
+policy/configuration changes and real access loss still refuse operations; the UI
+keeps its existing withdrawal behavior. See [health publication and admission](../../../runa/handbook/architecture/module-framework.md#delivered-health-services).
 
 The reference SettingsProvider demonstrates native settings access, field grants,
 action-specific proof and publication. Its owned HTTP workflow and named snapshot

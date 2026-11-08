@@ -158,12 +158,12 @@ final class ModuleRegistry
         if ($level > 0 && $this->cached !== null) {
             return $this->cached;
         }
-        /** @var int|null $generation */
-        $generation = $this->connection->table('shared.module_registry_state')->where('id', 1)->value('generation');
-        if ($generation === null) {
+        /** @var object{generation: int, health_revision: int}|null $revision */
+        $revision = $this->connection->table('shared.module_registry_state')->where('id', 1)->first(['generation', 'health_revision']);
+        if ($revision === null) {
             throw new RuntimeException('Module registry migration is required.');
         }
-        if ($this->cached !== null && $this->cached->generation === (int) $generation) {
+        if ($this->cached !== null && $this->cached->generation === (int) $revision->generation && $this->cached->healthRevision === (int) $revision->health_revision) {
             return $this->cached;
         }
         $snapshot = $level > 0 ? $this->loadSnapshot() : $this->connection->transaction($this->loadSnapshot(...));
@@ -178,8 +178,8 @@ final class ModuleRegistry
     {
         // Also acquire this lock for a caller-owned transaction. A read begun
         // outside a transaction takes its own short transaction for consistency.
-        /** @var object{generation:int,update_operation:?string}|null $state */
-        $state = $this->connection->table('shared.module_registry_state')->where('id', 1)->sharedLock()->first(['generation', 'update_operation']);
+        /** @var object{generation:int,health_revision:int,update_operation:?string}|null $state */
+        $state = $this->connection->table('shared.module_registry_state')->where('id', 1)->sharedLock()->first(['generation', 'health_revision', 'update_operation']);
         if ($state === null) {
             throw new RuntimeException('Module registry migration is required.');
         }
@@ -208,6 +208,6 @@ final class ModuleRegistry
             $fenced += array_fill_keys(array_keys($modules), true);
         }
 
-        return new RegistrySnapshot($state->generation, $modules, array_keys($fenced));
+        return new RegistrySnapshot($state->generation, $modules, array_keys($fenced), $state->health_revision);
     }
 }
