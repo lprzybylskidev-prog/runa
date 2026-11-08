@@ -21,6 +21,7 @@ base:
     command: php artisan runa:typecheck
     severity: hard_fail
   - id: application-tests
+    terminal: true
     depends_on: [application-config]
     command: php artisan runa:test --scope=backend
     exclusive_group: testing-state
@@ -140,7 +141,12 @@ groups:
     ]
   e2e: [application-e2e, application-frontend-diagnostics]
   database:
-    [application-database-migrations, application-database, application-seeding]
+    [
+      application-database-migrations,
+      application-database,
+      application-seeding,
+      application-tests,
+    ]
   development: [application-development, application-hooks]
   containers: [application-container-security]
   security: [application-dependencies, application-container-security]
@@ -191,7 +197,7 @@ group_steps:
     severity: hard_fail
     exclusive_group: testing-state
   - id: application-database-migrations
-    depends_on: [application-tests]
+    depends_on: [application-config]
     command: php artisan runa:doctor:database-migrations
     severity: hard_fail
     exclusive_group: testing-state

@@ -18,6 +18,7 @@ class QualityNode(TypedDict):
     exclusive_group: NotRequired[str | None]
     depends_on_if_selected: NotRequired[list[str]]
     command_if_selected: NotRequired[dict[str, str]]
+    terminal: NotRequired[bool]
 
 
 class QualityDefinition(TypedDict):
@@ -64,6 +65,7 @@ class QualityStep:
     severity: str
     execution_context: str
     exclusive_group: str | None
+    terminal: bool = False
 
     @classmethod
     def parse(cls, value: Mapping[str, object]) -> "QualityStep":
@@ -93,7 +95,10 @@ class QualityStep:
             not isinstance(group, str) or not re.fullmatch(r"[a-z0-9-]+", group)
         ):
             raise ValueError("Invalid quality exclusive group.")
-        return cls(identifier, argv, tuple(dependencies), severity, location, group)
+        terminal = value.get("terminal", False)
+        if type(terminal) is not bool:
+            raise ValueError("Invalid terminal quality boundary.")
+        return cls(identifier, argv, tuple(dependencies), severity, location, group, terminal)
 
 
 def string_list(value: object) -> list[str]:

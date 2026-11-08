@@ -185,7 +185,7 @@ their existing behavior; duration alone does not create a new handoff workflow.
 ## Current execution state
 
 Activation is committed as `13e3c715`. Point 1 is complete under the approved
-producer-side evidence extension; point 2 is next. No broad test suite or final quality run has
+producer-side evidence extension; point 2 is complete; point 3 is next. No broad test suite or final quality run has
 been started.
 
 ### Evidence-contract finding and proposed decision
@@ -303,7 +303,7 @@ frontend acceptance is not applicable; reassess if scope changes.
   - Assess owner and customer products: share applicable operational guidance,
     preserve owner-only SIGSEGV policy and protected-platform boundaries, and
     record reasons for products that need no change.
-- [ ] 2. Enforce the final backend boundary in quality planning and execution.
+- [x] 2. Enforce the final backend boundary in quality planning and execution.
   - Prerequisites: point 1 contract.
   - Correct the owning graph/planner/executor and previews so every selected
     non-backend validation finishes successfully before full backend launch,

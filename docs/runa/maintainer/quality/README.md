@@ -11,6 +11,18 @@ Quality is enforced locally through:
 
 `docs/runa/maintainer/quality/gates.yml` is the canonical gate definition.
 
+## Final backend execution boundary
+
+The source-owned full backend node is `terminal: true`. Selection adds every other
+selected node as its prerequisite, including final workflow tests and acceptance.
+The executor independently refuses launch until all other nodes have passed;
+failed, blocked or interrupted validation blocks backend. Definitions with multiple
+terminal nodes or an incoming dependency on backend fail graph validation. The
+preview places backend last and shows its complete prerequisites. Manual remaining
+checks and repair loops must preserve the same order; review evidence validity
+before repeating expensive completed work. Focused post-release metadata checks
+and main sanity retain their documented scope, not another acceptance suite.
+
 ## Modes
 
 ### `python3 tools/maintainer/quality-plan`

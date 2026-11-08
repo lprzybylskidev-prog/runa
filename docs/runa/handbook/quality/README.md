@@ -11,6 +11,18 @@ Quality is enforced locally through:
 
 `tools/application/quality.yml` is the canonical gate definition.
 
+## Final backend execution boundary
+
+The full backend node is `terminal: true`: the planner makes every other selected
+check, including final workflow tests, its prerequisite. The executor also refuses
+backend launch until every other node has passed. Failed, blocked or interrupted
+checks block it. The preview lists backend last and shows those prerequisites;
+multiple terminal nodes or a dependency cycle are invalid. Database selections
+retain the full backend suite and run migration/constraint/seeding checks first.
+Manual continuation and repairs follow the same order and reuse valid evidence.
+Only reports, non-test bookkeeping and documented focused release metadata/main
+sanity checks may follow, without another planned acceptance suite.
+
 ### `php artisan runa:quality:plan`
 
 Preview explicit groups, or the legacy impact-area selection without flags.
