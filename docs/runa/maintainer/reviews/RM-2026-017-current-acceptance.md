@@ -1,9 +1,14 @@
 # RM-2026-017 current owner acceptance scenarios
 
-Point 10r preparation, 2026-11-08. The [post-refactor readiness review](RM-2026-017-post-refactor-readiness.md)
+**Readiness 10t remains open:** ordinary-timing reference refresh can receive native
+`availability_changed`/503 on session/Admin activity. Current icons/assets can be
+inspected, but the formal point-11 handoff awaits diagnosis and an agreed disposition.
+See the [current evidence and discussion boundary](RM-2026-017-icon-readiness.md).
+
+Point 10t preparation, 2026-11-08. The [icon readiness review](RM-2026-017-icon-readiness.md)
 records current source/runtime/assets, bounded observations and preserved resources.
 Point 11 requires the owner's explicit result for this environment. Full automated
-verification/release remains point 12. Prior 10i screenshots identify older source.
+verification/release remains point 12. Prior 10i/10r screenshots identify older source.
 
 ## Preconditions and identity
 
@@ -13,19 +18,46 @@ Admin entry uses the native full-page password confirmation. No password reset,
 substitute credential or guard bypass is needed. Safe account discovery remains
 `php artisan runa:seed:accounts`; credentials stay private.
 
-Runtime source: `5903593ccde714088b3816fbe8493889a76067c9` plus the documentation-only
-10r handoff commit. Platform VERSION remains 0.7.0, approved feature projection 0.8.0;
+Runtime source: `e69a3b5f7c1741da9392d20827bc638fa8b00091` plus the documentation-only
+10t handoff commit. Platform VERSION remains 0.7.0, approved feature projection 0.8.0;
 Framework API 2.1.0. Installed/source versions match: Admin 2.0.0, Auth 6.0.1,
 Audit 1.1.2, Permissions 2.1.2 and reference 0.4.1. Current development SPA entry:
-`/build/assets/index-CaW1iAUP.js`. Exact build hashes are in the linked review.
-Both identified development/test reference sample tables and their installation
+`/build/assets/index-B-Ok1op7.js`. Exact build hashes are in the linked review.
+In 10r both identified development/test reference sample tables and their installation
 provenance were rebuilt; each now contains the current `welcome` example. Existing
 accounts, credentials, settings, enabled flags and Core history were preserved.
+Icon points perform no storage reset or account/credential change.
 
 The [Core matrix](../../../app/modules/reference/core-capabilities.md) owns source/API/test
 links and noninteractive exclusions. Reference grants have prefix `app.reference.`;
 source synchronization never assigns them. Native Admin requires `runa.admin.enter`.
 Use existing authorized access; inspect restricted states in prepared isolated fixtures.
+
+## Icon acceptance
+
+The owner delegated icon selection; this is the first manual acceptance of the
+new choices. Report any meaning/style that should be adjusted. Use the same action
+across views to assess consistency, with visible labels and existing effect colors.
+
+| Sample                                                                   | Inspect                                                                                                                             |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| [Login](http://localhost:8080/auth/login)                                | Login/verification/password confirmation icons; visible text, localized names and keyboard activation.                              |
+| [Account](http://localhost:8080/account)                                 | Save, mail verification, crop, cancel, reset, revocation and feedback; color/icon meaning remains distinct.                         |
+| [Users](http://localhost:8080/admin/runa.auth/users)                     | Create account, details, mixed bulk tools and final concrete actions; open/cancel a dialog with the keyboard and check close focus. |
+| [Auth policy](http://localhost:8080/admin/runa.auth/policy)              | Save/review/publication and snapshot capture/load/delete use the same icons as reference settings.                                  |
+| [Reference settings](http://localhost:8080/admin/app.reference/settings) | Refresh, review, publication, snapshot actions and empty feedback; compare PL/EN, light/dark and 390px/desktop layouts.             |
+
+Also inspect existing reference samples/history/work, Permissions definitions and
+Audit detail scenarios below. Module identity must agree in sidebar and Admin cards:
+Admin adjustments, Auth key, Audit clipboard, Permissions shield and reference flask.
+Module authors can declare their own frontend/icon.ts; no protected map edit is needed.
+
+Labelled buttons retain text; icons are decorative. Busy replaces the leading icon
+with a same-size spinner without moving the label/control. Existing compact tools
+remain square and named. Sample Table pagination/column reorder/reset, picker clear/
+done controls and Dialog close through the existing user filters/table preferences.
+Feedback retains readable text and its announcement; empty inbox icons stay subtle.
+Fields and top-level subviews are intentionally decorated selectively.
 
 ## Post-refactor scenarios
 

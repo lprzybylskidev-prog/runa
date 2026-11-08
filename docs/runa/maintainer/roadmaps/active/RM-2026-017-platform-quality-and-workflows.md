@@ -21,7 +21,24 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10s completed, 2026-11-08
+## Current execution state — icons built, point 10t readiness stop, 2026-11-08
+
+**Points 1–10s and repair 10s1 are complete. Point 10t remains open; point 11 is
+not yet ready.** Source e69a3b5f and current index-B-Ok1op7.js contain the shared
+icons and reference flask declaration. Corrected operational builds and development
+doctor pass; six owner component cases and one application reference case pass.
+
+The [icon readiness checkpoint](../../reviews/RM-2026-017-icon-readiness.md) records
+working current views and clean ordinary samples, but also native activity
+availability_changed/503 during a further ordinary-timing reference refresh.
+Two delayed experiments are separate failed evidence. A green sample does not
+resolve the repeated ordinary-flow readiness uncertainty. No guard/retry/health
+behavior was changed. Discussion is required before expanding the icon scope into
+a correction of the health-generation/activity admission premise. Existing icons
+can be inspected; manual acceptance and final verification/release stay open.
+Platform/module/API candidates and all data/credentials/resources remain preserved.
+
+## Historical execution state — point 10s completed, 2026-11-08
 
 **Points 1–10s and repair 10s1 are complete. Renewed readiness 10t is next
 before owner acceptance
@@ -5974,3 +5991,31 @@ The initial failed build remains evidence; corrected committed-source operationa
 build and actual runtime observations remain in 10t. Hooks and staged knowledge
 freshness apply; broad automated verification remains 12. No test duplicating a
 missing-import assertion is added; the native compiler/build owns that diagnostic.
+
+## Point 10t checkpoint and native activity discussion stop, 2026-11-08
+
+Source e69a3b5f compiles and operational production/development/error builds plus
+development doctor pass. The source repair 10s1 is complete. Current asset entry
+is index-B-Ok1op7.js; exact hashes/source are in the
+[readiness checkpoint](../../reviews/RM-2026-017-icon-readiness.md) and runtime evidence.
+Existing accounts/data, source/installed module versions, secrets/grants, services,
+all Docker resources/volumes/caches/backups and evidence remain preserved.
+
+Actual Nginx combined views, one ordinary icon-specific run and draft/proof/device/
+mobile interactions succeed on current assets. Two delayed sample-read experiments
+receive native availability_changed/503; a further unmodified-timing repeat also
+fails after session/Admin activity refuses. These native failures remain immutable
+runtime reports, not PASS. No browser exception or guard suppression is introduced.
+
+Selected original source shows the global registry-generation fence and health
+observation generation publication. Their concurrent overlap is a candidate, not
+complete traced causality. A health/availability/activity correction may alter an
+agreed behavior/security premise and requires discussion under AGENTS before
+implementation. No backend fix, recovery/retry workaround or extra dependency is
+authorized by the icon task. Keep 10t open and do not claim the manual handoff ready.
+
+The acceptance sheet records current icons, source/build identity and the blocker;
+the owner may inspect the visual work while the formal readiness remains unresolved.
+No storage reset or Docker resources were created/removed; browser processes closed
+and all reports/recovery state remain. Point 11 and final point 12 stay open;
+no acceptance, complete suite, security/AI gate or release is claimed.
