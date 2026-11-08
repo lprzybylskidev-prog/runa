@@ -21,7 +21,19 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — health correction approved, 2026-11-08
+## Current execution state — point 10t complete, ready for owner acceptance, 2026-11-08
+
+**Points 1–10t are complete. Point 11 awaits the owner's explicit manual result.**
+The committed owning health correction is bff56568. Renewed operational builds and
+development doctor pass; 24 concurrent reference/Admin/Auth activity responses
+return 200 while generation stays 1015 and health_revision advances 58 → 74.
+Current icons, draft/proof cancellation, busy geometry and PL/EN/light/dark/mobile
+observations succeed. See [renewed readiness](../../reviews/RM-2026-017-health-readiness.md)
+and the [current acceptance sheet](../../reviews/RM-2026-017-current-acceptance.md).
+Older native failures remain preserved; full verification/release stays 12 after
+owner acceptance. Platform/module/API candidates and existing data/access stay intact.
+
+## Historical execution state — health correction approved, 2026-11-08
 
 **Points 1–10s2 are complete. The owning health-publication/admission correction
 and 13 focused cases (73 assertions) pass; 10t readiness remains open.** The owner
@@ -1952,7 +1964,7 @@ below are retained as historical records only.
     Necessary storage preparation moved here because native route/identity boot
     already reads the new column. No module/API candidate change or broad PASS.
 
-- [ ] 10t. Renew icon runtime/assets and manual acceptance handoff.
+- [x] 10t. Renew icon runtime/assets and manual acceptance handoff.
   - **Dependency:** committed 10s/10s1/10s2. Build supported application and native/emergency
     assets from the coherent candidate, preserving existing accounts/data/services.
   - Observe actual Nginx pages/APIs and sample action/module/feedback icons at
@@ -1961,6 +1973,12 @@ below are retained as historical records only.
   - Refresh the acceptance sheet with representative shared-component samples and
     directly changed behavior, including the reference module's declared icon.
     Only owner acceptance completes 11; final automated verification remains 12.
+  - **Result:** [current runtime and bounded evidence](../../reviews/RM-2026-017-health-readiness.md).
+    Assets rebuilt from bff56568; actual Nginx route/module/build identities agree.
+    24/24 concurrent responses return 200 with fresh observations and stable hard
+    generation. Icon/interaction/combined observations pass, preserving expected
+    initial guest/proof refusals and old failed evidence. Native doctor passes.
+    No full-suite, owner-acceptance or release PASS. Existing storage/resources remain.
 
 - [ ] 11. Owner manual frontend acceptance (penultimate point).
   - **Objective:** receive the owner's explicit result on the rendered application.

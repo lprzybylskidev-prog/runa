@@ -1,14 +1,12 @@
 # RM-2026-017 current owner acceptance scenarios
 
-**Readiness 10t remains open:** ordinary-timing reference refresh can receive native
-`availability_changed`/503 on session/Admin activity. Current icons/assets can be
-inspected, but the formal point-11 handoff awaits diagnosis and an agreed disposition.
-See the [current evidence and discussion boundary](RM-2026-017-icon-readiness.md).
-
-Point 10t preparation, 2026-11-08. The [icon readiness review](RM-2026-017-icon-readiness.md)
-records current source/runtime/assets, bounded observations and preserved resources.
-Point 11 requires the owner's explicit result for this environment. Full automated
-verification/release remains point 12. Prior 10i/10r screenshots identify older source.
+**Ready for owner acceptance (point 11):** the health-publication/admission
+correction is committed and renewed 10t preparation succeeds. The
+[current readiness evidence](RM-2026-017-health-readiness.md) records actual
+concurrent reference/session/Admin requests, current assets and preserved data.
+The earlier [icon readiness stop](RM-2026-017-icon-readiness.md) remains historical
+evidence. Only your explicit manual result completes 11; full automated
+verification/release remains 12. Prior 10i/10r screenshots identify older source.
 
 ## Preconditions and identity
 
@@ -18,7 +16,7 @@ Admin entry uses the native full-page password confirmation. No password reset,
 substitute credential or guard bypass is needed. Safe account discovery remains
 `php artisan runa:seed:accounts`; credentials stay private.
 
-Runtime source: `e69a3b5f7c1741da9392d20827bc638fa8b00091` plus the documentation-only
+Runtime source: `bff56568eeaac9128e8390fe3047f79a8d3eb4f9` plus the documentation-only
 10t handoff commit. Platform VERSION remains 0.7.0, approved feature projection 0.8.0;
 Framework API 2.1.0. Installed/source versions match: Admin 2.0.0, Auth 6.0.1,
 Audit 1.1.2, Permissions 2.1.2 and reference 0.4.1. Current development SPA entry:
@@ -26,12 +24,23 @@ Audit 1.1.2, Permissions 2.1.2 and reference 0.4.1. Current development SPA entr
 In 10r both identified development/test reference sample tables and their installation
 provenance were rebuilt; each now contains the current `welcome` example. Existing
 accounts, credentials, settings, enabled flags and Core history were preserved.
-Icon points perform no storage reset or account/credential change.
+The 10s2 repair reconstructed only the identified registry singleton in each base,
+preserving generation/metadata and checked account/settings/reference counts;
+10t performs no further storage reset or account/credential change.
 
 The [Core matrix](../../../app/modules/reference/core-capabilities.md) owns source/API/test
 links and noninteractive exclusions. Reference grants have prefix `app.reference.`;
 source synchronization never assigns them. Native Admin requires `runa.admin.enter`.
 Use existing authorized access; inspect restricted states in prepared isolated fixtures.
+
+## Health renewal during ordinary use
+
+Refresh [reference samples](http://localhost:8080/admin/app.reference/samples)
+while using the account/Admin views in another authenticated tab. Successful
+unchanged healthy renewal should retain the session, Admin access and controls.
+Check that explicit refresh retains an edited settings draft and that cancelling
+password confirmation preserves it. Actual expiry/access loss still follows its
+normal refusal/withdrawal; health renewal never extends an original operation proof.
 
 ## Icon acceptance
 
