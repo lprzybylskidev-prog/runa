@@ -63,7 +63,7 @@ Management discovery runs the inspected immutable image ID with no network, moun
 
 ### Explicit operation commands
 
-Retained recovery aliases: `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test` (backend/frontend/tooling aggregate), `./bin/deploy`, `./bin/logs`; Composer/pnpm/Boost remain tool transports. Removed multi-action aliases are listed in the migration map. Git hooks use dedicated `tools/application/bin/pre-commit` and `commit-msg` transports. `./bin/command`, `./bin/check` and `./bin/operations` only show discovery.
+Retained recovery aliases: `./bin/format`, `./bin/lint`, `./bin/typecheck`, `./bin/analyse`, `./bin/test` (backend/frontend/tooling aggregate), `./bin/deploy`, `./bin/logs`; Composer/pnpm/Boost remain tool transports. Removed multi-action aliases are listed in the migration map. Git hooks use dedicated `tools/application/bin/pre-commit` and `commit-msg` transports. `./bin/command` shows discovery; use `./bin/artisan --management list` for cold Artisan discovery. The retired `./bin/check` and `./bin/operations` aliases are removed; retained recovery aliases point directly to their shared transport.
 
 Internal Python services live under `tools/application`; fixed package command modules do not form a public bin registry. Development setup starts `python3 -m tools.application.development` from the selected tool checkout. Their argument parsing is defensive process validation, not a separately documented CLI. Preserve mature Compose/scanner/Git/quality/RAG mechanics; application-facing source-check orchestration and Xdebug behavior live in PHP Actions. Do not mechanically translate process engines to PHP or introduce Docker-in-Docker.
 

@@ -21,7 +21,25 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — point 10p completed, 2026-11-08
+## Current execution state — point 10q completed, 2026-11-08
+
+**Points 1–10q are complete. Point 10r is next.** Retired discovery-only
+`bin/check` and `bin/operations` are removed. Six retained recovery aliases now
+point directly to `bin/command`; Artisan discovery and live cold/tool transports
+remain. Current command guidance and executable fixture inventories are aligned.
+
+MT-2026-002 is resolved against the completed RM-2026-011 platform 0.5.0 release,
+using existing maintenance fields. MT-2026-001 remains planned: no corrected
+official-PostgreSQL replacement has been established. Dated security, migration
+and release evidence is preserved; no runtime pin, exception or dependency changes.
+
+Two focused contracts pass (customer projection and current maintenance schema),
+as does a bounded filesystem/fixture check of all six retained links and both
+retired names. This is no full-suite, security or final PASS. Platform remains
+0.7.0 / approved feature-0.8.0; module/API candidates are unchanged. Combined
+preparation remains 10r, explicit owner acceptance 11 and final release 12.
+
+## Historical execution state — point 10p completed, 2026-11-08
 
 **Points 1–10p are complete. Point 10q is next; 10q–10r remain open.** Native
 Artisan PHP testing now uses one Runa-owned Pest launch for serial and parallel
@@ -1778,7 +1796,7 @@ below are retained as historical records only.
   - Preserve the owner SIGSEGV evidence procedure; no crash root-cause investigation,
     campaign/resume automation or unexecuted coverage claims. Broad suites stay 12.
 
-- [ ] 10q. Remove retired selector aliases and reconcile resolved maintenance state.
+- [x] 10q. Remove retired selector aliases and reconcile resolved maintenance state.
   - **Dependency:** 10k; complete before 10r. Own P07/P10. Remove only discovery-only
     bin/check and bin/operations aliases and their current delivery/contract assertions;
     preserve live recovery/tool/cold transports and current Artisan discovery.
@@ -5701,3 +5719,61 @@ backups and reports remain; no Docker resources were created or removed.
 Point 10q is next. Combined installed storage/runtime/assets readiness remains 10r,
 sole explicit owner manual acceptance remains 11 and final verification/release 12.
 Mandatory commit hooks and staged incremental knowledge freshness apply.
+
+## Point 10q completion — retired selectors and maintenance reconciliation, 2026-11-08
+
+### Source and delivery disposition
+
+P07 removes only discovery-only `bin/check` and `bin/operations`. Their six live
+consumers (`format`, `lint`, `typecheck`, `analyse`, `test`, `deploy`) now link
+directly to `command`, preserving the invoked basename and existing literal-argv
+Artisan dispatch. `bin/command`, `bin/artisan`, Composer/pnpm/Boost/logs and the
+shared dispatcher are unchanged. Public command discovery remains native Artisan
+and cold `./bin/artisan --management list`.
+
+The live Python command-contract fixture drops both retired names. The customer
+source-projection fixture asserts the retained `bin/deploy` transport instead of
+requiring `bin/operations`. The host-executor acceptance copy list already uses
+`bin/command` and needs no change. Historical RM-005 command migration and RM-012
+Python inventory/reconciliation records, plus point-10j inventory, retain their
+original evidence. The current public command guide and unreleased changelog
+record the actual removal; no duplicate dispatcher or replacement alias is added.
+
+P10 uses the existing backlog `resolved`, `roadmap` and `released_version` fields
+to record MT-2026-002's completed RM-2026-011 / 0.5.0 delivery. Source review covers
+the immutable roadmap final report (54/54 final gates recorded PASS), released
+0.5.0 changelog, existing v0.5.0 tag and current PHP 8.4.27 pins/corrected package
+floors. This reconciles historical release evidence; it is not a fresh runtime or
+security verification. The dated remediation/risk reports remain byte-for-byte
+unchanged, including their then-pending publication wording. MT-2026-001 remains
+unchanged and planned; its official-image retirement condition is still unproven.
+
+### Focused evidence and instruction products
+
+The local knowledge index was current before research. English current-intent
+retrieval located P07 and command migration evidence; the original audit and
+maintenance/release sources were opened before edits. Focused source searches
+found no remaining executable/fixture references to the retired names. A bounded
+filesystem/JSON check confirms both are absent, all six recovery symlinks resolve
+directly to `bin/command`, and the live contract fixture retains those six names.
+
+Two small supported diagnostics resolve the changed fixture/schema questions:
+
+- `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_operations.py::OperationContracts::test_complete_customer_projection_preserves_development_source_and_excludes_owner_tools`
+  passes 1 case (exit 0, cleanup 0).
+- `python3 tools/maintainer/test-python --scope=contracts --path=contracts/test_maintenance.py::MaintenanceContracts::test_current_registry_passes`
+  passes 1 case (exit 0, cleanup 0), including the resolved-record release fields.
+
+No new test mirrors this low-impact link/metadata edit. Full tooling, delivery,
+security, runtime readiness and release verification remain in their owning later
+points. Mandatory hooks and staged incremental knowledge freshness still apply.
+Root AGENTS, owner skills and the separately authored customer product already
+route to native/cold Artisan and contain no retired-alias contract; no selection,
+authority or reusable procedure changes require edits there. Owner-only
+maintenance resolution is not copied into customer guidance.
+
+Platform VERSION stays 0.7.0 / approved feature-0.8.0. No module/API version,
+manifest, runtime configuration, database/ledger, dependency or security exception
+changes. No Docker resource was created or removed; development/base test data,
+shared/model/Qdrant caches, backups and verification evidence remain. Point 10r
+is next; owner acceptance 11 and final verification/release 12 remain open.

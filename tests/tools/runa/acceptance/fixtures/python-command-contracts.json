@@ -171,16 +171,6 @@
       "status": "specified-not-executed"
     },
     {
-      "id": "bin/check",
-      "invocation": ["./bin/check"],
-      "surface": "discovery",
-      "source": "bin/command",
-      "alias": true,
-      "baseline_contract": "ledger: discovery",
-      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
-      "status": "specified-not-executed"
-    },
-    {
       "id": "bin/command",
       "invocation": ["./bin/command"],
       "surface": "discovery",
@@ -237,16 +227,6 @@
       "source": "bin/passthrough",
       "alias": true,
       "baseline_contract": "ledger: transport",
-      "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
-      "status": "specified-not-executed"
-    },
-    {
-      "id": "bin/operations",
-      "invocation": ["./bin/operations"],
-      "surface": "discovery",
-      "source": "bin/command",
-      "alias": true,
-      "baseline_contract": "ledger: discovery",
       "scenario_ids": ["literal-arguments", "scope-and-cwd", "help-and-errors"],
       "status": "specified-not-executed"
     },

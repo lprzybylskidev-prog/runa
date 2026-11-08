@@ -4,6 +4,10 @@ All release entries are maintained by the agent from roadmap facts.
 
 ## Unreleased — RM-2026-017
 
+- Remove retired discovery-only bin/check and bin/operations aliases; retained
+  recovery aliases point directly to bin/command. Reconcile MT-2026-002 as
+  resolved in the already released platform 0.5.0; retain MT-2026-001.
+
 - Replace native Artisan testing's global argv adaptation and split Collision/Pest
   launch paths with one Runa-owned Pest command for serial/parallel execution and
   PHPUnit classes. Preserve literal native options, guarded lifecycle, discovery,
