@@ -23,19 +23,59 @@ impact_areas:
 
 # RM-2026-017 — Comprehensive platform quality, consistency and development workflows
 
-## Current execution state — owner accepted; point 12 preparation, 2026-11-08
+## Current execution state — point 12 native-host verification preparation, 2026-11-08
 
-The owner explicitly accepted the manual review and authorized point 12 in this
-session. Point 11 accepts the current 10x environment documented in the
-[acceptance sheet](../../reviews/RM-2026-017-current-acceptance.md): runtime source
-bb5abb29 and documentation handoff 8d30518b, http://localhost:8080 and
-index-BdXz_X9Q.js. No subsequent UI change or new qualification was requested.
-Point 12 remains open. The exact 13-group graph has been previewed; its declaration
-and heavy-scope rationale are above. No new automated final run or PASS is claimed.
-See the Execution handoff below for the required container-to-host transition,
-preserved historical evidence and remaining prerequisites.
+Owner acceptance 11 remains valid for bb5abb29 runtime / 8d30518b documentation
+and index-BdXz_X9Q.js. Native-host handoff 0dd6c641 is received. Point 10y repair
+5926a491 reconciles owner command guidance/documentation fixtures; complete
+21-case documentation contracts and check-docs pass. No frontend changes occurred.
+
+Point 12 remains open. The actual current-state guidance and changed security
+boundaries have been reviewed; retained report:
+`.runtime/artifacts/RM-2026-017-point12-source-review.md`. It records exact source
+owners, no blocking source finding, instruction-product/version assessment and
+remaining automated checks; source review is not final verification PASS. The new
+local attestation must bind this report and current changed surface before launch.
+The exact declared 13-group graph was previewed on the native host. Launch its
+supported background run only after this preparation is committed and indexed;
+end the turn after successful launch. Application reference backend/frontend runs,
+result/evidence review, scoped cleanup and release closure remain subsequent work.
 
 ## Execution handoff
+
+### Point 12 — native host received and source review completed, 2026-11-08
+
+Checkout `/home/lprzybylski/Documents/php/runa`, branch/handoff, native Docker,
+Compose 5.1.4/Python 3.12.3 and active hooks are confirmed. Development services
+are healthy. Knowledge was current and source-verified retrieval completed.
+Both suite/endpoint locks are available. Two stopped inherited containers match
+the existing journal: `ea5e9954d18c` / `runa-dev-app-test-1` and `a304cf9c0465` /
+`runa-dev-nginx-test-1`, project `runa-dev`, run
+`454f8f080fc946efb9fad9d86e33c264`, exact native checkout and expected services.
+Their scoped removal list is those two containers only; the supported browser
+runner will recover/revalidate ownership under locks. No manual recovery/deletion
+has occurred. Preserve development/base test data, all volumes/networks/images,
+Qdrant/model caches, backups and native evidence.
+
+Latest historical quality state/logs, old security attestation, endpoint journal
+and passing point-10y XML are retained with provenance at
+`.runtime/verification/retained/RM-2026-017-point12-host-prelaunch-20261108T131804Z/`.
+Original historical files remain. The older container-handoff archive also remains.
+None of the old RM-2026-016 results certifies this candidate. Source review covered
+README, documentation ownership, current public/owner command/testing/environment/
+production/public API/settings/health guidance, relevant owner skills and customer
+instruction products against owning code. The only confirmed guidance/test issues
+were repaired in 10y; no new reusable instruction rule, runtime or UI change.
+Approved feature/0.8.0, module/API candidates and unchanged App version remain.
+
+The review report records the inspected source boundaries and pending runtime,
+strict AI, secret/dependency/security and native installation/transport results.
+Before launch write fresh content-bound local security evidence, commit/index this
+preparation and repeat the exact quality-plan. Use the existing 13-group background
+quality-roadmap command below, then stop work. After completion, preserve latest
+reports before separate `./bin/artisan runa:test --scope=backend --parallel` and
+`./bin/artisan runa:test:frontend`; record App reference results separately from
+owner results. Continue any failure through the existing repair/evidence procedure.
 
 ### Point 12 — container to native Docker host, 2026-11-08 13:04 UTC
 
